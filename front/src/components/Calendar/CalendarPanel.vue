@@ -1,0 +1,234 @@
+<template>
+  <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4" color="surfaceContainerHigh">
+    <h2 class="text-h5 text-overline text-center">{{ formattedDate }}</h2>
+
+    <v-card rounded="xl" color="background" class="mb-4 card-shadow" elevation="0">
+      <v-card-item class="d-flex align-start justify-space-between pa-4">
+        <v-card-title
+          :class="substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate) ? 'text-secondary text-medium-emphasis' : ''"
+          class="pb-0 mb-0">
+          <h2 class="text-h4 font-weight-medium" v-if="isRestDay">Repos</h2>
+          <h2 class="text-h4 font-weight-medium" v-else>{{ getShiftName }}</h2>
+        </v-card-title>
+        <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ getShiftTeam }}</v-card-subtitle>
+        <v-card-subtitle v-if="!isRestDay" class="pt-0">
+          {{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}
+        </v-card-subtitle>
+
+        <template #append>
+          <div class="d-flex flex-column">
+
+
+            <v-chip v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)" color="remplacement"
+              variant="flat" size="small" rounded="lg">
+              <v-icon>mdi-account-arrow-right-outline</v-icon>
+              <span>Remplace dans équipe {{ substitutionTeam }}</span>
+            </v-chip>
+            <v-chip v-if="substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate)" color="remplacement"
+              variant="flat" size="small" rounded="lg">
+              <v-icon>mdi-account-arrow-left-outline</v-icon>
+              <span>Remplacé par </span>
+            </v-chip>
+            <v-chip v-if="substitutionStore.hasOwnOpenSubstitutions(selectedDate)" color="remplacement"
+              variant="outlined" size="small" rounded="lg"
+              style="border-color: rgba(var(--v-theme-remplacement), 0.4);">
+              <v-icon>mdi-account-arrow-left-outline</v-icon>
+              <span>Demande de remplacement</span>
+            </v-chip>
+          </div>
+        </template>
+      </v-card-item>
+    </v-card>
+
+
+
+    <div>
+      <v-slide-group :mobile="smAndDown" class="mb-4 mx-2">
+        <v-slide-group-item >
+          <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-3"
+            @click="$emit('openAbsenceDialog', 'Congé')">
+            <v-icon start>mdi-beach</v-icon>
+            Congé
+          </v-btn>
+        </v-slide-group-item>
+        <v-slide-group-item>
+          <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-3"
+            @click="$emit('openAbsenceDialog', 'VIC')">
+            <v-icon start>mdi-calendar-clock</v-icon>
+            VIC
+          </v-btn>
+        </v-slide-group-item>
+        <v-slide-group-item>
+          <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-2"
+            @click="$emit('openAbsenceDialog', 'Stage')">
+            <v-icon start>mdi-school</v-icon>
+            Stage
+          </v-btn>
+        </v-slide-group-item>
+        <v-slide-group-item>
+          <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-2"
+            @click="$emit('openAbsenceDialog', 'Autre')">
+            <v-icon start>mdi-dots-horizontal</v-icon>
+            Autre
+          </v-btn>
+        </v-slide-group-item>
+        <v-slide-group-item>
+          <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-2"
+            @click="$emit('openAbsenceDialog', 'Autre')">
+            <v-icon start>mdi-dots-horizontal</v-icon>
+            Bureau
+          </v-btn>
+        </v-slide-group-item>
+      </v-slide-group>
+    </div>
+
+    <div class="d-flex align-center justify-center mb-4"
+      v-if="!substitutionStore.hasOwnOpenSubstitutions(selectedDate) && !substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate)">
+      <v-btn height="60px" color="permutation" text-color="permutation"
+        class="flex-1-1 d-flex flex-column rounded-ts-xl rounded-bs-xl mr-1 text-none " :disabled="isRestDay || inPast"
+        :class="{ 'opacity-10': isRestDay || inPast }" rounded="lg" @click="$emit('openRemplaDialog', 'Permut')">
+        <template #prepend>
+          <v-icon>mdi-swap-horizontal-hidden</v-icon>
+        </template>
+        Permutation
+      </v-btn>
+      <v-btn height="60px" color="remplacement" :disabled="isRestDay || inPast"
+        class="flex-1-1 d-flex flex-column rounded-te-xl rounded-be-xl text-none " rounded="lg"
+        :class="{ 'opacity-10': isRestDay || inPast }" @click="$emit('openRemplaDialog', 'Rempla')">
+        <template #prepend>
+          <v-icon>mdi-account-arrow-left-outline</v-icon>
+        </template>
+        Remplacement
+      </v-btn>
+    </div>
+
+    <div class="d-flex align-center justify-center mb-4"
+      v-if="substitutionStore.hasOwnOpenSubstitutions(selectedDate) || substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate)">
+      <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
+        class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
+        Annuler ma demande
+      </v-btn>
+    </div>
+
+    <div class="d-flex align-center justify-center mb-4"
+      v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)">
+      <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
+        class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg">
+        Annuler mon rempla
+      </v-btn>
+    </div>
+
+    <v-btn width="100%" flat rounded="xl" height="64px" color="background"
+      :class="{ 'opacity-50': substitutionStore.getAvailableSubstitutionsCount(selectedDate) === 0 }"
+      append-icon="mdi-chevron-right" class="justify-space-between d-flex text-medium-emphasis mb-2 text-subtitle-2"
+      @click="$emit('openSubstitutionsDrawer')">
+      <v-chip rounded="xl" color="remplacement" variant="flat" class="text-caption font-weight-bold px-4 mr-3">
+        <span>{{ substitutionStore.getAvailableSubstitutionsCount(selectedDate) }}</span>
+      </v-chip>
+      Voir les remplacements disponibles
+    </v-btn>
+
+    <v-btn width="100%" :class="{ 'opacity-50': substitutionStore.getAvailableSwitchesCount(selectedDate) === 0 }" flat
+      rounded="xl" height="64px" color="background" append-icon="mdi-chevron-right"
+      class="justify-space-between d-flex text-medium-emphasis text-subtitle-2" @click="$emit('openSwitchesDrawer')">
+      <v-chip rounded="xl" color="permutation" variant="flat" class="text-caption font-weight-bold px-4 mr-3">
+        <span>{{ substitutionStore.getAvailableSwitchesCount(selectedDate) }}</span>
+      </v-chip>
+      Voir les permutations disponibles
+    </v-btn>
+  </v-sheet>
+</template>
+
+<script setup>
+import { computed, onMounted } from 'vue';
+import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useTeamStore } from '@/stores/teamStore';
+import { useAuthStore } from '@/stores/authStore';
+
+const substitutionStore = useSubstitutionStore();
+const teamStore = useTeamStore();
+const authStore = useAuthStore();
+
+const props = defineProps({
+  formattedDate: {
+    type: String,
+    required: true
+  },
+  vacationsOfUser: {
+    type: Map,
+    required: true
+  },
+  selectedDate: {
+    type: [Date, String, null],
+    required: true
+  },
+
+  rounded: {
+    type: String,
+    default: 'xl'
+  },
+  elevation: {
+    type: Number,
+    default: 0
+  },
+  showChips: {
+    type: Boolean,
+    default: false
+  },
+
+});
+
+defineEmits(['openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'openAbsenceDialog']);
+
+const getVacation = computed(() => {
+  if (!props.selectedDate) return null;
+  return props.vacationsOfUser.get(new Date(props.selectedDate).toISOString());
+});
+
+const isRestDay = computed(() => {
+  return getVacation.value?.shift?.type === 'rest';
+});
+
+const inPast = computed(() => {
+  return new Date(props.selectedDate).toISOString().split('T')[0] < new Date().toISOString().split('T')[0];
+});
+
+
+const getShiftName = computed(() => {
+  return getVacation.value?.shift?.name || '';
+});
+
+const getShiftHours = computed(() => {
+  return {
+    startTime: getVacation.value?.shift?.startTime || '',
+    endTime: getVacation.value?.shift?.endTime || ''
+  };
+});
+
+const substitutionId = computed(() => {
+  const substitution = substitutionStore.hasOwnOpenSubstitutions(props.selectedDate);
+  return substitution ? substitution._id : null;
+});
+
+const getShiftTeam = computed(() => {
+  return getVacation.value?.teamObject?.name || '';
+});
+
+const substitutionTeam = computed(() => {
+  const teamId = substitutionStore.hasAcceptedSubstitutionsAsAccepter(props.selectedDate)?.posterShift.teamId;
+  if (!teamId) return '';
+  const team = teamStore.centerTeams.find(t => t._id === teamId);
+  return team?.name || '';
+});
+
+onMounted(async () => {
+  await teamStore.fetchCenterTeams(authStore.centerId);
+});
+
+</script>
+
+<style scoped>
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(121, 121, 121, 0.007), 0 4px 8px rgba(0, 0, 0, 0.048) !important;
+}
+</style>

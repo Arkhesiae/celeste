@@ -1,0 +1,11 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Your rule content
+Project has 2 parts, backend and front. Always provide consistent solutions which consider complete workflow from front to back etc.
+Always use vue composition API and use script setup when needed.
+- You can @ files here
+- You can use markdown but dont have to

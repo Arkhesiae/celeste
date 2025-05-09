@@ -1,0 +1,127 @@
+<template>
+  <v-sheet
+    rounded="xl"
+    elevation="0"
+    color="transparent"
+    class="calendar-sheet mx-auto"
+    min-width="300px"
+    max-width="600px"
+    v-touch="{
+      left: () => handleSwipe('left'),
+      right: () => handleSwipe('right')
+    }"
+  >
+    <!-- En-têtes des jours de la semaine -->
+    <v-row class="mt-1 mb-8">
+      <v-col v-for="day in daysOfWeek" :key="day" class="text-center">
+        <strong>{{ day }}</strong>
+      </v-col>
+    </v-row>
+
+    <!-- Jours du calendrier -->
+    <v-row
+      v-for="(week, index) in calendarDays"
+      :key="index"
+      class="calendar-row d-flex justify-space-between align-center my-4"
+      dense
+    >
+      <div
+        style="height: 48px"
+        v-for="day in week"
+        :key="day.date"
+        class="day-container d-flex justify-space-around align-center"
+      >
+        <v-sheet
+          @click="$emit('select-day', day.date)"
+          color="transparent"
+          class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
+          style="width: 48px; height: 48px; border-radius: 50%; position: relative; font-weight: 400 "
+          :class="{
+            'isWorkDay': isWorkDay(day.date),
+            'selected': isSelected(day.date),
+            'today-center-highlight': isToday(day.date),
+            'empty-day': !day.isInMonth
+          }"
+        >
+
+          <StatusChip v-if="substitutionStore.hasOwnOpenSubstitutions(day.date.toISOString())" type="rempla" status="pending"/>
+          <StatusChip v-if="substitutionStore.hasAcceptedSubstitutionsAsPoster(day.date.toISOString())" type="rempla" status="accepted-poster"/>
+          <StatusChip v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(day.date.toISOString())" type="rempla" status="accepted-accepter"/>
+<!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 16" type="switch" status="accepted"/>-->
+<!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 17" type="rempla" status="pending"/>-->
+
+              <span class="text-body-1 " :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'">
+                {{ day.date.getUTCDate() }} 
+              </span>
+              <span class="text-caption position-absolute opacity-50" v-if="isWorkDay(day.date)" style="top: 0; right: 0;">{{ vacationsOfUser.get(day.date.toISOString())?.shift?.name }}</span>
+
+          <div
+            style="position: absolute; width: 100%; bottom: 0"
+            class="d-flex justify-center"
+          >
+
+            <div  v-if="substitutionStore.hasAvailableSubstitutions(day.date)" style="height: 8px ; width: 8px ; border-radius: 8px ; background: rgb(var(--v-theme-remplacement)) ; margin-left: 1px ; margin-right: 1px" ></div>
+            <div  v-if="substitutionStore.hasAvailableSwitches(day.date)" style="height: 8px ; width: 8px ; border-radius: 8px ; background: rgb(var(--v-theme-permutation)) ; margin-left: 1px ; margin-right: 1px"></div>
+          </div>
+        </v-sheet>
+      </div>
+    </v-row>
+  </v-sheet>
+</template>
+
+<script setup>
+import { useSubstitutionStore } from '@/stores/substitutionStore';
+
+const substitutionStore = useSubstitutionStore();
+
+const props = defineProps({
+  daysOfWeek: Array,
+  calendarDays: Array,
+  isSelected: Function,
+  isWorkDay: Function,
+  isToday: Function,
+  hasAvailableSubstitution: Function,
+  hasOwnOpenSubstitution: Function,
+  hasAcceptedSubstitutionAsPoster: Function,
+  hasAcceptedSubstitutionAsAccepter: Function,
+  hasAvailableSwitch: Function,
+  vacationsOfUser: Map,
+  rotationsMap: Map,
+});
+const emit = defineEmits(['select-day', 'swipe-left', 'swipe-right']);
+
+const handleSwipe = (direction) => {
+  if (direction === 'left') {
+    emit('swipe-left');
+  } else if (direction === 'right') {
+    emit('swipe-right');
+  }
+};
+</script>
+
+<style scoped>
+.day-container {
+  width: calc(100% / 7);
+}
+
+.isWorkDay {
+  opacity: .9;
+  font-weight: 900 !important;
+}
+
+.selected {
+  background: rgb(var(--v-theme-surface)) !important;
+}
+
+.today-center-highlight {
+  border: 1px solid rgba(var(--v-theme-surface-light), 0.2) !important;
+}
+
+.empty-day {
+  opacity: 0.4;
+}
+
+.calendar-sheet {
+  touch-action: pan-y pinch-zoom;
+}
+</style>

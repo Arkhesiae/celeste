@@ -1,0 +1,347 @@
+<template>
+  <v-container>
+    <v-row class="mt-4">
+      <!-- Section Calendrier --> 
+
+      <v-col cols="12" lg="8" class="mt-2">
+        <CalendarHeader :currentMonth="selectedMonth" :currentYear="selectedYear"
+          @update:currentMonth="handleMonthUpdate" @update:currentYear="handleYearUpdate"></CalendarHeader>
+
+
+        <CalendarDesktop v-if="!smAndDown" :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays"
+            :isSelected="isSelected" :isWorkDay="isWorkDay" :isToday="isToday" :vacationsOfUser="vacationsOfUser"
+           :rotationsMap="rotationsMap" @select-day="selectDay" />
+
+
+        <CalendarMobile v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
+          :isWorkDay="isWorkDay" 
+          :isToday="isToday" :rotationsMap="rotationsMap"
+          :vacationsOfUser="vacationsOfUser" @select-day="selectDay" @swipe-left="handleSwipeLeft"
+          @swipe-right="handleSwipeRight" />
+
+      </v-col>
+
+      <!-- Side Panel (Desktop) -->
+    
+      <CalendarSidePanel v-if="selectedDate && !mdAndDown":cols="4" :formattedDate="formattedDate"
+        :vacationsOfUser="vacationsOfUser" :selectedDate="selectedDate"
+        @openRemplaDialog="openRemplaDialog"
+        @openSubstitutionsDrawer="showSubstitutionsDrawer = true" @openSwitchesDrawer="showSwitchesDrawer = true"
+        @cancelDemand="handleCancelDemand" />
+ 
+
+      <!-- Bottom Sheet (Mobile) -->
+      <CalendarBottomSheet v-if="mdAndDown" v-model="showBottomSheet" :formattedDate="formattedDate"
+        :vacationsOfUser="vacationsOfUser" :selectedDate="selectedDate"
+        @update:modelValue="onBottomSheetClose"
+        @openRemplaDialog="openRemplaDialog" @openSubstitutionsDrawer="showSubstitutionsDrawer = true"
+        @openSwitchesDrawer="showSwitchesDrawer = true" @cancelDemand="handleCancelDemand" />
+    </v-row>
+
+    <AddSubstitutionForm :dialogMode="dialogMode" :dialogVisible="remplaDialog" :vacationsOfUser="vacationsOfUser"
+      :date="selectedDate" :selectedVacation="selectedVacation" @onClose="closeRemplaDialog" @onSubmit="handleSubmit"
+      @update:dialogModeValue="dialogMode = $event" @update:dialogVisible="remplaDialog = $event">
+    </AddSubstitutionForm>
+
+
+
+    <v-dialog v-model="loadingVacations" persistent width="300">
+      <v-card rounded="xl" class="pa-2">
+        <v-card-text class="d-flex align-center">
+          <v-progress-circular indeterminate color="primary"></v-progress-circular>
+          <p class="ml-4">Chargement...</p>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Drawers -->
+    <AvailableSubstitutionsDrawer v-model="showSubstitutionsDrawer" :selectedDate="selectedDate" />
+
+    <AvailableSwitchesDrawer v-model="showSwitchesDrawer" :selectedDate="selectedDate" />
+  </v-container>
+</template>
+
+<script setup>
+import { computed, onMounted, ref, watch } from 'vue';
+import { useAuthStore } from "@/stores/authStore.js";
+import { useDisplay } from "vuetify";
+import { useTeamStore } from "@/stores/teamStore.js";
+import { useSubstitutionStore } from "@/stores/substitutionStore.js";
+import { useCalendar } from '@/composables/useCalendar';
+import { vacationService } from "@/services/vacationService.js";
+import { useSnackbarStore } from "@/stores/snackbarStore.js";
+import { useRotationStore } from "@/stores/rotationStore.js";
+import { useSubstitutionManagement } from '@/composables/useSubstitutionManagement';
+import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
+import CalendarHeader from "@/components/Calendar/CalendarHeader.vue";
+import CalendarDesktop from "@/components/Calendar/CalendarDesktop.vue";
+import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
+import CalendarSidePanel from "@/components/Calendar/CalendarSidePanel.vue";
+import CalendarBottomSheet from "@/components/Calendar/CallendarBottomSheet.vue";
+import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
+import AvailableSubstitutionsDrawer from "@/components/Calendar/AvailableSubstitutionsDrawer.vue";
+import AvailableSwitchesDrawer from "@/components/Calendar/AvailableSwitchesDrawer.vue";
+
+/** Constantes */
+const CALENDAR_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+const DIALOG_MODES = {
+  REMPLACEMENT: 'Rempla'
+};
+
+/**  Initialisation des stores */
+const authStore = useAuthStore();
+const substitutionStore = useSubstitutionStore();
+const snackbarStore = useSnackbarStore();
+const teamStore = useTeamStore();
+
+/**  États */
+const isLoading = ref(false);
+const vacationsOfUser = ref(new Map());
+const remplaDialog = ref(false);
+const showBottomSheet = ref(false);
+const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
+const loadingVacations = ref(false);
+const showSubstitutionsDrawer = ref(false);
+const showSwitchesDrawer = ref(false);
+
+const { mobile, smAndDown, mdAndDown } = useDisplay();
+const userId = computed(() => authStore.userId);
+
+// Utilisation des composables
+const { 
+  selectedDate,
+  formattedDate,
+  currentLocalDate,
+  selectedMonth,
+  selectedYear,
+  handleMonthUpdate,
+  handleYearUpdate,
+  navigateMonth,
+  handleSwipeLeft,
+  handleSwipeRight
+} = useCalendarNavigation();
+
+
+const { calendarDays } = useCalendar(selectedYear, selectedMonth);
+const rotationsMap = ref(new Map());
+
+// Computed properties
+const selectedVacation = computed(() => {
+  if (!selectedDate.value) return null;
+  return vacationsOfUser.value.get(selectedDate.value);
+});
+
+const isSelected = (date) => selectedDate.value === date.toISOString();
+
+const isToday = (date) => {
+  const today = currentLocalDate.value;
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
+};
+
+const isWorkDay = (date) => {
+  const shift = vacationsOfUser.value.get(date.toISOString())?.shift?.name;
+  return shift ? shift !== 'Rest Day' : false;
+};
+
+// Handlers
+const selectDay = (date) => {
+  if (!date) return;
+  selectedDate.value = date.toISOString();
+};
+
+const openRemplaDialog = (mode) => {
+  dialogMode.value = mode;
+  remplaDialog.value = true;
+};
+
+const closeRemplaDialog = () => {
+  remplaDialog.value = false;
+};
+
+const onBottomSheetClose = (isOpen) => {  
+  if (!isOpen) {
+    selectedDate.value = null;
+  }
+};
+
+// Data fetching
+const getWorkdaysOfUser = async () => {
+  loadingVacations.value = true;
+  try {
+    const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));
+    const result = await vacationService.fetchVacationsOfUser(userId.value, flatArray);
+    result.forEach(({ date, shift, teamObject }) => {
+      vacationsOfUser.value.set(date, { shift, teamObject });
+    });
+    console.log(result);
+  } catch (err) {
+    snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-outline');
+    console.error('Erreur getWorkdaysOfUser:', err);
+    throw err;
+  } finally {
+    loadingVacations.value = false;
+  }
+};
+
+const getAllSubstitutions = async () => {
+  if (!calendarDays.value || calendarDays.value.length === 0) {
+    return;
+  }
+
+  try {
+    const startDate = calendarDays.value[0][0].date.toISOString();
+    const endDate = calendarDays.value[calendarDays.value.length - 1][6].date.toISOString();
+    await substitutionStore.fetchAllDemands({startDate, endDate});
+  } catch (err) {
+    snackbarStore.showNotification('Erreur lors du chargement des substitutions : ' + err.message, 'onError', 'mdi-alert-outline');
+    console.error('Erreur getAllSubstitutions:', err);
+    throw err;
+  }
+};
+
+const handleSubmit = async (demand) => {
+    try {
+      const posterId = userId.value;
+      const posterShift = {
+        date: demand.date,
+        shift: demand.selectedVacation.shift,
+        teamId: demand.selectedVacation.teamObject._id
+      };
+
+      const requestData = {
+        posterId,
+        posterShift,
+        comment: demand.comment,
+        points: demand.points,
+        status: 'open',
+        acceptedSwitches: demand.acceptedSwitches
+      };
+
+      await substitutionStore.createSubstitutionDemand(requestData);
+      snackbarStore.showNotification('Demande créée avec succès !', 'onPrimary', 'mdi-check-circle-outline');
+      closeRemplaDialog();
+      showBottomSheet.value = false
+      return true;
+    } catch (error) {
+      console.error('Erreur lors de la création de la demande:', error);
+      snackbarStore.showNotification('Erreur lors de la création de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+      closeRemplaDialog();
+      showBottomSheet.value = false
+      return false;
+    }
+  };
+
+const handleCancelDemand = async (substitutionId) => {
+  try {
+    await substitutionStore.cancelDemand(substitutionId);
+    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check-circle-outline');
+  } catch (error) {
+    snackbarStore.showNotification('Erreur lors de l\'annulation de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
+// Watchers
+watch(selectedDate, (newDate) => {
+  if (newDate && mobile.value) {
+    showBottomSheet.value = true;
+  }
+}, { immediate: true });
+
+watch(calendarDays, async (newCalendarDays) => {
+  if (newCalendarDays && newCalendarDays.length > 0) {
+    await Promise.all([
+      getWorkdaysOfUser(),
+      getAllSubstitutions()
+    ]);
+  }
+});
+
+// Lifecycle hooks
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    await Promise.all([
+      teamStore.fetchCenterTeams(authStore.centerId),
+      getWorkdaysOfUser(),
+      getAllSubstitutions(),
+    ]);
+    snackbarStore.showNotification('Substitutions et vacations chargées !', 'primary', 'mdi-check');
+  } catch (err) {
+    snackbarStore.showNotification('Erreur lors du chargement initial', 'error', 'mdi-alert-outline');
+    console.error('Erreur onMounted:', err);
+  } finally {
+    isLoading.value = false;
+  }
+});
+</script>
+
+
+<style>
+:root {
+  --calendar-day-size: 80px;
+  --calendar-day-mobile-size: 48px;
+  --border-radius: 8px;
+}
+
+.calendar-day {
+  height: var(--calendar-day-size);
+  width: var(--calendar-day-size);
+}
+
+.calendar-day-mobile {
+  height: var(--calendar-day-mobile-size) !important;
+  width: var(--calendar-day-mobile-size) !important;
+}
+
+.nblock {
+  position: relative;
+  /* Nécessaire pour positionner ::after */
+  z-index: 0;
+  /* Supprime le contexte inutile */
+  overflow: visible !important;
+  opacity: 1 !important;
+}
+
+
+.nblock:after {
+  content: '';
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  border-radius: 8px;
+  background: linear-gradient(45deg, #ff86ac, rgba(255, 160, 109, 0.94), rgba(250, 152, 248, 0.05),
+      rgba(159, 159, 248, 0.22), #f693b1);
+  background-size: 400%;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  z-index: -1;
+  /* Cela fonctionne si le stacking context de `.block` est supprimé */
+  animation: steam 15s linear infinite;
+}
+
+@keyframes steam {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
+    background-position: 400% 0;
+  }
+}
+
+.nblock:after {
+  filter: blur(10px);
+}
+
+
+.empty-day {
+  opacity: 0.5 !important;
+}
+
+
+
+
+
+</style>

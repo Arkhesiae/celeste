@@ -7,7 +7,7 @@ services:
     ports:
       - 80:3000
     volumes:
-      - ./server_data:/app
+      - ../celeste-server/server_data:/app
     depends_on:
       - database
     environment:
@@ -16,8 +16,8 @@ services:
     image: mongo:8.0
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     volumes:
-      - "./mongo_data:/data/db"
-      - "./mongo_config:/data/configdb"
+      - "../celeste-server/mongo_data:/data/db"
+      - "../celeste-server/mongo_config:/data/configdb"
     environment:
       MONGO_INITDB_DATABASE: myDb
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}

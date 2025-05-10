@@ -16,7 +16,7 @@ services:
       - celeste
   database:
     image: mongo:8.0
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    command: [ "--bind_ip_all", "--port", "27017"]
     volumes:
       - "../celeste-server/mongo_data:/data/db"
       - "../celeste-server/mongo_config:/data/configdb"

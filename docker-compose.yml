@@ -7,7 +7,7 @@ services:
     ports:
       - 80:3000
     volumes:
-      - ../celeste-server/server_data:/app
+      - ../celeste-server/server_data:/app/public/avatars
     depends_on:
       - database
     environment:

@@ -12,6 +12,8 @@ services:
       - database
     environment:
       MONGO_URI: ${MONGO_URI}
+    networks:
+      - celeste
   database:
     image: mongo:8.0
     command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
@@ -22,4 +24,10 @@ services:
       MONGO_INITDB_DATABASE: myDb
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    networks:
+      - celeste
+
+networks:
+  celeste:
+    external: true
 

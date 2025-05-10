@@ -130,7 +130,7 @@
         </v-card-title>
         <v-card-text class="pa-0 mb-6">
           <p v-if="userHasShift">
-            Vous avez déjà un shift prévu pour cette journée
+            Vous travaillez déjà ce jour
           </p>
           <p v-else>
             Êtes-vous sûr de vouloir accepter ce remplacement ?
@@ -233,12 +233,8 @@ const handleAccept = async () => {
     const response = await substitutionStore.checkUserShift(props.demand.posterShift.date)
     userHasShift.value = response.hasShift
     userShift.value = response.shift
-    
-    if (userHasShift.value) {
-      showConfirmationDialog.value = true
-    } else {
-      await handleConfirmAccept()
-    }
+    showConfirmationDialog.value = true
+ 
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la vérification des shifts', 'onError', "mdi-alert-circle-outline")
     console.error('Erreur lors de la vérification des shifts:', error)
@@ -264,7 +260,6 @@ const handleSwap = async () => {
   try {
     await substitutionStore.swapShifts(props.demand._id, userShift.value._id)
     snackbarStore.showNotification('Échange de shifts effectué avec succès')
-    await substitutionStore.fetchAllDemands([substitutionStore.startDate, substitutionStore.endDate])
     showConfirmationDialog.value = false
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'échange des shifts', 'onError', "mdi-alert-circle-outline")

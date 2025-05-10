@@ -36,9 +36,13 @@
 </template>
 
 <script setup>
+
+
   import { computed } from 'vue';
   import { useSubstitutionStore } from '@/stores/substitutionStore';
   import DemandCard from '@/components/Remplacer/DemandCard.vue';
+  import { useDisplay } from 'vuetify';
+
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -51,6 +55,7 @@ const props = defineProps({
 });
 
 const substitutionStore = useSubstitutionStore();
+const { smAndDown } = useDisplay();
 
 const availableSwitches = computed(() => {
   return substitutionStore.availableSwitches

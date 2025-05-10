@@ -27,7 +27,7 @@
             <v-chip v-if="substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate)" color="remplacement"
               variant="flat" size="small" rounded="lg">
               <v-icon>mdi-account-arrow-left-outline</v-icon>
-              <span>Remplacé par </span>
+              <span>Remplacé par {{ substituteUser }}</span>
             </v-chip>
             <v-chip v-if="substitutionStore.hasOwnOpenSubstitutions(selectedDate)" color="remplacement"
               variant="outlined" size="small" rounded="lg"
@@ -144,9 +144,11 @@ import { computed, onMounted } from 'vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
 
 const substitutionStore = useSubstitutionStore();
 const teamStore = useTeamStore();
+const userStore = useUserStore();
 const authStore = useAuthStore();
 
 const props = defineProps({
@@ -221,9 +223,15 @@ const substitutionTeam = computed(() => {
   return team?.name || '';
 });
 
-onMounted(async () => {
-  await teamStore.fetchCenterTeams(authStore.centerId);
+const substituteUser = computed(() => {
+  const accepterId = substitutionStore.hasAcceptedSubstitutionsAsPoster(props.selectedDate)?.accepterId;
+  if (!accepterId) return '';
+  const user = userStore.users.find(u => u._id === accepterId);
+  return user?.name + ' ' +user?.lastName.toUpperCase() || '';
 });
+
+
+
 
 </script>
 

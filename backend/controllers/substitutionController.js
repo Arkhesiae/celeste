@@ -2,6 +2,7 @@ const Substitution = require('../models/substitutionModel');
 const {User} = require("../models/userModel");
 const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
 const {computeShiftOfUser} = require("../utils/computeShiftOfUser");
+const { createDelayedTransaction } = require('../services/transactionService');
 
 
 const getCenterDemands = async (req, res) => {
@@ -381,15 +382,12 @@ const acceptRequest = async (req, res) => {
             return res.status(400).json({ error: 'Vous ne pouvez pas accepter votre propre demande' });
         }
 
-
         const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
         const shift = await computeShiftOfUser(new Date(request.posterShift.date), userId);
-
-
 
         // Mise à jour de la demande
         const updatedRequest = await Substitution.findByIdAndUpdate(
@@ -402,10 +400,18 @@ const acceptRequest = async (req, res) => {
             { new: true }
         );
 
-        // Création d'une transaction de points si nécessaire
+        console.log(request.points)
+        // Création d'une transaction différée si des points sont en jeu
         if (request.points > 0) {
-            // TODO: Implémenter la logique de transfert de points
-            // Cela nécessitera probablement un nouveau modèle Transaction
+            await createDelayedTransaction({
+                sender: request.posterId,
+                receiver: userId,
+                amount: request.points,
+                type: 'replacement',
+                request: requestId,
+                description: `Transaction pour la substitution du ${new Date(request.posterShift.date).toLocaleDateString()}`,
+                scheduledDate: new Date(request.posterShift.date)
+            });
         }
 
         res.status(200).json({
@@ -460,9 +466,10 @@ const checkUserShift = async (req, res) => {
         const date = req.params.date;
 
         const userShift = await computeShiftOfUser(new Date(date), userId);
+        const hasShift = userShift[0] && userShift[0].shift.type !== 'rest'
 
         res.status(200).json({
-            hasShift: !!userShift,
+            hasShift: hasShift,
             shift: userShift
         });
     } catch (error) {

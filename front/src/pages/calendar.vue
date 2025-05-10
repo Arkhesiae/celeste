@@ -66,6 +66,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from "@/stores/authStore.js";
 import { useDisplay } from "vuetify";
 import { useTeamStore } from "@/stores/teamStore.js";
+import { useUserStore } from '@/stores/userStore';
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useCalendar } from '@/composables/useCalendar';
 import { vacationService } from "@/services/vacationService.js";
@@ -93,6 +94,7 @@ const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
 const teamStore = useTeamStore();
+const userStore = useUserStore();
 
 /**  États */
 const isLoading = ref(false);
@@ -261,9 +263,12 @@ watch(calendarDays, async (newCalendarDays) => {
 // Lifecycle hooks
 onMounted(async () => {
   try {
+    console.log("eaze")
     isLoading.value = true;
     await Promise.all([
+      userStore.fetchUsersOfCenter(),
       teamStore.fetchCenterTeams(authStore.centerId),
+    
       getWorkdaysOfUser(),
       getAllSubstitutions(),
     ]);

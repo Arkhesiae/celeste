@@ -3,7 +3,7 @@
  */
 import { useAuthStore } from '@/stores/authStore';
 
-export const API_URL = 'http://192.168.1.36:3000';
+export const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Fonction utilitaire pour gérer les réponses de l'API

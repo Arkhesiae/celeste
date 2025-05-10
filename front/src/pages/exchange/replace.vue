@@ -222,7 +222,7 @@
 
 <script>
 import {ref, computed, onMounted, watch} from "vue";
-import {useRemplacementStore} from "@/stores/remplacementStore.js";
+import {useSubstitutionStore} from "@/stores/substitutionStore.js";
 import {useUserStore} from "@/stores/userStore.js";
 import {useAuthStore} from "@/stores/authStore.js";
 import {toUTCNormalized} from "@/utils.js";
@@ -233,7 +233,7 @@ export default {
   components: {DemandCard},
   setup() {
     // Initialisation des stores
-    const remplacementStore = useRemplacementStore();
+    const substitutionStore = useSubstitutionStore();
     const userStore = useUserStore();
     const authStore = useAuthStore();
 
@@ -313,7 +313,7 @@ export default {
             posterId: userId.value,
             shift: userShift.value,
           };
-          await remplacementStore.createDemand(newDemand);
+          await substitutionStore.createDemand(newDemand);
           // Réinitialiser le formulaire après l'envoi
           demand.value = {shift: "", date: null, comment: "", points: 0};
         } catch (err) {
@@ -327,7 +327,7 @@ export default {
     // Supprimer une demande
     const deleteDemand = async (demandId) => {
       try {
-        await remplacementStore.deleteDemand(demandId);
+        await substitutionStore.deleteDemand(demandId);
       } catch (err) {
         console.error("Erreur lors de la suppression de la demande.", err);
       }
@@ -336,7 +336,7 @@ export default {
     // Charger les utilisateurs et les demandes au montage
     onMounted(async () => {
       await userStore.fetchUsers();
-      await remplacementStore.fetchAndMarkAsSeen(authStore.userId);
+      await substitutionStore.fetchAndMarkAsSeen(authStore.userId);
       loadingUsers.value = false;
     });
 

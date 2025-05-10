@@ -109,7 +109,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const hasAcceptedSubstitutionsAsPoster = computed(() => (date) => {
     if (!date) return false;
-    return ownAcceptedSubstitutions.value?.some(s => s.posterShift.date === date);
+    return ownAcceptedSubstitutions.value?.find(s => s.posterShift.date === date);
   });
 
   const hasAcceptedSubstitutionsAsAccepter = computed(() => (date) => {
@@ -296,7 +296,9 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   async function swapShifts(demandId, userShiftId) {
     try {
-      return await substitutionService.swapShifts(demandId, userShiftId);
+      await substitutionService.swapShifts(demandId, userShiftId);
+            // Rafraîchir les données pour la période actuelle
+            await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
     } catch (error) {
       console.error('Erreur lors de l\'échange des shifts:', error);
       throw error;

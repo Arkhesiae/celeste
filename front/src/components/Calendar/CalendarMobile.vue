@@ -44,9 +44,7 @@
           }"
         >
 
-          <StatusChip v-if="substitutionStore.hasOwnOpenSubstitutions(day.date.toISOString())" type="rempla" status="pending"/>
-          <StatusChip v-if="substitutionStore.hasAcceptedSubstitutionsAsPoster(day.date.toISOString())" type="rempla" status="accepted-poster"/>
-          <StatusChip v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(day.date.toISOString())" type="rempla" status="accepted-accepter"/>
+           <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" type="rempla" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/>
 <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 16" type="switch" status="accepted"/>-->
 <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 17" type="rempla" status="pending"/>-->
 
@@ -97,6 +95,21 @@ const handleSwipe = (direction) => {
     emit('swipe-right');
   }
 };
+
+
+const getStatus = (date) => {
+  if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {
+    return 'accepted-accepter';
+  }
+  if (substitutionStore.hasAcceptedSubstitutionsAsPoster(date)) {
+    return 'accepted-poster';
+  }
+  if (substitutionStore.hasOwnOpenSubstitutions(date)) {
+    return 'pending';
+  }
+  return '';
+};
+
 </script>
 
 <style scoped>

@@ -17,11 +17,13 @@ require('./cron/processDemands');
 
 // Configuration CORS globale
 app.use(cors({
-  origin: ['http://192.168.1.36:30035', 'http://localhost:30035'],
+  origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+console.log(process.env.MONGO_URI);
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));

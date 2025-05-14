@@ -9,6 +9,7 @@
       @open-substitutions-drawer="handleOpenSubstitutionsDrawer"
       @open-switches-drawer="handleOpenSwitchesDrawer"
       @cancel-demand="handleCancelDemand"
+      @unaccept-demand="handleUnacceptDemand"
     />
   </v-col>
 </template>
@@ -17,7 +18,7 @@
 import { computed } from 'vue';
 import CalendarPanel from './CalendarPanel.vue';
 
-const emit = defineEmits(['openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand']);
+const emit = defineEmits(['openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'unacceptDemand']);
 
 const props = defineProps({
   cols: {
@@ -76,6 +77,10 @@ const handleOpenSwitchesDrawer = () => {
 
 const handleCancelDemand = (substitutionId) => {
   emit('cancelDemand', substitutionId);
+};
+
+const handleUnacceptDemand = (substitutionId) => {
+  emit('unacceptDemand', substitutionId);
 };
 </script>
 

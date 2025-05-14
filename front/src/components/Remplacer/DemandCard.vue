@@ -28,7 +28,7 @@
             {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
           </span>
           <v-avatar
-            :image="getUserById(demand?.posterId)?.avatar || 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
+            :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
             size="x-small"
           ></v-avatar>
           <v-chip
@@ -63,7 +63,7 @@
           <v-card-title class="pb-0 mb-0">
             <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
           </v-card-title>
-          <v-card-subtitle class="pt-0 text-caption">Dans {{ demand?.posterShift?.teamId }}</v-card-subtitle>
+          <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
           <v-card-subtitle class="pt-0">
             {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
           </v-card-subtitle>
@@ -123,7 +123,7 @@
     </v-card-actions>
 
     <!-- Dialog de confirmation -->
-    <v-dialog v-model="showConfirmationDialog" max-width="500">
+    <v-dialog v-model="showConfirmationDialog" max-width="500" style="z-index: 1000000 !important">
       <v-card rounded="xl" color="surfaceContainer" class="pa-6">
         <v-card-title class="text-h5 pa-0">
           Confirmation de remplacement
@@ -137,14 +137,15 @@
           </p>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-spacer></v-spacer>
+       
           <v-btn
-            color="error"
+            color="secondary"
             variant="text"
             @click="showConfirmationDialog = false"
           >
             Annuler
           </v-btn>
+          <v-spacer></v-spacer>
           <v-btn
             v-if="userHasShift"
             color="permutation"
@@ -172,9 +173,11 @@
 import { computed, onMounted, ref, onUnmounted } from 'vue'
 import { useUserStore } from "@/stores/userStore.js"
 import { useDate } from 'vuetify'
-    import { useSnackbarStore } from '@/stores/snackbarStore'
+import { useSnackbarStore } from '@/stores/snackbarStore'
 import { useSubstitutionStore } from '@/stores/substitutionStore'
 import { useAuthStore } from '@/stores/authStore'
+import { useTeamStore } from '@/stores/teamStore'
+import { API_URL } from '@/config/api'
 
 const props = defineProps({
   demand: {
@@ -194,6 +197,8 @@ const loading = ref({
 let intervalId = null
 
 const snackbarStore = useSnackbarStore()
+
+const teamStore = useTeamStore()
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
@@ -286,11 +291,13 @@ const handleInterest = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   timeSinceCreation.value = calculateTimeSinceCreation()
   intervalId = setInterval(() => {
     timeSinceCreation.value = calculateTimeSinceCreation()
   }, 60000)
+  
+
 })
 
 onUnmounted(() => {
@@ -303,6 +310,11 @@ defineEmits(['accept', 'interest', 'update:demand'])
 
 const userStore = useUserStore()
 const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
+
+const getTeamName = computed(() => {
+  const team = teamStore.centerTeams.find(team => team._id === props.demand?.posterShift?.teamId)
+  return team?.name || props.demand?.posterShift?.teamId
+})
 </script>
 
 <style scoped>

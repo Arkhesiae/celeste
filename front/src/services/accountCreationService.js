@@ -11,7 +11,7 @@ export const accountCreationService = {
    * @returns {Promise<Object>} L'utilisateur créé.
    */
   async createAccount(userData) {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await fetch(`${API_URL}/users/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -27,7 +27,7 @@ export const accountCreationService = {
    * @returns {Promise<boolean>} True si l'email est disponible.
    */
   async checkEmailAvailability(email) {
-    const response = await fetch(`${API_URL}/auth/check-email`, {
+    const response = await fetch(`${API_URL}/users/check-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

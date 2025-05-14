@@ -23,7 +23,7 @@ router.post('/', async (req, res) => {
     }
 
     // Génération du token d'accès (JWT)
-    const accessToken = jwt.sign({userId: user._id, isAdmin: user.isAdmin}, 'secret', {
+    const accessToken = jwt.sign({userId: user._id, isAdmin: user.isAdmin, adminType: user.adminType}, 'secret', {
         expiresIn: stayConnected ? '365d' : '2h'
     });
 

@@ -18,11 +18,11 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import AvailableSubstitutionsDrawer from './AvailableSubstitutionsDrawer.vue';
-import AvailableSwitchesDrawer from './AvailableSwitchesDrawer.vue';
+import AvailableSubstitutionsDrawer from './Drawers/AvailableSubstitutionsDrawer.vue';
+import AvailableSwitchesDrawer from './Drawers/AvailableSwitchesDrawer.vue';
 import CalendarPanel from './CalendarPanel.vue';
 
-const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand']);
+const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'unacceptDemand']);
 
 const props = defineProps({
   modelValue: {
@@ -89,9 +89,12 @@ const handleOpenSwitchesDrawer = () => {
   emit('openSwitchesDrawer');
 };
 
-
 const handleCancelDemand = (substitutionId) => {
   emit('cancelDemand', substitutionId);
+};
+
+const handleUnacceptDemand = (substitutionId) => {
+  emit('unacceptDemand', substitutionId);
 };
 </script>
 

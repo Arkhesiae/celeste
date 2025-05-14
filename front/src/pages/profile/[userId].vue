@@ -101,7 +101,7 @@ import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { usePointStore } from '@/stores/pointStore.js';
 import TransferDialog from '@/components/Profile/TransferDialog.vue';
 import PointsCard from '@/components/Profile/PointsCard.vue';
-import AvatarDialog from '@/components/Profile/AvatarDialog.vue';
+import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue';
 import { API_URL } from '@/config/api';
 
 const { smAndDown } = useDisplay();
@@ -173,7 +173,7 @@ onMounted(async () => {
   try {
     isLoading.value = true;
     await teamStore.fetchTeamOccurrencesOfUser(userId.value);
-    await teamStore.fetchAllTeams();
+    await teamStore.fetchCenterTeams(authStore.centerId);
 
     target.value = document.querySelector("#profilecard");
     const headerElement = document.querySelector('.profile-header');

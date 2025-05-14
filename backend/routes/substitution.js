@@ -13,7 +13,8 @@ const {
     swapShifts,
     cancelDemand,
     checkUserShift,
-    markInterest
+    markInterest,
+    unacceptRequest
 } = require('../controllers/substitutionController');
 
 // Routes protégées par token
@@ -28,6 +29,7 @@ router.post('/:id/interest', verifyToken, markInterest);
 router.post('/:id/accept', verifyToken, acceptRequest);
 router.post('/:id/swap', verifyToken, swapShifts);
 router.post('/:id/cancel', verifyToken, cancelDemand);
+router.post('/:id/unaccept', verifyToken, unacceptRequest);
 router.delete('/:id/delete', verifyToken, deleteDemand);
 
 router.get('/check-shift/:date', verifyToken, checkUserShift);

@@ -9,8 +9,8 @@ export const teamService = {
    * Récupère toutes les équipes.
    * @returns {Promise<Array>} Liste des équipes.
    */
-  async getTeams() {
-    const response = await fetch(`${API_URL}/teams`, {
+  async getTeams(centerId) {
+    const response = await fetch(`${API_URL}/teams/${centerId}`, {
       headers: getAuthHeaders()
     });
     return handleResponse(response);

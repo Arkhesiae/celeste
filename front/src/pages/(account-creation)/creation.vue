@@ -74,6 +74,8 @@
                     :rules="[rules.email]"
                     :error-messages="stepErrors[2]"
                     :append-icon="emailExists ? 'mdi-alert-circle' : ''"
+                    :loading="checkingEmail"
+                    :disabled="checkingEmail"
                     @blur="validateStep(2)"
                     @update:modelValue="onEmailChange"
                   />
@@ -414,6 +416,7 @@ const form = ref(null);
 const loadingCenters = ref(false);
 const loadingTeams = ref(false);
 const isSubmitting = ref(false);
+const checkingEmail = ref(false);
 
 // Side panel state
 const sidePanelOpen = ref(false);
@@ -462,7 +465,7 @@ const submitContactForm = async () => {
 // Item props for select inputs
 const itemProps = (item) => ({
   title: item.name,
-  subtitle: item._id,
+  subtitle: item.OACI,
 });
 
 // Data fetching
@@ -535,7 +538,7 @@ const rules = {
 };
 
 // Step validation
-const validateStep = (stepNum) => {
+const validateStep = async (stepNum) => {
   let isValid = true;
 
   switch (stepNum) {
@@ -553,10 +556,11 @@ const validateStep = (stepNum) => {
       }
 
       // Check if email already exists
+      checkingEmail.value = true;
       try {
-        // This would be an API call in production
-        const alreadyExists = false; // Replace with actual API response
-        if (alreadyExists) {
+        const isAvailable = await accountCreationService.checkEmailAvailability(user.value.email);
+        console.log(isAvailable)
+        if (!isAvailable.available) {
           emailExists.value = true;
           isValid = false;
           stepErrors.value[2] = "Adresse e-mail déjà utilisée";
@@ -565,6 +569,8 @@ const validateStep = (stepNum) => {
         console.error("Erreur lors de la vérification de l'email :", error);
         stepErrors.value[2] = "Une erreur est survenue. Veuillez réessayer";
         isValid = false;
+      } finally {
+        checkingEmail.value = false;
       }
       break;
 

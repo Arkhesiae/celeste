@@ -165,5 +165,18 @@ export const substitutionService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Annule l'acceptation d'une demande de substitution.
+   * @param {string} id - L'ID de la substitution.
+   * @returns {Promise<Object>} La substitution mise à jour.
+   */
+  async unacceptDemand(id) {
+    const response = await fetch(`${API_URL}/substitution/${id}/unaccept`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };

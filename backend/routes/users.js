@@ -31,7 +31,8 @@ const {
     getUserPreferences,
     transferPoints,
     getTransactionHistory,
-    updateAvatar
+    updateAvatar,
+    checkEmailAvailability
 } = require('../controllers/userController');
 const router = express.Router();
 
@@ -54,6 +55,7 @@ const upload = multer({
 
 // Routes publiques
 router.post('/create', createUser);
+router.post('/check-email', checkEmailAvailability);
 
 // Routes protégées par token
 router.get('/:id', verifyToken, isUserOrAdmin, getUserById);

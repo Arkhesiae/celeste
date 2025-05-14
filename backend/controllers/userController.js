@@ -34,6 +34,19 @@ const createUser = async (req, res) => {
     }
 };
 
+// Vérifier la disponibilité d'un email
+const checkEmailAvailability = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const existingUser = await User.findOne({ email });
+        res.json({ available: !existingUser });
+    } catch (error) {
+        console.error('Erreur lors de la vérification de l\'email:', error);
+        res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+};
+
 // Obtenir tous les utilisateurs
 const getAllUsers = async (req, res) => {
     try {
@@ -704,5 +717,6 @@ module.exports = {
     getUserPreferences,
     transferPoints,
     getTransactionHistory,
-    updateAvatar
+    updateAvatar,
+    checkEmailAvailability
 };

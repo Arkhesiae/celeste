@@ -60,12 +60,13 @@ const isAdmin = (req, res, next) => {
  * @param {Function} next - Fonction next d'Express
  */
 const isMasterAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'masterAdmin') {
+    console.log(req.user, req.user.isAdmin, req.user.adminType)
+    if (req.user && req.user.isAdmin && req.user.adminType === 'master') {
         next();
     } else {
         return res.status(403).json({
             success: false,
-            message: 'Accès refusé. Droits d\'administrateur principal requis.'
+            message: 'Accès refusé. Droits d\'administrateur princapal requis.'
         });
     }
 };

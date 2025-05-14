@@ -24,7 +24,7 @@
       </div> -->
 
       <!-- Boutons de notifications -->
-      <v-tooltip location="bottom" text="Notifications">
+      <v-tooltip location="bottom" text="Notifications" v-if="false">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" v-if="isLoggedIn" icon @click="toggleNotifications" class="mr-2">
             <v-badge color="tertiary"  :content="'COMMING SOON'" :model-value="'COMMING SOON'">
@@ -46,7 +46,26 @@
 
 
           <!-- Badge d'admin -->
-          <v-chip class="mr-2" v-if="isAdmin && isLoggedIn">Admin</v-chip>
+          <v-chip class="mr-2" rounded="lg" v-if="isAdmin && isLoggedIn"> 
+            <v-icon class="mr-2" v-if="authStore.adminType === 'master'" color="primary">mdi-star-four-points</v-icon>
+            <v-icon class="mr-2" v-else color="secondary">mdi-shield-crown-outline</v-icon>
+            {{ authStore.adminType === 'master' ? 'Master' : 'Admin' }}</v-chip>
+
+          <!-- Lien vers les messages pour admin master -->
+          <v-btn
+            v-if="isAdmin && authStore.adminType === 'master'"
+            icon
+            class="mr-2"
+            @click="router.push({ path : '/messages' })"
+          >
+            <v-badge
+              :content="messageStore.unreadCount"
+              :model-value="messageStore.unreadCount > 0"
+              color="error"
+            >
+              <v-icon>mdi-message-text</v-icon>
+            </v-badge>
+          </v-btn>
         </template>
 
         <!--    Navigation accueil    -->
@@ -191,6 +210,7 @@ import {ref, computed, onMounted, onUnmounted, watch} from "vue";
 import { useNotificationStore } from '../stores/notificationStore';
 import { useTheme } from 'vuetify';
 import { API_URL } from '@/config/api';
+import { useMessageStore } from '../stores/messageStore';
 
 
 const props = defineProps({
@@ -278,6 +298,7 @@ const handleLogout = async () => {
 };
 
 const notificationStore = useNotificationStore();
+const messageStore = useMessageStore();
 
 const fetchNotifications = async () => {
   if (authStore.userId) {

@@ -149,12 +149,12 @@ const handleLogin = async () => {
 
   loggingIn.value = true;
   try {
-    await authStore.logIn({
+    const response = await authStore.logIn({
       email: email.value,
       password: password.value,
       stayConnected: stayConnected.value
     });
-
+    console.log(response)
     // Notification de connexion réussie
     snackbarStore.showNotification('Connexion réussie', 'success', 'mdi-check');
     setTimeout(() => {
@@ -163,12 +163,13 @@ const handleLogin = async () => {
     }, 400)
 
   } catch (error) {
+  
     // Gestion des différents types d'erreurs
     if (error.status === 401) {
       snackbarStore.showNotification('Identifiants incorrects', 'onError', 'mdi-alert-circle');
     } else {
       snackbarStore.showNotification(
-        'Erreur de connexion, veuillez réessayer plus tard',
+        error.message || 'Erreur de connexion, veuillez réessayer plus tard',
         'onError',
         'mdi-alert-circle'
       );

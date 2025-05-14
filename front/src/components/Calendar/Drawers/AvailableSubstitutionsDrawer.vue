@@ -60,14 +60,6 @@ const availableSubstitutions  = computed(() => substitutionStore.availableSubsti
 
 
 
-const handleAccept = async (substitution) => {
-  try {
-    await substitutionStore.acceptSubstitution(substitution.id);
-    emit('update:modelValue', false);
-  } catch (error) {
-    console.error('Erreur lors de l\'acceptation de la substitution:', error);
-  }
-};
 </script>
 
 <style scoped>

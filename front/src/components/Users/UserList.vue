@@ -10,8 +10,7 @@
         <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground"  >
           <v-chip variant="text" rounded="lg" value="all">Tous</v-chip>
           <v-chip variant="text" color="tertiary" rounded="lg" value="admin">Administrateurs</v-chip>
-          <v-chip variant="text" rounded="lg" value="pending">Candidatures en attente</v-chip>
-          <v-chip variant="text" rounded="lg" value="user">Utilisateurs simples</v-chip>
+          <v-chip variant="text" rounded="lg" value="user">Utilisateurs</v-chip>
         </v-chip-group>
       </v-col>
       
@@ -32,16 +31,16 @@
         <v-menu color="onBackground" rounded="lg">
           <template v-slot:activator="{ props }">
             <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-              <span class="text-overline">Trier par</span>
+              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par'}}</span>
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
           <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
             <v-list-item rounded="lg" @click="sortBy = 'name'">
-              <v-list-item-title>Nom</v-list-item-title>
+              <v-list-item-title>Prénom</v-list-item-title>
             </v-list-item>
             <v-list-item rounded="lg" @click="sortBy = 'lastName'">
-              <v-list-item-title>Prénom</v-list-item-title>
+              <v-list-item-title>Nom</v-list-item-title>
             </v-list-item>
             <v-list-item rounded="lg" @click="sortBy = 'email'">
               <v-list-item-title>Email</v-list-item-title>
@@ -95,15 +94,20 @@
             </v-card-title>
           </v-card-item>
           <v-card-text class="pt-0 d-flex justify-start">
-            <div   v-if="user.isAdmin" class="block d-flex mr-2">
+            <div   v-if="user.isAdmin" class="d-flex mr-2"
+             :class="user.adminType === 'master' ? 'block' : ''"
+            >
               <v-chip
                 rounded="lg"
-               variant="flat"
+                variant="flat"
               
                 color="surface"
                 size="small"
                
-              >Admin</v-chip>
+              > 
+              <v-icon class="mr-2" v-if="user.isAdmin && user.adminType === 'master'" color="primary">mdi-star-four-points</v-icon>
+              <v-icon class="mr-2" v-else color="secondary">mdi-shield-crown-outline</v-icon>
+              Admin</v-chip>
             </div>
            
             <v-chip
@@ -269,7 +273,7 @@ const centerDialog = ref(false);
 const selectedFilter = ref('all');
 const selectedCenter = ref(null);
 const selectedUser = ref(null);
-const sortBy = ref('name');
+const sortBy = ref('');
 const sortDirection = ref('asc');
 const searchQuery = ref('');
 const currentTeam = ref(null);
@@ -282,12 +286,17 @@ const filteredUsers = computed(() => {
   let filtered = users.value;
   if (!users.value) return [];
 
+  // Filtrer par type d'admin
+  if (authStore.adminType !== 'master') {
+    filtered = filtered.filter(user => user.centerId === authStore.centerId);
+  }
+
   if (selectedFilter.value === 'admin') {
     filtered = filtered.filter((user) => user.isAdmin);
   } else if (selectedFilter.value === 'pending') {
     filtered = filtered.filter((user) => user.status === 'pending');
   } else if (selectedFilter.value === 'user') {
-    filtered = filtered.filter((user) => !user.isLocalAdmin && user.status !== 'pending');
+    filtered = filtered.filter((user) => !user.isAdmin);
   }
 
   if (searchQuery.value) {
@@ -388,17 +397,21 @@ onMounted(async () => {
   try {
     await Promise.all([
       centerStore.fetchCenters(),
-      teamStore.fetchCenterTeams(authStore.centerId),
-      userStore.fetchUsersOfCenter(authStore.centerId)
+      teamStore.fetchCenterTeams(authStore.centerId)
     ]);
-    // users.value.forEach(async (user) => {
-    //   user.currentTeam = await userService.fetchCurrentTeamOfUser(user._id);
-    // });
-    console.log(users.value)
+
+    // Charger les utilisateurs en fonction du type d'admin
+    if (authStore.adminType === 'master') {
+      await userStore.fetchUsers();
+    } else {
+      await userStore.fetchUsersOfCenter(authStore.centerId);
+    }
+
+  
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {
     console.error('Error fetching initial data:', error);
-    snackbarStore.showNotification('Erreur lors du chargement des données', 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');
   }
 });
 </script>

@@ -14,55 +14,56 @@
         <v-card rounded="xl" elevation="0" class="pa-0" color="transparent">
           <v-card-title>Demandes en cours</v-card-title>
 
-
-          <v-col cols="6">
-            <v-text-field rounded="xl" prepend-inner-icon="mdi-magnify"
-                          label="Rechercher..."></v-text-field>
-            <span>Filtrer par </span>
-            <v-chip
-              rounded="lg"
-              color="primary"
-              append-icon="mdi-chevron-down"
-            >
-              Zone
-            </v-chip>
-            <v-chip
-              rounded="lg"
-              color="primary"
-              append-icon="mdi-chevron-down"
-            >
-              Equipe
-            </v-chip>
-            <v-chip
-              rounded="lg"
-              closable
-              color="primary"
-
-            >
-              EST
-            </v-chip>
-            <v-chip-group v-model="filterStatus" mandatory>
-              <!-- Filtres de statut -->
-
-              <v-chip
-                v-for="status in statuses"
-                rounded="lg"
-                border="sm dashed"
-                :key="status"
-                color="primary"
-              >
-                {{ status }}
-              </v-chip>
-            </v-chip-group>
-            <!-- Filtres de statut -->
-            <v-chip
-              rounded="lg"
-              color="primary"
-              append-icon="mdi-chevron-down"
-            >
-              Trier par
-            </v-chip>
-          </v-col>
+          <v-row class="justify-space-between align-center mb-4">
+      <v-col cols="12" md="6" >
+        <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground"  >
+          <v-chip variant="text" rounded="lg" value="all">Disponible</v-chip>
+          <v-chip variant="text" color="tertiary" rounded="lg" value="admin">Indisponible</v-chip>
+          <v-chip variant="text" rounded="lg" value="pending">Tout</v-chip>
+        </v-chip-group>
+      </v-col>
+      
+      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
+        <v-text-field
+          v-model="searchQuery"
+          label="Rechercher"
+          variant="solo"
+          flat
+          rounded="xl"
+          single-line
+          hide-details
+          density="compact"
+          class="search-field"
+          style="max-width: 300px"
+          clearable
+        />
+        <v-menu color="onBackground" rounded="lg">
+          <template v-slot:activator="{ props }">
+            <v-btn color="remplacement" variant="text" rounded="lg" v-bind="props">
+              <span class="text-overline">Trier par</span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
+            <v-list-item rounded="lg" @click="sortBy = 'name'">
+              <v-list-item-title>Nom</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'lastName'">
+              <v-list-item-title>Prénom</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'email'">
+              <v-list-item-title>Email</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'status'">
+              <v-list-item-title>Statut</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'createdAt'">
+              <v-list-item-title>Date d'inscription</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-col>
+    </v-row>
           <v-col
 
           >
@@ -98,7 +99,7 @@
         </v-card>
       </v-col>
       <v-col cols=4 >
-        <v-btn class="mb-4" prepend-icon="mdi-plus" variant="tonal" height="80px" width="100%" elevation="0">Ajouter
+        <v-btn class="mb-4" prepend-icon="mdi-plus" variant="tonal" color="remplacement" height="80px" width="100%" elevation="0">Ajouter
           une demande
         </v-btn>
         <div class="my-8 d-flex flex-column">
@@ -255,7 +256,7 @@ export default {
     // Calculs réactifs
     const users = computed(() => userStore.users);
     const userId = computed(() => authStore.userId);
-    const demands = computed(() => remplacementStore.demands);
+    const demands = computed(() => []);
     const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId));
 
     // Fonction pour récupérer le shift de l'utilisateur sélectionné

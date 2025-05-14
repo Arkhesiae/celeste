@@ -6,7 +6,7 @@
     temporary
     width="600"
     floating
-    style="z-index: 1000333 !important"
+    style="z-index: 10002 !important"
     order="-7"
   >
     <v-sheet class="pa-4">

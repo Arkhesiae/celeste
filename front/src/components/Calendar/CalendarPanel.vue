@@ -113,7 +113,8 @@
     <div class="d-flex align-center justify-center mb-4"
       v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)">
       <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
-        class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg">
+        class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
+        @click="$emit('unacceptDemand', substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)._id)">
         Annuler mon rempla
       </v-btn>
     </div>
@@ -180,7 +181,7 @@ const props = defineProps({
 
 });
 
-defineEmits(['openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'openAbsenceDialog']);
+defineEmits(['openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'openAbsenceDialog', 'unacceptDemand']);
 
 const getVacation = computed(() => {
   if (!props.selectedDate) return null;
@@ -208,8 +209,9 @@ const getShiftHours = computed(() => {
 });
 
 const substitutionId = computed(() => {
-  const substitution = substitutionStore.hasOwnOpenSubstitutions(props.selectedDate);
-  return substitution ? substitution._id : null;
+  const openSubstitution = substitutionStore.hasOwnOpenSubstitutions(props.selectedDate);
+  const acceptedSubstitution = substitutionStore.hasAcceptedSubstitutionsAsPoster(props.selectedDate);
+  return openSubstitution ? openSubstitution._id : acceptedSubstitution ? acceptedSubstitution._id : null;
 });
 
 const getShiftTeam = computed(() => {

@@ -133,10 +133,10 @@ import { useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
 import { ref } from 'vue'
-import EmailDialog from '@/components/Profile/EmailDialog.vue'
-import PasswordDialog from '@/components/Profile/PasswordDialog.vue'
-import AvatarDialog from '@/components/Profile/AvatarDialog.vue'
-import TransferRequestDialog from '@/components/Profile/TransferRequestDialog.vue'
+import EmailDialog from '@/components/Profile/Parameters/EmailDialog.vue'
+import PasswordDialog from '@/components/Profile/Parameters/PasswordDialog.vue'
+import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue'
+import TransferRequestDialog from '@/components/Profile/Parameters/TransferRequestDialog.vue'
 import { useScrollPosition } from '@/composables/useScrollPosition';
 
 const { resetScroll } = useScrollPosition();

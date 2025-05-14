@@ -534,6 +534,48 @@ const swapShifts = async (req, res) => {
     }
 };
 
+const unacceptRequest = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const requestId = req.params.id;
+
+        // Récupération de la demande
+        const request = await Substitution.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ error: 'Demande non trouvée' });
+        }
+
+        // Vérification que la demande est acceptée
+        if (request.status !== 'accepted') {
+            return res.status(400).json({ error: 'Cette demande n\'est pas acceptée' });
+        }
+
+        // Vérification que l'utilisateur est bien celui qui a accepté
+        if (request.accepterId.toString() !== userId) {
+            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à annuler cette acceptation' });
+        }
+
+        // Mise à jour de la demande
+        const updatedRequest = await Substitution.findByIdAndUpdate(
+            requestId,
+            {
+                accepterId: null,
+                status: 'open',
+                updatedAt: new Date()
+            },
+            { new: true }
+        );
+
+        res.status(200).json({
+            message: 'Acceptation annulée avec succès',
+            request: updatedRequest
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation de l\'acceptation:', error);
+        res.status(500).json({ error: 'Une erreur est survenue lors de l\'annulation de l\'acceptation' });
+    }
+};
+
 module.exports = {
     getCenterDemands,
     getUserDemands,
@@ -546,5 +588,6 @@ module.exports = {
     getSeenCount,
     checkUserShift,
     swapShifts,
-    markInterest
+    markInterest,
+    unacceptRequest
 }; 

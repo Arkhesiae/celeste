@@ -70,7 +70,7 @@ const handleCancel = () => {
       <v-card-actions class="pa-0 ">
         
         <v-btn
-          color="primary"
+          color="secondary"
           variant="outlined"
           size="large"
           :slim="false"  

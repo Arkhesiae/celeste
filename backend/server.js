@@ -1,4 +1,9 @@
-require('dotenv').config();
+require('dotenv').config({
+    path: process.env.NODE_ENV === 'production' 
+        ? '.env.production' 
+        : '.env.development'
+});
+
 const mongoose = require('mongoose');
 const express = require('express');
 const cors = require('cors');
@@ -12,6 +17,7 @@ const teamsRouter = require('./routes/teams');
 const substitutionRouter = require('./routes/substitution');
 const loginRouter = require('./routes/login');
 const notificationRouter = require('./routes/notifications');
+const messageRoutes = require('./routes/messageRoutes');
 require('./cron/processTransactions'); 
 require('./cron/processDemands');
 
@@ -23,7 +29,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-console.log(process.env.MONGO_URI);
+console.log("URI! ", process.env.MONGO_URI)
+
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -42,6 +49,7 @@ mongoose.connect(process.env.MONGO_URI, {})
     });
 
 app.use('/api/users', usersRouter);
+app.use('/api/messages', messageRoutes);
 app.use('/api/login', loginRouter);
 app.use('/api/substitution', substitutionRouter);
 app.use('/api/rotations', rotationsRouter);

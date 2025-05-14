@@ -38,16 +38,31 @@
                    title="Tour de service"
                    value="tservice"></v-list-item>
       <v-divider opacity=".01"></v-divider>
-      <v-list-item @click="router.push({ path: '/users' })"
+      <v-list-item 
+               v-if="authStore.isAdmin"
+      @click="router.push({ path: '/users' })"
                    rounded="xl"
                    :prepend-icon="isActive('/users') ? 'mdi-account-group' : 'mdi-account-group-outline'"
                    title="Utilisateurs"
                    value="users"></v-list-item>
-      <v-list-item @click="router.push({ path: '/center/centers' })"
+      <v-list-item v-if="authStore.isAdmin" 
+                   @click="router.push({ path: '/admin/pending-users' })"
+                   rounded="xl"
+                   :prepend-icon="isActive('/admin/pending-users') ? 'mdi-account-clock' : 'mdi-account-clock-outline'"
+                   title="Candidatures"
+                   value="pending-users"></v-list-item>
+      <v-list-item v-if="authStore.adminType === 'master'"
+                   @click="router.push({ path: '/center/centers' })"
                    rounded="xl"
                    :prepend-icon="isActive('/center/centers') ? 'mdi-home' : 'mdi-home-outline'"
                    title="Centres"
                    value="centers"></v-list-item>
+      <v-list-item v-else
+                   @click="router.push({ path: '/center/'+authStore.centerId+'/teams' })"
+                   rounded="xl"
+                   :prepend-icon="isActive('/center/'+authStore.centerId+'/teams') ? 'mdi-home' : 'mdi-home-outline'"
+                   title="Mon centre"
+                   value="my-center"></v-list-item>
     </v-list>
   </v-navigation-drawer>
 </template>

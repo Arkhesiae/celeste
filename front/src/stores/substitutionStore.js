@@ -316,6 +316,16 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   }
 
+  async function unacceptDemand(demandId) {
+    try {
+      await substitutionService.unacceptDemand(demandId);
+      await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation de l\'acceptation:', error.message);
+      throw error;
+    }
+  }
+
   return {
     // State
     substitutions,
@@ -349,6 +359,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     acceptDemand,
     checkUserShift,
     swapShifts,
-    markInterest
+    markInterest,
+    unacceptDemand
   };
 });

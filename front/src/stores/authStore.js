@@ -167,6 +167,7 @@ export const useAuthStore = defineStore('auth', () => {
         name: result.name,
         email: credentials.email,
         isAdmin: result.isAdmin,
+        adminType: result.adminType,
         avatar: result.avatar,
         userId: result.userId,
         accessToken: result.accessToken,

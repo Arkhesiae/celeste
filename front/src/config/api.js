@@ -13,8 +13,11 @@ export const API_URL = import.meta.env.VITE_API_URL;
 export const handleResponse = async (response) => {
   if (!response.ok) {
     const error = await response.json();
-    console.error(error.message);
-    throw new Error(error.message || error.error ||  'Une erreur est survenue');
+    console.error(error);
+    
+    const customError = new Error(error.message || error.error || 'Une erreur est survenue');
+    customError.status = response.status;
+    throw customError;
   }
   return response.json();
 };

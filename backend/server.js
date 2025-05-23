@@ -40,7 +40,7 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Servir les fichiers statiques
 app.use('/api/avatars', express.static(path.join(__dirname, '/public/avatars')));
-app.use('/', express.static(path.join(__dirname, '../front/dist')));
+app.use('/', express.static(path.join(__dirname, 'public')));
 
 // Connexion à MongoDB
 mongoose.connect(process.env.MONGO_URI, {})

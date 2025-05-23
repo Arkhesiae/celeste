@@ -68,11 +68,11 @@ app.get('/api', (req, res) => {
 
 // Route catch-all pour le routage côté client
 app.get(/^\/(?!api).*/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../front/dist/index.html'));
+    res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
 // Lancement du serveur
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Serveur lancé sur http://192.168.1.36:${PORT}`);
+    console.log(`🚀 Serveur lancé port ${PORT}`);
 });

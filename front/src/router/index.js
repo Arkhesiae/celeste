@@ -14,7 +14,7 @@ const router = createRouter({
   }
 });
 
-const noAuth = ['/login', '/(account-creation)/creation', '/landing', '/(account-creation)/get-started']
+const noAuth = ['/login', '/(account-creation)/creation', '/landing', '/(account-creation)/get-started', '/reset-password', '/(account-creation)/account-recovery']
 
 // Configuration des transitions
 const transitionConfigs = {
@@ -34,28 +34,19 @@ const transitionConfigs = {
   }
 };
 
-// Garde de navigation globale
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
+  console.log(to.name);
   const authStore = useAuthStore();
-  authStore.validateAccessToken();
+  authStore.validateAccessToken(); // Important si asynchrone
 
-  // Gestion des transitions pour les pages avec layout parameter
+  // Gestion des transitions selon layout
   if (to.meta.layout === 'parameter') {
     to.meta.transition = transitionConfigs.parameter.forward;
   } else if (from.meta.layout === 'parameter') {
     to.meta.transition = transitionConfigs.parameter.backward;
   }
 
-  // Vérification de l'authentification
-  if (!noAuth.includes(to.name) && !authStore.isLoggedIn) {
-    return next({ name: '/login' });
-  }
-  
-  if (noAuth.includes(to.name) && authStore.isLoggedIn) {
-    return next({ name: '/dashboard' });
-  }
-
-  // Gestion des transitions pour les routes spécifiques
+  // Transition personnalisée pour certaines routes
   const applyTransition = (config) => {
     const { routes, forward, backward } = config;
     if (routes.includes(to.name) && routes.includes(from.name)) {
@@ -63,13 +54,25 @@ router.beforeEach((to, from, next) => {
       const fromIndex = routes.indexOf(from.name);
       to.meta.transition = toIndex > fromIndex ? forward : backward;
     }
-   
   };
 
   applyTransition(transitionConfigs.auth);
   applyTransition(transitionConfigs.teams);
 
-  next();
+  // Authentification
+  if (!noAuth.includes(to.name) && !authStore.isLoggedIn && to.name !== '/login') {
+    return next({ name: '/login' });
+  }
+
+  if (to.name !== '/pending-approval' && authStore.status === 'pending' && authStore.isLoggedIn) {
+    return next({ name: '/pending-approval' });
+  }
+
+  if (to.name !== '/dashboard' && noAuth.includes(to.name) && authStore.isLoggedIn) {
+    return next({ name: '/dashboard' });
+  }
+
+  return next();
 });
 
 // Gestion des hot updates

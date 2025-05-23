@@ -177,7 +177,7 @@ const close = () => {
 
 <template>
   <v-dialog v-model="localDialogVisible" max-width="500">
-    <v-card rounded="xl" elevation="0" color="surfaceContainer">
+    <v-card rounded="xl" color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
         <v-card-title class="">
           <div class="text-h6 font-weight-medium">{{ isEditMode ? 'Modifier la vacation' : 'Ajouter une vacation' }}</div>
@@ -317,6 +317,7 @@ const close = () => {
           class="ml-4"
           @click="submit"
           size="large"
+          :slim="false"
           :disabled="!isValid"
         >
           {{ isEditMode ? 'Modifier' : 'Ajouter' }}

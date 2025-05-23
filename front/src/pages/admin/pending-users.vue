@@ -6,8 +6,8 @@
     </div>
 
     <v-row>
-      <v-col v-for="user in pendingUsers" :key="user._id" cols="12" md="6" lg="4">
-        <v-card class="px-2 ma-0" rounded="xl" variant="flat" color="surface">
+      <v-col v-for="user in pendingUsers" :key="user._id" cols="12" >
+        <v-card class="pa-2" rounded="xl" variant="flat" color="surface">
           <v-card-item>
             <v-card-title class="d-flex justify-space-between align-center">
               <div class="d-flex align-center">
@@ -20,23 +20,24 @@
                 </div>
               </div>
             </v-card-title>
+           
           </v-card-item>
           <v-card-text class="pt-0">
             <v-list>
+          
               <v-list-item>
-                <template v-slot:prepend>
-                  <v-icon>mdi-calendar</v-icon>
-                </template>
-                <v-list-item-title>Date d'inscription</v-list-item-title>
-                <v-list-item-subtitle>{{ new Date(user.createdAt).toLocaleDateString() }}</v-list-item-subtitle>
+                
+                <v-list-item-title>Equipe</v-list-item-title>
+                <v-list-item-subtitle>{{ userCurrentTeam(user)}}</v-list-item-subtitle>
               </v-list-item>
             </v-list>
           </v-card-text>
-          <v-card-actions class="pt-0">
+          <v-card-actions class="pt-0 flex-wrap justify-end">
+            <v-spacer></v-spacer>
             <v-btn
               color="success"
               variant="tonal"
-              block
+              rounded="lg"
               prepend-icon="mdi-check"
               @click="approveUser(user)"
             >
@@ -44,11 +45,11 @@
             </v-btn>
             <v-btn
               color="error"
-              variant="tonal"
-              block
-              prepend-icon="mdi-close"
+              variant="text"
+
+
               @click="rejectUser(user)"
-              class="mt-2"
+            
             >
               Rejeter la candidature
             </v-btn>
@@ -60,13 +61,13 @@
     <!-- Confirmation Dialog -->
     <v-dialog v-model="confirmDialog" max-width="400">
       <v-card rounded="xl" variant="flat" class="pa-6">
-        <v-card-title class="text-h6">Confirmer l'action</v-card-title>
-        <v-card-text>
+        <v-card-title class="text-h6 pa-0">Confirmer l'action</v-card-title>
+        <v-card-text class="pa-0 py-4">
           {{ confirmMessage }}
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-0 ">
           <v-spacer></v-spacer>
-          <v-btn color="primary" variant="text" @click="confirmDialog = false">
+          <v-btn color="onSurface" variant="text" @click="confirmDialog = false">
             Annuler
           </v-btn>
           <v-btn
@@ -87,10 +88,12 @@ import { ref, computed, onMounted } from 'vue';
 import { useUserStore } from "@/stores/userStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useAuthStore } from '@/stores/authStore';
+import { useTeamStore } from '@/stores/teamStore';
 
 const userStore = useUserStore();
 const snackbarStore = useSnackbarStore();
 const authStore = useAuthStore();
+const teamStore = useTeamStore();
 
 const confirmDialog = ref(false);
 const confirmMessage = ref('');
@@ -98,7 +101,20 @@ const confirmAction = ref('');
 const selectedUser = ref(null);
 
 const pendingUsers = computed(() => {
-  return userStore.users.filter(user => user.status === 'pending');
+  return userStore.users.filter(user => user.registrationStatus === 'pending');
+});
+
+const centerTeams = computed(() => {
+  return teamStore.centerTeams;
+}); 
+
+const userCurrentTeam = computed(() => (user) => {
+  if (user.currentTeam) {
+    const team = centerTeams.value.find(team => team._id === user.currentTeam?._id);
+    return team ? team.name : 'Équipe inconnue';
+  } else {
+    return 'Aucune équipe';
+  }
 });
 
 const approveUser = (user) => {
@@ -129,7 +145,7 @@ const handleConfirmAction = async () => {
   } catch (error) {
     console.error('Erreur lors de l\'action:', error);
     snackbarStore.showNotification(
-      `Erreur lors de l'${confirmAction.value === 'approve' ? 'approbation' : 'rejet'}`,
+      "Erreur lors " + (confirmAction.value === 'approve' ? "de l'approbation" : "du rejet"),
       'onError',
       'mdi-alert-circle'
     );
@@ -141,6 +157,7 @@ const handleConfirmAction = async () => {
 
 onMounted(async () => {
   try {
+    await teamStore.fetchCenterTeams(authStore.centerId);
     await userStore.fetchUsersOfCenter(authStore.centerId);
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {
@@ -151,11 +168,5 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.v-card {
-  transition: transform 0.2s;
-}
 
-.v-card:hover {
-  transform: translateY(-2px);
-}
 </style> 

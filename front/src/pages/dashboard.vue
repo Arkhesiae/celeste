@@ -206,7 +206,7 @@ onMounted(loadData);
                 {{ getVacation.shift.startTime }} - {{ getVacation.shift.endTime }}
               </div>
             </div>
-            <v-chip color="remplacement" variant="flat" size="small" rounded="lg">
+            <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg" style="right: 0; top: 0;">
               Équipe {{ getVacation.teamObject.name }}
             </v-chip>
           </div>
@@ -229,7 +229,7 @@ onMounted(loadData);
                 {{ getTomorrowVacation.shift.startTime }} - {{ getTomorrowVacation.shift.endTime }}
               </div>
             </div>
-            <v-chip color="remplacement" variant="flat" size="small" rounded="lg">
+            <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg" style="right: 0; top: 0;">
               Équipe {{ getTomorrowVacation.teamObject.name }}
             </v-chip>
           </div>
@@ -277,7 +277,7 @@ onMounted(loadData);
 
       <!-- Carte des points -->
       <div class="mb-4 smooth-shadow rounded-xl">
-          <PointsCard :points="stats.points" :transactions="[]" color="remplacement"/>
+          <PointsCard variant="tonal" :points="stats.points" :transactions="[]" color="remplacement"/>
       </div>
 
       <!-- Section Calendrier -->

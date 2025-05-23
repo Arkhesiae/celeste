@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { getTransactionHistory, getUserPoints, getPendingTransactions } from '@/services/pointService';
+import { pointService } from '@/services/pointService';
 import { useAuthStore } from './authStore';
 
 /**
@@ -13,7 +13,7 @@ export const usePointStore = defineStore('points', () => {
   // State
   const points = ref();
   const transactions = ref([]);
-  const pendingTransactions = ref([]);
+
   const isLoading = ref(false);
   const isLoadingPending = ref(false);
 
@@ -36,7 +36,7 @@ export const usePointStore = defineStore('points', () => {
   const fetchUserPoints = async () => {
     try {
       isLoading.value = true;
-      const data = await getUserPoints(authStore.userId);
+      const data = await pointService.getUserPoints(authStore.userId);
       points.value = data.points;
     } catch (error) {
       console.error('Erreur lors de la récupération des points:', error);
@@ -51,12 +51,15 @@ export const usePointStore = defineStore('points', () => {
   const fetchTransactions = async () => {
     try {
       isLoading.value = true;
-      const data = await getTransactionHistory(authStore.userId);
+      const data = await pointService.getTransactionHistory(authStore.userId);
       transactions.value = data.map(t => ({
-        type: t.sender._id === authStore.userId ? 'sent' : 'received',
+        flow: t.sender._id === authStore.userId ? 'sent' : 'received',
         amount: t.amount,
+        status: t.status,
+        type: t.type,
         description: t.description || (t.type === 'transfer' ? 'Transfert de points' : 'Remplacement'),
         date: formatDate(t.createdAt),
+        effectiveDate: formatDate(t.effectiveDate),
         user: t.sender._id === authStore.userId ? t.receiver.name : t.sender.name
       }));
     } catch (error) {
@@ -72,7 +75,7 @@ export const usePointStore = defineStore('points', () => {
   const fetchPendingTransactions = async () => {
     try {
       isLoadingPending.value = true;
-      const data = await getPendingTransactions(authStore.userId);
+      const data = await pointService.getPendingTransactions(authStore.userId);
       pendingTransactions.value = data.map(t => ({
         amount: t.amount,
         description: t.description || 'Transaction en attente',
@@ -86,6 +89,29 @@ export const usePointStore = defineStore('points', () => {
     }
   };
 
+  const transferPoints = async  (fromUserId, toUserId, amount, description = '', scheduledDate = null)  => {
+    try {
+      isLoading.value = true;
+      await pointService.transferPoints(fromUserId, toUserId, amount, description, scheduledDate);
+      await fetchTransactions();
+      await fetchUserPoints();
+    } catch (error) {
+      console.error('Erreur lors de la récupération des transactions:', error);
+    } finally {
+      isLoading.value = false;
+    }
+  };
+
+  const pendingTransactions = computed(() => {
+    return transactions.value.filter(t => t.status === 'pending');
+  });
+
+  const processedTransactions = computed(() => {
+    return transactions.value.filter(t => t.status === 'completed');
+  });
+
+ 
+
   const formattedPoints = computed(() => formatPoints(points.value));
 
   return {
@@ -93,10 +119,12 @@ export const usePointStore = defineStore('points', () => {
     points,
     transactions,
     pendingTransactions,
+    processedTransactions,
     isLoading,
     isLoadingPending,
 
     // Actions
+    transferPoints,
     fetchUserPoints,
     fetchTransactions,
     fetchPendingTransactions,

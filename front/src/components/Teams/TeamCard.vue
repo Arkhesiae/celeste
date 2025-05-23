@@ -3,7 +3,7 @@
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
-          <span class="text-h6">Equipe {{ team.name }}</span>
+          <span class="text-h6">Equipe {{ team?.name }}</span>
           <v-btn
             v-if="isAdmin"
             icon

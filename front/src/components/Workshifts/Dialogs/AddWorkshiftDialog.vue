@@ -281,13 +281,13 @@ const close = () => {
       
       <div v-if="currentWindow === 1" class="pa-6 d-flex">
         <v-btn
-            v-if="!props.rotation"
+          v-if="!props.rotation"
           color="primary"
           variant="text"
           rounded="xl"
           @click="currentWindow = 0"
-          :slim="false"
           size="large"
+          :slim="false"
         >
           Retour
         </v-btn>
@@ -295,11 +295,11 @@ const close = () => {
         <v-btn
           color="primary"
           variant="tonal"
-          :slim="false"
-          :disabled="newRotation.days.length === 0"
           rounded="xl"
+          :disabled="newRotation.days.length === 0"
           @click="submit"
           size="large"
+          :slim="false"
         >
           {{ props.rotation ? 'Enregistrer les modifications' : 'Enregistrer' }}
         </v-btn>

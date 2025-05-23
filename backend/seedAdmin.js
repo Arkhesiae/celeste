@@ -22,6 +22,7 @@ async function createAdmin() {
     isAdmin: true,
     isActive: true,
     adminType: 'master',
+    registrationStatus: 'approved',
     email: process.env.ADMIN_EMAIL,
     password: hashedPassword,
     preferences: {

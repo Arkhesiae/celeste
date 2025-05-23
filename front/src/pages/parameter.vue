@@ -112,19 +112,10 @@ meta:
     />
     <TransferRequestDialog
       v-model="showTransferRequestDialog"
-      @success="showSuccessMessage"
-      @error="showErrorMessage"
+  
     />
-
-    <!-- Snackbar pour les messages -->
-    <v-snackbar
-      v-model="snackbar.show"
-      :color="snackbar.color"
-      rounded="lg"
-      :timeout="3000"
-    >
-      {{ snackbar.text }}
-    </v-snackbar>
+    <GlobalSnackbar />
+  
   </v-container>
 </template>
 
@@ -138,8 +129,11 @@ import PasswordDialog from '@/components/Profile/Parameters/PasswordDialog.vue'
 import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue'
 import TransferRequestDialog from '@/components/Profile/Parameters/TransferRequestDialog.vue'
 import { useScrollPosition } from '@/composables/useScrollPosition';
+import { useSnackbarStore } from '@/stores/snackbarStore';
+import GlobalSnackbar from '@/layouts/components/GlobalSnackbar.vue'
 
 const { resetScroll } = useScrollPosition();
+const snackbarStore = useSnackbarStore();
 
 // Theme synchronization
 const isDarkTheme = computed({
@@ -164,51 +158,29 @@ const showTransferRequestDialog = ref(false)
 const notificationsByEmail = ref(true)
 const notificationsByApp = ref(true)
 
-// Snackbar
-const snackbar = ref({
-  show: false,
-  text: '',
-  color: 'success'
-})
-
-const showSuccessMessage = (message) => {
-  snackbar.value = {
-    show: true,
-    text: message,
-    color: 'success'
-  }
-}
-
-const showErrorMessage = (message) => {
-  snackbar.value = {
-    show: true,
-    text: message,
-    color: 'error'
-  }
-}
 
 const handleEmailSuccess = (message) => {
-  showSuccessMessage(message)
+  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle')
 }
 
 const handleEmailError = (message) => {
-  showErrorMessage(message)
+  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
 }
 
 const handlePasswordSuccess = (message) => {
-  showSuccessMessage(message)
+  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle')
 }
 
 const handlePasswordError = (message) => {
-  showErrorMessage(message)
+  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
 }
 
 const handleAvatarSuccess = (message) => {
-  showSuccessMessage(message)
+  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle')
 }
 
 const handleAvatarError = (message) => {
-  showErrorMessage(message)
+  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
 }
 
 </script>

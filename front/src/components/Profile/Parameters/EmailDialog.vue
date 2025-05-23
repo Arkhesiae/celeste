@@ -1,8 +1,10 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">Modifier l'adresse email</v-card-title>
+        <v-card-title class="d-flex justify-space-between align-center">
+          {{ currentStep === 1 ? 'Modifier l\'adresse email' : 'Vérification OTP' }}
+        </v-card-title>
         <template #append v-if="!smAndDown">
           <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
         </template>
@@ -12,43 +14,68 @@
       </v-card-item>
 
       <v-card-text class="px-6">
-        <v-form ref="form" v-model="valid">
-          <v-text-field
-            v-model="email"
-            :rules="emailRules"
-            label="Nouvelle adresse email"
-            required
-            type="email"
-            prepend-inner-icon="mdi-email-outline"
-            variant="outlined"
-            color="primary"
-            rounded="xl"
-            bg-color="surface"
-            hide-details="auto"
-          ></v-text-field>
-        </v-form>
+        <v-window v-model="currentStep">
+          <div class="d-flex align-center justify-space-between mb-4">
+            <div>
+              <span>Addresse email actuelle </span>
+              <v-list-item-subtitle>{{ authStore.email }}</v-list-item-subtitle>
+            </div>
+            
+          </div>
+          <!-- Étape 1: Email -->
+          <v-window-item :value="1">
+            <v-form ref="emailForm" v-model="emailValid">
+              <v-text-field
+                flat
+                v-model="email"
+                :rules="emailRules"
+                label="Nouvelle adresse email"
+                required
+                type="email"
+                prepend-inner-icon="mdi-email-outline"
+                variant="solo-filled"
+                color="primary"
+                rounded="xl"
+                bg-color="surface"
+                hide-details="auto"
+              ></v-text-field>
+            </v-form>
+          </v-window-item>
+
+          <!-- Étape 2: OTP -->
+          <v-window-item :value="2">
+            <OTPVerification
+              :email="email"
+              title="Vérification de votre email"
+              @verified="onOtpVerified"
+              @error="onOtpError"
+            />
+          </v-window-item>
+        </v-window>
       </v-card-text>
 
       <v-card-actions class="pa-6">
-        <v-spacer></v-spacer>
+      
         <v-btn
           color="primary"
           variant="text"
           rounded="xl"
-          @click="close"
+          @click="handleBack"
           :disabled="loading"
         >
-          Annuler
+          {{ currentStep === 1 ? 'Annuler' : 'Retour' }}
         </v-btn>
+        <v-spacer></v-spacer>
         <v-btn
+          v-if="currentStep === 1"
           color="primary"
           variant="tonal"
           rounded="xl"
-          @click="submit"
+          @click="handleNext"
           :loading="loading"
-          :disabled="!valid"
+          :disabled="!emailValid"
         >
-          Enregistrer
+          Continuer
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -57,8 +84,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
 import { useDisplay } from 'vuetify'
+import OTPVerification from '@/components/OTPVerification.vue'
+import { profileService } from '@/services/profileService'
 
+const authStore = useAuthStore()
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -69,10 +100,11 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'success', 'error'])
 
 const { smAndDown } = useDisplay()
-const form = ref(null)
-const valid = ref(false)
+const emailForm = ref(null)
+const emailValid = ref(false)
 const loading = ref(false)
 const email = ref('')
+const currentStep = ref(1)
 
 const emailRules = [
   v => !!v || 'L\'email est requis',
@@ -91,34 +123,48 @@ const localDialogVisible = computed({
 
 const resetForm = () => {
   email.value = ''
-  form.value?.reset()
+  currentStep.value = 1
+  emailForm.value?.reset()
 }
 
 const close = () => {
   localDialogVisible.value = false
 }
 
-const submit = async () => {
-  if (!form.value?.validate()) return
+const handleBack = () => {
+  if (currentStep.value === 1) {
+    close()
+  } else {
+    currentStep.value--
+  }
+}
 
+const handleNext = async () => {
+  if (!emailForm.value?.validate()) return
+  currentStep.value++
+}
+
+const onOtpVerified = async () => {
   loading.value = true
   try {
-    // TODO: Implémenter l'appel API pour mettre à jour l'email
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await profileService.updateEmail(email.value)
+    authStore.email = email.value
     emit('success', 'L\'email a été mis à jour avec succès')
     close()
   } catch (error) {
-    emit('error', error.message || 'Une erreur est survenue')
+    emit('error', error.message || 'Une erreur est survenue lors de la mise à jour de l\'email')
   } finally {
     loading.value = false
   }
 }
+
+const onOtpError = (error) => {
+  emit('error', error.message || 'Une erreur est survenue lors de la vérification')
+}
 </script>
 
 <style scoped>
-.v-card {
-  border: 1px solid rgba(var(--v-theme-surface-variant), 0.12);
-}
+
 
 .v-btn {
   text-transform: none;

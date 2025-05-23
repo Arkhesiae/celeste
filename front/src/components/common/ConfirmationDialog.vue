@@ -32,6 +32,10 @@ const props = defineProps({
     type: String,
     default: 'primary',
   },
+  confirmColor: {
+    type: String,
+
+  },  
 });
 
 const emit = defineEmits(['update:isDialogVisible', 'confirm', 'cancel']);
@@ -54,8 +58,9 @@ const handleCancel = () => {
     max-width="400"
   >
     <v-card rounded="xl" class="pa-6">
-      <v-card-item class="text-center ma-0 pa-0">
+      <v-card-item  class="text-center ma-0 pa-0">
         <v-icon
+          v-if="icon"
           :icon="icon"
           size="36"
           :color="iconColor"
@@ -81,7 +86,7 @@ const handleCancel = () => {
         </v-btn>
         <v-spacer />
         <v-btn
-          color="primary"
+          :color="confirmColor || 'primary'"
        
           size="large"
           :slim="false"

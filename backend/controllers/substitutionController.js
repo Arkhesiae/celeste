@@ -2,7 +2,8 @@ const Substitution = require('../models/substitutionModel');
 const {User} = require("../models/userModel");
 const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
 const {computeShiftOfUser} = require("../utils/computeShiftOfUser");
-const { createDelayedTransaction } = require('../services/transactionService');
+const { createDelayedTransaction, cancelDelayedTransaction } = require('../services/transactionService');
+const Transaction = require('../models/transaction.model');
 
 
 const getCenterDemands = async (req, res) => {
@@ -275,6 +276,16 @@ const cancelDemand = async (req, res) => {
             return res.status(404).json({error: 'Demand not found'});
         }
 
+        
+        // Annuler la transaction associée si elle existe
+        if (demand.points > 0) {
+            const transaction = await Transaction.findOne({ request: demandId });
+            if (transaction) {
+                await cancelDelayedTransaction(transaction._id);
+            }
+        }
+
+
         res.status(200).json({message: 'Demand deleted successfully'});
     } catch (error) {
         console.error('Error deleting demand:', error);
@@ -289,6 +300,14 @@ const deleteDemand = async (req, res) => {
         const demand = await Substitution.findByIdAndUpdate(demandId, {deleted: true}, {new: true});
         if (!demand) {
             return res.status(404).json({error: 'Demand not found'});
+        }
+
+        // Annuler la transaction associée si elle existe
+        if (demand.points > 0) {
+            const transaction = await Transaction.findOne({ request: demandId });
+            if (transaction) {
+                await cancelDelayedTransaction(transaction._id);
+            }
         }
 
         res.status(200).json({message: 'Demand deleted successfully'});
@@ -409,7 +428,7 @@ const acceptRequest = async (req, res) => {
                 amount: request.points,
                 type: 'replacement',
                 request: requestId,
-                description: `Transaction pour la substitution du ${new Date(request.posterShift.date).toLocaleDateString()}`,
+                description: `Remplacement du ${new Date(request.posterShift.date).toLocaleDateString()}`,
                 scheduledDate: new Date(request.posterShift.date)
             });
         }
@@ -553,6 +572,14 @@ const unacceptRequest = async (req, res) => {
         // Vérification que l'utilisateur est bien celui qui a accepté
         if (request.accepterId.toString() !== userId) {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à annuler cette acceptation' });
+        }
+
+        // Annuler la transaction associée si elle existe
+        if (request.points > 0) {
+            const transaction = await Transaction.findOne({ request: requestId });
+            if (transaction) {
+                await cancelDelayedTransaction(transaction._id);
+            }
         }
 
         // Mise à jour de la demande

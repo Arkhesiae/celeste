@@ -49,7 +49,7 @@
           <PointsCard height="100%" @transfer="transferDialog = true" />
         </v-col>
         <v-col :class="smAndDown ? 'my-16' : ''" cols="12" md="8">
-          <TeamCard  :teamOccurrences="teamOccurrences" @update-dialog-mode="openAddDialog" />
+          <UserTeamCard :teamOccurrences="teamOccurrences" @update-dialog-mode="openAddDialog" />
         </v-col>
       </v-row>
     
@@ -78,10 +78,9 @@
         @error="handleAvatarError"
       />
 
-      <TeamDialog 
+      <TeamChangeDialog 
         :dialogMode="dialogMode" 
         :dialogVisible="addDialog" 
-        :teams="teams"
         :occurrences="teamOccurrences || []" 
         @onSubmit="handleTeamChange" 
         @onClose="closeAddDialog"

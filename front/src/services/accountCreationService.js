@@ -51,5 +51,20 @@ export const accountCreationService = {
       body: JSON.stringify({ token })
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Récupère les informations d'un utilisateur par son email.
+   * @param {string} email - L'email de l'utilisateur.
+   * @returns {Promise<Object>} Les informations de l'utilisateur.
+   */
+  async getUserInfo(email) {
+    const response = await fetch(`${API_URL}/users/info/${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    return handleResponse(response);
   }
 };

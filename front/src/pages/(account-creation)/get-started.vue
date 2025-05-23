@@ -21,12 +21,14 @@ const handleExistingAccount = () => {
 </script>
 
 <template>
-  <div class="get-started-container">
+  <v-container class="fill-height">
+    <v-row justify="center">
     <Transition name="fade">
       <div v-if="showContent">
-        <h1 class="animate-title">Bienvenue !</h1>
-        <p class="subtitle animate-subtitle">Comment souhaitez-vous commencer ?</p>
-        
+        <div>
+          <h1 class="animate-title">Bienvenue !</h1>
+          <p class="subtitle animate-subtitle">Comment souhaitez-vous commencer ?</p>
+        </div>
         <div class="options-container">
           <Transition name="slide-up" appear>
             <div class="option-card" @click="handleNewAccount">
@@ -44,16 +46,12 @@ const handleExistingAccount = () => {
         </div>
       </div>
     </Transition>
-  </div>
+    </v-row>
+  </v-container>
 </template>
 
 <style scoped>
-.get-started-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+
 
 h1 {
   font-size: 2.5rem;

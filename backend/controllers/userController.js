@@ -14,7 +14,7 @@ const fs = require('fs');
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
     const {name, lastName, password, email, centerId, team, zone} = req.body;
-
+    
     try {
         const hashedPassword = await hash(password, 10);
         const user = new User({
@@ -23,9 +23,13 @@ const createUser = async (req, res) => {
             email,
             id: uuidv4(),
             password: hashedPassword,
-            team,
             centerId
         });
+        const firstTeam = await Team.findById(team);
+        if (!firstTeam) {
+            return res.status(404).json({message: 'Equipe non trouvée'});
+        }
+        user.teams.push({teamId: firstTeam._id, fromDate: new Date(), toDate: null});
 
         await user.save();
         res.json({status: 'Utilisateur créé avec succès.', user: user});
@@ -693,6 +697,67 @@ const updateAvatar = async (req, res) => {
   }
 };
 
+// Mettre à jour l'email de l'utilisateur
+const updateEmail = async (req, res) => {
+    const { email } = req.body;
+    const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
+
+    try {
+        // Vérifier si le nouvel email est déjà utilisé
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Cette adresse email est déjà utilisée' });
+        }
+
+        // Mettre à jour l'email
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { email },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json({ message: 'Email mis à jour avec succès', user });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'email:', error);
+        res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'email' });
+    }
+};
+
+// Récupérer les informations d'un utilisateur par email
+const getUserInfoByEmail = async (req, res) => {
+    const { email } = req.params;
+
+    try {
+        const user = await User.findOne({ email })
+            .select('name lastName avatar isAdmin adminType')
+            .populate('centerId', 'name');
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        // Déterminer le rôle de l'utilisateur
+        let role = 'utilisateur';
+        if (user.isAdmin) {
+            role = user.adminType === 'master' ? 'administrateur principal' : 'administrateur local';
+        }
+
+        res.json({
+            name: `${user.name} ${user.lastName}`,
+            avatar: user.avatar,
+            role: role,
+            center: user.centerId?.name || ''
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des informations utilisateur:', error);
+        res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+};
+
 // Exporter les fonctions du module
 module.exports = {
     createUser,
@@ -718,5 +783,7 @@ module.exports = {
     transferPoints,
     getTransactionHistory,
     updateAvatar,
-    checkEmailAvailability
+    checkEmailAvailability,
+    updateEmail,
+    getUserInfoByEmail
 };

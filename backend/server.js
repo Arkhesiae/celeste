@@ -18,6 +18,8 @@ const substitutionRouter = require('./routes/substitution');
 const loginRouter = require('./routes/login');
 const notificationRouter = require('./routes/notifications');
 const messageRoutes = require('./routes/messageRoutes');
+const otpRoutes = require('./routes/otpRoutes');
+const authRouter = require('./routes/auth');
 require('./cron/processTransactions'); 
 require('./cron/processDemands');
 
@@ -51,11 +53,13 @@ mongoose.connect(process.env.MONGO_URI, {})
 app.use('/api/users', usersRouter);
 app.use('/api/messages', messageRoutes);
 app.use('/api/login', loginRouter);
+app.use('/api/auth', authRouter);
 app.use('/api/substitution', substitutionRouter);
 app.use('/api/rotations', rotationsRouter);
 app.use('/api/notifications', notificationRouter);
 app.use('/api/center', centerRouter);
 app.use('/api/teams', teamsRouter);
+app.use('/api/otp', otpRoutes);
 
 // Routes par défaut
 app.get('/api', (req, res) => {

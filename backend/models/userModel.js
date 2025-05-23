@@ -59,6 +59,11 @@ const userSchema = new mongoose.Schema({
         enum: ['master', 'local', null],
         default: null
     },
+    registrationStatus: {
+        type: String,
+        enum: ['pending', 'verified'],
+        default: 'pending'
+    },
     preferences : {
         theme : { 
             type: Boolean, 

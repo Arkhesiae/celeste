@@ -37,6 +37,7 @@ router.post('/', async (req, res) => {
         preferences: user.preferences,
         centerId: user.centerId,
         avatar: user.avatar,
+        status: user.registrationStatus || 'pending',
         accessToken: accessToken
     });
 });

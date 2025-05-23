@@ -32,6 +32,11 @@
                   Actif
                 </v-chip>
               </div>
+              <v-tooltip
+                  location="top"
+                  text="Supprimer la date d'activation"
+                >
+                  <template v-slot:activator="{ props }">
               <v-chip
                 class="ms-0"
                 color="tertiary"
@@ -41,8 +46,14 @@
                 append-icon="mdi-close"
                 @click="$emit('removeActivationDate', rotation._id, rotation.activationDate, rotation.centerId)"
               >
-                  {{ new Date(rotation.activationDate).toLocaleDateString() || 'N/A' }}
+            
+                    <span v-bind="props">
+                      {{ new Date(rotation.activationDate).toLocaleDateString() || 'N/A' }}
+                    </span>
+                  
               </v-chip>
+            </template>
+          </v-tooltip>
             </div>
           </v-timeline-item>
         </v-scroll-y-transition>

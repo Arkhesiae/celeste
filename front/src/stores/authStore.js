@@ -26,6 +26,7 @@ export const useAuthStore = defineStore('auth', () => {
     theme: false
   });
   const avatar = ref('');
+  const status = ref(''); // Ajout du statut de l'utilisateur
 
   // Getters
   const isTokenExpired = () => {
@@ -94,6 +95,7 @@ export const useAuthStore = defineStore('auth', () => {
     centerId.value = data.centerId || '';
     preferences.value = data.preferences || { theme: false };
     avatar.value = data.avatar || '';
+    status.value = data.status || 'pending'; // Ajout du statut
     error.value = null;
 
     saveToLocalStorage({
@@ -105,7 +107,8 @@ export const useAuthStore = defineStore('auth', () => {
       userId: userId.value,
       centerId: centerId.value,
       preferences: preferences.value,
-      avatar: avatar.value
+      avatar: avatar.value,
+      status: status.value // Ajout du statut
     });
   };
 
@@ -123,6 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
     centerId.value = '';
     preferences.value = { theme: false };
     avatar.value = '';
+    status.value = ''; // Réinitialisation du statut
     error.value = null;
     localStorage.removeItem(STORAGE_KEY);
   };
@@ -168,6 +172,7 @@ export const useAuthStore = defineStore('auth', () => {
         email: credentials.email,
         isAdmin: result.isAdmin,
         adminType: result.adminType,
+        status: result.status,
         avatar: result.avatar,
         userId: result.userId,
         accessToken: result.accessToken,
@@ -194,6 +199,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken: accessToken.value,
         isAdmin: isAdmin.value,
         adminType: adminType.value,
+        status: status.value,
         userId: userId.value,
         centerId: centerId.value,
         preferences: preferences.value,
@@ -228,6 +234,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken: accessToken.value,
         isAdmin: isAdmin.value,
         adminType: adminType.value,
+        status: status.value,
         userId: userId.value,
         centerId: centerId.value,
         preferences: preferences.value,
@@ -249,6 +256,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken: accessToken.value,
         isAdmin: isAdmin.value,
         adminType: adminType.value,
+        status: status.value,
         userId: userId.value,
         centerId: centerId.value,
         preferences: preferences.value,
@@ -272,6 +280,7 @@ export const useAuthStore = defineStore('auth', () => {
     error,
     preferences,
     avatar,
+    status, // Ajout du statut dans le retour
     loadFromLocalStorage,
     setUser,
     logOut,

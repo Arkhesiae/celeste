@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
+    <v-card :rounded="smAndDown ? '' : 'xl'"  class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">Demander une mutation</v-card-title>
         <template #append v-if="!smAndDown">
@@ -49,6 +49,8 @@
           rounded="xl"
           @click="close"
           :disabled="loading"
+          size="large"
+          :slim="false"
         >
           Annuler
         </v-btn>
@@ -59,6 +61,8 @@
           @click="submit"
           :loading="loading"
           :disabled="!valid"
+          size="large"
+          :slim="false"
         >
           Envoyer la demande
         </v-btn>
@@ -132,9 +136,6 @@ const submit = async () => {
 </script>
 
 <style scoped>
-.v-card {
-  border: 1px solid rgba(var(--v-theme-surface-variant), 0.12);
-}
 
 .v-btn {
   text-transform: none;

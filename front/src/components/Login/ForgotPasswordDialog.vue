@@ -9,6 +9,7 @@
       <v-card-text class="pa-6 pt-4">
         <p class="text-body-2 text-medium-emphasis mb-4">
           Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe.
+          Si cet email existe, vous recevrez un lien de réinitialisation de votre mot de passe.
         </p>
         <v-form ref="form" v-model="valid">
           <v-text-field
@@ -18,7 +19,8 @@
             required
             type="email"
             prepend-inner-icon="mdi-email-outline"
-            variant="outlined"
+            variant="solo-filled"
+            flat
             color="primary"
             rounded="xl"
             bg-color="surface"
@@ -30,20 +32,24 @@
       <v-card-actions class="pa-6 pt-2">
         <v-spacer></v-spacer>
         <v-btn
-      
+          color="primary"
           variant="text"
-          class="rounded-xl"
+          rounded="xl"
           @click="closeDialog"
+          size="large"
+          :slim="false"
         >
-    
           Annuler
         </v-btn>
         <v-btn
           color="primary"
+          variant="tonal"
+          rounded="xl"
           :loading="loading"
           :disabled="!valid"
-          class="rounded-xl"
           @click="submit"
+          size="large"
+          :slim="false"
         >
           <v-icon icon="mdi-send" class="me-1"></v-icon>
           Réinitialiser
@@ -55,6 +61,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { authService } from '@/services/authService'
 
 const props = defineProps({
   modelValue: {
@@ -86,10 +93,12 @@ const dialog = computed({
 })
 
 const resetPassword = async (email) => {
-  // TODO: Implémenter l'appel API
-  return new Promise((resolve) => {
-    setTimeout(resolve, 1000)
-  })
+  try {
+    await authService.requestPasswordReset(email)
+    return true
+  } catch (error) {
+    throw new Error(error.message || 'Une erreur est survenue lors de la demande de réinitialisation')
+  }
 }
 
 const resetForm = () => {

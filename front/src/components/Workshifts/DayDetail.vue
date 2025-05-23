@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="0" color="surfaceContainerHigh">
+  <v-card  color="surfaceContainerHigh">
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="text-h6 font-weight-medium">

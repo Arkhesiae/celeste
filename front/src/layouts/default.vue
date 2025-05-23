@@ -1,37 +1,25 @@
 <template>
-  <div>
-    <AppBar :showButtons="inScreen" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
+    <div class="transition-wrapper d-flex">
+        <AppBar :showButtons="inScreen" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
 
-    <DesktopNavigationDrawer v-model:navExpanded="navExpanded" />
+        <DesktopNavigationDrawer v-model:navExpanded="navExpanded" />
 
-    <MobileNavigationDrawer v-model:modelValue="mobileDrawer" />
+        <MobileNavigationDrawer v-model:modelValue="mobileDrawer" />
 
-    <div class="position-fixed ma-2" style="bottom: 0; right: 0 ; z-index: 99">
-      <v-btn variant="tonal" class="mr-2" icon="mdi-star-four-points" @click="autoLogin('master')">Master</v-btn>
-      <v-btn variant="tonal" class="mr-2" icon="mdi-shield-crown-outline" @click="autoLogin('admin')">Local</v-btn>
-      <v-btn variant="tonal" class="mr-2" icon="mdi-account-outline" @click="autoLogin('user')"></v-btn>
-      <v-btn variant="tonal" icon="mdi-logout" color="error" @click="handleLogout"></v-btn>
+        <LoginButtons />
+
+        <v-main>
+            <router-view v-slot="{ Component, route }">
+                <transition :name="route.meta.transition || 'fade'" mode="out-in">
+                    <component :is="Component" />
+                </transition>
+            </router-view>
+        </v-main>
+
+        <BottomNavigation />
+
+        <GlobalSnackbar />
     </div>
-
-    <v-main>
-      <router-view v-slot="{ Component, route }">
-        <transition :name="route.meta.transition || 'fade'" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </v-main>
-
-    <!-- Snackbar global -->
-    <v-snackbar-queue v-model="snackbarStore.messageQueue"  color="onBackground" :timeout="3000" location="top"
-      height="64px" rounded="xl">
-      <template #text="{item}">
-        <div class="d-flex align-center" >
-          <v-icon :icon="item.icon" :color="item.iconColor" class="me-2" />
-          {{ item.message }}
-        </div>
-      </template>
-    </v-snackbar-queue>
-  </div>
 </template>
 
 <script setup>
@@ -41,8 +29,10 @@ import { useAuthStore } from "@/stores/authStore.js";
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import DesktopNavigationDrawer from './components/DesktopNavigationDrawer.vue';
 import MobileNavigationDrawer from './components/MobileNavigationDrawer.vue';
-import AppBar from './AppBar.vue';
-
+import AppBar from './components/AppBar.vue';
+import LoginButtons from './components/LoginButtons.vue';
+import GlobalSnackbar from './components/GlobalSnackbar.vue';
+import BottomNavigation from './components/BottomNavigation.vue';
 // Utilisation de stores
 const snackbarStore = useSnackbarStore();
 
@@ -105,6 +95,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.transition-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
 a {
   text-decoration: none;
   color: transparent;

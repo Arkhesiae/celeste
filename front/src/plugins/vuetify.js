@@ -141,7 +141,7 @@ export default createVuetify({
           "surfaceContainer": "#E9EFF0",
           "surfaceContainerHigh": "#E3E9EA",
           "surfaceContainerHighest": "#DEE3E5",
-          "remplacement": "#75387c",
+          "remplacement": "#51184a",
           "permutation": "#e6ec5d",
         }
       },
@@ -156,9 +156,20 @@ export default createVuetify({
     messages: { fr }, // Provide French translations
   },
   defaults: {
-   
     VDialog : {
       scrim: '#0F1416',
+      class: 'pa-6',
+      rounded: 'xl',
+      VCardActions: {
+        class: 'pa-0',
+        VBtn: {
+          size: 'large',
+          slim: false,
+          rounded: 'xl',
+        },
+      },
     },
+  
+  
   },
 })

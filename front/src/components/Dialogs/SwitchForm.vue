@@ -79,10 +79,26 @@
         </v-form>
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" @click="close">Annuler</v-btn>
-        <v-btn variant="tonal" rounded="lg" color="primary"
-               :disabled="!formValid"
-               @click="submit">Poster la demande
+        <v-btn 
+          variant="text" 
+          color="secondary" 
+          rounded="xl"
+          @click="close"
+          size="large"
+          :slim="false"
+        >
+          Annuler
+        </v-btn>
+        <v-btn 
+          variant="tonal" 
+          rounded="xl" 
+          color="primary"
+          :disabled="!formValid"
+          @click="submit"
+          size="large"
+          :slim="false"
+        >
+          Poster la demande
         </v-btn>
       </v-card-actions>
 
@@ -253,7 +269,7 @@ export default {
       () => props.dialogVisible,
       (value) => {
         if (value) {
-          // On définit la date initiale au moment où la boîte de dialogue s’ouvre
+          // On définit la date initiale au moment où la boîte de dialogue s'ouvre
           selectedDate.value = props.date ? new Date(props.date) : null;
           formattedDate.value = props.date ? toDisplayFormat(props.date) : '';
         } else {

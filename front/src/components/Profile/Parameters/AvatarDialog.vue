@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
+    <v-card :rounded="smAndDown ? '' : 'xl'"  class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">Modifier l'avatar</v-card-title>
         <template #append v-if="!smAndDown">
@@ -13,27 +13,27 @@
 
       <v-card-text class="px-6">
         <v-form ref="form" v-model="valid">
-          <div class="d-flex flex-column align-center">
-            <v-avatar size="128" class="mb-4" :image="previewUrl || authStore.avatar">
-              {{ !previewUrl && !authStore.avatar ? authStore.name.charAt(0) : '' }}
-            </v-avatar>
+          <div class="d-flex flex-column py-6">
+         
             
             <v-file-input
               v-model="selectedFile"
               accept="image/*"
               label="Choisir une image"
               prepend-icon="mdi-camera"
-              variant="outlined"
+              variant="solo-filled"
+              flat
               color="primary"
               rounded="xl"
               bg-color="surface"
-              hide-details="auto"
+              
               @update:model-value="handleFileSelect"
             ></v-file-input>
 
             <v-btn
               v-if="previewUrl"
               color="error"
+              height="48px"
               variant="tonal"
               rounded="xl"
               class="mt-4"
@@ -53,6 +53,8 @@
           rounded="xl"
           @click="close"
           :disabled="loading"
+          size="large"
+          :slim="false"
         >
           Annuler
         </v-btn>
@@ -63,6 +65,8 @@
           @click="submit"
           :loading="loading"
           :disabled="!valid || (!selectedFile && !previewUrl)"
+          size="large"
+          :slim="false"
         >
           Enregistrer
         </v-btn>

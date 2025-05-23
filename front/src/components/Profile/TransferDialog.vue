@@ -4,17 +4,12 @@
       <v-card-title class="pa-0">Faire un Virement</v-card-title>
       <v-card-text class="pa-0 py-6 ">
         <v-form @submit.prevent="confirmTransfer">
-          <v-text-field
-            variant="underlined"
-            elevation="0" 
-            class="mb-4"
-            flat
-            v-model="transferAmount"
-            label="Montant"
-            type="number"
-            :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']"
-          ></v-text-field>
-          
+          <v-number-input v-model="transferAmount" class="text-primary" reverse controlVariant="split" label=""
+                    rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
+                    base-color="transparent" variant="outlined"
+                    :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']">
+          </v-number-input>
+    
           <v-autocomplete
             v-model="transferRecipient"
             :items="availableUsers"
@@ -87,11 +82,12 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import { transferPoints } from "@/services/pointService.js";
 import { userService } from "@/services/userService.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
+import { usePointStore } from "@/stores/pointStore.js";
 
+const pointStore = usePointStore();
 
 const props = defineProps({
   dialogVisible: {
@@ -167,7 +163,7 @@ const confirmTransfer = async () => {
   try {
     isLoading.value = true;
     const scheduledDate = isDelayedTransfer.value ? transferDate.value : null;
-    await transferPoints(props.userId, transferRecipient.value, transferAmount.value, '', scheduledDate);
+    await pointStore.transferPoints(props.userId, transferRecipient.value, transferAmount.value, '', scheduledDate);
     snackbarStore.showNotification(
       isDelayedTransfer.value 
         ? 'Virement différé programmé avec succès' 
@@ -197,3 +193,16 @@ const isFutureDate = (date) => {
   return selectedDate > today;
 };
 </script> 
+
+<style scoped>
+:deep(.v-number-input .v-field__field input) {
+  color: rgb(var(--v-theme-primary)) !important;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+:deep(.v-btn--icon) {
+  background-color: rgb(var(--v-theme-surface-container)) !important;
+
+}
+</style>

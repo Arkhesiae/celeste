@@ -1,5 +1,5 @@
 <template>
-  <v-card :class="smAndDown ? 'points-card-mobile' : 'points-card'" rounded="xl" elevation="0">
+  <v-card  :class="smAndDown ? 'points-card-mobile' : 'points-card'" rounded="xl" elevation="0">
     <v-card-text class="pa-6 height-transition" style="height: 100%"> 
       <div class="d-flex flex-column justify-space-between height-transition" style=" height: 100% ">
         <!-- En-tête avec l'icône et le menu -->
@@ -58,7 +58,7 @@
             class="mx-auto my-4"
           ></v-progress-circular>
           <div v-else-if="transactions.length > 0">
-            <v-card v-for="(transaction, index) in transactions.slice(0, 2)" :key="index" color="background" flat class="transaction-item pa-4 d-flex justify-space-between align-center py-2 my-2">
+            <v-card v-for="(transaction, index) in processedTransactions.slice(0, 2)" :key="index"  color="background" flat class="transaction-item pa-4 d-flex justify-space-between align-center py-2 my-2">
               <div class="d-flex align-center">
                 <v-icon :color="transaction.type === 'received' ? 'primary' : 'secondary'" class="mr-2">
                   {{ transaction.type === 'received' ? 'mdi-bank-transfer-in' : 'mdi-bank-transfer-out' }}
@@ -68,13 +68,39 @@
                   <div class="text-caption text-medium-emphasis">{{ transaction.date }}</div>
                 </div>
               </div>
-              <div :class="{'text-primary': transaction.type === 'received', 'text-secondary': transaction.type === 'sent'}">
-                {{ transaction.type === 'received' ? '+' : '-' }}{{ transaction.amount }}
-              </div>
+              
+              <div :class="{
+                    'text-green': transaction.flow === 'received',
+                    'text-red': transaction.flow === 'sent'
+                  }">
+                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
+                  </div>
             </v-card>
           </div>
           <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
             Aucune transaction récente
+          </div>
+
+          <!-- Transactions en attente -->
+          <div v-if="pendingTransactions.length > 0" class="mt-4">
+            <div class="text-subtitle-2 opacity-50 mb-2">Prochaine transaction en attente</div>
+            <v-card  v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="'pending-'+index" 
+              color="surfaceContainerHigh" flat class=" pa-4 d-flex justify-space-between align-center py-2 my-2">
+              <div class="d-flex align-center">
+                <v-icon color="remplacement" class="mr-2">mdi-clock-outline</v-icon>
+                <div>
+                  <div class="text-body-2">{{ transaction.description }}</div>
+                  <div class="text-caption opacity-50">Prévue le {{ transaction.effectiveDate }}</div>
+                </div>
+              </div>
+              
+              <div :class="{
+                    'text-green': transaction.flow === 'received',
+                    'text-red': transaction.flow === 'sent'
+                  }">
+                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
+                  </div>
+            </v-card>
           </div>
         </div>
       </div>
@@ -87,12 +113,15 @@ import { onMounted } from 'vue';
 import { usePointStore } from '@/stores/pointStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
+import { tr } from 'vuetify/locale';
 
 const pointStore = usePointStore();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const points = computed(() => pointStore.points);
 const transactions = computed(() => pointStore.transactions);
+const pendingTransactions = computed(() => pointStore.pendingTransactions);
+const processedTransactions = computed(() => pointStore.processedTransactions);
 const isLoading = computed(() => pointStore.isLoading);
 
 
@@ -107,7 +136,11 @@ const formatDate = (dateString) => {
 onMounted(() => {
   
   pointStore.fetchUserPoints();
-  pointStore.fetchTransactions();
+  try {
+    pointStore.fetchTransactions();
+  } catch (error) {
+    console.error('Erreur lors de la récupération des transactions:', error);
+  }
 });
 </script>
 
@@ -147,9 +180,7 @@ onMounted(() => {
   border-radius: 12px;
 }
 
-.transaction-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
+
 
 .transaction-item:last-child {
   border-bottom: none;
@@ -173,5 +204,13 @@ onMounted(() => {
   opacity: 0;
 }
 
+.pending-transaction {
+  border-left: 3px solid rgb(var(--v-theme-warning));
+  background: rgba(var(--v-theme-warning), 0.05);
+}
+
+.pending-transaction:hover {
+  background: rgba(var(--v-theme-warning), 0.1);
+}
 
 </style> 

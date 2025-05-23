@@ -1,7 +1,7 @@
 <template>
-  <v-container>
-    <v-row>
-      <v-col cols="12" sm="12" md="8" lg="8" class="mt-16">
+  <v-container fluid class="fill-height">
+    <v-row justify="center" style="min-height: 80vh">
+      <v-col cols="12" sm="12" md="8" lg="8" class="py-16 mt-16">
         <v-card variant="text" class="mt-16">
           <v-card-text class="d-flex align-start flex-column" :class="{'align-center': !mdAndUp}">
             <div class="text-overline subtitle-animation">Plus qu'un simple site de rempla</div>
@@ -42,15 +42,15 @@
         </v-card>
       </v-col>
     </v-row>
-
-    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch">
+    
+    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch bg-surfaceContainer" style="min-height: 400px">
       <v-col cols="12" md="4">
         <v-card
-          style="border: 2px rgba(120,141,145,0.04) solid"
+ 
           flat
           height="100%"
           rounded="xl"
-          class="flex-column d-flex pa-8"
+          class="flex-column d-flex pa-8 bg-background"
         >
           <v-icon color="#dc8474" class="mt-4 mb-4 align-self-center" style="">mdi-responsive</v-icon>
           <v-icon color="#dc8474" style="filter: blur(10px); transform: scale(8) ; opacity: 0.2" class="position-absolute">mdi-responsive</v-icon>
@@ -60,11 +60,10 @@
       </v-col>
       <v-col cols="12" md="4">
         <v-card
-          style="border: 2px rgba(120,141,145,0.04) solid"
           flat
           height="100%"
           rounded="xl"
-          class="flex-column d-flex pa-8"
+          class="flex-column d-flex pa-8 bg-background"
         >
           <v-icon color="#c8687e" class="mt-4 mb-4 align-self-center">mdi-shield-check-outline</v-icon>
           <v-icon color="#c8687e" style="filter: blur(10px); transform: scale(8) ; opacity: 0.2" class="position-absolute">mdi-shield-check-outline</v-icon>
@@ -75,10 +74,9 @@
       <v-col cols="12" md="4">
         <v-card
           flat
-          style="border: 2px rgba(120,141,145,0.04) solid"
           height="100%"
           rounded="xl"
-          class="flex-column d-flex pa-8"
+          class="flex-column d-flex pa-8 bg-background"
         >
           <v-icon color="#a779cd" class="mt-4 mb-4 align-self-center">mdi-calendar-sync</v-icon>
           <v-icon color="#a779cd" style="filter: blur(10px); transform: scale(8) ; opacity: 0.2" class="position-absolute">mdi-calendar-sync</v-icon>

@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="900" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
+    <v-card :rounded="smAndDown ? '' : 'xl'"   class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           {{ dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe' }}
@@ -31,7 +31,7 @@
                   variant="outlined" 
                   class="mb-8" 
                   :items="teams" 
-                  item-title="name"
+                  :item-title="item => 'Equipe ' + item.name"
                   v-model="selectedTeam"
                   label="Equipe"
                   single-line
@@ -49,7 +49,7 @@
             <v-row>
               <v-col cols="12" md="6">
                 <v-card-item class="pa-0 mb-6">
-                  <span class="text-overline font-weight-medium">{{ selectedTeamName }}</span>
+                  <span class="text-overline font-weight-medium">Equipe {{ selectedTeamName }}</span>
                   <v-card-title class="d-flex justify-space-between align-center">
                     <div class="text-h5 font-weight-medium">Configuration des dates</div>
                   </v-card-title>
@@ -189,8 +189,26 @@
         Ecraser le changement du {{ toDisplayFormat(pickerDates[0]) }} ?
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" @click="showConfirmationDialog = false">Annuler</v-btn>
-        <v-btn variant="tonal" rounded="lg" color="primary" @click="submit() ; showConfirmationDialog=false">Valider</v-btn>
+        <v-btn 
+          variant="text" 
+          color="secondary" 
+          rounded="xl"
+          @click="showConfirmationDialog = false"
+          size="large"
+          :slim="false"
+        >
+          Annuler
+        </v-btn>
+        <v-btn 
+          variant="tonal" 
+          rounded="xl" 
+          color="primary" 
+          @click="submit() ; showConfirmationDialog=false"
+          size="large"
+          :slim="false"
+        >
+          Valider
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -201,6 +219,7 @@ import { ref, computed, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useDate } from 'vuetify';
 import { toUTCNormalized } from "@/utils.js";
+import { useTeamStore } from "@/stores/teamStore";
 
 const props = defineProps({
   dialogMode: {
@@ -209,10 +228,6 @@ const props = defineProps({
   },
   dialogVisible: {
     type: Boolean,
-    required: true,
-  },
-  teams: {
-    type: Array,
     required: true,
   },
   occurrences: {
@@ -225,6 +240,8 @@ const emit = defineEmits(["onClose", "onSubmit", "update:dialogModeValue", "upda
 
 const { smAndDown } = useDisplay();
 const date = useDate();
+const teamStore = useTeamStore();
+const teams = computed(() => teamStore.centerTeams);
 
 const dialogModeValue = computed({
   get: () => props.dialogMode,
@@ -245,10 +262,10 @@ const formattedStartDate = ref('');
 const formattedDate = ref('');
 const formValid = ref(false);
 
-const selectedTeamName = computed(() => {
-  const team = props.teams.find(t => t._id === selectedTeam.value);
-  return team ? team.name : '';
-});
+  const selectedTeamName = computed(() => {
+    const team = teams.value.find(t => t._id === selectedTeam.value);
+    return team ? team.name : '';
+  });
 
 const numberOfDays = computed(() => {
   if (dialogModeValue.value !== 'Renfort' || !selectedDates.value.startDate || !selectedDates.value.endDate) return 0;
@@ -375,12 +392,15 @@ const submit = (teamData) => {
 const close = () => {
   localDialogVisible.value = false;
 };
+
+onMounted(() => {
+  console.log(teams.value);
+});
+
 </script>
 
 <style scoped>
-.v-card {
-  border: 1px solid rgba(var(--v-theme-surface-variant), 0.12);
-}
+
 
 .v-btn {
   text-transform: none;

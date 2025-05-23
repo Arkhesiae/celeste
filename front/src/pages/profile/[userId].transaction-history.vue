@@ -34,22 +34,25 @@
                 class="mx-auto my-4"></v-progress-circular>
 
               <div v-else-if="filteredTransactions.length > 0" c>
-                <v-card v-for="(transaction, index) in filteredTransactions" :key="index" color="surface" flat rounded="lg"
-                  class="transaction-item pa-4 d-flex justify-space-between align-center py-2  mb-2">
+                <v-card v-for="(transaction, index) in filteredTransactions" :key="index" :color="transaction.status === 'pending' ? 'surfaceContainerHigh' : 'surfaceContainer'" flat rounded="lg"
+                  class="transaction-item pa-4 d-flex justify-space-between align-center py-2  mb-2"
+                  :class="transaction.status === 'pending' ? 'opacity-50' : ''">
                   <div class="d-flex align-center">
-                    <v-icon :color="transaction.type === 'received' ? 'primary' : 'secondary'" class="mr-2">
-                      {{ transaction.type === 'received' ? 'mdi-bank-transfer-in' : 'mdi-bank-transfer-out' }}
+                    <v-icon v-if="transaction.status === 'completed'" :color="transaction.flow === 'sent' ? 'red' : 'green'" class="mr-2">
+                      {{ transaction.flow === 'sent' ? 'mdi-bank-transfer-out' : 'mdi-bank-transfer-in' }}
                     </v-icon>
+                    <v-icon v-if="transaction.status === 'pending'" color="remplacement" class="mr-2">mdi-clock-outline</v-icon>
                     <div>
                       <div class="text-body-2">{{ transaction.description }}</div>
-                      <div class="text-caption text-medium-emphasis">{{ formatDate(transaction.date) }}</div>
+                      <div class="text-caption text-medium-emphasis">{{ transaction.effectiveDate ? transaction.effectiveDate : transaction.date }}</div>
                     </div>
                   </div>
+
                   <div :class="{
-                    'text-primary': transaction.type === 'received',
-                    'text-secondary': transaction.type === 'sent'
+                    'text-green': transaction.flow === 'received',
+                    'text-red': transaction.flow === 'sent'
                   }">
-                    {{ transaction.type === 'received' ? '+' : '-' }}{{ transaction.amount }}
+                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
                   </div>
                 </v-card>
               </div>
@@ -63,27 +66,31 @@
 
       <!-- Colonne de droite : Transactions en attente -->
       <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="0">
-          <v-card-text class="pa-6">
+        <v-card rounded="xl" elevation="0" color="background">
+          <v-card-text class="pa-1">
             <h2 class="text-h5 mb-6">Transactions en attente</h2>
 
             <v-progress-circular v-if="isLoadingPending" indeterminate color="primary"
               class="mx-auto my-4"></v-progress-circular>
 
             <div v-else-if="pendingTransactions.length > 0">
-              <v-card v-for="(transaction, index) in pendingTransactions" :key="index" color="background" flat
-                class="transaction-item pa-4 d-flex justify-space-between align-center py-2 my-2">
-                <div class="d-flex align-center">
-                  <v-icon color="warning" class="mr-2">mdi-clock-outline</v-icon>
-                  <div>
-                    <div class="text-body-2">{{ transaction.description }}</div>
-                    <div class="text-caption text-medium-emphasis">
-                      En attente depuis {{ formatDate(transaction.date) }}
-                    </div>
-                  </div>
+              <v-card v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="'pending-'+index" 
+              color="surfaceContainerHigh" flat rounded="lg"  class=" pa-4 d-flex justify-space-between align-center py-2 my-2">
+              <div class="d-flex align-center">
+                <v-icon color="remplacement" class="mr-2">mdi-clock-outline</v-icon>
+                <div>
+                  <div class="text-body-2">{{ transaction.description }}</div>
+                  <div class="text-caption text-medium-emphasis">Prévue le {{ transaction.effectiveDate }}</div>
                 </div>
-                <div class="text-warning">{{ transaction.amount }}</div>
-              </v-card>
+              </div>
+              
+              <div :class="{
+                    'text-green': transaction.flow === 'received',
+                    'text-red': transaction.flow === 'sent'
+                  }">
+                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
+                  </div>
+            </v-card>
             </div>
             <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
               Aucune transaction en attente
@@ -112,10 +119,25 @@ const isLoading = computed(() => pointStore.isLoading);
 const isLoadingPending = computed(() => pointStore.isLoadingPending);
 
 const filteredTransactions = computed(() => {
-  if (selectedTransactionType.value === 'all') {
-    return transactions.value;
-  }
-  return transactions.value.filter(t => t.type === selectedTransactionType.value);
+  let filtered = selectedTransactionType.value === 'all' 
+    ? transactions.value 
+    : transactions.value.filter(t => t.flow === selectedTransactionType.value);
+ 
+  const sorted = filtered.sort((b, a) => {
+    const dateA = a.effectiveDate;
+    const dateB = b.effectiveDate;
+    
+    // Conversion du format dd/mm/yyyy en Date
+    const [dayA, monthA, yearA] = dateA.split('/');
+    const [dayB, monthB, yearB] = dateB.split('/');
+    
+    const dateObjA = new Date(yearA, monthA - 1, dayA);
+    const dateObjB = new Date(yearB, monthB - 1, dayB);
+    
+    return dateObjA - dateObjB;
+  });
+  
+  return sorted;
 });
 
 const formatDate = (dateString) => {
@@ -129,7 +151,6 @@ const formatDate = (dateString) => {
 onMounted(() => {
   resetScroll();
   pointStore.fetchTransactions();
-  pointStore.fetchPendingTransactions();
 });
 </script>
 
@@ -141,9 +162,7 @@ onMounted(() => {
 
 }
 
-.transaction-item {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
+
 
 .transaction-item:last-child {
   border-bottom: none;

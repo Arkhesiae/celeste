@@ -10,7 +10,7 @@
 
     <!-- Titre de l'application -->
     <v-app-bar-title @click="handleTitleClick">
-      <v-btn class="text-overline font-weight-bold active" :active="isHomepage">
+      <v-btn flat color="remplacement" class="text-overline font-weight-bold " :active="isHomepage || isDashboard">
         {{ APP_TITLE }}
       </v-btn>
     </v-app-bar-title>
@@ -74,19 +74,21 @@
             <v-switch v-model="isDarkTheme" inset class="mr-2" hide-details false-icon="mdi-weather-sunny"
               true-icon="mdi-weather-night"></v-switch>
             <v-btn variant="text" class="text-body-2 nav-link">Assistance</v-btn>
-            <v-btn variant="text" class="text-body-2 nav-link text-capitalize">à propos</v-btn>
-            <v-btn variant="text" class="text-body-2 nav-link">Nouveautés</v-btn>
-            <v-btn variant="text" class="text-body-2 nav-link">Icnagenda
+            <!-- <v-btn variant="text" class="text-body-2 nav-link text-capitalize">à propos</v-btn> -->
+            <!-- <v-btn variant="text" class="text-body-2 nav-link">Nouveautés</v-btn> -->
+
+            <v-btn variant="text" class="text-body-2 nav-link" @click="openIcnagenda">Icnagenda
               <v-icon class="ml-3 text-medium-emphasis">mdi-open-in-new</v-icon>
             </v-btn>
-            <v-btn variant="text" class="text-body-2 nav-link">Olafatco
+            <v-btn variant="text" class="text-body-2 nav-link" @click="openOlafatco">Olafatco
               <v-icon class="ml-3 text-medium-emphasis">mdi-open-in-new</v-icon>
             </v-btn>
           </div>
           <v-scroll-y-reverse-transition>
             <div v-if="!showButtons" class="d-flex">
               <div class="block d-flex">
-                <v-btn prepend-icon="mdi-lightning-bolt" variant="flat" rounded="lg" color="">Get started</v-btn>
+                <v-btn prepend-icon="mdi-lightning-bolt" variant="flat" rounded="lg" color=""
+                @click="router.push({ path: '/get-started' })">Get started</v-btn>
               </div>
               <div class="d-flex mx-5">
                 <v-btn variant="flat" rounded="lg" color="onBackground" append-icon="mdi-arrow-right"
@@ -164,35 +166,17 @@
                 <v-list-item-title>Se déconnecter</v-list-item-title>
               </v-list-item>
             </v-list>
+            <div class="d-flex justify-end">
+              <v-btn prepend-icon="mdi-information-outline" variant="text" color="background" class="text-body-2" @click="router.push({ path:'/contact-admin'})">Assistance</v-btn>
+            </div>
           </v-card>
+    
         </v-menu>
       </template>
     </template>
   </v-app-bar>
 
-  <!-- Bottom Navigation -->
-  <v-bottom-navigation v-if="smAndDown && isLoggedIn" class="bottom-nav " bg-color="onBackground" grow height="80"
-    rounded="xl" style="z-index: 2000 !important;" shift>
-    <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' })" :active="router.currentRoute.value.path === '/dashboard'">
-      <v-icon size="large">{{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}</v-icon>
-    </v-btn>
-    <v-btn :ripple="false" value="calendar" icon @click="router.push({ path: '/calendar' })" :active="router.currentRoute.value.path === '/calendar'">
-      <v-icon size="large">{{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}</v-icon>
-    </v-btn>
-    <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
 
-        <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
-  
-    </v-btn>
-    <v-btn   :ripple="false" value="profile"  active-color="onPrimary" active-class="active-item" icon @click="router.push({ path: '/profile/' + authStore.userId })" :active="router.currentRoute.value.path === '/profile/' + authStore.userId">
-      <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="NOTIFICATION_COUNT !== 0">
-      <v-avatar size="28" class="" variant="tonal"   >
-                    <v-img v-if="authStore.avatar" :src="`${API_URL}${authStore.avatar}`" alt="Avatar" />
-                    <v-icon v-else>mdi-account</v-icon>
-                  </v-avatar>
-                </v-badge>
-    </v-btn>
-  </v-bottom-navigation>
 
   <NotificationsDialog v-model:isDialogOpen="isDialogOpen" v-if="isLoggedIn" :user-id="authStore.userId"
     :notifications="notificationStore.notifications" @markAsRead="handleMarkAsRead"
@@ -207,10 +191,11 @@ import {useAuthStore} from "@/stores/authStore.js";
 import {useTeamStore} from "@/stores/teamStore.js";
 import {useRoute, useRouter} from "vue-router";
 import {ref, computed, onMounted, onUnmounted, watch} from "vue";
-import { useNotificationStore } from '../stores/notificationStore';
+import { useNotificationStore } from '../../stores/notificationStore';
 import { useTheme } from 'vuetify';
 import { API_URL } from '@/config/api';
-import { useMessageStore } from '../stores/messageStore';
+import { useMessageStore } from '../../stores/messageStore';
+import BottomNavigation from '@/layouts/components/BottomNavigation.vue';
 
 
 const props = defineProps({
@@ -249,6 +234,7 @@ const teamStore = useTeamStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const isAdmin = computed(() => authStore.isAdmin);
 const isHomepage = computed(() => route.name === "/landing");
+const isDashboard = computed(() => route.name === "/dashboard");
 const notificationInterval = ref(null);
 const PROFILE_PATH = "/profile/"+ authStore.userId;
 // Computed properties for user info
@@ -338,6 +324,16 @@ const isActive = (path) => {
   return router.currentRoute.value.path === path;
 };
 
+const openIcnagenda = () => {
+  window.open('https://icnagenda.FR', '_blank');
+};
+
+const openOlafatco = () => {
+  window.open('https://olafatco.dsna.aviation-civile.gouv.fr/gerer-la-licence', '_blank');
+};
+
+
+
 </script>
 
 <style scoped>
@@ -426,17 +422,9 @@ const isActive = (path) => {
  
 }
 
-:deep(.v-btn--active) {
-  color: rgba(var(--v-theme-onPrimary), 1) !important;
-  background-color: transparent !important;
-  font-size: 1rem;
-}
 
-:deep(.v-btn__overlay) {
-  color: rgba(var(--v-theme-onPrimary), 1) !important;
-  background-color: transparent !important;
-  font-size: 1rem;
-}
+
+
 
 
 .active-item {

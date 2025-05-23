@@ -32,7 +32,9 @@ const {
     transferPoints,
     getTransactionHistory,
     updateAvatar,
-    checkEmailAvailability
+    checkEmailAvailability,
+    updateEmail,
+    getUserInfoByEmail
 } = require('../controllers/userController');
 const router = express.Router();
 
@@ -56,6 +58,7 @@ const upload = multer({
 // Routes publiques
 router.post('/create', createUser);
 router.post('/check-email', checkEmailAvailability);
+router.get('/info/:email', getUserInfoByEmail);
 
 // Routes protégées par token
 router.get('/:id', verifyToken, isUserOrAdmin, getUserById);
@@ -91,5 +94,8 @@ router.get('/:id/preferences', verifyToken, isUserOrAdmin, getUserPreferences);
 router.put('/:id/preferences', verifyToken, isUserOrAdmin, updateUserPreferences);
 
 router.post('/:id/avatar', verifyToken, upload.single('avatar'), updateAvatar);
+
+// Route protégée pour la mise à jour de l'email
+router.post('/update-email', verifyToken, updateEmail);
 
 module.exports = router;

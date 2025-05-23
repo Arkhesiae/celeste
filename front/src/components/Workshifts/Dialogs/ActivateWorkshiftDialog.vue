@@ -54,7 +54,7 @@ const close = () => {
 
 <template>
   <v-dialog v-model="localDialogVisible" width="400px" :fullscreen="smAndDown">
-    <v-card :rounded="!smAndDown ? 'xl' : ''" elevation="0" class="pa-0 pt-6">
+    <v-card :rounded="!smAndDown ? 'xl' : ''"  class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
        
        <v-card-title class="d-flex justify-space-between align-center">Programmer un TDS</v-card-title>
@@ -103,11 +103,13 @@ const close = () => {
         <v-spacer></v-spacer>
         <v-btn
           color="primary"
-          variant="text"
-          rounded="lg"
+          variant="tonal"
+          rounded="xl"
           @click="submit"
           :disabled="!selectedDate"
           prepend-icon="mdi-clock-star-four-points-outline"
+          size="large"
+          :slim="false"
         >
           Programmer
         </v-btn>

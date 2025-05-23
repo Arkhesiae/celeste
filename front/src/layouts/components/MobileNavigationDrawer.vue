@@ -145,8 +145,8 @@ const menuItemsLogged = [
 ];
 
 const menuItems = [
-  { key: 'about', label: 'A propos', path: '/about', title: 'A propos' },
-  { key: 'news', label: 'Nouveautés', path: '/news', title: 'Nouveautés' },
+  // { key: 'about', label: 'A propos', path: '/about', title: 'A propos' },
+  // { key: 'news', label: 'Nouveautés', path: '/news', title: 'Nouveautés' },
   { key: 'assistance', label: 'Assistance', path: '/assistance', title: 'Assistance' }
 ];
 

@@ -81,7 +81,7 @@
       </div>
     </v-card-text>
 
-    <v-card-actions class="ma-0 pa-0">
+    <v-card-actions class="pa-0">
       <v-spacer></v-spacer>
       <v-btn
         v-if="demand?.status === 'open'"
@@ -137,11 +137,13 @@
           </p>
         </v-card-text>
         <v-card-actions class="pa-0">
-       
           <v-btn
             color="secondary"
             variant="text"
+            rounded="xl"
             @click="showConfirmationDialog = false"
+            size="large"
+            :slim="false"
           >
             Annuler
           </v-btn>
@@ -149,17 +151,23 @@
           <v-btn
             v-if="userHasShift"
             color="permutation"
-            variant="text"
+            variant="tonal"
+            rounded="xl"
             @click="handleSwap"
             :loading="loading.accept"
+            size="large"
+            :slim="false"
           >
             Permuter
           </v-btn>
           <v-btn
             color="remplacement"
-            variant="elevated"
+            variant="tonal"
+            rounded="xl"
             @click="handleConfirmAccept"
             :loading="loading.accept"
+            size="large"
+            :slim="false"
           >
             {{ userHasShift ? 'Remplacer' : 'Confirmer' }}
           </v-btn>

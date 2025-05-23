@@ -3,18 +3,20 @@
  */
 import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
 
-/**
+
+export const pointService = {
+/** 
  * Récupère les points de l'utilisateur
  * @param {string} id - L'ID de l'utilisateur
  * @returns {Promise<Object>} Les points de l'utilisateur
  */
-export const getUserPoints = async (id) => {
-  const response = await fetch(`${API_URL}/users/${id}/points`, {
-    method: 'GET',
+  getUserPoints: async (id) => {
+    const response = await fetch(`${API_URL}/users/${id}/points`, {
+      method: 'GET',
     headers: getAuthHeaders(),
   });
   return handleResponse(response);
-};
+  },
 
 /**
  * Effectue un transfert de points entre utilisateurs
@@ -25,11 +27,11 @@ export const getUserPoints = async (id) => {
  * @param {string} scheduledDate - Date prévue pour le virement différé (optionnel)
  * @returns {Promise<Object>} La transaction créée
  */
-export const transferPoints = async (fromUserId, toUserId, amount, description = '', scheduledDate = null) => {
-  const response = await fetch(`${API_URL}/users/${fromUserId}/points/transfer`, {
-    method: 'POST',
-    headers: getAuthHeaders(),
-    body: JSON.stringify({
+  transferPoints: async (fromUserId, toUserId, amount, description = '', scheduledDate = null) => {
+    const response = await fetch(`${API_URL}/users/${fromUserId}/points/transfer`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({
       toUserId,
       amount,
       description,
@@ -38,7 +40,7 @@ export const transferPoints = async (fromUserId, toUserId, amount, description =
     }),
   });
   return handleResponse(response);
-};
+  },
 
 /**
  * Récupère l'historique des transactions d'un utilisateur
@@ -46,23 +48,24 @@ export const transferPoints = async (fromUserId, toUserId, amount, description =
  * @param {number} limit - Nombre maximum de transactions à récupérer
  * @returns {Promise<Array>} Liste des transactions
  */
-export const getTransactionHistory = async (userId, limit = 10) => {
-  const response = await fetch(`${API_URL}/users/${userId}/transactions?limit=${limit}`, {
-    method: 'GET',
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(response);
-};
+  getTransactionHistory: async (userId, limit = 10) => {
+    const response = await fetch(`${API_URL}/users/${userId}/transactions?limit=${limit}`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+      },
 
 /**
  * Récupère les transactions en attente d'un utilisateur
  * @param {string} userId - L'ID de l'utilisateur
  * @returns {Promise<Array>} Liste des transactions en attente
  */
-export const getPendingTransactions = async (userId) => {
-  const response = await fetch(`${API_URL}/users/${userId}/transactions/pending`, {
-    method: 'GET',
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(response);
+  getPendingTransactions: async (userId) => {
+    const response = await fetch(`${API_URL}/users/${userId}/transactions/pending`, {
+      method: 'GET',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
+  },
 }; 

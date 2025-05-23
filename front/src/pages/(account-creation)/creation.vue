@@ -1,6 +1,7 @@
 <template>
 
-<v-container class="d-flex align-center justify-center" style="height: calc(100vh - 64px) !important">
+<v-container  class="d-flex fill-height">
+  <v-row justify="center" align-content="center">
     <v-slide-y-reverse-transition hide-on-leave appear>
       <v-card
         width="100%"
@@ -15,7 +16,7 @@
         <v-row>
           <v-col cols="12" md="6">
             <v-scroll-y-transition appear hide-on-leave>
-              <div v-if="step < 6">
+              <div v-if="step < 6 || step === 7 ">
                 <v-card-title class="pl-0 text-h4">Créer mon compte</v-card-title>
                 <span class="text-body-2 text-medium-emphasis pl-0">
                   Accéder à toutes vos demandes de remplacements, permutations et bien d'autres nouvelles fonctionnalités !
@@ -30,7 +31,7 @@
             </v-scroll-y-transition>
           </v-col>
 
-          <v-col cols="12" :md="step === 7 ? 12 : 6">
+          <v-col cols="12" :md="step === 8 ? 12 : 6">
             <v-form ref="form">
               <v-window v-model="step">
                 <!-- Étape 1: Organisme -->
@@ -159,7 +160,7 @@
                   </v-radio-group>
                 </v-window-item>
 
-                <!-- Étape 6: Conditions -->
+                <!-- Étape 6: Données -->
                 <v-window-item :value="6">
                   <v-checkbox
                     label="J'accepte que mes données de remplacement soient collectées et utilisées par CELESTE"
@@ -180,13 +181,33 @@
                   </a>
                 </v-window-item>
 
-                <!-- Étape 7: Confirmation de création du compte -->
+                <!-- Étape 7: Vérification OTP -->
                 <v-window-item :value="7">
+                  <v-fade-transition mode="out-in">
+                    <v-card v-if="otpValid">
+                    <v-card-text>
+                      <span class="text-h6 font-weight-bold">Addresse email vérifiée</span>
+                    </v-card-text>
+                  </v-card>
+                  <OTPVerification
+                    v-else
+                    :email="user.email"
+                    title="Vérification de votre email"
+                    
+                    @verified="onOtpVerified"
+                
+                  />
+                  </v-fade-transition>
+                
+                </v-window-item>
+
+                <!-- Étape 8: Confirmation de création du compte -->
+                <v-window-item :value="8">
                   <div class="text-center pt-6">
                     <div class="success-animation mb-6">
                       <v-avatar size="64" color="onPrimary" class="success-circle">
                         <v-avatar size="50" color="onPrimary">
-                          <v-icon size="40" color="primary">mdi-check</v-icon>
+                          <v-icon size="40" color="onBackground">mdi-check</v-icon>
                         </v-avatar>
                       </v-avatar>
                     </div>
@@ -203,7 +224,7 @@
               <!-- Boutons -->
               <v-card-actions class="mt-6 pa-0">
                 <v-btn
-                  v-if="step > 1 && step < 7"
+                  v-if="step > 1 && step < 8"
                   variant="text"
                   @click="step--"
                 >
@@ -213,7 +234,7 @@
                 <v-spacer></v-spacer>
 
                 <v-btn
-                  v-if="step < 6"
+                  v-if="step < 7"
                   @click="step++"
                   color="primary"
                   variant="flat"
@@ -225,9 +246,20 @@
                 </v-btn>
 
                 <v-btn
-                  v-if="step === 7"
-                  color="primary"
+                  v-if="step < 7 && isDev"
+                  @click="step++"
+                  color="warning"
+                  variant="flat"
                   rounded="xl"
+                  class="px-6 ml-2"
+                >
+                  Passer
+                </v-btn>
+
+                <v-btn
+                  v-if="step === 8"
+                  color="onBackground"
+                  rounded="lg"
                   class="px-4"
                   variant="flat"
                   prepend-icon="mdi-login"
@@ -236,10 +268,13 @@
                   Se connecter
                 </v-btn>
 
-                <div v-if="step === 6" class="block d-flex">
+                <v-scale-transition>
+
+                
+                <div v-if="step === 7 && otpValid" class="block d-flex">
                   <v-btn
                     @click="handleCreateAccount"
-                    :disabled="!stepValid[6] || isSubmitting"
+                    :disabled="(!stepValid[6] || isSubmitting) && !isDev"
                     color="surface"
                     variant="flat"
                     rounded="xl"
@@ -249,6 +284,7 @@
                     Créer mon compte
                   </v-btn>
                 </div>
+              </v-scale-transition>
               </v-card-actions>
             </v-form>
           </v-col>
@@ -258,7 +294,7 @@
           color="primary"
           class="position-absolute left-0"
           :model-value="progressValue"
-          :style="step === 7 ? 'display: none' : ''"
+          :style="step === 8 ? 'display: none' : ''"
         ></v-progress-linear>
       </v-card>
     </v-slide-y-reverse-transition>
@@ -266,10 +302,10 @@
     <!-- Side Panel for additional information -->
     <v-navigation-drawer
       v-model="sidePanelOpen"
-      v-if="sidePanelOpen"
       order="10"
       location="right"
       temporary
+
       width="500"
       floating
     >
@@ -280,27 +316,11 @@
           <div v-if="activeSidePanel === 'contact'">
             <p class="text-h5 font-weight-bold mb-4">Contacter un administrateur</p>
             <p class="text-medium-emphasis mb-4">Vous ne trouvez pas votre organisme dans la liste ? Contactez un administrateur pour ajouter votre organisme à notre plateforme.</p>
+            <ContactAdminForm color="transparent"></ContactAdminForm>
+      
 
             <v-form @submit.prevent="submitContactForm">
-              <v-text-field
-                v-model="contactForm.subject"
-                label="Sujet"
-                rounded="xl"
-                variant="plain"
-                required
-                class="mb-2"
-              ></v-text-field>
-
-              <v-textarea
-                v-model="contactForm.message"
-                label="Message"
-                rounded="xl"
-                variant="solo-filled"
-                flat
-                required
-                rows="5"
-                class="mb-4"
-              ></v-textarea>
+             
 
               <v-btn
                 color="primary"
@@ -375,6 +395,7 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
+  </v-row>
   </v-container>
 </template>
 
@@ -385,8 +406,13 @@ import { useTeamStore } from "@/stores/teamStore.js";
 import { accountCreationService } from "@/services/accountCreationService.js";
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
+import { useSnackbarStore } from "@/stores/snackbarStore.js";
+import OTPVerification from '@/components/OTPVerification.vue';
+import ContactAdminForm from "@/components/Forms/ContactAdminForm.vue";
+
 const router = useRouter();
 const centerStore = useCenterStore();
+const snackbarStore = useSnackbarStore();
 const teamStore = useTeamStore();
 
 // Form data
@@ -401,15 +427,20 @@ const user = ref({
   zone: "east", // Default value
 });
 
+// OTP state
+const otp = ref("");
+const otpValid = ref(false);
+
 // Responsive display
 const {smAndDown} = useDisplay();
+const isDev = ref(import.meta.env.DEV);
 
 // UI state
 const step = ref(1);
 const acceptedTerms = ref(false);
 const emailExists = ref(false);
-const stepValid = ref({1: false, 2: false, 3: false, 4: false, 5: false, 6: false});
-const stepErrors = ref({1: "", 2: "", 3: "", 4: "", 5: "", 6: ""});
+const stepValid = ref({1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false});
+const stepErrors = ref({1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: ""});
 const form = ref(null);
 
 // Loading states
@@ -435,7 +466,7 @@ const contactForm = ref({
 });
 
 // Computed properties
-const progressValue = computed(() => ((step.value - 1) * 100) / 6);
+const progressValue = computed(() => ((step.value - 1) * 100) / 8);
 const centers = computed(() => centerStore.centers);
 const centerTeams = computed(() => teamStore.centerTeams);
 
@@ -504,22 +535,34 @@ const onCenterSelect = () => {
 
 const onEmailChange = () => {
   emailExists.value = false;
+  otpValid.value = false;
   stepErrors.value[2] = "";
 };
+
+const onOtpVerified = () => {
+  otpValid.value = true;
+}
 
 const handleCreateAccount = async () => {
   isSubmitting.value = true;
   try {
-    await accountCreationService.registerUser(user.value);
+    
+    // Si l'OTP est valide, créer le compte
+    await accountCreationService.createAccount(user.value);
 
-    // If account creation succeeds, move to step 7 (confirmation)
+    // Si la création du compte réussit, passer à l'étape 8 (confirmation)
     setTimeout(() => {
-      step.value = 7;
+      step.value = 8;
       console.log("Compte créé avec succès!", "success");
     }, 1000);
   } catch (error) {
+    snackbarStore.showNotification(
+     "Erreur lors de la création du compte",
+      "error",
+      "mdi-alert-circle"
+    );
     console.error("Erreur lors de la création du compte:", error);
-    console.error("Erreur lors de la création du compte", "error");
+    stepErrors.value[7] = "Erreur lors de la création du compte";
   } finally {
     isSubmitting.value = false;
   }
@@ -536,6 +579,7 @@ const rules = {
   matchPassword: (value) => value === user.value.password || "Les mots de passe ne correspondent pas",
   required: (value) => !!value || "Champ requis"
 };
+
 
 // Step validation
 const validateStep = async (stepNum) => {
@@ -559,7 +603,6 @@ const validateStep = async (stepNum) => {
       checkingEmail.value = true;
       try {
         const isAvailable = await accountCreationService.checkEmailAvailability(user.value.email);
-        console.log(isAvailable)
         if (!isAvailable.available) {
           emailExists.value = true;
           isValid = false;
@@ -605,6 +648,16 @@ const validateStep = async (stepNum) => {
       stepErrors.value[6] = isValid ? "" : "Veuillez accepter les conditions";
       break;
 
+    case 7: // OTP Verification
+      isValid = otp.value.length === 6 && otpValid.value;
+      stepErrors.value[7] = isValid ? "" : "Code OTP invalide";
+      break;
+
+    case 8: // Confirmation de création du compte
+      isValid = true;
+      stepErrors.value[8] = isValid ? "" : "Erreur lors de la confirmation de la création du compte";
+      break;
+
     default:
       break;
   }
@@ -613,7 +666,9 @@ const validateStep = async (stepNum) => {
   return isValid;
 };
 
-onMounted(fetchCenters);
+
+onMounted(
+  fetchCenters);
 </script>
 
 <style scoped>

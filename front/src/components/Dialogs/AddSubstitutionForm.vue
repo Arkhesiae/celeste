@@ -6,6 +6,7 @@ import { useCenterStore } from '@/stores/centerStore';
 import { useAuthStore } from '@/stores/authStore';
 import { vacationService } from '@/services/vacationService';
 import { calculateRestDelay } from '@/utils/shiftUtils';
+import ConfirmationDialog from '@/components/common/ConfirmationDialog.vue';
 
 const props = defineProps({
   dialogMode: { type: String, required: true },
@@ -39,7 +40,8 @@ const authStore = useAuthStore();
 const demand = ref({
   comment: '',
   points: 0,
-  acceptedSwitches: []
+  acceptedSwitches: [],
+  pointsPerSwitch: {}
 });
 const adjacentVacations = ref({ prev: null, next: null });
 const loadingRotations = ref(false);
@@ -47,6 +49,8 @@ const rotationError = ref(null);
 const formattedDate = ref('');
 const localDate = ref('');
 const currentWindow = ref(0);
+const formValid = ref(false);
+const showConfirmationDialog = ref(false);
 
 // Règles de validation
 const rules = {
@@ -86,8 +90,6 @@ const rotationDays = computed(() => {
   }));
 });
 
-const formValid = ref(false);
-
 // Watcher pour mettre à jour formValid
 watch(
   [
@@ -97,7 +99,7 @@ watch(
     () => demand.value.acceptedSwitches
   ],
   () => {
-    formValid.value = 
+    formValid.value =
       demand.value.comment !== '' &&
       demand.value.points >= 0 &&
       localDate.value !== '' &&
@@ -139,7 +141,7 @@ const getAdjacentVacations = async (date) => {
 // Mettre à jour la fonction isDayAvailable
 const isDayAvailable = computed(() => (rotationDay) => {
   if (!props.selectedVacation || !rotationDay) return false;
- 
+
   const rotationShift = activeRotation.value.days.filter(day => day.type !== 'rest')[rotationDay.index];
 
   // Vérifier le délai de repos minimum (par exemple 11h)
@@ -158,7 +160,7 @@ const isDayAvailable = computed(() => (rotationDay) => {
     if (nextDelay < MIN_REST_HOURS) return false;
   }
   // Vérifier s'il s'agit de la même vacation
-  if  (rotationShift._id === props.selectedVacation.shift._id) {
+  if (rotationShift._id === props.selectedVacation.shift._id) {
     return false;
   }
 
@@ -240,13 +242,28 @@ const resetForm = () => {
   demand.value = {
     comment: '',
     points: 0,
-    acceptedSwitches: []
+    acceptedSwitches: [],
+    pointsPerSwitch: {}
   };
   localDate.value = '';
   formattedDate.value = '';
 };
 
 const submit = () => {
+  if (demand.value.points === 0) {
+    showConfirmationDialog.value = true;
+    return;
+  }
+  emit('onSubmit', {
+    ...demand.value,
+    date: localDate.value,
+    selectedVacation: props.selectedVacation,
+    acceptedSwitches: demand.value.acceptedSwitches
+  });
+};
+
+const confirmSubmit = () => {
+  showConfirmationDialog.value = false;
   emit('onSubmit', {
     ...demand.value,
     date: localDate.value,
@@ -285,50 +302,53 @@ const isNextButtonDisabled = computed(() => {
                 @update:model-value="handleDateChange"></v-text-field>
               <div v-if="dialogModeValue === 'Renfort'" class="text-h4 ma-3">-</div>
             </div>
-            <div class="my-12"> 
-            <v-card rounded="xl" color="background" class="mb-2" flat>
-              <v-card-item>
-                <v-card-title class="pb-0 mb-0">
-                  <h2 class="text-h4 font-weight-medium">{{ selectedVacation?.shift?.name || 'Aucun shift sélectionné' }}
-                  </h2>
-                </v-card-title>
-                <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedVacation?.teamObject?.name || 'Aucune équipe' }}</v-card-subtitle>
-                <v-card-subtitle class="pt-0">
-                  {{ selectedVacation?.shift?.startTime || '' }} - {{ selectedVacation?.shift?.endTime || '' }}
-                </v-card-subtitle>
+            <div class="my-12">
+              <v-card rounded="xl" color="background" class="mb-2" flat>
+                <v-card-item>
+                  <v-card-title class="pb-0 mb-0">
+                    <h2 class="text-h4 font-weight-medium">{{ selectedVacation?.shift?.name || 'Aucun shift sélectionné'
+                      }}
+                    </h2>
+                  </v-card-title>
+                  <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedVacation?.teamObject?.name ||
+                    'Aucune équipe' }}</v-card-subtitle>
+                  <v-card-subtitle class="pt-0">
+                    {{ selectedVacation?.shift?.startTime || '' }} - {{ selectedVacation?.shift?.endTime || '' }}
+                  </v-card-subtitle>
 
-                <div class="position-absolute top-0 right-0 mr-1 mt-1"> 
-                  <v-chip-group  base-color="background" variant="flat" rounded="lg" size="small">
-                    <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
-                      <v-icon start icon="mdi-clock-outline"></v-icon>
-                      A
-                    </v-chip>
-                    <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
-                      <v-icon start icon="mdi-clock-outline"></v-icon>
-                      B
-                    </v-chip>
-                    <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
-                      <v-icon start icon="mdi-clock-outline"></v-icon>
-                      C
-                    </v-chip>
-                    <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
-                      <v-icon start icon="mdi-clock-outline"></v-icon>
-                      TBD
-                    </v-chip>
-                  </v-chip-group>
-                </div>
-              </v-card-item>
-            </v-card>
-            <span class="text-caption mt-8 pa-4" >
-              <v-icon start icon="mdi-information-outline"></v-icon>
-              En cliquant sur <b>TBD</b>, votre remplaçant déterminera l'horaire effectué à postériori.
-            </span>
-          </div>
+                  <div class="position-absolute top-0 right-0 mr-1 mt-1">
+                    <v-chip-group base-color="background" variant="flat" rounded="lg" size="small">
+                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
+                        <v-icon start icon="mdi-clock-outline"></v-icon>
+                        A
+                      </v-chip>
+                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
+                        <v-icon start icon="mdi-clock-outline"></v-icon>
+                        B
+                      </v-chip>
+                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
+                        <v-icon start icon="mdi-clock-outline"></v-icon>
+                        C
+                      </v-chip>
+                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
+                        <v-icon start icon="mdi-clock-outline"></v-icon>
+                        TBD
+                      </v-chip>
+                    </v-chip-group>
+                  </div>
+                </v-card-item>
+              </v-card>
+              <span class="text-caption mt-8 pa-4">
+                <v-icon start icon="mdi-information-outline"></v-icon>
+                En cliquant sur <b>TBD</b>, votre remplaçant déterminera l'horaire effectué à postériori.
+              </span>
+            </div>
           </v-window-item>
 
           <!-- Deuxième fenêtre : Configuration des permutations et points -->
           <v-window-item :value="1">
-            <v-progress-circular v-if="loadingRotations" indeterminate color="primary" class="ma-4"></v-progress-circular>
+            <v-progress-circular v-if="loadingRotations" indeterminate color="primary"
+              class="ma-4"></v-progress-circular>
             <v-alert v-else-if="rotationError" type="error" variant="tonal" class="mt-2" rounded="lg">
               {{ rotationError }}
             </v-alert>
@@ -342,51 +362,54 @@ const isNextButtonDisabled = computed(() => {
                     <v-card-subtitle class="pt-0 text-caption">Sélectionnez les vacations acceptées</v-card-subtitle>
                   </v-card-item>
                   <v-card-text class="">
-                    <v-chip-group v-model="demand.acceptedSwitches" @update:model-value="console.log(demand.acceptedSwitches)" multiple color="surface" :rules="[rules.rotations]">
-                      <v-chip v-for="day in rotationDays" :key="day._id" :value="day._id"
-                        class="ma-1" rounded="lg"
-                        variant="flat"
-                        :class="isDayAvailable(day) ? '' : 'text-error'"
-                        base-color="transparent"
-                        color="transparent">
-                        <template v-if="day.type === 'rest'">
-                          <v-icon start icon="mdi-bed-outline"></v-icon>
-                        </template>
-                        <template v-if="!isDayAvailable(day)">
-                          <v-tooltip activator="parent" location="top">
-                            {{ getUnavailabilityReason(day) }}
-                          </v-tooltip>
-                        </template>
-                        {{ day.name }}
-                      </v-chip>
+                    <v-chip-group v-model="demand.acceptedSwitches"
+                      @update:model-value="console.log(demand.acceptedSwitches)" multiple color="surface"
+                      :rules="[rules.rotations]">
+                      <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center">
+                        <v-chip :value="day._id" class="ma-1" rounded="lg" variant="flat"
+                          :class="isDayAvailable(day) ? '' : 'text-error'" base-color="transparent" color="transparent">
+                          <template v-if="day.type === 'rest'">
+                            <v-icon start icon="mdi-bed-outline"></v-icon>
+                          </template>
+                          <template v-if="!isDayAvailable(day)">
+                            <v-tooltip activator="parent" location="top">
+                              {{ getUnavailabilityReason(day) }}
+                            </v-tooltip>
+                          </template>
+                          {{ day.name }}
+                        </v-chip>
+                      </div>
                     </v-chip-group>
                   </v-card-text>
                 </v-card>
 
                 <v-textarea rounded="xl" v-model="demand.comment" no-resize label="Commentaire" outlined></v-textarea>
 
-                <div class="d-flex justify-start align-center">
-                  <v-number-input
-                  class="text-primary"
-                  reverse
-        
-                  controlVariant="split"
-                  label=""
-                  rounded="xl"
-                  bg-color="surfaceContainer"
-                  color="blue"
-                  glow
-                  :hideInput="false"
-                  inset
-                  base-color="transparent"
-                  variant="outlined"
-              
-       
-                >
-      
-           
-                </v-number-input>
-               
+                <v-card color="transparent" class="mt-4" elevation="0">
+                  <v-card-title class="text-h6 font-weight-medium pa-0 mb-2">
+                    Points par vacation
+                  </v-card-title>
+                  <v-card-subtitle class="text-caption pa-0 mb-4">
+                    Définissez le nombre de points pour chaque vacation sélectionnée
+                  </v-card-subtitle>
+                  <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center mb-1">
+                    <template v-if="demand.acceptedSwitches.includes(day._id)">
+                      <span class="text-body-1 mr-4">{{ day.name }}</span>
+                      <v-number-input v-model="demand.pointsPerSwitch[day._id]" class="text-primary secondary ml-4" reverse
+                        controlVariant="split" label="" rounded="xl" bg-color="surfaceContainer" color="blue" glow
+                        :hideInput="false" inset base-color="transparent" variant="outlined"></v-number-input>
+                    </template>
+                  </div>
+                </v-card>
+
+                <div class="d-flex justify-start align-center mt-4">
+                  <v-number-input v-model="demand.points" class="text-primary" reverse controlVariant="split" label=""
+                    rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
+                    base-color="transparent" variant="outlined">
+
+
+                  </v-number-input>
+
                 </div>
               </v-form>
             </template>
@@ -397,14 +420,14 @@ const isNextButtonDisabled = computed(() => {
       <v-card-actions class="justify-space-between pa-0">
         <template v-if="currentWindow === 0">
           <v-btn variant="text" color="secondary" size="large" :slim="false" @click="close">Annuler</v-btn>
-          <v-btn variant="tonal" rounded="xl" size="large" :slim="false" color="secondary" 
+          <v-btn variant="tonal" rounded="xl" size="large" :slim="false" color="secondary"
             :disabled="isNextButtonDisabled" @click="currentWindow = 1">
             Suivant
           </v-btn>
         </template>
         <template v-else>
           <v-btn variant="text" color="secondary" size="large" :slim="false" @click="currentWindow = 0">Retour</v-btn>
-          <v-btn variant="flat" rounded="xl" size="large" :slim="false" color="remplacement" 
+          <v-btn variant="flat" rounded="xl" size="large" :slim="false" color="remplacement"
             :disabled="!formValid || !selectedVacation" @click="submit">
             Poster la demande
           </v-btn>
@@ -412,13 +435,23 @@ const isNextButtonDisabled = computed(() => {
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <ConfirmationDialog :isDialogVisible="showConfirmationDialog" :title="'Nombre de points'"
+    :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirmColor="'remplacement'"
+    :confirmText="'Poster quand même'" @confirm="confirmSubmit"
+    @update:isDialogVisible="showConfirmationDialog = $event" />
 </template>
 
 <style scoped>
-
 :deep(.v-number-input .v-field__field input) {
   color: rgb(var(--v-theme-primary)) !important;
   font-size: 1.5rem;
+  font-weight: 600;
+}
+
+:deep(.v-number-input.secondary .v-field__field input) {
+  color: rgb(var(--v-theme-secondary)) !important;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -426,7 +459,4 @@ const isNextButtonDisabled = computed(() => {
   background-color: rgb(var(--v-theme-surface-container)) !important;
 
 }
-
-
-
 </style>

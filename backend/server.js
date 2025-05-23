@@ -22,6 +22,7 @@ const otpRoutes = require('./routes/otpRoutes');
 const authRouter = require('./routes/auth');
 require('./cron/processTransactions'); 
 require('./cron/processDemands');
+const { createAdmin } = require('./seedAdmin');
 
 // Configuration CORS globale
 app.use(cors({
@@ -70,6 +71,12 @@ app.get('/api', (req, res) => {
 app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
+
+
+createAdmin().catch((err) => {
+    console.error('❌ Error creating admin:', err);
+    process.exit(1);
+  });
 
 // Lancement du serveur
 const PORT = process.env.PORT || 3000;

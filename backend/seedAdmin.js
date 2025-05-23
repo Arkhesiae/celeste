@@ -5,13 +5,12 @@ import User from './models/userModel.js';
 
 dotenv.config();
 
-console.log('🚀 Starting admin creation...');
-async function createAdmin() {
+export async function createAdmin() {
 
   console.log(process.env.MONGO_URI);
   await mongoose.connect(process.env.MONGO_URI);
  
-  const existingAdmin = await User.findOne({ role: 'admin' });
+  const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
   if (existingAdmin) {
     console.log('✅ Admin already exists.');
     return process.exit(0);
@@ -41,8 +40,3 @@ async function createAdmin() {
 
   process.exit(0);
 }
-
-createAdmin().catch((err) => {
-  console.error('❌ Error creating admin:', err);
-  process.exit(1);
-});

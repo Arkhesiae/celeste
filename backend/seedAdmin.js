@@ -5,15 +5,19 @@ import User from './models/userModel.js';
 
 dotenv.config();
 
+console.log('🚀 Starting admin creation...');
 async function createAdmin() {
-  await mongoose.connect(process.env.MONGO_URI);
 
+  console.log(process.env.MONGO_URI);
+  await mongoose.connect(process.env.MONGO_URI);
+ 
   const existingAdmin = await User.findOne({ role: 'admin' });
   if (existingAdmin) {
     console.log('✅ Admin already exists.');
     return process.exit(0);
   }
-
+  console.log(process.env.ADMIN_PASSWORD);
+  console.log(process.env.ADMIN_EMAIL);
   const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
 
   const admin = new User({

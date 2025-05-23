@@ -20,7 +20,7 @@ ENV ADMIN_PASSWORD=celeste
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "node server.js && node seedAdmin.js"]
+CMD sh -c "node seedAdmin.js && node server.js"
 
 
 

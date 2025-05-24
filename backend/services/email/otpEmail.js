@@ -11,8 +11,8 @@ async function sendEmailOtp(toEmail, otp) {
     port: parseInt(process.env.EMAIL_PORT, 10),
     secure: false, // TLS, pas SSL
     auth: {
-      user: process.env.AWS_ACCESS_KEY_ID,
-      pass: process.env.AWS_SECRET_ACCESS_KEY,
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
     }
   });
 

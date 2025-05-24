@@ -32,7 +32,6 @@ const userSchema = new mongoose.Schema({
     centerId : { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Center',
-        required: [true, 'Le centre est requis']
     },
     email: { 
         type: String, 

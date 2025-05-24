@@ -1,4 +1,9 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config({
+  path: process.env.NODE_ENV === 'production' 
+    ? '.env.production'
+    : '.env.development'
+});
 
 /**
  * Envoie un OTP par email via AWS SES + Nodemailer
@@ -6,6 +11,8 @@ const nodemailer = require('nodemailer');
  * @param {string} otp
  */
 async function sendEmailOtp(toEmail, otp) {
+  console.log("SMTP USER:", process.env.SMTP_USER);
+  console.log("SMTP PASS:", process.env.SMTP_PASS);
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT, 10),

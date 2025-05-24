@@ -22,7 +22,7 @@ const otpRoutes = require('./routes/otpRoutes');
 const authRouter = require('./routes/auth');
 require('./cron/processTransactions'); 
 require('./cron/processDemands');
-const { createAdmin } = require('./seedAdmin');
+import { createAdmin } from './utils/seedAdmin.js';
 
 // Configuration CORS globale
 app.use(cors({
@@ -31,8 +31,6 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-console.log("URI! ", process.env.MONGO_URI)
 
 
 // Middleware
@@ -44,12 +42,21 @@ app.use('/api/avatars', express.static(path.join(__dirname, '/public/avatars')))
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 // Connexion à MongoDB
-mongoose.connect(process.env.MONGO_URI, {})
-    .then(() => console.log('✅ MongoDB connecté via Docker'))
-    .catch((err) => {
-        console.error('❌ Erreur de connexion à MongoDB :', err.message);
-        process.exit(1);
+mongoose.connect(process.env.MONGO_URI)
+  .then(async () => {
+    console.log('✅ MongoDB connecté via Docker');
+
+    await createAdmin(); // assure-toi que le modèle est prêt
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Serveur lancé port ${PORT}`);
     });
+  })
+  .catch((err) => {
+    console.error('❌ Erreur de connexion à MongoDB :', err.message);
+    process.exit(1);
+  });
+
 
 app.use('/api/users', usersRouter);
 app.use('/api/messages', messageRoutes);
@@ -71,12 +78,6 @@ app.get('/api', (req, res) => {
 app.get(/^\/(?!api).*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public/index.html'));
 });
-
-
-createAdmin().catch((err) => {
-    console.error('❌ Error creating admin:', err);
-    process.exit(1);
-  });
 
 // Lancement du serveur
 const PORT = process.env.PORT || 3000;

@@ -1,14 +1,10 @@
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-const bcrypt = require('bcrypt');
-const {User} = require('./models/userModel.js');
+import User from '../models/userModel.js';
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
 export async function createAdmin() {
-
-  console.log(process.env.MONGO_URI);
-  await mongoose.connect(process.env.MONGO_URI);
  
   const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
   if (existingAdmin) {

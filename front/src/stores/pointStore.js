@@ -60,7 +60,7 @@ export const usePointStore = defineStore('points', () => {
         description: t.description || (t.type === 'transfer' ? 'Transfert de points' : 'Remplacement'),
         date: formatDate(t.createdAt),
         effectiveDate: formatDate(t.effectiveDate),
-        user: t.sender._id === authStore.userId ? t.receiver.name : t.sender.name
+        user: t.sender._id === authStore.userId ? t.receiver?.name : t.sender?.name
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions:', error);
@@ -80,7 +80,7 @@ export const usePointStore = defineStore('points', () => {
         amount: t.amount,
         description: t.description || 'Transaction en attente',
         date: formatDate(t.createdAt),
-        user: t.sender._id === authStore.userId ? t.receiver.name : t.sender.name
+        user: t.sender._id === authStore.userId ? t.receiver?.name : t.sender?.name
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions en attente:', error);
@@ -96,7 +96,8 @@ export const usePointStore = defineStore('points', () => {
       await fetchTransactions();
       await fetchUserPoints();
     } catch (error) {
-      console.error('Erreur lors de la récupération des transactions:', error);
+      console.error('Erreur lors du transfert de points:', error);
+      throw error;
     } finally {
       isLoading.value = false;
     }

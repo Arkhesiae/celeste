@@ -1,5 +1,5 @@
 const Otp = require('../models/Otp');
-const { sendOtpEmail } = require('../services/emailService');
+const { sendEmailOtp } = require('../utils/email/sendEmailOtp');
 const crypto = require('crypto');
 
 const generateOtp = () => {
@@ -33,7 +33,7 @@ exports.sendOtp = async (req, res) => {
       console.log('========================\n');
     } else {
       // En production, envoyer l'email
-      await sendOtpEmail(email, otp);
+      await sendEmailOtp(email, otp);
     }
 
     res.json({ message: 'Code OTP envoyé avec succès' });

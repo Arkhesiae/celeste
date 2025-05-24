@@ -15,7 +15,7 @@
         <!-- Section des points -->
         <div class="points-section justify-center align-center flex-column mb-6">
           <div class="text-subtitle-1 text-center mb-1" style="opacity: 0.5;">Mes points</div>
-          <transition v-if="points" name="slide-points" mode="out-in" >
+          <transition v-if="points || points === 0" name="slide-points" mode="out-in" >
       <div
         
         :key="points"

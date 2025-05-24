@@ -154,9 +154,9 @@
             />
             <v-select
               v-model="newCenter.type"
-              :items="['Approche', 'CRNA', 'Autre']"
-              item-text="name"
-              item-value="_id"
+              :items="centerTypes"
+              item-title="name"
+              item-value="value"
               label="Type de centre"
               variant="underlined"
               :rules="[v => !!v || 'Le type de centre est requis']"
@@ -223,6 +223,20 @@ const newCenter = ref({
   type: "",
   adminId: null,
 });
+const centerTypes = ref([
+  {
+    name: 'Approche',
+    value: 'app'
+  },
+  {
+    name: 'CRNA',
+    value: 'crna'
+  },
+  {
+    name: 'Autre',
+    value: 'other'
+  }
+])
 const centerNameError = ref('');
 const ICAONameError = ref('');
 

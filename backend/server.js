@@ -27,7 +27,7 @@ require('dotenv').config({
   
   // CORS
   app.use(cors({
-    origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249'],
+    origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249', 'http://celeste-app.fr'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

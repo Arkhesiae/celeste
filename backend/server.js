@@ -22,7 +22,7 @@ const otpRoutes = require('./routes/otpRoutes');
 const authRouter = require('./routes/auth');
 require('./cron/processTransactions'); 
 require('./cron/processDemands');
-require('./utils/seedAdmin');
+const { createAdmin } = require('./utils/seedAdmin');
 
 // Configuration CORS globale
 app.use(cors({

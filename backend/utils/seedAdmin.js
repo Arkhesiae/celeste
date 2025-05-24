@@ -4,7 +4,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-export async function createAdmin() {
+async function createAdmin() {
  
   const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
   if (existingAdmin) {
@@ -36,3 +36,5 @@ export async function createAdmin() {
 
   process.exit(0);
 }
+
+module.exports = { createAdmin };

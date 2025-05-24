@@ -1,6 +1,6 @@
-import {User} from '../models/userModel.js';
-import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
+const {User} = require('../models/userModel.js');
+const bcrypt = require('bcrypt');
+const dotenv = require('dotenv');
 
 dotenv.config();
 

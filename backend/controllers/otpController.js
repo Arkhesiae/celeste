@@ -1,5 +1,5 @@
 const Otp = require('../models/Otp');
-const { sendEmailOtp } = require('../utils/email/sendEmailOtp');
+const { sendEmailOtp } = require('../services/email/otpEmail');
 const crypto = require('crypto');
 
 const generateOtp = () => {

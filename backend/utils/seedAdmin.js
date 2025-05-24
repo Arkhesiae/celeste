@@ -9,7 +9,7 @@ async function createAdmin() {
   const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
   if (existingAdmin) {
     console.log('✅ Admin already exists.');
-    return process.exit(0);
+    return; 
   }
   console.log(process.env.ADMIN_PASSWORD);
   console.log(process.env.ADMIN_EMAIL);
@@ -33,8 +33,6 @@ async function createAdmin() {
 
   await admin.save();
   console.log('🚀 Admin account created:', admin.email);
-
-  process.exit(0);
 }
 
 module.exports = { createAdmin };

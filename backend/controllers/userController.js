@@ -1,12 +1,12 @@
 const {v4: uuidv4} = require('uuid');
-const {User} = require('../models/userModel.js');
-const Center = require('../models/centerModel');
+const User = require('../models/User');
+const Center = require('../models/Center');
 const {hash} = require("bcrypt");
-const Team = require('../models/teamModel');
+const Team = require('../models/Team');
 const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
 const {computeShiftOfUser} = require("../utils/computeShiftOfUser.js");
 const {computeShiftOfUserWithSubstitutions} = require("../utils/computeShiftOfUserWithSubstitutions.js");
-const Transaction = require('../models/transaction.model');
+const Transaction = require('../models/Transaction');
 const { createDelayedTransaction, processPendingTransactions } = require('../services/transactionService');
 const path = require('path');
 const fs = require('fs');
@@ -164,8 +164,8 @@ const getUsersByCenter = async (req, res) => {
 
     try {
         const users = await User.find({centerId}).populate('teams');
-        if (!users.length) {
-            return res.status(404).json({message: 'Aucun utilisateur trouvé pour ce centre.'});
+        if (!users.length) {    
+            res.status(200).json([]);
         }
 
         const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {

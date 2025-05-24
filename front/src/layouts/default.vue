@@ -6,7 +6,7 @@
 
         <MobileNavigationDrawer v-model:modelValue="mobileDrawer" />
 
-        <LoginButtons />
+        <LoginButtons v-if="isDev" />
 
         <v-main>
             <router-view v-slot="{ Component, route }">
@@ -35,7 +35,7 @@ import GlobalSnackbar from './components/GlobalSnackbar.vue';
 import BottomNavigation from './components/BottomNavigation.vue';
 // Utilisation de stores
 const snackbarStore = useSnackbarStore();
-
+const isDev = ref(import.meta.env.DEV);
 const authStore = useAuthStore();
 const router = useRouter();
 

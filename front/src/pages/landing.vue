@@ -4,7 +4,7 @@
       <v-col cols="12" sm="12" md="8" lg="8" class="py-16 mt-16">
         <v-card variant="text" class="mt-16">
           <v-card-text class="d-flex align-start flex-column" :class="{'align-center': !mdAndUp}">
-            <div class="text-overline subtitle-animation">Plus qu'un simple site de rempla</div>
+            <div class="text-overline subtitle-animation">Votre nouveau site de rempla</div>
             <div
               class="font-weight-medium d-flex flex-wrap mt-4"
               :class="[
@@ -24,13 +24,13 @@
             <div class="text-h6 mt-5 subtitle-animation">Remplacer s'offre un nouveau look !</div>
           </v-card-text>
 
-          <v-card-actions class="ml-2 pb-5" :class="{'justify-center': !mdAndUp}" v-intersect="onIntersect">
+          <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{'justify-center': !mdAndUp}" v-intersect="onIntersect">
             <div class="block d-flex button-animation" style="animation-delay: 1.1s;">
               <v-btn prepend-icon="mdi-lightning-bolt" height="48px" class="px-8" variant="flat" rounded="lg" color="surface" @click="router.push({ path: '/get-started' })">
                 Get started
               </v-btn>
             </div>
-            <div class="d-flex ml-5 button-animation" style="animation-delay: 1.3s;">
+            <div class="d-flex button-animation" style="animation-delay: 1.3s;">
               <v-btn class="px-8 pr-8" variant="flat" height="48px" rounded="lg" color="onBackground" @click="router.push({ path: '/login' })">
                 <template #append>
                   <v-icon style="left:10px">mdi-arrow-right</v-icon>

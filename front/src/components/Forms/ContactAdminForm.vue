@@ -3,6 +3,7 @@
     <v-card color="transparent" rounded="xl" elevation="0" class="pa-0">
       <v-card-text>
         <div class="mb-4">
+          
           <div class="text-subtitle-2 mb-2">Administrateur à contacter</div>
           <v-chip-group
             v-model="formData.adminId"
@@ -13,10 +14,9 @@
             class="mb-2"
           >
             <v-chip
-              v-for="admin in admins"
-              :key="admin.id"
-              :value="admin.id"
-              
+              v-for="admin in adminsChip"
+              :key="admin.type"
+              :value="admin.type"
               variant="flat"
               rounded="lg"
               class="ma-1"
@@ -104,19 +104,33 @@ import { ref, reactive, onMounted } from 'vue';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useUserStore } from '@/stores/userStore';
 
-
+const props = defineProps({
+  admins: {
+    type: String,
+    required: true
+  }
+});
 
 
 const snackbarStore = useSnackbarStore();
-const userStore = useUserStore();
 const form = ref(null);
 const isValid = ref(false);
 const loading = ref(false);
 
 const admins = ref([
-  { id: 'master1', name: 'Admin Principal', type: 'master' },
-  { id: 'local1', name: 'Admin Local', type: 'local' }
+  { name: 'Admin Principal', type: 'master' },
+  { name: 'Admin Local', type: 'local' }
 ]);
+
+const adminsChip = computed(() => {
+  if (props.admins === 'both' || !props.admins) {
+    return admins.value;
+  } else if (props.admins === 'master') {
+    return admins.value.filter(admin => admin.type === 'master');
+  } else if (props.admins === 'local') {
+    return admins.value.filter(admin => admin.type === 'local');
+  }
+});
 
 const messageTypes = [
   { title: 'Demande d\'assistance', value: 'assistance' },

@@ -1,4 +1,4 @@
-const Substitution = require('../models/substitutionModel');
+const Substitution = require('../models/Substitution');
 
 /**
  * Archive les demandes de substitution ouvertes dont les dates sont passées

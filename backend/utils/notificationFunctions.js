@@ -1,6 +1,6 @@
 // Function to create notifications for all users
-const {User} = require("../models/userModel");
-const Notification = require('../models/notificationModel');
+const User = require("../models/User");
+const Notification = require('../models/Notification');
 
 async function createNotificationForAllUsers(message, type = 'general') {
     try {

@@ -55,7 +55,7 @@
                     Vous ne trouvez pas votre organisme dans la liste ?
                   </span>
                   <a
-                    class="text-caption d-flex align-center"
+                    class="text-caption d-flex align-center text-remplacement"
                     style="color: #85cde8; text-decoration: none; cursor: pointer"
                     @click="showSidePanel('contact')"
                   >
@@ -172,8 +172,8 @@
                     Toutes les données collectées ne sont utilisées qu'à des fins de statistiques pour le bon fonctionnement du site.
                   </span>
                   <a
-                    class="text-caption d-flex align-center"
-                    style="color: #85cde8; text-decoration: none; cursor: pointer"
+                    class="text-caption d-flex align-center text-remplacement"
+                    style="text-decoration: none; cursor: pointer"
                     @click="showSidePanel('privacy')"
                   >
                     En savoir plus sur l'utilisation des données
@@ -239,7 +239,7 @@
                   color="primary"
                   variant="flat"
                   rounded="xl"
-                  class="px-6"
+                  class="px-6 text-onPrimary"
                   :disabled="!stepValid[step]"
                 >
                   Suivant
@@ -313,24 +313,18 @@
 
 
         <v-card-text class="pa-4">
+       
           <div v-if="activeSidePanel === 'contact'">
-            <p class="text-h5 font-weight-bold mb-4">Contacter un administrateur</p>
+            <div class="d-flex justify-start align-center">
+              <v-btn @click="sidePanelOpen = false" icon="mdi-arrow-left" variant="text" rounded="xl" ></v-btn>
+              <p class="text-h5 font-weight-bold ">Contacter un administrateur</p>
+              
+            </div>
             <p class="text-medium-emphasis mb-4">Vous ne trouvez pas votre organisme dans la liste ? Contactez un administrateur pour ajouter votre organisme à notre plateforme.</p>
-            <ContactAdminForm color="transparent"></ContactAdminForm>
+            <ContactAdminForm admins="master" color="transparent"></ContactAdminForm>
       
 
-            <v-form @submit.prevent="submitContactForm">
-             
-
-              <v-btn
-                color="primary"
-                block
-                type="submit"
-                :loading="contactForm.submitting"
-              >
-                Envoyer
-              </v-btn>
-            </v-form>
+         
           </div>
 
           <div v-else-if="activeSidePanel === 'privacy'" class="privacy-content">

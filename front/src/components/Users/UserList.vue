@@ -1,9 +1,31 @@
 <template>
   <v-container>
-    <div class="my-16 d-flex flex-column">
+    <div class=" my-16 d-flex justify-space-between align-start flex-wrap">
+      <div class="d-flex flex-column">
       <span class="text-h4 font-weight-medium">Liste des utilisateurs</span>
       <span class="text-h4 text-overline text-medium-emphasis">gérer et organiser les membres</span>
     </div>
+      <v-select
+          v-if="authStore.adminType === 'master'"
+          v-model="selectedCenterId"
+          :items="centers"
+    
+          :item-props="center => ({
+            title: center.name,
+            subtitle: center.oaci
+          })"
+          item-value="_id"
+          label="Sélectionner un centre"
+          variant="solo-filled"
+          rounded="xl"
+          class="mt-4 "
+          flat
+          min-width="200px" 
+          max-width="300px"
+          @update:model-value="handleCenterChange"
+        />
+    </div>
+ 
 
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6" >
@@ -12,6 +34,7 @@
           <v-chip variant="text" color="tertiary" rounded="lg" value="admin">Administrateurs</v-chip>
           <v-chip variant="text" rounded="lg" value="user">Utilisateurs</v-chip>
         </v-chip-group>
+       
       </v-col>
       
       <v-col cols="12" md="6" class="d-flex justify-end gap-2">
@@ -257,10 +280,8 @@ import { useCenterStore } from "@/stores/centerStore";
 import { useUserStore } from "@/stores/userStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useTeamStore } from '@/stores/teamStore';
-
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
-import {userService}   from '@/services/userService';
 
 const centerStore = useCenterStore();
 const teamStore = useTeamStore();
@@ -276,10 +297,9 @@ const selectedUser = ref(null);
 const sortBy = ref('');
 const sortDirection = ref('asc');
 const searchQuery = ref('');
-const currentTeam = ref(null);
+const selectedCenterId = ref(null);
 
 const centers = computed(() => centerStore.centers);
-const teams = computed(() => teamStore.centerTeams);
 const users = computed(() => userStore.users);
 
 const filteredUsers = computed(() => {
@@ -354,16 +374,6 @@ const assignCenter = async () => {
   }
 };
 
-const approveUser = async (user) => {
-  try {
-    await userStore.approveUser(user._id);
-    snackbarStore.showNotification('Candidature approuvée', 'onSuccess', 'mdi-check-circle');
-  } catch (error) {
-    console.error('Error approving user:', error);
-    snackbarStore.showNotification('Erreur lors de l\'approbation', 'onError', 'mdi-alert-circle');
-  }
-};
-
 const deleteUser = async (user) => {
   if (!confirm(`Êtes-vous sûr de vouloir supprimer ${user.name} ?`)) return;
 
@@ -393,6 +403,22 @@ const openUserDialog = (user) => {
   userDialog.value = true;
 };
 
+const handleCenterChange = async (centerId) => {
+  try {
+    if (centerId) {
+
+      await userStore.fetchUsersByCenter(centerId);
+    } else {
+      await userStore.fetchUsers();
+    }
+    console.log(users.value)
+    snackbarStore.showNotification('Utilisateurs chargés', 'onSuccess', 'mdi-check-circle');
+  } catch (error) {
+    console.error('Erreur lors du chargement des utilisateurs:', error);
+    snackbarStore.showNotification('Erreur lors du chargement des utilisateurs', 'onError', 'mdi-alert-circle');
+  }
+};
+
 onMounted(async () => {
   try {
     await Promise.all([
@@ -403,17 +429,20 @@ onMounted(async () => {
     // Charger les utilisateurs en fonction du type d'admin
     if (authStore.adminType === 'master') {
       await userStore.fetchUsers();
+      selectedCenterId.value = null;
     } else {
-      await userStore.fetchUsersOfCenter(authStore.centerId);
+      await userStore.fetchUsersByCenter(authStore.centerId);
+      selectedCenterId.value = authStore.centerId;
     }
 
-  
+
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {
     console.error('Error fetching initial data:', error);
     snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');
   }
 });
+
 </script>
 
 <style scoped>

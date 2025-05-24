@@ -152,7 +152,7 @@
         </v-card-text>
         <v-card-actions class="pa-0">
           <v-btn text @click="editTeamNameDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="updateTeamName">Enregistrer</v-btn>
+          <v-btn text color="primary" @click="renameTeam">Enregistrer</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -363,12 +363,12 @@ const addNewTeam = async () => {
   
   try {
     await teamStore.addTeam(centerId, newTeamName.value);
-    snackbarStore.showNotification('Équipe ajoutée avec succès', 'primary');
+    snackbarStore.showNotification('Nom de l\'équipe mis à jour avec succès', 'onPrimary', "mdi-check");
     addTeamDialog.value = false;
     newTeamName.value = '';
   } catch (error) {
     console.error('Erreur lors de l\'ajout de l\'équipe:', error);
-    snackbarStore.showNotification('Erreur lors de l\'ajout de l\'équipe', 'onError');
+    snackbarStore.showNotification('Erreur lors de l\'ajout de l\'équipe : ' + error.message, 'onError');
   }
 };
 
@@ -380,7 +380,7 @@ const removeTeam = async (teamId) => {
     snackbarStore.showNotification('Équipe supprimée avec succès', 'primary');
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'équipe:', error);
-    snackbarStore.showNotification('Erreur lors de la suppression de l\'équipe', 'onError');
+    snackbarStore.showNotification('Erreur lors de la suppression de l\'équipe : ' + error.message, 'onError');
   }
 };
 
@@ -442,16 +442,16 @@ const openEditTeamNameDialog = (team) => {
   editTeamNameDialog.value = true;
 };
 
-const updateTeamName = async () => {
+const renameTeam = async () => {
   if (!selectedTeamForEdit.value || !editedTeamName.value) return;
   
   try {
-    await teamStore.updateTeamName(selectedTeamForEdit.value._id, editedTeamName.value);
-    snackbarStore.showNotification('Nom de l\'équipe mis à jour avec succès', 'primary');
+    await teamStore.renameTeam(selectedTeamForEdit.value._id, editedTeamName.value);
+    snackbarStore.showNotification('Nom de l\'équipe mis à jour avec succès', 'onPrimary', "mdi-check");
     editTeamNameDialog.value = false;
   } catch (error) {
     console.error('Erreur lors de la mise à jour du nom de l\'équipe:', error);
-    snackbarStore.showNotification('Erreur lors de la mise à jour du nom de l\'équipe', 'onError');
+    snackbarStore.showNotification('Erreur lors de la mise à jour du nom de l\'équipe : ' + error.message, 'onError');
   }
 };
 

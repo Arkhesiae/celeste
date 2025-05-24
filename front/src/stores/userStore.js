@@ -44,20 +44,35 @@ export const useUserStore = defineStore('user', () => {
    * Récupère les utilisateurs d'un centre spécifique.
    */
   const fetchUsersOfCenter = async () => {
-    console.log("h")
     try {
       loading.value = true;
-  
       error.value = null;
       users.value = await userService.fetchUsersByCenter(authStore.centerId);
     } catch (err) {
-      console.log(err)
       error.value = err.message || 'Erreur lors de la récupération des utilisateurs du centre';
       throw err;
     } finally {
       loading.value = false;
     }
   };
+
+  /**
+   * Récupère les utilisateurs d'un centre spécifique.
+   */
+  const fetchUsersByCenter = async (centerId) => {
+    try {
+      loading.value = true;
+      error.value = null;
+      users.value = await userService.fetchUsersByCenter(centerId);
+    } catch (err) {
+      error.value = err.message || 'Erreur lors de la récupération des utilisateurs du centre';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+
 
   /**
    * Récupère l'utilisateur actuellement connecté.
@@ -181,6 +196,7 @@ export const useUserStore = defineStore('user', () => {
     // Actions
     fetchUsers,
     fetchUsersOfCenter,
+    fetchUsersByCenter,
     fetchCurrentUser,
     assignCenter,
     approveUser,

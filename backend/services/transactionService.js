@@ -1,5 +1,4 @@
-const Transaction = require('../models/transaction.model');
-const User = require('../models/userModel');
+const Transaction = require('../models/Transaction');
 
 /**
  * Crée une transaction différée

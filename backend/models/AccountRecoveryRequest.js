@@ -30,4 +30,9 @@ const accountRecoveryRequestSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('AccountRecoveryRequest', accountRecoveryRequestSchema); 
+const AccountRecoveryRequest = mongoose.model('AccountRecoveryRequest', accountRecoveryRequestSchema);
+
+module.exports = AccountRecoveryRequest;
+
+
+

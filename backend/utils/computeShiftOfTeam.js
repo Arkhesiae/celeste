@@ -1,5 +1,5 @@
-const Team = require('../models/teamModel');
-const Center = require('../models/centerModel');
+const Team = require('../models/Team');
+const Center = require('../models/Center');
 const { findLatestRotation } = require('./findLatestRotation');
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée

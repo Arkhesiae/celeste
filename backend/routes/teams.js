@@ -12,19 +12,19 @@ const {
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
 // Créer une nouvelle équipe dans un centre
-router.post('/create-team', createTeam);
-router.put('/:id/cycle-start-date', verifyToken, updateTeamCycleStartDate);
+router.post('/create-team', verifyToken, isAdmin, createTeam);
+router.put('/:id/cycle-start-date', verifyToken, isAdmin, updateTeamCycleStartDate);
 router.put('/:id/name', verifyToken, isAdmin, updateTeamName);
 // Supprimer une équipe
-router.delete('/delete-team/:teamId', deleteTeam);
+router.delete('/delete-team/:teamId', verifyToken, isAdmin, deleteTeam);
 
 // Récupérer les équipes d'un centre
-router.get('/:id', getTeamsByCenter);
+router.get('/:id', verifyToken, getTeamsByCenter);
 
 // Récupérer toutes les équipes
-router.get('/', getAllTeams);
+router.get('/', verifyToken, getAllTeams);
 
-// Récupérer les vacances d'une équipe pour une période donnée
-router.post('/:id/get-shifts', getTeamShifts);
+// Récupérer les shifts d'une équipe pour une période donnée
+router.post('/:id/get-shifts', verifyToken, getTeamShifts);
 
 module.exports = router;

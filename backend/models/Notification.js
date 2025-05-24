@@ -9,4 +9,7 @@ const NotificationSchema = new mongoose.Schema({
     type: { type: String, enum: ['team_change', 'general'], default: 'general' },
 });
 
-module.exports = mongoose.model('Notification', NotificationSchema);
+const Notification = mongoose.model('Notification', NotificationSchema);
+
+module.exports = Notification;
+

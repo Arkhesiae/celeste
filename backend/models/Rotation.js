@@ -79,4 +79,6 @@ const RotationSchema = new mongoose.Schema({
 // Index composé pour optimiser les requêtes courantes
 RotationSchema.index({ centerId: 1, active: 1, deleted: 1 });
 
-module.exports = mongoose.model('Rotation', RotationSchema); 
+const Rotation = mongoose.model('Rotation', RotationSchema);
+
+module.exports = Rotation;

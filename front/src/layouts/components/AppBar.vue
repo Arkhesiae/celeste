@@ -73,7 +73,7 @@
           <div class="d-flex justify-center align-center">
             <v-switch v-model="isDarkTheme" inset class="mr-2" hide-details false-icon="mdi-weather-sunny"
               true-icon="mdi-weather-night"></v-switch>
-            <v-btn variant="text" class="text-body-2 nav-link">Assistance</v-btn>
+            <v-btn variant="text" class="text-body-2 nav-link" @click="navigateToContact">Assistance</v-btn>
             <!-- <v-btn variant="text" class="text-body-2 nav-link text-capitalize">à propos</v-btn> -->
             <!-- <v-btn variant="text" class="text-body-2 nav-link">Nouveautés</v-btn> -->
 
@@ -277,6 +277,10 @@ const navigateToProfile = () => {
 
 const navigateToParameter = () => {
   router.push({path: PARAMETER_PATH});
+};
+
+const navigateToContact = () => {
+  router.push({path: '/contact-admin'});
 };
 
 const handleLogout = async () => {

@@ -168,11 +168,11 @@ export const useTeamStore = defineStore('team', () => {
    * @param {string} teamId - L'ID de l'équipe.
    * @param {string} teamName - Le nouveau nom de l'équipe.
    */
-  const updateTeamName = async (teamId, teamName) => {
+  const renameTeam = async (teamId, teamName) => {
     try {
       loading.value = true;
       error.value = null;
-      await teamService.updateTeam(teamId, { name: teamName });
+      await teamService.renameTeam(teamId, { name: teamName });
       await fetchCenterTeams(currentCenter.value);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la mise à jour du nom de l\'équipe';
@@ -220,7 +220,7 @@ export const useTeamStore = defineStore('team', () => {
     assignUserToTeam,
     addTeam,
     deleteTeam,
-    updateTeamName,
+    renameTeam,
     updateTeamCycleStartDate
   };
 });

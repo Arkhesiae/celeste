@@ -1,4 +1,4 @@
-const  Rotation  = require('../models/rotationModel');
+const  Rotation  = require('../models/Rotation');
 
 const findLatestRotation = async (centerId, date = new Date()) => {
     const dateTimestamp = new Date(date);

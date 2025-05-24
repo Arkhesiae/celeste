@@ -1,7 +1,7 @@
-const Center = require('../models/centerModel');
-const {User} = require('../models/userModel');
-const Team = require('../models/teamModel');
-const Rotation = require('../models/rotationModel');
+const Center = require('../models/Center');
+const User = require('../models/User');
+const Team = require('../models/Team');
+const Rotation = require('../models/Rotation');
 const { findLatestRotation } = require('../utils/findLatestRotation');
 
 // GET ALL CENTERS

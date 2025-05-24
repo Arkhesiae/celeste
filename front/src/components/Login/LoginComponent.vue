@@ -32,7 +32,7 @@
 
             <v-window v-model="currentStep">
               <v-window-item :value="1">
-                <v-text-field color="tertiary" variant="outlined" label="Adresse e-mail ou identifiant" type="email"
+                <v-text-field color="tertiary" variant="outlined" label="Adresse e-mail" type="email"
                   rounded="xl" v-model="email" :rules="[rules.required, rules.email]" :error-messages="emailError"
                   :loading="isCheckingEmail" required class="mobile-input mt-2" @blur="checkEmailExists"
                   @input="emailError = ''" @keyup.enter="tryGoToStep2" />

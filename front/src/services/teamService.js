@@ -35,7 +35,7 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe créée.
    */
   async createTeam(teamData) {
-    const response = await fetch(`${API_URL}/teams`, {
+    const response = await fetch(`${API_URL}/teams/create-team`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(teamData)
@@ -49,8 +49,8 @@ export const teamService = {
    * @param {Object} teamData - Les nouvelles données de l'équipe.
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
-  async updateTeam(id, teamData) {
-    const response = await fetch(`${API_URL}/teams/${id}`, {
+  async renameTeam(id, teamData) {
+    const response = await fetch(`${API_URL}/teams/${id}/name`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(teamData)

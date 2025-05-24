@@ -5,6 +5,54 @@
       <span class="text-h4 text-overline text-medium-emphasis">gérer les nouvelles inscriptions</span>
     </div>
 
+
+    <v-row class="justify-space-between align-center mb-4">
+      <v-col cols="12" md="6" >
+  
+      </v-col>
+      
+      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
+        <v-text-field
+          v-model="searchQuery"
+          label="Rechercher"
+          variant="solo"
+          flat
+          rounded="xl"
+          single-line
+          hide-details
+          density="compact"
+          class="search-field"
+          style="max-width: 300px"
+          clearable
+        />
+        <v-menu color="onBackground" rounded="lg">
+          <template v-slot:activator="{ props }">
+            <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
+              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par'}}</span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
+            <v-list-item rounded="lg" @click="sortBy = 'name'">
+              <v-list-item-title>Prénom</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'lastName'">
+              <v-list-item-title>Nom</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'email'">
+              <v-list-item-title>Email</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'status'">
+              <v-list-item-title>Statut</v-list-item-title>
+            </v-list-item>
+            <v-list-item rounded="lg" @click="sortBy = 'createdAt'">
+              <v-list-item-title>Date d'inscription</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </v-col>
+    </v-row>
+
     <v-row>
       <v-col v-for="user in pendingUsers" :key="user._id" cols="12" >
         <v-card class="pa-2" rounded="xl" variant="flat" color="surface">

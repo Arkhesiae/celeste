@@ -1,13 +1,4 @@
 const express = require('express');
-const mongoose = require("mongoose");
-const {User} = require('../models/userModel.js');
-const {hash} = require("bcrypt");
-const {v4: uuidv4} = require('uuid');
-const bcrypt = require("bcrypt");
-const Team = require('../models/teamModel');
-const jwt = require("jsonwebtoken");
-const multer = require('multer');
-const path = require('path');
 const {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} = require('../middleware/authMiddleware');
 const {
     createUser,
@@ -36,6 +27,7 @@ const {
     updateEmail,
     getUserInfoByEmail
 } = require('../controllers/userController');
+const multer = require('multer');
 const router = express.Router();
 
 const storage = multer.diskStorage({

@@ -15,6 +15,7 @@ const router = createRouter({
 });
 
 const noAuth = ['/login', '/(account-creation)/creation', '/landing', '/(account-creation)/get-started', '/reset-password', '/(account-creation)/account-recovery']
+const both = ['/contact-admin']
 
 // Configuration des transitions
 const transitionConfigs = {
@@ -59,18 +60,23 @@ router.beforeEach(async (to, from, next) => {
   applyTransition(transitionConfigs.auth);
   applyTransition(transitionConfigs.teams);
 
-  // Authentification
-  if (!noAuth.includes(to.name) && !authStore.isLoggedIn && to.name !== '/login') {
-    return next({ name: '/login' });
-  }
+  if (authStore.isLoggedIn) {
+    if (to.name !== '/pending-approval' && authStore.status === 'pending') {
+      return next({ name: '/pending-approval' });
+    }
 
-  if (to.name !== '/pending-approval' && authStore.status === 'pending' && authStore.isLoggedIn) {
-    return next({ name: '/pending-approval' });
+    if (to.name !== '/dashboard' && noAuth.includes(to.name) && !both.includes(to.name)) {
+      return next({ name: '/dashboard' });
+    }
   }
+  else {
+    if (!noAuth.includes(to.name) && !both.includes(to.name) && to.name !== '/login') {
+      return next({ name: '/login' });
+    }
+  }
+ 
 
-  if (to.name !== '/dashboard' && noAuth.includes(to.name) && authStore.isLoggedIn) {
-    return next({ name: '/dashboard' });
-  }
+ 
 
   return next();
 });

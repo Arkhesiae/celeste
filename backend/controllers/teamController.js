@@ -1,7 +1,7 @@
-const Team = require('../models/teamModel');
-const Center = require('../models/centerModel');
-const Rotation = require('../models/rotationModel');
-const {User} = require("../models/userModel");
+const Team = require('../models/Team');
+const Center = require('../models/Center');
+const Rotation = require('../models/Rotation');
+const User = require("../models/User");
 const { computeShiftOfTeam } = require('../utils/computeShiftOfTeam');
 
 // Créer une nouvelle équipe dans un centre

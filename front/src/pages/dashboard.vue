@@ -190,12 +190,33 @@ onMounted(loadData);
     </v-btn>
   </div>
 
+  <v-row>
+    <v-col cols="12"  class="pa-2">
+      <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
+        <v-icon icon="mdi-bell-outline" size="16" color="remplacement" style="position: absolute; top: 16px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;"/>
+        <div class="d-flex justify-space-between align-center">
+          <div class="d-flex align-center ga-2 ml-4">
+            <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
+            <span class="font-weight-medium text-overline">Annonce</span>
+          </div>
+          <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement" />
+        </div>
+        <v-card-title class="text-h6 py-0 font-weight-medium ">Lancement du nouveau site</v-card-title>
+        <v-card-text>
+          <div class="text-medium-emphasis">
+            Bienvenue à tous ! 
+          </div>
+        </v-card-text>
+      </v-card>
+    </v-col>
+  </v-row>
+
   <!-- Grille principale -->
   <v-row>
     
     <v-col cols="12" md="6" class="pa-2">
     <!-- Carte des vacations -->
-    <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
+    <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-4" color="surfaceContainer">
       <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
       <v-card-text>
         <div v-if="getVacation">
@@ -241,8 +262,8 @@ onMounted(loadData);
     </v-card>
 
     <!-- Carte de la prochaine substitution -->
-    <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
-      <v-card-title class="text-h6 font-weight-medium">Prochaine substitution</v-card-title>
+    <v-card rounded="xl"  class="mb-4 shadow-alt pa-4" color="remplacement" z-index="-01000">
+      <v-card-title class="text-h6 font-weight-medium">A venir</v-card-title>
       <v-card-text>
         <div v-if="nextSubstitution">
           <div class="d-flex align-center justify-space-between mb-2">
@@ -260,8 +281,8 @@ onMounted(loadData);
             </v-chip>
           </div>
         </div>
-        <div v-else class="text-medium-emphasis">
-          Aucune substitution à venir
+        <div v-else class="text-onRemplacement" >
+          Aucun remplacement ou permutation à venir
         </div>
       </v-card-text>
     </v-card>
@@ -381,14 +402,21 @@ onMounted(loadData);
 </template>
 
 <style scoped>
-.smooth-shadow {
-    
-  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.062), 0 0px 0 1px rgba(255, 255, 255, 0.007), 0 0px 0px 1px rgba(0, 0, 0, 0.014) ;
-}
-
 .v-card-dashboard {
   background: rgba(var(--v-theme-background), 0.4);
  
- 
+}
+
+.shadow{
+  box-shadow: 
+    -31px -31px 43px 0 rgba(var(--v-theme-remplacement), 0.64),
+    26px 26px 48px 0 rgba(0, 0, 0, 0.16);
+}
+
+.shadow-alt {
+  
+  box-shadow: 
+  
+    0px 40px 50px 10px rgba(var(--v-theme-remplacement), .011);
 }
 </style>

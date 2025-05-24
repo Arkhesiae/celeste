@@ -1,4 +1,4 @@
-const Rotation = require('../models/rotationModel');
+const Rotation = require('../models/Rotation');
 const { createNotificationForCenter } = require("../utils/notificationFunctions");
 const { findLatestRotation } = require("../utils/findLatestRotation");
 // Helper function to compute work duration

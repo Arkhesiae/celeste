@@ -13,9 +13,9 @@ defineOptions({
   <v-container>
     <div class="d-flex justify-space-between">
       <div class="my-16 d-flex flex-column">
-        <span class="text-h4 font-weight-medium">Contacter l'administrateur</span>
+        <span class="text-h4 font-weight-medium">Contacter un administrateur</span>
         <span class="text-h4 text-overline text-medium-emphasis">
-          Besoin d'aide ? Envoyez un message à l'administrateur
+          Besoin d'aide ? Envoyez un message à un administrateur
         </span>
       </div>
     </div>

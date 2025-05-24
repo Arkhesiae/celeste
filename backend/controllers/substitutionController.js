@@ -1,9 +1,9 @@
-const Substitution = require('../models/substitutionModel');
-const {User} = require("../models/userModel");
+const Substitution = require('../models/Substitution');
+const User = require("../models/User");
 const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
 const {computeShiftOfUser} = require("../utils/computeShiftOfUser");
 const { createDelayedTransaction, cancelDelayedTransaction } = require('../services/transactionService');
-const Transaction = require('../models/transaction.model');
+const Transaction = require('../models/Transaction');
 
 
 const getCenterDemands = async (req, res) => {

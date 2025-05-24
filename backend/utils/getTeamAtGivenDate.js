@@ -1,4 +1,4 @@
-const Team = require('../models/teamModel');
+const Team = require('../models/Team');
 
 // Trouver l'équipe active à une date
 const getTeamAtGivenDate = async (teams, date) => {

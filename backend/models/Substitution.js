@@ -112,4 +112,6 @@ const SubstitutionSchema = new mongoose.Schema({
 SubstitutionSchema.index({ status: 1 });
 SubstitutionSchema.index({ centerId: 1 });
 
-module.exports = mongoose.model('Substitution', SubstitutionSchema);
+const Substitution = mongoose.model('Substitution', SubstitutionSchema);
+
+module.exports = Substitution;

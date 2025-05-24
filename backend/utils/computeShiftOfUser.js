@@ -1,8 +1,7 @@
-const Team = require('../models/teamModel');
+const Team = require('../models/Team');
 const {computeShiftOfTeam} = require("./computeShiftOfTeam");
 const {getTeamAtGivenDate} = require("./getTeamAtGivenDate");
-const {User} = require("../models/userModel");
-const {status} = require("express/lib/response");
+const User = require("../models/User");
 
 
 // Récupérer le shift d'un utilisateur à une date donnée

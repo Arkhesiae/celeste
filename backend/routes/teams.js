@@ -19,7 +19,7 @@ router.put('/:id/name', verifyToken, isAdmin, updateTeamName);
 router.delete('/delete-team/:teamId', verifyToken, isAdmin, deleteTeam);
 
 // Récupérer les équipes d'un centre
-router.get('/:id', verifyToken, getTeamsByCenter);
+router.get('/:id', getTeamsByCenter);
 
 // Récupérer toutes les équipes
 router.get('/', verifyToken, getAllTeams);

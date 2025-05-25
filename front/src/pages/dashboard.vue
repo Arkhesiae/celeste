@@ -18,6 +18,7 @@ const substitutionStore = useSubstitutionStore()
 const snackbarStore = useSnackbarStore()
 const userName = authStore.name
 const { smAndDown } = useDisplay();
+const showAnnouncement = ref(true);
 
 // État pour le calendrier
 const selectedDate = ref(new Date());
@@ -192,14 +193,14 @@ onMounted(loadData);
 
   <v-row>
     <v-col cols="12"  class="pa-2">
-      <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
+      <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
         <v-icon icon="mdi-bell-outline" size="16" color="remplacement" style="position: absolute; top: 16px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;"/>
         <div class="d-flex justify-space-between align-center">
           <div class="d-flex align-center ga-2 ml-4">
             <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
             <span class="font-weight-medium text-overline">Annonce</span>
           </div>
-          <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement" />
+          <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement" @click="showAnnouncement = false" />
         </div>
         <v-card-title class="text-h6 py-0 font-weight-medium ">Lancement du nouveau site</v-card-title>
         <v-card-text>
@@ -327,14 +328,15 @@ onMounted(loadData);
       </v-card>
 
       <!-- Carte de l'équipe -->
-      <v-card rounded="xl" elevation="0" class="mb-4">
+      <v-card rounded="xl" elevation="0" class="pa-2">
         <v-card-title class="text-h6 font-weight-medium">Mon équipe</v-card-title>
+        <v-icon icon="mdi-account-group" size="16" color="onBackground" style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;"/>
         <v-card-text>
           <div v-if="teamStore.currentTeam" class="d-flex flex-column align-center">
             <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
               <v-icon icon="mdi-account-group" size="32"></v-icon>
             </v-avatar>
-            <div class="text-h5 font-weight-bold mb-2">{{ teamStore.currentTeam.name }}</div>
+            <div class="text-h5 font-weight-bold mb-2">Equipe {{ teamStore.currentTeam.name }}</div>
             <div class="text-medium-emphasis text-center">
               <v-icon icon="mdi-calendar-start" class="mr-2"></v-icon>
               Cycle depuis le {{ new Date(teamStore.currentTeam.cycleStartDate).toLocaleDateString() }}
@@ -346,7 +348,7 @@ onMounted(loadData);
         </v-card-text>
       </v-card>
 
-      <!-- Actions rapides -->
+      <!-- Actions rapides
       <v-card rounded="xl" elevation="0">
         <v-card-title class="text-h6 font-weight-medium">Actions rapides</v-card-title>
         <v-card-text>
@@ -362,7 +364,7 @@ onMounted(loadData);
             />
           </v-list>
         </v-card-text>
-      </v-card>
+      </v-card> -->
     </v-card>
     </v-col>
 

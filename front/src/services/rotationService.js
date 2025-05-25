@@ -106,5 +106,20 @@ export const rotationService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Met à jour un jour dans une rotation.
+   * @param {string} rotationId - L'ID de la rotation.
+   * @param {Object} updatedDay - Les nouvelles données du jour.
+   * @returns {Promise<Object>} La rotation mise à jour.
+   */
+  async updateDayInRotation(rotationId, updatedDay) {
+    const response = await fetch(`${API_URL}/rotations/${rotationId}/day`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ updatedDay })
+    });
+    return handleResponse(response);
   }
 };

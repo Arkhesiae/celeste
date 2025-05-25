@@ -1,51 +1,43 @@
 <template>
   <v-container class="mb-16">
     <div class="d-flex justify-space-between my-16 flex-column">
-      <div class="d-flex align-center">
-        <span class="text-h4 font-weight-medium">Tours de service</span>
 
+      <div class="d-flex justify-space-between align-center flex-wrap">
+        <div class="d-flex align-start flex-column">
+          <span class="text-h4 font-weight-medium">Tours de service</span>
+          <span class="text-h4 text-overline text-medium-emphasis">
+            Créer, modifier et activer un tour de service
+          </span>
+        </div>
+
+        <v-select v-if="authStore.adminType === 'master'" v-model="selectedCenterId" :items="centers" :item-props="center => ({
+          title: center.name,
+          subtitle: center.oaci
+        })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
+          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
       </div>
-      <span class="text-h4 text-overline text-medium-emphasis">
-        Créer, modifier et activer un tour de service
-      </span>
     </div>
 
-    <v-row  class="position-relative">
+    <v-row class="position-relative">
       <v-col cols="12" md="8">
         <!-- Workshifts List -->
-        <SavedWorkshift
-          v-for="rotation in rotations"
-          :key="rotation._id"
-          :rotation="rotation"
-          :is-expanded="expandedRotations[rotation._id]"
-          @set-activation-date="handleSetActivationDate"
-          @delete="deleteRotation"
-          @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
-          @edit="handleEdit"
-        />
+        <SavedWorkshift v-for="rotation in rotations" :key="rotation._id" :rotation="rotation"
+          :is-expanded="expandedRotations[rotation._id]" @set-activation-date="handleSetActivationDate"
+          @delete="deleteRotation" @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
+          @edit="handleEdit" />
 
         <v-row class="mt-8">
-          <v-col cols="12"  lg="4" sm="4" xs="12" md="12">
-            <v-btn
-              block
-              class="justify-space-between"
-              rounded="xl"
-              color="surface"
-              height="64"
-              v-if="smAndDown"
-              variant="flat"
-              @click="showTimelineDrawer = !showTimelineDrawer"
-            >
-
-
-            <template #append>
-              <v-icon color="primary">mdi-chevron-right</v-icon>
-            </template>
-            <v-icon class="mr-4">mdi-timeline-clock</v-icon>
+          <v-col cols="12" lg="4" sm="4" xs="12" md="12">
+            <v-btn block class="justify-space-between" rounded="xl" color="surface" height="64" v-if="smAndDown"
+              variant="flat" @click="showTimelineDrawer = !showTimelineDrawer">
+              <template #append>
+                <v-icon color="primary">mdi-chevron-right</v-icon>
+              </template>
+              <v-icon class="mr-4">mdi-timeline-clock</v-icon>
               Voir la timeline
             </v-btn>
           </v-col>
-         
+
         </v-row>
 
       </v-col>
@@ -53,16 +45,8 @@
       <!-- Timeline -->
       <v-col cols="12" md="4">
         <div v-if="!smAndDown" style="top:150px; position: sticky !important;">
-          <v-btn
-            v-if="isAdmin"
-            class="mb-8"
-            prepend-icon="mdi-file-plus-outline"
-            color="onBackground"
-            height="80px"
-            width="100%"
-            elevation="0"
-            @click="showAddDialog = true"
-          >
+          <v-btn v-if="isAdmin" class="mb-8" prepend-icon="mdi-file-plus-outline" color="onBackground" height="80px"
+            width="100%" elevation="0" @click="showAddDialog = true">
             Ajouter un tour de service
           </v-btn>
           <div class="d-flex flex-column mb-6">
@@ -71,24 +55,14 @@
               Timeline d'activation des tours de service
             </span>
           </div>
-          <Timeline
-            :current-active="currentActive"
-            :sorted-rotations="sortedRotations"
-            @remove-activation-date="removeActivationDate"
-          />
+          <Timeline :current-active="currentActive" :sorted-rotations="sortedRotations"
+            @remove-activation-date="removeActivationDate" />
         </div>
       </v-col>
     </v-row>
 
     <!-- Mobile Timeline Drawer -->
-    <v-bottom-sheet
-      v-if="smAndDown"
-      v-model="showTimelineDrawer"
-      location="bottom"
-      temporary
-    
-      class="timeline-drawer"
-    >
+    <v-bottom-sheet v-if="smAndDown" v-model="showTimelineDrawer" location="bottom" temporary class="timeline-drawer">
       <v-card class="pa-6" color="surfaceContainerHigh">
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="d-flex flex-column">
@@ -97,84 +71,44 @@
               Timeline d'activation des tours de service
             </span>
           </div>
-          <!-- <v-btn
-            icon
-            variant="text"
-            color="default"
-            @click="showTimelineDrawer = false"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn> -->
         </div>
-        <Timeline
-          :current-active="currentActive"
-          :sorted-rotations="sortedRotations"
-          @remove-activation-date="removeActivationDate"
-        />
+        <Timeline :current-active="currentActive" :sorted-rotations="sortedRotations"
+          @remove-activation-date="removeActivationDate" />
       </v-card>
     </v-bottom-sheet>
 
-   
 
-    <v-fab
-      v-if="smAndDown && isAdmin"
-      prepend-icon="mdi-file-plus-outline"
-      class="fab"
-      height="60px"
-      rounded="0"
-      location="bottom end"
-      text="Tour de service"
-      extended
-      app
-      color="onBackground"
-      @click="showAddDialog = true"
-    ></v-fab>
 
-    <ErrorDialog
-      error-title="Impossible de supprimer ce tour de service"
-      :error-message="errorMessage"
-      error-icon="mdi-delete-alert-outline"
-      :isDialogVisible="showErrorDialog"
-      @update:dialogVisible="showErrorDialog = $event"
-    ></ErrorDialog>
+    <v-fab v-if="smAndDown && isAdmin" prepend-icon="mdi-file-plus-outline" class="fab" height="60px" rounded="0"
+      location="bottom end" text="Tour de service" extended app color="onBackground"
+      @click="showAddDialog = true"></v-fab>
 
-    <ConfirmationDialog
-      :isDialogVisible="showConfirmationDialog"
-      :title="'Suppression du tour de service'"
-      :text="'Êtes-vous sûr de vouloir supprimer ce tour de service ? Cette action est irréversible.'"  
-      :icon="'mdi-delete-outline'"
-      :iconColor="'error'"
-      :confirmText="'Supprimer'"
-      @confirm="confirmDelete"
-      @update:isDialogVisible="showConfirmationDialog = $event"
-    ></ConfirmationDialog>  
+    <ErrorDialog error-title="Impossible de supprimer ce tour de service" :error-message="errorMessage"
+      error-icon="mdi-delete-alert-outline" :isDialogVisible="showErrorDialog"
+      @update:dialogVisible="showErrorDialog = $event"></ErrorDialog>
 
-    <AddWorkshiftDialog
-      :isDialogVisible="showAddDialog"
-      :rotation="rotationToEdit"
-      @rotationSubmit="saveRotation"
-      @rotationEditSubmit="saveRotation"
-      @rotationEditCancel="closeAddDialog"
-      @update:dialogVisible="closeAddDialog"
-    ></AddWorkshiftDialog>
+    <ConfirmationDialog :isDialogVisible="showConfirmationDialog" :title="'Suppression du tour de service'"
+      :text="'Êtes-vous sûr de vouloir supprimer ce tour de service ? Cette action est irréversible.'"
+      :icon="'mdi-delete-outline'" :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmDelete"
+      @update:isDialogVisible="showConfirmationDialog = $event"></ConfirmationDialog>
 
-    <ActivateWorkshiftDialog
-      :isDialogVisible="showActivateDialog"
-      :rotation="rotationToActivate"
-      @onSubmit="setActive"
-      @update:dialogVisible="showActivateDialog = $event"
-    ></ActivateWorkshiftDialog>
+    <AddWorkshift :isDialogVisible="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
+      @rotationEditSubmit="saveRotation" @rotationEditCancel="closeAddDialog" @update:dialogVisible="closeAddDialog">
+    </AddWorkshift>
+
+    <ActivateWorkshift :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActive"
+      @update:dialogVisible="showActivateDialog = $event"></ActivateWorkshift>
   </v-container>
 </template>
 
 <script setup>
-import {ref, onMounted, computed} from 'vue';
-import {useRotationStore} from '@/stores/rotationStore';
-import {useCenterStore} from "@/stores/centerStore.js";
-import {useAuthStore} from "@/stores/authStore.js";
-import {useSnackbarStore} from "@/stores/snackbarStore";
+import { ref, onMounted, computed } from 'vue';
+import { useRotationStore } from '@/stores/rotationStore';
+import { useCenterStore } from "@/stores/centerStore.js";
+import { useAuthStore } from "@/stores/authStore.js";
+import { useSnackbarStore } from "@/stores/snackbarStore";
 
-import {useDisplay} from "vuetify";
+import { useDisplay } from "vuetify";
 import { useRouter } from 'vue-router';
 import { toUTCNormalized } from '@/utils';
 
@@ -185,6 +119,7 @@ const rotationStore = useRotationStore();
 
 const snackbarStore = useSnackbarStore();
 const selectedCenter = computed(() => authStore.centerId);
+const centers = computed(() => centerStore.centers);
 const isAdmin = computed(() => authStore.isAdmin);
 
 const rotations = computed(() => rotationStore.rotations);
@@ -210,6 +145,8 @@ const showTimelineDrawer = ref(false);
 const router = useRouter();
 
 const rotationToEdit = ref(null);
+
+const selectedCenterId = ref(null);
 
 const getDayStyle = (startTime, endTime) => {
   if (!startTime || !endTime) {
@@ -286,7 +223,7 @@ const setActive = (startDate) => {
       if (isNaN(inputDate.getTime())) {
         throw new Error('Date invalide');
       }
-     
+
       rotationStore.setActiveRotation(rotationToActivate.value, inputDate);
       snackbarStore.showNotification('Date d\'activation du tour de service mise à jour', 'onSuccess', 'mdi-check-circle-outline');
     } catch (error) {
@@ -317,13 +254,32 @@ const handleEdit = (rotation) => {
   showAddDialog.value = true;
 };
 
+const handleCenterChange = async (centerId) => {
+  try {
+    if (centerId) {
+      await rotationStore.fetchRotations(centerId);
+    }
+    snackbarStore.showNotification('Tours de service chargés', 'onSuccess', 'mdi-check-circle-outline');
+  } catch (error) {
+    console.error('Erreur lors du chargement des tours de service:', error);
+    snackbarStore.showNotification('Erreur lors du chargement des tours de service', 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
 onMounted(async () => {
   try {
-    await rotationStore.fetchRotations(selectedCenter.value);
+    await centerStore.fetchCenters();
+
+    // Charger les rotations en fonction du type d'admin
+    if (authStore.adminType === 'master') {
+      selectedCenterId.value = null;
+    } else {
+      await rotationStore.fetchRotations(authStore.centerId);
+      selectedCenterId.value = authStore.centerId;
+    }
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la récupération des tours de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');
   }
-
 });
 
 </script>
@@ -334,11 +290,11 @@ onMounted(async () => {
   padding-right: 24px !important;
 }
 
-:deep(.fab > .v-fab__container > button){
+:deep(.fab > .v-fab__container > button) {
   border-radius: 16px !important;
 }
 
-:deep(.v-fab__container ) {
+:deep(.v-fab__container) {
   margin-right: 24px !important;
   margin-bottom: 24px !important;
 }
@@ -359,4 +315,3 @@ onMounted(async () => {
   overflow-y: auto;
 }
 </style>
-

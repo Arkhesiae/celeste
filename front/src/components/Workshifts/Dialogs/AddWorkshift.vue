@@ -1,7 +1,7 @@
 <script setup>
   import { ref, computed, reactive, watch } from 'vue';
 import { useDisplay } from 'vuetify';
-import AddDayDialog from '../Dialogs/AddDayDialog.vue';
+import AddDayDialog from './AddOrEditDay.vue';
 import WorkshiftSummary from '../Summary/WorkshiftSummary.vue';
 
 const props = defineProps({
@@ -308,7 +308,7 @@ const close = () => {
   </v-dialog>
 
   <!-- Add Day Dialog -->
-  <AddDayDialog
+  <AddOrEditDay
     :isDialogVisible="showAddDayDialog"
     :dayNumber="newRotation.days.filter(day => day.type === 'work').length + 1"
     :variants="variants"

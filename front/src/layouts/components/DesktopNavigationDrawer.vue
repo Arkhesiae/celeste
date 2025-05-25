@@ -17,6 +17,7 @@
   
       <v-list-item @click="router.push({ path: '/permutations' })"
       rounded="xl" 
+                   
                    :prepend-icon="isActive('/permutations') ? 'mdi-swap-horizontal' : 'mdi-swap-horizontal-hidden'"
                    title="Permutations"
                    value="permutations"></v-list-item>

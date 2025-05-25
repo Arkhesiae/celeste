@@ -15,5 +15,6 @@ router.post('/save', verifyToken, isAdmin, rotationController.saveRotation);
 router.delete('/:id', verifyToken, isAdmin, rotationController.deleteRotation);
 router.post('/:id/activate', verifyToken, isAdmin, rotationController.addActivationDate);
 router.delete('/:id/activation-date', verifyToken, isAdmin, rotationController.removeActivationDate);
+router.put('/:rotationId/day', verifyToken, isAdmin, rotationController.updateDayInRotation);
 
 module.exports = router; 

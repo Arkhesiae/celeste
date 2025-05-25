@@ -239,6 +239,43 @@ const removeActivationDate = async (req, res) => {
     }
 };
 
+// Mettre à jour un jour dans une rotation
+const updateDayInRotation = async (req, res) => {
+    const { rotationId } = req.params;
+    const { updatedDay } = req.body;
+
+    try {
+        const rotation = await Rotation.findById(rotationId);
+        if (!rotation) {
+            return res.status(404).json({ message: 'Tour de service non trouvé' });
+        }
+
+
+        if (!rotation.days.some(day => day._id.equals(updatedDay._id))) {
+            return res.status(400).json({ message: 'Jour non trouvé dans la rotation' });
+        }
+
+        // Calculer endsNextDay et defaultPoints si c'est un jour de travail
+        if (updatedDay.type !== 'rest') {
+            if (updatedDay.startTime && updatedDay.endTime) {
+                const { endsNextDay, duration } = computeWorkDuration(updatedDay.startTime, updatedDay.endTime);
+                updatedDay.endsNextDay = endsNextDay;
+                if (!updatedDay.defaultPoints) {
+                    updatedDay.defaultPoints = duration;
+                }
+            }
+        }
+
+        // Mettre à jour le jour spécifique
+        rotation.days[rotation.days.findIndex(day => day._id.equals(updatedDay._id))] = updatedDay;
+        await rotation.save();
+
+        res.json({ message: 'Jour mis à jour avec succès', rotation });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     saveRotation,
     getAllRotations,
@@ -248,4 +285,5 @@ module.exports = {
     deleteRotation,
     addActivationDate,
     removeActivationDate,
+    updateDayInRotation,
 }; 

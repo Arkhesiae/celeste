@@ -76,6 +76,23 @@ export const useRotationStore = defineStore('rotation', () => {
       await fetchRotations(centerId); // Rafraîchir les données
   };
 
+  /**
+   * Met à jour un jour dans une rotation.
+   * @param {string} rotationId - L'ID de la rotation.
+   * @param {number} dayIndex - L'index du jour à mettre à jour.
+   * @param {Object} updatedDay - Les nouvelles données du jour.
+   * @param {string} centerId - L'ID du centre pour rafraîchir les données.
+   */
+  const updateDayInRotation = async (rotationId, updatedDay, centerId) => {
+    try {
+      await rotationService.updateDayInRotation(rotationId, updatedDay);
+      await fetchRotations(centerId); // Rafraîchir les données
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du jour :', error);
+      throw error;
+    }
+  };
+
   return {
     rotations,
     sortedRotations,
@@ -86,5 +103,6 @@ export const useRotationStore = defineStore('rotation', () => {
     saveRotation,
     setActiveRotation,
     deleteRotation,
+    updateDayInRotation,
   };
 });

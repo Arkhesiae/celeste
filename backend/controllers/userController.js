@@ -1,20 +1,20 @@
-const {v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const User = require('../models/User');
 const Center = require('../models/Center');
-const {hash} = require("bcrypt");
+const { hash } = require("bcrypt");
 const Team = require('../models/Team');
-const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
-const {computeShiftOfUser} = require("../utils/computeShiftOfUser.js");
-const {computeShiftOfUserWithSubstitutions} = require("../utils/computeShiftOfUserWithSubstitutions.js");
+const { getTeamAtGivenDate } = require("../utils/getTeamAtGivenDate");
+const { computeShiftOfUser } = require("../utils/computeShiftOfUser.js");
+const { computeShiftOfUserWithSubstitutions } = require("../utils/computeShiftOfUserWithSubstitutions.js");
 const Transaction = require('../models/Transaction');
 const { createDelayedTransaction, processPendingTransactions } = require('../services/transactionService');
 const path = require('path');
 const fs = require('fs');
-
+const { sendEmailApproval, sendEmailRejection } = require('../services/email/approvalEmail');
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
-    const {name, lastName, password, email, centerId, team, zone} = req.body;
-    
+    const { name, lastName, password, email, centerId, team, zone } = req.body;
+
     try {
         const hashedPassword = await hash(password, 10);
         const user = new User({
@@ -27,14 +27,14 @@ const createUser = async (req, res) => {
         });
         const firstTeam = await Team.findById(team);
         if (!firstTeam) {
-            return res.status(404).json({message: 'Equipe non trouvée'});
+            return res.status(404).json({ message: 'Equipe non trouvée' });
         }
-        user.teams.push({teamId: firstTeam._id, fromDate: new Date(), toDate: null});
+        user.teams.push({ teamId: firstTeam._id, fromDate: new Date(), toDate: null });
 
         await user.save();
-        res.json({status: 'Utilisateur créé avec succès.', user: user});
+        res.json({ status: 'Utilisateur créé avec succès.', user: user });
     } catch (err) {
-        res.status(500).json({message: err.message});
+        res.status(500).json({ message: err.message });
     }
 };
 
@@ -58,113 +58,149 @@ const getAllUsers = async (req, res) => {
         res.status(200).json(users);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
-        res.status(500).json({message: 'Erreur interne du serveur'});
+        res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
 
 // Obtenir un compte utilisateur par ID
 const getUserById = (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     User.findById(id)
         .then((user) => {
             if (!user) {
-                return res.status(404).json({error: 'User not found.'});
+                return res.status(404).json({ error: 'User not found.' });
             }
             res.json(user);
         })
-        .catch((err) => res.status(500).json({message: err.message}));
+        .catch((err) => res.status(500).json({ message: err.message }));
 };
 
 // Supprimer un compte utilisateur par ID
 const deleteUserById = (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     User.findByIdAndDelete(id)
         .then((user) => {
             if (!user) {
-                return res.status(404).json({error: 'User not found.'});
+                return res.status(404).json({ error: 'User not found.' });
             }
             res.json("User deleted successfully");
         })
-        .catch((err) => res.status(500).json({message: err.message}));
+        .catch((err) => res.status(500).json({ message: err.message }));
 };
-
 
 
 
 // Approuver un utilisateur
 const approveUser = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
     try {
-        const user = await User.findByIdAndUpdate(id, {status: 'approved'}, {new: true});
+        const user = await User.findByIdAndUpdate(id, { registrationStatus: 'verified' }, { new: true });
         if (!user) {
-            return res.status(404).json({message: 'Utilisateur non trouvé'});
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
-        res.status(200).json({message: 'Utilisateur approuvé avec succès', user});
+        // En mode développement, afficher le code dans la console
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('\n=== MODE DÉVELOPPEMENT ===');
+            console.log(`📧 Email: ${user.email}`);
+            console.log('========================\n');
+        } else {
+            // En production, envoyer l'email
+            await sendEmailApproval(user.email);
+        }
+
+        res.status(200).json({ message: 'Utilisateur approuvé avec succès', user });
     } catch (error) {
         console.error('Erreur lors de l\'approbation de l\'utilisateur:', error);
-        res.status(500).json({message: 'Erreur interne du serveur'});
+        res.status(500).json({ message: 'Erreur interne du serveur' });
+    }
+};
+
+// Supprimer un utilisateur
+const deletePendingUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+        if (user.registrationStatus !== 'pending') {
+            return res.status(400).json({ message: 'L\'utilisateur n\'est pas en attente d\'approbation' });
+        }
+        await User.findByIdAndDelete(id);
+        // En mode développement, afficher le code dans la console
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('\n=== MODE DÉVELOPPEMENT ===');
+            console.log(`📧 Email: ${user.email}`);
+            console.log('========================\n');
+        } else {
+            // En production, envoyer l'email
+            await sendEmailRejection(user.email);
+        }
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+        res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
 
 // Promouvoir un utilisateur en administrateur
 const makeUserAdmin = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
     try {
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({message: 'Utilisateur non trouvé'});
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
         if (!user.centerId) {
-            return res.status(404).json({message: 'Aucun centre trouvé pour cet utilisateur'});
+            return res.status(404).json({ message: 'Aucun centre trouvé pour cet utilisateur' });
         }
 
         user.isAdmin = true;
         user.adminType = "local";
         await user.save();
 
-        res.json({message: 'Utilisateur promu administrateur local avec succès'});
+        res.json({ message: 'Utilisateur promu administrateur local avec succès' });
     } catch (error) {
         console.error('Erreur lors de la promotion de l\'utilisateur:', error);
-        res.status(500).json({message: 'Échec de la promotion de l\'utilisateur en administrateur'});
+        res.status(500).json({ message: 'Échec de la promotion de l\'utilisateur en administrateur' });
     }
 };
 
 // Assigner un utilisateur à un centre
 const assignUserToCenter = async (req, res) => {
     const userId = req.params.id;
-    const {centerId: newCenterId} = req.body;
+    const { centerId: newCenterId } = req.body;
 
     try {
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({error: 'Utilisateur non trouvé'});
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
         if (user.centerId === newCenterId) {
-            return res.status(400).json({error: 'L\'utilisateur est déjà assigné à ce centre'});
+            return res.status(400).json({ error: 'L\'utilisateur est déjà assigné à ce centre' });
         }
 
         user.centerId = newCenterId;
         user.isLocalAdmin = false;
         await user.save();
 
-        res.status(200).json({message: 'Utilisateur assigné avec succès au nouveau centre'});
+        res.status(200).json({ message: 'Utilisateur assigné avec succès au nouveau centre' });
     } catch (error) {
         console.error('Erreur lors de l\'assignation de l\'utilisateur à un nouveau centre:', error);
-        res.status(500).json({error: 'Erreur interne du serveur'});
+        res.status(500).json({ error: 'Erreur interne du serveur' });
     }
 };
 
 // Obtenir les utilisateurs d'un centre spécifique
 const getUsersByCenter = async (req, res) => {
-    const {centerId} = req.params;
+    const { centerId } = req.params;
 
     try {
-        const users = await User.find({centerId}).populate('teams');
-        if (!users.length) {    
+        const users = await User.find({ centerId }).populate('teams');
+        if (!users.length) {
             res.status(200).json([]);
         }
 
@@ -179,7 +215,7 @@ const getUsersByCenter = async (req, res) => {
         res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs pour un centre:', error);
-        res.status(500).json({message: 'Une erreur est survenue lors de la récupération des utilisateurs.'});
+        res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des utilisateurs.' });
     }
 };
 
@@ -251,7 +287,7 @@ const getUserTeamOccurrences = async (req, res) => {
     try {
         const user = await getUserWithTeams(id);
         const now = new Date();
-        const sortedOccurrences = user.teams.sort((a, b) => 
+        const sortedOccurrences = user.teams.sort((a, b) =>
             new Date(a.fromDate) - new Date(b.fromDate)
         );
 
@@ -306,27 +342,27 @@ const getUsersAndGroupByTeam = async (req, res) => {
     try {
         date = req.query.date ? new Date(req.query.date) : new Date();
         if (isNaN(date.getTime())) {
-            return res.status(400).json({message: 'Date invalide'});
+            return res.status(400).json({ message: 'Date invalide' });
         }
     } catch (error) {
-        return res.status(400).json({message: 'Format de date invalide'});
+        return res.status(400).json({ message: 'Format de date invalide' });
     }
 
     const centerId = req.params.centerId;
     if (!centerId) {
-        return res.status(400).json({message: 'ID du centre requis'});
+        return res.status(400).json({ message: 'ID du centre requis' });
     }
 
     try {
         // Récupération simultanée du centre et des équipes
         const [center, teams, users] = await Promise.all([
             Center.findById(centerId),
-            Team.find({center: centerId}),
-            User.find({centerId})
+            Team.find({ center: centerId }),
+            User.find({ centerId })
         ]);
 
         if (!center) {
-            return res.status(404).json({message: 'Centre non trouvé'});
+            return res.status(404).json({ message: 'Centre non trouvé' });
         }
 
         // Création d'un Map pour un accès rapide aux équipes
@@ -351,7 +387,7 @@ const getUsersAndGroupByTeam = async (req, res) => {
                 .sort((a, b) => new Date(b.fromDate) - new Date(a.fromDate));
 
             // Traitement de l'équipe principale
-            const mainTeamOccurrence = validOccurrences.find(occurrence => 
+            const mainTeamOccurrence = validOccurrences.find(occurrence =>
                 new Date(occurrence.fromDate) <= date && !occurrence.toDate
             );
 
@@ -372,8 +408,8 @@ const getUsersAndGroupByTeam = async (req, res) => {
             for (const occurrence of validOccurrences) {
                 if (occurrence.toDate) {
                     const teamResult = resultMap.get(occurrence.teamId.toString());
-                    if (teamResult && 
-                        new Date(occurrence.fromDate) <= date && 
+                    if (teamResult &&
+                        new Date(occurrence.fromDate) <= date &&
                         new Date(occurrence.toDate) >= date) {
                         teamResult.renforts.push({
                             userId: user._id,
@@ -390,7 +426,7 @@ const getUsersAndGroupByTeam = async (req, res) => {
         res.status(200).json(result);
     } catch (err) {
         console.error("Erreur lors de l'agrégation:", err);
-        res.status(500).json({error: "Une erreur est survenue lors du traitement des données."});
+        res.status(500).json({ error: "Une erreur est survenue lors du traitement des données." });
     }
 };
 
@@ -399,43 +435,43 @@ const getUsersAndGroupByTeam = async (req, res) => {
 // Supprimer une occurrence d'équipe
 const deleteTeamOccurrence = async (req, res) => {
     try {
-        const {id, occurrenceId} = req.params;
+        const { id, occurrenceId } = req.params;
         const user = await User.findOneAndUpdate(
-            {_id: id},
-            {$pull: {teams: {_id: occurrenceId}}},
-            {new: true}
+            { _id: id },
+            { $pull: { teams: { _id: occurrenceId } } },
+            { new: true }
         );
 
         if (!user) {
-            return res.status(404).json({message: 'User not found'});
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        res.status(200).json({message: 'Team occurrence deleted successfully'});
+        res.status(200).json({ message: 'Team occurrence deleted successfully' });
     } catch (error) {
         console.error("Error deleting team occurrence:", error);
-        res.status(500).json({message: "Internal server error"});
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
 // Assigner une équipe à un utilisateur
 const assignTeamToUser = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
     const newTeam = req.body;
 
     if (!newTeam.teamId || !newTeam.fromDate) {
-        return res.status(400).json({error: "teamId and fromDate are required"});
+        return res.status(400).json({ error: "teamId and fromDate are required" });
     }
 
     try {
         const teamExists = await Team.findById(newTeam.teamId);
         if (!teamExists) {
-            return res.status(404).json({error: "Team not found"});
+            return res.status(404).json({ error: "Team not found" });
         }
 
         const user = await User.findById(id);
-        if (!user) return res.status(404).json({message: "User not found"});
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-        user.teams.push({teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate});
+        user.teams.push({ teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate });
         await user.save();
         res.send(user.teams);
     } catch (error) {
@@ -446,18 +482,18 @@ const assignTeamToUser = async (req, res) => {
 // Obtenir les vacances d'un utilisateur
 const getUserShifts = async (req, res) => {
     try {
-        const {dates} = req.body;
-        const {id: userId} = req.params;
+        const { dates } = req.body;
+        const { id: userId } = req.params;
 
         if (!dates || !userId) {
-            return res.status(400).json({message: !dates ? 'No dates provided' : 'No user provided'});
+            return res.status(400).json({ message: !dates ? 'No dates provided' : 'No user provided' });
         }
 
         const results = await computeShiftOfUser(dates, userId);
         res.json(results);
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -465,59 +501,59 @@ const getUserShifts = async (req, res) => {
 // Obtenir les vacances d'un utilisateur
 const getUserShiftsWithSubstitutions = async (req, res) => {
     try {
-        const {dates} = req.body;
-        const {id: userId} = req.params;
+        const { dates } = req.body;
+        const { id: userId } = req.params;
 
         if (!dates || !userId) {
-            return res.status(400).json({message: !dates ? 'No dates provided' : 'No user provided'});
+            return res.status(400).json({ message: !dates ? 'No dates provided' : 'No user provided' });
         }
 
         const results = await computeShiftOfUserWithSubstitutions(dates, userId);
         res.json(results);
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({error: error.message});
+        res.status(500).json({ error: error.message });
     }
 };
 
 
 // Mettre à jour les préférences d'un utilisateur
 const updateUserPreferences = async (req, res) => {
-    const {id} = req.params;
-    const {preferences} = req.body;
+    const { id } = req.params;
+    const { preferences } = req.body;
 
     try {
         const user = await User.findByIdAndUpdate(
             id,
-            {$set: {preferences}},
-            {new: true}
+            { $set: { preferences } },
+            { new: true }
         );
 
         if (!user) {
-            return res.status(404).json({message: 'Utilisateur non trouvé'});
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
-        res.json({message: 'Préférences mises à jour avec succès', preferences: user.preferences});
+        res.json({ message: 'Préférences mises à jour avec succès', preferences: user.preferences });
     } catch (error) {
         console.error('Erreur lors de la mise à jour des préférences:', error);
-        res.status(500).json({message: 'Erreur interne du serveur'});
+        res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
 
 // Obtenir les préférences d'un utilisateur
 const getUserPreferences = async (req, res) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
     try {
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({message: 'Utilisateur non trouvé'});
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
-        res.json({preferences: user.preferences});
+        res.json({ preferences: user.preferences });
     } catch (error) {
         console.error('Erreur lors de la récupération des préférences:', error);
-        res.status(500).json({message: 'Erreur interne du serveur'});
+        res.status(500).json({ message: 'Erreur interne du serveur' });
     }
 };
 
@@ -527,12 +563,12 @@ const getPointsById = (req, res) => {
     User.findById(id)
         .then((user) => {
             if (!user) {
-                return res.status(404).json({message: 'User not found.'});
+                return res.status(404).json({ message: 'User not found.' });
             }
             res.json({ points: user.points });
 
         })
-        .catch((err) => res.status(500).json({message: err.message}));
+        .catch((err) => res.status(500).json({ message: err.message }));
 }
 
 /**
@@ -558,7 +594,7 @@ const transferPoints = async (req, res) => {
         const receiver = await User.findById(toUserId);
 
         if (!sender || !receiver) {
-            return res.status(404).json({message: 'Utilisateur non trouvé' });
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
         const amountInt = parseInt(amount);
@@ -631,10 +667,10 @@ const getTransactionHistory = async (req, res) => {
                 { receiver: userId }
             ]
         })
-        .sort({ createdAt: -1 })
-        .limit(limit)
-        .populate('sender', 'name')
-        .populate('receiver', 'name');
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .populate('sender', 'name')
+            .populate('receiver', 'name');
 
         res.status(200).json(transactions);
     } catch (error) {
@@ -645,56 +681,56 @@ const getTransactionHistory = async (req, res) => {
 
 const updateAvatar = async (req, res) => {
     console.log("req.file");
-  try {
-    const { id } = req.params;
-    const avatar = req.file;
+    try {
+        const { id } = req.params;
+        const avatar = req.file;
 
-    if (!avatar) {
-      return res.status(400).json({ message: 'Aucune image fournie' });
+        if (!avatar) {
+            return res.status(400).json({ message: 'Aucune image fournie' });
+        }
+
+        console.log(avatar);
+
+        // Vérifier le type de fichier
+        if (!avatar.mimetype.startsWith('image/')) {
+            return res.status(400).json({ message: 'Le fichier doit être une image' });
+        }
+
+        console.log(avatar.mimetype);
+
+        // Vérifier la taille du fichier (max 5MB)
+        if (avatar.size > 5 * 1024 * 1024) {
+            return res.status(400).json({ message: 'L\'image ne doit pas dépasser 5MB' });
+        }
+
+
+        // Déplacer le fichier vers le dossier public/avatars
+        const uploadPath = path.join(__dirname, '../public/avatars', avatar.filename);
+        await fs.promises.mkdir(path.dirname(uploadPath), { recursive: true });
+        await fs.promises.rename(avatar.path, uploadPath);
+
+        // Mettre à jour l'utilisateur dans la base de données
+        const user = await User.findByIdAndUpdate(
+            id,
+            { avatar: `/avatars/${avatar.filename}` },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json({ avatar: user.avatar });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'avatar:', error);
+
+        // Gestion spécifique des erreurs multer
+        if (error.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ message: 'L\'image ne doit pas dépasser 5MB' });
+        }
+
+        res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'avatar' });
     }
-
-    console.log(avatar);
-
-    // Vérifier le type de fichier
-    if (!avatar.mimetype.startsWith('image/')) {
-      return res.status(400).json({ message: 'Le fichier doit être une image' });
-    }
-
-    console.log(avatar.mimetype);
-
-    // Vérifier la taille du fichier (max 5MB)
-    if (avatar.size > 5 * 1024 * 1024) {
-      return res.status(400).json({ message: 'L\'image ne doit pas dépasser 5MB' });
-    }
- 
-
-    // Déplacer le fichier vers le dossier public/avatars
-    const uploadPath = path.join(__dirname, '../public/avatars', avatar.filename);
-    await fs.promises.mkdir(path.dirname(uploadPath), { recursive: true });
-    await fs.promises.rename(avatar.path, uploadPath);
-
-    // Mettre à jour l'utilisateur dans la base de données
-    const user = await User.findByIdAndUpdate(
-      id,
-      { avatar: `/avatars/${avatar.filename}` },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: 'Utilisateur non trouvé' });
-    }
-
-    res.json({ avatar: user.avatar });
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'avatar:', error);
-    
-    // Gestion spécifique des erreurs multer
-    if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ message: 'L\'image ne doit pas dépasser 5MB' });
-    }
-    
-    res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'avatar' });
-  }
 };
 
 // Mettre à jour l'email de l'utilisateur
@@ -767,6 +803,7 @@ module.exports = {
 
     getPointsById,
     approveUser,
+    deletePendingUser,
     makeUserAdmin,
     assignUserToCenter,
     getUsersByCenter,

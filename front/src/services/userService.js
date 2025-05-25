@@ -147,4 +147,30 @@ export const userService = {
     });
     return handleResponse(response);
   },
+
+  /**
+   * Approuve un utilisateur.
+   * @param {string} userId - L'ID de l'utilisateur à approuver.
+   * @returns {Promise<Object>} L'utilisateur approuvé.
+   */
+  async approvePendingUser(userId) {
+    const response = await fetch(`${API_URL}/users/pending/${userId}/approve`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Supprime un utilisateur.
+   * @param {string} userId - L'ID de l'utilisateur à supprimer.
+   * @returns {Promise<void>}
+   */
+  async deletePendingUser(userId) {
+    const response = await fetch(`${API_URL}/users/pending/${userId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  }
 };

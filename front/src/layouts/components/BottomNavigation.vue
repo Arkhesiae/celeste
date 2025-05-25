@@ -1,6 +1,6 @@
 <template>
   <v-bottom-navigation v-if="smAndDown && isLoggedIn" class="bottom-nav" bg-color="onBackground" grow height="80"
-    rounded="xl" style="z-index: 2000 !important;" shift>
+   style="z-index: 2000 !important;" shift>
     <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' })" :active="router.currentRoute.value.path === '/dashboard'">
       <v-icon size="large">{{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}</v-icon>
     </v-btn>
@@ -54,6 +54,7 @@ const emit = defineEmits(['toggle-notifications']);
 .bottom-nav {
   position: fixed;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 24px 24px 0 0;
 }
 
 :deep(.v-btn--active) {

@@ -113,11 +113,11 @@ export const useUserStore = defineStore('user', () => {
    * Approuve un utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
    */
-  const approveUser = async (userId) => {
+  const approvePendingUser = async (userId) => {
     try {
       loading.value = true;
       error.value = null;
-      await userService.updateUser(userId, { status: 'approved' });
+      await userService.approvePendingUser(userId);
       await fetchUsers();
     } catch (err) {
       error.value = err.message || 'Erreur lors de l\'approbation de l\'utilisateur';
@@ -131,11 +131,11 @@ export const useUserStore = defineStore('user', () => {
    * Supprime un utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
    */
-  const deleteUser = async (userId) => {
+  const deletePendingUser = async (userId) => {
     try {
       loading.value = true;
       error.value = null;
-      await userService.deleteUser(userId);
+      await userService.deletePendingUser(userId);
       await fetchUsers();
     } catch (err) {
       error.value = err.message || 'Erreur lors de la suppression de l\'utilisateur';
@@ -199,8 +199,8 @@ export const useUserStore = defineStore('user', () => {
     fetchUsersByCenter,
     fetchCurrentUser,
     assignCenter,
-    approveUser,
-    deleteUser,
+    approvePendingUser,
+    deletePendingUser,
     makeAdmin,
     fetchUsersAndGroupByTeam
   };

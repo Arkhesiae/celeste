@@ -17,6 +17,7 @@ const {
     deleteTeamOccurrence,
     assignTeamToUser,
     getUserShifts,
+    deletePendingUser,
     getUserShiftsWithSubstitutions,
     updateUserPreferences,
     getUserPreferences,
@@ -74,7 +75,8 @@ router.post('/:id/get-shifts-with-substitutions', verifyToken, isUserOrAdmin, ge
 
 // Routes protégées par token et rôle administrateur principal
 router.get('/', verifyToken, isMasterAdmin, getAllUsers);
-router.patch('/:id/approve', verifyToken, isAdmin, approveUser);
+router.post('/pending/:id/approve', verifyToken, isAdmin, approveUser);
+router.delete('/pending/:id', verifyToken, isAdmin, deletePendingUser);
 router.post('/:id/make-admin', verifyToken, isMasterAdmin, makeUserAdmin);
 router.delete('/:id', verifyToken, isMasterAdmin, deleteUserById);
 router.post('/:id/assign-center', verifyToken, isMasterAdmin, assignUserToCenter);

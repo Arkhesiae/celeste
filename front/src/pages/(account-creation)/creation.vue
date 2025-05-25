@@ -568,7 +568,7 @@ const navigateToLogin = () => {
 
 // Validation rules
 const rules = {
-  email: (value) => (/.+@.+\..+/).test(value) || "Adresse email invalide",
+  email: (value) => (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/).test(value) || "Adresse email invalide",
   min: (min) => (value) => value?.length >= min || `Doit contenir au moins ${min} caractères`,
   matchPassword: (value) => value === user.value.password || "Les mots de passe ne correspondent pas",
   required: (value) => !!value || "Champ requis"

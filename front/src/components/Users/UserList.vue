@@ -18,7 +18,7 @@
           label="Sélectionner un centre"
           variant="solo-filled"
           rounded="xl"
-          class="mt-4 "
+          class=""
           flat
           min-width="200px" 
           max-width="300px"

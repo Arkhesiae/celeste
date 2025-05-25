@@ -1,8 +1,8 @@
 <template>
   <v-container class="mb-16">
-    <div class="d-flex justify-space-between my-16 flex-column">
+    
 
-      <div class="d-flex justify-space-between align-center flex-wrap">
+      <div class="  my-16 d-flex justify-space-between align-center flex-wrap">
         <div class="d-flex align-start flex-column">
           <span class="text-h4 font-weight-medium">Tours de service</span>
           <span class="text-h4 text-overline text-medium-emphasis">
@@ -16,7 +16,7 @@
         })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
           min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
       </div>
-    </div>
+ 
 
     <v-row class="position-relative">
       <v-col cols="12" md="8">

@@ -1,14 +1,34 @@
 <template>
   <v-container>
-    <div class="my-16 d-flex flex-column">
+    <div class=" my-16 d-flex justify-space-between align-center">
+
+      <div class="d-flex flex-column">
       <span class="text-h4 font-weight-medium">Nouvelles inscriptions</span>
       <span class="text-h4 text-overline text-medium-emphasis">gérer les nouvelles inscriptions</span>
     </div>
-
+      <v-select
+          v-if="authStore.adminType === 'master'"
+          v-model="selectedCenterId"
+          :items="centers"
+          :item-props="center => ({
+            title: center.name,
+            subtitle: center.oaci
+          })"
+          item-value="_id"
+          label="Sélectionner un centre"
+          variant="solo-filled"
+          rounded="xl"
+          flat
+          min-width="200px" 
+          max-width="300px"
+          @update:model-value="handleCenterChange"
+        />
+    </div>
+    
 
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6" >
-  
+      
       </v-col>
       
       <v-col cols="12" md="6" class="d-flex justify-end gap-2">
@@ -89,7 +109,7 @@
               prepend-icon="mdi-check"
               @click="approveUser(user)"
             >
-              Approuver la candidature
+              Approuver l'inscription
             </v-btn>
             <v-btn
               color="error"
@@ -99,7 +119,7 @@
               @click="rejectUser(user)"
             
             >
-              Rejeter la candidature
+              Rejeter
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -137,19 +157,35 @@ import { useUserStore } from "@/stores/userStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useAuthStore } from '@/stores/authStore';
 import { useTeamStore } from '@/stores/teamStore';
+import { useCenterStore } from '@/stores/centerStore';
 
 const userStore = useUserStore();
 const snackbarStore = useSnackbarStore();
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
+const centerStore = useCenterStore();
 
 const confirmDialog = ref(false);
 const confirmMessage = ref('');
 const confirmAction = ref('');
 const selectedUser = ref(null);
+const selectedCenterId = ref(null);
+
+const centers = computed(() => centerStore.centers);
 
 const pendingUsers = computed(() => {
-  return userStore.users.filter(user => user.registrationStatus === 'pending');
+  let users = userStore.users.filter(user => user.registrationStatus === 'pending');
+  
+  // Si c'est un admin local, ne montrer que les utilisateurs de son centre
+  if (authStore.adminType !== 'master') {
+    users = users.filter(user => user.centerId === authStore.centerId);
+  }
+  // Si un centre est sélectionné, filtrer par ce centre
+  else if (selectedCenterId.value) {
+    users = users.filter(user => user.centerId === selectedCenterId.value);
+  }
+  
+  return users;
 });
 
 const centerTeams = computed(() => {
@@ -184,11 +220,11 @@ const handleConfirmAction = async () => {
 
   try {
     if (confirmAction.value === 'approve') {
-      await userStore.approveUser(selectedUser.value._id);
-      snackbarStore.showNotification('Candidature approuvée', 'onSuccess', 'mdi-check-circle');
+      await userStore.approvePendingUser(selectedUser.value._id);
+      snackbarStore.showNotification('Inscription approuvée', 'onSuccess', 'mdi-check-circle');
     } else {
-      await userStore.deleteUser(selectedUser.value._id);
-      snackbarStore.showNotification('Candidature rejetée', 'onSuccess', 'mdi-check-circle');
+      await userStore.deletePendingUser(selectedUser.value._id);
+      snackbarStore.showNotification('Inscription rejetée', 'onSuccess', 'mdi-check-circle');
     }
   } catch (error) {
     console.error('Erreur lors de l\'action:', error);
@@ -203,10 +239,36 @@ const handleConfirmAction = async () => {
   }
 };
 
+const handleCenterChange = async (centerId) => {
+  try {
+    if (centerId) {
+      await userStore.fetchUsersByCenter(centerId);
+    } else {
+      await userStore.fetchUsers();
+    }
+    snackbarStore.showNotification('Utilisateurs chargés', 'onSuccess', 'mdi-check-circle');
+  } catch (error) {
+    console.error('Erreur lors du chargement des utilisateurs:', error);
+    snackbarStore.showNotification('Erreur lors du chargement des utilisateurs', 'onError', 'mdi-alert-circle');
+  }
+};
+
 onMounted(async () => {
   try {
-    await teamStore.fetchCenterTeams(authStore.centerId);
-    await userStore.fetchUsersOfCenter(authStore.centerId);
+    await Promise.all([
+      centerStore.fetchCenters(),
+      teamStore.fetchCenterTeams(authStore.centerId)
+    ]);
+
+    // Charger les utilisateurs en fonction du type d'admin
+    if (authStore.adminType === 'master') {
+      await userStore.fetchUsers();
+      selectedCenterId.value = null;
+    } else {
+      await userStore.fetchUsersByCenter(authStore.centerId);
+      selectedCenterId.value = authStore.centerId;
+    }
+
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);

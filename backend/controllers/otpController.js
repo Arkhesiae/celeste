@@ -16,7 +16,7 @@ exports.sendOtp = async (req, res) => {
 
     // Générer un nouveau code OTP
     const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expire dans 10 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Expire dans 5 minutes
 
     // Sauvegarder l'OTP dans la base de données
     await Otp.create({
@@ -39,7 +39,7 @@ exports.sendOtp = async (req, res) => {
     res.json({ message: 'Code OTP envoyé avec succès' });
   } catch (error) {
     console.error('Erreur lors de l\'envoi de l\'OTP:', error);
-    res.status(500).json({ message: 'Erreur lors de l\'envoi de l\'OTP' });
+    res.status(500).json({ message: 'Erreur lors de l\'envoi du code' });
   }
 };
 

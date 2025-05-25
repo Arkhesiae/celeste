@@ -285,6 +285,7 @@ const navigateToContact = () => {
 
 const handleLogout = async () => {
   await authStore.logOut();
+  router.push({path: '/login'});
 };
 
 const notificationStore = useNotificationStore();

@@ -15,12 +15,9 @@ const getAllCenters = async (req, res) => {
     }
 };
 
-
-
-
 // ADD A NEW CENTER
 const addCenter = async (req, res) => {
-    const {name, adminId, OACI, type} = req.body;
+    const {name, adminId, OACI, type, numberOfTeams = 12} = req.body;
 
     if (!name) {
         return res.status(400).json({message: 'Le nom du centre est requis'});
@@ -34,12 +31,40 @@ const addCenter = async (req, res) => {
         return res.status(400).json({message: 'Le type du centre est requis'});
     }
 
+    if (numberOfTeams < 1 || numberOfTeams > 50) {
+        return res.status(400).json({message: 'Le nombre d\'équipes doit être compris entre 1 et 50'});
+    }
+
     try {
+        // Créer le centre
         const newCenter = new Center({name, OACI, type});
         await newCenter.save();
+
+        // Créer les équipes
+        const teams = Array.from({ length: numberOfTeams }, (_, i) => ({
+            name: (i + 1).toString(),
+            center: newCenter._id
+        }));
+
+        await Team.insertMany(teams);
+
+        // Si un admin est spécifié, le promouvoir
+        if (adminId) {
+            await User.findByIdAndUpdate(adminId, {
+                isAdmin: true,
+                adminType: "local",
+                centerId: newCenter._id
+            });
+        }
+
         res.status(201).json(newCenter);
     } catch (error) {
         console.error('Erreur lors de la création du centre :', error);
+        // En cas d'erreur, supprimer le centre et ses équipes
+        if (newCenter?._id) {
+            await Center.findByIdAndDelete(newCenter._id);
+            await Team.deleteMany({ center: newCenter._id });
+        }
         res.status(500).json({message: 'Échec de la création du centre'});
     }
 };

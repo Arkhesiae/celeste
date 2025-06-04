@@ -287,7 +287,7 @@ const centerName = computed(() => {
 // États
 const selectedFilter = ref('all');
 const searchQuery = ref('');
-const sortBy = ref('name');
+const sortBy = ref('order');
 const sortDirection = ref('asc');
 const addTeamDialog = ref(false);
 const datePickerDialog = ref(false);
@@ -323,7 +323,7 @@ const filteredAndSortedTeams = computed(() => {
   }
 
   if (sortBy.value === 'order') {
-    return filtered;
+    return filtered.sort((a, b) => a.order - b.order);
   }
 
   return filtered.sort((a, b) => {
@@ -363,7 +363,7 @@ const addNewTeam = async () => {
   
   try {
     await teamStore.addTeam(centerId, newTeamName.value);
-    snackbarStore.showNotification('Nom de l\'équipe mis à jour avec succès', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Equipe ajoutée avec succès', 'onPrimary', "mdi-check");
     addTeamDialog.value = false;
     newTeamName.value = '';
   } catch (error) {
@@ -410,10 +410,10 @@ const setCycleStartDate = async () => {
     ));
 
     await teamStore.updateTeamCycleStartDate(selectedTeam.value._id, utcDate.toISOString());
-    snackbarStore.showNotification('Date de cycle mise à jour avec succès', 'primary');
+    snackbarStore.showNotification('Date de cycle mise à jour avec succès', 'onPrimary', "mdi-check");
     datePickerDialog.value = false;
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la mise à jour de la date de cycle', 'onError');
+    snackbarStore.showNotification('Erreur lors de la mise à jour de la date de cycle : ' + error.message, 'onError', "mdi-alert-circle-outline");
   }
 };
 
@@ -459,7 +459,7 @@ const onDragEnd = async () => {
   try {
     // Mettre à jour l'ordre des équipes dans le store
     await teamStore.updateTeamsOrder(orderedTeams.value.map(team => team._id));
-    snackbarStore.showNotification('Ordre des équipes mis à jour avec succès', 'success');
+    snackbarStore.showNotification('Ordre des équipes mis à jour avec succès', 'onPrimary', "mdi-check");
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'ordre des équipes:', error);
     snackbarStore.showNotification('Erreur lors de la mise à jour de l\'ordre des équipes', 'onError');
@@ -471,7 +471,8 @@ const openReorderDialog = () => {
   reorderDialog.value = true;
 };
 
-const closeReorderDialog = () => {
+const closeReorderDialog = async () => {
+  await onDragEnd();
   reorderDialog.value = false;
 };
 

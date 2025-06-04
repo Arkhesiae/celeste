@@ -127,12 +127,14 @@ const checkUserCenter = async (req, res, next) => {
  */
 const isUserOrAdmin = (req, res, next) => {
     const targetUserId = req.params.id;
+
     const currentUserId = req.user.userId;
     const isAdmin = req.user.isAdmin ;
 
     if (currentUserId === targetUserId || isAdmin) {
         next();
     } else {
+        console.log(req);
         return res.status(403).json({
             success: false,
             message: 'Accès refusé. Vous devez être l\'utilisateur concerné ou un administrateur.'

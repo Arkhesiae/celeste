@@ -43,12 +43,11 @@
             'empty-day': !day.isInMonth
           }"
         >
-
-           <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" type="rempla" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/>
+        <PendingChip v-if="substitutionStore.hasOwnPendingDemand(day.date.toISOString())" style="bottom:-8px !important; " :date="day.date"/>
 <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 16" type="switch" status="accepted"/>-->
 <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 17" type="rempla" status="pending"/>-->
 
-              <span class="text-body-1 " :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'">
+              <span class="text-body-2" :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'" >
                 {{ day.date.getUTCDate() }} 
               </span>
               <span class="text-caption position-absolute opacity-50" v-if="isWorkDay(day.date)" style="top: 0; right: 0;">{{ vacationsOfUser.get(day.date.toISOString())?.shift?.name }}</span>
@@ -58,8 +57,24 @@
             class="d-flex justify-center"
           >
 
-            <div  v-if="substitutionStore.hasAvailableSubstitutions(day.date)" style="height: 8px ; width: 8px ; border-radius: 8px ; background: rgb(var(--v-theme-remplacement)) ; margin-left: 1px ; margin-right: 1px" ></div>
-            <div  v-if="substitutionStore.hasAvailableSwitches(day.date)" style="height: 8px ; width: 8px ; border-radius: 8px ; background: rgb(var(--v-theme-permutation)) ; margin-left: 1px ; margin-right: 1px"></div>
+          <div class="d-flex justify-center">
+              <div 
+                v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
+                class="indicator-dot remplacement "
+                style="background: rgb(var(--v-theme-remplacement)) !important"
+              ></div>
+              <div 
+                v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
+                class="indicator-dot permutation ml-1"
+                style="background: rgb(var(--v-theme-permutation)) !important"
+              ></div>
+              <div 
+                v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
+                class="indicator-dot other-demand ml-1"
+                style="background: rgba(var(--v-theme-surfaceContainerHighest), 1) !important"
+              ></div>
+            </div>
+   
           </div>
         </v-sheet>
       </div>
@@ -97,18 +112,7 @@ const handleSwipe = (direction) => {
 };
 
 
-const getStatus = (date) => {
-  if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {
-    return 'accepted-accepter';
-  }
-  if (substitutionStore.hasAcceptedSubstitutionsAsPoster(date)) {
-    return 'accepted-poster';
-  }
-  if (substitutionStore.hasOwnOpenSubstitutions(date)) {
-    return 'pending';
-  }
-  return '';
-};
+
 
 </script>
 
@@ -120,6 +124,12 @@ const getStatus = (date) => {
 .isWorkDay {
   opacity: .9;
   font-weight: 900 !important;
+}
+
+.indicator-dot {
+  height: 8px;
+  width: 8px;
+  border-radius: 8px;
 }
 
 .selected {

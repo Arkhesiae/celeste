@@ -64,6 +64,8 @@ const SubstitutionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Rotation.days'
     }],
+    isTrueSwitch: {type: Boolean, default: false},
+    type: {type: String, enum: ['switch', 'hybrid', 'substitution']},
     comment: {
         type: String,
         default: ''

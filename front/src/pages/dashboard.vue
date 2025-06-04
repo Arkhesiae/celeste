@@ -1,5 +1,5 @@
 <script setup>
-import {useAuthStore} from "@/stores/authStore.js";
+import { useAuthStore } from "@/stores/authStore.js";
 import { ref, computed, onMounted, watch } from 'vue';
 import { useDate } from 'vuetify';
 import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
@@ -10,7 +10,10 @@ import { useTeamStore } from "@/stores/teamStore.js";
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useCalendar } from '@/composables/useCalendar';
-import {vacationService} from "@/services/vacationService.js";
+import { vacationService } from "@/services/vacationService.js";
+import { useRotationStore } from "@/stores/rotationStore.js";
+import DemandCard from '@/components/OwnDemandCard.vue';
+import OwnDemandCard from "@/components/OwnDemandCard.vue";
 
 const authStore = useAuthStore()
 const teamStore = useTeamStore()
@@ -27,6 +30,7 @@ const currentYear = ref(new Date().getFullYear());
 const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const vacationsOfUser = ref(new Map());
 const rotationsMap = ref(new Map());
+const currentActiveRotation = ref(null);
 
 // Utilisation du composable useCalendar
 const { calendarDays } = useCalendar(currentYear, currentMonth);
@@ -44,34 +48,35 @@ const isWorkDay = (date) => {
 
 const isToday = (date) => {
   const today = new Date();
-  return date.getDate() === today.getDate() && 
-         date.getMonth() === today.getMonth() && 
-         date.getFullYear() === today.getFullYear();
+  return date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear();
 };
 
 // Fonction pour obtenir la vacation actuelle ou la prochaine
 const getVacation = computed(() => {
   const today = new Date();
   const todayISO = new Date(today.toISOString().split('T')[0]);
-  
+
   // Vérifier d'abord la vacation d'aujourd'hui
   const todayVacation = vacationsOfUser.value.get(todayISO.toISOString());
-  if (todayVacation && todayVacation.shift.name !== 'Rest Day') {
+  console.log(todayVacation);
+  if (todayVacation && todayVacation.shift && todayVacation.shift.name !== 'Rest Day') {
     return todayVacation;
   }
 
-  
+
   // Si pas de vacation aujourd'hui, chercher la prochaine
   const sortedDates = Array.from(vacationsOfUser.value.keys())
     .map(date => new Date(date))
     .filter(date => date > today)
     .sort((a, b) => a - b);
-    
+
   if (sortedDates.length > 0) {
     const nextDate = sortedDates[0].toISOString();
     return vacationsOfUser.value.get(nextDate);
   }
-  
+
   return null;
 });
 
@@ -80,7 +85,7 @@ const getTomorrowVacation = computed(() => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   const tomorrowISO = new Date(tomorrow.toISOString().split('T')[0]);
-  
+
   return vacationsOfUser.value.get(tomorrowISO.toISOString());
 });
 
@@ -90,15 +95,18 @@ const nextSubstitution = computed(() => {
   const allSubstitutions = [
 
   ];
-  
+
   // Filtrer les substitutions futures et les trier par date
   const futureSubstitutions = allSubstitutions
     .filter(sub => new Date(sub.posterShift.date) > today)
     .sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
-    
+
   return futureSubstitutions[0] || null;
 });
 
+const pendingDemands = computed(() => {
+  return substitutionStore.ownPendingHybridSubstitutions.concat(substitutionStore.ownPendingTrueSubstitutions).concat(substitutionStore.ownPendingTrueSwitches);
+});
 
 // Chargement des données
 const isLoading = ref(true);
@@ -121,10 +129,10 @@ const quickActions = [
 const loadData = async () => {
   try {
     isLoading.value = true;
-    
+
     // Charger l'équipe actuelle
     await teamStore.fetchCurrentTeamOfUser(authStore.userId);
-    
+
     // Charger les substitutions
     await substitutionStore.fetchAllDemands({
       startDate: new Date().toISOString(),
@@ -138,16 +146,14 @@ const loadData = async () => {
       vacationsOfUser.value.set(date, { shift, teamObject });
     });
 
-    // // Mettre à jour les statistiques
-    // stats.value = {
-    //   remplacements: substitutionStore.getOpenSubstitutions.length,
-    //   permutations: substitutionStore.getOpenSwitches.length,
-    //   points: authStore.points || 0
-    // };
+    // Charger le tour de service actif
+    const rotationStore = useRotationStore();
+    await rotationStore.fetchRotations(authStore.centerId);
+    currentActiveRotation.value = rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
 
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);
-    snackbarStore.showNotification("Erreur lors du chargement des données : "+ error.message, 'onError', 'mdi-alert-circle');
+ 
   } finally {
     isLoading.value = false;
   }
@@ -159,6 +165,24 @@ watch([currentMonth, currentYear], () => {
 });
 
 onMounted(loadData);
+
+const handleAcceptDemand = async (demand) => {
+  try {
+    // Implémenter la logique d'acceptation
+    console.log('Accepter la demande:', demand);
+  } catch (error) {
+    console.error('Erreur lors de l\'acceptation de la demande:', error);
+  }
+};
+
+const handleDeclineDemand = async (demand) => {
+  try {
+    // Implémenter la logique de refus
+    console.log('Refuser la demande:', demand);
+  } catch (error) {
+    console.error('Erreur lors du refus de la demande:', error);
+  }
+};
 </script>
 
 <route>
@@ -170,185 +194,230 @@ onMounted(loadData);
 </route>
 
 <template>
-<v-container >
-  <!-- En-tête -->
-  <div class="d-flex justify-space-between align-center mb-8">
-    <div class="d-flex flex-column">
-      <span class="text-h4 font-weight-medium">Bienvenue {{userName}} !</span>
-      <span class="text-h4 text-overline text-medium-emphasis">Tableau de bord</span>
-    </div>
-    <v-btn
-      v-if="!smAndDown"
-      color="remplacement"
-      height="48px"
-      class="px-6"
-      style="border-radius: 16px !important"
-      prepend-icon="mdi-plus"
-   
-      @click="$router.push('/exchange/replace')"
-    >
-      Nouveau remplacement
-    </v-btn>
-  </div>
-
-  <v-row>
-    <v-col cols="12"  class="pa-2">
-      <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
-        <v-icon icon="mdi-bell-outline" size="16" color="remplacement" style="position: absolute; top: 16px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;"/>
-        <div class="d-flex justify-space-between align-center">
-          <div class="d-flex align-center ga-2 ml-4">
-            <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
-            <span class="font-weight-medium text-overline">Annonce</span>
-          </div>
-          <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement" @click="showAnnouncement = false" />
-        </div>
-        <v-card-title class="text-h6 py-0 font-weight-medium ">Lancement du nouveau site</v-card-title>
-        <v-card-text>
-          <div class="text-medium-emphasis">
-            Bienvenue à tous ! 
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
-
-  <!-- Grille principale -->
-  <v-row>
-    
-    <v-col cols="12" md="6" class="pa-2">
-    <!-- Carte des vacations -->
-    <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-4" color="surfaceContainer">
-      <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
-      <v-card-text>
-        <div v-if="getVacation">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div>
-              <div class="text-h5 font-weight-medium">{{ getVacation.shift.name }}</div>
-              <div class="text-medium-emphasis">
-                {{ getVacation.shift.startTime }} - {{ getVacation.shift.endTime }}
-              </div>
-            </div>
-            <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg" style="right: 0; top: 0;">
-              Équipe {{ getVacation.teamObject.name }}
-            </v-chip>
-          </div>
-        </div>
-        <div v-else class="text-medium-emphasis">
-          Pas de vacation aujourd'hui
-        </div>
-      </v-card-text>
-    </v-card>
-
-    <!-- Carte de la vacation de demain -->
-    <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
-      <v-card-title class="text-h6 font-weight-medium">Demain</v-card-title>
-      <v-card-text>
-        <div v-if="getTomorrowVacation">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div>
-              <div class="text-h5 font-weight-medium">{{ getTomorrowVacation.shift.name }}</div>
-              <div class="text-medium-emphasis">
-                {{ getTomorrowVacation.shift.startTime }} - {{ getTomorrowVacation.shift.endTime }}
-              </div>
-            </div>
-            <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg" style="right: 0; top: 0;">
-              Équipe {{ getTomorrowVacation.teamObject.name }}
-            </v-chip>
-          </div>
-        </div>
-        <div v-else class="text-medium-emphasis">
-          Pas de vacation demain
-        </div>
-      </v-card-text>
-    </v-card>
-
-    <!-- Carte de la prochaine substitution -->
-    <v-card rounded="xl"  class="mb-4 shadow-alt pa-4" color="remplacement" z-index="-01000">
-      <v-card-title class="text-h6 font-weight-medium">A venir</v-card-title>
-      <v-card-text>
-        <div v-if="nextSubstitution">
-          <div class="d-flex align-center justify-space-between mb-2">
-            <div>
-              <div class="text-h5 font-weight-medium">{{ nextSubstitution.type === 'replacement' ? 'Remplacement' : 'Permutation' }}</div>
-              <div class="text-medium-emphasis">
-                {{ new Date(nextSubstitution.posterShift.date).toLocaleDateString() }}
-              </div>
-              <div class="text-medium-emphasis">
-                {{ nextSubstitution.posterShift.shift.name }}
-              </div>
-            </div>
-            <v-chip :color="nextSubstitution.type === 'replacement' ? 'remplacement' : 'permutation'" variant="flat" size="small" rounded="lg">
-              {{ nextSubstitution.type === 'replacement' ? 'Remplacement' : 'Permutation' }}
-            </v-chip>
-          </div>
-        </div>
-        <div v-else class="text-onRemplacement" >
-          Aucun remplacement ou permutation à venir
-        </div>
-      </v-card-text>
-    </v-card>
-    </v-col>
-
-    
-
-    <!-- Section Points et Équipe -->
-    <v-col cols="12" md="6" :class="smAndDown ? 'pa-0' : 'pa-2'">
-      <v-card rounded="xl" elevation="0" class="pa-4" :color="smAndDown ? 'surfaceContainerHigh' : 'surfaceContainer'">
-
-
-
-      <!-- Carte des points -->
-      <div class="mb-4 smooth-shadow rounded-xl">
-          <PointsCard variant="tonal" :points="stats.points" :transactions="[]" color="remplacement"/>
+  <v-container>
+    <!-- En-tête -->
+    <div class="d-flex justify-space-between align-center mb-8">
+      <div class="d-flex flex-column">
+        <span class="text-h4 font-weight-medium">Bienvenue {{ userName }} !</span>
+        <span class="text-h4 text-overline text-medium-emphasis">Tableau de bord</span>
       </div>
+      <v-btn v-if="!smAndDown" color="remplacement" height="48px" class="px-6" style="border-radius: 16px !important"
+        prepend-icon="mdi-plus" @click="$router.push('/exchange/replace')">
+        Nouveau remplacement
+      </v-btn>
+    </div>
 
-      <!-- Section Calendrier -->
-
-      <v-card rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow pa-2"  color="surfaceContainer">
-        <v-card-title class="text-h6 font-weight-medium">Calendrier</v-card-title>
-        <v-card-text>
-          <CalendarMobile
-            :daysOfWeek="daysOfWeek"
-            :calendarDays="calendarDays"
-            :isSelected="isSelected"
-            :isWorkDay="isWorkDay"
-            :isToday="isToday"
-            :hasAvailableSubstitution="hasAvailableSubstitution"
-            :hasOpenSubstitution="hasOpenSubstitution"
-            :hasAcceptedSubstitutionAsPoster="hasAcceptedSubstitutionAsPoster"
-            :hasAcceptedSubstitutionAsAccepter="hasAcceptedSubstitutionAsAccepter"
-            :hasAvailableSwitch="hasAvailableSwitch"
-            :vacationsOfUser="vacationsOfUser"
-            :rotationsMap="rotationsMap"
-            @select-day="selectedDate = $event"
-            @swipe-left="currentMonth = (currentMonth + 1) % 12"
-            @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12"
-          />
-        </v-card-text>
-      </v-card>
-
-      <!-- Carte de l'équipe -->
-      <v-card rounded="xl" elevation="0" class="pa-2">
-        <v-card-title class="text-h6 font-weight-medium">Mon équipe</v-card-title>
-        <v-icon icon="mdi-account-group" size="16" color="onBackground" style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;"/>
-        <v-card-text>
-          <div v-if="teamStore.currentTeam" class="d-flex flex-column align-center">
-            <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
-              <v-icon icon="mdi-account-group" size="32"></v-icon>
-            </v-avatar>
-            <div class="text-h5 font-weight-bold mb-2">Equipe {{ teamStore.currentTeam.name }}</div>
-            <div class="text-medium-emphasis text-center">
-              <v-icon icon="mdi-calendar-start" class="mr-2"></v-icon>
-              Cycle depuis le {{ new Date(teamStore.currentTeam.cycleStartDate).toLocaleDateString() }}
+    <v-row>
+      <v-col cols="12" class="pa-2">
+        <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4"
+          color="surfaceContainer">
+          <v-icon icon="mdi-bell-outline" size="16" color="remplacement"
+            style="position: absolute; top: 16px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
+          <div class="d-flex justify-space-between align-center">
+            <div class="d-flex align-center ga-2 ml-4">
+              <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
+              <span class="font-weight-medium text-overline">Annonce</span>
             </div>
+            <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement"
+              @click="showAnnouncement = false" />
           </div>
-          <div v-else class="text-center text-medium-emphasis">
-            Aucune équipe assignée
-          </div>
-        </v-card-text>
-      </v-card>
+          <v-card-title class="text-h6 py-0 font-weight-medium ">Lancement du nouveau site</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Bienvenue à tous !
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
 
-      <!-- Actions rapides
+    <!-- Grille principale -->
+    <v-row>
+
+      <v-col cols="12" md="6" class="pa-2">
+        <!-- Carte des vacations -->
+        <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-4" color="surfaceContainer">
+          <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
+          <v-card-text>
+            <div v-if="getVacation && getVacation.shift">
+              <div class="d-flex align-center justify-space-between mb-2">
+                <div>
+                  <div class="text-h5 font-weight-medium">{{ getVacation.shift.name }}</div>
+                  <div class="text-medium-emphasis">
+                    {{ getVacation.shift.startTime }} - {{ getVacation.shift.endTime }}
+                  </div>
+                </div>
+                <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
+                  style="right: 0; top: 0;">
+                  Équipe {{ getVacation.teamObject.name }}
+                </v-chip>
+              </div>
+            </div>
+            <div v-else class="text-medium-emphasis"> 
+              <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2"/>
+              Pas de vacation aujourd'hui 
+            </div>
+          </v-card-text>
+        </v-card>
+
+
+        <!-- Carte de la vacation de demain -->
+        <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
+          <v-card-title class="text-h6 font-weight-medium">Demain</v-card-title>
+          <v-card-text>
+            <div v-if="getTomorrowVacation && getTomorrowVacation.shift">
+              <div class="d-flex align-center justify-space-between mb-2">
+                <div>
+                  <div class="text-h5 font-weight-medium">{{ getTomorrowVacation.shift.name }}</div>
+                  <div class="text-medium-emphasis">
+                    {{ getTomorrowVacation.shift.startTime }} - {{ getTomorrowVacation.shift.endTime }}
+                  </div>
+                </div>
+                <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
+                  style="right: 0; top: 0;">
+                  Équipe {{ getTomorrowVacation.teamObject.name }}
+                </v-chip>
+              </div>
+            </div>
+            <div v-else class="text-medium-emphasis">
+              <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2"/>
+              Pas de vacation demain
+            </div>
+          </v-card-text>
+        </v-card>
+
+        <!-- Carte de la prochaine substitution -->
+        <v-card rounded="xl" class="mb-4 shadow-alt pa-4" color="remplacement" z-index="-01000">
+          <v-card-title class="text-h6 font-weight-medium">A venir</v-card-title>
+          <v-card-text>
+            <div v-if="nextSubstitution">
+              <div class="d-flex align-center justify-space-between mb-2">
+                <div>
+                  <div class="text-h5 font-weight-medium">{{ nextSubstitution.type === 'replacement' ? 'Remplacement' :
+                    'Permutation' }}</div>
+                  <div class="text-medium-emphasis">
+                    {{ new Date(nextSubstitution.posterShift.date).toLocaleDateString() }}
+                  </div>
+                  <div class="text-medium-emphasis">
+                    {{ nextSubstitution.posterShift.shift.name }}
+                  </div>
+                </div>
+                <v-chip :color="nextSubstitution.type === 'replacement' ? 'remplacement' : 'permutation'" variant="flat"
+                  size="small" rounded="lg">
+                  {{ nextSubstitution.type === 'replacement' ? 'Remplacement' : 'Permutation' }}
+                </v-chip>
+              </div>
+            </div>
+            <div v-else class="text-onRemplacement">
+              Aucun remplacement ou permutation à venir
+            </div>
+          </v-card-text>
+        </v-card>
+
+        <!-- Carte des demandes en attente -->
+        <v-card rounded="xl" class="mb-4 shadow-alt pa-1" color="surfaceContainer"   z-index="-01000">
+          <v-card-title class="text-h6 font-weight-medium">Demande en attente</v-card-title>
+          <v-card-text>
+            <div v-if="pendingDemands.length > 0">
+              <OwnDemandCard
+                v-for="demand in pendingDemands"
+                :key="demand.id"
+                :demand="demand"
+              />
+            </div>
+            <div v-else class="text-center py-4">
+              <v-icon
+                icon="mdi-check-circle-outline"
+                color="success"
+                size="large"
+                class="mb-2"
+              />
+              <div class="text-body-1">Aucune demande en attente</div>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+
+
+
+      <!-- Section Points et Équipe -->
+      <v-col cols="12" md="6" :class="smAndDown ? 'pa-0' : 'pa-2'">
+
+        <!-- Carte du tour de service actif -->
+        <v-card rounded="xl" elevation="0" class="mb-4 pa-6" color="surfaceContainer" @click="$router.push('/rotation')" style="cursor: pointer;">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <v-card-title class="text-h6 font-weight-medium pa-0">Tour de service actif</v-card-title>
+              <v-card-text class="pa-0">
+                <div v-if="currentActiveRotation">
+                  <div class="d-flex align-center justify-space-between mb-2">
+                    <div>
+                      <div class="text-h5 font-weight-medium">{{ currentActiveRotation.name }}</div>
+                      <div class="text-medium-emphasis">
+                        Actif depuis le {{ new Date(currentActiveRotation.activationDate).toLocaleDateString() }}
+                      </div>
+                    </div>
+                    <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
+                      style="right: 0; top: 0;">
+                      Actif
+                    </v-chip>
+                  </div>
+                </div>
+                <div v-else class="text-medium-emphasis">
+                  Aucun tour de service actif
+                </div>
+              </v-card-text>
+            </div>
+            <v-icon icon="mdi-chevron-right" color="remplacement" size="24" />
+          </div>
+        </v-card>
+
+
+        <v-card rounded="xl" elevation="0" class="pa-4"
+          :color="smAndDown ? 'surfaceContainerHigh' : 'surfaceContainer'">
+
+
+
+          <!-- Carte des points -->
+          <div class="mb-4 smooth-shadow rounded-xl">
+            <PointsCard variant="tonal" :points="stats.points" :transactions="[]" color="remplacement" />
+          </div>
+
+          <!-- Section Calendrier -->
+
+          <v-card rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow pa-2" color="surfaceContainer">
+            <v-card-title class="text-h6 font-weight-medium">Calendrier</v-card-title>
+            <v-card-text>
+              <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected"
+                :isWorkDay="isWorkDay" :isToday="isToday" :vacationsOfUser="vacationsOfUser" :rotationsMap="rotationsMap"
+                @select-day="selectedDate = $event" @swipe-left="currentMonth = (currentMonth + 1) % 12"
+                @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12" />
+            </v-card-text>
+          </v-card>
+
+          <!-- Carte de l'équipe -->
+          <v-card rounded="xl" elevation="0" class="pa-2">
+            <v-card-title class="text-h6 font-weight-medium">Mon équipe</v-card-title>
+            <v-icon icon="mdi-account-group" size="16" color="onBackground"
+              style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
+            <v-card-text>
+              <div v-if="teamStore.currentTeam" class="d-flex flex-column align-center">
+                <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
+                  <v-icon icon="mdi-account-group" size="32"></v-icon>
+                </v-avatar>
+                <div class="text-h5 font-weight-bold mb-2">Equipe {{ teamStore.currentTeam.name }}</div>
+                <div class="text-medium-emphasis text-center">
+                  <v-icon icon="mdi-calendar-start" class="mr-2"></v-icon>
+                  Cycle depuis le {{ new Date(teamStore.currentTeam.cycleStartDate).toLocaleDateString() }}
+                </div>
+              </div>
+              <div v-else class="text-center text-medium-emphasis">
+                Aucune équipe assignée
+              </div>
+            </v-card-text>
+          </v-card>
+
+          <!-- Actions rapides
       <v-card rounded="xl" elevation="0">
         <v-card-title class="text-h6 font-weight-medium">Actions rapides</v-card-title>
         <v-card-text>
@@ -365,60 +434,60 @@ onMounted(loadData);
           </v-list>
         </v-card-text>
       </v-card> -->
-    </v-card>
-    </v-col>
+        </v-card>
+      </v-col>
 
-  </v-row>
+    </v-row>
 
-  <!-- Statistiques -->
-  <v-row class="mt-4">
-    <v-col cols="12" md="4">
-      <v-card rounded="xl" elevation="0">
-        <v-card-text class="text-center">
-          <v-icon color="primary" size="48" class="mb-4">mdi-account-clock</v-icon>
-          <div class="text-h4 font-weight-bold">{{ stats.remplacements }}</div>
-          <div class="text-medium-emphasis">Remplacements</div>
-        </v-card-text>
-      </v-card>
-    </v-col>
-    <v-col cols="12" md="4">
-      <v-card rounded="xl" elevation="0">
-        <v-card-text class="text-center">
-          <v-icon color="secondary" size="48" class="mb-4">mdi-swap-horizontal</v-icon>
-          <div class="text-h4 font-weight-bold">{{ stats.permutations }}</div>
-          <div class="text-medium-emphasis">Permutations</div>
-        </v-card-text>
-      </v-card>
-    </v-col>
-    <v-col cols="12" md="4">
-      <v-card rounded="xl" elevation="0">
-        <v-card-text class="text-center">
-          <v-icon color="tertiary" size="48" class="mb-4">mdi-star</v-icon>
-          <div class="text-h4 font-weight-bold">{{ stats.points }}</div>
-          <div class="text-medium-emphasis">Points</div>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
-</v-container>
+    <!-- Statistiques -->
+    <!-- <v-row class="mt-4">
+      <v-col cols="12" md="4">
+        <v-card rounded="xl" elevation="0">
+          <v-card-text class="text-center">
+            <v-icon color="primary" size="48" class="mb-4">mdi-account-clock</v-icon>
+            <div class="text-h4 font-weight-bold">{{ stats.remplacements }}</div>
+            <div class="text-medium-emphasis">Remplacements</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-card rounded="xl" elevation="0">
+          <v-card-text class="text-center">
+            <v-icon color="secondary" size="48" class="mb-4">mdi-swap-horizontal</v-icon>
+            <div class="text-h4 font-weight-bold">{{ stats.permutations }}</div>
+            <div class="text-medium-emphasis">Permutations</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="4">
+        <v-card rounded="xl" elevation="0">
+          <v-card-text class="text-center">
+            <v-icon color="tertiary" size="48" class="mb-4">mdi-star</v-icon>
+            <div class="text-h4 font-weight-bold">{{ stats.points }}</div>
+            <div class="text-medium-emphasis">Points</div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row> -->
+  </v-container>
 </template>
 
 <style scoped>
 .v-card-dashboard {
   background: rgba(var(--v-theme-background), 0.4);
- 
+
 }
 
-.shadow{
-  box-shadow: 
+.shadow {
+  box-shadow:
     -31px -31px 43px 0 rgba(var(--v-theme-remplacement), 0.64),
     26px 26px 48px 0 rgba(0, 0, 0, 0.16);
 }
 
 .shadow-alt {
-  
-  box-shadow: 
-  
+
+  box-shadow:
+
     0px 40px 50px 10px rgba(var(--v-theme-remplacement), .011);
 }
 </style>

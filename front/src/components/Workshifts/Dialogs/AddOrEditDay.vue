@@ -119,10 +119,6 @@ const props = defineProps({
     type: Array,
     default: () => ['A', 'B', 'C']
   },
-  isEditMode: {
-    type: Boolean,
-    default: false
-  },
   existingDay: {
     type: Object,
     default: null
@@ -287,6 +283,7 @@ const close = () => {
   reset();
   localDialogVisible.value = false;
 };
+
 </script>
 
 <style scoped>

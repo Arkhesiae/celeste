@@ -11,6 +11,7 @@ const { createDelayedTransaction, processPendingTransactions } = require('../ser
 const path = require('path');
 const fs = require('fs');
 const { sendEmailApproval, sendEmailRejection } = require('../services/email/approvalEmail');
+
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
     const { name, lastName, password, email, centerId, team, zone } = req.body;
@@ -137,6 +138,7 @@ const deletePendingUser = async (req, res) => {
             // En production, envoyer l'email
             await sendEmailRejection(user.email);
         }
+        res.status(200).json({message: 'Candidature rejetée', user});
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur:', error);
         res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -165,6 +167,42 @@ const makeUserAdmin = async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la promotion de l\'utilisateur:', error);
         res.status(500).json({ message: 'Échec de la promotion de l\'utilisateur en administrateur' });
+    }
+};
+
+// Retirer le statut administrateur d'un utilisateur
+const removeUserAdmin = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        // Vérifier que l'utilisateur n'est pas le dernier admin de son centre
+        if (user.isAdmin && user.adminType === 'local') {
+            const centerAdmins = await User.countDocuments({
+                centerId: user.centerId,
+                isAdmin: true,
+                adminType: 'local'
+            });
+
+            if (centerAdmins <= 1) {
+                return res.status(400).json({ 
+                    message: 'Impossible de retirer le statut admin : c\'est le dernier administrateur du centre' 
+                });
+            }
+        }
+
+        user.isAdmin = false;
+        user.adminType = null;
+        await user.save();
+
+        res.json({ message: 'Statut administrateur retiré avec succès' });
+    } catch (error) {
+        console.error('Erreur lors du retrait du statut administrateur:', error);
+        res.status(500).json({ message: 'Échec du retrait du statut administrateur' });
     }
 };
 
@@ -598,7 +636,6 @@ const transferPoints = async (req, res) => {
         }
 
         const amountInt = parseInt(amount);
-        console.log(scheduledDate)
         // Si la date d'effectivité est dans le futur, créer une transaction différée
         if (scheduledDate) {
             const transaction = await createDelayedTransaction({
@@ -794,6 +831,29 @@ const getUserInfoByEmail = async (req, res) => {
     }
 };
 
+const getDevListUsers = async (req, res) => {
+    try {
+        const { role } = req.query;
+        
+        if (role === 'team') {
+            // Récupérer uniquement les utilisateurs d'équipe (non admin)
+            const users = await User.find({
+                isAdmin: false,
+                adminType: null,
+                isActive: true
+            }).select('name email teams centerId');
+            
+            return res.json(users);
+        }
+        
+        // Pour l'instant, nous ne gérons que le cas 'team'
+        return res.status(400).json({ message: 'Rôle non supporté' });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+};
+
 // Exporter les fonctions du module
 module.exports = {
     createUser,
@@ -805,6 +865,7 @@ module.exports = {
     approveUser,
     deletePendingUser,
     makeUserAdmin,
+    removeUserAdmin,
     assignUserToCenter,
     getUsersByCenter,
     getUserTeamAtDate,
@@ -822,5 +883,6 @@ module.exports = {
     updateAvatar,
     checkEmailAvailability,
     updateEmail,
-    getUserInfoByEmail
+    getUserInfoByEmail,
+    getDevListUsers
 };

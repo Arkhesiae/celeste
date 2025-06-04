@@ -26,7 +26,7 @@
       <CalendarSidePanel v-if="selectedDate && !mdAndDown":cols="4" :formattedDate="formattedDate"
         :vacationsOfUser="vacationsOfUser" :selectedDate="selectedDate"
         @openRemplaDialog="openRemplaDialog"
-        @openSubstitutionsDrawer="showSubstitutionsDrawer = true" @openSwitchesDrawer="showSwitchesDrawer = true"
+        @openDrawer="handleOpenDrawer"
         @cancelDemand="handleCancelDemand"
         @unacceptDemand="handleUnacceptDemand" />
  
@@ -35,8 +35,9 @@
       <CalendarBottomSheet v-if="mdAndDown" v-model="showBottomSheet" :formattedDate="formattedDate"
         :vacationsOfUser="vacationsOfUser" :selectedDate="selectedDate"
         @update:modelValue="onBottomSheetClose"
-        @openRemplaDialog="openRemplaDialog" @openSubstitutionsDrawer="showSubstitutionsDrawer = true"
-        @openSwitchesDrawer="showSwitchesDrawer = true" @cancelDemand="handleCancelDemand"
+        @openRemplaDialog="openRemplaDialog" 
+        @openDrawer="handleOpenDrawer"
+        @cancelDemand="handleCancelDemand" 
         @unacceptDemand="handleUnacceptDemand" />
     </v-row>
 
@@ -57,9 +58,12 @@
     </v-dialog>
 
     <!-- Drawers -->
-    <AvailableSubstitutionsDrawer v-model="showSubstitutionsDrawer" :selectedDate="selectedDate" />
-
-    <AvailableSwitchesDrawer v-model="showSwitchesDrawer" :selectedDate="selectedDate" />
+    <UnifiedDrawer 
+      v-model="activeDrawer.show" 
+      :selected-date="selectedDate"
+      :drawer-type="activeDrawer.type"
+      @update:model-value="activeDrawer.show = false"
+    />
 
     <ConfirmationDialog
       :isDialogVisible="showCancelConfirmationDialog"
@@ -104,8 +108,7 @@ import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
 import CalendarSidePanel from "@/components/Calendar/CalendarSidePanel.vue";
 import CalendarBottomSheet from "@/components/Calendar/CallendarBottomSheet.vue";
 import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
-import AvailableSubstitutionsDrawer from "@/components/Calendar/Drawers/AvailableSubstitutionsDrawer.vue";
-import AvailableSwitchesDrawer from "@/components/Calendar/Drawers/AvailableSwitchesDrawer.vue";
+import UnifiedDrawer from "@/components/Calendar/Drawers/UnifiedDrawer.vue";
 import ConfirmationDialog from "@/components/common/ConfirmationDialog.vue";
 
 /** Constantes */
@@ -113,6 +116,8 @@ const CALENDAR_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const DIALOG_MODES = {
   REMPLACEMENT: 'Rempla'
 };
+
+
 
 /**  Initialisation des stores */
 const authStore = useAuthStore();
@@ -128,8 +133,7 @@ const remplaDialog = ref(false);
 const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const loadingVacations = ref(false);
-const showSubstitutionsDrawer = ref(false);
-const showSwitchesDrawer = ref(false);
+const activeDrawer = ref({ show: false, type: null });
 const showCancelConfirmationDialog = ref(false);
 const showUnacceptConfirmationDialog = ref(false);
 const substitutionToCancel = ref(null);
@@ -159,7 +163,7 @@ const rotationsMap = ref(new Map());
 // Computed properties
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
-  return vacationsOfUser.value.get(selectedDate.value);
+  return {shift : vacationsOfUser.value.get(selectedDate.value).shift._id, teamObject : vacationsOfUser.value.get(selectedDate.value).teamObject};
 });
 
 const accepterName = computed(() => {
@@ -178,8 +182,8 @@ const isToday = (date) => {
 };
 
 const isWorkDay = (date) => {
-  const shift = vacationsOfUser.value.get(date.toISOString())?.shift?.name;
-  return shift ? shift !== 'Rest Day' : false;
+  const shift = vacationsOfUser.value.get(date.toISOString())?.shift;
+  return shift ? shift.type !== 'rest' : false;
 };
 
 // Handlers
@@ -191,6 +195,11 @@ const selectDay = (date) => {
 const openRemplaDialog = (mode) => {
   dialogMode.value = mode;
   remplaDialog.value = true;
+};
+
+const handleOpenDrawer = (type) => {
+  console.log("openDrawer", type)
+  activeDrawer.value = { show: true, type };
 };
 
 const closeRemplaDialog = () => {
@@ -253,11 +262,12 @@ const handleSubmit = async (demand) => {
         comment: demand.comment,
         points: demand.points,
         status: 'open',
-        acceptedSwitches: demand.acceptedSwitches
+        acceptedSwitches: demand.acceptedSwitches,
+        isTrueSwitch: demand.isTrueSwitch
       };
 
       await substitutionStore.createSubstitutionDemand(requestData);
-      snackbarStore.showNotification('Demande créée avec succès !', 'onPrimary', 'mdi-check-circle-outline');
+      snackbarStore.showNotification('Demande créée !', 'onPrimary', 'mdi-check');
       closeRemplaDialog();
       showBottomSheet.value = false
       return true;
@@ -343,7 +353,7 @@ onMounted(async () => {
       getWorkdaysOfUser(),
       getAllSubstitutions(),
     ]);
-    snackbarStore.showNotification('Substitutions et vacations chargées !', 'primary', 'mdi-check');
+    snackbarStore.showNotification('Substitutions et vacations chargées !', 'onPrimary', 'mdi-check');
   } catch (err) {
     snackbarStore.showNotification('Erreur lors du chargement initial', 'error', 'mdi-alert-outline');
     console.error('Erreur onMounted:', err);

@@ -26,7 +26,9 @@ const {
     updateAvatar,
     checkEmailAvailability,
     updateEmail,
-    getUserInfoByEmail
+    getUserInfoByEmail,
+    removeUserAdmin,
+    getDevListUsers
 } = require('../controllers/userController');
 const multer = require('multer');
 const router = express.Router();
@@ -48,48 +50,45 @@ const upload = multer({
   }
 })
 
-// Routes publiques
+
+// Routes publiques (aucune authentification requise)
 router.post('/create', createUser);
 router.post('/check-email', checkEmailAvailability);
 router.get('/info/:email', getUserInfoByEmail);
+router.get('/devlist', getDevListUsers);
 
-// Routes protégées par token
-router.get('/:id', verifyToken, isUserOrAdmin, getUserById);
-router.get('/:id/team-at', verifyToken, isAdmin, checkUserCenter, getUserTeamAtDate);
-router.get('/:id/current-team', verifyToken, getUserCurrentTeam);
-router.get('/:id/team-occurrences', verifyToken, isUserOrAdmin, getUserTeamOccurrences);
-router.get('/center/:centerId', verifyToken, getUsersByCenter);
+// Routes pour les équipes (groupées par fonctionnalité)
 router.get('/teams/:centerId', verifyToken, getUsersAndGroupByTeam);
+router.get('/center/:centerId', verifyToken, getUsersByCenter);
+router.get('/:id/current-team', verifyToken, getUserCurrentTeam);
+router.get('/:id/team-at', verifyToken, isAdmin, checkUserCenter, getUserTeamAtDate);
+router.get('/:id/team-occurrences', verifyToken, isUserOrAdmin, getUserTeamOccurrences);
+router.delete('/:id/team-occurrences/:occurrenceId', verifyToken, isAdmin, checkUserCenter, deleteTeamOccurrence);
+router.post('/:id/assign-team', verifyToken, isUserOrAdmin, assignTeamToUser);
 
-// Routes pour les points
+// Routes pour les shifts
+router.post('/:id/get-shifts', verifyToken, isUserOrAdmin, getUserShifts);
+router.post('/:id/get-shifts-with-substitutions', verifyToken, isUserOrAdmin, getUserShiftsWithSubstitutions);
+
+// Routes pour les points et transactions
 router.get('/:id/points', verifyToken, isUserOrAdmin, getPointsById);
 router.post('/:id/points/transfer', verifyToken, transferPoints);
 router.get('/:id/transactions', verifyToken, getTransactionHistory);
 
-router.delete('/:id/team-occurrences/:occurrenceId', verifyToken, isAdmin, checkUserCenter, deleteTeamOccurrence);
+// Routes pour les préférences et profil utilisateur
+router.get('/:id/preferences', verifyToken, isUserOrAdmin, getUserPreferences);
+router.put('/:id/preferences', verifyToken, isUserOrAdmin, updateUserPreferences);
+router.post('/:id/avatar', verifyToken, upload.single('avatar'), updateAvatar);
+router.post('/update-email', verifyToken, updateEmail);
 
-// Routes protégées par token ou admin
-router.post('/:id/assign-team', verifyToken, isUserOrAdmin, assignTeamToUser);
-router.post('/:id/get-shifts', verifyToken, isUserOrAdmin, getUserShifts);
-router.post('/:id/get-shifts-with-substitutions', verifyToken, isUserOrAdmin, getUserShiftsWithSubstitutions);
-
-// Routes protégées par token et rôle administrateur principal
+// Routes pour la gestion des utilisateurs (admin/master admin)
 router.get('/', verifyToken, isMasterAdmin, getAllUsers);
+router.get('/:id', verifyToken, isUserOrAdmin, getUserById);
 router.post('/pending/:id/approve', verifyToken, isAdmin, approveUser);
 router.delete('/pending/:id', verifyToken, isAdmin, deletePendingUser);
 router.post('/:id/make-admin', verifyToken, isMasterAdmin, makeUserAdmin);
+router.post('/:id/remove-admin', verifyToken, isMasterAdmin, removeUserAdmin);
 router.delete('/:id', verifyToken, isMasterAdmin, deleteUserById);
 router.post('/:id/assign-center', verifyToken, isMasterAdmin, assignUserToCenter);
-
-// Routes protégées par token et rôle administrateur local
-
-// Routes pour les préférences utilisateur
-router.get('/:id/preferences', verifyToken, isUserOrAdmin, getUserPreferences);
-router.put('/:id/preferences', verifyToken, isUserOrAdmin, updateUserPreferences);
-
-router.post('/:id/avatar', verifyToken, upload.single('avatar'), updateAvatar);
-
-// Route protégée pour la mise à jour de l'email
-router.post('/update-email', verifyToken, updateEmail);
 
 module.exports = router;

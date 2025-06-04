@@ -21,7 +21,7 @@
     <v-row class="position-relative">
       <v-col cols="12" md="8">
         <!-- Workshifts List -->
-        <SavedWorkshift v-for="rotation in rotations" :key="rotation._id" :rotation="rotation"
+        <SavedWorkshift v-for="rotation in rotations" :key="rotation._id" :rotation="rotation" :isActive="isRotationActive(rotation)"
           :is-expanded="expandedRotations[rotation._id]" @set-activation-date="handleSetActivationDate"
           @delete="deleteRotation" @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
           @edit="handleEdit" />
@@ -93,10 +93,10 @@
       @update:isDialogVisible="showConfirmationDialog = $event"></ConfirmationDialog>
 
     <AddWorkshift :isDialogVisible="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
-      @rotationEditSubmit="saveRotation" @rotationEditCancel="closeAddDialog" @update:dialogVisible="closeAddDialog">
+      @rotationEditSubmit="updateRotation" @rotationEditCancel="closeAddDialog" @update:dialogVisible="closeAddDialog">
     </AddWorkshift>
 
-    <ActivateWorkshift :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActive"
+    <ActivateWorkshift :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActivationDate"
       @update:dialogVisible="showActivateDialog = $event"></ActivateWorkshift>
   </v-container>
 </template>
@@ -128,6 +128,10 @@ const currentActive = computed(() => {
   if (!sortedRotations.value) return null;
   return sortedRotations.value.find(rotation => rotation.status === 'active') || null;
 });
+
+const isRotationActive = (rotation) => {
+  return currentActive.value && currentActive.value._id === rotation._id;
+};
 
 const rotationToActivate = ref("")
 const expandedRotations = ref({})
@@ -183,10 +187,25 @@ const saveRotation = async (newRotation) => {
   try {
     newRotation.centerId = selectedCenter.value;
     await rotationStore.saveRotation(newRotation);
-    snackbarStore.showNotification('Tour de service sauvegardé avec succès', 'onSuccess', 'mdi-check-circle-outline');
+    snackbarStore.showNotification('Tour de service créé', 'onPrimary', 'mdi-file-check-outline');
     closeAddDialog();
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la sauvegarde du tour de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+    snackbarStore.showNotification('Erreur lors de la création du tour de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
+const updateRotation = async (updatedRotation) => {
+  try {
+    // S'assurer que nous avons l'ID et le centerId
+    if (!updatedRotation._id || !updatedRotation.centerId) {
+      throw new Error('Données de rotation invalides');
+    }
+    
+    await rotationStore.updateRotation(updatedRotation._id, updatedRotation);
+    snackbarStore.showNotification('Tour de service modifié', 'onPrimary', 'mdi-file-check-outline');
+    closeAddDialog();
+  } catch (error) {
+    snackbarStore.showNotification('Erreur lors de la modification du tour de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');
   }
 };
 
@@ -207,7 +226,7 @@ const deleteRotation = async (rotationId) => {
 const confirmDelete = async () => {
   try {
     await rotationStore.deleteRotation(rotationToDelete.value, selectedCenter.value);
-    snackbarStore.showNotification('Tour de service supprimé', 'onSuccess', 'mdi-check-circle-outline');
+    snackbarStore.showNotification('Tour de service supprimé', 'onPrimary', 'mdi-check');
     showConfirmationDialog.value = false;
     rotationToDelete.value = null;
   } catch (error) {
@@ -216,19 +235,17 @@ const confirmDelete = async () => {
   }
 };
 
-const setActive = (startDate) => {
+const setActivationDate = (startDate) => {
   if (startDate) {
     try {
       const inputDate = new Date(toUTCNormalized(startDate));
       if (isNaN(inputDate.getTime())) {
         throw new Error('Date invalide');
       }
-
       rotationStore.setActiveRotation(rotationToActivate.value, inputDate);
-      snackbarStore.showNotification('Date d\'activation du tour de service mise à jour', 'onSuccess', 'mdi-check-circle-outline');
+      snackbarStore.showNotification('Date d\'activation ajoutée', 'onSuccess', 'mdi-check');
     } catch (error) {
-      // errorMessage.value = error.message;
-      // showErrorDialog.value = true;
+      snackbarStore.showNotification('Erreur lors de l\'ajout de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
     }
   }
 };
@@ -259,7 +276,7 @@ const handleCenterChange = async (centerId) => {
     if (centerId) {
       await rotationStore.fetchRotations(centerId);
     }
-    snackbarStore.showNotification('Tours de service chargés', 'onSuccess', 'mdi-check-circle-outline');
+    snackbarStore.showNotification('Tours de service chargés', 'onPrimary', 'mdi-check');
   } catch (error) {
     console.error('Erreur lors du chargement des tours de service:', error);
     snackbarStore.showNotification('Erreur lors du chargement des tours de service', 'onError', 'mdi-alert-circle-outline');

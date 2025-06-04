@@ -12,17 +12,13 @@
     />
   </v-bottom-sheet>
 
-  <AvailableSubstitutionsDrawer v-model="showSubstitutionsDrawer" :selectedDate="selectedDate" />
-  <AvailableSwitchesDrawer v-model="showSwitchesDrawer" :selectedDate="selectedDate" />
 </template>
 
 <script setup>
 import { computed, ref } from 'vue';
-import AvailableSubstitutionsDrawer from './Drawers/AvailableSubstitutionsDrawer.vue';
-import AvailableSwitchesDrawer from './Drawers/AvailableSwitchesDrawer.vue';
 import CalendarPanel from './CalendarPanel.vue';
 
-const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'unacceptDemand']);
+const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openDrawer', 'cancelDemand', 'unacceptDemand']);
 
 const props = defineProps({
   modelValue: {
@@ -82,11 +78,15 @@ const handleOpenRemplaDialog = (type) => {
 };
 
 const handleOpenSubstitutionsDrawer = () => {
-  emit('openSubstitutionsDrawer');
+  emit('openDrawer', 'substitutions');
 };
 
 const handleOpenSwitchesDrawer = () => {
-  emit('openSwitchesDrawer');
+  emit('openDrawer', 'switches');
+};
+
+const handleOpenOthersDrawer = () => {
+  emit('openDrawer', 'others');
 };
 
 const handleCancelDemand = (substitutionId) => {

@@ -18,7 +18,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['onDeleteDay', 'onUpdateDay']);
+const emit = defineEmits(['onDeleteDay', 'onUpdateDay', 'onEditDay']);
 
 const { smAndDown, mdAndDown } = useDisplay();
 const showDetailsDialog = ref(false);
@@ -36,7 +36,15 @@ const handleDelete = () => {
   showDetailsDialog.value = false;
 };
 
+const handleEdit = () => {
+  emit('onEditDay', selectedDay.value);
+  showDetailsDialog.value = false;
+};
+
+
+
 const handleUpdate = (updatedDay) => {
+  console.log(updatedDay);
   emit('onUpdateDay', selectedDayIndex.value, updatedDay);
   showDetailsDialog.value = false;
 };
@@ -45,7 +53,7 @@ const handleUpdate = (updatedDay) => {
 <template>
   <div class="workshift-summary" >
     <v-expand-transition>
-      <div v-if="isExpanded" :style="smAndDown ? '' : 'max-height: 400px; ; '">
+      <div v-if="isExpanded" :style="smAndDown ? '' : 'max-height: 400px; overflow-y: auto;  overflow-x: hidden '">
         <v-row  class="px-2 py-0">
           <v-col
             v-for="(day, index) in days"
@@ -55,7 +63,7 @@ const handleUpdate = (updatedDay) => {
           >
             <v-card
               height="64px" 
-              class="day-card pa-0 d-flex"
+              class="day-card pa-0 d-flex "
               color="background"
               flat
               @click="openDetails(day, index)"
@@ -109,6 +117,7 @@ const handleUpdate = (updatedDay) => {
         :variants="variants"
         @close="showDetailsDialog = false"
         @onDelete="handleDelete"
+        @onEdit="handleEdit"
         @onUpdate="handleUpdate"
       />
     </v-dialog>
@@ -125,6 +134,7 @@ const handleUpdate = (updatedDay) => {
         :variants="variants"
         @close="showDetailsDialog = false"
         @onDelete="handleDelete"
+        @onEdit="handleEdit"
         @onUpdate="handleUpdate"
       />
     </v-bottom-sheet>

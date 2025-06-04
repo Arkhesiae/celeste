@@ -59,7 +59,7 @@
 
     <v-card-actions class="pa-6">
       <v-spacer></v-spacer>
-      <v-btn v-if="deletable" color="error" variant="tonal" rounded="lg" prepend-icon="mdi-delete"
+      <v-btn v-if="deletable" color="error" variant="text" rounded="lg" prepend-icon="mdi-delete"  size="small" slim 
         @click="$emit('onDelete')">
         Supprimer
       </v-btn>

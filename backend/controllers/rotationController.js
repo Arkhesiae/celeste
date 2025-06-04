@@ -216,16 +216,16 @@ const addActivationDate = async (req, res) => {
 // Supprimer une date d'activation
 const removeActivationDate = async (req, res) => {
     const { id } = req.params;
-    const { date } = req.body;
+    const { activationDate } = req.body;
 
     try {
-        if (!date) {
+        if (!activationDate) {
             return res.status(400).json({ message: 'Activation date is required.' });
         }
 
         const updatedRotation = await Rotation.findByIdAndUpdate(
             id,
-            { $pull: { activationDates: date } },
+            { $pull: { activationDates: activationDate } },
             { new: true }
         );
 
@@ -241,15 +241,14 @@ const removeActivationDate = async (req, res) => {
 
 // Mettre à jour un jour dans une rotation
 const updateDayInRotation = async (req, res) => {
-    const { rotationId } = req.params;
+    const { id } = req.params;
     const { updatedDay } = req.body;
-
+    
     try {
-        const rotation = await Rotation.findById(rotationId);
+        const rotation = await Rotation.findById(id);
         if (!rotation) {
             return res.status(404).json({ message: 'Tour de service non trouvé' });
         }
-
 
         if (!rotation.days.some(day => day._id.equals(updatedDay._id))) {
             return res.status(400).json({ message: 'Jour non trouvé dans la rotation' });
@@ -276,6 +275,82 @@ const updateDayInRotation = async (req, res) => {
     }
 };
 
+// Dupliquer une rotation
+const duplicateRotation = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const rotation = await Rotation.findById(id);
+        if (!rotation) {
+            return res.status(404).json({ message: 'Tour de service non trouvé' });
+        }
+
+        // Créer une copie de la rotation
+        const duplicatedRotation = new Rotation({
+            name: `${rotation.name} (copie)`,
+            days: rotation.days,
+            centerId: rotation.centerId,
+            activationDates: [], // La copie commence sans dates d'activation
+        });
+
+        await duplicatedRotation.save();
+
+        // Créer une notification pour le centre
+        await createNotificationForCenter(
+            {
+                message: `Le tour de service "${duplicatedRotation.name}" a été créé`,
+                title: "Nouveau tour de service"
+            },
+            'general',
+            rotation.centerId
+        );
+
+        res.status(201).json({ 
+            message: 'Tour de service dupliqué avec succès', 
+            rotation: duplicatedRotation 
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// Mettre à jour une rotation
+const updateRotation = async (req, res) => {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    try {
+        const rotation = await Rotation.findById(id);
+        if (!rotation) {
+            return res.status(404).json({ message: 'Tour de service non trouvé' });
+        }
+
+        // Mettre à jour les champs autorisés
+        if (updatedData.name) {
+            rotation.name = updatedData.name;
+        }
+        if (updatedData.days) {
+            rotation.days = updatedData.days;
+        }
+        if (updatedData.activationDates) {
+            rotation.activationDates = updatedData.activationDates;
+        }
+        if (updatedData.centerId) {
+            rotation.centerId = updatedData.centerId;
+        }
+
+        // Sauvegarder les modifications
+        const updatedRotation = await rotation.save();
+
+        res.json({ 
+            message: 'Tour de service mis à jour avec succès', 
+            rotation: updatedRotation 
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     saveRotation,
     getAllRotations,
@@ -286,4 +361,6 @@ module.exports = {
     addActivationDate,
     removeActivationDate,
     updateDayInRotation,
+    duplicateRotation,
+    updateRotation,
 }; 

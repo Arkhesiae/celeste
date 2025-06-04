@@ -3,7 +3,7 @@
     <v-row justify="center" align-content="center">
     <v-slide-y-reverse-transition hide-on-leave appear>
       <v-card width="100%" class="mt-n16 pa-6 pt-10" :color="smAndDown ? 'transparent' : ''" rounded="xl" elevation="0"
-        style="max-width: 900px;">
+        style="max-width: 900px; z-index: 34 !important;">
         <v-card-title class="pl-0 text-overline font-weight-bold">CéLESTE</v-card-title>
 
         <v-row>
@@ -112,11 +112,21 @@
             </v-card-actions>
           </v-col>
         </v-row>
+        <img v-if="!smAndDown" src="@/assets/Orly1.png" alt="landing" class="position-absolute"
+        :class="{'img-mobile': smAndDown, 'img-desktop': !smAndDown}"/>
       </v-card>
       </v-slide-y-reverse-transition>
     </v-row>
     <ForgotPasswordDialog v-model="showForgotPasswordDialog" @success="handlePasswordResetSuccess"
       @error="handlePasswordResetError" />
+      <div class="position-absolute top-0 d-flex justify-end align-center w-100" style="height: 70vh;">
+ 
+          <img  v-if="smAndDown" src="@/assets/Orly1.png" class="img-mobile" :class="{'img-mobile-xs': xs}"/>
+      
+      </div>
+
+    <!-- <img  v-if="smAndDown" src="@/assets/Orly1.png" alt="landing"
+    :class="{'img-mobile': smAndDown, 'img-desktop': !smAndDown}"/> -->
   </v-container>
 </template>
 
@@ -131,7 +141,7 @@ import { accountCreationService } from '@/services/accountCreationService';
 const router = useRouter();
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
-const { smAndDown } = useDisplay();
+const { smAndDown, xs } = useDisplay();
 const API_URL = import.meta.env.VITE_API_URL;
 
 const email = ref('');
@@ -273,5 +283,30 @@ const handlePasswordResetError = (message) => {
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+.img-desktop{
+  z-index: -2;
+  width: 70%;
+  height: 100%;
+  object-fit: cover;
+  left: 25px;
+  top: 0px;
+  position: absolute;
+}
+
+.img-mobile{
+  
+  width: 330px;
+  object-fit: cover;
+ 
+  
+}
+
+.img-mobile-xs{
+  width: 300px;
+  object-fit: cover;
+  position: absolute;
+  right: -100px;
 }
 </style>

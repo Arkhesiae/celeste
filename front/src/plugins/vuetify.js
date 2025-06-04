@@ -83,7 +83,8 @@ export default createVuetify({
           "surfaceContainerHigh": "#252B2C",
           "surfaceContainerHighest": "#303637",
           "remplacement": "#f6ccfd",
-          "permutation": "#e6ec5d",
+          "permutation": "#635876",
+          "onPermutation": "#a000a0",
           info: '#2196F3',
           success: '#affF80',
           warning: '#FB8C00',
@@ -141,8 +142,8 @@ export default createVuetify({
           "surfaceContainer": "#E9EFF0",
           "surfaceContainerHigh": "#E3E9EA",
           "surfaceContainerHighest": "#DEE3E5",
-          "remplacement": "#51184a",
-          "permutation": "#e6ec5d",
+          "remplacement": "#4e3e64",
+          "permutation": "#9777a0 ",
         }
       },
     },
@@ -161,13 +162,19 @@ export default createVuetify({
       class: 'pa-6',
       rounded: 'xl',
       VCardActions: {
-        class: 'pa-0',
+     
         VBtn: {
           size: 'large',
           slim: false,
           rounded: 'xl',
         },
       },
+    },
+    VBottomSheet: {
+      VDialog: {
+        class: 'pa-0',
+      },
+ 
     },
   
   

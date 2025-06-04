@@ -7,7 +7,8 @@ const {
     getAllTeams,
     getTeamShifts,
     updateTeamCycleStartDate,
-    updateTeamName
+    updateTeamName,
+    updateTeamsOrder
 } = require('../controllers/teamController');
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 
@@ -26,5 +27,8 @@ router.get('/', verifyToken, getAllTeams);
 
 // Récupérer les shifts d'une équipe pour une période donnée
 router.post('/:id/get-shifts', verifyToken, getTeamShifts);
+
+// Mettre à jour l'ordre des équipes
+router.put('/order', verifyToken, isAdmin, updateTeamsOrder);
 
 module.exports = router;

@@ -61,9 +61,31 @@ const isNextButtonDisabled = computed(() => {
   return !newRotation.value.name;
 });
 
-const handleAddDay = (day) => {
-  newRotation.value.days.push(day);
-  updateRestDayNames(); // Recalculer les noms des jours de repos
+const variants = ref(['A', 'B', 'C']);
+const showAddDayDialog = ref(false);
+const isSummaryExpanded = ref(true);
+const dayToEdit = ref(null);
+
+const handleEditDay = (day) => {
+  dayToEdit.value = { ...day }; // Créer une copie du jour à éditer
+  showAddDayDialog.value = true;
+};
+
+const handleSubmitDay = (day) => {
+  if (dayToEdit.value) {
+    // Mode édition : remplacer le jour existant
+    const index = newRotation.value.days.findIndex(d => d._id === dayToEdit.value._id);
+    console.log(dayToEdit.value);
+    console.log(newRotation.value.days);
+    if (index !== -1) {
+      newRotation.value.days[index] = day;
+    }
+    dayToEdit.value = null; // Réinitialiser après l'édition
+  } else {
+    // Mode ajout : ajouter un nouveau jour
+    newRotation.value.days.push(day);
+  }
+  updateRestDayNames();
 };
 
 const handleAddRestDay = () => {
@@ -89,12 +111,6 @@ const updateRestDayNames = () => {
   });
 };
 
-const variants = ref(['A', 'B', 'C']);
-const showAddDayDialog = ref(false);
-const isSummaryExpanded = ref(true);
-
-
-
 const computeWorkDuration = (start, end) => {
   const [startHour, startMinute] = start.split(':').map(Number);
   const [endHour, endMinute] = end.split(':').map(Number);
@@ -119,17 +135,20 @@ const addDay = () => {
   showAddDayDialog.value = true;
 };
 
-
-
 const submit = () => {
-  emit('rotationSubmit', {
-    name: newRotation.value.name,
-    centerId: null,
-    days: newRotation.value.days,
-  });
   if (props.rotation) {
+    // Mode édition
     emit('rotationEditSubmit', {
       ...newRotation.value,
+      _id: props.rotation._id,
+      centerId: props.rotation.centerId,
+      days: newRotation.value.days,
+    });
+  } else {
+    // Mode création
+    emit('rotationSubmit', {
+      name: newRotation.value.name,
+      centerId: null,
       days: newRotation.value.days,
     });
   }
@@ -226,8 +245,8 @@ const close = () => {
                     <WorkshiftSummary
                       :days="newRotation.days"
                       :isExpanded="isSummaryExpanded"
-                    
                       @onDeleteDay="handleRemoveDay"
+                      @onEditDay="handleEditDay"
                     />
                   </v-card>
                 </v-fade-transition>
@@ -312,7 +331,9 @@ const close = () => {
     :isDialogVisible="showAddDayDialog"
     :dayNumber="newRotation.days.filter(day => day.type === 'work').length + 1"
     :variants="variants"
-    @onSubmit="handleAddDay"
+    :day="dayToEdit"
+    :mode="dayToEdit ? 'edit' : 'add'"
+    @onSubmit="handleSubmitDay"
     @update:dialogVisible="showAddDayDialog = $event"
   />
 </template>

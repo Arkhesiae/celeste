@@ -110,5 +110,34 @@ export const teamService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Met à jour la date de début de cycle d'une équipe.
+   * @param {string} teamId - L'ID de l'équipe.
+   * @param {string} date - La date de début de cycle.
+   * @returns {Promise<Object>} L'équipe mise à jour.
+   */
+  async updateTeamCycleStartDate(teamId, cycleStartDate) {
+    const response = await fetch(`${API_URL}/teams/${teamId}/cycle-start-date`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ cycleStartDate })
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Met à jour l'ordre des équipes.
+   * @param {Array<string>} teamIds - Liste ordonnée des IDs des équipes.
+   * @returns {Promise<Array>} Liste mise à jour des équipes.
+   */
+  async updateTeamsOrder(teamIds) {
+    const response = await fetch(`${API_URL}/teams/order`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ teamIds })
+    });
+    return handleResponse(response);
   }
 };

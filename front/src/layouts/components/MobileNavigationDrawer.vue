@@ -135,7 +135,6 @@ const props = defineProps({
 defineEmits(['update:modelValue', 'update:theme']);
 
 const menuItemsLogged = [
-  { key: 'permutations', label: 'Permutations', path: '/exchange/switch', title: 'Permutations' },
   { key: 'remplacements', label: 'Remplacement', path: '/exchange/replace', title: 'Remplacements' },
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },

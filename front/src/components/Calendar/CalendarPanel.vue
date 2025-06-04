@@ -5,7 +5,7 @@
     <v-card rounded="xl" color="background" class="mb-4 card-shadow" elevation="0">
       <v-card-item class="d-flex align-start justify-space-between pa-4">
         <v-card-title
-          :class="substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate) ? 'text-secondary text-medium-emphasis' : ''"
+         
           class="pb-0 mb-0">
           <h2 class="text-h4 font-weight-medium" v-if="isRestDay">Repos</h2>
           <h2 class="text-h4 font-weight-medium" v-else>{{ getShiftName }}</h2>
@@ -17,7 +17,7 @@
 
         <template #append>
           <div class="d-flex flex-column">
-
+<!-- 
 
             <v-chip v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)" color="remplacement"
               variant="flat" size="small" rounded="lg">
@@ -28,13 +28,9 @@
               variant="flat" size="small" rounded="lg">
               <v-icon>mdi-account-arrow-left-outline</v-icon>
               <span>Remplacé par {{ substituteUser }}</span>
-            </v-chip>
-            <v-chip v-if="substitutionStore.hasOwnOpenSubstitutions(selectedDate)" color="remplacement"
-              variant="outlined" size="small" rounded="lg"
-              style="border-color: rgba(var(--v-theme-remplacement), 0.4);">
-              <v-icon>mdi-account-arrow-left-outline</v-icon>
-              <span>Demande de remplacement</span>
-            </v-chip>
+            </v-chip> -->
+            <PendingChipExtended v-if="substitutionStore.hasOwnPendingDemand(new Date(selectedDate).toISOString())" style="top:12px !important; right:12px !important"  :date=" new Date(selectedDate)"/>
+     
           </div>
         </template>
       </v-card-item>
@@ -83,18 +79,18 @@
     </div>
 
     <div class="d-flex align-center justify-center mb-4"
-      v-if="!substitutionStore.hasOwnOpenSubstitutions(selectedDate) && !substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate)">
+      v-if="!substitutionStore.hasOwnPendingDemand(selectedDate)">
       <v-btn height="60px" color="permutation" text-color="permutation"
         class="flex-1-1 d-flex flex-column rounded-ts-xl rounded-bs-xl mr-1 text-none " :disabled="isRestDay || inPast"
-        :class="{ 'opacity-10': isRestDay || inPast }" rounded="lg" @click="$emit('openRemplaDialog', 'Permut')">
+        :class="{ 'opacity-10': isRestDay || inPast }" flat rounded="lg" @click="$emit('openRemplaDialog', 'switch')">
         <template #prepend>
           <v-icon>mdi-swap-horizontal-hidden</v-icon>
         </template>
         Permutation
       </v-btn>
       <v-btn height="60px" color="remplacement" :disabled="isRestDay || inPast"
-        class="flex-1-1 d-flex flex-column rounded-te-xl rounded-be-xl text-none " rounded="lg"
-        :class="{ 'opacity-10': isRestDay || inPast }" @click="$emit('openRemplaDialog', 'Rempla')">
+        class="flex-1-1 d-flex flex-column rounded-te-xl rounded-be-xl text-none " flat rounded="lg"
+        :class="{ 'opacity-10': isRestDay || inPast }" @click="$emit('openRemplaDialog', 'substitution')">
         <template #prepend>
           <v-icon>mdi-account-arrow-left-outline</v-icon>
         </template>
@@ -103,39 +99,51 @@
     </div>
 
     <div class="d-flex align-center justify-center mb-4"
-      v-if="substitutionStore.hasOwnOpenSubstitutions(selectedDate) || substitutionStore.hasAcceptedSubstitutionsAsPoster(selectedDate)">
+      v-if="substitutionStore.hasOwnPendingDemand(selectedDate)">
       <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
         class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
         Annuler ma demande
       </v-btn>
     </div>
 
-    <div class="d-flex align-center justify-center mb-4"
-      v-if="substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)">
+    <!-- <div class="d-flex align-center justify-center mb-4"
+      v-if="substitutionStore.hasAcceptedDemand(selectedDate)">
       <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
         class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
         @click="$emit('unacceptDemand', substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)._id)">
         Annuler mon rempla
       </v-btn>
-    </div>
+    </div> -->
 
     <v-btn width="100%" flat rounded="xl" height="64px" color="background"
-      :class="{ 'opacity-50': substitutionStore.getAvailableSubstitutionsCount(selectedDate) === 0 }"
+      :class="{ 'opacity-10': substitutionStore.countAvailableSubstitutions(selectedDate) === 0 }"
+      :disabled="substitutionStore.countAvailableSubstitutions(selectedDate) === 0" 
       append-icon="mdi-chevron-right" class="justify-space-between d-flex text-medium-emphasis mb-2 text-subtitle-2"
-      @click="$emit('openSubstitutionsDrawer')">
+      @click="$emit('openDrawer', 'substitutions')">
       <v-chip rounded="xl" color="remplacement" variant="flat" class="text-caption font-weight-bold px-4 mr-3">
-        <span>{{ substitutionStore.getAvailableSubstitutionsCount(selectedDate) }}</span>
+        <span>{{ substitutionStore.countAvailableSubstitutions(selectedDate) }}</span>
       </v-chip>
       Voir les remplacements disponibles
     </v-btn>
 
-    <v-btn width="100%" :class="{ 'opacity-50': substitutionStore.getAvailableSwitchesCount(selectedDate) === 0 }" flat
+    <v-btn width="100%" :class="{ 'opacity-10': substitutionStore.countAvailableSwitches(selectedDate) === 0 }" flat
       rounded="xl" height="64px" color="background" append-icon="mdi-chevron-right"
-      class="justify-space-between d-flex text-medium-emphasis text-subtitle-2" @click="$emit('openSwitchesDrawer')">
+      :disabled="substitutionStore.countAvailableSwitches(selectedDate) === 0" 
+      class="justify-space-between d-flex text-medium-emphasis text-subtitle-2 mb-2" @click="$emit('openDrawer', 'switches')">
       <v-chip rounded="xl" color="permutation" variant="flat" class="text-caption font-weight-bold px-4 mr-3">
-        <span>{{ substitutionStore.getAvailableSwitchesCount(selectedDate) }}</span>
+        <span>{{ substitutionStore.countAvailableSwitches(selectedDate) }}</span>  
       </v-chip>
       Voir les permutations disponibles
+    </v-btn>
+
+    <v-btn width="100%" :class="{ 'opacity-10': substitutionStore.countOtherDemands(selectedDate) === 0 }" flat
+      rounded="xl" height="64px" color="background" append-icon="mdi-chevron-right"
+      :disabled="substitutionStore.countOtherDemands(selectedDate) === 0"
+      class="justify-space-between d-flex text-medium-emphasis text-subtitle-2" @click="$emit('openDrawer', 'others')">
+      <v-chip rounded="xl" color="surfaceContainerHigh" variant="flat" class="text-caption font-weight-bold px-4 mr-3">
+        <span>{{ substitutionStore.countOtherDemands(selectedDate) }}</span>  
+      </v-chip>
+      Voir les autres demandes
     </v-btn>
   </v-sheet>
 </template>
@@ -146,9 +154,11 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
+import { useDisplay } from 'vuetify';
 
 const substitutionStore = useSubstitutionStore();
 const teamStore = useTeamStore();
+const { smAndDown } = useDisplay();
 const userStore = useUserStore();
 const authStore = useAuthStore();
 
@@ -165,7 +175,6 @@ const props = defineProps({
     type: [Date, String, null],
     required: true
   },
-
   rounded: {
     type: String,
     default: 'xl'
@@ -181,7 +190,7 @@ const props = defineProps({
 
 });
 
-defineEmits(['openRemplaDialog', 'openSubstitutionsDrawer', 'openSwitchesDrawer', 'cancelDemand', 'openAbsenceDialog', 'unacceptDemand']);
+defineEmits(['openRemplaDialog', 'openDrawer', 'cancelDemand', 'openAbsenceDialog', 'unacceptDemand']);
 
 const getVacation = computed(() => {
   if (!props.selectedDate) return null;

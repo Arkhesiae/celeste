@@ -21,6 +21,8 @@ require('dotenv').config({
   const messageRoutes = require('./routes/messageRoutes');
   const otpRoutes = require('./routes/otpRoutes');
   const authRouter = require('./routes/auth');
+  const devRouter = require('./routes/dev');
+  
   require('./cron/processTransactions');
   require('./cron/processDemands');
   const { createAdmin } = require('./utils/seedAdmin');
@@ -52,6 +54,7 @@ require('dotenv').config({
   app.use('/api/center', centerRouter);
   app.use('/api/teams', teamsRouter);
   app.use('/api/otp', otpRoutes);
+  app.use('/api/dev', devRouter);
   
   // Routes par défaut
   app.get('/api', (req, res) => {
@@ -69,7 +72,6 @@ require('dotenv').config({
       console.log('✅ MongoDB connecté via Docker');
   
       await createAdmin(); // Créer l'admin si nécessaire
-  
       app.listen(PORT, () => {
         console.log(`🚀 Serveur lancé port ${PORT}`);
       });

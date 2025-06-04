@@ -191,10 +191,29 @@ export const useTeamStore = defineStore('team', () => {
     try {
       loading.value = true;
       error.value = null;
-      await teamService.updateTeam(teamId, { cycleStartDate });
+      await teamService.updateTeamCycleStartDate(teamId, cycleStartDate);
+      await fetchCenterTeams(currentCenter.value);
+    } catch (err) { 
+      console.log(err);
+      error.value = err.message || 'Erreur lors de la mise à jour de la date de début de cycle';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Met à jour l'ordre des équipes.
+   * @param {Array<string>} teamIds - Liste ordonnée des IDs des équipes.
+   */
+  const updateTeamsOrder = async (teamIds) => {
+    try {
+      loading.value = true;
+      error.value = null;
+      await teamService.updateTeamsOrder(teamIds);
       await fetchCenterTeams(currentCenter.value);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la mise à jour de la date de début de cycle';
+      error.value = err.message || 'Erreur lors de la mise à jour de l\'ordre des équipes';
       throw err;
     } finally {
       loading.value = false;
@@ -221,7 +240,8 @@ export const useTeamStore = defineStore('team', () => {
     addTeam,
     deleteTeam,
     renameTeam,
-    updateTeamCycleStartDate
+    updateTeamCycleStartDate,
+    updateTeamsOrder
   };
 });
 

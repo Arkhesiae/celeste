@@ -1,22 +1,22 @@
 <template>
   <v-container fluid class="fill-height">
-    <v-row justify="center" style="min-height: 80vh">
+    <v-row justify="center" style="min-height: 800px">
       <v-col cols="12" sm="12" md="8" lg="8" class="py-16 mt-16">
-        <v-card variant="text" class="mt-16">
+        <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
           <v-card-text class="d-flex align-start flex-column" :class="{'align-center': !mdAndUp}">
             <div class="text-overline subtitle-animation">Votre nouveau site de rempla</div>
             <div
               class="font-weight-medium d-flex flex-wrap mt-4"
               :class="[
-                mdAndUp ? 'text-h1' : 'text-h2',
+                mdAndUp ? 'text-h1' : 'text-h3',
                 {'justify-center': !mdAndUp}
               ]"
               :style="mdAndUp ? 'left: -8px; position: relative' : ''"
             >
            
-              <span class="title-animation" style="margin-right: 1rem">Bienvenue</span>
+              <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">Bienvenue</span>
            
-              <span class="title-animation" style="margin-right: 1rem">sur</span>
+              <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">sur</span>
               <span class="gradient font-weight-bold title-animation">Céleste</span>
           
               
@@ -26,12 +26,12 @@
 
           <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{'justify-center': !mdAndUp}" v-intersect="onIntersect">
             <div class="block d-flex button-animation" style="animation-delay: 1.1s;">
-              <v-btn prepend-icon="mdi-lightning-bolt" height="48px" class="px-8" variant="flat" rounded="lg" color="surface" @click="router.push({ path: '/get-started' })">
+              <v-btn prepend-icon="mdi-lightning-bolt" style="border-radius: 12px !important;"  height="48px" class="px-8" variant="flat" rounded="lg" color="surface" @click="router.push({ path: '/get-started' })">
                 Get started
               </v-btn>
             </div>
-            <div class="d-flex button-animation" style="animation-delay: 1.3s;">
-              <v-btn class="px-8 pr-8" variant="flat" height="48px" rounded="lg" color="onBackground" @click="router.push({ path: '/login' })">
+            <div class="d-flex button-animation" style="animation-delay: 1.3s; z-index: 34 !important;">
+              <v-btn class="px-8 pr-8" variant="flat" style="border-radius: 12px !important;" height="48px" rounded="lg" color="onBackground" @click="router.push({ path: '/login' })">
                 <template #append>
                   <v-icon style="left:10px">mdi-arrow-right</v-icon>
                 </template>
@@ -41,6 +41,11 @@
           </v-card-actions>
         </v-card>
       </v-col>
+      
+        <v-img src="@/assets/CRNA.png" alt="landing" 
+        :class="{'img-mobile': !mdAndUp, 'img-desktop': mdAndUp}"/>
+       
+    
     </v-row>
     
     <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch bg-surfaceContainer" style="min-height: 400px">
@@ -198,7 +203,8 @@ export default {
 .gradient {
   fill: transparent;
   color: #000;
-  background: linear-gradient(to right, #dc8474, #c8687e 20%, #a779cd 40%, #c36abe 60%, #dc8474 80%);
+  font-weight: 900 !important;
+  background: linear-gradient(to right, rgb(var(--v-theme-remplacement)) 20%, #a779cd 40%, rgb(var(--v-theme-permutation)) 60%, #dc8474 80%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -321,4 +327,23 @@ export default {
   animation-delay: .6s;
   opacity: 0;
 } 
+
+.img-mobile{
+  height: 800px;
+  width: 800px;
+  position: absolute;
+  top: 400px;
+  left: 50%;
+  transform: translateX(-36%);
+}
+
+.img-desktop{
+  z-index: 10;
+  width: 900px;
+  height: 800px;
+  object-fit: cover;
+  position: absolute;
+  right: -250px;
+  top: 200px;
+}
 </style>

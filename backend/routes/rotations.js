@@ -11,10 +11,12 @@ router.get('/status/:centerId', verifyToken, rotationController.getAllRotationsW
 router.get('/active-at-date', verifyToken, rotationController.getActiveRotationAtDate);
 
 // Routes protégées par isAdmin
-router.post('/save', verifyToken, isAdmin, rotationController.saveRotation);
+router.post('/create', verifyToken, isAdmin, rotationController.saveRotation);
 router.delete('/:id', verifyToken, isAdmin, rotationController.deleteRotation);
 router.post('/:id/activate', verifyToken, isAdmin, rotationController.addActivationDate);
-router.delete('/:id/activation-date', verifyToken, isAdmin, rotationController.removeActivationDate);
-router.put('/:rotationId/day', verifyToken, isAdmin, rotationController.updateDayInRotation);
+router.delete('/:id/remove-date', verifyToken, isAdmin, rotationController.removeActivationDate);
+router.put('/:id/day', verifyToken, isAdmin, rotationController.updateDayInRotation);
+router.post('/:id/duplicate', verifyToken, isAdmin, rotationController.duplicateRotation);
+router.put('/:id/update', verifyToken, isAdmin, rotationController.updateRotation);
 
 module.exports = router; 

@@ -115,6 +115,10 @@ const updateTeamCycleStartDate = async (req, res) => {
     const { id } = req.params;
     const { cycleStartDate } = req.body;
     try {
+        if (!cycleStartDate) {
+            return res.status(400).json({ error: 'Date de début de cycle manquante' });
+        }
+
         const team = await Team.findByIdAndUpdate(
             id,
             { cycleStartDate },
@@ -145,6 +149,38 @@ const updateTeamName = async (req, res) => {
     }
 };
 
+/**
+ * Met à jour l'ordre des équipes.
+ * @param {Object} req - Requête HTTP
+ * @param {Object} req.body - Corps de la requête
+ * @param {Array<string>} req.body.teamIds - Liste ordonnée des IDs des équipes
+ * @param {Object} res - Réponse HTTP
+ */
+const updateTeamsOrder = async (req, res) => {
+    const { teamIds } = req.body;
+    
+    if (!Array.isArray(teamIds)) {
+        return res.status(400).json({ error: 'La liste des IDs d\'équipes est requise' });
+    }
+
+    try {
+        // Mettre à jour l'ordre de chaque équipe
+        const updatePromises = teamIds.map((teamId, index) => 
+            Team.findByIdAndUpdate(teamId, { order: index }, { new: true })
+        );
+
+        await Promise.all(updatePromises);
+        
+        // Récupérer les équipes mises à jour
+        const updatedTeams = await Team.find({ _id: { $in: teamIds } }).sort({ order: 1 });
+        
+        res.json(updatedTeams);
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'ordre des équipes:', error);
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+};
+
 module.exports = {
     createTeam,
     deleteTeam,
@@ -152,5 +188,6 @@ module.exports = {
     getAllTeams,
     getTeamShifts,
     updateTeamCycleStartDate,
-    updateTeamName
+    updateTeamName,
+    updateTeamsOrder
 }; 

@@ -1,56 +1,38 @@
 <template>
-  <v-card 
-    color="transparent"
-    rounded="xl"
-    elevation="0"
-    class="pa-4 mb-2"
-  >
+  <v-card color="transparent" rounded="sm" elevation="0">
     <v-card-item class="pa-0">
       <v-card-title class="text-body-2 d-flex align-center">
-        <v-icon  icon="mdi-calendar" size="small" class="mx-2"></v-icon>
+        <v-icon icon="mdi-calendar" size="small" class="mx-2"></v-icon>
         <span class="text-medium-emphasis font-weight-bold">
           {{ formatDate(demand?.posterShift?.date) }}
         </span>
-        <v-chip
-          v-if="timeSinceCreation"
-          class="ms-2"
-          rounded="pill"
-          size="x-small"
-            
-          variant="tonal"
-        >
+        <v-chip v-if="timeSinceCreation" class="ms-2" rounded="pill" size="x-small" variant="tonal">
           {{ timeSinceCreation }}
         </v-chip>
       </v-card-title>
       <template #append>
         <div class="d-flex align-center">
-          <span class="text-medium-emphasis font-weight-bold me-2">
+          <div>
+            <span v-if="!smAndDown" class="text-medium-emphasis font-weight-bold text-caption me-2">
             {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
           </span>
-          <v-avatar
+          <v-avatar 
             :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
             size="x-small"
-          ></v-avatar>
-          <v-chip
-            class="ms-2 text-medium-emphasis px-3"
-            prepend-icon="mdi-eye-outline"
-            size="small"
-            
-            rounded="pill"
-            color="onBackground"
-            variant="tonal"
-          >
+            class="cursor-pointer"
+            @click="showUserDialog = true"></v-avatar>
+          </div>
+      
+
+          <v-chip class="ms-2 text-medium-emphasis " size="small" rounded="pill" color="onBackground" variant="tonal">
+            <v-icon>mdi-comment-outline</v-icon>
+          </v-chip>
+          <v-chip class="ms-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
+            color="onBackground" variant="tonal">
             {{ demand?.seenBy?.length || 0 }}
           </v-chip>
-          <v-btn
-            variant="text"
-            class="ms-2"
-            color="onBackground"
-            icon="mdi-dots-vertical"
-            size="small"
-           
-          >
-          
+          <v-btn variant="text" class="ms-2" color="onBackground" icon="mdi-dots-vertical" size="small">
+
           </v-btn>
         </div>
       </template>
@@ -58,73 +40,113 @@
 
     <v-divider color="primary" opacity="0.01" class="my-0"></v-divider>
 
-    <v-card rounded="xl" color="background" class="mb-0 card-shadow" elevation="0">
-        <v-card-item>
+    <v-card  color="surfaceContainerHigh" variant="flat" class="mb-0 card-shadow card-radius-16" elevation="0"
+      @click="isExpanded = !isExpanded">
+      <v-card-item>
+        <div class="d-flex align-start ">
           <v-card-title class="pb-0 mb-0">
             <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
           </v-card-title>
-          <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
-          <v-card-subtitle class="pt-0">
-            {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
-          </v-card-subtitle>
-        </v-card-item>
-      </v-card>
+          <div class="d-flex align-start flex-column justify-space-between ml-2">
+            <v-card-subtitle class="py-0">
+              {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
+            </v-card-subtitle>
+            <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
 
-    <v-card-text class="pa-0 ma-0">
- 
+          </div>
+        </div>
 
-      
 
-      <div v-if="demand?.comment" class="mt-4">
-        <v-icon color="primary" icon="mdi-comment-text-outline" class="me-2"></v-icon>
-        <span class="text-body-2 text-medium-emphasis">{{ demand?.comment }}</span>
+
+      </v-card-item>
+      <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
+        <v-chip v-if="demand?.type === 'switch'" color="permutation" variant="flat" size="small" rounded="lg"
+          prepend-icon="mdi-swap-horizontal">
+          Permutation
+        </v-chip>
+        <v-chip v-if="demand?.type === 'hybrid'" class="hybrid-chip" color="remplacement" variant="flat" size="small"
+          rounded="lg" prepend-icon="mdi-account-arrow-left"> <v-icon color="background" class="ml-n1"
+            icon="mdi-swap-horizontal"></v-icon>
+          Hybride
+        </v-chip>
+        <v-chip v-if="demand?.type === 'substitution'" color="remplacement" variant="flat" size="small" rounded="lg"
+          prepend-icon="mdi-account-arrow-left-outline">
+          Remplacement
+        </v-chip>
       </div>
-    </v-card-text>
 
-    <v-card-actions class="pa-0">
-      <v-spacer></v-spacer>
-      <v-btn
-        v-if="demand?.status === 'open'"
-        rounded="lg"
-     
-       
-        :variant="isInterested ? 'elevated' : 'outlined'"
-        size="small"
-        :slim="false"
-        class="faint-border me-2"
-        color="onBackground"
-        :prepend-icon="isInterested ? 'mdi-heart' : 'mdi-heart-outline'"
-        @click="handleInterest"
-        :loading="loading.interest"
-      >
-        Intéressé
-      </v-btn>
-      <v-btn
-        v-if="demand?.status === 'open'"
-        rounded="xl"
-        color="remplacement"
-        size="small"
-        :slim="false"
-        variant="flat"
-        prepend-icon="mdi-account-arrow-left-outline"
-        @click="handleAccept"
-        :loading="loading.accept"
-      >
-        Remplacer
-      </v-btn>
-      <v-chip
-        v-else-if="demand?.status === 'accepted'"
-        color="success"
-        variant="tonal"
-        prepend-icon="mdi-check-circle"
-      >
-        Acceptée
-      </v-chip>
-    </v-card-actions>
+    </v-card>
+
+    <v-expand-transition>
+      <div v-show="isExpanded">
+        <v-card-text class="pa-0 ma-0">
+
+
+
+
+          <div v-if="demand?.comment" class="mt-4">
+            <v-icon color="primary" icon="mdi-comment-text-outline" class="me-2"></v-icon>
+            <span class="text-body-2 text-medium-emphasis">{{ demand?.comment }}</span>
+          </div>
+        </v-card-text>
+
+        <v-card-actions class="pa-0">
+          <div v-if="demand?.limit?.length > 0">
+
+
+            <v-chip v-if="smAndDown" rounded="lg" variant="tonal" color="error" size="small" @click="showLimitsDialog = true">
+              <v-icon>mdi-alert-circle-outline</v-icon>
+            </v-chip>
+            <v-chip v-else v-for="limit in demand?.limit" rounded="lg" variant="tonal" color="error" size="small">
+              <div v-if="limit === 'alreadyWorking'">
+                Travaille ce jour
+              </div>
+              <div v-if="limit === 'insufficientRest'">
+                Pas assez de repos {{ demand.rest.before }} {{ demand.rest.after }}
+              </div>
+              <div v-if="limit === 'consecutiveDaysLimit'">
+                Plus de 3 jours consécutifs
+              </div>
+            </v-chip>
+          </div>
+          <v-chip rounded="lg" variant="tonal" v-if="demand?.type === 'switch' || demand?.type === 'hybrid'"
+            :color="demand?.canSwitch ? 'permutation' : 'error'" size="small">
+            {{ demand?.canSwitch ? 'Peut permuter' : 'Ne peut pas permuter' }}
+          </v-chip>
+
+
+          <v-spacer></v-spacer>
+          <v-btn v-if="demand?.status === 'open'" rounded="lg" :variant="isInterested ? 'elevated' : 'outlined'"
+            size="small" :slim="false" class="faint-border me-2" color="onBackground"
+            :prepend-icon="isInterested ? 'mdi-heart' : 'mdi-heart-outline'" @click="handleInterest"
+            :loading="loading.interest">
+            Intéressé
+          </v-btn>
+          <div v-if="demand?.status === 'open'" class="d-flex align-center  justify-end ga-2">
+            <v-btn v-if="demand?.status === 'open' && (demand?.type === 'substitution' || demand?.type === 'hybrid')"
+              rounded="xl" color="remplacement" size="small" :slim="false" variant="flat"
+              prepend-icon="mdi-account-arrow-left-outline" @click="handleAccept" :loading="loading.accept">
+              Remplacer
+            </v-btn>
+            <v-btn v-if="demand?.status === 'open' && (demand?.type === 'hybrid' || demand?.type === 'switch')"
+              rounded="xl" color="permutation" size="small" :slim="false" variant="flat"
+              prepend-icon="mdi-swap-horizontal" @click="handleSwap" :loading="loading.accept">
+              Permuter
+            </v-btn>
+
+          </div>
+
+          <v-chip v-else-if="demand?.status === 'accepted'" color="success" variant="tonal"
+            prepend-icon="mdi-check-circle">
+            Acceptée
+          </v-chip>
+        </v-card-actions>
+      </div>
+    </v-expand-transition>
 
     <!-- Dialog de confirmation -->
-    <v-dialog v-model="showConfirmationDialog" max-width="500" style="z-index: 1000000 !important">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-6">
+    <v-dialog v-model="showConfirmationDialog" max-width="500">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
         <v-card-title class="text-h5 pa-0">
           Confirmation de remplacement
         </v-card-title>
@@ -137,39 +159,70 @@
           </p>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn
-            color="secondary"
-            variant="text"
-            rounded="xl"
-            @click="showConfirmationDialog = false"
-            size="large"
-            :slim="false"
-          >
+          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationDialog = false" size="large"
+            :slim="false">
             Annuler
           </v-btn>
           <v-spacer></v-spacer>
-          <v-btn
-            v-if="userHasShift"
-            color="permutation"
-            variant="tonal"
-            rounded="xl"
-            @click="handleSwap"
-            :loading="loading.accept"
-            size="large"
-            :slim="false"
-          >
+          <v-btn v-if="userHasShift" color="permutation" variant="tonal" rounded="xl" @click="handleSwap"
+            :loading="loading.accept" size="large" :slim="false">
             Permuter
           </v-btn>
-          <v-btn
-            color="remplacement"
-            variant="tonal"
-            rounded="xl"
-            @click="handleConfirmAccept"
-            :loading="loading.accept"
-            size="large"
-            :slim="false"
-          >
+          <v-btn color="remplacement" variant="tonal" rounded="xl" @click="handleConfirmAccept"
+            :loading="loading.accept" size="large" :slim="false">
             {{ userHasShift ? 'Remplacer' : 'Confirmer' }}
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Dialog d'informations utilisateur -->
+    <v-dialog v-model="showUserDialog" max-width="300">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-4">
+        <v-card-item class="pa-0">
+          <template #prepend>
+            <v-avatar
+              :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
+              size="large"
+              class="me-3"></v-avatar>
+          </template>
+          <v-card-title class="text-h6 pa-0">
+            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+          </v-card-title>
+          <v-card-subtitle class="pa-0">
+            {{ getUserById(demand?.posterId)?.email }}
+          </v-card-subtitle>
+        </v-card-item>
+  
+      </v-card>
+    </v-dialog>
+
+    <!-- Dialog des limites -->
+    <v-dialog v-model="showLimitsDialog" max-width="300">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-4">
+        <v-card-title class="text-h6 pa-0">
+          Limites de la demande
+        </v-card-title>
+        <v-card-text class="pa-0 mt-4">
+          <div v-for="limit in demand?.limit" :key="limit" class="d-flex align-center mb-2">
+            <v-icon color="error" class="me-2">mdi-alert-circle-outline</v-icon>
+            <span class="text-body-2">
+              <template v-if="limit === 'alreadyWorking'">
+                Travaille ce jour
+              </template>
+              <template v-if="limit === 'insufficientRest'">
+                Pas assez de repos {{ demand.rest.before }} {{ demand.rest.after }}
+              </template>
+              <template v-if="limit === 'consecutiveDaysLimit'">
+                Plus de 3 jours consécutifs
+              </template>
+            </span>
+          </div>
+        </v-card-text>
+        <v-card-actions class="pa-0 mt-4">
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="showLimitsDialog = false">
+            Fermer
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -186,6 +239,9 @@ import { useSubstitutionStore } from '@/stores/substitutionStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTeamStore } from '@/stores/teamStore'
 import { API_URL } from '@/config/api'
+import { useDisplay } from 'vuetify'
+
+
 
 const props = defineProps({
   demand: {
@@ -193,7 +249,7 @@ const props = defineProps({
     required: true
   }
 })
-
+const { smAndDown } = useDisplay()
 const authStore = useAuthStore()
 const substitutionStore = useSubstitutionStore()
 const date = useDate()
@@ -215,11 +271,11 @@ const formatDate = (dateString) => {
 
 const calculateTimeSinceCreation = () => {
   if (!props.demand?.createdAt) return ''
-  
+
   const now = new Date()
   const createdAt = new Date(props.demand.createdAt)
   const diffInHours = Math.floor((now - createdAt) / (1000 * 60 * 60))
-  
+
   if (diffInHours < 1) {
     const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60))
     return `Il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`
@@ -247,7 +303,7 @@ const handleAccept = async () => {
     userHasShift.value = response.hasShift
     userShift.value = response.shift
     showConfirmationDialog.value = true
- 
+
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la vérification des shifts', 'onError', "mdi-alert-circle-outline")
     console.error('Erreur lors de la vérification des shifts:', error)
@@ -304,7 +360,7 @@ onMounted(async () => {
   intervalId = setInterval(() => {
     timeSinceCreation.value = calculateTimeSinceCreation()
   }, 60000)
-  
+
 
 })
 
@@ -323,6 +379,10 @@ const getTeamName = computed(() => {
   const team = teamStore.centerTeams.find(team => team._id === props.demand?.posterShift?.teamId)
   return team?.name || props.demand?.posterShift?.teamId
 })
+
+const isExpanded = ref(false)
+const showUserDialog = ref(false)
+const showLimitsDialog = ref(false)
 </script>
 
 <style scoped>
@@ -331,11 +391,22 @@ const getTeamName = computed(() => {
 }
 
 .faint-border {
-  border-color: rgba(243, 243, 243, 0.05);
+  border-color: rgba(243, 243, 243, 0.000005);
 }
 
-.card-shadow {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(121, 121, 121, 0.034), 0 4px 8px rgba(0, 0, 0, 0.048) !important;
+.card-radius-16 {
+  border-radius: 16px !important;
+}
+
+/* .card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.000096), 0 0 0 1px rgba(121, 121, 121, 0.034), 0 4px 8px rgba(0, 0, 0, 0.00048) !important;
+} */
+
+.hybrid-chip {
+  background: linear-gradient(to right, rgba(var(--v-theme-permutation), 1), rgba(var(--v-theme-remplacement), 1) 50%);
+}
+
+.cursor-pointer {
+  cursor: pointer;
 }
 </style>
-

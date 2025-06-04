@@ -72,8 +72,6 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
-
-
   /**
    * Récupère l'utilisateur actuellement connecté.
    */
@@ -153,10 +151,28 @@ export const useUserStore = defineStore('user', () => {
     try {
       loading.value = true;
       error.value = null;
-      await userService.updateUser(userId, { isLocalAdmin: true });
+      await userService.makeAdmin(userId);
       await fetchUsers();
     } catch (err) {
       error.value = err.message || 'Erreur lors de la promotion de l\'utilisateur en administrateur';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  /**
+   * Retire le statut administrateur d'un utilisateur.
+   * @param {string} userId - L'ID de l'utilisateur.
+   */
+  const removeAdmin = async (userId) => {
+    try {
+      loading.value = true;
+      error.value = null;
+      await userService.removeAdmin(userId);
+      await fetchUsers();
+    } catch (err) {
+      error.value = err.message || 'Erreur lors du retrait du statut administrateur';
       throw err;
     } finally {
       loading.value = false;
@@ -202,6 +218,7 @@ export const useUserStore = defineStore('user', () => {
     approvePendingUser,
     deletePendingUser,
     makeAdmin,
+    removeAdmin,
     fetchUsersAndGroupByTeam
   };
 });

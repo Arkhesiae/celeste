@@ -43,12 +43,17 @@ export const useRotationStore = defineStore('rotation', () => {
   };
 
   /**
-   * Sauvegarde un tour de service (ajout ou mise à jour).
+   * Sauvegarde un nouveau tour de service.
    * @param {Object} rotation - Les données du tour de service.
    */
   const saveRotation = async (rotation) => {
-      await rotationService.saveRotation(rotation);
+    try {
+      await rotationService.createRotation(rotation);
       await fetchRotations(rotation.centerId); // Rafraîchir les données
+    } catch (error) {
+      console.error('Erreur lors de la création du tour de service :', error);
+      throw error;
+    }
   };
 
   /**
@@ -77,6 +82,21 @@ export const useRotationStore = defineStore('rotation', () => {
   };
 
   /**
+   * Duplique une rotation.
+   * @param {string} rotationId - L'ID de la rotation à dupliquer.
+   * @param {string} centerId - L'ID du centre pour rafraîchir les données.
+   */
+  const duplicateRotation = async (rotationId, centerId) => {
+    try {
+      await rotationService.duplicateRotation(rotationId);
+      await fetchRotations(centerId); // Rafraîchir les données
+    } catch (error) {
+      console.error('Erreur lors de la duplication de la rotation :', error);
+      throw error;
+    }
+  };
+
+  /**
    * Met à jour un jour dans une rotation.
    * @param {string} rotationId - L'ID de la rotation.
    * @param {number} dayIndex - L'index du jour à mettre à jour.
@@ -93,6 +113,21 @@ export const useRotationStore = defineStore('rotation', () => {
     }
   };
 
+  /**
+   * Met à jour un tour de service existant.
+   * @param {string} rotationId - L'ID de la rotation.
+   * @param {Object} updatedRotation - Les nouvelles données de la rotation.
+   */
+  const updateRotation = async (rotationId, updatedRotation) => {
+    try {
+      await rotationService.updateRotation(rotationId, updatedRotation);
+      await fetchRotations(updatedRotation.centerId); // Rafraîchir les données
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de la rotation :', error);
+      throw error;
+    }
+  };
+
   return {
     rotations,
     sortedRotations,
@@ -104,5 +139,7 @@ export const useRotationStore = defineStore('rotation', () => {
     setActiveRotation,
     deleteRotation,
     updateDayInRotation,
+    duplicateRotation,
+    updateRotation,
   };
 });

@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { centerService } from '@/services/centerService';
+import { teamService } from '@/services/teamService';
 
 /**
  * Store Pinia pour gérer l'état des centres.
@@ -201,7 +202,25 @@ export const useCenterStore = defineStore('center', () => {
     } finally {
       loading.value = false;
     }
-  };  
+  };
+
+  /**
+   * Crée une équipe pour un centre.
+   * @param {Object} teamData - Les données de la nouvelle équipe.
+   * @returns {Promise<Object>} L'équipe créée.
+   */
+  const createTeam = async (teamData) => {
+    try {
+      loading.value = true;
+      error.value = null;
+      return await teamService.createTeam(teamData);
+    } catch (err) {
+      error.value = err.message || 'Erreur lors de la création de l\'équipe';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
 
   return {
     // State
@@ -224,6 +243,7 @@ export const useCenterStore = defineStore('center', () => {
     fetchActiveRotations,
     fetchActiveRotationOfCenter,
     fetchAdminsByCenter,
-    fetchUsersCountByCenter
+    fetchUsersCountByCenter,
+    createTeam
   };
 });

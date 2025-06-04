@@ -50,6 +50,7 @@ const formattedDate = ref('');
 const localDate = ref('');
 const currentWindow = ref(0);
 const formValid = ref(false);
+const selectedVariant = ref(null);
 const showConfirmationDialog = ref(false);
 
 // Règles de validation
@@ -72,12 +73,29 @@ const isDialogVisible = computed({
 });
 
 const dialogTitle = computed(() =>
-  dialogModeValue.value === 'Rempla' ? 'Demander un remplacement' : 'Demande de permutation'
+  dialogModeValue.value === 'substitution' ? 'Demander un remplacement' : 'Demande de permutation'
 );
 
 const activeRotation = computed(() => {
   const centerId = authStore.centerId;
   return centerStore.activeRotationsByCenter[centerId];
+});
+
+const selectedRotationDay = computed(() => {
+  if (!props.selectedVacation?.shift || !rotationStore.rotations) return null;
+  // Parcourir toutes les rotations pour trouver le jour correspondant
+  for (const rotation of rotationStore.rotations) {
+    const foundDay = rotation.days?.find(day => day._id === props.selectedVacation.shift);
+    if (foundDay) {
+    
+      return {
+        shift: foundDay,
+        teamObject: props.selectedVacation.teamObject,
+        rotationName: rotation.name // Ajouter le nom de la rotation pour référence
+      };
+    }
+  }
+  return null;
 });
 
 const rotationDays = computed(() => {
@@ -211,6 +229,7 @@ onMounted(async () => {
     loadingRotations.value = true;
     rotationError.value = null;
     await centerStore.fetchActiveRotationOfCenter(authStore.centerId);
+    await rotationStore.fetchRotations(authStore.centerId);
   } catch (error) {
     console.error('Erreur lors du chargement du tour de service:', error);
     rotationError.value = 'Erreur lors du chargement du tour de service. Veuillez réessayer.';
@@ -245,6 +264,7 @@ const resetForm = () => {
     acceptedSwitches: [],
     pointsPerSwitch: {}
   };
+  selectedVariant.value = null;
   localDate.value = '';
   formattedDate.value = '';
 };
@@ -258,7 +278,8 @@ const submit = () => {
     ...demand.value,
     date: localDate.value,
     selectedVacation: props.selectedVacation,
-    acceptedSwitches: demand.value.acceptedSwitches
+    acceptedSwitches: demand.value.acceptedSwitches,
+    isTrueSwitch: dialogModeValue.value === 'switch'
   });
 };
 
@@ -268,7 +289,8 @@ const confirmSubmit = () => {
     ...demand.value,
     date: localDate.value,
     selectedVacation: props.selectedVacation,
-    acceptedSwitches: demand.value.acceptedSwitches
+    acceptedSwitches: demand.value.acceptedSwitches,
+    isTrueSwitch: dialogModeValue.value === 'switch'
   });
 };
 
@@ -300,37 +322,34 @@ const isNextButtonDisabled = computed(() => {
                 persistent-hint hint="Remplacement" label="Date de remplacement" :rules="[rules.required, rules.date]"
                 @blur="formatDateForDisplay" @focus="formatDateForInput"
                 @update:model-value="handleDateChange"></v-text-field>
-              <div v-if="dialogModeValue === 'Renfort'" class="text-h4 ma-3">-</div>
+              <div v-if="dialogModeValue === 'substitution'" class="text-h4 ma-3">-</div>
             </div>
             <div class="my-12">
               <v-card rounded="xl" color="background" class="mb-2" flat>
                 <v-card-item>
                   <v-card-title class="pb-0 mb-0">
-                    <h2 class="text-h4 font-weight-medium">{{ selectedVacation?.shift?.name || 'Aucun shift sélectionné'
+                    <h2 class="text-h4 font-weight-medium">{{ selectedRotationDay?.shift?.name || 'Aucun shift sélectionné'
                       }}
                     </h2>
                   </v-card-title>
-                  <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedVacation?.teamObject?.name ||
+                  <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedRotationDay?.teamObject?.name ||
                     'Aucune équipe' }}</v-card-subtitle>
-                  <v-card-subtitle class="pt-0">
-                    {{ selectedVacation?.shift?.startTime || '' }} - {{ selectedVacation?.shift?.endTime || '' }}
+                 
+                  <v-card-subtitle class="pt-0" v-if="selectedVariant && selectedRotationDay?.shift?.variants.length !== 0">
+                    {{ selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.startTime || '' }} - 
+                    {{ selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.endTime || '' }}
+                  </v-card-subtitle>
+                  <v-card-subtitle class="pt-0" v-else>
+                    {{ selectedRotationDay?.shift?.startTime || '' }} - {{ selectedRotationDay?.shift?.endTime || '' }}
                   </v-card-subtitle>
 
                   <div class="position-absolute top-0 right-0 mr-1 mt-1">
-                    <v-chip-group base-color="background" variant="flat" rounded="lg" size="small">
-                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
+                    <v-chip-group v-model="selectedVariant" base-color="background" variant="flat" rounded="lg" size="small">
+                      <v-chip v-for="variant in selectedRotationDay?.shift?.variants" :key="variant._id" :value="variant._id" color="onBackground" variant="flat" rounded="lg" size="small">
                         <v-icon start icon="mdi-clock-outline"></v-icon>
-                        A
+                        {{ variant.name }}
                       </v-chip>
-                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
-                        <v-icon start icon="mdi-clock-outline"></v-icon>
-                        B
-                      </v-chip>
-                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
-                        <v-icon start icon="mdi-clock-outline"></v-icon>
-                        C
-                      </v-chip>
-                      <v-chip color="onBackground" variant="flat" rounded="lg" size="small">
+                      <v-chip v-if="selectedRotationDay?.shift?.variants.length !== 0" value="TBD" color="onBackground" variant="flat" rounded="lg" size="small">
                         <v-icon start icon="mdi-clock-outline"></v-icon>
                         TBD
                       </v-chip>

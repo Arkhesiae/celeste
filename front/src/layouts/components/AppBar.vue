@@ -298,16 +298,8 @@ const fetchNotifications = async () => {
 };
 
 onMounted(async () => {
-
-
-  if (authStore.userId) {
-    await teamStore.fetchCurrentTeamOfUser(authStore.userId);
-    await fetchNotifications(authStore.userId);
-    await pointStore.fetchUserPoints();
-  }
   // Rafraîchir les notifications toutes les 30 secondes
   notificationInterval.value = setInterval(fetchNotifications, 30000);
-  
 });
 
 onUnmounted(() => {

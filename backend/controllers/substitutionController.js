@@ -99,18 +99,15 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
         try {
             const demandDate = new Date(demand.posterShift.date);
             const vacationOfFetcher = (await computeShiftOfUser(demandDate, userId))[0];
-
+            const demandWithLimit = demand.toObject();
+            demandWithLimit.limit = [];
             // Vérifier si l'utilisateur travaille déjà ce jour-là
             if (vacationOfFetcher.shift?.name !== "Rest Day" && vacationOfFetcher.shift?.type !== "rest") {
                 // Vérifier si une permutation est possible
-                const demandWithLimit = demand.toObject();
-                demandWithLimit.limit = 'alreadyWorking';
+                demandWithLimit.limit.push('alreadyWorking');
                 if (demand.acceptedSwitches && demand.acceptedSwitches.includes(vacationOfFetcher.shift._id.toString())) {
                     demandWithLimit.canSwitch = true;
                 }
-           
-                categorizedDemands.push(demandWithLimit);
-                return;
             }
 
             // Vérifier les périodes de repos
@@ -124,25 +121,24 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
             const previousShift = shifts[5].shift;
             const nextShift = shifts[7].shift;
 
+            demandWithLimit.rest = {
+                before:  calculateRestDelay(previousShift, demand.posterShift, 'before'),
+                after: calculateRestDelay(demand.posterShift, nextShift, 'after') 
+            }
             const hasElevenHoursBefore = checkRestPeriod(previousShift, demand.posterShift, 'before');
             const hasElevenHoursAfter = checkRestPeriod(nextShift, demand.posterShift, 'after');
 
+            console.log(hasElevenHoursBefore, hasElevenHoursAfter); 
             if (!hasElevenHoursBefore || !hasElevenHoursAfter) {
-                const demandWithLimit = demand.toObject();
-                demandWithLimit.limit = 'insufficientRest';
-                categorizedDemands.push(demandWithLimit);
-                return;
+                demandWithLimit.limit.push('insufficientRest');
             }
 
             // Vérifier la limite de jours consécutifs
             if (checkConsecutiveDays(shifts, demandDate) >= 6) {
-                const demandWithLimit = demand.toObject();
-                demandWithLimit.limit = 'consecutiveDaysLimit';
-                categorizedDemands.push(demandWithLimit);
-                return;
+                demandWithLimit.limit.push('consecutiveDaysLimit');
             }
 
-            categorizedDemands.push(demand);
+            categorizedDemands.push(demandWithLimit);
         } catch (err) {
             console.error(`Erreur lors du traitement de la demande ${demand._id}:`, err);
             throw err;
@@ -152,16 +148,29 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
     return categorizedDemands;
 };
 
+const calculateRestDelay = (shift, shift2) => {
+    if (!shift || !shift2) return 0;
+
+    const shiftEnd = new Date(`2000-01-01 ${shift.endTime}`);
+    const shift2Start = new Date(`2000-01-02 ${shift2.startTime}`);
+    
+    if (shift.endsNextDay) {
+      shiftEnd.setDate(shiftEnd.getDate() + 1);
+    }
+    
+    // Calculer la différence en heures
+    const diffHours = (shift2Start - shiftEnd) / (1000 * 60 * 60);
+    return diffHours;
+  } 
+
 const checkRestPeriod = (shift, demandShift, period) => {
-  
         if (shift.type === 'rest') return true;
-        
     if (period === 'before') {
         return demandShift.startTime && shift.endTime ? 
-            (new Date(demandShift.startTime) - new Date(shift.endTime)) / (1000 * 60 * 60) > 11 : true;
+            calculateRestDelay(shift, demandShift) >= 11 : true;
     } else {
         return demandShift.endTime && shift.startTime ? 
-            (new Date(shift.startTime) - new Date(demandShift.endTime)) / (1000 * 60 * 60) > 11 : true;
+            calculateRestDelay(demandShift, shift) >= 11 : true;
     }
     
 };
@@ -196,7 +205,8 @@ const createDemand = async (req, res) => {
             points, 
             status = 'open',
             acceptedSwitches,
-            reservedForUserId 
+            reservedForUserId,
+            isTrueSwitch
         } = req.body;
 
         console.log(acceptedSwitches);
@@ -233,6 +243,13 @@ const createDemand = async (req, res) => {
             return res.status(400).json({ error: 'Une demande existe déjà pour ce jour' });
         }
 
+        let type;
+        if (isTrueSwitch) {
+            type = "switch";
+        } else {
+            type = acceptedSwitches.length > 0 ? "hybrid" : "substitution";
+        }
+
         // Création de la demande
         const demand = new Substitution({
             posterId,
@@ -243,13 +260,15 @@ const createDemand = async (req, res) => {
             },
             comment: comment || '',
             points,
-            status: 'open',
+            status: status,
             centerId: user.centerId,
             createdAt: new Date(),
             deleted: false,
             seenBy: [],
             interested: [],
-            acceptedSwitches: acceptedSwitches || []
+            acceptedSwitches: acceptedSwitches || [],
+            isTrueSwitch: isTrueSwitch || false,
+            type : type
         });
 
         await demand.save();

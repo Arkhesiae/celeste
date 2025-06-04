@@ -35,9 +35,9 @@
           </v-card-item>
 
           
+          <PendingChip v-if="substitutionStore.hasOwnPendingDemand(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
 
-
-          <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" style="bottom:8px !important; right: 8px !important" type="rempla" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/>
+          <!-- <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" style="bottom:8px !important; right: 8px !important" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/> -->
 
 
           <div class="d-flex justify-space-between align-center px-4">
@@ -50,17 +50,22 @@
           <div  class="position-absolute pr-4 pb-4" style="bottom: 0; right: 0;">
             <div class="d-flex justify-center">
               <div 
-                v-if="substitutionStore.hasAvailableSubstitutions(day.date)"
+                v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
                 class="indicator-dot remplacement "
                 style="background: rgb(var(--v-theme-remplacement)) !important"
               ></div>
               <div 
-                v-if="substitutionStore.hasAvailableSwitches(day.date)"
+                v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
                 class="indicator-dot permutation ml-1"
                 style="background: rgb(var(--v-theme-permutation)) !important"
               ></div>
+              <div 
+                v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
+                class="indicator-dot other-demand ml-1"
+                style="background: rgba(var(--v-theme-background), 1) !important"
+              ></div>
             </div>
-          </div>
+          </div>      
           </div>
          
       
@@ -91,8 +96,8 @@ const props = defineProps({
 const getColor = (date) => {
   if (props.isSelected(date)) {
     return 'surfaceContainerHighest';
-  } else if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date.toISOString())) {
-    return 'remplacement';
+  // } else if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date.toISOString())) {
+  //   return 'remplacement';
   }  else if (props.isWorkDay(date)) {
     return 'surfaceContainerHigh';
     }  else {
@@ -100,18 +105,20 @@ const getColor = (date) => {
   }
 };
 
-const getStatus = (date) => {
-  if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {
-    return 'accepted-accepter';
-  }
-  if (substitutionStore.hasAcceptedSubstitutionsAsPoster(date)) {
-    return 'accepted-poster';
-  }
-  if (substitutionStore.hasOwnOpenSubstitutions(date)) {
-    return 'pending';
-  }
-  return '';
-};
+
+
+// const getStatus = (date) => {
+//   if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {
+//     return 'accepted-accepter';
+//   }
+//   if (substitutionStore.hasAcceptedSubstitutionsAsPoster(date)) {
+//     return 'accepted-poster';
+//   }
+//   if (substitutionStore.hasOwnOpenSubstitutions(date)) {
+//     return 'pending';
+//   }
+//   return '';
+// };
 
 
 const emit = defineEmits(['select-day']);

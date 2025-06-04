@@ -13,15 +13,15 @@
 <script setup>
 import { useAuthStore } from "@/stores/authStore.js";
 import { useTheme } from 'vuetify';
-
+import { useAppInitialization } from '@/composables/useAppInitialization';
 
 const authStore = useAuthStore();
 const theme = useTheme();
+const { initializeApp } = useAppInitialization();
 
-onMounted(() => {
-  authStore.loadFromLocalStorage();
+onMounted(async () => {
+  await initializeApp();
   if (authStore.isLoggedIn) {
- 
     theme.global.name.value = authStore.preferences.theme ? 'darkTheme' : 'lightTheme';
   }
 });

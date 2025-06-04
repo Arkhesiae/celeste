@@ -172,5 +172,31 @@ export const userService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Rend un utilisateur administrateur.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @returns {Promise<Object>} L'utilisateur mis à jour.
+   */
+  async makeAdmin(userId) {
+    const response = await fetch(`${API_URL}/users/${userId}/make-admin`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Retire le statut administrateur d'un utilisateur.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @returns {Promise<Object>} L'utilisateur mis à jour.
+   */
+  async removeAdmin(userId) {
+    const response = await fetch(`${API_URL}/users/${userId}/remove-admin`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };

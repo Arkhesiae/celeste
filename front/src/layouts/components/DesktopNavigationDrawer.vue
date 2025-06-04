@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer
-    rail
+  
     floating
     expand-on-hover
     :model-value="navExpanded"
@@ -15,17 +15,17 @@
   >
     <v-list variant="text" active-class="active-item" base-color="background" nav bg-color="onBackground" class="pa-4 elevation-3 ma-4 mt-16" rounded="xl">
   
-      <v-list-item @click="router.push({ path: '/permutations' })"
+      <!-- <v-list-item @click="router.push({ path: '/permutations' })"
       rounded="xl" 
                    
                    :prepend-icon="isActive('/permutations') ? 'mdi-swap-horizontal' : 'mdi-swap-horizontal-hidden'"
                    title="Permutations"
-                   value="permutations"></v-list-item>
+                   value="permutations"></v-list-item> -->
       <v-list-item @click="router.push({ path: '/exchange/replace' })"
-         
          rounded="xl"
-                   :prepend-icon="isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'"
-                   title="Remplacements"></v-list-item>
+         :prepend-icon="isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'"
+         title="Demandes"
+         value="replace"></v-list-item>
 
       <v-list-item @click="router.push({ path: '/calendar' })"
                    rounded="xl"

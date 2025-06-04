@@ -30,12 +30,22 @@ const processPendingTransactions = async () => {
     for (const transaction of pendingTransactions) {
         try {
             // Vérifier que l'expéditeur a toujours assez de points
-            if (transaction.sender.points - transaction.amount < -100 ) {
-                transaction.status = 'cancelled';
-                await transaction.save();
-                continue;
+            if (transaction.type === "replacement" || transaction.type === "swap") {
+                // Pour replacement/swap, le solde minimum autorisé est -20
+                if ((transaction.sender.points - transaction.amount) < -20) {
+                    transaction.status = 'cancelled';
+                    await transaction.save();
+                    continue;
+                }
+            } else if (transaction.type === "transfer") {
+                // Pour un transfert classique, le solde ne peut pas devenir négatif
+                if ((transaction.sender.points - transaction.amount) < 0) {
+                    transaction.status = 'cancelled';
+                    await transaction.save();
+                    continue;
+                }
             }
-
+        
             // Effectuer le transfert
             transaction.sender.points -= transaction.amount;
             transaction.receiver.points += transaction.amount;

@@ -54,25 +54,13 @@
         <v-menu color="onBackground" rounded="lg">
           <template v-slot:activator="{ props }">
             <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par'}}</span>
+              <span class="text-overline">{{ sortBy ? sortBy.text : 'Trier par'}}</span>
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
           <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-            <v-list-item rounded="lg" @click="sortBy = 'name'">
-              <v-list-item-title>Prénom</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'lastName'">
-              <v-list-item-title>Nom</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'email'">
-              <v-list-item-title>Email</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'status'">
-              <v-list-item-title>Statut</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'createdAt'">
-              <v-list-item-title>Date d'inscription</v-list-item-title>
+            <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg" @click="sortBy = option">
+              <v-list-item-title>{{ option.text }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -100,16 +88,19 @@
                   </v-btn>
                 </template>
                 <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-                  <v-list-item rounded="lg" @click.stop="approveUser(user)" v-if="user.status === 'pending'">
+                  <v-list-item rounded="lg" @click.stop="approveUser(user)" v-if="user.registrationStatus=== 'pending' && (isLocalAdmin || isMasterAdmin)">
                     <v-list-item-title>Approuver</v-list-item-title>
                   </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="makeAdmin(user)" v-if="!user.isLocalAdmin">
+                  <v-list-item rounded="lg" @click.stop="makeAdmin(user)" v-if="!user.isAdmin && isMasterAdmin">
                     <v-list-item-title>Octroyer statut admin</v-list-item-title>
                   </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="openCenterDialog(user)">
+                  <v-list-item rounded="lg" @click.stop="removeAdmin(user)" v-if="user.isAdmin && isMasterAdmin">
+                    <v-list-item-title>Enlever statut admin</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item rounded="lg" @click.stop="openCenterDialog(user)" v-if="isMasterAdmin">
                     <v-list-item-title>Modifier le centre</v-list-item-title>
                   </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="deleteUser(user)">
+                  <v-list-item rounded="lg" @click.stop="deleteUser(user)" v-if="isLocalAdmin || isMasterAdmin">
                     <v-list-item-title class="text-onError">Supprimer</v-list-item-title>
                   </v-list-item>
                 </v-list>
@@ -171,7 +162,7 @@
               <div class="text-subtitle-1 text-medium-emphasis">{{ selectedUser.email }}</div>
             </div>
           </div>
-          <v-btn icon @click="userDialog = false">
+          <v-btn variant="text" icon @click="userDialog = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
@@ -188,9 +179,11 @@
                   <v-list-item-title>Statut</v-list-item-title>
                   <v-list-item-subtitle>
                     <v-chip
-                      :color="selectedUser.status === 'pending' ? 'warning' : 'success'"
+                      rounded="lg"
+                      color="onBackground"
+                      :color="selectedUser.registrationStatus === 'pending' ? 'warning' : 'success'"
                       size="small"
-                    >{{ selectedUser.status === 'pending' ? 'Candidature en attente' : 'Candidature approuvée' }}</v-chip>
+                    >{{ selectedUser.registrationStatus === 'pending' ? 'Candidature en attente' : 'Candidature approuvée' }}</v-chip>
                   </v-list-item-subtitle>
                 </v-list-item>
                 <v-list-item>
@@ -219,28 +212,35 @@
             <v-col cols="12" md="6">
               <div class="text-subtitle-1 mb-2">Actions</div>
               <v-list>
-                <v-list-item @click="approveUser(selectedUser)" v-if="selectedUser.status === 'pending'">
+                <v-list-item @click="approveUser(selectedUser)" v-if="selectedUser.registrationStatus === 'pending' && (isLocalAdmin || isMasterAdmin)">
                   <template v-slot:prepend>
                     <v-icon>mdi-check</v-icon>
                   </template>
                   <v-list-item-title>Approuver la candidature</v-list-item-title>
                 </v-list-item>
-                <v-list-item @click="makeAdmin(selectedUser)" v-if="!selectedUser.isLocalAdmin">
+                <v-list-item rounded="lg" @click="makeAdmin(selectedUser)" v-if="!selectedUser.isAdmin && isMasterAdmin">
                   <template v-slot:prepend>
                     <v-icon>mdi-shield-account</v-icon>
                   </template>
                   <v-list-item-title>Octroyer statut admin</v-list-item-title>
                 </v-list-item>
-                <v-list-item @click="openCenterDialog(selectedUser)">
+                <v-list-item rounded="lg" @click="removeAdmin(selectedUser)" v-if="selectedUser.isAdmin && isMasterAdmin">
+                  <template v-slot:prepend>
+                    <v-icon>mdi-shield-account</v-icon>
+                  </template>
+                  <v-list-item-title>Enlever statut admin</v-list-item-title>
+                </v-list-item>
+                <v-list-item rounded="lg" @click="openCenterDialog(selectedUser)" v-if="isMasterAdmin">
                   <template v-slot:prepend>
                     <v-icon>mdi-office-building-marker</v-icon>
                   </template>
                   <v-list-item-title>Modifier le centre</v-list-item-title>
                 </v-list-item>
-                <v-list-item color="error" @click="deleteUser(selectedUser)">
-                  <v-btn color="error" block variant="tonal" height="48"  prepend-icon="mdi-delete" rounded="lg" @click="deleteUser(selectedUser)">Supprimer l'utilisateur</v-btn>
-
-              
+                <v-list-item rounded="lg" color="error" @click="deleteUser(selectedUser)" v-if="isLocalAdmin || isMasterAdmin">
+                  <template v-slot:prepend>
+                    <v-icon>mdi-delete</v-icon>
+                  </template>
+                  <v-list-item-title>Supprimer l'utilisateur</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-col>
@@ -298,9 +298,17 @@ const sortBy = ref('');
 const sortDirection = ref('asc');
 const searchQuery = ref('');
 const selectedCenterId = ref(null);
-
+const isMasterAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'master');
+const isLocalAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'local');
 const centers = computed(() => centerStore.centers);
 const users = computed(() => userStore.users);
+const sortOptions = [
+  { text: 'Prénom', sortValue: 'name' },
+  { text: 'Nom', sortValue: 'lastName' },
+  { text: 'Email', sortValue: 'email' },
+  { text: 'Statut', sortValue: 'status' },
+  { text: 'Date d\'inscription', sortValue: 'createdAt' },
+];
 
 const filteredUsers = computed(() => {
   let filtered = users.value;
@@ -339,10 +347,10 @@ const sortedAndFilteredUsers = computed(() => {
   return [...filteredUsers.value].sort((a, b) => {
     let comparison = 0;
     
-    if (sortBy.value === 'createdAt') {
-      comparison = new Date(a[sortBy.value]).getTime() - new Date(b[sortBy.value]).getTime();
+    if (sortBy.value.sortValue === 'createdAt') {
+      comparison = new Date(a[sortBy.value.sortValue]).getTime() - new Date(b[sortBy.value.sortValue]).getTime();
     } else {
-      comparison = String(a[sortBy.value]).localeCompare(String(b[sortBy.value]));
+      comparison = String(a[sortBy.value.sortValue]).localeCompare(String(b[sortBy.value.sortValue]));
     }
     
     return sortDirection.value === 'asc' ? comparison : -comparison;
@@ -393,6 +401,16 @@ const makeAdmin = async (user) => {
   } catch (error) {
     console.error('Error making user admin:', error);
     snackbarStore.showNotification('Erreur lors de l\'octroi du statut admin', 'onError', 'mdi-alert-circle');
+  }
+};
+
+const removeAdmin = async (user) => {
+  try {
+    await userStore.removeAdmin(user._id);
+    snackbarStore.showNotification('Statut admin retiré', 'onSuccess', 'mdi-check-circle');
+  } catch (error) {
+    console.error('Error removing user admin:', error);
+    snackbarStore.showNotification('Erreur lors de la suppression du statut admin ' + error.message, 'onError', 'mdi-alert-circle');
   }
 };
 

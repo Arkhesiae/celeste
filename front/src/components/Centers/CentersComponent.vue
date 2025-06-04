@@ -174,8 +174,20 @@
               dense
               required
             />
+            <v-text-field 
+              v-model="newCenter.numberOfTeams" 
+              variant="underlined" 
+              type="number"
+              :rules="[
+                v => !!v || 'Le nombre d\'équipes est requis',
+                v => v > 0 || 'Le nombre d\'équipes doit être supérieur à 0',
+                v => v <= 50 || 'Le nombre d\'équipes ne doit pas dépasser 50'
+              ]"
+              label="Nombre d'équipes" 
+              required 
+            />
           </v-card-text>
-          <v-card-actions class="pa-0">
+          <v-card-actions class="pa-0 ">
       
             <v-btn text color="primary" @click="addDialog = false">Annuler</v-btn>
             <v-spacer></v-spacer>
@@ -222,6 +234,7 @@ const newCenter = ref({
   OACI: "",
   type: "",
   adminId: null,
+  numberOfTeams: 12,
 });
 const centerTypes = ref([
   {
@@ -305,7 +318,7 @@ const saveCenter = async () => {
     await centerStore.createCenter(newCenter.value);
     await centerStore.fetchCenters();
     addDialog.value = false;
-    newCenter.value = { name: "", OACI: "", type: "", adminId: null };
+    newCenter.value = { name: "", OACI: "", type: "", adminId: null, numberOfTeams: 12 };
     form.value.reset();
   } catch (error) {
     snackbarStore.showNotification(error.message, 'onError', 'mdi-alert-circle');

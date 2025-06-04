@@ -34,7 +34,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation créée.
    */
   async createRotation(rotationData) {
-    const response = await fetch(`${API_URL}/rotations`, {
+    const response = await fetch(`${API_URL}/rotations/create`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(rotationData)
@@ -49,7 +49,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation mise à jour.
    */
   async updateRotation(id, rotationData) {
-    const response = await fetch(`${API_URL}/rotations/${id}`, {
+    const response = await fetch(`${API_URL}/rotations/${id}/update`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify(rotationData)
@@ -75,10 +75,11 @@ export const rotationService = {
    * @param {string} id - L'ID de la rotation.
    * @returns {Promise<Object>} La rotation activée.
    */
-  async activateRotation(id) {
+  async setActiveRotation(id, activationDate  ) {
     const response = await fetch(`${API_URL}/rotations/${id}/activate`, {
       method: 'POST',
-      headers: getAuthHeaders()
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ activationDate })
     });
     return handleResponse(response);
   },
@@ -88,10 +89,11 @@ export const rotationService = {
    * @param {string} id - L'ID de la rotation.
    * @returns {Promise<Object>} La rotation désactivée.
    */
-  async deactivateRotation(id) {
-    const response = await fetch(`${API_URL}/rotations/${id}/deactivate`, {
-      method: 'POST',
-      headers: getAuthHeaders()
+  async removeActivationDate(id, activationDate) {
+    const response = await fetch(`${API_URL}/rotations/${id}/remove-date`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ activationDate })
     });
     return handleResponse(response);
   },
@@ -110,15 +112,28 @@ export const rotationService = {
 
   /**
    * Met à jour un jour dans une rotation.
-   * @param {string} rotationId - L'ID de la rotation.
+   * @param {string} id - L'ID de la rotation.
    * @param {Object} updatedDay - Les nouvelles données du jour.
    * @returns {Promise<Object>} La rotation mise à jour.
    */
-  async updateDayInRotation(rotationId, updatedDay) {
-    const response = await fetch(`${API_URL}/rotations/${rotationId}/day`, {
+  async updateDayInRotation(id, updatedDay) {
+    const response = await fetch(`${API_URL}/rotations/${id}/day`, {
       method: 'PUT',
       headers: getAuthHeaders(),
       body: JSON.stringify({ updatedDay })
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Duplique une rotation.
+   * @param {string} id - L'ID de la rotation à dupliquer.
+   * @returns {Promise<Object>} La rotation dupliquée.
+   */
+  async duplicateRotation(id) {
+    const response = await fetch(`${API_URL}/rotations/${id}/duplicate`, {
+      method: 'POST',
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   }

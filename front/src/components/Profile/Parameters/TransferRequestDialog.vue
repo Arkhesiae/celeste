@@ -49,8 +49,7 @@
           rounded="xl"
           @click="close"
           :disabled="loading"
-          size="large"
-          :slim="false"
+
         >
           Annuler
         </v-btn>
@@ -61,8 +60,7 @@
           @click="submit"
           :loading="loading"
           :disabled="!valid"
-          size="large"
-          :slim="false"
+
         >
           Envoyer la demande
         </v-btn>

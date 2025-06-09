@@ -143,8 +143,7 @@
           rounded="xl"
           @click="currentWindow = 1"
           :disabled="!selectedTeam"
-          size="large"
-          :slim="false"
+
         >
           Suivant
         </v-btn>
@@ -157,8 +156,8 @@
           variant="text"
           rounded="xl"
           @click="currentWindow = 0"
-          :slim="false"
-          size="large"
+
+
         >
           Retour
         </v-btn>
@@ -166,11 +165,9 @@
         <v-btn
           color="primary"
           variant="tonal"
-          :slim="false"
           :disabled="!formValid"
           rounded="xl"
           @click="handleAddTeam"
-          size="large"
         >
           Valider
         </v-btn>
@@ -194,8 +191,7 @@
           color="secondary" 
           rounded="xl"
           @click="showConfirmationDialog = false"
-          size="large"
-          :slim="false"
+
         >
           Annuler
         </v-btn>
@@ -204,8 +200,7 @@
           rounded="xl" 
           color="primary" 
           @click="submit() ; showConfirmationDialog=false"
-          size="large"
-          :slim="false"
+
         >
           Valider
         </v-btn>
@@ -394,7 +389,6 @@ const close = () => {
 };
 
 onMounted(() => {
-  console.log(teams.value);
 });
 
 </script>

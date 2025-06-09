@@ -70,17 +70,6 @@ export const userService = {
   },
 
   /**
-   * Récupère l'utilisateur actuellement connecté.
-   * @returns {Promise<Object>} Les données de l'utilisateur courant.
-   */
-  async getCurrentUser() {
-    const response = await fetch(`${API_URL}/users/me`, {
-      headers: getAuthHeaders()
-    });
-    return handleResponse(response);
-  },
-
-  /**
    * Met à jour les préférences de l'utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
    * @param {Object} preferences - Les nouvelles préférences.

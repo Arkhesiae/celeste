@@ -30,7 +30,7 @@
     <v-card-title class="text-h4 d-flex flex-column align-center  ">
       <div v-if="permanentTeam" class="d-flex flex-column align-center">
         <p class="text-overline text-medium-emphasis  ">équipe</p>
-        <p class="text-h1 font-weight-medium">{{ permanentTeam.teamName }}</p>
+        <p class="text-h1 font-weight-medium gradient">{{ permanentTeam.teamName }}</p>
         <p class="text-subtitle-2 text-medium-emphasis ">depuis le {{ formattedPermanentTeamDate }}</p>
       </div>
       <p v-else>Aucune équipe</p>
@@ -303,5 +303,17 @@ const showInfo = ref(false);
 .scale-down {
   transform: scale(1);
   /* Cartes non sélectionnées */
+}
+
+.gradient {
+  fill: transparent;
+  color: #000;
+  font-weight: 700 !important;
+  background: linear-gradient(to right, rgb(var(--v-theme-remplacement))00%, #a779cd 40%, rgb(var(--v-theme-permutation)) 90%, #dc8474 80%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  animation: animatedTextGradient 15s linear infinite;
 }
 </style>

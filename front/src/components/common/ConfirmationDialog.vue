@@ -76,9 +76,8 @@ const handleCancel = () => {
         
         <v-btn
           color="secondary"
-          variant="outlined"
-          size="large"
-          :slim="false"  
+          variant="outlined"         
+          :slim="true"  
           @click="handleCancel"
           class="border-white"
         >
@@ -87,9 +86,7 @@ const handleCancel = () => {
         <v-spacer />
         <v-btn
           :color="confirmColor || 'primary'"
-       
-          size="large"
-          :slim="false"
+          :slim="true"
           :disabled="isConfirmDisabled"
           @click="handleConfirm"
           

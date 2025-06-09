@@ -84,7 +84,7 @@ export const useTeamStore = defineStore('team', () => {
       currentTeam.value = await userService.fetchCurrentTeamOfUser(userId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération de l\'équipe actuelle';
-      throw err;
+      
     } finally {
       loading.value = false;
     }

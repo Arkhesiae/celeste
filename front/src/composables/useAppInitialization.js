@@ -5,6 +5,9 @@ import { useTeamStore } from '@/stores/teamStore';
 import { usePointStore } from '@/stores/pointStore';
 import { useMessageStore } from '@/stores/messageStore';
 import { useNotificationStore } from '@/stores/notificationStore';
+import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useRotationStore } from '@/stores/rotationStore';
+import { useInitializationStore } from '@/stores/initializationStore';
 
 export function useAppInitialization() {
   const authStore = useAuthStore();
@@ -14,48 +17,77 @@ export function useAppInitialization() {
   const pointStore = usePointStore();
   const messageStore = useMessageStore();
   const notificationStore = useNotificationStore();
+  const substitutionStore = useSubstitutionStore();
+  const rotationStore = useRotationStore();
+  const initializationStore = useInitializationStore();
 
-  const initializeApp = async () => {
+  const initializeApp = async (onProgress) => {
     try {
-      // 1. Charger les données d'authentification depuis le localStorage
       authStore.loadFromLocalStorage();
-
+      initializationStore.setLoading(true);
+      
       if (authStore.isLoggedIn) {
-        // 2. Charger les données de l'utilisateur courant
-     
+        await userStore.fetchCurrentUser();
+        if (onProgress) onProgress('user');
 
-        // 3. Charger les données du centre si l'utilisateur en a un
         if (authStore.centerId) {
+          initializationStore.currentlyLoading = 'center';
           await Promise.all([
             centerStore.fetchUsersByCenter(authStore.centerId),
             centerStore.fetchAdminsByCenter(),
             centerStore.fetchUsersCountByCenter()
           ]);
+          initializationStore.updateInitializationState('center', true);
+          if (onProgress) onProgress('center');
         }
 
-        // 4. Charger les données de l'équipe de l'utilisateur
         if (authStore.userId) {
+          initializationStore.currentlyLoading = 'team';
           await Promise.all([
             teamStore.fetchCurrentTeamOfUser(authStore.userId),
-            teamStore.fetchTeamOccurrencesOfUser(authStore.userId)
+            teamStore.fetchTeamOccurrencesOfUser(authStore.userId),
+            teamStore.fetchCenterTeams(authStore.centerId)
           ]);
+          initializationStore.updateInitializationState('team', true);
+          if (onProgress) onProgress('team');
         }
 
-        // 5. Charger les données personnelles de l'utilisateur
+        initializationStore.currentlyLoading = 'substitutions';
+        await substitutionStore.fetchAllDemands({
+          startDate: new Date().toISOString(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+        });
+        initializationStore.updateInitializationState('substitutions', true);
+        if (onProgress) onProgress('substitutions');
+
+        if (authStore.centerId) {
+          initializationStore.currentlyLoading = 'rotations';
+          await rotationStore.fetchRotations(authStore.centerId);
+          initializationStore.updateInitializationState('rotations', true);
+          if (onProgress) onProgress('rotations');
+        }
+
+        initializationStore.currentlyLoading = 'personal';
         await Promise.all([
           pointStore.fetchUserPoints(),
-          messageStore.fetchMessages(),
+     
           notificationStore.fetchNotifications(authStore.userId)
         ]);
+        initializationStore.updateInitializationState('personal', true);
+        if (onProgress) onProgress('personal');
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de l\'application:', error);
-      // En cas d'erreur, on déconnecte l'utilisateur pour éviter un état incohérent
       authStore.logOut();
+      throw error;
+    } finally {
+      initializationStore.setLoading(false);
     }
   };
 
   return {
-    initializeApp
+    initializeApp,
+    initializationState: initializationStore.initializationState,
+    isLoading: initializationStore.isLoading
   };
 } 

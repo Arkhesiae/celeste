@@ -24,7 +24,7 @@
           </div>
       
 
-          <v-chip class="ms-2 text-medium-emphasis " size="small" rounded="pill" color="onBackground" variant="tonal">
+          <v-chip v-if="demand?.comment" class="ms-2 text-medium-emphasis " size="small" rounded="pill" color="onBackground" variant="tonal">
             <v-icon>mdi-comment-outline</v-icon>
           </v-chip>
           <v-chip class="ms-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
@@ -60,6 +60,7 @@
 
       </v-card-item>
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
+     
         <v-chip v-if="demand?.type === 'switch'" color="permutation" variant="flat" size="small" rounded="lg"
           prepend-icon="mdi-swap-horizontal">
           Permutation
@@ -109,7 +110,7 @@
               </div>
             </v-chip>
           </div>
-          <v-chip rounded="lg" variant="tonal" v-if="demand?.type === 'switch' || demand?.type === 'hybrid'"
+          <v-chip rounded="lg" variant="tonal" v-if="(demand?.type === 'switch' || demand?.type === 'hybrid') && !smAndDown"
             :color="demand?.canSwitch ? 'permutation' : 'error'" size="small">
             {{ demand?.canSwitch ? 'Peut permuter' : 'Ne peut pas permuter' }}
           </v-chip>
@@ -117,22 +118,30 @@
 
           <v-spacer></v-spacer>
           <v-btn v-if="demand?.status === 'open'" rounded="lg" :variant="isInterested ? 'elevated' : 'outlined'"
-            size="small" :slim="false" class="faint-border me-2" color="onBackground"
+            size="small" :slim="true" class="faint-border me-2" color="onBackground"
             :prepend-icon="isInterested ? 'mdi-heart' : 'mdi-heart-outline'" @click="handleInterest"
             :loading="loading.interest">
             Intéressé
           </v-btn>
           <div v-if="demand?.status === 'open'" class="d-flex align-center  justify-end ga-2">
             <v-btn v-if="demand?.status === 'open' && (demand?.type === 'substitution' || demand?.type === 'hybrid')"
-              rounded="xl" color="remplacement" size="small" :slim="false" variant="flat"
+              rounded="xl" color="remplacement" size="small" :slim="true" variant="flat"
               prepend-icon="mdi-account-arrow-left-outline" @click="handleAccept" :loading="loading.accept">
               Remplacer
             </v-btn>
-            <v-btn v-if="demand?.status === 'open' && (demand?.type === 'hybrid' || demand?.type === 'switch')"
-              rounded="xl" color="permutation" size="small" :slim="false" variant="flat"
+            <div v-if="demand?.status === 'open' && (demand?.type === 'hybrid' || demand?.type === 'switch')">
+              <v-btn v-if="demand?.canSwitch"
+              rounded="xl" color="permutation" size="small" :slim="true" variant="flat"
               prepend-icon="mdi-swap-horizontal" @click="handleSwap" :loading="loading.accept">
               Permuter
             </v-btn>
+            <v-btn v-else
+              rounded="xl" color="error"  size="small" :slim="true" variant="tonal"
+              prepend-icon="mdi-cancel" @click="handleSwap" :loading="loading.accept">
+              Permuter
+            </v-btn>
+            </div>
+       
 
           </div>
 
@@ -159,22 +168,46 @@
           </p>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationDialog = false" size="large"
-            :slim="false">
+          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationDialog = false" >
             Annuler
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn v-if="userHasShift" color="permutation" variant="tonal" rounded="xl" @click="handleSwap"
-            :loading="loading.accept" size="large" :slim="false">
+            :loading="loading.accept">
             Permuter
           </v-btn>
           <v-btn color="remplacement" variant="tonal" rounded="xl" @click="handleConfirmAccept"
-            :loading="loading.accept" size="large" :slim="false">
+            :loading="loading.accept">
             {{ userHasShift ? 'Remplacer' : 'Confirmer' }}
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="showConfirmationSwapDialog" max-width="500">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
+        <v-card-title class="text-h5 pa-0">
+          Confirmation de permutation
+        </v-card-title>
+        <v-card-text class="pa-0 mb-6">
+          <p>
+            Êtes-vous sûr de vouloir permuter ?
+          </p>
+        </v-card-text>
+        <v-card-actions class="pa-0">
+          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationSwapDialog = false" >
+            Annuler
+          </v-btn>
+          <v-spacer></v-spacer>
+          <v-btn color="permutation" variant="tonal" rounded="xl" @click="handleConfirmSwap"
+            :loading="loading.accept">
+            Permuter
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+
+    </v-dialog>
+
 
     <!-- Dialog d'informations utilisateur -->
     <v-dialog v-model="showUserDialog" max-width="300">
@@ -183,7 +216,7 @@
           <template #prepend>
             <v-avatar
               :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
-              size="large"
+              
               class="me-3"></v-avatar>
           </template>
           <v-card-title class="text-h6 pa-0">
@@ -222,6 +255,24 @@
         <v-card-actions class="pa-0 mt-4">
           <v-spacer></v-spacer>
           <v-btn color="primary" variant="text" @click="showLimitsDialog = false">
+            Fermer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showErrorDialog" max-width="400">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-6">
+        <v-card-title class="text-h6 pa-0">
+          Vous ne pouvez pas permuter
+        </v-card-title>
+        <v-card-text class="pa-0 mt-4">
+          <p>
+            L'auteur de cette demande n'accepte pas cette permutation.
+          </p>
+        </v-card-text>
+        <v-card-actions class="pa-0 mt-4">
+          <v-btn color="primary" variant="text" @click="showErrorDialog = false">
             Fermer
           </v-btn>
         </v-card-actions>
@@ -288,11 +339,12 @@ const calculateTimeSinceCreation = () => {
 }
 
 const showConfirmationDialog = ref(false)
+const showConfirmationSwapDialog = ref(false)
 const userHasShift = ref(false)
 const userShift = ref(null)
+const showErrorDialog = ref(false)
 
 const isInterested = computed(() => {
-  console.log('demand', props.demand)
   return props.demand?.interested?.includes(authStore.userId)
 })
 
@@ -327,12 +379,25 @@ const handleConfirmAccept = async () => {
 const handleSwap = async () => {
   loading.value.accept = true
   try {
-    await substitutionStore.swapShifts(props.demand._id, userShift.value._id)
-    snackbarStore.showNotification('Échange de shifts effectué avec succès')
-    showConfirmationDialog.value = false
+    if (props.demand?.canSwitch) {
+      showConfirmationSwapDialog.value = true
+    } else {
+      showErrorDialog.value = true
+    }
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'échange des shifts', 'onError', "mdi-alert-circle-outline")
     console.error('Erreur lors de l\'échange:', error)
+  } finally {
+    loading.value.accept = false
+  }
+}
+
+const handleConfirmSwap = async () => {
+  loading.value.accept = true
+  try {
+    await substitutionStore.swapShifts(props.demand._id, userShift.value._id)
+    snackbarStore.showNotification('Échange de shifts effectué avec succès')
+    showConfirmationSwapDialog.value = false
   } finally {
     loading.value.accept = false
   }

@@ -108,8 +108,7 @@ const close = () => {
           @click="submit"
           :disabled="!selectedDate"
           prepend-icon="mdi-clock-star-four-points-outline"
-          size="large"
-          :slim="false"
+          
         >
           Programmer
         </v-btn>

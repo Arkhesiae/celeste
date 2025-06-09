@@ -2,6 +2,7 @@ import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { substitutionService } from '@/services/substitutionService';
 import { useAuthStore } from '@/stores/authStore';
+import { useShiftStore } from '@/stores/shiftStore';
 
 /**
  * Store Pinia pour gérer l'état des substitutions.
@@ -22,6 +23,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const startDate = ref(null);
   const endDate = ref(null);
 
+  const shiftStore = useShiftStore();
   const authStore = useAuthStore();
   const userId = computed(() => authStore.userId);
 
@@ -156,7 +158,23 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   // ----- Accepted as Poster -----
 
+  
+
   // ----- Accepted as Accepter -----
+
+  const acceptedAsAccepter = computed(() => {
+    if (!userId.value) return [];
+    return substitutions.value.filter(substitution => 
+      substitution.status === 'accepted' && 
+      substitution.posterId !== userId.value
+    );
+  });
+
+  const findAcceptedAsAccepter = computed(() => (date) => {
+    if (!userId.value) return false;
+    return acceptedAsAccepter.value.find(substitution => substitution.posterShift.date === date);
+  });
+
 
 
   // ----- Vérifications de disponibilité -----
@@ -197,6 +215,11 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     return matchesDate(ownPendingHybridSubstitutions.value, date) ||
            matchesDate(ownPendingTrueSubstitutions.value, date) ||
            matchesDate(ownPendingTrueSwitches.value, date);
+  });
+
+  const hasAcceptedAsAccepter = computed(() => (date) => {
+    if (!userId.value) return false;
+    return matchesDate(acceptedAsAccepter.value, date);
   });
 
   // ----- Compteurs -----
@@ -322,6 +345,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     try {
       await substitutionService.acceptDemand(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+      await shiftStore.fetchShiftsWithSubstitutions();
     } catch (err) {
       console.error('Erreur lors de l\'acceptation de la demande:', err);
       throw err;
@@ -334,6 +358,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     try {
       await substitutionService.unacceptDemand(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+      await shiftStore.fetchShiftsWithSubstitutions();
     } catch (error) {
       console.error('Erreur lors de l\'annulation de l\'acceptation:', error.message);
       throw error;
@@ -368,6 +393,8 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     try {
       await substitutionService.swapShifts(demandId, userShiftId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+      await shiftStore.fetchShiftsWithSubstitutions();
+      
     } catch (error) {
       console.error('Erreur lors de l\'échange des shifts:', error);
       throw error;
@@ -413,6 +440,9 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     hasOwnPendingTrueSwitches,
     hasOwnPendingTrueSubstitutions,
     hasOwnPendingHybridSubstitutions,
+
+    hasAcceptedAsAccepter,
+    findAcceptedAsAccepter,
 
     countOtherDemands,
     countAvailableSwitches,

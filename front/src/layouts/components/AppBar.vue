@@ -10,7 +10,7 @@
 
     <!-- Titre de l'application -->
     <v-app-bar-title @click="handleTitleClick">
-      <v-btn flat color="remplacement" class="text-overline font-weight-bold " :active="isHomepage || isDashboard">
+      <v-btn flat color="remplacement" class="text-overline " style="font-weight: 900 !important;" :active="isHomepage || isDashboard">
         {{ APP_TITLE }}
       </v-btn>
     </v-app-bar-title>

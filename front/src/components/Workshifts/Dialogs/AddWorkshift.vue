@@ -75,8 +75,6 @@ const handleSubmitDay = (day) => {
   if (dayToEdit.value) {
     // Mode édition : remplacer le jour existant
     const index = newRotation.value.days.findIndex(d => d._id === dayToEdit.value._id);
-    console.log(dayToEdit.value);
-    console.log(newRotation.value.days);
     if (index !== -1) {
       newRotation.value.days[index] = day;
     }
@@ -291,8 +289,7 @@ const close = () => {
           rounded="xl"
           @click="currentWindow = 1"
           :disabled="isNextButtonDisabled"
-          size="large"
-          :slim="false"
+         
         >
           Suivant
         </v-btn>
@@ -305,8 +302,7 @@ const close = () => {
           variant="text"
           rounded="xl"
           @click="currentWindow = 0"
-          size="large"
-          :slim="false"
+         
         >
           Retour
         </v-btn>
@@ -317,8 +313,7 @@ const close = () => {
           rounded="xl"
           :disabled="newRotation.days.length === 0"
           @click="submit"
-          size="large"
-          :slim="false"
+         
         >
           {{ props.rotation ? 'Enregistrer les modifications' : 'Enregistrer' }}
         </v-btn>

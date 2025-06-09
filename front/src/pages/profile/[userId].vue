@@ -1,29 +1,26 @@
 <template>
   <div class="profile-page position-relative">
-    <v-container class="position-relative" :class="smAndDown ? 'pa-0' : ''" >
-      <div id="profilecard" class="header-placeholder mt-8 mb-6" ref="containerRef" :style="{ height: headerHeight ? headerHeight : 206 + 'px' }">
-        <v-card 
-          :class="[
-            'profile-header',
-            'pa-0',
-            'pt-2',
-            { 'fixed-header': isSticky },
-            { 'bg-background': isSticky && smAndDown },
-            { 'bg-surfaceContainer': !(isSticky && smAndDown) },
-            { 'bg-surfaceContainerHigh': isSticky && !smAndDown }
-          ]"
-          :style="isSticky && !smAndDown ? { width: containerWidth + 'px !important' } : {}"
-          flat 
-          rounded="xl">
+    <v-container class="position-relative" :class="smAndDown ? 'pa-0' : ''">
+      <div id="profilecard" class="header-placeholder mt-8 mb-6" ref="containerRef"
+        :style="{ height: headerHeight ? headerHeight : 206 + 'px' }">
+        <v-card :class="[
+          'profile-header',
+          'pa-0',
+          'pt-2',
+          { 'fixed-header': isSticky },
+          { 'bg-background': isSticky && smAndDown },
+          { 'bg-surfaceContainer': !(isSticky && smAndDown) },
+          { 'bg-surfaceContainerHigh': isSticky && !smAndDown }
+        ]" :style="isSticky && !smAndDown ? { width: containerWidth + 'px !important' } : {}" flat rounded="xl">
           <div class="d-flex align-start justify-space-between pa-6">
             <div class="d-flex align-start flex-column justify-space-between">
-      
-                <v-card-title v-if="!isSticky" class="text-h5 pa-0 mb-4">Profil</v-card-title>
-  
+
+              <v-card-title v-if="!isSticky" class="text-h5 pa-0 mb-4">Profil</v-card-title>
+
               <div class="d-flex align-center justify-space-between">
                 <div class="d-flex align-center">
- 
-                  <v-avatar size="64" class="mr-4" variant="tonal"   >
+
+                  <v-avatar size="64" class="mr-4" variant="tonal">
                     <v-img v-if="authStore.avatar" :src="`${API_URL}${authStore.avatar}`" alt="Avatar" />
                     <v-icon v-else>mdi-account</v-icon>
                   </v-avatar>
@@ -43,50 +40,73 @@
 
       <v-slide-y-transition appear>
 
-   
-      <v-row :class="smAndDown ? 'px-4' : ''">
+
+        <v-row :class="smAndDown ? 'px-4' : ''">
+          <v-col cols="12" md="4">
+            <PointsCard height="100%" @transfer="transferDialog = true" />
+          </v-col>
+          <v-col :class="smAndDown ? 'my-16' : ''" cols="12" md="8">
+            <UserTeamCard :teamOccurrences="teamOccurrences" @update-dialog-mode="openAddDialog" />
+          </v-col>
+        </v-row>
+
+
+      </v-slide-y-transition>
+      <v-row>
+        <v-col cols="12" md="6">
+          <v-card color="surfaceContainer" flat rounded="xl" class="pa-6" height="400px">aze</v-card>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-card color="surfaceContainer" flat rounded="xl" class="pa-4" height="400px">aez</v-card>
+        </v-col>
+      </v-row>
+
+      <v-row :class="smAndDown ? 'px-2' : ''">
         <v-col cols="12" md="4">
-          <PointsCard height="100%" @transfer="transferDialog = true" />
+          <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80" to="/center" link flat>
+            <div class="d-flex align-center justify-space-between h-100">
+              <span class="text-onBackground text-h6">Mon centre</span>
+              <v-icon color="onBackground">mdi-chevron-right</v-icon>
+            </div>
+          </v-card>
         </v-col>
-        <v-col :class="smAndDown ? 'my-16' : ''" cols="12" md="8">
-          <UserTeamCard :teamOccurrences="teamOccurrences" @update-dialog-mode="openAddDialog" />
+        <v-col cols="12" md="4">
+          <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80" to="/service" link flat>
+            <div class="d-flex align-center justify-space-between h-100">
+              <span class="text-onBackground text-h6">Tour de service</span>
+              <v-icon color="onBackground">mdi-chevron-right</v-icon>
+            </div>
+          </v-card>
+        </v-col>
+        <v-col cols="12" md="4">
         </v-col>
       </v-row>
-    
+      <v-row :class="smAndDown ? 'px-2' : ''" class="mb-4">
+        <v-col cols="12" md="4" order-lg="1">
 
-    </v-slide-y-transition>
-    <v-row>
-        <v-col cols="12" md="6">
-          <v-card color="surfaceContainer" rounded="xl" class="pa-6" height="400px">aze</v-card>
         </v-col>
-        <v-col cols="12" md="6">
-          <v-card color="surfaceContainer" rounded="xl" class="pa-4" height="400px">aez</v-card>
+        <v-col cols="12" md="4" order-lg="1">
+
         </v-col>
+        <v-col cols="12" md="4" order-lg="3">
+          <v-card color="error" variant="tonal" rounded="xl" class="pa-6 cursor-pointer" height="64" @click="logout"
+            flat>
+            <div class="d-flex align-center justify-center h-100">
+              <span class="text-h7">Se déconnecter</span>
+
+            </div>
+          </v-card>
+        </v-col>
+
       </v-row>
-    
-      <TransferDialog 
+      <TransferDialog :dialogVisible="transferDialog" :userId="userId" @update:dialogVisible="transferDialog = $event"
+        @transfer-success="handleTransferSuccess" />
 
-        :dialogVisible="transferDialog" 
-        :userId="userId" 
-        @update:dialogVisible="transferDialog = $event"
-        @transfer-success="handleTransferSuccess" 
-      />
+      <AvatarDialog v-model="avatarDialog" @success="handleAvatarSuccess" @error="handleAvatarError" />
 
-      <AvatarDialog
-        v-model="avatarDialog"
-        @success="handleAvatarSuccess"
-        @error="handleAvatarError"
-      />
-
-      <TeamChangeDialog 
-        :dialogMode="dialogMode" 
-        :dialogVisible="addDialog" 
-        :occurrences="teamOccurrences || []" 
-        @onSubmit="handleTeamChange" 
-        @onClose="closeAddDialog"
-        @update:dialogModeValue="dialogMode = $event" 
-        @update:dialogVisible="addDialog = $event" 
-      />
+      <TeamChangeDialog :dialogMode="dialogMode" :dialogVisible="addDialog" :occurrences="teamOccurrences || []"
+        @onSubmit="handleTeamChange" @onClose="closeAddDialog" @update:dialogModeValue="dialogMode = $event"
+        @update:dialogVisible="addDialog = $event" />
     </v-container>
   </div>
 </template>
@@ -157,7 +177,7 @@ const handleTeamChange = async (data, conflict) => {
 
 const handleTransferSuccess = () => {
   pointStore.fetchUserPoints();
-  pointStore.fetchTransactions(); 
+  pointStore.fetchTransactions();
 };
 
 const handleAvatarSuccess = () => {
@@ -166,6 +186,11 @@ const handleAvatarSuccess = () => {
 
 const handleAvatarError = () => {
   // Handle avatar error
+};
+
+const logout = () => {
+  authStore.logout();
+  router.push('/login');
 };
 
 onMounted(async () => {
@@ -177,7 +202,7 @@ onMounted(async () => {
     target.value = document.querySelector("#profilecard");
     const headerElement = document.querySelector('.profile-header');
     headerHeight.value = headerElement ? headerElement.offsetHeight + 32 : 206;
-    
+
     if (target.value) {
       setTimeout(() => {
         observer.value = new IntersectionObserver(
@@ -198,7 +223,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error(error.message);
-    snackbarStore.showNotification(error.message, 'onError' );
+    snackbarStore.showNotification(error.message, 'onError');
   } finally {
     isLoading.value = false;
   }

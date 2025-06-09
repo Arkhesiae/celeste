@@ -11,101 +11,65 @@
     <v-row class="mb-16">
       <!-- Colonne principale -->
       <v-col cols="12" sm="12" md="8">
-        <v-card rounded="xl" elevation="0" class="pa-0" color="transparent">
+        <v-card rounded="xl" elevation="0" class="pa-0 position-relative " color="transparent">
           <!-- Filtres et recherche -->
-          <v-row class="justify-space-between align-center mb-4">
-            <v-col cols="12" md="6">
-              <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
-                <v-chip variant="text" rounded="lg" value="all">Disponible</v-chip>
-                <v-chip variant="text" color="tertiary" rounded="lg" value="admin">Indisponible</v-chip>
-                <v-chip variant="text" rounded="lg" value="pending">Tout</v-chip>
-              </v-chip-group>
-            </v-col>
+          <ListHeader :filters="[
+            { label: 'Permutations', value: 'switch' },
+            { label: 'Remplacements', value: 'substitution', color: 'tertiary' },
+            { label: 'Hybrides', value: 'hybrid' },
+            { label: 'Tout', value: 'all' }
+          ]" :sort-options="sortOptions" v-model:filter="selectedFilter" v-model:search="searchQuery"
+            v-model:sort="sortBy" />
 
-            <v-col cols="12" md="6" class="d-flex justify-end gap-2">
-              <v-text-field
-                v-model="searchQuery"
-                label="Rechercher"
-                variant="solo"
-                flat
-                rounded="xl"
-                single-line
-                hide-details
-                density="compact"
-                class="search-field"
-                style="max-width: 300px"
-                clearable
-              />
-              <v-menu color="onBackground" rounded="lg">
-                <template v-slot:activator="{ props }">
-                  <v-btn color="remplacement" variant="text" rounded="lg" v-bind="props">
-                    <span class="text-overline">Trier par</span>
-                    <v-icon>mdi-chevron-down</v-icon>
-                  </v-btn>
-                </template>
-                <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-                  <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg" @click="sortBy = option.value">
-                    <v-list-item-title>{{ option.label }}</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </v-col>
-          </v-row>
+
+          <span v-if="filteredSubstitutions.length === 0 && filteredSwitches.length === 0"
+            class="text-medium-emphasis text-subtitle-2 ml-4">
+            Aucune demande disponible
+          </span>
+
+
+
+
+
 
           <!-- Liste des demandes -->
           <v-col class="pa-0 ma-0" cols="12">
             <!-- Demandes remplaçables -->
-            <v-row class="ma-0 pa-0"> 
+            <v-row class="ma-0 pa-0">
               <v-col cols="12" class="pa-0 ma-0">
+                <v-chip color="remplacement" v-if="filteredSubstitutions.length > 0" rounded="lg"
+                  class="text-h7 font-weight-medium">Remplaçable</v-chip>
+                <DemandCard v-for="demand in filteredSubstitutions" :key="demand._id" :demand="demand"
+                  class="pa-0 ma-0 my-2" />
 
-            <v-chip color="remplacement" rounded="lg" class="text-h7 font-weight-medium">Remplaçable</v-chip>
-            <DemandCard
-              v-for="demand in demands"
-              :key="demand._id"
-              :demand="demand"
-              class="pa-0 ma-0 my-2"
-            />
-            <span v-if="demands.length === 0" class="text-medium-emphasis text-subtitle-2 ml-4">
-              Aucune demande disponible
-            </span>
-            </v-col>
-          </v-row>
+              </v-col>
+            </v-row>
             <!-- Demandes permutables -->
-            <v-chip color="permutation" rounded="lg" class="text-h7 mt-16 font-weight-medium" variant="tonal">
-              Permutables
-            </v-chip>
-            <DemandCard
-              v-for="demand in availableSwitches"
-              :key="demand._id"
-              :demand="demand"
-              class="pa-0 ma-0"
-            />
+            <v-row class="ma-0 pa-0">
+              <v-col cols="12" class="pa-0 ma-0">
+                <v-chip color="permutation" v-if="filteredSwitches.length > 0" rounded="lg"
+                  class="text-h7 mt-16 font-weight-medium" variant="tonal">
+                  Permutables
+                </v-chip>
+                <DemandCard v-for="demand in filteredSwitches" :key="demand._id" :demand="demand" class="pa-0 ma-0" />
+              </v-col>
+            </v-row>
 
             <!-- Autres demandes -->
             <v-divider color="primary" opacity="0.01" class="my-0" />
-            <v-chip color="error" rounded="lg" class="mt-16 text-h7 font-weight-medium">
+            <v-chip color="error" v-if="filteredOthers.length > 0" rounded="lg"
+              class="mt-16 text-h7 font-weight-medium">
               Autres demandes
             </v-chip>
-            <DemandCard
-              v-for="demand in otherDemands"
-              :key="demand._id"
-              :demand="demand"
-            />
+            <DemandCard v-for="demand in filteredOthers" :key="demand._id" :demand="demand" />
           </v-col>
         </v-card>
       </v-col>
 
       <!-- Colonne latérale -->
       <v-col cols="12" sm="12" md="4">
-        <v-btn
-          class="mb-4"
-          prepend-icon="mdi-plus"
-          variant="tonal"
-          color="remplacement"
-          height="80px"
-          width="100%"
-          elevation="0"
-        >
+        <v-btn v-if="!smAndDown" class="mb-4" prepend-icon="mdi-plus" variant="tonal" color="remplacement" height="80px"
+          width="100%" elevation="0">
           Ajouter une demande
         </v-btn>
 
@@ -114,38 +78,23 @@
           <span class="opac text-subtitle-2 text-medium-emphasis">Toutes mes demandes</span>
         </div>
 
-        <v-card
-          rounded="xl"
-          elevation="0"
-          class="pa-1 position-sticky"
-          style="position: sticky !important; top: 100px !important;"
-        >
+        <v-card rounded="xl" elevation="0" class="pa-1 position-sticky"
+          style="position: sticky !important; top: 100px !important;">
           <v-card-item @click="displayPending = !displayPending">
             <v-card-title>En attente</v-card-title>
             <template #append>
-              <v-icon
-                icon="mdi-chevron-down"
-                :style="{ transform: displayPending ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }"
-              />
+              <v-icon icon="mdi-chevron-down"
+                :style="{ transform: displayPending ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
             </template>
           </v-card-item>
 
           <v-expand-transition>
             <v-card-text v-if="pendingDemands.length > 0 && displayPending">
               <div v-if="pendingDemands.length > 0">
-                <OwnDemandCard
-                  v-for="demand in pendingDemands"
-                  :key="demand.id"
-                  :demand="demand"
-                />
+                <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
               </div>
               <div v-else class="text-center py-4">
-                <v-icon
-                  icon="mdi-check-circle-outline"
-                  color="success"
-                  size="large"
-                  class="mb-2"
-                />
+                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
                 <div class="text-body-1">Aucune demande en attente</div>
               </div>
             </v-card-text>
@@ -155,20 +104,8 @@
     </v-row>
 
     <!-- Bouton flottant pour mobile -->
-    <v-fab
-      v-if="smAndDown"
-      prepend-icon="mdi-plus"
-      class="fab"
-      height="60px"
-      rounded="0"
-      flat
-      color="remplacement"
-      location="bottom end"
-      text="Nouvelle demande"
-      extended
-      app
-      @click="showAddDialog = true"
-    />
+    <v-fab v-if="smAndDown" prepend-icon="mdi-plus" class="fab" height="60px" rounded="0" flat color="remplacement"
+      location="bottom end" text="Nouvelle demande" extended app @click="showAddDialog = true" />
   </v-container>
 </template>
 
@@ -180,6 +117,7 @@ import { useAuthStore } from "@/stores/authStore.js";
 import { toUTCNormalized } from "@/utils.js";
 import { useDisplay } from "vuetify";
 import DemandCard from "@/components/Remplacer/DemandCard.vue";
+import ListHeader from "@/components/common/ListHeader.vue";
 
 // Stores
 const substitutionStore = useSubstitutionStore();
@@ -198,11 +136,10 @@ const showAddDialog = ref(false);
 
 // Options de tri
 const sortOptions = [
-  { label: 'Nom', value: 'name' },
-  { label: 'Prénom', value: 'lastName' },
-  { label: 'Email', value: 'email' },
-  { label: 'Statut', value: 'status' },
-  { label: "Date d'inscription", value: 'createdAt' }
+  { text: 'Type', value: 'type' },
+  { text: 'Date', value: 'date' },
+  { text: 'Nom du shift', value: 'shift.name' },
+  { text: 'Statut', value: 'status' },
 ];
 
 // Données de la demande
@@ -216,42 +153,71 @@ const demand = ref({
 // Computed properties
 const userId = computed(() => authStore.userId);
 const users = computed(() => userStore.users);
-const otherDemands = computed(() => substitutionStore.otherDemands);
-const availableSwitches = computed(() => substitutionStore.availableSwitches);
 const pendingDemands = computed(() => [
   ...substitutionStore.ownPendingHybridSubstitutions,
   ...substitutionStore.ownPendingTrueSubstitutions,
   ...substitutionStore.ownPendingTrueSwitches
 ]);
 
-const demands = computed(() => {
-  let filteredDemands = substitutionStore.availableSubstitutions || [];
+const getNestedValue = (obj, path) => {
+  if (!path || typeof path !== 'string') {
+    return obj;
+  }
+  return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
+
+// Fonction utilitaire pour le filtrage et le tri
+const filterAndSortDemands = (demands) => {
+  let filteredDemands = [...demands] || [];
 
   // Filtrage par recherche
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
     filteredDemands = filteredDemands.filter(demand =>
       demand.shift?.name?.toLowerCase().includes(query) ||
-      demand.date?.toLowerCase().includes(query)
+      demand.posterShift?.date?.toLowerCase().includes(query)
     );
   }
 
   // Filtrage par statut
-  if (selectedFilter.value !== 'all') {
-    filteredDemands = filteredDemands.filter(demand => demand.status === selectedFilter.value);
+  if (selectedFilter.value && selectedFilter.value !== 'all') {
+    filteredDemands = filteredDemands.filter(demand => demand.type === selectedFilter.value);
   }
 
   // Tri
   if (sortBy.value) {
     filteredDemands.sort((a, b) => {
-      const aValue = a[sortBy.value];
-      const bValue = b[sortBy.value];
-      return typeof aValue === 'string' ? aValue.localeCompare(bValue) : aValue - bValue;
+      console.log(sortBy.value  );
+      if (sortBy.value.value === 'date') {
+        console.log(new Date(a.posterShift.date) - new Date(b.posterShift.date));
+        return new Date(a.posterShift.date) - new Date(b.posterShift.date);
+      }
+      if (sortBy.value.value === 'shift.name') {
+        return a.posterShift?.name?.localeCompare(b.posterShift?.name);
+      }
+      if (sortBy.value.value === 'status') {
+        return a.status.localeCompare(b.status);
+      }
+      return 0;
     });
   }
 
+  console.log(filteredDemands);
+
   return filteredDemands;
-});
+};
+
+const filteredSubstitutions = computed(() => 
+  filterAndSortDemands(substitutionStore.availableSubstitutions)
+);
+
+const filteredSwitches = computed(() => 
+  filterAndSortDemands(substitutionStore.availableSwitches)
+);
+
+const filteredOthers = computed(() => 
+  filterAndSortDemands(substitutionStore.otherDemands)
+);
 
 // Méthodes
 const fetchUserShift = async () => {
@@ -319,7 +285,7 @@ onMounted(async () => {
     const oneYearFromNow = new Date();
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
     await Promise.all([
-      userStore.fetchUsers(),
+
       substitutionStore.fetchAllDemands({
         startDate: new Date().toISOString(),
         endDate: oneYearFromNow.toISOString()

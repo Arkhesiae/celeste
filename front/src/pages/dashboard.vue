@@ -14,6 +14,7 @@ import { vacationService } from "@/services/vacationService.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
 import DemandCard from '@/components/OwnDemandCard.vue';
 import OwnDemandCard from "@/components/OwnDemandCard.vue";
+import TransferDialog from '@/components/Profile/TransferDialog.vue';
 
 const authStore = useAuthStore()
 const teamStore = useTeamStore()
@@ -60,8 +61,8 @@ const getVacation = computed(() => {
 
   // Vérifier d'abord la vacation d'aujourd'hui
   const todayVacation = vacationsOfUser.value.get(todayISO.toISOString());
-  console.log(todayVacation);
-  if (todayVacation && todayVacation.shift && todayVacation.shift.name !== 'Rest Day') {
+
+  if (todayVacation && todayVacation.shift) {
     return todayVacation;
   }
 
@@ -87,6 +88,13 @@ const getTomorrowVacation = computed(() => {
   const tomorrowISO = new Date(tomorrow.toISOString().split('T')[0]);
 
   return vacationsOfUser.value.get(tomorrowISO.toISOString());
+});
+
+const vacationName = computed(() => (vacation) => {
+  if (!vacation) return null;
+  console.log(vacation);
+  if (vacation.shift.type === 'rest') return 'Repos';
+  return vacation.shift.name;
 });
 
 // Fonction pour obtenir la prochaine substitution
@@ -183,6 +191,13 @@ const handleDeclineDemand = async (demand) => {
     console.error('Erreur lors du refus de la demande:', error);
   }
 };
+
+const transferDialog = ref(false);
+
+const handleTransferSuccess = () => {
+  pointStore.fetchUserPoints();
+  pointStore.fetchTransactions();
+};
 </script>
 
 <route>
@@ -198,7 +213,10 @@ const handleDeclineDemand = async (demand) => {
     <!-- En-tête -->
     <div class="d-flex justify-space-between align-center mb-8">
       <div class="d-flex flex-column">
-        <span class="text-h4 font-weight-medium">Bienvenue {{ userName }} !</span>
+        <div class="d-flex align-center">
+          <span class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
+          <span class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold">{{ userName }}</span>
+        </div>
         <span class="text-h4 text-overline text-medium-emphasis">Tableau de bord</span>
       </div>
       <v-btn v-if="!smAndDown" color="remplacement" height="48px" class="px-6" style="border-radius: 16px !important"
@@ -242,7 +260,7 @@ const handleDeclineDemand = async (demand) => {
             <div v-if="getVacation && getVacation.shift">
               <div class="d-flex align-center justify-space-between mb-2">
                 <div>
-                  <div class="text-h5 font-weight-medium">{{ getVacation.shift.name }}</div>
+                  <div class="text-h5 font-weight-medium">{{ vacationName(getVacation) }}</div>
                   <div class="text-medium-emphasis">
                     {{ getVacation.shift.startTime }} - {{ getVacation.shift.endTime }}
                   </div>
@@ -268,8 +286,8 @@ const handleDeclineDemand = async (demand) => {
             <div v-if="getTomorrowVacation && getTomorrowVacation.shift">
               <div class="d-flex align-center justify-space-between mb-2">
                 <div>
-                  <div class="text-h5 font-weight-medium">{{ getTomorrowVacation.shift.name }}</div>
-                  <div class="text-medium-emphasis">
+                  <div class="text-h5 font-weight-medium">{{ vacationName(getTomorrowVacation) }}</div>
+                  <div class="text-medium-emphasis" v-if="getTomorrowVacation.shift.type !== 'rest'">
                     {{ getTomorrowVacation.shift.startTime }} - {{ getTomorrowVacation.shift.endTime }}
                   </div>
                 </div>
@@ -298,7 +316,7 @@ const handleDeclineDemand = async (demand) => {
                   <div class="text-medium-emphasis">
                     {{ new Date(nextSubstitution.posterShift.date).toLocaleDateString() }}
                   </div>
-                  <div class="text-medium-emphasis">
+                  <div class="text-medium-emphasis" v-if="nextSubstitution.posterShift.shift.type !== 'rest'">
                     {{ nextSubstitution.posterShift.shift.name }}
                   </div>
                 </div>
@@ -328,7 +346,7 @@ const handleDeclineDemand = async (demand) => {
             <div v-else class="text-center py-4">
               <v-icon
                 icon="mdi-check-circle-outline"
-                color="success"
+                color="permutation"
                 size="large"
                 class="mb-2"
               />
@@ -344,7 +362,7 @@ const handleDeclineDemand = async (demand) => {
       <v-col cols="12" md="6" :class="smAndDown ? 'pa-0' : 'pa-2'">
 
         <!-- Carte du tour de service actif -->
-        <v-card rounded="xl" elevation="0" class="mb-4 pa-6" color="surfaceContainer" @click="$router.push('/rotation')" style="cursor: pointer;">
+        <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-2' : 'mx-0'" color="surfaceContainer" @click="$router.push('/rotation')" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
               <v-card-title class="text-h6 font-weight-medium pa-0">Tour de service actif</v-card-title>
@@ -380,7 +398,7 @@ const handleDeclineDemand = async (demand) => {
 
           <!-- Carte des points -->
           <div class="mb-4 smooth-shadow rounded-xl">
-            <PointsCard variant="tonal" :points="stats.points" :transactions="[]" color="remplacement" />
+            <PointsCard variant="tonal" :points="stats.points" :transactions="[]" color="remplacement" @transfer="transferDialog = true" />
           </div>
 
           <!-- Section Calendrier -->
@@ -469,6 +487,12 @@ const handleDeclineDemand = async (demand) => {
         </v-card>
       </v-col>
     </v-row> -->
+    <TransferDialog 
+      :dialogVisible="transferDialog" 
+      :userId="authStore.userId" 
+      @update:dialogVisible="transferDialog = $event"
+      @transfer-success="handleTransferSuccess" 
+    />
   </v-container>
 </template>
 
@@ -489,5 +513,17 @@ const handleDeclineDemand = async (demand) => {
   box-shadow:
 
     0px 40px 50px 10px rgba(var(--v-theme-remplacement), .011);
+}
+
+.gradient {
+  fill: transparent;
+  color: #000;
+  font-weight: 900 !important;
+  background: linear-gradient(to right, rgb(var(--v-theme-remplacement)) 20%, #a779cd 40%, rgb(var(--v-theme-permutation)) 60%, #dc8474 80%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+  animation: animatedTextGradient 15s linear infinite;
 }
 </style>

@@ -97,8 +97,8 @@ const close = () => {
           variant="text"
           rounded="xl"
           @click="close"
-          :slim="false"
-          size="large"
+          :slim="true"
+
         >
           {{ secondaryActionText }}
         </v-btn>
@@ -106,11 +106,10 @@ const close = () => {
         <v-btn
           color="primary"
           variant="tonal"
-          :slim="false"
+          :slim="true"
           rounded="xl"
           @click="submit"
           :disabled="isPrimaryActionDisabled"
-          size="large"
         >
           {{ primaryActionText }}
         </v-btn>

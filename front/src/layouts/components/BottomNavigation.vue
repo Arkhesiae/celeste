@@ -1,25 +1,29 @@
 <template>
   <v-bottom-navigation v-if="smAndDown && isLoggedIn" class="bottom-nav" bg-color="onBackground" grow height="80"
    style="z-index: 2000 !important;" shift>
-    <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' })" :active="router.currentRoute.value.path === '/dashboard'">
-      <v-icon size="large">{{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}</v-icon>
+    <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' })" :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'" :active="router.currentRoute.value.path === '/dashboard'">
+      <v-icon size="20">{{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}</v-icon>
+      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Accueil</span>
     </v-btn>
-    <v-btn :ripple="false" value="calendar" icon @click="router.push({ path: '/calendar' })" :active="router.currentRoute.value.path === '/calendar'">
-      <v-icon size="large">{{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}</v-icon>
+    <v-btn :ripple="false" value="calendar" icon @click="router.push({ path: '/calendar' })" :class="isActive('/calendar') ? 'active-item' : 'inactive-item'" :active="router.currentRoute.value.path === '/calendar'">
+      <v-icon size="20">{{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}</v-icon>
+      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
     </v-btn>
-    <v-btn :ripple="false" value="demandes" icon @click="router.push({ path: '/exchange/replace' })" :active="router.currentRoute.value.path === '/exchange'">
-      <v-icon size="large">{{ isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline' }}</v-icon>
+    <v-btn :ripple="false" value="demandes" icon @click="router.push({ path: '/exchange/replace' })" :class="isActive('/exchange/replace') ? 'active-item' : 'inactive-item'" :active="router.currentRoute.value.path === '/exchange'">
+      <v-icon size="20">{{ isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline' }}</v-icon>
+      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Demandes</span>
     </v-btn>
     <!-- <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
     </v-btn> -->
-    <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon @click="router.push({ path: '/profile/' + authStore.userId })" :active="router.currentRoute.value.path === '/profile/' + authStore.userId">
-      <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="NOTIFICATION_COUNT !== 0">
+    <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon @click="router.push({ path: '/profile/' + authStore.userId })" :class="isActive('/profile/' + authStore.userId) ? 'active-item' : 'inactive-item'" :active="router.currentRoute.value.path === '/profile/' + authStore.userId">
+      <v-badge  color="tertiary" :content="NOTIFICATION_COUNT" :model-value="NOTIFICATION_COUNT !== 0">
         <v-avatar size="28" class="" variant="tonal">
           <v-img v-if="authStore.avatar" :src="`${API_URL}${authStore.avatar}`" alt="Avatar" />
           <v-icon v-else>mdi-account</v-icon>
         </v-avatar>
       </v-badge>
+  
     </v-btn>
   </v-bottom-navigation>
 </template>
@@ -73,7 +77,13 @@ const emit = defineEmits(['toggle-notifications']);
 }
 
 .active-item {
-  color: rgba(var(--v-theme-primary), 1) !important;
+  color: rgba(var(--v-theme-onPrimary), 1) !important;
+
+  background-color: transparent !important;
+}
+.inactive-item {
+  color: rgba(var(--v-theme-onPrimary), .51) !important;
+
   background-color: transparent !important;
 }
 </style> 

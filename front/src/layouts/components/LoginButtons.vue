@@ -1,51 +1,53 @@
 <template>
-  <div class="position-fixed ma-2" style="bottom: 0; right: 0 ; z-index: 99">
-    <v-btn variant="tonal" class="mr-2" icon="mdi-star-four-points" @click="autoLogin('master')">Master</v-btn>
-    <v-btn variant="tonal" class="mr-2" icon="mdi-shield-crown-outline" @click="autoLogin('admin')">Local</v-btn>
-    <v-btn variant="tonal" class="mr-2" icon="mdi-account-outline" @click="autoLogin('user')">User</v-btn>
-    <v-btn variant="tonal" class="mr-2" icon="mdi-account-multiple" @click="showTeamUsers = !showTeamUsers">Team Users</v-btn>
-    <v-btn variant="tonal" icon="mdi-logout" color="error" @click="handleLogout"></v-btn>
+  <div>
+    <div class="position-fixed ma-2" style="bottom: 0; right: 0 ; z-index: 99">
+      <v-btn variant="tonal" class="mr-2" icon="mdi-star-four-points" @click="autoLogin('master')">Master</v-btn>
+      <v-btn variant="tonal" class="mr-2" icon="mdi-shield-crown-outline" @click="autoLogin('admin')">Local</v-btn>
+      <v-btn variant="tonal" class="mr-2" icon="mdi-account-outline" @click="autoLogin('user')">User</v-btn>
+      <v-btn variant="tonal" class="mr-2" icon="mdi-account-multiple" @click="showTeamUsers = !showTeamUsers">Team Users</v-btn>
+      <v-btn variant="tonal" icon="mdi-logout" color="error" @click="handleLogout"></v-btn>
 
-    <!-- Menu des utilisateurs d'équipe -->
-    <v-menu
-      v-model="showTeamUsers"
-      :close-on-content-click="false"
-      location="top"
-    >
-      <template v-slot:activator="{ props }">
-        <div v-bind="props"></div>
-      </template>
-      <v-card min-width="300">
-        <v-card-title class="text-h6">
-          Utilisateurs d'équipe
-          <v-btn
-            icon="mdi-refresh"
-            variant="text"
-            size="small"
-            class="ml-2"
-            @click="generateTeamUsers"
-            :loading="generatingUsers"
-          ></v-btn>
-        </v-card-title>
-        <v-card-text>
-          <v-list>
-            <v-list-item
-              v-for="user in teamUsers"
-              :key="user.email"
-              :title="user.name"
-              :subtitle="user.email"
-              @click="autoLoginTeamUser(user)"
-            >
-              <template v-slot:prepend>
-                <v-avatar color="primary" size="32">
-                  {{ user.name.charAt(0) }}
-                </v-avatar>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-      </v-card>
-    </v-menu>
+      <!-- Menu des utilisateurs d'équipe -->
+      <v-menu
+        v-model="showTeamUsers"
+        :close-on-content-click="false"
+        location="top"
+      >
+        <template v-slot:activator="{ props }">
+          <div v-bind="props"></div>
+        </template>
+        <v-card min-width="300">
+          <v-card-title class="text-h6">
+            Utilisateurs d'équipe
+            <v-btn
+              icon="mdi-refresh"
+              variant="text"
+              size="small"
+              class="ml-2"
+              @click="generateTeamUsers"
+              :loading="generatingUsers"
+            ></v-btn>
+          </v-card-title>
+          <v-card-text>
+            <v-list>
+              <v-list-item
+                v-for="user in teamUsers"
+                :key="user.email"
+                :title="user.name"
+                :subtitle="user.email"
+                @click="autoLoginTeamUser(user)"
+              >
+                <template v-slot:prepend>
+                  <v-avatar color="primary" size="32">
+                    {{ user.name.charAt(0) }}
+                  </v-avatar>
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-card-text>
+        </v-card>
+      </v-menu>
+    </div>
   </div>
 </template>
 
@@ -54,11 +56,16 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/authStore.js";
 import { API_URL } from '@/config/api';
+import { useAppInitialization } from '@/composables/useAppInitialization';
+
 const authStore = useAuthStore();
 const router = useRouter();
+const { initializeApp } = useAppInitialization();
 const showTeamUsers = ref(false);
 const teamUsers = ref([]);
 const generatingUsers = ref(false);
+const showLoadingScreen = ref(false);
+
 
 const handleLogout = async () => {
   await authStore.logOut();
@@ -68,6 +75,8 @@ const handleLogout = async () => {
 const autoLogin = async (role) => {
   try {
     authStore.logOut(); // Déconnexion de l'utilisateur actuel
+    showLoadingScreen.value = true;
+    
     if (role === 'admin') {
       await authStore.logIn({
         email: 'localadmin@celeste.com',
@@ -84,9 +93,14 @@ const autoLogin = async (role) => {
         password: 'celeste',
       });
     }
-    await router.push({ path: "/dashboard", replace: true });
+
+        // Initialiser l'application avec le callback de progression
+    await initializeApp();
+    router.push({ path: "/dashboard", replace: true });
+ 
   } catch (error) {
     console.error(`Échec de la connexion automatique en tant que ${role}:`, error);
+    showLoadingScreen.value = false;
   }
 };
 
@@ -137,15 +151,25 @@ const fetchTeamUsers = async () => {
 
 const autoLoginTeamUser = async (user) => {
   try {
+    showLoadingScreen.value = true;
     await authStore.logOut();
     await authStore.logIn({
       email: user.email,
       password: 'user',
     });
-    await router.push({ path: "/dashboard", replace: true });
-    showTeamUsers.value = false;
+
+    // Initialiser l'application avec le callback de progression
+    await initializeApp(
+      
+    );
+    
+    setTimeout(() => {
+      router.push({ path: "/dashboard", replace: true });
+      showTeamUsers.value = false;
+    }, 1000);
   } catch (error) {
     console.error('Échec de la connexion:', error);
+    showLoadingScreen.value = false;
   }
 };
 

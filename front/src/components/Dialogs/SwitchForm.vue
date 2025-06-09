@@ -84,8 +84,7 @@
           color="secondary" 
           rounded="xl"
           @click="close"
-          size="large"
-          :slim="false"
+
         >
           Annuler
         </v-btn>
@@ -95,8 +94,7 @@
           color="primary"
           :disabled="!formValid"
           @click="submit"
-          size="large"
-          :slim="false"
+
         >
           Poster la demande
         </v-btn>

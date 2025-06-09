@@ -25,47 +25,20 @@
           @update:model-value="handleCenterChange"
         />
     </div>
- 
 
-    <v-row class="justify-space-between align-center mb-4">
-      <v-col cols="12" md="6" >
-        <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground"  >
-          <v-chip variant="text" rounded="lg" value="all">Tous</v-chip>
-          <v-chip variant="text" color="tertiary" rounded="lg" value="admin">Administrateurs</v-chip>
-          <v-chip variant="text" rounded="lg" value="user">Utilisateurs</v-chip>
-        </v-chip-group>
-       
-      </v-col>
-      
-      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
-        <v-text-field
-          v-model="searchQuery"
-          label="Rechercher"
-          variant="solo"
-          flat
-          rounded="xl"
-          single-line
-          hide-details
-          density="compact"
-          class="search-field"
-          style="max-width: 300px"
-          clearable
-        />
-        <v-menu color="onBackground" rounded="lg">
-          <template v-slot:activator="{ props }">
-            <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-              <span class="text-overline">{{ sortBy ? sortBy.text : 'Trier par'}}</span>
-              <v-icon>mdi-chevron-down</v-icon>
-            </v-btn>
-          </template>
-          <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-            <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg" @click="sortBy = option">
-              <v-list-item-title>{{ option.text }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </v-col>
-    </v-row>
+    <div class="list-header-container"> 
+    <ListHeader
+      :filters="[
+        { label: 'Tous', value: 'all' },
+        { label: 'Administrateurs', value: 'admin', color: 'tertiary' },
+        { label: 'Utilisateurs', value: 'user' }
+      ]"
+      :sort-options="sortOptions"
+      v-model:filter="selectedFilter"
+      v-model:search="searchQuery"
+      v-model:sort="sortBy"
+    />
+    </div>
 
     <v-row>
       <v-col v-for="user in sortedAndFilteredUsers" :key="user._id" cols="12" md="6" lg="4" :class="smAndDown ? 'pa-0' : ''">
@@ -282,6 +255,7 @@ import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
+import ListHeader from '@/components/common/ListHeader.vue';
 
 const centerStore = useCenterStore();
 const teamStore = useTeamStore();
@@ -429,7 +403,6 @@ const handleCenterChange = async (centerId) => {
     } else {
       await userStore.fetchUsers();
     }
-    console.log(users.value)
     snackbarStore.showNotification('Utilisateurs chargés', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Erreur lors du chargement des utilisateurs:', error);
@@ -504,14 +477,6 @@ onMounted(async () => {
 
 .sort-select {
   max-width: 200px;
-}
-
-.search-field {
-  max-width: 300px;
-}
-
-.gap-2 {
-  gap: 8px;
 }
 
 .v-card {

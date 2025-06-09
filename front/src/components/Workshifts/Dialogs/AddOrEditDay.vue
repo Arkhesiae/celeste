@@ -79,7 +79,7 @@
       </v-card-text>
 
       <div class="pa-6 d-flex justify-end">
-        <v-btn color="primary" variant="text" rounded="xl" class="ml-4" @click="submit" size="large" :slim="false"
+        <v-btn color="primary" variant="text" rounded="xl" class="ml-4" @click="submit"
           :disabled="!isValid">
           {{ mode === 'edit' ? 'Modifier' : 'Ajouter' }}
         </v-btn>

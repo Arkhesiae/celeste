@@ -143,7 +143,7 @@ export default createVuetify({
           "surfaceContainerHigh": "#E3E9EA",
           "surfaceContainerHighest": "#DEE3E5",
           "remplacement": "#4e3e64",
-          "permutation": "#9777a0 ",
+          "permutation": "#9777a0",
         }
       },
     },
@@ -162,10 +162,8 @@ export default createVuetify({
       class: 'pa-6',
       rounded: 'xl',
       VCardActions: {
-     
         VBtn: {
-          size: 'large',
-          slim: false,
+      
           rounded: 'xl',
         },
       },

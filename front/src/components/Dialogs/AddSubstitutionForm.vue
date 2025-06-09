@@ -438,15 +438,15 @@ const isNextButtonDisabled = computed(() => {
 
       <v-card-actions class="justify-space-between pa-0">
         <template v-if="currentWindow === 0">
-          <v-btn variant="text" color="secondary" size="large" :slim="false" @click="close">Annuler</v-btn>
-          <v-btn variant="tonal" rounded="xl" size="large" :slim="false" color="secondary"
+          <v-btn variant="text" color="secondary"  @click="close">Annuler</v-btn>
+          <v-btn variant="tonal" rounded="xl"  color="secondary"
             :disabled="isNextButtonDisabled" @click="currentWindow = 1">
             Suivant
           </v-btn>
         </template>
         <template v-else>
-          <v-btn variant="text" color="secondary" size="large" :slim="false" @click="currentWindow = 0">Retour</v-btn>
-          <v-btn variant="flat" rounded="xl" size="large" :slim="false" color="remplacement"
+          <v-btn variant="text" color="secondary"  @click="currentWindow = 0">Retour</v-btn>
+          <v-btn variant="flat" rounded="xl"  color="remplacement"
             :disabled="!formValid || !selectedVacation" @click="submit">
             Poster la demande
           </v-btn>

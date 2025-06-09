@@ -106,14 +106,14 @@
       </v-btn>
     </div>
 
-    <!-- <div class="d-flex align-center justify-center mb-4"
-      v-if="substitutionStore.hasAcceptedDemand(selectedDate)">
+    <div class="d-flex align-center justify-center mb-4"
+      v-if="substitutionStore.hasAcceptedAsAccepter(selectedDate)">
       <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
         class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
-        @click="$emit('unacceptDemand', substitutionStore.hasAcceptedSubstitutionsAsAccepter(selectedDate)._id)">
+        @click="$emit('unacceptDemand', substitutionStore.findAcceptedAsAccepter(selectedDate)._id)">
         Annuler mon rempla
       </v-btn>
-    </div> -->
+    </div>
 
     <v-btn width="100%" flat rounded="xl" height="64px" color="background"
       :class="{ 'opacity-10': substitutionStore.countAvailableSubstitutions(selectedDate) === 0 }"

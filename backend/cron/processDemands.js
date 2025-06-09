@@ -10,4 +10,4 @@ cron.schedule('*/1 * * * *', async () => {
     } catch (error) {
         console.error('Erreur lors du traitement des demandes:', error);
     }
-}); 
+});  

@@ -542,16 +542,28 @@ const getUserShiftsWithSubstitutions = async (req, res) => {
         const { dates } = req.body;
         const { id: userId } = req.params;
 
-        if (!dates || !userId) {
-            return res.status(400).json({ message: !dates ? 'No dates provided' : 'No user provided' });
+        if (!dates || !dates.startDate || !dates.endDate || !userId) {
+            return res.status(400).json({ message: !dates ? 'No dates provided' : !dates.startDate ? 'No start date provided' : !dates.endDate ? 'No end date provided' : 'No user provided' });
         }
 
-        const results = await computeShiftOfUserWithSubstitutions(dates, userId);
+        const dateArray = generateDateArray(dates.startDate, dates.endDate);
+        const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
         res.json(results);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: error.message });
     }
+};
+
+const generateDateArray = (startDate, endDate) => {
+    const dateArray = [];
+    const currentDate = new Date(startDate);
+    const endDates = new Date(endDate);
+    while (currentDate <= endDates) {
+        dateArray.push(new Date(currentDate).toISOString());
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return dateArray;
 };
 
 

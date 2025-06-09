@@ -553,7 +553,7 @@ div .sortable-drag{
   cursor: grabbing;
 }
 
-.fade-move{
+/* .fade-move{
   transition: all 0.2s cubic-bezier(0.55, 0, 0.1, 1);
   
 }
@@ -570,7 +570,7 @@ div .sortable-drag{
 
 .fade-leave-active {
   position: absolute;
-}
+} */
 
 /* Style pour l'icône de glisser-déposer */
 .mdi-drag {

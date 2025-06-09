@@ -71,8 +71,7 @@
           rounded="xl"
           @click="close"
           :disabled="loading"
-          size="large"
-          :slim="false"
+
         >
           Annuler
         </v-btn>
@@ -83,8 +82,7 @@
           @click="handleStepAction"
           :loading="loading"
           :disabled="!valid"
-          size="large"
-          :slim="false"
+
         >
           {{ step === 1 ? 'Vérifier' : 'Modifier' }}
         </v-btn>

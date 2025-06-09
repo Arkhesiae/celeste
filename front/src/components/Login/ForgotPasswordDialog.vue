@@ -36,8 +36,7 @@
           variant="text"
           rounded="xl"
           @click="closeDialog"
-          size="large"
-          :slim="false"
+
         >
           Annuler
         </v-btn>
@@ -48,8 +47,7 @@
           :loading="loading"
           :disabled="!valid"
           @click="submit"
-          size="large"
-          :slim="false"
+         
         >
           <v-icon icon="mdi-send" class="me-1"></v-icon>
           Réinitialiser

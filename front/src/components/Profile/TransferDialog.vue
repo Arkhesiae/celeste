@@ -58,8 +58,7 @@
         <v-btn
           color="secondary"
           text
-          size="large"
-          :slim="false"
+
           @click="closeDialog"
           :disabled="isLoading"
         >
@@ -68,8 +67,7 @@
         <v-btn
           color="primary"
           text
-          size="large"
-          :slim="false"
+
           @click="confirmTransfer"
           :loading="isLoading"
         >

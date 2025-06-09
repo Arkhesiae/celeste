@@ -53,8 +53,7 @@
           rounded="xl"
           @click="close"
           :disabled="loading"
-          size="large"
-          :slim="false"
+
         >
           Annuler
         </v-btn>
@@ -65,8 +64,7 @@
           @click="submit"
           :loading="loading"
           :disabled="!valid || (!selectedFile && !previewUrl)"
-          size="large"
-          :slim="false"
+
         >
           Enregistrer
         </v-btn>

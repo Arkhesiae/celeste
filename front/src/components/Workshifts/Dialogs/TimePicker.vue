@@ -80,7 +80,7 @@ const saveTimePicker = () => {
           rounded="xl"
           class="ml-4"
           @click="saveTimePicker"
-          :slim="false"
+          :slim="true"
           size="large"
         >
           Enregistrer

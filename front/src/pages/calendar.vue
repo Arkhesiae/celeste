@@ -96,6 +96,7 @@ import { useDisplay } from "vuetify";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useUserStore } from '@/stores/userStore';
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
+import { useShiftStore } from "@/stores/shiftStore.js";
 import { useCalendar } from '@/composables/useCalendar';
 import { vacationService } from "@/services/vacationService.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
@@ -125,10 +126,10 @@ const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
 const teamStore = useTeamStore();
 const userStore = useUserStore();
+const shiftStore = useShiftStore();
 
 /**  États */
 const isLoading = ref(false);
-const vacationsOfUser = ref(new Map());
 const remplaDialog = ref(false);
 const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
@@ -198,7 +199,6 @@ const openRemplaDialog = (mode) => {
 };
 
 const handleOpenDrawer = (type) => {
-  console.log("openDrawer", type)
   activeDrawer.value = { show: true, type };
 };
 
@@ -212,16 +212,29 @@ const onBottomSheetClose = (isOpen) => {
   }
 };
 
+const vacationsOfUser = computed(() => {
+  const map = new Map();
+  if (shiftStore.shiftsWithSubstitutions.value) { 
+    shiftStore.shiftsWithSubstitutions.value.forEach(({ date, shift, teamObject }) => {
+      map.set(date, { shift, teamObject });
+    });
+  }
+  console.log(shiftStore.shiftsWithSubstitutions.value);
+  console.log(map);
+  return map;
+});
+
 // Data fetching
 const getWorkdaysOfUser = async () => {
   loadingVacations.value = true;
   try {
     const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));
-    const result = await vacationService.fetchVacationsOfUser(userId.value, flatArray);
-    result.forEach(({ date, shift, teamObject }) => {
-      vacationsOfUser.value.set(date, { shift, teamObject });
-    });
-    console.log(result);
+    const dates = {
+      startDate: flatArray[0].toISOString(),
+      endDate: flatArray[flatArray.length - 1].toISOString()
+    }
+    await shiftStore.fetchShiftsWithSubstitutions(dates);
+    console.log(shiftStore.shiftsWithSubstitutions.value);
   } catch (err) {
     snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-outline');
     console.error('Erreur getWorkdaysOfUser:', err);
@@ -316,9 +329,9 @@ const handleUnacceptDemand = (substitutionId) => {
 const confirmUnacceptDemand = async () => {
   try {
     await substitutionStore.unacceptDemand(substitutionToUnaccept.value);
-    snackbarStore.showSnackbar('Acceptation annulée avec succès', 'success');
+    snackbarStore.showNotification('Acceptation annulée', 'onPrimary', 'mdi-check-circle-outline');
   } catch (error) {
-    snackbarStore.showSnackbar('Erreur lors de l\'annulation de l\'acceptation', 'error');
+    snackbarStore.showNotification('Erreur lors de l\'annulation de l\'acceptation', 'onError', 'mdi-alert-circle-outline');
   } finally {
     showUnacceptConfirmationDialog.value = false;
     substitutionToUnaccept.value = null;
@@ -344,7 +357,7 @@ watch(calendarDays, async (newCalendarDays) => {
 // Lifecycle hooks
 onMounted(async () => {
   try {
-    console.log("eaze")
+
     isLoading.value = true;
     await Promise.all([
       userStore.fetchUsersOfCenter(),

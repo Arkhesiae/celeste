@@ -79,7 +79,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       loading.value = true;
       error.value = null;
-      currentUser.value = await userService.getCurrentUser();
+      currentUser.value = await userService.getUserById(authStore.userId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération de l\'utilisateur courant';
       throw err;

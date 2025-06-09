@@ -1,12 +1,9 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.remplacer.app',
-  appName: 'Remplacer',
-  webDir: 'dist',
-  server: {
-    androidScheme: 'https'
-  }
+  appId: 'com.celeste.app',
+  appName: 'Celeste',
+  webDir: 'dist'
 };
 
-export default config; 
+export default config;

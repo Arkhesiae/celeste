@@ -137,10 +137,13 @@ import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { accountCreationService } from '@/services/accountCreationService';
+import LoadingScreen from '@/components/Loading/LoadingScreen.vue';
+import { useAppInitialization } from '@/composables/useAppInitialization';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
+const { initializeApp } = useAppInitialization();
 const { smAndDown, xs } = useDisplay();
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -156,6 +159,7 @@ const loggingIn = ref(false);
 const showForgotPasswordDialog = ref(false);
 const userInfo = ref(null);
 const isLoadingUserInfo = ref(false);
+
 
 const rules = {
   required: value => !!value || 'Champ requis',
@@ -233,8 +237,22 @@ const handleLogin = async () => {
     if (authStore.status === 'pending') {
       router.push({ path: '/pending-approval', replace: true });
     } else {
-      snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
-      setTimeout(() => router.push({ path: '/dashboard', replace: true }), 400);
+      try {
+        // Initialiser l'application avec le callback de progression
+        await initializeApp((item) => {
+          const index = loadingItems.value.findIndex(i => i.label.toLowerCase().includes(item));
+          if (index !== -1) {
+            loadingItems.value[index].loaded = true;
+          }
+        });
+        
+        snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
+        setTimeout(() => router.push({ path: '/dashboard', replace: true }), 1000);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+        snackbarStore.showNotification('Erreur lors du chargement des données', 'onError', 'mdi-alert-circle');
+        showLoadingScreen.value = false;
+      }
     }
   } catch (error) {
     if (error.status === 401) {

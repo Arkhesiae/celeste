@@ -6,9 +6,9 @@
       :selected-date="selectedDate"
       :show-chips="true"
       @open-rempla-dialog="handleOpenRemplaDialog"
-      @open-substitutions-drawer="handleOpenSubstitutionsDrawer"
-      @open-switches-drawer="handleOpenSwitchesDrawer"
+      @open-drawer="handleOpenDrawer"
       @cancel-demand="handleCancelDemand"
+      @unaccept-demand="handleUnacceptDemand"
     />
   </v-bottom-sheet>
 
@@ -77,16 +77,8 @@ const handleOpenRemplaDialog = (type) => {
   emit('openRemplaDialog', type);
 };
 
-const handleOpenSubstitutionsDrawer = () => {
-  emit('openDrawer', 'substitutions');
-};
-
-const handleOpenSwitchesDrawer = () => {
-  emit('openDrawer', 'switches');
-};
-
-const handleOpenOthersDrawer = () => {
-  emit('openDrawer', 'others');
+const handleOpenDrawer = (type) => {
+  emit('openDrawer', type);
 };
 
 const handleCancelDemand = (substitutionId) => {

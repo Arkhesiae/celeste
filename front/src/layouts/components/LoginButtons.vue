@@ -75,7 +75,7 @@ const handleLogout = async () => {
 const autoLogin = async (role) => {
   try {
     authStore.logOut(); // Déconnexion de l'utilisateur actuel
-    showLoadingScreen.value = true;
+  
     
     if (role === 'admin') {
       await authStore.logIn({
@@ -100,7 +100,7 @@ const autoLogin = async (role) => {
  
   } catch (error) {
     console.error(`Échec de la connexion automatique en tant que ${role}:`, error);
-    showLoadingScreen.value = false;
+
   }
 };
 
@@ -151,7 +151,7 @@ const fetchTeamUsers = async () => {
 
 const autoLoginTeamUser = async (user) => {
   try {
-    showLoadingScreen.value = true;
+
     await authStore.logOut();
     await authStore.logIn({
       email: user.email,
@@ -159,17 +159,12 @@ const autoLoginTeamUser = async (user) => {
     });
 
     // Initialiser l'application avec le callback de progression
-    await initializeApp(
-      
-    );
-    
-    setTimeout(() => {
-      router.push({ path: "/dashboard", replace: true });
-      showTeamUsers.value = false;
-    }, 1000);
+    await initializeApp();
+    router.push({ path: "/dashboard", replace: true });
+    showTeamUsers.value = false;
   } catch (error) {
     console.error('Échec de la connexion:', error);
-    showLoadingScreen.value = false;
+ 
   }
 };
 

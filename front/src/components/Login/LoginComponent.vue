@@ -228,30 +228,28 @@ const handleLogin = async () => {
 
   loggingIn.value = true;
   try {
+  
     await authStore.logIn({
       email: email.value,
       password: password.value,
       stayConnected: stayConnected.value
     });
+    await initializeApp();
+
+
 
     if (authStore.status === 'pending') {
       router.push({ path: '/pending-approval', replace: true });
     } else {
       try {
-        // Initialiser l'application avec le callback de progression
-        await initializeApp((item) => {
-          const index = loadingItems.value.findIndex(i => i.label.toLowerCase().includes(item));
-          if (index !== -1) {
-            loadingItems.value[index].loaded = true;
-          }
-        });
+         
         
         snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
-        setTimeout(() => router.push({ path: '/dashboard', replace: true }), 1000);
+        router.push({ path: '/dashboard', replace: true });
       } catch (error) {
         console.error('Erreur lors du chargement des données:', error);
         snackbarStore.showNotification('Erreur lors du chargement des données', 'onError', 'mdi-alert-circle');
-        showLoadingScreen.value = false;
+       
       }
     }
   } catch (error) {
@@ -263,6 +261,7 @@ const handleLogin = async () => {
     console.error('Erreur de connexion:', error);
   } finally {
     loggingIn.value = false;
+
   }
 };
 

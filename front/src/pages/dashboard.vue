@@ -16,6 +16,7 @@ import DemandCard from '@/components/OwnDemandCard.vue';
 import OwnDemandCard from "@/components/OwnDemandCard.vue";
 import TransferDialog from '@/components/Profile/TransferDialog.vue';
 
+
 const authStore = useAuthStore()
 const teamStore = useTeamStore()
 const substitutionStore = useSubstitutionStore()
@@ -99,10 +100,7 @@ const vacationName = computed(() => (vacation) => {
 // Fonction pour obtenir la prochaine substitution
 const nextSubstitution = computed(() => {
   const today = new Date();
-  const allSubstitutions = [
-
-  ];
-
+  const allSubstitutions = substitutionStore.acceptedAsAccepter
   // Filtrer les substitutions futures et les trier par date
   const futureSubstitutions = allSubstitutions
     .filter(sub => new Date(sub.posterShift.date) > today)
@@ -140,18 +138,18 @@ const loadData = async () => {
     // Charger l'équipe actuelle
     await teamStore.fetchCurrentTeamOfUser(authStore.userId);
 
-    // Charger les substitutions
-    await substitutionStore.fetchAllDemands({
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    });
+    // // Charger les substitutions
+    // await substitutionStore.fetchAllDemands({
+    //   startDate: new Date().toISOString(),
+    //   endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    // });
 
-    // Charger les jours de travail
-    const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));
-    const result = await vacationService.fetchWorkdaysOfUser(authStore.userId, flatArray);
-    result.forEach(({ date, shift, teamObject }) => {
-      vacationsOfUser.value.set(date, { shift, teamObject });
-    });
+    // // Charger les jours de travail
+    // const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));
+    // const result = await vacationService.fetchWorkdaysOfUser(authStore.userId, flatArray);
+    // result.forEach(({ date, shift, teamObject }) => {
+    //   vacationsOfUser.value.set(date, { shift, teamObject });
+    // });
 
     // Charger le tour de service actif
     const rotationStore = useRotationStore();
@@ -160,7 +158,7 @@ const loadData = async () => {
 
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);
- 
+
   } finally {
     isLoading.value = false;
   }
@@ -267,8 +265,9 @@ const handleVacation = async (vacation) => {
           <v-card-text>
             <div v-if="getVacation && getVacation.shift.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
-                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2" style="filter: blur(0px); z-index: -1; opacity: 0.070;"/>
-              
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
+                  style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
+
               </div>
             </div>
             <div v-if="getVacation && getVacation.shift">
@@ -285,9 +284,9 @@ const handleVacation = async (vacation) => {
                 </v-chip>
               </div>
             </div>
-            <div v-else class="text-medium-emphasis"> 
-              <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2"/>
-              Pas de vacation aujourd'hui 
+            <div v-else class="text-medium-emphasis">
+              <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2" />
+              Pas de vacation aujourd'hui
             </div>
           </v-card-text>
         </v-card>
@@ -299,8 +298,9 @@ const handleVacation = async (vacation) => {
           <v-card-text>
             <div v-if="getVacation && getVacation.shift.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
-                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2" style="filter: blur(0px); z-index: -1; opacity: 0.070;"/>
-              
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
+                  style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
+
               </div>
             </div>
             <div v-if="getTomorrowVacation && getTomorrowVacation.shift">
@@ -318,34 +318,43 @@ const handleVacation = async (vacation) => {
               </div>
             </div>
             <div v-else class="text-medium-emphasis">
-              <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2"/>
+              <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2" />
               Pas de vacation demain
             </div>
           </v-card-text>
         </v-card>
 
         <!-- Carte de la prochaine substitution -->
-        <v-card rounded="xl" class="mb-4 shadow-alt pa-4" color="remplacement" z-index="-01000">
-          <v-card-title class="text-h6 font-weight-medium">A venir</v-card-title>
-          <v-card-text>
-            <div v-if="nextSubstitution">
-              <div class="d-flex align-center justify-space-between mb-2">
-                <div>
-                  <div class="text-h5 font-weight-medium">{{ nextSubstitution.type === 'replacement' ? 'Remplacement' :
-                    'Permutation' }}</div>
-                  <div class="text-medium-emphasis">
-                    {{ new Date(nextSubstitution.posterShift.date).toLocaleDateString() }}
-                  </div>
-                  <div class="text-medium-emphasis" v-if="nextSubstitution.posterShift.shift.type !== 'rest'">
-                    {{ nextSubstitution.posterShift.shift.name }}
+        <v-card rounded="xl" class="mb-4 shadow-alt pa-6" color="remplacement" z-index="-01000">
+          <v-card-title class="text-h6 font-weight-medium pa-0 mb-4">A venir</v-card-title>
+          <v-card-text class="pa-0">
+          
+              <v-card color="" v-if="nextSubstitution" class="d-flex align-center justify-space-between pa-4" style="border-radius: 16px !important">
+                <div class="d-flex align-center justify-start">
+                  <v-card-title class="pa-0 mr-2">
+                    <h2 class="text-h4 font-weight-medium">{{ nextSubstitution?.posterShift?.name }}</h2>
+                  </v-card-title>
+                  <div class="d-flex align-start flex-column justify-space-between ma-0">
+                    <v-card-subtitle class="pa-0 ma-0">
+                      {{ nextSubstitution?.posterShift?.startTime }} - {{ nextSubstitution?.posterShift?.endTime }}
+                    </v-card-subtitle>
+                    <v-card-subtitle class="pa-0 ma-0 text-caption">Dans équipe {{ nextSubstitution?.teamName
+                      }}</v-card-subtitle>
+
                   </div>
                 </div>
-                <v-chip :color="nextSubstitution.type === 'replacement' ? 'remplacement' : 'permutation'" variant="flat"
-                  size="small" rounded="lg">
-                  {{ nextSubstitution.type === 'replacement' ? 'Remplacement' : 'Permutation' }}
+                
+                <v-chip :color="nextSubstitution.type === 'substitution' ? 'remplacement' : 'permutation'"
+                  variant="flat" size="small" rounded="lg">
+                  {{ nextSubstitution.type === 'substitution' ? 'Remplacement' : 'Permutation' }}
                 </v-chip>
-              </div>
-            </div>
+                <v-chip color="onBackground" prepend-icon="mdi-unicorn-variant"
+                  variant="flat" size="small" rounded="lg">
+                  {{ nextSubstitution.points }}
+                </v-chip>
+                <v-icon icon="mdi-chevron-right" color="onBackground" size="24" />
+              </v-card>
+      
             <div v-else class="text-onRemplacement">
               Aucun remplacement ou permutation à venir
             </div>
@@ -353,23 +362,14 @@ const handleVacation = async (vacation) => {
         </v-card>
 
         <!-- Carte des demandes en attente -->
-        <v-card rounded="xl" class="mb-4 shadow-alt pa-1" color="surfaceContainer"   z-index="-01000">
+        <v-card rounded="xl" class="mb-4 shadow-alt pa-1" color="surfaceContainer" z-index="-01000">
           <v-card-title class="text-h6 font-weight-medium">Demande en attente</v-card-title>
           <v-card-text>
             <div v-if="pendingDemands.length > 0">
-              <OwnDemandCard
-                v-for="demand in pendingDemands"
-                :key="demand.id"
-                :demand="demand"
-              />
+              <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
             </div>
             <div v-else class="text-center py-4">
-              <v-icon
-                icon="mdi-check-circle-outline"
-                color="permutation"
-                size="large"
-                class="mb-2"
-              />
+              <v-icon icon="mdi-check-circle-outline" color="permutation" size="large" class="mb-2" />
               <div class="text-body-1">Aucune demande en attente</div>
             </div>
           </v-card-text>
@@ -382,7 +382,8 @@ const handleVacation = async (vacation) => {
       <v-col cols="12" md="6" :class="smAndDown ? 'pa-0' : 'pa-2'">
 
         <!-- Carte du tour de service actif -->
-        <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-2' : 'mx-0'" color="surfaceContainer" @click="$router.push('/rotation')" style="cursor: pointer;">
+        <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-2' : 'mx-0'"
+          color="surfaceContainer" @click="$router.push('/rotation')" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
               <v-card-title class="text-h6 font-weight-medium pa-0">Tour de service actif</v-card-title>
@@ -418,7 +419,8 @@ const handleVacation = async (vacation) => {
 
           <!-- Carte des points -->
           <div class="mb-4 smooth-shadow rounded-xl">
-            <PointsCard  :points="stats.points" :transactions="[]" color="onBackground" @transfer="transferDialog = true" />
+            <PointsCard :points="stats.points" :transactions="[]" color="onBackground"
+              @transfer="transferDialog = true" />
           </div>
 
           <!-- Section Calendrier -->
@@ -426,9 +428,9 @@ const handleVacation = async (vacation) => {
           <v-card rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow pa-2" color="surfaceContainer">
             <v-card-title class="text-h6 font-weight-medium">Calendrier</v-card-title>
             <v-card-text>
-              <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected"
-                :isWorkDay="isWorkDay" :isToday="isToday" :vacationsOfUser="vacationsOfUser" :rotationsMap="rotationsMap"
-                @select-day="selectedDate = $event" @swipe-left="currentMonth = (currentMonth + 1) % 12"
+              <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected" :isToday="isToday" 
+                :rotationsMap="rotationsMap" @select-day="selectedDate = $event"
+                @swipe-left="currentMonth = (currentMonth + 1) % 12"
                 @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12" />
             </v-card-text>
           </v-card>
@@ -455,7 +457,7 @@ const handleVacation = async (vacation) => {
             </v-card-text>
           </v-card>
 
-      
+
 
           <!-- Actions rapides
       <v-card rounded="xl" elevation="0">
@@ -544,12 +546,8 @@ const handleVacation = async (vacation) => {
         </v-card>
       </v-col>
     </v-row> -->
-    <TransferDialog 
-      :dialogVisible="transferDialog" 
-      :userId="authStore.userId" 
-      @update:dialogVisible="transferDialog = $event"
-      @transfer-success="handleTransferSuccess" 
-    />
+    <TransferDialog :dialogVisible="transferDialog" :userId="authStore.userId"
+      @update:dialogVisible="transferDialog = $event" @transfer-success="handleTransferSuccess" />
   </v-container>
 </template>
 

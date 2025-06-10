@@ -61,7 +61,8 @@ onMounted(async () => {
     
     <div class="d-flex align-center justify-center">
       <div v-if="acceptedAsPoster" class="d-flex align-center justify-center">
-        <span class="mr-1">Remplacé par</span>
+        <span v-if="acceptedAsPoster.type === 'substitution'" class="mr-1">Remplacé par</span>
+        <span v-if="acceptedAsPoster.type === 'switch'" class="mr-1">Permute avec</span>
         <v-avatar size="x-small" class="" variant="tonal">
           <v-img v-if="accepterUser?.avatar" :src="`${API_URL}${accepterUser.avatar}`" alt="Avatar" />
           <span v-else class="text-caption font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ? `${accepterUser.name.charAt(0)}${accepterUser.lastName.charAt(0)}` : '?' }}</span>

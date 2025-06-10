@@ -106,8 +106,7 @@ import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import CalendarHeader from "@/components/Calendar/CalendarHeader.vue";
 import CalendarDesktop from "@/components/Calendar/CalendarDesktop.vue";
 import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
-import CalendarSidePanel from "@/components/Calendar/CalendarSidePanel.vue";
-import CalendarBottomSheet from "@/components/Calendar/CallendarBottomSheet.vue";
+
 import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
 import UnifiedDrawer from "@/components/Calendar/Drawers/UnifiedDrawer.vue";
 import ConfirmationDialog from "@/components/common/ConfirmationDialog.vue";
@@ -168,7 +167,6 @@ const rotationsMap = ref(new Map());
 // Computed properties
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
-  console.log(vacationsOfUser.value.get(selectedDate.value));
   return {shift : vacationsOfUser.value.get(selectedDate.value)?.shift?._id, teamObject : vacationsOfUser.value.get(selectedDate.value)?.teamObject};
 });
 
@@ -220,7 +218,6 @@ const onBottomSheetClose = (isOpen) => {
 const vacationsOfUser = computed(() => {
   const map = new Map();
   const shifts = shiftsWithSubstitutions.value;
-  console.log(shifts);
   if (shifts && shifts.length > 0) { 
     shifts.forEach(({ date, shift, teamObject }) => {
       map.set(date, { shift, teamObject });

@@ -11,7 +11,7 @@ require('dotenv').config({
  * @param {string} otp
  */
 async function sendEmailOtp(toEmail, otp) {
-    console.log("SMTP USER:", process.env.SMTP_USERNAME);
+  console.log("SMTP USER:", process.env.SMTP_USERNAME);
   console.log("SMTP PASS:", process.env.SMTP_PASSWORD);
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,

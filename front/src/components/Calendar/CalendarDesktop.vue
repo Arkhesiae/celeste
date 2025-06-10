@@ -78,36 +78,65 @@
 
 <script setup>
 import {defineProps, defineEmits} from 'vue';
-import StatusChip from './Chips/StatusChip.vue';
+import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { computed } from 'vue';
 
 
 const substitutionStore = useSubstitutionStore();
+const shiftStore = useShiftStore();
 
 const props = defineProps({
   daysOfWeek: Array,
   calendarDays: Array,
   isSelected: Function,
-  isWorkDay: Function,
   isToday: Function,
   vacationsOfUser: Map,
   rotationsMap: Map,
 });
 
 
+const isWorkDay = (date) => {
+  const shift = vacationsOfUser.value.get(date.toISOString())?.shift;
+  return shift ? shift.type !== 'rest' : false;
+};
+
+
 const getColor = (date) => {
   if (props.isSelected(date)) {
-    return 'surfaceContainerHighest';
+    return 'onBackground';
   // } else if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date.toISOString())) {
   //   return 'remplacement';
-  }  else if (props.isWorkDay(date)) {
+  }  else if (isWorkDay(date) && !inPast(date)) {
     return 'surfaceContainerHigh';
     }  else {
     return 'surface';
   }
 };
 
+const inPast = (date) => {
+  return date < new Date();
+};
 
+
+const shiftsWithSubstitutions = computed(() => {
+  return shiftStore.shiftsWithSubstitutions;
+});
+
+const vacationsOfUser = computed(() => {
+  const map = new Map();
+  const shifts = shiftsWithSubstitutions.value;
+  if (shifts && shifts.length > 0) {
+    shifts.forEach(({ date, shift, teamObject }) => {
+      map.set(date, { shift, teamObject });
+    });
+  }
+  return map;
+});
+
+
+const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.name;
+const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.type;
 
 // const getStatus = (date) => {
 //   if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {
@@ -125,8 +154,7 @@ const getColor = (date) => {
 
 const emit = defineEmits(['select-day']);
 
-const getShiftName = (date) => props.vacationsOfUser.get(date.toISOString())?.shift?.name;
-const getShiftType = (date) => props.vacationsOfUser.get(date.toISOString())?.shift?.type;
+
 </script>
 
 <style scoped>

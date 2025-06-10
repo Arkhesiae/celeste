@@ -525,7 +525,6 @@ const swapShifts = async (req, res) => {
     try {
         const userId = req.user.userId;
         const demandId = req.params.id;
-        const { userShiftId } = req.body;
 
         // Récupération de la demande
         const demand = await Substitution.findById(demandId);
@@ -544,15 +543,21 @@ const swapShifts = async (req, res) => {
         }
 
         // Récupération du shift de l'utilisateur
-        const userShift = await computeShiftOfUser(new Date(date), userId);
+        const userShift = await computeShiftOfUser(new Date(demand.posterShift.date), userId);
         if (!userShift) {
             return res.status(404).json({ error: 'Shift utilisateur non trouvé' });
         }
 
-        // Vérification que le shift appartient bien à l'utilisateur
-        if (userShift.userId.toString() !== userId) {
-            return res.status(403).json({ error: 'Ce shift ne vous appartient pas' });
+        
+        // Vérification que le shift de l'utilisateur est dans la liste des shifts acceptés pour l'échange
+        const isShiftAccepted = demand.acceptedSwitches.some(
+            acceptedShift => acceptedShift.toString() === userShift[0].shift._id.toString()
+        );
+
+        if (!isShiftAccepted) {
+            return res.status(400).json({ error: 'Votre shift n\'est pas accepté pour cet échange' });
         }
+
 
         // Mise à jour de la demande
         const updatedDemand = await Substitution.findByIdAndUpdate(
@@ -560,8 +565,10 @@ const swapShifts = async (req, res) => {
             {
                 accepterId: userId,
                 status: 'accepted',
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                accepterShift: userShift[0].shift
             },
+        
             { new: true }
         );
 

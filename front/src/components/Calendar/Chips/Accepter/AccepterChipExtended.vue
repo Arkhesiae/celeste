@@ -49,7 +49,10 @@ const shiftType = computed(() => {
     
     </div>
       <div v-if="findAcceptedAsAccepter" >
-        <span>Remplace dans équipe {{teamName}}</span>
+
+        <span v-if="findAcceptedAsAccepter.type === 'substitution'">Remplace dans équipe {{teamName}}</span>
+        
+        <span v-if="findAcceptedAsAccepter.type === 'switch'">Permute dans équipe {{teamName}}</span>
       </div>
       <div  v-else>
        

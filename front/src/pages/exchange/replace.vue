@@ -11,7 +11,7 @@
     <v-row class="mb-16">
       <!-- Colonne principale -->
       <v-col cols="12" sm="12" md="8">
-        <v-card rounded="xl" elevation="0" class="pa-0 position-relative " color="transparent">
+          <div>
           <!-- Filtres et recherche -->
           <ListHeader :filters="[
             { label: 'Permutations', value: 'switch' },
@@ -23,62 +23,64 @@
 
 
           <span v-if="filteredSubstitutions.length === 0 && filteredSwitches.length === 0"
-            class="text-medium-emphasis text-subtitle-2 ml-4">
+            class="text-medium-emphasis text-subtitle-2 ">
             Aucune demande disponible
           </span>
 
 
-
-
-
-
           <!-- Liste des demandes -->
-          <v-col class="pa-0 ma-0" cols="12">
-            <!-- Demandes remplaçables -->
-            <v-row class="ma-0 pa-0">
-              <v-col cols="12" class="pa-0 ma-0">
-                <v-chip color="remplacement" v-if="filteredSubstitutions.length > 0" rounded="lg"
-                  class="text-h7 font-weight-medium">Remplaçable</v-chip>
-                <DemandCard v-for="demand in filteredSubstitutions" :key="demand._id" :demand="demand"
-                  class="pa-0 ma-0 my-2" />
 
-              </v-col>
-            </v-row>
-            <!-- Demandes permutables -->
-            <v-row class="ma-0 pa-0">
-              <v-col cols="12" class="pa-0 ma-0">
-                <v-chip color="permutation" v-if="filteredSwitches.length > 0" rounded="lg"
-                  class="text-h7 mt-16 font-weight-medium" variant="tonal">
-                  Permutables
-                </v-chip>
-                <DemandCard v-for="demand in filteredSwitches" :key="demand._id" :demand="demand" class="pa-0 ma-0" />
-              </v-col>
-            </v-row>
+          <!-- Demandes remplaçables -->
+          <div v-else>
+          <v-row class="ma-0 pa-0">
+            <v-col cols="12" class="pa-0 ma-0">
+              <v-chip color="remplacement" v-if="filteredSubstitutions.length > 0" rounded="lg"
+                class="text-h7 font-weight-medium">Remplaçable</v-chip>
+              <DemandCard v-for="demand in filteredSubstitutions" :key="demand._id" :demand="demand"
+                class="pa-0 ma-0 my-2" />
 
-            <!-- Autres demandes -->
-            <v-divider color="primary" opacity="0.01" class="my-0" />
-            <v-chip color="error" v-if="filteredOthers.length > 0" rounded="lg"
-              class="mt-16 text-h7 font-weight-medium">
-              Autres demandes
-            </v-chip>
-            <DemandCard v-for="demand in filteredOthers" :key="demand._id" :demand="demand" />
-          </v-col>
-        </v-card>
+            </v-col>
+          </v-row>
+          <!-- Demandes permutables -->
+          <v-row class="ma-0 pa-0">
+            <v-col cols="12" class="pa-0 ma-0">
+              <v-chip color="permutation" v-if="filteredSwitches.length > 0" rounded="lg"
+                class="text-h7 mt-16 font-weight-medium" variant="tonal">
+                Permutables
+              </v-chip>
+              <DemandCard v-for="demand in filteredSwitches" :key="demand._id" :demand="demand" class="pa-0 ma-0" />
+            </v-col>
+          </v-row>
+          </div>
+          <!-- Autres demandes -->
+          <!-- Demandes permutables -->
+          <v-row class="ma-0 pa-0" >
+            <v-col cols="12" class="pa-0 ma-0">
+              <v-divider color="primary" opacity="0.01" class="my-0" />
+              <v-chip color="error" v-if="filteredOthers.length > 0" rounded="lg"
+                class="mt-16 text-h7 font-weight-medium">
+                Autres demandes
+              </v-chip>
+              <DemandCard v-for="demand in filteredOthers" :key="demand._id" :demand="demand" />
+            </v-col>
+          </v-row>
+
+        </div>
       </v-col>
 
       <!-- Colonne latérale -->
       <v-col cols="12" sm="12" md="4">
-        <v-btn v-if="!smAndDown" class="mb-4" prepend-icon="mdi-plus" variant="tonal" color="remplacement" height="80px"
-          width="100%" elevation="0">
+        <!-- <v-btn v-if="!smAndDown" class="mb-4" prepend-icon="mdi-plus" variant="tonal" color="remplacement" height="80px"
+          width="100%" elevation="0" @click="showAddDialog = true">
           Ajouter une demande
-        </v-btn>
+        </v-btn> -->
 
-        <div class="my-8 d-flex flex-column">
+        <div class="mb-8 d-flex flex-column">
           <span class="text-h5 font-weight-medium">Mes demandes</span>
           <span class="opac text-subtitle-2 text-medium-emphasis">Toutes mes demandes</span>
         </div>
 
-        <v-card rounded="xl" elevation="0" class="pa-1 position-sticky"
+        <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 position-sticky"
           style="position: sticky !important; top: 100px !important;">
           <v-card-item @click="displayPending = !displayPending">
             <v-card-title>En attente</v-card-title>
@@ -89,7 +91,7 @@
           </v-card-item>
 
           <v-expand-transition>
-            <v-card-text v-if="pendingDemands.length > 0 && displayPending">
+            <v-card-text class="pa-0" v-if="pendingDemands.length > 0 && displayPending">
               <div v-if="pendingDemands.length > 0">
                 <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
               </div>
@@ -100,12 +102,64 @@
             </v-card-text>
           </v-expand-transition>
         </v-card>
+
+        
+        <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
+          style="position: sticky !important; top: 400px !important;">
+          <v-card-item @click="displayAccepted = !displayAccepted">
+            <v-card-title>Acceptées</v-card-title>
+            <template #append>
+              <v-icon icon="mdi-chevron-down"
+                :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
+            </template>
+          </v-card-item>
+
+          <v-expand-transition>
+      
+          </v-expand-transition>
+        </v-card>
+
+        <div class="my-8 d-flex flex-column">
+          <span class="text-h5 font-weight-medium">A venir</span>
+          <span class="opac text-subtitle-2 text-medium-emphasis">Vacations à venir</span>
+        </div>
+
+        <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
+          style="position: sticky !important; top: 400px !important;">
+          <v-card-item @click="displayAccepted = !displayAccepted">
+            <v-card-title>Acceptées</v-card-title>
+            <template #append>
+              <v-icon icon="mdi-chevron-down"
+                :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
+            </template>
+          </v-card-item>
+
+          <v-expand-transition>
+            <v-card-text class="pa-0" v-if="acceptedDemands.length > 0 && displayAccepted">
+              <div v-if="acceptedDemands.length > 0">
+                <OwnDemandCard color="surface" v-for="demand in acceptedDemands" :key="demand.id" :demand="demand" />
+              </div>
+              <div v-else class="text-center py-4">
+                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
+                <div class="text-body-1">Aucune demande acceptée</div>
+              </div>
+            </v-card-text>
+          </v-expand-transition>
+        </v-card>
       </v-col>
     </v-row>
 
     <!-- Bouton flottant pour mobile -->
-    <v-fab v-if="smAndDown" prepend-icon="mdi-plus" class="fab" height="60px" rounded="0" flat color="remplacement"
-      location="bottom end" text="Nouvelle demande" extended app @click="showAddDialog = true" />
+    <!-- <v-fab v-if="smAndDown" prepend-icon="mdi-plus" class="fab" height="60px" rounded="0" flat color="remplacement"
+      location="bottom end" text="Nouvelle demande" extended app @click="showAddDialog = true" /> -->
+
+    <!-- Dialog pour ajouter une demande -->
+
+      <AddSubstitutionForm 
+        dialogMode="add" 
+        v-model:dialogVisible="showAddDialog"
+      />
+ 
   </v-container>
 </template>
 
@@ -118,6 +172,7 @@ import { toUTCNormalized } from "@/utils.js";
 import { useDisplay } from "vuetify";
 import DemandCard from "@/components/Remplacer/DemandCard.vue";
 import ListHeader from "@/components/common/ListHeader.vue";
+import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
 
 // Stores
 const substitutionStore = useSubstitutionStore();
@@ -129,6 +184,7 @@ const { smAndDown } = useDisplay();
 const loadingUsers = ref(true);
 const userShift = ref(null);
 const displayPending = ref(false);
+const displayAccepted = ref(false);
 const searchQuery = ref('');
 const sortBy = ref('createdAt');
 const selectedFilter = ref('all');
@@ -158,6 +214,7 @@ const pendingDemands = computed(() => [
   ...substitutionStore.ownPendingTrueSubstitutions,
   ...substitutionStore.ownPendingTrueSwitches
 ]);
+const acceptedDemands = computed(() => substitutionStore.acceptedAsAccepter);
 
 const getNestedValue = (obj, path) => {
   if (!path || typeof path !== 'string') {
@@ -203,15 +260,15 @@ const filterAndSortDemands = (demands) => {
   return filteredDemands;
 };
 
-const filteredSubstitutions = computed(() => 
+const filteredSubstitutions = computed(() =>
   filterAndSortDemands(substitutionStore.availableSubstitutions)
 );
 
-const filteredSwitches = computed(() => 
+const filteredSwitches = computed(() =>
   filterAndSortDemands(substitutionStore.availableSwitches)
 );
 
-const filteredOthers = computed(() => 
+const filteredOthers = computed(() =>
   filterAndSortDemands(substitutionStore.otherDemands)
 );
 

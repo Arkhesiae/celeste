@@ -179,7 +179,7 @@
             Annuler
           </v-btn>
           <v-spacer></v-spacer>
-          <v-btn v-if="userHasShift" color="permutation" variant="tonal" rounded="xl" @click="handleSwap"
+          <v-btn v-if="userHasShift  && demand?.canSwitch" color="permutation" variant="tonal" rounded="xl" @click="handleSwap"
             :loading="loading.accept">
             Permuter
           </v-btn>
@@ -418,10 +418,14 @@ const handleSwap = async () => {
 const handleConfirmSwap = async () => {
   loading.value.accept = true
   try {
-    await substitutionStore.swapShifts(props.demand._id, userShift.value._id)
+    await substitutionStore.swapShifts(props.demand._id)
     snackbarStore.showNotification('Échange de shifts effectué avec succès')
     showConfirmationSwapDialog.value = false
-  } finally {
+  } catch (error) {
+    snackbarStore.showNotification('Erreur lors de l\'échange des shifts', 'onError', "mdi-alert-circle-outline")
+    console.error('Erreur lors de l\'échange:', error)
+  }
+  finally {
     loading.value.accept = false
   }
 }

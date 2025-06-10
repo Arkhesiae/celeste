@@ -142,14 +142,12 @@ export const substitutionService = {
   /**
    * Échange les shifts entre deux utilisateurs.
    * @param {string} demandId - L'ID de la demande de substitution.
-   * @param {string} userShiftId - L'ID du shift de l'utilisateur.
    * @returns {Promise<Object>} Les informations de l'échange.
    */
-  async swapShifts(demandId, userShiftId) {
-    const response = await fetch(`${API_URL}/substitution/swap/${demandId}`, {
+  async swapShifts(demandId) {
+    const response = await fetch(`${API_URL}/substitution/${demandId}/swap`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ userShiftId })
     });
     return handleResponse(response);
   },

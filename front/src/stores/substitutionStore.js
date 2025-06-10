@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { substitutionService } from '@/services/substitutionService';
 import { useAuthStore } from '@/stores/authStore';
 import { useShiftStore } from '@/stores/shiftStore';
+import { usePointStore } from '@/stores/pointStore';
 
 /**
  * Store Pinia pour gérer l'état des substitutions.
@@ -26,7 +27,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const shiftStore = useShiftStore();
   const authStore = useAuthStore();
   const userId = computed(() => authStore.userId);
-
+  const pointStore = usePointStore();
   // =============== UTILITY FUNCTIONS ===============
 
   const matchesDate = (substitutions, date) => {
@@ -377,6 +378,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       await substitutionService.cancelDemand(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
       await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
     } catch (err) {
       error.value = err.message || 'Erreur lors de la suppression de la substitution';
       throw err;
@@ -392,6 +394,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       await substitutionService.acceptDemand(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
       await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
     } catch (err) {
       console.error('Erreur lors de l\'acceptation de la demande:', err);
       throw err;
@@ -405,6 +408,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       await substitutionService.unacceptDemand(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
       await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
     } catch (error) {
       console.error('Erreur lors de l\'annulation de l\'acceptation:', error.message);
       throw error;
@@ -435,11 +439,12 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
-  const swapShifts = async (demandId, userShiftId) => {
+  const swapShifts = async (demandId) => {
     try {
-      await substitutionService.swapShifts(demandId, userShiftId);
+      await substitutionService.swapShifts(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
       await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
       
     } catch (error) {
       console.error('Erreur lors de l\'échange des shifts:', error);
@@ -500,6 +505,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     hasOwnPendingTrueSubstitutions,
     hasOwnPendingHybridSubstitutions,
 
+    acceptedAsAccepter,
     hasAcceptedAsAccepter,
     findAcceptedAsAccepter,
 

@@ -16,7 +16,7 @@
 
 <script setup>
 import { computed, ref } from 'vue';
-import CalendarPanel from './CalendarPanel.vue';
+import CalendarPanel from './common/CalendarPanel.vue';
 
 const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openDrawer', 'cancelDemand', 'unacceptDemand']);
 

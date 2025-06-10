@@ -298,7 +298,6 @@ const checkCenterNameExists = async (name) => {
 
 const checkICAONameExists = async (OACI) => {
   if (!OACI) return;
-  console.log(centers.value)
   const exists = centers.value.some(center => 
     center.OACI?.toLowerCase() === OACI.toLowerCase()
   );

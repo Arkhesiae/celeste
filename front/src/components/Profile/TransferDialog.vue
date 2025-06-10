@@ -201,6 +201,6 @@ const isFutureDate = (date) => {
 
 :deep(.v-btn--icon) {
   background-color: rgb(var(--v-theme-surface-container)) !important;
-
+  color: rgb(var(--v-theme-onBackground)) !important;
 }
 </style>

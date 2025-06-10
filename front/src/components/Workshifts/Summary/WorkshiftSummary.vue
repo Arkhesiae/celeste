@@ -24,6 +24,7 @@ const { smAndDown, mdAndDown } = useDisplay();
 const showDetailsDialog = ref(false);
 const selectedDay = ref(null);
 const selectedDayIndex = ref(null);
+const updatedDay = ref(null);
 
 const openDetails = (day, index) => {
   selectedDay.value = day;
@@ -41,12 +42,15 @@ const handleEdit = () => {
   showDetailsDialog.value = false;
 };
 
-
-
 const handleUpdate = (updatedDay) => {
-  console.log(updatedDay);
-  emit('onUpdateDay', selectedDayIndex.value, updatedDay);
+  updatedDay.value = updatedDay;
+  emit('onUpdateDay', selectedDayIndex.value, updatedDay.value);
   showDetailsDialog.value = false;
+};
+
+const updateDay = (day) => {
+  updatedDay.value = day;
+  emit('update:day', day);
 };
 </script>
 

@@ -35,7 +35,6 @@ export const useOtpStore = defineStore('otp', () => {
       request.attempts++;
       const response = await otpService.verifyOtp(email, otp);
       
-      console.log(response.verified)
       if (response.verified) {
         otpRequests.value.delete(email);
       }
@@ -51,10 +50,21 @@ export const useOtpStore = defineStore('otp', () => {
     otpRequests.value.delete(email);
   };
 
+  const verifyOTP = async (otp) => {
+    try {
+      const response = await otpService.verifyOTP(otp);
+      return response.verified;
+    } catch (err) {
+      console.error('Erreur lors de la vérification de l\'OTP:', err);
+      throw err;
+    }
+  };
+
   return {
     otpRequests,
     sendOtp,
     verifyOtp,
     clearOtpRequest,
+    verifyOTP,
   };
 }); 

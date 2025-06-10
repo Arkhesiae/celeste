@@ -87,6 +87,22 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     );
   });
 
+  const findOwnPendingDemand = computed(() => (date) => {
+    if (!userId.value) return [];
+    const ownPendingDemands = [
+      ...ownPendingHybridSubstitutions.value,
+      ...ownPendingTrueSubstitutions.value,
+      ...ownPendingTrueSwitches.value
+    ];
+
+      const ownPendingDemand = ownPendingDemands.find(substitution => substitution.posterShift.date === date);
+      if (ownPendingDemand?.length > 1) {
+        console.error('Plusieurs demandes en attente pour un même jour');
+        throw new Error('Plusieurs demandes en attente pour un même jour');
+      };
+      return ownPendingDemand;
+  });
+
   // ----- Available -----
 
   const availableTrueSwitches = computed(() => {
@@ -152,12 +168,30 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     );
   });
   
-  // ----- Unavailable -----
-
-  // ----- Accepted -----
 
   // ----- Accepted as Poster -----
 
+  const acceptedAsPoster = computed(() => {
+    if (!userId.value) return [];
+    return substitutions.value.filter(substitution => 
+      substitution.status === 'accepted' && 
+      substitution.posterId === userId.value
+    );
+  });
+
+  const findAcceptedAsPoster = computed(() => (date) => {
+    if (!userId.value) return [];
+    const acceptedAsPosterDemands = [
+      ...acceptedAsPoster.value,
+    ];
+
+      const acceptedAsPosterDemand = acceptedAsPosterDemands.find(substitution => substitution.posterShift.date === date);
+      if (acceptedAsPosterDemand?.length > 1) {
+        console.error('Plusieurs demandes acceptées pour un même jour');
+        throw new Error('Plusieurs demandes acceptées pour un même jour');
+      };
+      return acceptedAsPosterDemand;
+  });
   
 
   // ----- Accepted as Accepter -----
@@ -166,13 +200,20 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     if (!userId.value) return [];
     return substitutions.value.filter(substitution => 
       substitution.status === 'accepted' && 
+      substitution.accepterId === userId.value &&
       substitution.posterId !== userId.value
     );
   });
 
   const findAcceptedAsAccepter = computed(() => (date) => {
-    if (!userId.value) return false;
-    return acceptedAsAccepter.value.find(substitution => substitution.posterShift.date === date);
+    if (!userId.value) return [];
+    const acceptedAsAccepterDemand = acceptedAsAccepter.value.find(substitution => substitution.posterShift.date === date);
+    if (acceptedAsAccepterDemand?.length > 1) {
+
+      console.error('Plusieurs demandes acceptées pour un même jour');
+      throw new Error('Plusieurs demandes acceptées pour un même jour');
+    };
+    return acceptedAsAccepterDemand;
   });
 
 
@@ -222,10 +263,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     return matchesDate(acceptedAsAccepter.value, date);
   });
 
+  const hasAcceptedAsPoster = computed(() => (date) => {
+    if (!userId.value) return false;
+    return matchesDate(acceptedAsPoster.value, date);
+  });
+
   // ----- Compteurs -----
 
   const countOtherDemands = computed(() => (date) => {
-    console.log(date);
     if (!userId.value) return 0;
     return otherDemands.value.filter(substitution => substitution.posterShift.date === date).length;
   });
@@ -331,6 +376,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       error.value = null;
       await substitutionService.cancelDemand(demandId);
       await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+      await shiftStore.fetchShiftsWithSubstitutions();
     } catch (err) {
       error.value = err.message || 'Erreur lors de la suppression de la substitution';
       throw err;
@@ -412,6 +458,18 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
+  const fetchSubstitutions = async (date) => {
+    try {
+      loading.value = true;
+      substitutions.value = await substitutionService.getSubstitutions(date);
+    } catch (err) {
+      error.value = err.message || 'Erreur lors de la récupération des substitutions';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
   return {
     // State
     substitutions,
@@ -424,6 +482,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     ownPendingTrueSwitches,
     ownPendingTrueSubstitutions,
     ownPendingHybridSubstitutions,
+    findOwnPendingDemand,
 
     availableSwitches,
     availableSubstitutions,
@@ -444,6 +503,9 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     hasAcceptedAsAccepter,
     findAcceptedAsAccepter,
 
+    hasAcceptedAsPoster,
+    findAcceptedAsPoster,
+
     countOtherDemands,
     countAvailableSwitches,
     countAvailableSubstitutions,
@@ -461,6 +523,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     updateDemandStatus,
     checkUserShift,
     swapShifts,
-    markInterest
+    markInterest,
+    fetchSubstitutions
   };
 });

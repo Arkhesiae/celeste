@@ -4,9 +4,7 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useAuthStore } from '@/stores/authStore';
 
-const teamStore = useTeamStore();
 const substitutionStore = useSubstitutionStore();
-const authStore = useAuthStore();
 const props = defineProps({
   date : { type: Date, required: true },
   text: { type: String },
@@ -68,9 +66,7 @@ const hasMultiplePending = computed(() => {
       <v-icon color="remplacement"  v-if="isTrueSubstitution">mdi-account-arrow-left</v-icon>
       <v-icon color="remplacement"  v-if="isHybridSubstitution">mdi-account-arrow-left</v-icon>
       <v-icon color="permutation"  v-if="isHybridSubstitution">mdi-swap-horizontal</v-icon>
-      <!-- <div  v-if=" isHybridSubstitution" class="d-flex justify-center align-center" style="position: absolute; top: 1px; right: -14px; height: 16px; width: 16px; background-color: rgba(var(--v-theme-permutation), 0.4); border-radius: 50%;">
-        <v-icon size="small" class="" color="permutation">mdi-plus</v-icon>
-      </div> -->
+
       <div v-if="text" >
         <span>{{text}}</span>
       </div>

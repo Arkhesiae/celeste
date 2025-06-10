@@ -349,17 +349,22 @@ const isNextButtonDisabled = computed(() => {
                         <v-icon start icon="mdi-clock-outline"></v-icon>
                         {{ variant.name }}
                       </v-chip>
-                      <v-chip v-if="selectedRotationDay?.shift?.variants.length !== 0" value="TBD" color="onBackground" variant="flat" rounded="lg" size="small">
+                      <!-- <v-chip v-if="selectedRotationDay?.shift?.variants.length !== 0" value="TBD" color="onBackground" variant="flat" rounded="lg" size="small">
                         <v-icon start icon="mdi-clock-outline"></v-icon>
                         TBD
-                      </v-chip>
+                      </v-chip> -->
                     </v-chip-group>
                   </div>
                 </v-card-item>
               </v-card>
-              <span class="text-caption mt-8 pa-4">
+              <!-- <span class="text-caption mt-8 pa-4">
                 <v-icon start icon="mdi-information-outline"></v-icon>
                 En cliquant sur <b>TBD</b>, votre remplaçant déterminera l'horaire effectué à postériori.
+              </span> -->
+
+              <span class="text-caption mt-8 pa-4">
+                <v-icon start icon="mdi-information-outline"></v-icon>
+                En cliquant sur une <b>variante</b>, votre pouvez définir l'horaire de votre remplacement.
               </span>
             </div>
           </v-window-item>
@@ -463,7 +468,7 @@ const isNextButtonDisabled = computed(() => {
 
 <style scoped>
 :deep(.v-number-input .v-field__field input) {
-  color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-remplacement)) !important;
   font-size: 1.5rem;
   font-weight: 600;
 }
@@ -475,7 +480,9 @@ const isNextButtonDisabled = computed(() => {
 }
 
 :deep(.v-btn--icon) {
+  color: rgb(var(--v-theme-remplacement)) !important;
   background-color: rgb(var(--v-theme-surface-container)) !important;
+
 
 }
 </style>

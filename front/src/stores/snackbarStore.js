@@ -19,7 +19,6 @@ export const useSnackbarStore = defineStore('snackbar', () => {
 
   const pushQueue = (newText) => {
     messageQueue.value.push(newText)
-    console.log(messageQueue.value)
   }
 
   /**
@@ -83,6 +82,14 @@ export const useSnackbarStore = defineStore('snackbar', () => {
    */
   const hide = () => {
     show.value = false;
+  };
+
+  const showMessage = (message, type = 'info') => {
+    const id = Date.now();
+    messageQueue.value.push({ id, message, type });
+    setTimeout(() => {
+      messageQueue.value = messageQueue.value.filter(msg => msg.id !== id);
+    }, 3000);
   };
 
   return {

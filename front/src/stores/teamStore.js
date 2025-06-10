@@ -47,7 +47,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       teams.value = await teamService.getTeams();
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération des équipes';
+      console.error('Erreur lors de la récupération des équipes:', err);
       throw err;
     } finally {
       loading.value = false;
@@ -194,7 +194,7 @@ export const useTeamStore = defineStore('team', () => {
       await teamService.updateTeamCycleStartDate(teamId, cycleStartDate);
       await fetchCenterTeams(currentCenter.value);
     } catch (err) { 
-      console.log(err);
+      console.error('Erreur lors de la mise à jour de la date de début de cycle:', err);
       error.value = err.message || 'Erreur lors de la mise à jour de la date de début de cycle';
       throw err;
     } finally {

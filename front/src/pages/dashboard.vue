@@ -92,7 +92,6 @@ const getTomorrowVacation = computed(() => {
 
 const vacationName = computed(() => (vacation) => {
   if (!vacation) return null;
-  console.log(vacation);
   if (vacation.shift.type === 'rest') return 'Repos';
   return vacation.shift.name;
 });
@@ -176,19 +175,19 @@ onMounted(loadData);
 
 const handleAcceptDemand = async (demand) => {
   try {
-    // Implémenter la logique d'acceptation
-    console.log('Accepter la demande:', demand);
-  } catch (error) {
-    console.error('Erreur lors de l\'acceptation de la demande:', error);
+    await substitutionStore.acceptDemand(demand.id);
+    snackbarStore.showMessage('Demande acceptée avec succès', 'success');
+  } catch (err) {
+    snackbarStore.showMessage('Erreur lors de l\'acceptation de la demande', 'error');
   }
 };
 
-const handleDeclineDemand = async (demand) => {
+const handleRejectDemand = async (demand) => {
   try {
-    // Implémenter la logique de refus
-    console.log('Refuser la demande:', demand);
-  } catch (error) {
-    console.error('Erreur lors du refus de la demande:', error);
+    await substitutionStore.rejectDemand(demand.id);
+    snackbarStore.showMessage('Demande refusée', 'info');
+  } catch (err) {
+    snackbarStore.showMessage('Erreur lors du refus de la demande', 'error');
   }
 };
 
@@ -197,6 +196,15 @@ const transferDialog = ref(false);
 const handleTransferSuccess = () => {
   pointStore.fetchUserPoints();
   pointStore.fetchTransactions();
+};
+
+const handleVacation = async (vacation) => {
+  try {
+    await vacationStore.updateVacation(vacation);
+    snackbarStore.showMessage('Vacances mises à jour avec succès', 'success');
+  } catch (err) {
+    snackbarStore.showMessage('Erreur lors de la mise à jour des vacances', 'error');
+  }
 };
 </script>
 
@@ -257,15 +265,21 @@ const handleTransferSuccess = () => {
         <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-4" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
           <v-card-text>
+            <div v-if="getVacation && getVacation.shift.type === 'rest'">
+              <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2" style="filter: blur(0px); z-index: -1; opacity: 0.070;"/>
+              
+              </div>
+            </div>
             <div v-if="getVacation && getVacation.shift">
               <div class="d-flex align-center justify-space-between mb-2">
                 <div>
                   <div class="text-h5 font-weight-medium">{{ vacationName(getVacation) }}</div>
-                  <div class="text-medium-emphasis">
+                  <div class="text-medium-emphasis" v-if="getVacation.shift.type !== 'rest'">
                     {{ getVacation.shift.startTime }} - {{ getVacation.shift.endTime }}
                   </div>
                 </div>
-                <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
+                <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
                   style="right: 0; top: 0;">
                   Équipe {{ getVacation.teamObject.name }}
                 </v-chip>
@@ -283,6 +297,12 @@ const handleTransferSuccess = () => {
         <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Demain</v-card-title>
           <v-card-text>
+            <div v-if="getVacation && getVacation.shift.type === 'rest'">
+              <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2" style="filter: blur(0px); z-index: -1; opacity: 0.070;"/>
+              
+              </div>
+            </div>
             <div v-if="getTomorrowVacation && getTomorrowVacation.shift">
               <div class="d-flex align-center justify-space-between mb-2">
                 <div>
@@ -291,7 +311,7 @@ const handleTransferSuccess = () => {
                     {{ getTomorrowVacation.shift.startTime }} - {{ getTomorrowVacation.shift.endTime }}
                   </div>
                 </div>
-                <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
+                <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
                   style="right: 0; top: 0;">
                   Équipe {{ getTomorrowVacation.teamObject.name }}
                 </v-chip>
@@ -398,7 +418,7 @@ const handleTransferSuccess = () => {
 
           <!-- Carte des points -->
           <div class="mb-4 smooth-shadow rounded-xl">
-            <PointsCard variant="tonal" :points="stats.points" :transactions="[]" color="remplacement" @transfer="transferDialog = true" />
+            <PointsCard  :points="stats.points" :transactions="[]" color="onBackground" @transfer="transferDialog = true" />
           </div>
 
           <!-- Section Calendrier -->
@@ -416,12 +436,12 @@ const handleTransferSuccess = () => {
           <!-- Carte de l'équipe -->
           <v-card rounded="xl" elevation="0" class="pa-2">
             <v-card-title class="text-h6 font-weight-medium">Mon équipe</v-card-title>
-            <v-icon icon="mdi-account-group" size="16" color="onBackground"
+            <v-icon icon="mdi-crowd" size="16" color="onBackground"
               style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
             <v-card-text>
               <div v-if="teamStore.currentTeam" class="d-flex flex-column align-center">
                 <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
-                  <v-icon icon="mdi-account-group" size="32"></v-icon>
+                  <v-icon icon="mdi-crowd" size="32"></v-icon>
                 </v-avatar>
                 <div class="text-h5 font-weight-bold mb-2">Equipe {{ teamStore.currentTeam.name }}</div>
                 <div class="text-medium-emphasis text-center">
@@ -434,6 +454,8 @@ const handleTransferSuccess = () => {
               </div>
             </v-card-text>
           </v-card>
+
+      
 
           <!-- Actions rapides
       <v-card rounded="xl" elevation="0">
@@ -456,7 +478,42 @@ const handleTransferSuccess = () => {
       </v-col>
 
     </v-row>
-
+    <!-- <v-row :class="smAndDown ? 'my-16' : ''">
+      
+        
+        <v-col cols="12" md="12" class="pa-2" >
+          <div class="d-flex block " >
+        <v-card rounded="xl" elevation="0" class="pa-6 flex-grow-1">
+            <v-card-title class="text-h6 font-weight-medium pa-0">Soutenez le projet</v-card-title>
+            <v-icon icon="mdi-coffee" size="16" color="onBackground"
+              style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.050;" />
+            <v-card-text class="pa-0">
+              <div class="d-flex flex-column align-center">
+                <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
+                  <v-icon icon="mdi-coffee" size="32" color="remplacement"></v-icon>
+                </v-avatar>
+                
+                <div class="text-medium-emphasis text-center mb-4">
+                  Si vous appréciez mon travail, vous pouvez m'offrir un café pour me soutenir
+                </div>
+                <v-btn
+                  color="remplacement"
+                  variant="flat"
+                  rounded="lg"
+                  prepend-icon="mdi-coffee"
+                  style="  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
+      rgba(159, 159, 248, 0.22));"
+                  target="_blank"
+                  class="px-6"
+                >
+                  Offrir un café
+                </v-btn>
+              </div>
+            </v-card-text>
+          </v-card>
+        </div>
+        </v-col>
+    </v-row> -->
     <!-- Statistiques -->
     <!-- <v-row class="mt-4">
       <v-col cols="12" md="4">
@@ -525,5 +582,51 @@ const handleTransferSuccess = () => {
   -webkit-text-fill-color: transparent;
   text-fill-color: transparent;
   animation: animatedTextGradient 15s linear infinite;
+}
+
+.block {
+  position: relative;
+  z-index: 0;
+  overflow: visible !important;
+
+}
+
+.block:after,
+.block:before {
+  content: '';
+  position: absolute;
+  left: -1.5px;
+  top: -1.5px;
+  opacity: 0.81;
+  border-radius: 24px;
+  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
+      rgba(159, 159, 248, 0.22), #ffccdd);
+  background-size: 400%;
+  width: calc(100% + 3px);
+  height: calc(100% + 3px);
+  z-index: -1;
+  animation: steam 15s linear infinite;
+}
+
+@keyframes steam {
+  0% {
+    background-position: 0 0;
+  }
+
+  80% {
+    background-position: 400% 0;
+  }
+
+  100% {
+    background-position: 400% 0;
+  }
+}
+
+.block:after {
+  filter: blur(20px);
+}
+
+.block:before {
+  filter: blur(3px);
 }
 </style>

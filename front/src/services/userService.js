@@ -92,7 +92,6 @@ export const userService = {
    */
   async updateAvatar(userId, formData) {
     const authStore = useAuthStore();
-    console.log(formData);
     const response = await fetch(`${API_URL}/users/${userId}/avatar`, {
       method: 'POST',
       headers: {"Authorization": `Bearer ${authStore.accessToken}`},
@@ -187,5 +186,7 @@ export const userService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
-  }
+  },
+
+
 };

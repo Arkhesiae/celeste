@@ -167,8 +167,9 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  console.log("unmounted")
-  stopTimer();
+  if (timer.value) {
+    clearInterval(timer.value);
+  }
 });
 </script>
 

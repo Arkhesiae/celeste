@@ -36,7 +36,8 @@
 
           
           <PendingChip v-if="substitutionStore.hasOwnPendingDemand(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
-
+          <AccepterChip v-if="substitutionStore.hasAcceptedAsAccepter(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
+          <ConfirmationChip v-if="substitutionStore.hasAcceptedAsPoster(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
           <!-- <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" style="bottom:8px !important; right: 8px !important" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/> -->
 
 
@@ -52,7 +53,7 @@
               <div 
                 v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
                 class="indicator-dot remplacement "
-                style="background: rgb(var(--v-theme-remplacement)) !important"
+                style="background: rgb(var(--v-theme-remplacement)) !important" 
               ></div>
               <div 
                 v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
@@ -79,6 +80,7 @@
 import {defineProps, defineEmits} from 'vue';
 import StatusChip from './Chips/StatusChip.vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
+
 
 const substitutionStore = useSubstitutionStore();
 
@@ -153,7 +155,7 @@ const getShiftType = (date) => props.vacationsOfUser.get(date.toISOString())?.sh
 
 .today-center-highlight {
   color: rgb(var(--v-theme-primary)) !important;
-  border : 1px solid  rgb(var(--v-theme-primary))
+  border : 1px solid  rgba(var(--v-theme-primary), 0.15)
 }
 
 .isWorkDay {

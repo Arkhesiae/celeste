@@ -11,6 +11,7 @@ export const useRotationStore = defineStore('rotation', () => {
   const rotations = ref([]); // Liste des tours de service
   const sortedRotations = ref([]); // Liste des tours de service triés
   const activeRotation = ref(null); // Tour de service actif
+  const loading = ref(false);
 
   /**
    * Récupère les tours de service pour un centre spécifique.
@@ -18,8 +19,8 @@ export const useRotationStore = defineStore('rotation', () => {
    */
   const fetchRotations = async (centerId) => {
     try {
+      loading.value = true;
       const data = await rotationService.fetchRotations(centerId);
-      console.log(data);
       rotations.value = data.allRotations;
       sortedRotations.value = data.sortedRotations;
     } catch (error) {

@@ -35,30 +35,42 @@ onMounted(async () => {
 
 </script>
 
+
+
+
 <template>
 
-    <v-chip
- 
-      rounded="lg"
-      color="background"
-      variant="flat"
-      size="x-small"
-      style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-      class="text-caption font-weight-bold position-absolute px-2 overflow-visible d-flex align-center justify-center"
-    >
-      <v-icon color="error"  v-if="acceptedAsPoster.length > 1">mdi-alert-circle-outline</v-icon>
-      <v-icon color="permutation"  v-if="acceptedAsPoster.type === 'switch'">mdi-swap-horizontal-hidden</v-icon>
+  <v-chip
+
+    rounded="lg"
+    color="background"
+    variant="flat"
+    size="x-small"
+    style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+  >
+  <div class="mr-1">
+    <v-icon color="error"  v-if="acceptedAsPoster.length > 1">mdi-alert-circle-outline</v-icon>
+    <v-icon color="permutation"  v-if="acceptedAsPoster.type === 'switch'">mdi-swap-horizontal-hidden</v-icon>
       <v-icon color="remplacement"  v-if="acceptedAsPoster.type === 'substitution'">mdi-account-arrow-left</v-icon>
       <v-icon color="remplacement"  v-if="acceptedAsPoster.type === 'hybrid' && !acceptedAsPoster.accepterShift">mdi-account-arrow-left</v-icon>
       <v-icon color="permutation"  v-if="acceptedAsPoster.type === 'hybrid' && acceptedAsPoster.accepterShift">mdi-swap-horizontal</v-icon>
 
+  </div>
+    
+    
+    <div class="d-flex align-center justify-center">
       <div v-if="acceptedAsPoster" class="d-flex align-center justify-center">
+        <span class="mr-1">Remplacé par</span>
         <v-avatar size="x-small" class="" variant="tonal">
           <v-img v-if="accepterUser?.avatar" :src="`${API_URL}${accepterUser.avatar}`" alt="Avatar" />
           <span v-else class="text-caption font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ? `${accepterUser.name.charAt(0)}${accepterUser.lastName.charAt(0)}` : '?' }}</span>
         </v-avatar>
+        <span> {{ accepterUser ? `${accepterUser.name} ${accepterUser.lastName.charAt(0)}` : '?' }}</span>
+      
       </div>
-    
-    </v-chip>
+
+    </div>
+  </v-chip>
 
 </template>

@@ -52,14 +52,14 @@
 
 
       </v-slide-y-transition>
-      <v-row>
+      <!-- <v-row>
         <v-col cols="12" md="6">
           <v-card color="surfaceContainer" flat rounded="xl" class="pa-6" height="400px">aze</v-card>
         </v-col>
         <v-col cols="12" md="6">
           <v-card color="surfaceContainer" flat rounded="xl" class="pa-4" height="400px">aez</v-card>
         </v-col>
-      </v-row>
+      </v-row> -->
 
       <v-row :class="smAndDown ? 'px-2' : ''">
         <v-col cols="12" md="4">

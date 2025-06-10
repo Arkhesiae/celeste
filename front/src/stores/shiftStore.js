@@ -10,11 +10,9 @@ import { useAuthStore } from '@/stores/authStore';
  * - La gestion de la période de visualisation
  * - Le suivi des vacations adjacentes
  * 
- * @module vacationStore
+ * @module shiftStore
  */
 export const useShiftStore = defineStore('shift', () => {
-
-  const vacations = ref([]);
   const period = ref({
     startDate: null,
     endDate: null
@@ -26,43 +24,34 @@ export const useShiftStore = defineStore('shift', () => {
   const authStore = useAuthStore();
   const userId = computed(() => authStore.userId);
 
-
-  const hasVacationOnDate = computed(() => {
-    return (date) => {
-      if (!vacations.value?.length) return false;
-      return vacations.value.some(vacation => 
-        vacation.date === date
-      );
-    };
-  });
-
   const fetchShiftsWithSubstitutions = async (dates) => {
-    if (!userId.value) return;
+    if (!userId.value) {
+      return;
+    }
     
     loading.value = true;
     try {
       error.value = null;
       if (!dates) {
         if (period.value.startDate && period.value.endDate) {
-        dates = {
+          dates = {
             startDate: period.value.startDate,
             endDate: period.value.endDate
           };
         } else {
           let startDate = new Date();
-          let endDate = startDate.setMonth(startDate.getMonth() + 1);
+          let endDate = new Date(startDate);
+          endDate.setMonth(endDate.getMonth() + 1);
           dates = {
-            startDate: startDate,
-            endDate: endDate
+            startDate: startDate.toISOString(),
+            endDate: endDate.toISOString()
           };
         }
       }
 
-      console.log(dates);
-
       const fetchedShiftsWithSubstitutions = await vacationService.fetchVacationsOfUser(userId.value, dates);
       shiftsWithSubstitutions.value = fetchedShiftsWithSubstitutions;
-      console.log(shiftsWithSubstitutions.value);
+      
       period.value = {
         startDate: dates.startDate,
         endDate: dates.endDate
@@ -108,14 +97,11 @@ export const useShiftStore = defineStore('shift', () => {
 
   return {
     // State
-    vacations,
     period,
     loading,
     error,
     shiftsWithSubstitutions,
 
-    // Computed
-    hasVacationOnDate,
 
     // Actions
     fetchShiftsWithSubstitutions,

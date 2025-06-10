@@ -10,14 +10,14 @@ const teamStore = useTeamStore();
 const substitutionStore = useSubstitutionStore();
 const authStore = useAuthStore();
 const props = defineProps({
-  date : { type: Date, required: true },
+  date: {
+    type: Date,
+    required: true
+  },
   text: { type: String },
-
 });
 
 const type = ref('');
-
-
 
 const isTrueSwitch = computed(() => {
   if (substitutionStore.hasOwnPendingTrueSwitches(props.date.toISOString())) {
@@ -50,8 +50,6 @@ const hasMultiplePending = computed(() => {
   return pendingCount >= 2;
 });
 
-console.log(props.date)
-
 </script>
 
 <template>
@@ -77,9 +75,7 @@ console.log(props.date)
       <span v-if="isTrueSwitch">Demande de permutation</span>
       <span v-if="isTrueSubstitution">Demande de remplacement</span>
       <span v-if="isHybridSubstitution">Demande en cours</span>
-      <!-- <div  v-if=" isHybridSubstitution" class="d-flex justify-center align-center" style="position: absolute; top: 1px; right: -14px; height: 16px; width: 16px; background-color: rgba(var(--v-theme-permutation), 0.4); border-radius: 50%;">
-        <v-icon size="small" class="" color="permutation">mdi-plus</v-icon>
-      </div> -->
+
       <v-icon >mdi-chevron-right</v-icon>
     </v-chip>
 

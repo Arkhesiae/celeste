@@ -296,12 +296,17 @@ const cancelDemand = async (req, res) => {
         }
 
         
-        // Annuler la transaction associée si elle existe
+        // Annuler toutes les transactions associées à la demande
         if (demand.points > 0) {
-            const transaction = await Transaction.findOne({ request: demandId });
-            if (transaction) {
-                await cancelDelayedTransaction(transaction._id);
-            }
+            const transactions = await Transaction.find({ request: demandId });
+            await Promise.all(transactions.map(async (transaction) => {
+                try {
+                    await cancelDelayedTransaction(transaction._id);
+                } catch (error) {
+                    console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
+                    // On continue même si une transaction échoue à être annulée
+                }
+            }));
         }
 
 
@@ -593,12 +598,17 @@ const unacceptRequest = async (req, res) => {
             return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à annuler cette acceptation' });
         }
 
-        // Annuler la transaction associée si elle existe
+        // Annuler toutes les transactions associées à la demande
         if (request.points > 0) {
-            const transaction = await Transaction.findOne({ request: requestId });
-            if (transaction) {
-                await cancelDelayedTransaction(transaction._id);
-            }
+            const transactions = await Transaction.find({ request: requestId });
+            await Promise.all(transactions.map(async (transaction) => {
+                try {
+                    await cancelDelayedTransaction(transaction._id);
+                } catch (error) {
+                    console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
+                    // On continue même si une transaction échoue à être annulée
+                }
+            }));
         }
 
         // Mise à jour de la demande

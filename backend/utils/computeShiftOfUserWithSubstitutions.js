@@ -41,20 +41,27 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 }
 
                 const initialShift = await computeShiftOfTeam(date, team.teamId);
-
+                
                 // Vérifier les substitutions où l'utilisateur est impliqué
                 const substitutions = await Substitution.find({
-                    $or: [
-                        { posterId: userId },
-                        { accepterId: userId }
-                    ],
-                    status: 'accepted',
-                    deleted: false,
-                    $or: [
-                        { 'posterShift.date': date },
-                        { 'accepterShift.date': date }
+                    $and: [
+                        {
+                            $or: [
+                                { posterId: userId },
+                                { accepterId: userId }
+                            ]
+                        },
+                        {
+                            $or: [
+                                { 'posterShift.date': date },
+                                { 'accepterShift.date': date }
+                            ]
+                        },
+                        { status: 'accepted' },
+                        { deleted: false }
                     ]
                 }).sort({ createdAt: 1 }); // Tri par date de création croissante
+
 
                 // Si l'utilisateur a des substitutions acceptées pour cette date
                 if (substitutions.length > 0) {
@@ -106,7 +113,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                                     role: 'poster',
                                     substitutionId: substitution._id
                                 });
-                            } else {
+                            } else  {
                                 // L'utilisateur est le remplaçant, il prend le shift du poster
                                 currentShift = substitution.posterShift;
                                 currentTeam = await Team.findById(substitution.posterShift.teamId);

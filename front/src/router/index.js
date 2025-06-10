@@ -36,7 +36,6 @@ const transitionConfigs = {
 };
 
 router.beforeEach(async (to, from, next) => {
-  console.log(to.name);
   const authStore = useAuthStore();
   authStore.validateAccessToken(); // Important si asynchrone
 

@@ -134,11 +134,15 @@ const remplaDialog = ref(false);
 const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const loadingVacations = ref(false);
-const activeDrawer = ref({ show: false, type: null });
+const activeDrawer = ref({ show: false, type: 'substitutions' });
 const showCancelConfirmationDialog = ref(false);
 const showUnacceptConfirmationDialog = ref(false);
 const substitutionToCancel = ref(null);
 const substitutionToUnaccept = ref(null);
+
+const shiftsWithSubstitutions = computed(() => {
+  return shiftStore.shiftsWithSubstitutions;
+});
 
 const { mobile, smAndDown, mdAndDown } = useDisplay();
 const userId = computed(() => authStore.userId);
@@ -164,7 +168,8 @@ const rotationsMap = ref(new Map());
 // Computed properties
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
-  return {shift : vacationsOfUser.value.get(selectedDate.value).shift._id, teamObject : vacationsOfUser.value.get(selectedDate.value).teamObject};
+  console.log(vacationsOfUser.value.get(selectedDate.value));
+  return {shift : vacationsOfUser.value.get(selectedDate.value)?.shift?._id, teamObject : vacationsOfUser.value.get(selectedDate.value)?.teamObject};
 });
 
 const accepterName = computed(() => {
@@ -214,13 +219,13 @@ const onBottomSheetClose = (isOpen) => {
 
 const vacationsOfUser = computed(() => {
   const map = new Map();
-  if (shiftStore.shiftsWithSubstitutions.value) { 
-    shiftStore.shiftsWithSubstitutions.value.forEach(({ date, shift, teamObject }) => {
+  const shifts = shiftsWithSubstitutions.value;
+  console.log(shifts);
+  if (shifts && shifts.length > 0) { 
+    shifts.forEach(({ date, shift, teamObject }) => {
       map.set(date, { shift, teamObject });
     });
   }
-  console.log(shiftStore.shiftsWithSubstitutions.value);
-  console.log(map);
   return map;
 });
 
@@ -234,10 +239,8 @@ const getWorkdaysOfUser = async () => {
       endDate: flatArray[flatArray.length - 1].toISOString()
     }
     await shiftStore.fetchShiftsWithSubstitutions(dates);
-    console.log(shiftStore.shiftsWithSubstitutions.value);
   } catch (err) {
     snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-outline');
-    console.error('Erreur getWorkdaysOfUser:', err);
     throw err;
   } finally {
     loadingVacations.value = false;
@@ -304,7 +307,7 @@ const handleCancelDemand = async (substitutionId) => {
     }
     
     await substitutionStore.cancelDemand(substitutionId);
-    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check-circle-outline');
+    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check');
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'annulation de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
   }
@@ -313,7 +316,7 @@ const handleCancelDemand = async (substitutionId) => {
 const confirmCancelDemand = async () => {
   try {
     await substitutionStore.cancelDemand(substitutionToCancel.value._id);
-    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check-circle-outline');
+    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check');
     showCancelConfirmationDialog.value = false;
     substitutionToCancel.value = null;
   } catch (error) {
@@ -329,7 +332,7 @@ const handleUnacceptDemand = (substitutionId) => {
 const confirmUnacceptDemand = async () => {
   try {
     await substitutionStore.unacceptDemand(substitutionToUnaccept.value);
-    snackbarStore.showNotification('Acceptation annulée', 'onPrimary', 'mdi-check-circle-outline');
+    snackbarStore.showNotification('Acceptation annulée', 'onPrimary', 'mdi-check');
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'annulation de l\'acceptation', 'onError', 'mdi-alert-circle-outline');
   } finally {
@@ -360,13 +363,12 @@ onMounted(async () => {
 
     isLoading.value = true;
     await Promise.all([
-      userStore.fetchUsersOfCenter(),
-      teamStore.fetchCenterTeams(authStore.centerId),
+      
     
       getWorkdaysOfUser(),
       getAllSubstitutions(),
     ]);
-    snackbarStore.showNotification('Substitutions et vacations chargées !', 'onPrimary', 'mdi-check');
+    // snackbarStore.showNotification('Substitutions et vacations chargées !', 'onPrimary', 'mdi-check');
   } catch (err) {
     snackbarStore.showNotification('Erreur lors du chargement initial', 'error', 'mdi-alert-outline');
     console.error('Erreur onMounted:', err);

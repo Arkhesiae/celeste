@@ -29,8 +29,9 @@
               <v-icon>mdi-account-arrow-left-outline</v-icon>
               <span>Remplacé par {{ substituteUser }}</span>
             </v-chip> -->
+            <ConfirmationChipExtended v-if="substitutionStore.hasAcceptedAsPoster(new Date(selectedDate).toISOString())" style="top:12px !important; right:12px !important"  :date=" new Date(selectedDate)"/>
             <PendingChipExtended v-if="substitutionStore.hasOwnPendingDemand(new Date(selectedDate).toISOString())" style="top:12px !important; right:12px !important"  :date=" new Date(selectedDate)"/>
-     
+            <AccepterChipExtended v-if="substitutionStore.hasAcceptedAsAccepter(new Date(selectedDate).toISOString())" style="top:12px !important; right:12px !important"  :date=" new Date(selectedDate)"/>
           </div>
         </template>
       </v-card-item>
@@ -79,7 +80,7 @@
     </div>
 
     <div class="d-flex align-center justify-center mb-4"
-      v-if="!substitutionStore.hasOwnPendingDemand(selectedDate)">
+      v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)">
       <v-btn height="60px" color="permutation" text-color="permutation"
         class="flex-1-1 d-flex flex-column rounded-ts-xl rounded-bs-xl mr-1 text-none " :disabled="isRestDay || inPast"
         :class="{ 'opacity-10': isRestDay || inPast }" flat rounded="lg" @click="$emit('openRemplaDialog', 'switch')">
@@ -99,10 +100,18 @@
     </div>
 
     <div class="d-flex align-center justify-center mb-4"
-      v-if="substitutionStore.hasOwnPendingDemand(selectedDate)">
+      v-if="substitutionStore.hasOwnPendingDemand(selectedDate) ">
       <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
         class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
         Annuler ma demande
+      </v-btn>
+    </div>
+
+    <div class="d-flex align-center justify-center mb-4"
+      v-if=" substitutionStore.hasAcceptedAsPoster(selectedDate)">
+      <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
+        class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
+        Annuler 
       </v-btn>
     </div>
 
@@ -218,9 +227,10 @@ const getShiftHours = computed(() => {
 });
 
 const substitutionId = computed(() => {
-  const openSubstitution = substitutionStore.hasOwnOpenSubstitutions(props.selectedDate);
-  const acceptedSubstitution = substitutionStore.hasAcceptedSubstitutionsAsPoster(props.selectedDate);
-  return openSubstitution ? openSubstitution._id : acceptedSubstitution ? acceptedSubstitution._id : null;
+  const ownPendingDemand = substitutionStore.findOwnPendingDemand(props.selectedDate);
+  if (ownPendingDemand) return ownPendingDemand._id;
+  const acceptedAsPoster = substitutionStore.findAcceptedAsPoster(props.selectedDate);
+  if (acceptedAsPoster) return acceptedAsPoster._id;
 });
 
 const getShiftTeam = computed(() => {

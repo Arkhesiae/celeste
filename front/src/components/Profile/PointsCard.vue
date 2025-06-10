@@ -135,9 +135,9 @@ const formatDate = (dateString) => {
 
 onMounted(() => {
   
-  pointStore.fetchUserPoints();
+  // pointStore.fetchUserPoints();
   try {
-    pointStore.fetchTransactions();
+    // pointStore.fetchTransactions();
   } catch (error) {
     console.error('Erreur lors de la récupération des transactions:', error);
   }

@@ -47,8 +47,11 @@
                       <div class="text-caption text-medium-emphasis">{{ transaction.effectiveDate ? transaction.effectiveDate : transaction.date }}</div>
                     </div>
                   </div>
-
-                  <div :class="{
+                  <div v-if="transaction.status === 'cancelled'">
+                    <span class="text-caption text-medium-emphasis mr-2">Annulée</span>
+                    <v-icon color="error" class="mr-2">mdi-close-circle-outline</v-icon>
+                  </div>
+                  <div v-else :class="{
                     'text-green': transaction.flow === 'received',
                     'text-red': transaction.flow === 'sent'
                   }">

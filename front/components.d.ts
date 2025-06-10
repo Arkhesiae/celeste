@@ -8,6 +8,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AccepterChip: typeof import('./src/components/Calendar/Chips/AccepterChip.vue')['default']
+    AccepterChipExtended: typeof import('./src/components/Calendar/Chips/AccepterChipExtended.vue')['default']
     ActivateWorkshift: typeof import('./src/components/Workshifts/Dialogs/ActivateWorkshift.vue')['default']
     AddOrEditDay: typeof import('./src/components/Workshifts/Dialogs/AddOrEditDay.vue')['default']
     AddSubstitutionForm: typeof import('./src/components/Dialogs/AddSubstitutionForm.vue')['default']
@@ -22,6 +23,7 @@ declare module 'vue' {
     CallendarBottomSheet: typeof import('./src/components/Calendar/CallendarBottomSheet.vue')['default']
     CentersComponent: typeof import('./src/components/Centers/CentersComponent.vue')['default']
     ConfirmationChip: typeof import('./src/components/Calendar/Chips/ConfirmationChip.vue')['default']
+    ConfirmationChipExtended: typeof import('./src/components/Calendar/Chips/ConfirmationChipExtended.vue')['default']
     ConfirmationDialog: typeof import('./src/components/common/ConfirmationDialog.vue')['default']
     ContactAdminForm: typeof import('./src/components/Forms/ContactAdminForm.vue')['default']
     copy: typeof import('./src/components/Calendar/Chips/AccepterChip.vue')['default']

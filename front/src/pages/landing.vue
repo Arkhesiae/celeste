@@ -301,6 +301,28 @@ onUnmounted(() => {
 
 const targetNumber = 500;
 
+onMounted(() => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, {
+    threshold: 0.1
+  });
+
+  const buttonSection = document.querySelector('.button-section');
+  if (buttonSection) {
+    observer.observe(buttonSection);
+  }
+
+  const statsSection = document.querySelector('.stats-section');
+  if (statsSection) {
+    observer.observe(statsSection);
+  }
+});
+
 </script>
 
 <style scoped>

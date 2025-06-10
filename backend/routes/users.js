@@ -82,7 +82,7 @@ router.post('/:id/avatar', verifyToken, upload.single('avatar'), updateAvatar);
 router.post('/update-email', verifyToken, updateEmail);
 
 // Routes pour la gestion des utilisateurs (admin/master admin)
-router.get('/', verifyToken, isMasterAdmin, getAllUsers);
+router.get('/', verifyToken,  getAllUsers);
 router.get('/:id', verifyToken, isUserOrAdmin, getUserById);
 router.post('/pending/:id/approve', verifyToken, isAdmin, approveUser);
 router.delete('/pending/:id', verifyToken, isAdmin, deletePendingUser);

@@ -29,7 +29,13 @@ onMounted(async () => {
 </script>
 
 <style>
-
+/* Remove chrome autofill color from inputs */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 50000000000s ease-in-out 0s;
+}
 
 
 /* Add this to your main CSS file or in the <style> section of your main Vue component */

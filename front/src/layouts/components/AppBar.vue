@@ -145,7 +145,7 @@
                     </div>
                   </div>
                   <div class="d-flex align-center">
-                    <v-icon color="onPrimary" icon="mdi-account-group"></v-icon>
+                    <v-icon color="onPrimary" icon="mdi-crowd"></v-icon>
                     <v-list-item-title class="text-subtitle-1 font-weight-bold ml-2">Équipe</v-list-item-title>
                     <v-list-item-subtitle class="ml-2"> {{' '+ currentTeam?.name || 'Non assigné' }} {{ currentTeam?.type === 'Renfort' ?
                       '(Renfort)' : '' }}</v-list-item-subtitle>

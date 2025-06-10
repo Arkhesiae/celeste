@@ -12,19 +12,26 @@
       </v-card-title>
       <template #append>
         <div class="d-flex align-center">
-          <div>
+          <div class="mr-2">
             <span v-if="!smAndDown" class="text-medium-emphasis font-weight-bold text-caption me-2">
-            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
-          </span>
-          <v-avatar 
-            :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
-            size="x-small"
-            class="cursor-pointer"
-            @click="showUserDialog = true"></v-avatar>
+              {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+            </span>
+            <v-avatar
+              :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
+              size="x-small" class="cursor-pointer" @click="showUserDialog = true"></v-avatar>
           </div>
-      
 
-          <v-chip v-if="demand?.comment" class="ms-2 text-medium-emphasis " size="small" rounded="pill" color="onBackground" variant="tonal">
+          <div class="d-flex align-center">
+
+            <v-chip color="onBackground" variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
+              class="font-weight-bold">
+              {{ 10 }}
+
+            </v-chip>
+
+          </div>
+          <v-chip v-if="demand?.comment" class="ms-2 text-medium-emphasis " size="small" rounded="pill"
+            color="remplacement" variant="flat" @click="showCommentDialog = true" style="cursor: pointer"  >
             <v-icon>mdi-comment-outline</v-icon>
           </v-chip>
           <v-chip class="ms-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
@@ -40,7 +47,7 @@
 
     <v-divider color="primary" opacity="0.01" class="my-0"></v-divider>
 
-    <v-card  color="surfaceContainerHigh" variant="flat" class="mb-0 card-shadow card-radius-16" elevation="0"
+    <v-card color="surfaceContainerHigh" variant="flat" class="mb-0 card-shadow card-radius-16" elevation="0"
       @click="isExpanded = !isExpanded">
       <v-card-item>
         <div class="d-flex align-start ">
@@ -60,7 +67,7 @@
 
       </v-card-item>
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
-     
+
         <v-chip v-if="demand?.type === 'switch'" color="permutation" variant="flat" size="small" rounded="lg"
           prepend-icon="mdi-swap-horizontal">
           Permutation
@@ -95,7 +102,8 @@
           <div v-if="demand?.limit?.length > 0">
 
 
-            <v-chip v-if="smAndDown" rounded="lg" variant="tonal" color="error" size="small" @click="showLimitsDialog = true">
+            <v-chip v-if="smAndDown" rounded="lg" variant="tonal" color="error" size="small"
+              @click="showLimitsDialog = true">
               <v-icon>mdi-alert-circle-outline</v-icon>
             </v-chip>
             <v-chip v-else v-for="limit in demand?.limit" rounded="lg" variant="tonal" color="error" size="small">
@@ -110,7 +118,8 @@
               </div>
             </v-chip>
           </div>
-          <v-chip rounded="lg" variant="tonal" v-if="(demand?.type === 'switch' || demand?.type === 'hybrid') && !smAndDown"
+          <v-chip rounded="lg" variant="tonal"
+            v-if="(demand?.type === 'switch' || demand?.type === 'hybrid') && !smAndDown"
             :color="demand?.canSwitch ? 'permutation' : 'error'" size="small">
             {{ demand?.canSwitch ? 'Peut permuter' : 'Ne peut pas permuter' }}
           </v-chip>
@@ -130,18 +139,16 @@
               Remplacer
             </v-btn>
             <div v-if="demand?.status === 'open' && (demand?.type === 'hybrid' || demand?.type === 'switch')">
-              <v-btn v-if="demand?.canSwitch"
-              rounded="xl" color="permutation" size="small" :slim="true" variant="flat"
-              prepend-icon="mdi-swap-horizontal" @click="handleSwap" :loading="loading.accept">
-              Permuter
-            </v-btn>
-            <v-btn v-else
-              rounded="xl" color="error"  size="small" :slim="true" variant="tonal"
-              prepend-icon="mdi-cancel" @click="handleSwap" :loading="loading.accept">
-              Permuter
-            </v-btn>
+              <v-btn v-if="demand?.canSwitch" rounded="xl" color="permutation" size="small" :slim="true" variant="flat"
+                prepend-icon="mdi-swap-horizontal" @click="handleSwap" :loading="loading.accept">
+                Permuter
+              </v-btn>
+              <v-btn v-else rounded="xl" color="error" size="small" :slim="true" variant="tonal"
+                prepend-icon="mdi-cancel" @click="handleSwap" :loading="loading.accept">
+                Permuter
+              </v-btn>
             </div>
-       
+
 
           </div>
 
@@ -168,7 +175,7 @@
           </p>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationDialog = false" >
+          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationDialog = false">
             Annuler
           </v-btn>
           <v-spacer></v-spacer>
@@ -195,12 +202,11 @@
           </p>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationSwapDialog = false" >
+          <v-btn color="secondary" variant="text" rounded="xl" @click="showConfirmationSwapDialog = false">
             Annuler
           </v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="permutation" variant="tonal" rounded="xl" @click="handleConfirmSwap"
-            :loading="loading.accept">
+          <v-btn color="permutation" variant="tonal" rounded="xl" @click="handleConfirmSwap" :loading="loading.accept">
             Permuter
           </v-btn>
         </v-card-actions>
@@ -216,7 +222,6 @@
           <template #prepend>
             <v-avatar
               :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
-              
               class="me-3"></v-avatar>
           </template>
           <v-card-title class="text-h6 pa-0">
@@ -226,7 +231,7 @@
             {{ getUserById(demand?.posterId)?.email }}
           </v-card-subtitle>
         </v-card-item>
-  
+
       </v-card>
     </v-dialog>
 
@@ -278,6 +283,24 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+      <!-- Dialog pour afficher le commentaire -->
+  <v-dialog v-model="showCommentDialog" max-width="500px" >
+    <v-card class="pa-6" rounded="xl">
+      <v-card-title class="text-h6 pa-0" >
+        Commentaire de {{ demand?.posterShift?.name }}
+      </v-card-title>
+      <v-card-text class="pa-0">
+        {{ demand?.comment }}
+      </v-card-text>
+      <v-card-actions class="pa-0">
+        <v-spacer></v-spacer>
+        <v-btn color="primary" variant="text" @click="showCommentDialog = false">
+          Fermer
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
   </v-card>
 </template>
 
@@ -366,7 +389,7 @@ const handleConfirmAccept = async () => {
   loading.value.accept = true
   try {
     await substitutionStore.acceptDemand(props.demand._id)
-    snackbarStore.showNotification('Remplacement accepté avec succès', "onPrimary", "mdi-check-circle-outline")
+    snackbarStore.showNotification('Remplacement accepté', "onPrimary", "mdi-check")
     showConfirmationDialog.value = false
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'acceptation du remplacement : ' + error.message, 'onError', "mdi-alert-circle-outline")
@@ -408,9 +431,9 @@ const handleInterest = async () => {
   try {
     const response = await substitutionStore.markInterest(props.demand._id)
     if (response.message === 'Interest added') {
-      snackbarStore.showNotification('Intérêt marqué', "onPrimary", "mdi-check-circle-outline")
+      snackbarStore.showNotification('Intérêt marqué', "onPrimary", "mdi-check")
     } else {
-      snackbarStore.showNotification('Intérêt retiré', "onPrimary", "mdi-check-circle-outline")
+      snackbarStore.showNotification('Intérêt retiré', "onPrimary", "mdi-check")
     }
   } catch (error) {
     snackbarStore.showNotification('Erreur lors du marquage de l\'intérêt : ' + error.message, 'onError', "mdi-alert-circle-outline")
@@ -448,6 +471,7 @@ const getTeamName = computed(() => {
 const isExpanded = ref(false)
 const showUserDialog = ref(false)
 const showLimitsDialog = ref(false)
+const showCommentDialog = ref(false)
 </script>
 
 <style scoped>

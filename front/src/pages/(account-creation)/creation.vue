@@ -547,7 +547,7 @@ const handleCreateAccount = async () => {
     // Si la création du compte réussit, passer à l'étape 8 (confirmation)
     setTimeout(() => {
       step.value = 8;
-      console.log("Compte créé avec succès!", "success");
+    
     }, 1000);
   } catch (error) {
     snackbarStore.showNotification(

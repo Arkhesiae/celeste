@@ -187,9 +187,7 @@ const filterAndSortDemands = (demands) => {
   // Tri
   if (sortBy.value) {
     filteredDemands.sort((a, b) => {
-      console.log(sortBy.value  );
       if (sortBy.value.value === 'date') {
-        console.log(new Date(a.posterShift.date) - new Date(b.posterShift.date));
         return new Date(a.posterShift.date) - new Date(b.posterShift.date);
       }
       if (sortBy.value.value === 'shift.name') {
@@ -201,8 +199,6 @@ const filterAndSortDemands = (demands) => {
       return 0;
     });
   }
-
-  console.log(filteredDemands);
 
   return filteredDemands;
 };
@@ -218,6 +214,14 @@ const filteredSwitches = computed(() =>
 const filteredOthers = computed(() => 
   filterAndSortDemands(substitutionStore.otherDemands)
 );
+
+const sortedDemands = computed(() => {
+  const sorted = [...filteredSubstitutions.value];
+  if (sortBy.value === 'date') {
+    return sorted.sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
+  }
+  return sorted;
+});
 
 // Méthodes
 const fetchUserShift = async () => {

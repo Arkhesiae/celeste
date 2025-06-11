@@ -42,6 +42,9 @@ require('dotenv').config({
   // Middleware
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+  // Serve the .well-known/acme-challenge directory for Certbot validation
+app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '/var/www/certbot/.well-known/acme-challenge')));
   
   // Fichiers statiques
   app.use('/api/avatars', express.static(path.join(__dirname, '/public/avatars')));

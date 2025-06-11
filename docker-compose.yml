@@ -8,7 +8,7 @@ services:
       - 80:3000
     volumes:
       - ../celeste-server/server_data:/app/public/avatars
-      - ../celeste-server/server_data:/app/public/.well-known/acme-challenge
+      - ../celeste-server/server_data/.well-known/acme-challenge:/app/public/.well-known/acme-challenge
     depends_on:
       - database
     environment:

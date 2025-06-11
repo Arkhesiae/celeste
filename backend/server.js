@@ -45,7 +45,7 @@ require('dotenv').config({
 
 
 // Serve ACME challenge path first (before SPA route)
-app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, 'public/.well-known/acme-challenge')));
+app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, '/public/.well-known/acme-challenge')))
   
   // Fichiers statiques
   app.use('/api/avatars', express.static(path.join(__dirname, '/public/avatars')));

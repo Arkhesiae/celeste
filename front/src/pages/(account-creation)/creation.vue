@@ -51,6 +51,15 @@
                     :error-messages="stepErrors[1]"
                     @update:modelValue="onCenterSelect"
                   />
+                  <v-radio-group 
+                    inline
+                    
+                    v-model="user.zone"
+                    @update:modelValue="validateStep(5)"
+                  >
+                    <v-radio label="Est" value="east"></v-radio>
+                    <v-radio label="Ouest" value="west"></v-radio>
+                  </v-radio-group>
                   <span class="text-caption text-grey-darken-1">
                     Vous ne trouvez pas votre organisme dans la liste ?
                   </span>
@@ -151,13 +160,7 @@
                     :item-props="itemProps"
                     @update:modelValue="validateStep(5)"
                   />
-                  <v-radio-group
-                    v-model="user.zone"
-                    @update:modelValue="validateStep(5)"
-                  >
-                    <v-radio label="Est" value="east"></v-radio>
-                    <v-radio label="Ouest" value="west"></v-radio>
-                  </v-radio-group>
+                
                 </v-window-item>
 
                 <!-- Étape 6: Données -->

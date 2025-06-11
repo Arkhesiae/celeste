@@ -26,7 +26,11 @@ require('dotenv').config({
   require('./cron/processTransactions');
   require('./cron/processDemands');
   const { createAdmin } = require('./utils/seedAdmin');
-  
+  console.log(process.env.EMAIL_HOST);
+
+  console.log(process.env.SMTP_USERNAME);
+  console.log(process.env.SMTP_PASSWORD);
+
   // CORS
   app.use(cors({
     origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249', 'http://celeste-app.fr'],

@@ -34,7 +34,7 @@
               <v-window-item :value="1">
                 <v-text-field color="tertiary" variant="outlined" label="Adresse e-mail" type="email"
                   rounded="xl" v-model="email" :rules="[rules.required, rules.email]" :error-messages="emailError"
-                  :loading="isCheckingEmail" required class="mobile-input mt-2" @blur="checkEmailExists"
+                  :loading="isCheckingEmail" required class="mobile-input mt-2" 
                   @input="emailError = ''" @keyup.enter="tryGoToStep2" />
               </v-window-item>
 
@@ -99,7 +99,7 @@
 
                 <v-btn v-if="currentStep === 1" class="my-2 px-4" variant="flat" rounded="lg" color="onBackground"
                   append-icon="mdi-arrow-right" :class="smAndDown ? 'login-button-mobile' : 'login-button'"
-                  :disabled="!validStep1 || loggingIn" :loading="loggingIn" type="button" @click="tryGoToStep2">
+                   :loading="loggingIn" type="button" @click="tryGoToStep2">
                   Continuer
                 </v-btn>
 

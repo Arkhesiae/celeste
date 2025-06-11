@@ -159,11 +159,11 @@ onMounted(() => {
 
 .points-card-mobile {
  
-  background: linear-gradient(180deg, 
+  /* background: linear-gradient(180deg, 
     rgba(255, 255, 255, 0) 0%,
     rgba(var(--v-theme-surface), 0.4) 15%,
     rgba(var(--v-theme-surface), 0.9) 100%
-  );
+  ); */
   /* border: 2px solid rgba(0, 0, 0, 0.027); */
   backdrop-filter: blur(10px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1);

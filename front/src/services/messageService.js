@@ -1,55 +1,36 @@
-import { API_URL } from '@/config/api';
-
+import { API_URL, handleResponse, getAuthHeaders } from '@/config/api';
 
 export const messageService = {
   async fetchMessages() {
     const response = await fetch(`${API_URL}/messages`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Erreur lors de la récupération des messages');
-    const data = await response.json();
-  
+    return handleResponse(response);
   },
 
-  async createMessage(message) {
+  async createMessage(messageData) {
     const response = await fetch(`${API_URL}/messages`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify(message.toJSON())
+      headers: getAuthHeaders(),
+      body: JSON.stringify(messageData)
     });
-    if (!response.ok) throw new Error('Erreur lors de la création du message');
-    const data = await response.json();
-   
+    return handleResponse(response);
   },
 
   async markAsRead(messageId) {
     const response = await fetch(`${API_URL}/messages/${messageId}/read`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Erreur lors du marquage du message comme lu');
-    const data = await response.json();
- 
+    return handleResponse(response);
   },
 
   async deleteMessage(messageId) {
     const response = await fetch(`${API_URL}/messages/${messageId}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
+      headers: getAuthHeaders()
     });
-    if (!response.ok) throw new Error('Erreur lors de la suppression du message');
-    return true;
+    return handleResponse(response);
   }
 }; 

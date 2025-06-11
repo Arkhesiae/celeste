@@ -199,7 +199,7 @@
         </v-card>
 
 
-        <v-card rounded="xl" elevation="0" class="pa-4 pb-16"
+        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16' : ''"
           :color="smAndDown ? 'onBackground' : 'surfaceContainer'">
 
 

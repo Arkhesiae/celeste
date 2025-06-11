@@ -20,7 +20,7 @@ defineOptions({
       </div>
     </div>
 
-    <v-row justify="">
+    <v-row >
       <v-col cols="12" md="8" lg="6">
         <v-slide-y-transition appear>
           <ContactAdminForm />
@@ -31,7 +31,5 @@ defineOptions({
 </template>
 
 <style scoped>
-.v-container {
-  min-height: 100vh;
-}
+
 </style> 

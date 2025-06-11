@@ -59,8 +59,8 @@
             @click="router.push({ path : '/messages' })"
           >
             <v-badge
-              :content="messageStore.unreadCount"
-              :model-value="messageStore.unreadCount > 0"
+              :content="messageStore.messages.length"
+              :model-value="messageStore.messages.length > 0"
               color="error"
             >
               <v-icon>mdi-message-text</v-icon>

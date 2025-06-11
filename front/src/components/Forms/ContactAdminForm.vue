@@ -59,14 +59,27 @@
         ></v-select>
 
         <v-text-field
-          v-model="formData.subject"
-          label="Sujet"
-          :rules="[v => !!v || 'Le sujet est requis']"
+          v-model="formData.email"
+          label="Email"
+          :rules="[v => !!v || 'L\'email est requis']"
           required
           variant="outlined"
           rounded="xl"
           class="mb-4"
         ></v-text-field>
+
+        <v-text-field
+          v-model="formData.subject"
+          label="Sujet"
+          :rules="[v => !!v || 'Le sujet est requis']"
+          required
+          variant="solo-filled"
+          flat
+          rounded="xl"
+          class="mb-4"
+        ></v-text-field>
+
+  
 
         <v-textarea
           v-model="formData.message"
@@ -100,9 +113,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useUserStore } from '@/stores/userStore';
+import { messageService } from '@/services/messageService';
 
 const props = defineProps({
   admins: {
@@ -142,6 +156,7 @@ const formData = reactive({
   adminId: '',
   type: '',
   subject: '',
+  email: '',
   message: ''
 });
 
@@ -150,12 +165,23 @@ const handleSubmit = async () => {
 
   loading.value = true;
   try {
-    // TODO: Implémenter l'appel API pour envoyer le message
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulation d'appel API
-    snackbarStore.showNotification('Message envoyé avec succès !', 'success', 'mdi-check-circle');
+    await messageService.createMessage({
+      adminId: formData.adminId,
+      type: formData.type,
+      subject: formData.subject,
+      email: formData.email,
+      message: formData.message
+    });
+    
+    snackbarStore.showNotification('Message envoyé avec succès !', 'onPrimary', 'mdi-email-fast-outline');
     resetForm();
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'envoi du message', 'error', 'mdi-alert-circle');
+    console.error('Erreur lors de l\'envoi du message:', error);
+    snackbarStore.showNotification(
+      error.message || 'Erreur lors de l\'envoi du message',
+      'error',
+      'mdi-alert-circle'
+    );
   } finally {
     loading.value = false;
   }
@@ -165,6 +191,7 @@ const resetForm = () => {
   formData.adminId = '';
   formData.type = '';
   formData.subject = '';
+  formData.email = '';
   formData.message = '';
   form.value.reset();
 };

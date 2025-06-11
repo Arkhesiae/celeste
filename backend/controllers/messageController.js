@@ -1,13 +1,9 @@
 const Message = require('../models/Message');
-const { isMasterAdmin } = require('../middleware/authMiddleware');
+const User = require('../models/User');
 
 // Récupérer tous les messages
 exports.getMessages = async (req, res) => {
   try {
-    if (!isMasterAdmin(req.user)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
-
     const messages = await Message.find()
       .sort({ createdAt: -1 })
       .populate('senderId', 'name email')
@@ -23,21 +19,31 @@ exports.getMessages = async (req, res) => {
 // Créer un nouveau message
 exports.createMessage = async (req, res) => {
   try {
-    if (!isMasterAdmin(req.user)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
+    const { adminId, type, subject, email, message } = req.body;
 
-    const { title, content, receiverId } = req.body;
-    const message = new Message({
-      title,
-      content,
-      senderId: req.user._id,
-      receiverId
+    // Trouver l'administrateur destinataire
+    const receiver = await User.findOne({ 
+      isAdmin: true,
+      adminType: adminId === 'master' ? 'master' : 'local'
     });
 
-    await message.save();
+    if (!receiver) {
+      return res.status(404).json({ message: 'Administrateur non trouvé' });
+    }
+
+    const newMessage = new Message({
+      title: subject,
+      content: message,
+      type,
+      senderEmail: email,
+      senderId: req.user?._id || null, // Peut être null si l'utilisateur n'est pas connecté
+      receiverId: receiver._id,
+      isRead: false
+    });
+
+    await newMessage.save();
     
-    const populatedMessage = await Message.findById(message._id)
+    const populatedMessage = await Message.findById(newMessage._id)
       .populate('senderId', 'name email')
       .populate('receiverId', 'name email');
 
@@ -57,10 +63,6 @@ exports.markAsRead = async (req, res) => {
       return res.status(404).json({ message: 'Message non trouvé' });
     }
 
-    if (!isMasterAdmin(req.user) && message.receiverId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
-
     message.isRead = true;
     await message.save();
 
@@ -78,10 +80,6 @@ exports.markAsRead = async (req, res) => {
 // Supprimer un message
 exports.deleteMessage = async (req, res) => {
   try {
-    if (!isMasterAdmin(req.user)) {
-      return res.status(403).json({ message: 'Accès non autorisé' });
-    }
-
     const message = await Message.findById(req.params.id);
     
     if (!message) {

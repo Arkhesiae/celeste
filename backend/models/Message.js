@@ -11,10 +11,20 @@ const messageSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  type: {
+    type: String,
+    enum: ['assistance', 'review', 'other'],
+    required: true
+  },
+  senderEmail: {
+    type: String,
+    required: true,
+    trim: true
+  },
   senderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null
   },
   receiverId: {
     type: mongoose.Schema.Types.ObjectId,

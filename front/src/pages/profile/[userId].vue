@@ -71,7 +71,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" md="4">
-          <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80" to="/service" link flat>
+          <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80" @click="router.push('/rotation')" link flat>
             <div class="d-flex align-center justify-space-between h-100">
               <span class="text-onBackground text-h6">Tour de service</span>
               <v-icon color="onBackground">mdi-chevron-right</v-icon>
@@ -122,7 +122,10 @@ import TransferDialog from '@/components/Profile/TransferDialog.vue';
 import PointsCard from '@/components/Profile/PointsCard.vue';
 import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue';
 import { API_URL } from '@/config/api';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+  
 const { smAndDown } = useDisplay();
 const teamStore = useTeamStore();
 const authStore = useAuthStore();

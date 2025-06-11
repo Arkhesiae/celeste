@@ -50,10 +50,8 @@ export const useMessageStore = defineStore('message', () => {
   async function markAsRead(messageId) {
     try {
       const updatedMessage = await messageService.markAsRead(messageId);
-      const index = messages.value.findIndex(msg => msg.id === messageId);
-      if (index !== -1) {
-        messages.value[index] = updatedMessage;
-      }
+      await fetchMessages();
+     
       error.value = null;
     } catch (err) {
       error.value = err.message;
@@ -64,7 +62,8 @@ export const useMessageStore = defineStore('message', () => {
   async function deleteMessage(messageId) {
     try {
       await messageService.deleteMessage(messageId);
-      messages.value = messages.value.filter(msg => msg.id !== messageId);
+     
+      await fetchMessages();
       error.value = null;
     } catch (err) {
       error.value = err.message;

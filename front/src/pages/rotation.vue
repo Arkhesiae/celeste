@@ -312,8 +312,8 @@ onMounted(async () => {
 }
 
 :deep(.v-fab__container) {
-  margin-right: 24px !important;
-  margin-bottom: 24px !important;
+  margin-right: 16px !important;
+  margin-bottom: 96px !important;
 }
 
 .timeline-drawer {

@@ -97,6 +97,15 @@ export function useAppInitialization() {
     if (onProgress) onProgress('personal');
   };
 
+  const initializeMessages = async (onProgress) => {
+    if (!authStore.isAdmin) return;
+
+    initializationStore.currentlyLoading = 'messages';
+    await messageStore.fetchMessages();
+    initializationStore.updateInitializationState('messages', true);
+    if (onProgress) onProgress('messages');
+  };
+
   const initializeApp = async (onProgress) => {
     try {
       initializationStore.setLoading(true);
@@ -110,6 +119,7 @@ export function useAppInitialization() {
         await initializeShiftsAndSubstitutions(onProgress);
         await initializeRotations(onProgress);
         await initializePersonalData(onProgress);
+        await initializeMessages(onProgress);
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de l\'application:', error);

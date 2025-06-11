@@ -98,7 +98,7 @@
         </v-col>
       </v-fade-transition>
     </v-row>
-
+<!-- 
     <v-row class="px-4 mt-16 d-flex align-content-stretch">
       <v-col cols="12" md="12">
         <v-card flat height="100%" rounded="xl" class="flex-column d-flex pa-8">
@@ -108,7 +108,7 @@
           <span class="text-caption text-medium-emphasis"></span>
         </v-card>
       </v-col>
-    </v-row>
+    </v-row> -->
   </v-container>
 </template>
 
@@ -249,9 +249,9 @@ const setupStatsObserver = async () => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         console.log("ae")
-        startAnimation(500, animatedNumber, 'controllers');
-        startAnimation(10, animatedCenters, 'centers');
-        startAnimation(2000, animatedReplacements, 'replacements');
+        startAnimation(999, animatedNumber, 'controllers');
+        startAnimation(999, animatedCenters, 'centers');
+        startAnimation(999, animatedReplacements, 'replacements');
       } else {
         animatedNumber.value = 0;
         animatedCenters.value = 0;

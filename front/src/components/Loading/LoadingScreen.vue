@@ -18,6 +18,13 @@
 
           <span class="text-caption text-medium-emphasis mb-4">{{ initializationStore.currentlyLoading }}</span>
 
+          <v-progress-linear
+            indeterminate
+            color="remplacement"
+            height="4"
+            class="mt-4"
+          ></v-progress-linear>
+
           <!-- <v-list bg-color="transparent" class="mb-4 d-flex flex-column gap-0 justify-start align-center">
             <v-list-item v-for="(item, index) in loadingItems" :key="index" class="justify-start d-flex align-center">
               <template v-slot:prepend>

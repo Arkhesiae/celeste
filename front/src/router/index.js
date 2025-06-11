@@ -36,6 +36,10 @@ const transitionConfigs = {
 };
 
 router.beforeEach(async (to, from, next) => {
+
+  if (to.path.startsWith('/.well-known/acme-challenge/')) {
+    return next(); // Let the request through without redirection
+  }
   const authStore = useAuthStore();
   authStore.validateAccessToken(); // Important si asynchrone
 

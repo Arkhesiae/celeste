@@ -66,7 +66,7 @@
                   <a
                     class="text-caption d-flex align-center text-remplacement"
                     style="color: #85cde8; text-decoration: none; cursor: pointer"
-                    @click="showSidePanel('contact')"
+                    @click="router.push('/contact-admin')"
                   >
                     Contacter un administrateur
                     <v-icon>mdi-chevron-right</v-icon>
@@ -333,8 +333,8 @@
           <div v-else-if="activeSidePanel === 'privacy'" class="privacy-content">
             <p class="text-h5 font-weight-bold mb-4">Utilisation des données</p>
 
-            <v-expansion-panels variant="accordion" rounded="xl" color="background" flat bg-color="background">
-              <v-expansion-panel >
+            <v-expansion-panels variant="accordion" rounded="xl" color="surfaceContainerHigh" flat bg-color="surfaceContainerHigh" class="pa-6">
+              <v-expansion-panel  >
                 <v-expansion-panel-title>Quelles données sont collectées ?</v-expansion-panel-title>
                 <v-expansion-panel-text class="text-caption text-medium-emphasis" >
                   <p>CELESTE collecte uniquement les données nécessaires au bon fonctionnement du service :</p>
@@ -373,20 +373,7 @@
                 </v-expansion-panel-text>
               </v-expansion-panel>
 
-              <v-expansion-panel>
-                <v-expansion-panel-title>Vos droits concernant vos données</v-expansion-panel-title>
-                <v-expansion-panel-text class="text-caption text-medium-emphasis">
-                  <p>Conformément au RGPD, vous disposez des droits suivants :</p>
-                  <ul>
-                    <li>Droit d'accès à vos données</li>
-                    <li>Droit de rectification</li>
-                    <li>Droit à l'effacement (droit à l'oubli)</li>
-                    <li>Droit à la limitation du traitement</li>
-                    <li>Droit à la portabilité des données</li>
-                  </ul>
-                  <p>Pour exercer ces droits, contactez notre délégué à la protection des données à <a href="mailto:dpo@celeste.fr">dpo@celeste.fr</a>.</p>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
+             
             </v-expansion-panels>
           </div>
         </v-card-text>

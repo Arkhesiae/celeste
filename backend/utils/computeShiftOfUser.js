@@ -14,7 +14,8 @@ const computeShiftOfUser = async (dates, userId) => {
 
         const { teams } = user;
         if (!teams || teams.length === 0) {
-            throw new Error('Aucune équipe trouvée pour cet utilisateur');
+
+            return [];
         }
 
         const dateArray = Array.isArray(dates) ? dates : [dates];

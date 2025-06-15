@@ -116,10 +116,30 @@ export const useTeamStore = defineStore('team', () => {
     try {
       loading.value = true;
       error.value = null;
-      await teamService.addTeamMember(teamData.id, userId);
-      await fetchCenterTeams(currentCenter.value);
+      await teamService.assignToTeam(userId, teamData);
+      await fetchTeamOccurrencesOfUser(userId);
+      await fetchCurrentTeamOfUser(userId);
+      // Fetch substitutions and vacations ?
     } catch (err) {
       error.value = err.message || 'Erreur lors de l\'attribution de l\'utilisateur à l\'équipe';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+
+  const deleteTeamOccurrence = async (userId, occurrenceId) => {
+    try {
+      loading.value = true;
+      error.value = null;
+      await teamService.deleteTeamOccurrence(userId, occurrenceId);
+      await fetchTeamOccurrencesOfUser(userId);
+      await fetchCurrentTeamOfUser(userId);
+      // Fetch substitutions and vacations ?
+    } catch (err) {
+      console.error('Erreur détaillée:', err);
+      error.value = err.message || 'Erreur lors de la suppression de l\'occurrence d\'équipe';
       throw err;
     } finally {
       loading.value = false;
@@ -241,7 +261,8 @@ export const useTeamStore = defineStore('team', () => {
     deleteTeam,
     renameTeam,
     updateTeamCycleStartDate,
-    updateTeamsOrder
+    updateTeamsOrder,
+    deleteTeamOccurrence
   };
 });
 

@@ -63,7 +63,7 @@ router.get('/center/:centerId', verifyToken, getUsersByCenter);
 router.get('/:id/current-team', verifyToken, getUserCurrentTeam);
 router.get('/:id/team-at', verifyToken, isAdmin, checkUserCenter, getUserTeamAtDate);
 router.get('/:id/team-occurrences', verifyToken, isUserOrAdmin, getUserTeamOccurrences);
-router.delete('/:id/team-occurrences/:occurrenceId', verifyToken, isAdmin, checkUserCenter, deleteTeamOccurrence);
+router.delete('/:id/team-occurrences/:occurrenceId', verifyToken, isUserOrAdmin, deleteTeamOccurrence);
 router.post('/:id/assign-team', verifyToken, isUserOrAdmin, assignTeamToUser);
 
 // Routes pour les shifts

@@ -30,10 +30,7 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-import { ref, computed, onMounted, watch } from 'vue';
-import { useAuthStore } from "@/stores/authStore.js";
-import { useSnackbarStore } from '@/stores/snackbarStore';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useInitializationStore } from '@/stores/initializationStore';
 import DesktopNavigationDrawer from './components/DesktopNavigationDrawer.vue';
 import MobileNavigationDrawer from './components/MobileNavigationDrawer.vue';
@@ -43,10 +40,7 @@ import GlobalSnackbar from './components/GlobalSnackbar.vue';
 import BottomNavigation from './components/BottomNavigation.vue';
 
 
-const snackbarStore = useSnackbarStore();
 const isDev = ref(import.meta.env.DEV);
-const authStore = useAuthStore();
-const router = useRouter();
 const initializationStore = useInitializationStore();
 
 // Références
@@ -64,10 +58,6 @@ const toggleMobileDrawer = () => {
 const toggleDrawer = () => {
   navExpanded.value = !navExpanded.value;
 };
-
-
-onMounted(() => {
-})
 
 </script>
 

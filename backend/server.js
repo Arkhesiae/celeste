@@ -22,6 +22,7 @@ require('dotenv').config({
   const otpRoutes = require('./routes/otpRoutes');
   const authRouter = require('./routes/auth');
   const devRouter = require('./routes/dev');
+  const rulesRouter = require('./routes/rules');
   
   require('./cron/processTransactions');
   require('./cron/processDemands');
@@ -33,7 +34,7 @@ require('dotenv').config({
 
   // CORS
   app.use(cors({
-    origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249', 'http://celeste-app.fr'],
+    origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249', 'http://celeste-app.fr', 'https://celeste-app.fr'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
@@ -62,6 +63,7 @@ require('dotenv').config({
   app.use('/api/teams', teamsRouter);
   app.use('/api/otp', otpRoutes);
   app.use('/api/dev', devRouter);
+  app.use('/api/rules', rulesRouter);
   
   // Routes par défaut
   app.get('/api', (req, res) => {

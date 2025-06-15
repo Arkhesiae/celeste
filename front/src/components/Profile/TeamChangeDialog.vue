@@ -1,6 +1,6 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="900" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'"   class="pa-0 pt-6">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           {{ dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe' }}
@@ -26,20 +26,9 @@
                 </v-card-item>
               </v-col>
               <v-col cols="12" md="6">
-                <v-select 
-                  prepend-icon="mdi-account-outline" 
-                  variant="outlined" 
-                  class="mb-8" 
-                  :items="teams" 
-                  :item-title="item => 'Equipe ' + item.name"
-                  v-model="selectedTeam"
-                  label="Equipe"
-                  single-line
-                  item-value="_id" 
-                  :rules="[rules.required]"
-                  bg-color="surface"
-                  rounded="lg"
-                ></v-select>
+                <v-select prepend-icon="mdi-account-outline" variant="outlined" class="mb-8" :items="teams"
+                  :item-title="item => 'Equipe ' + item.name" v-model="selectedTeam" label="Equipe" single-line
+                  item-value="_id" :rules="[rules.required]" bg-color="surface" rounded="lg"></v-select>
               </v-col>
             </v-row>
           </v-window-item>
@@ -57,118 +46,116 @@
                     {{ dialogModeValue === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement' }}
                   </v-card-subtitle>
                 </v-card-item>
+
               </v-col>
               <v-col cols="12" md="6">
                 <v-fade-transition>
-                  <v-card  color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
+                  <v-card color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
                     <v-card-item>
                       <div class="d-flex justify-space-between align-center">
                         <v-card-title class="text-subtitle-1 font-weight-medium">
                           {{ dialogModeValue === 'Renfort' ? 'Période de renfort' : 'Date de changement' }}
                         </v-card-title>
-                        <v-chip
-                          v-if="selectedDates.startDate"
-                          class="ml-4"
-                          color="onBackground"
-                          size="small"
-                          rounded="lg"
-                        >
-                          {{ dialogModeValue === 'Renfort' ? `${numberOfDays} jour${numberOfDays > 1 ? 's' : ''}` : relativeDaysText }}
+                        <v-chip v-if="selectedDates.startDate" class="ml-4" color="onBackground" size="small"
+                          rounded="lg">
+                          {{ dialogModeValue === 'Renfort' ? `${numberOfDays} jour${numberOfDays > 1 ? 's' : ''}` :
+                            relativeDaysText }}
                         </v-chip>
                       </div>
                     </v-card-item>
-              
+
                     <v-card-text>
                       <div class="text-body-2">
                         <v-slide-y-transition mode="out-in">
 
-                
-                        <template v-if="!selectedDates.startDate">
-                          <span>Sélectionnez la période de renfort</span>
-                        </template>
-                        <template v-else>
-                          <div class="d-flex align-center flex-wrap">
-                            <span class="d-inline-block">{{ dialogModeValue === 'Renfort' ? 'Du' : 'Le' }}</span>
-                            <v-fade-transition>
-                              <span v-if="selectedDates.startDate" class="d-inline-block">
-                                &nbsp;{{ toDisplayFormat(selectedDates.startDate) }}&nbsp;
-                              </span>
-                            </v-fade-transition>
-                            <v-fade-transition>
-                              <div v-if="dialogModeValue === 'Renfort' && selectedDates.endDate">
-                                <span class="d-inline-block">au</span>
-                                <span class="d-inline-block "> &nbsp;{{ toDisplayFormat(selectedDates.endDate) }}</span>
-                              </div>
-                            </v-fade-transition>
-                          </div>
-                        </template>
-                      </v-slide-y-transition>
+
+                          <template v-if="!selectedDates.startDate">
+                            <span v-if="dialogModeValue === 'Renfort'">Sélectionnez la période de renfort</span>
+                            <span v-else>Sélectionnez la date de changement</span>
+                          </template>
+                          <template v-else>
+                            <div class="d-flex align-center flex-wrap">
+                              <span class="d-inline-block">{{ dialogModeValue === 'Renfort' ? 'Du' : 'Le' }}</span>
+                              <v-fade-transition>
+                                <span v-if="selectedDates.startDate" class="d-inline-block">
+                                  &nbsp;{{ toDisplayFormat(selectedDates.startDate) }}&nbsp;
+                                </span>
+                              </v-fade-transition>
+                              <v-fade-transition>
+                                <div v-if="dialogModeValue === 'Renfort' && selectedDates.endDate">
+                                  <span class="d-inline-block">au</span>
+                                  <span class="d-inline-block "> &nbsp;{{ toDisplayFormat(selectedDates.endDate)
+                                  }}</span>
+                                </div>
+                              </v-fade-transition>
+                            </div>
+                          </template>
+                        </v-slide-y-transition>
                       </div>
                     </v-card-text>
-                
+
                   </v-card>
                 </v-fade-transition>
               </v-col>
             </v-row>
 
             <v-row>
-              <v-col cols="12" md="6" class="pa-0">
-                
+              <v-col cols="12" md="6" class="pa-4">
+                <v-slide-y-transition>
+                  <v-alert v-if="conflict" color="error" type="warning" rounded="lg" variant="tonal" class="mt-4">
+
+                    <v-card-title class="pa-0 ma-0">Conflit</v-card-title>
+                    <v-card-text class="pa-0 ma-0">
+                      <p class="opacity-50">Vous avez déjà un changement prévu pour le {{
+                        toDisplayFormat(conflict.fromDate)
+                        }} dans l'équipe <strong>{{ conflict.teamName }}</strong></p>
+
+                    </v-card-text>
+
+
+                  </v-alert>
+                  <v-alert v-if="enRenfortConflict" color="error" type="warning" rounded="lg" variant="tonal" class="mt-4">
+
+                    <v-card-title class="pa-0 ma-0">Renfort déjà prévu</v-card-title>
+                    <v-card-text class="pa-0 ma-0">
+                      <p class="opacity-50">Vous avez déjà un renfort prévu entre le {{
+                        toDisplayFormat(enRenfortConflict.fromDate) }} et le {{
+                        toDisplayFormat(enRenfortConflict.toDate) }}
+                        dans l'équipe <strong>{{ enRenfortConflict.teamName }}</strong></p>
+
+                    </v-card-text>
+
+
+                  </v-alert>
+                </v-slide-y-transition>
               </v-col>
-              <v-col cols="12" md="6"> <v-date-picker
-              hide-header
-              class="mx-auto mt-4"
-              elevation="0"
-              width="100%"
-              max-width="600px"
-              :min="new Date().toISOString().split('T')[0]"
-              :multiple="dialogModeValue === 'Renfort' ? 'range' : false"
-              v-model="pickerDates"
-              @update:model-value="updateFormattedDate"
-              locale="fr"
-            ></v-date-picker></v-col>
+              <v-col cols="12" md="6"> <v-date-picker hide-header class="mx-auto mt-4" elevation="0" width="100%"
+                  max-width="600px" :min="new Date().toISOString().split('T')[0]"
+                  :multiple="dialogModeValue === 'Renfort' ? 'range' : false" v-model="pickerDates"
+                  @update:model-value="updateFormattedDate" locale="fr"></v-date-picker></v-col>
             </v-row>
 
-           
+
           </v-window-item>
         </v-window>
+
       </v-card-text>
 
       <!-- Actions pour la première fenêtre -->
       <v-card-actions v-if="currentWindow === 0" class="pa-6">
         <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          @click="currentWindow = 1"
-          :disabled="!selectedTeam"
-
-        >
+        <v-btn color="primary" variant="tonal" rounded="xl" @click="currentWindow = 1" :disabled="!selectedTeam">
           Suivant
         </v-btn>
       </v-card-actions>
-      
+
       <!-- Actions pour la deuxième fenêtre -->
       <div v-if="currentWindow === 1" class="pa-6 d-flex">
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          @click="currentWindow = 0"
-
-
-        >
+        <v-btn color="primary" variant="text" rounded="xl" @click="currentWindow = 0">
           Retour
         </v-btn>
         <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          variant="tonal"
-          :disabled="!formValid"
-          rounded="xl"
-          @click="handleAddTeam"
-        >
+        <v-btn color="primary" variant="tonal" :disabled="!formValid" rounded="xl" @click="handleTeamChange">
           Valider
         </v-btn>
       </div>
@@ -182,26 +169,15 @@
         <v-card-title>Conflit de changement</v-card-title>
       </v-card-item>
 
-      <v-card-text>
-        Ecraser le changement du {{ toDisplayFormat(pickerDates[0]) }} ?
+      <v-card-text class="opacity-50">
+        Vous avez déjà un changement prévu dans l'équipe <strong>{{ conflict.teamName }}</strong> pour le <strong>{{ toDisplayFormat(conflict.fromDate) }}</strong>.
+        Ecraser le changement ?
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn 
-          variant="text" 
-          color="secondary" 
-          rounded="xl"
-          @click="showConfirmationDialog = false"
-
-        >
+        <v-btn variant="text" color="secondary" rounded="xl" @click="showConfirmationDialog = false">
           Annuler
         </v-btn>
-        <v-btn 
-          variant="tonal" 
-          rounded="xl" 
-          color="primary" 
-          @click="submit() ; showConfirmationDialog=false"
-
-        >
+        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleConfirmChange">
           Valider
         </v-btn>
       </v-card-actions>
@@ -225,13 +201,10 @@ const props = defineProps({
     type: Boolean,
     required: true,
   },
-  occurrences: {
-    type: Object,
-    required: true,
-  },
+
 });
 
-const emit = defineEmits(["onClose", "onSubmit", "update:dialogModeValue", "update:dialogVisible"]);
+const emit = defineEmits(["onClose", "onSubmit", "update:dialogMode", "update:dialogVisible"]);
 
 const { smAndDown } = useDisplay();
 const date = useDate();
@@ -240,7 +213,7 @@ const teams = computed(() => teamStore.centerTeams);
 
 const dialogModeValue = computed({
   get: () => props.dialogMode,
-  set: (value) => emit("update:dialogModeValue", value),
+  set: (value) => emit("update:dialogMode", value),
 });
 
 const localDialogVisible = computed({
@@ -253,14 +226,14 @@ const showConfirmationDialog = ref(false);
 const selectedTeam = ref(null);
 const pickerDates = ref(null);
 const formattedStartDate = ref('');
-  const formattedEndDate = ref('');
+const formattedEndDate = ref('');
 const formattedDate = ref('');
 const formValid = ref(false);
 
-  const selectedTeamName = computed(() => {
-    const team = teams.value.find(t => t._id === selectedTeam.value);
-    return team ? team.name : '';
-  });
+const selectedTeamName = computed(() => {
+  const team = teams.value.find(t => t._id === selectedTeam.value);
+  return team ? team.name : '';
+});
 
 const numberOfDays = computed(() => {
   if (dialogModeValue.value !== 'Renfort' || !selectedDates.value.startDate || !selectedDates.value.endDate) return 0;
@@ -330,10 +303,10 @@ const enRenfort = computed(() => {
 });
 
 const enRenfortConflict = computed(() => {
-  if (!selectedDates.value.startDate || !selectedDates.value.endDate || !props.occurrences?.allOccurrences) return null;
+  if (!selectedDates.value.startDate || !selectedDates.value.endDate || !teamStore.teamOccurrences?.allOccurrences) return null;
   const startOfRenfort = new Date(toUTCNormalized(selectedDates.value.startDate));
   const endOfRenfort = new Date(toUTCNormalized(selectedDates.value.endDate));
-  return props.occurrences?.allOccurrences.find((occurrence) => {
+  return teamStore.teamOccurrences?.allOccurrences.find((occurrence) => {
     const startDate = new Date(occurrence.fromDate);
     const endDate = occurrence.toDate ? new Date(occurrence.toDate) : null;
     return startDate <= startOfRenfort && endDate >= startOfRenfort || startDate <= endOfRenfort && endDate >= endOfRenfort;
@@ -341,14 +314,14 @@ const enRenfortConflict = computed(() => {
 });
 
 const conflict = computed(() => {
-  if (!selectedDates.value.startDate || !props.occurrences?.allOccurrences) return null;
-  return props.occurrences?.allOccurrences.find(
-    (teame) => teame.fromDate === toUTCNormalized(selectedDates.value.startDate) && !teame.toDate
+  if (!selectedDates.value.startDate || !teamStore.teamOccurrences?.allOccurrences || props.dialogMode === 'Renfort')  return null;
+  return teamStore.teamOccurrences?.allOccurrences.find(
+    (occurrence) => occurrence.fromDate === toUTCNormalized(selectedDates.value.startDate) && !occurrence.toDate
   ) || null;
 });
 
 const isFormValid = computed(() => {
-  return !!selectedTeam.value && !enRenfortConflict.value;
+  return !!selectedTeam.value && selectedDates.value.startDate && !enRenfortConflict.value;
 });
 
 watch(isFormValid, (newVal) => {
@@ -364,7 +337,7 @@ watch(() => props.dialogVisible, (value) => {
   }
 });
 
-const handleAddTeam = async () => {
+const handleTeamChange = async () => {
   const teamData = {
     teamId: selectedTeam.value,
     fromDate: toUTCNormalized(selectedDates.value.startDate),
@@ -378,9 +351,20 @@ const handleAddTeam = async () => {
   }
 };
 
-const submit = (teamData) => {
+const handleConfirmChange = () => {
+  const teamData = {
+    teamId: selectedTeam.value,
+    fromDate: toUTCNormalized(selectedDates.value.startDate),
+    toDate: dialogModeValue.value === 'Renfort' ? toUTCNormalized(selectedDates.value.endDate) : null
+  };
+  console.log('handleConfirmChange', teamData, conflict.value);
+  submit(teamData, conflict.value);
+  showConfirmationDialog.value = false;
+};
+
+const submit = (teamData, conflictToReplace) => {
   if (formValid.value) {
-    emit("onSubmit", teamData, conflict.value);
+    emit("onSubmit", teamData, conflictToReplace);
   }
 };
 
@@ -394,8 +378,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
-
 .v-btn {
   text-transform: none;
   letter-spacing: 0;

@@ -77,28 +77,23 @@ export const teamService = {
    * @param {string} userId - L'ID de l'utilisateur à ajouter.
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
-  async addTeamMember(teamId, userId) {
-    const response = await fetch(`${API_URL}/teams/${teamId}/members`, {
+  async assignToTeam(userId, teamData) {
+    const response = await fetch(`${API_URL}/users/${userId}/assign-team`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ userId })
+      body: JSON.stringify(teamData)
     });
     return handleResponse(response);
   },
 
-  /**
-   * Supprime un membre d'une équipe.
-   * @param {string} teamId - L'ID de l'équipe.
-   * @param {string} userId - L'ID de l'utilisateur à supprimer.
-   * @returns {Promise<Object>} L'équipe mise à jour.
-   */
-  async removeTeamMember(teamId, userId) {
-    const response = await fetch(`${API_URL}/teams/${teamId}/members/${userId}`, {
+  async deleteTeamOccurrence(userId, occurrenceId) {
+    const response = await fetch(`${API_URL}/users/${userId}/team-occurrences/${occurrenceId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
     });
     return handleResponse(response);
   },
+
 
   /**
    * Récupère les membres d'une équipe.

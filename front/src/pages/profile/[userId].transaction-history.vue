@@ -33,31 +33,12 @@
               <v-progress-circular v-if="isLoading" indeterminate color="primary"
                 class="mx-auto my-4"></v-progress-circular>
 
-              <div v-else-if="filteredTransactions.length > 0" c>
-                <v-card v-for="(transaction, index) in filteredTransactions" :key="index" :color="transaction.status === 'pending' ? 'surfaceContainerHigh' : 'surfaceContainer'" flat rounded="lg"
-                  class="transaction-item pa-4 d-flex justify-space-between align-center py-2  mb-2"
-                  :class="transaction.status === 'pending' ? 'opacity-50' : ''">
-                  <div class="d-flex align-center">
-                    <v-icon v-if="transaction.status === 'completed'" :color="transaction.flow === 'sent' ? 'red' : 'green'" class="mr-2">
-                      {{ transaction.flow === 'sent' ? 'mdi-bank-transfer-out' : 'mdi-bank-transfer-in' }}
-                    </v-icon>
-                    <v-icon v-if="transaction.status === 'pending'" color="remplacement" class="mr-2">mdi-clock-outline</v-icon>
-                    <div>
-                      <div class="text-body-2">{{ transaction.description }}</div>
-                      <div class="text-caption text-medium-emphasis">{{ transaction.effectiveDate ? transaction.effectiveDate : transaction.date }}</div>
-                    </div>
-                  </div>
-                  <div v-if="transaction.status === 'cancelled'">
-                    <span class="text-caption text-medium-emphasis mr-2">Annulée</span>
-                    <v-icon color="error" class="mr-2">mdi-close-circle-outline</v-icon>
-                  </div>
-                  <div v-else :class="{
-                    'text-green': transaction.flow === 'received',
-                    'text-red': transaction.flow === 'sent'
-                  }">
-                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
-                  </div>
-                </v-card>
+              <div v-else-if="filteredTransactions.length > 0" class="ga-2 d-flex flex-column">
+                <TransactionItem 
+                  v-for="(transaction, index) in filteredTransactions" 
+                  :key="index"
+                  :transaction="transaction"
+                />
               </div>
               <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
                 Aucune transaction trouvée
@@ -77,23 +58,11 @@
               class="mx-auto my-4"></v-progress-circular>
 
             <div v-else-if="pendingTransactions.length > 0">
-              <v-card v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="'pending-'+index" 
-              color="surfaceContainerHigh" flat rounded="lg"  class=" pa-4 d-flex justify-space-between align-center py-2 my-2">
-              <div class="d-flex align-center">
-                <v-icon color="remplacement" class="mr-2">mdi-clock-outline</v-icon>
-                <div>
-                  <div class="text-body-2">{{ transaction.description }}</div>
-                  <div class="text-caption text-medium-emphasis">Prévue le {{ transaction.effectiveDate }}</div>
-                </div>
-              </div>
-              
-              <div :class="{
-                    'text-green': transaction.flow === 'received',
-                    'text-red': transaction.flow === 'sent'
-                  }">
-                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
-                  </div>
-            </v-card>
+              <TransactionItem 
+                v-for="(transaction, index) in pendingTransactions.slice(0, 2)" 
+                :key="'pending-'+index"
+                :transaction="transaction"
+              />
             </div>
             <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
               Aucune transaction en attente
@@ -109,12 +78,13 @@
 import { ref, computed, onMounted } from 'vue';
 import { usePointStore } from '@/stores/pointStore';
 import { useRouter } from 'vue-router';
-import { useScrollPosition } from '@/composables/useScrollPosition';
+
+import TransactionItem from '@/components/Transaction/TransactionItem.vue';
 
 const router = useRouter();
 const pointStore = usePointStore();
 const selectedTransactionType = ref('all');
-const { resetScroll } = useScrollPosition();
+
 
 const transactions = computed(() => pointStore.transactions);
 const pendingTransactions = computed(() => pointStore.pendingTransactions);
@@ -152,7 +122,7 @@ const formatDate = (dateString) => {
 };
 
 onMounted(() => {
-  resetScroll();
+
   pointStore.fetchTransactions();
 });
 </script>

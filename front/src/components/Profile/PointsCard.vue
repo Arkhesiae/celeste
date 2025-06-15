@@ -1,6 +1,6 @@
 <template>
-  <v-card  :class="smAndDown ? 'points-card-mobile' : 'points-card'" rounded="xl" elevation="0">
-    <v-card-text class="pa-6 height-transition" style="height: 100%"> 
+  <v-card  :class="smAndDown ? 'points-card-mobile' : 'points-card'" rounded="xl" elevation="0" class="pa-6">
+    <v-card-text class="pa-0 height-transition" style="height: 100%"> 
       <div class="d-flex flex-column justify-space-between height-transition" style=" height: 100% ">
         <!-- En-tête avec l'icône et le menu -->
         <div class="d-flex justify-space-between align-center mb-4">
@@ -43,10 +43,10 @@
         </div>
 
         <!-- Historique des transactions -->
-        <div class="mt-6">
+        <div class="mt-6 pa-0">
           <div class="d-flex justify-space-between align-center mb-3">
             <div class="text-h6">Dernière activité</div>
-            <v-btn variant="text" density="compact" color="onBackground" @click="$router.push('/profile/'+ authStore.userId + '/transaction-history')">
+            <v-btn variant="text" density="compact" color="auto" @click="$router.push('/profile/'+ authStore.userId + '/transaction-history')">
               Voir tout
               <v-icon end>mdi-chevron-right</v-icon>
             </v-btn>
@@ -57,25 +57,13 @@
             color="primary"
             class="mx-auto my-4"
           ></v-progress-circular>
-          <div v-else-if="transactions.length > 0">
-            <v-card v-for="(transaction, index) in processedTransactions.slice(0, 2)" :key="index"  color="background" flat class="transaction-item pa-4 d-flex justify-space-between align-center py-2 my-2">
-              <div class="d-flex align-center">
-                <v-icon :color="transaction.type === 'received' ? 'primary' : 'secondary'" class="mr-2">
-                  {{ transaction.type === 'received' ? 'mdi-bank-transfer-in' : 'mdi-bank-transfer-out' }}
-                </v-icon>
-                <div>
-                  <div class="text-body-2">{{ transaction.description }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ transaction.date }}</div>
-                </div>
-              </div>
-              
-              <div :class="{
-                    'text-green': transaction.flow === 'received',
-                    'text-red': transaction.flow === 'sent'
-                  }">
-                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
-                  </div>
-            </v-card>
+          <div v-else-if="transactions.length > 0" class="ga-2">
+            <TransactionItem 
+                  v-for="(transaction, index) in processedTransactions.slice(0, 2)" 
+                  :key="index"
+                  color="background"
+                  :transaction="transaction"
+                />
           </div>
           <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
             Aucune transaction récente
@@ -84,24 +72,12 @@
           <!-- Transactions en attente -->
           <div v-if="pendingTransactions.length > 0" class="mt-4">
             <div class="text-subtitle-2 opacity-50 mb-2">Prochaine transaction en attente</div>
-            <v-card  v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="'pending-'+index" 
-              color="surfaceContainerHigh" flat class=" pa-4 d-flex justify-space-between align-center py-2 my-2">
-              <div class="d-flex align-center">
-                <v-icon color="remplacement" class="mr-2">mdi-clock-outline</v-icon>
-                <div>
-                  <div class="text-body-2">{{ transaction.description }}</div>
-                  <div class="text-caption opacity-50">Prévue le {{ transaction.effectiveDate }}</div>
-                </div>
-              </div>
-              
-              <div :class="{
-                    'text-green': transaction.flow === 'received',
-                    'text-red': transaction.flow === 'sent'
-                  }">
-                    {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
-                  </div>
-            </v-card>
-          </div>
+            <TransactionItem 
+                  v-for="(transaction, index) in pendingTransactions.slice(0, 2)" 
+                  :key="index"
+                  :transaction="transaction"
+                />
+            </div>
         </div>
       </div>
     </v-card-text>

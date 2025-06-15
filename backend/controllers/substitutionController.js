@@ -2,6 +2,7 @@ const Substitution = require('../models/Substitution');
 const User = require("../models/User");
 const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
 const {computeShiftOfUser} = require("../utils/computeShiftOfUser");
+const {computeShiftOfUserWithSubstitutions} = require("../utils/computeShiftOfUserWithSubstitutions");
 const { createDelayedTransaction, cancelDelayedTransaction } = require('../services/transactionService');
 const Transaction = require('../models/Transaction');
 
@@ -47,7 +48,7 @@ const getCenterDemands = async (req, res) => {
 
         const statusFilter = req.query.status && req.query.status !== 'undefined' 
             ? { status: req.query.status } 
-            : { };
+            : { status: { $ne: 'canceled' } };
 
         const baseFilter = {
             centerId: user.centerId,
@@ -98,9 +99,19 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
     await Promise.all(otherDemands.map(async (demand) => {
         try {
             const demandDate = new Date(demand.posterShift.date);
-            const vacationOfFetcher = (await computeShiftOfUser(demandDate, userId))[0];
             const demandWithLimit = demand.toObject();
             demandWithLimit.limit = [];
+
+            const vacationOfFetcher = (await computeShiftOfUserWithSubstitutions(demandDate, userId))[0];
+
+            if (!vacationOfFetcher || !vacationOfFetcher.shift) {
+                console.log("Aucun shift trouvé pour l'utilisateur");
+                demandWithLimit.limit.push('noShift');
+                categorizedDemands.push(demandWithLimit);
+                return;
+            }
+
+           
             // Vérifier si l'utilisateur travaille déjà ce jour-là
             if (vacationOfFetcher.shift?.name !== "Rest Day" && vacationOfFetcher.shift?.type !== "rest") {
                 // Vérifier si une permutation est possible
@@ -117,7 +128,7 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
                 return newDate;
             });
 
-            const shifts = await computeShiftOfUser(range, userId);
+            const shifts = await computeShiftOfUserWithSubstitutions(range, userId);
             const previousShift = shifts[5].shift;
             const nextShift = shifts[7].shift;
 
@@ -128,7 +139,6 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
             const hasElevenHoursBefore = checkRestPeriod(previousShift, demand.posterShift, 'before');
             const hasElevenHoursAfter = checkRestPeriod(nextShift, demand.posterShift, 'after');
 
-            console.log(hasElevenHoursBefore, hasElevenHoursAfter); 
             if (!hasElevenHoursBefore || !hasElevenHoursAfter) {
                 demandWithLimit.limit.push('insufficientRest');
             }
@@ -144,7 +154,7 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
             throw err;
         }
     }));
-
+    
     return categorizedDemands;
 };
 
@@ -164,12 +174,12 @@ const calculateRestDelay = (shift, shift2) => {
   } 
 
 const checkRestPeriod = (shift, demandShift, period) => {
-        if (shift.type === 'rest') return true;
+    if (!shift || shift.type === 'rest') return true;
     if (period === 'before') {
         return demandShift.startTime && shift.endTime ? 
             calculateRestDelay(shift, demandShift) >= 11 : true;
     } else {
-        return demandShift.endTime && shift.startTime ? 
+        return demandShift.endTime && shift.startTime ?
             calculateRestDelay(demandShift, shift) >= 11 : true;
     }
     
@@ -219,7 +229,7 @@ const createDemand = async (req, res) => {
 
         // Vérification du shift de l'utilisateur
         const givenDate = new Date(posterShift.date);
-            const userShifts = await computeShiftOfUser(givenDate, posterId);
+            const userShifts = await computeShiftOfUserWithSubstitutions(givenDate, posterId);
         const userShift = userShifts[0];
             
         if (!userShift || !userShift.shift) {
@@ -430,7 +440,7 @@ const acceptRequest = async (req, res) => {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
-        const shift = await computeShiftOfUser(new Date(request.posterShift.date), userId);
+        const shift = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
 
         // Mise à jour de la demande
         const updatedRequest = await Substitution.findByIdAndUpdate(
@@ -508,7 +518,7 @@ const checkUserShift = async (req, res) => {
         const userId = req.user.userId;
         const date = req.params.date;
 
-        const userShift = await computeShiftOfUser(new Date(date), userId);
+        const userShift = await computeShiftOfUserWithSubstitutions(new Date(date), userId);
         const hasShift = userShift[0] && userShift[0].shift.type !== 'rest'
 
         res.status(200).json({
@@ -543,7 +553,7 @@ const swapShifts = async (req, res) => {
         }
 
         // Récupération du shift de l'utilisateur
-        const userShift = await computeShiftOfUser(new Date(demand.posterShift.date), userId);
+        const userShift = await computeShiftOfUserWithSubstitutions(new Date(demand.posterShift.date), userId);
         if (!userShift) {
             return res.status(404).json({ error: 'Shift utilisateur non trouvé' });
         }

@@ -8,9 +8,25 @@ const router = createRouter({
   history: createWebHistory(),
   routes: setupLayouts(routes),
   scrollBehavior (to, from, savedPosition) {
-    if (to.name === '/parameter') {
-      return { top: 0 }
+    // Utiliser la position sauvegardée si elle existe
+    if (savedPosition) {
+      return savedPosition;
     }
+
+    // Forcer le défilement vers le haut uniquement pour certaines routes
+    const forceTopRoutes = [
+      '/parameter',
+      '/profile/[userId]/change-history',
+      '/profile/[userId]/transaction-history',
+      '/profile/[userId]/points'
+    ];
+
+    if (forceTopRoutes.includes(to.name)) {
+      return { top: 0 };
+    }
+
+    // Comportement par défaut : défilement vers le haut
+    return { top: 0 };
   }
 });
 

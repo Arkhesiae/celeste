@@ -1,8 +1,4 @@
-<route lang="yaml">
-meta:
-  layout: parameter
-  transition: slide-lefty
-</route>
+
 
 <template>
   <v-container>
@@ -128,11 +124,11 @@ import EmailDialog from '@/components/Profile/Parameters/EmailDialog.vue'
 import PasswordDialog from '@/components/Profile/Parameters/PasswordDialog.vue'
 import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue'
 import TransferRequestDialog from '@/components/Profile/Parameters/TransferRequestDialog.vue'
-import { useScrollPosition } from '@/composables/useScrollPosition';
+
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import GlobalSnackbar from '@/layouts/components/GlobalSnackbar.vue'
 
-const { resetScroll } = useScrollPosition();
+
 const snackbarStore = useSnackbarStore();
 
 // Theme synchronization

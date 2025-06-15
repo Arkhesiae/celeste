@@ -1,0 +1,5 @@
+Host celeste-server
+    HostName 91.99.120.203
+    User root
+    IdentityFile ~/.ssh/id_rsa
+    StrictHostKeyChecking no 

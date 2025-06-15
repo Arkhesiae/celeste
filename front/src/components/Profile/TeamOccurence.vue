@@ -1,55 +1,30 @@
 <template>
-  <v-card v-for="(occurrence, index) in occurrences" :key="occurrence._id" class="pa-1 my-1" flat
-    :color="index === 0 ? 'background' : 'background'" :class="{
-      'card-border-top': index === 0,
-      'card-border-bottom': index === occurrences.length - 1
-    }">
-
+  <v-card  class="pa-1 my-1 occurrence-card" flat :color="occurrence.type === 'Renfort' ? 'background' : 'background'" >
     <v-card-item :prepend-icon="occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline'">
       <div class="d-flex align-start justify-space-between">
-
         <div class="d-flex align-start flex-column">
-
-          <v-card-title>Equipe {{ occurrence?.teamName }}</v-card-title>
-
-
-
+          <span :class="smAndDown ? 'text-body-1' : 'text-h6'">Equipe {{ occurrence?.teamName }}</span>
           <v-card-subtitle v-if="occurrence.type === 'Renfort'">
             Du
-            <v-chip variant="tonal" rounded="lg">{{ formattedOccurenceDate(occurrence.fromDate) }}</v-chip>
+            <v-chip :class="smAndDown ? 'px-0 ' : 'px-4'" :size="smAndDown ? 'small' : 'default'" :variant="smAndDown ? 'text' : 'tonal'" rounded="lg">{{ formattedOccurenceDate(occurrence.fromDate) }}</v-chip>
             au
-            <v-chip rounded="lg">{{ formattedOccurenceDate(occurrence.toDate) }}</v-chip>
+            <v-chip :class="smAndDown ? 'px-0 ' : 'px-4 '" :size="smAndDown ? 'small' : 'default'" :variant="smAndDown ? 'text' : 'tonal'" rounded="lg">{{ formattedOccurenceDate(occurrence.toDate) }}</v-chip>
           </v-card-subtitle>
           <v-card-subtitle v-else>
             A partir du
             <span class="">{{ formattedOccurenceDate(occurrence.fromDate) }}</span>
           </v-card-subtitle>
-
-
-
-
         </div>
         <div>
 
 
-          <!-- <v-chip
-                          
-                          class=""
-                          color="onBackground"
-                          size="small"
-                          rounded="lg"
-                        >
-                          {{ "Dans 3 jours" }}
-                        </v-chip> -->
+          <v-chip class="" color="onBackground" size="small" rounded="lg" v-if="!smAndDown">
+            {{ "Dans xx jours" }}
+          </v-chip>
 
 
         </div>
       </div>
-
-
-
-
-
       <template #append>
         <v-scroll-x-transition mode="out-in">
           <div v-if="activeCardId !== occurrence._id" key="not-active">
@@ -74,10 +49,11 @@
 import { ref, computed } from "vue";
 import { useAuthStore } from "@/stores/authStore.js";
 import { useTeamStore } from "@/stores/teamStore.js";
+import { useDisplay } from "vuetify";
 
 const props = defineProps({
-  occurrences: {
-    type: Array,
+  occurrence: {
+    type: Object,
     required: true,
   },
 });
@@ -85,6 +61,7 @@ const props = defineProps({
 const emit = defineEmits(['delete-occurrence']);
 
 const activeCardId = ref(null);
+const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const userId = computed(() => authStore.userId);
@@ -100,6 +77,7 @@ const formattedOccurenceDate = computed(() => (date) => {
 
 
 const handleDelete = (occurrenceId) => {
+  console.log('handleDelete', occurrenceId);
   emit('delete-occurrence', occurrenceId);
 };
 </script>
@@ -118,5 +96,10 @@ const handleDelete = (occurrenceId) => {
 .card-border-bottom {
   border-bottom-left-radius: 18px !important;
   border-bottom-right-radius: 18px !important;
+}
+</style>
+<style>
+.occurrence-card {
+  border-radius: 18px !important;
 }
 </style>

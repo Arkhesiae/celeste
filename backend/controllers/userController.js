@@ -481,13 +481,13 @@ const deleteTeamOccurrence = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
 
-        res.status(200).json({ message: 'Team occurrence deleted successfully' });
+        res.status(200).json({ message: 'Occurrence supprimée avec succès' });
     } catch (error) {
         console.error("Error deleting team occurrence:", error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Erreur interne du serveur" });
     }
 };
 

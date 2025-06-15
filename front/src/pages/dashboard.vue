@@ -40,6 +40,24 @@
           </v-card-text>
         </v-card>
       </v-col>
+      <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
+        <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Aucune équipe assignée</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Vous n'avez pas d'équipe assignée. Vous ne pourrez pas effectuer de remplacements ou de permutations.
+            </div>
+            <div>
+              Pour assigner une équipe, veuillez vous rendre sur la page profil
+            </div>
+          </v-card-text>
+        </div>
+          <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+        </div>
+        </v-alert>
+      </v-col>
     </v-row>
 
     <!-- Grille principale -->
@@ -175,12 +193,12 @@
             <div>
               <v-card-title class="text-h6 font-weight-medium pa-0">Tour de service actif</v-card-title>
               <v-card-text class="pa-0">
-                <div v-if="currentActiveRotation">
+                <div v-if="activeRotation">
                   <div class="d-flex align-center justify-space-between mb-2">
                     <div>
-                      <div class="text-h5 font-weight-medium">{{ currentActiveRotation.name }}</div>
+                      <div class="text-h5 font-weight-medium">{{ activeRotation.name }}</div>
                       <div class="text-medium-emphasis">
-                        Actif depuis le {{ new Date(currentActiveRotation.activationDate).toLocaleDateString() }}
+                        Actif depuis le {{ new Date(activeRotation.activationDate).toLocaleDateString() }}
                       </div>
                     </div>
                     <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
@@ -455,27 +473,46 @@ import { useTeamStore } from "@/stores/teamStore.js";
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useCalendar } from '@/composables/useCalendar';
-import { vacationService } from "@/services/vacationService.js";
+// import { vacationService } from "@/services/vacationService.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
 import DemandCard from '@/components/OwnDemandCard.vue';
 import OwnDemandCard from "@/components/OwnDemandCard.vue";
 import TransferDialog from '@/components/Profile/TransferDialog.vue';
+import { useRouter } from 'vue-router';
+import { useShiftStore } from "@/stores/shiftStore.js";
 
+const router = useRouter();
 
 const authStore = useAuthStore()
 const teamStore = useTeamStore()
 const substitutionStore = useSubstitutionStore()
 const snackbarStore = useSnackbarStore()
+const rotationStore = useRotationStore()
 const userName = authStore.name
 const { smAndDown } = useDisplay();
 const showAnnouncement = ref(true);
+const shiftStore = useShiftStore();
+
+const shiftsWithSubstitutions = computed(() => {
+  return shiftStore.shiftsWithSubstitutions;
+});
 
 // État pour le calendrier
 const selectedDate = ref(new Date());
 const currentMonth = ref(new Date().getMonth());
 const currentYear = ref(new Date().getFullYear());
 const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-const vacationsOfUser = ref(new Map());
+
+const vacationsOfUser = computed(() => {
+  const map = new Map();
+  const shifts = shiftsWithSubstitutions.value;
+  if (shifts && shifts.length > 0) { 
+    shifts.forEach(({ date, shift, teamObject }) => {
+      map.set(date, { shift, teamObject });
+    });
+  }
+  return map;
+});
 const rotationsMap = ref(new Map());
 const currentActiveRotation = ref(null);
 
@@ -536,6 +573,11 @@ const getTomorrowVacation = computed(() => {
   return vacationsOfUser.value.get(tomorrowISO.toISOString());
 });
 
+const activeRotation = computed(() => {
+  return rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
+ 
+});
+
 const vacationName = computed(() => (vacation) => {
   if (!vacation) return null;
   if (vacation.shift.type === 'rest') return 'Repos';
@@ -580,9 +622,6 @@ const loadData = async () => {
   try {
     isLoading.value = true;
 
-    // Charger l'équipe actuelle
-    await teamStore.fetchCurrentTeamOfUser(authStore.userId);
-
     // // Charger les substitutions
     // await substitutionStore.fetchAllDemands({
     //   startDate: new Date().toISOString(),
@@ -596,10 +635,6 @@ const loadData = async () => {
     //   vacationsOfUser.value.set(date, { shift, teamObject });
     // });
 
-    // Charger le tour de service actif
-    const rotationStore = useRotationStore();
-    await rotationStore.fetchRotations(authStore.centerId);
-    currentActiveRotation.value = rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
 
   } catch (error) {
     console.error('Erreur lors du chargement des données:', error);

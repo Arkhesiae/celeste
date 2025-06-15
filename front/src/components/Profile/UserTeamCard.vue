@@ -1,7 +1,7 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-0 bite" color="">
+  <v-card rounded="xl" elevation="0" class="pa-6 bite" color="">
     <!-- En-tête avec l'icône et le menu -->
-    <div class="d-flex justify-space-between align-center mb-4 pa-6">
+    <div class="d-flex justify-space-between align-center pa-0">
       <div class="d-flex align-center">
         <span class="text-h6">Mon équipe</span>
         <v-btn icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasis"
@@ -17,49 +17,44 @@
           </v-btn>
         </template>
         <v-list rounded="xl" class="pa-4" bg-color="onBackground">
-      
           <v-list-item rounded="xl" prepend-icon="mdi-handshake-outline" @click="promptDialog('Renfort')">
-            <v-list-item-title >Renforcer une équipe</v-list-item-title>
+            <v-list-item-title>Renforcer une équipe</v-list-item-title>
           </v-list-item>
           <v-list-item rounded="xl" prepend-icon="mdi-account-switch-outline" link @click="promptDialog('Changement')">
-            <v-list-item-title >Changer d'équipe</v-list-item-title>
+            <v-list-item-title>Changer d'équipe</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
     </div>
+
     <v-card-title class="text-h4 d-flex flex-column align-center  ">
       <div v-if="permanentTeam" class="d-flex flex-column align-center">
         <p class="text-overline text-medium-emphasis  ">équipe</p>
-        <p class="text-h1 font-weight-medium gradient">{{ permanentTeam.teamName }}</p>
+        <p class="text-h1 font-weight-medium gradient">{{ permanentTeam ? permanentTeam.name : 'Aucune équipe' }}</p>
         <p class="text-subtitle-2 text-medium-emphasis ">depuis le {{ formattedPermanentTeamDate }}</p>
       </div>
       <p v-else>Aucune équipe</p>
 
-      <v-chip v-if="showTemporaryTeamChip" color="onBackground" rounded="lg">
-        <v-icon class="mr-2">mdi-handshake-outline</v-icon>
-        Renforce {{ temporaryTeam?.teamName }} jusqu'au {{ formattedTemporaryTeamDate }}
 
-        <v-menu location="bottom end" @click.stop>
-          <template v-slot:activator="{ props }">
-            <v-btn icon size="small" v-bind="props" variant="text" color="default">
-              <v-icon size="large">mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-          <v-list rounded="xl" class="pa-4" bg-color="onBackground">
-            <!-- <v-list-item
-              @click="handleEdit(workshift)"
-              prepend-icon="mdi-pencil"
-            >
-              <v-list-item-title>Modifier</v-list-item-title>
-            </v-list-item> -->
-            <v-list-item prepend-icon="mdi-delete-outline">
-              <v-list-item-title>Annuler le renfort</v-list-item-title>
-            </v-list-item>
 
-          </v-list>
-        </v-menu>
+      <v-menu location="bottom end" offset="10" @click.stop>
+        <template v-slot:activator="{ props }">
+          <v-chip v-bind="props" v-if="showTemporaryTeamChip" color="onBackground" rounded="lg" >
+            <v-icon class="mr-2">mdi-handshake-outline</v-icon>
+            Renforce l'équipe {{ temporaryTeam?.teamName }} jusqu'au {{ formattedTemporaryTeamDate }}
 
-      </v-chip>
+          </v-chip>
+
+        </template>
+        <v-list rounded="xl" class="pa-4" bg-color="onBackground">
+          <v-list-item rounded="xl" prepend-icon="mdi-delete-outline" @click="handleDeleteOccurrence(temporaryTeam?._id)">
+            <v-list-item-title>Annuler le renfort</v-list-item-title>
+          </v-list-item>
+
+        </v-list>
+      </v-menu>
+
+
 
 
 
@@ -85,48 +80,40 @@
       </div>
     </div>
 
-    <div class="d-flex align-center justify-space-between px-6">
- 
-        <div class="text-h6">{{ nextOccurrences?.length > 0 ? 'A venir' : 'Aucun changement à venir' }}</div>
-        <div>
-          <v-scroll-x-transition mode="out-in">
-            <v-btn color="background" variant="flat" class="elevated-shadow" rounded="lg"
-              v-if="isHistoryRevealed === false" @click="isHistoryRevealed = true" append-icon="mdi-history">
-              Historique
-            </v-btn>
-
-            <v-btn color="background" class="elevated-shadow" rounded="lg" v-else @click="isHistoryRevealed = false"
-              append-icon="mdi-chevron-right">
-              A venir
-            </v-btn>
-          </v-scroll-x-transition>
-        </div>
-      </div>
+    <div class="d-flex align-center justify-space-between pa-0 mb-3">
+      <div class="text-h6">{{ nextOccurrences?.length > 0 ? 'A venir' : 'Aucun changement à venir' }}</div>
       <div>
+        <v-scroll-x-transition mode="out-in">
+          <v-btn color="background" variant="flat" class="elevated-shadow" rounded="lg"
+            v-if="isHistoryRevealed === false" @click="$router.push('/profile/' + authStore.userId + '/change-history')"
+            append-icon="mdi-history">
+            Historique
+          </v-btn>
 
-   
+          <v-btn color="background" class="elevated-shadow" rounded="lg" v-else @click="isHistoryRevealed = false"
+            append-icon="mdi-chevron-right">
+            A venir
+          </v-btn>
+        </v-scroll-x-transition>
+      </div>
+    </div>
+    <div>
+
+
     </div>
 
 
-    <v-card-text class="pa-6">
+    <v-card-text class="pa-0">
       <v-card color="transparent" class="pa-0" elevation="0" rounded="xl">
 
 
         <v-scroll-x-transition mode="out-in">
-          <div v-if="isHistoryRevealed === false">
-            <OccurrencesList :occurrences="nextOccurrences" @delete-occurrence="handleDeleteOccurrence" />
+          <div>
+            <TeamOccurence v-for="nextOccurrence in nextOccurrences" :occurrence="nextOccurrence"
+              :key="nextOccurrence._id" @delete-occurrence="handleDeleteOccurrence" />
+
           </div>
 
-
-          <div v-else>
-            <!--          <v-card-title class="d-flex justify-space-between align-center">Historique</v-card-title>-->
-
-            <OccurrencesList :occurrences="allOccurrences" @delete-occurrence="handleDeleteOccurrence" />
-
-            <!--        <v-card-actions class="mt-2">-->
-            <!--          <v-btn color="error" variant="text" @click="isHistoryRevealed = false">Close</v-btn>-->
-            <!--        </v-card-actions>-->
-          </div>
         </v-scroll-x-transition>
         <!-- <v-card-actions class="justify-end">
           <v-btn color="primary" outlined class="mt-3" rounded="xl" @click="promptDialog('Renfort')">Renfort</v-btn>
@@ -172,34 +159,22 @@
   <!-- Panneau latéral pour desktop -->
   <v-navigation-drawer v-model="showInfo" location="right" temporary="" order="-4" width="400"
     class="d-none d-md-block">
-    <v-card flat class="h-100 pa-4">
+    <v-card>
+      <v-toolbar color="primary">
+        <v-btn icon @click="showInfo = false">
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+        <v-toolbar-title>À propos de mon équipe</v-toolbar-title>
+      </v-toolbar>
 
-
-      <v-card-text class="pa-4">
-
-
-        <div class="privacy-content">
-          <p class="text-h5 font-weight-bold mb-4">Mon équipe</p>
-
-          <v-expansion-panels variant="accordion" rounded="xl" color="background" flat bg-color="background">
-            <v-expansion-panel class="pa-0 my-2" rounded="xl">
-              <v-expansion-panel-title> ?</v-expansion-panel-title>
-              <v-expansion-panel-text class="text-caption text-medium-emphasis">
-
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-
-            <v-expansion-panel>
-              <v-expansion-panel-title>Comment sont utilisées vos données ?</v-expansion-panel-title>
-              <v-expansion-panel-text class="text-caption text-medium-emphasis">
-                <p>V :</p>
-
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-
-
-          </v-expansion-panels>
-        </div>
+      <v-card-text class="pa-6">
+        <h2 class="text-h5 mb-4">Comment fonctionne mon équipe ?</h2>
+        <p class="mb-4">Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :</p>
+        <ul class="mb-4">
+          <li>Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</li>
+          <li>Renforcer une autre équipe en cliquant sur le bouton "Renfort"</li>
+          <li>Consulter votre historique et vos changements à venir</li>
+        </ul>
       </v-card-text>
     </v-card>
   </v-navigation-drawer>
@@ -212,37 +187,30 @@
 
 <script setup>
 import { ref, computed } from 'vue';
-import OccurrencesList from "@/components/Profile/OccurenceList.vue";
+import OccurrencesList from "@/components/Profile/TeamOccurence.vue";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
-import { teamService } from '@/services/teamService';
+
 import ConfirmationDialog from '@/components/common/ConfirmationDialog.vue';
 
-const props = defineProps({
-  teamOccurrences: {
-    type: Object,
-    default: () => ({}),
-  },
-});
 
-const emit = defineEmits(['update-dialog-mode']);
+const emit = defineEmits(['show-team-change-dialog']);
 
 const isHistoryRevealed = ref(false);
-const model = null;
-const activeCardId = ref(null);
+
 
 const promptDialog = (mode) => {
-  emit('update-dialog-mode', mode);
+  emit('show-team-change-dialog', mode);
 };
 
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const userId = computed(() => authStore.userId);
 
-const permanentTeam = computed(() => props.teamOccurrences?.permanentTeam || null);
-const temporaryTeam = computed(() => props.teamOccurrences?.temporaryTeam || null);
-const allOccurrences = computed(() => props.teamOccurrences?.allOccurrences || []);
-const nextOccurrences = computed(() => props.teamOccurrences?.nextOccurrences || []);
+const permanentTeam = computed(() => teamStore.currentTeam);
+const temporaryTeam = computed(() => teamStore.teamOccurrences?.temporaryTeam);
+const allOccurrences = computed(() => teamStore.teamOccurrences?.allOccurrences);
+const nextOccurrences = computed(() => teamStore.teamOccurrences?.nextOccurrences);
 
 const formattedPermanentTeamDate = computed(() => {
   if (!permanentTeam.value?.fromDate) return '';
@@ -263,21 +231,23 @@ const formattedTemporaryTeamDate = computed(() => {
 });
 
 const showTemporaryTeamChip = computed(() =>
-  temporaryTeam.value && (permanentTeam.value?.teamId !== temporaryTeam.value?.teamId)
+  
+  temporaryTeam.value
 );
 
 const showConfirmationDialog = ref(false);
 const occurrenceToDelete = ref(null);
 
 const handleDeleteOccurrence = (occurrenceId) => {
+  console.log('handleDeleteOccurrence', occurrenceId);
   occurrenceToDelete.value = occurrenceId;
   showConfirmationDialog.value = true;
 };
 
 const confirmDelete = async () => {
   try {
-    await teamService.deleteTeamOccurrence(userId.value, occurrenceToDelete.value);
-    await teamStore.getTeamOccurrencesOfUser(userId.value);
+    await teamStore.deleteTeamOccurrence(userId.value, occurrenceToDelete.value);
+
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'occurrence :', error);
   } finally {

@@ -1,6 +1,6 @@
-const AccountRecoveryRequest = require('../models/AccountRecoveryRequest');
+import AccountRecoveryRequest from '../models/AccountRecoveryRequest.js';
 
-exports.createRequest = async (req, res) => {
+export const createRequest = async (req, res) => {
   try {
     const request = new AccountRecoveryRequest(req.body);
     await request.save();
@@ -10,7 +10,7 @@ exports.createRequest = async (req, res) => {
   }
 };
 
-exports.getAllRequests = async (req, res) => {
+export const getAllRequests = async (req, res) => {
   try {
     const requests = await AccountRecoveryRequest.find()
       .sort({ createdAt: -1 });
@@ -20,7 +20,7 @@ exports.getAllRequests = async (req, res) => {
   }
 };
 
-exports.updateRequestStatus = async (req, res) => {
+export const updateRequestStatus = async (req, res) => {
   try {
     const request = await AccountRecoveryRequest.findByIdAndUpdate(
       req.params.id,
@@ -34,4 +34,6 @@ exports.updateRequestStatus = async (req, res) => {
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
-}; 
+};
+
+export default accountRecoveryController; 

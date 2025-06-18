@@ -1,9 +1,6 @@
-const nodemailer = require('nodemailer');
-require('dotenv').config({
-  path: process.env.NODE_ENV === 'production' 
-    ? '.env.production'
-    : '.env.development'
-});
+import nodemailer from 'nodemailer';
+import dotenv from 'dotenv';
+dotenv.config();
 
 /**
  * Envoie un OTP par email via AWS SES + Nodemailer
@@ -39,6 +36,4 @@ async function sendEmailOtp(toEmail, otp) {
   }
 }
 
-module.exports = {
-  sendEmailOtp
-}; 
+export { sendEmailOtp }; 

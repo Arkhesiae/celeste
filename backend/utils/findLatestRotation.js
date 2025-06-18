@@ -1,4 +1,4 @@
-const  Rotation  = require('../models/Rotation');
+import Rotation from '../models/Rotation.js';
 
 const findLatestRotation = async (centerId, date = new Date()) => {
     const dateTimestamp = new Date(date);
@@ -14,4 +14,4 @@ const findLatestRotation = async (centerId, date = new Date()) => {
     return rotations[0] || null;
 };
 
-module.exports = { findLatestRotation };
+export { findLatestRotation };

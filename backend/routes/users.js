@@ -1,6 +1,6 @@
-const express = require('express');
-const {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} = require('../middleware/authMiddleware');
-const {
+import express from 'express';
+import {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} from '../middleware/authMiddleware.js';
+import {
     createUser,
     getAllUsers,
     getUserById,
@@ -29,8 +29,8 @@ const {
     getUserInfoByEmail,
     removeUserAdmin,
     getDevListUsers
-} = require('../controllers/userController');
-const multer = require('multer');
+} from '../controllers/userController.js';
+import multer from 'multer';
 const router = express.Router();
 
 const storage = multer.diskStorage({
@@ -91,4 +91,4 @@ router.post('/:id/remove-admin', verifyToken, isMasterAdmin, removeUserAdmin);
 router.delete('/:id', verifyToken, isMasterAdmin, deleteUserById);
 router.post('/:id/assign-center', verifyToken, isMasterAdmin, assignUserToCenter);
 
-module.exports = router;
+export default router;

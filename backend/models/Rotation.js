@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const DaySchema = new mongoose.Schema({
     name: {type: String, required: true},
@@ -81,4 +81,4 @@ RotationSchema.index({ centerId: 1, active: 1, deleted: 1 });
 
 const Rotation = mongoose.model('Rotation', RotationSchema);
 
-module.exports = Rotation;
+export default Rotation;

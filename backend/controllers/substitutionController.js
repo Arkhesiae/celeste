@@ -1,10 +1,10 @@
-const Substitution = require('../models/Substitution');
-const User = require("../models/User");
-const {getTeamAtGivenDate} = require("../utils/getTeamAtGivenDate");
-const {computeShiftOfUser} = require("../utils/computeShiftOfUser");
-const {computeShiftOfUserWithSubstitutions} = require("../utils/computeShiftOfUserWithSubstitutions");
-const { createDelayedTransaction, cancelDelayedTransaction } = require('../services/transactionService');
-const Transaction = require('../models/Transaction');
+import Substitution from '../models/Substitution.js';
+import User from "../models/User.js";
+import {getTeamAtGivenDate} from "../utils/getTeamAtGivenDate.js";
+import {computeShiftOfUser} from "../utils/computeShiftOfUser.js";
+import {computeShiftOfUserWithSubstitutions} from "../utils/computeShiftOfUserWithSubstitutions.js";
+import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
+import Transaction from '../models/Transaction.js';
 
 
 const getCenterDemands = async (req, res) => {
@@ -649,7 +649,7 @@ const unacceptRequest = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     getCenterDemands,
     getUserDemands,
     createDemand,

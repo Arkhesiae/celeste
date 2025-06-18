@@ -1,4 +1,4 @@
-const Team = require('../models/Team');
+import Team from '../models/Team.js';
 
 // Trouver l'équipe active à une date
 const getTeamAtGivenDate = async (teams, date) => {
@@ -31,4 +31,4 @@ const getTeamAtGivenDate = async (teams, date) => {
     return null;
 };
 
-module.exports = { getTeamAtGivenDate };
+export { getTeamAtGivenDate };

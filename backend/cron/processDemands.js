@@ -1,5 +1,5 @@
-const cron = require('node-cron');
-const { processPastDemands } = require('../services/demandService');
+import cron from 'node-cron';
+import { processPastDemands } from '../services/demandService.js';
 
 // Exécuter toutes les 1 minutes
 cron.schedule('*/1 * * * *', async () => {

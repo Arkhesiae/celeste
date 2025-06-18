@@ -1,9 +1,9 @@
-const Center = require('../models/Center');
-const User = require('../models/User');
-const Team = require('../models/Team');
-const Rotation = require('../models/Rotation');
-const { findLatestRotation } = require('../utils/findLatestRotation');
-const mongoose = require('mongoose');
+import Center from '../models/Center.js';
+import User from '../models/User.js';
+import Team from '../models/Team.js';
+import Rotation from '../models/Rotation.js';
+import { findLatestRotation } from '../utils/findLatestRotation.js';
+import mongoose from 'mongoose';
 
 // GET ALL CENTERS
 const getAllCenters = async (req, res) => {
@@ -237,7 +237,7 @@ const getActiveRotationsByCenter = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     getAllCenters,
     addCenter,
     updateCenter,

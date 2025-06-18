@@ -1,16 +1,16 @@
-const { v4: uuidv4 } = require('uuid');
-const User = require('../models/User');
-const Center = require('../models/Center');
-const { hash } = require("bcrypt");
-const Team = require('../models/Team');
-const { getTeamAtGivenDate } = require("../utils/getTeamAtGivenDate");
-const { computeShiftOfUser } = require("../utils/computeShiftOfUser.js");
-const { computeShiftOfUserWithSubstitutions } = require("../utils/computeShiftOfUserWithSubstitutions.js");
-const Transaction = require('../models/Transaction');
-const { createDelayedTransaction, processPendingTransactions } = require('../services/transactionService');
-const path = require('path');
-const fs = require('fs');
-const { sendEmailApproval, sendEmailRejection } = require('../services/email/approvalEmail');
+import { v4 as uuidv4 } from 'uuid';
+import User from '../models/User.js';
+import Center from '../models/Center.js';
+import { hash } from "bcrypt";
+import Team from '../models/Team.js';
+import { getTeamAtGivenDate } from "../utils/getTeamAtGivenDate.js";
+import { computeShiftOfUser } from "../utils/computeShiftOfUser.js";
+import { computeShiftOfUserWithSubstitutions } from "../utils/computeShiftOfUserWithSubstitutions.js";
+import Transaction from '../models/Transaction.js';
+import { createDelayedTransaction, processPendingTransactions } from '../services/transactionService.js';
+import path from 'path';
+import fs from 'fs';
+import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
 
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
@@ -867,7 +867,7 @@ const getDevListUsers = async (req, res) => {
 };
 
 // Exporter les fonctions du module
-module.exports = {
+export {
     createUser,
     getAllUsers,
     getUserById,

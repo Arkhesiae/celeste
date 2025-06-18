@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {
+import {
     createTeam,
     deleteTeam,
     getTeamsByCenter,
@@ -9,8 +9,9 @@ const {
     updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder
-} = require('../controllers/teamController');
-const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
+} from '../controllers/teamController.js';
+
+import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
 
 // Créer une nouvelle équipe dans un centre
 router.post('/create-team', verifyToken, isAdmin, createTeam);
@@ -31,4 +32,4 @@ router.post('/:id/get-shifts', verifyToken, getTeamShifts);
 // Mettre à jour l'ordre des équipes
 router.put('/order', verifyToken, isAdmin, updateTeamsOrder);
 
-module.exports = router;
+export default router;

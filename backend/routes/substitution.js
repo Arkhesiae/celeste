@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {verifyToken, isUserOrAdmin} = require('../middleware/authMiddleware');
-const {
+import { verifyToken, isUserOrAdmin } from '../middleware/authMiddleware.js';
+import {
     getCenterDemands,
     getUserDemands,
     createDemand,
@@ -15,7 +15,7 @@ const {
     checkUserShift,
     markInterest,
     unacceptRequest
-} = require('../controllers/substitutionController');
+} from '../controllers/substitutionController.js';
 
 // Routes protégées par token
 router.get('/center', verifyToken, getCenterDemands);
@@ -36,4 +36,4 @@ router.get('/check-shift/:date', verifyToken, checkUserShift);
 
 router.get('/:id/seen-count', verifyToken, getSeenCount);
 
-module.exports = router;
+export default router;

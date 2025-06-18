@@ -1,8 +1,9 @@
-const User = require('../models/User');
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+import User from '../models/User.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
-exports.login = async (req, res) => {
+const loginController = {
+    login: async (req, res) => {
     const { email, password, stayConnected } = req.body;
     
     try {
@@ -42,4 +43,7 @@ exports.login = async (req, res) => {
         console.error('Erreur lors de la connexion:', error);
         res.status(500).json({ error: 'Une erreur est survenue lors de la connexion' });
     }
-}; 
+    }
+} 
+
+export default loginController; 

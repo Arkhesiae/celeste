@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ShiftSchema = new mongoose.Schema({
     name: {type: String, required: true},
@@ -116,4 +116,4 @@ SubstitutionSchema.index({ centerId: 1 });
 
 const Substitution = mongoose.model('Substitution', SubstitutionSchema);
 
-module.exports = Substitution;
+export default Substitution;

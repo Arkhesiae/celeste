@@ -1,7 +1,7 @@
-const User = require('../models/User');
-const Team = require('../models/Team');
-const Center = require('../models/Center');
-const bcrypt = require('bcrypt');
+import User from '../models/User.js';
+import Team from '../models/Team.js';
+import Center from '../models/Center.js';
+import bcrypt from 'bcrypt';
 
 async function generateTeamUsers() {
     try {
@@ -58,4 +58,4 @@ async function generateTeamUsers() {
     }
 }
 
-module.exports = generateTeamUsers; 
+export default generateTeamUsers; 

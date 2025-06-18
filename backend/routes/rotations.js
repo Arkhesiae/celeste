@@ -1,8 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const rotationController = require('../controllers/rotationController');
-const {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} = require('../middleware/authMiddleware');
+import express from 'express';
+import rotationController from '../controllers/rotationController.js';
+import {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} from '../middleware/authMiddleware.js';
 
+const router = express.Router();
 
 // Routes publiques
 router.get('/', verifyToken, rotationController.getAllRotations);
@@ -19,4 +19,4 @@ router.put('/:id/day', verifyToken, isAdmin, rotationController.updateDayInRotat
 router.post('/:id/duplicate', verifyToken, isAdmin, rotationController.duplicateRotation);
 router.put('/:id/update', verifyToken, isAdmin, rotationController.updateRotation);
 
-module.exports = router; 
+export default router; 

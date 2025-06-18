@@ -1,8 +1,8 @@
-const express = require('express');
-const router = express.Router();
-const workshiftController = require('../controllers/workshiftController');
-const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
+import express from 'express';
+import workshiftController from '../controllers/workshiftController.js';
+import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
 
+const router = express.Router();
 
 // Routes protégées par token
 router.get('/', verifyToken, workshiftController.getAllWorkshifts);
@@ -25,4 +25,4 @@ router.use((err, req, res, next) => {
     });
 });
 
-module.exports = router;
+export default router;

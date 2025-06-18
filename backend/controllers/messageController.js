@@ -1,8 +1,8 @@
-const Message = require('../models/Message');
-const User = require('../models/User');
+import Message from '../models/Message.js';
+import User from '../models/User.js';
 
 // Récupérer tous les messages
-exports.getMessages = async (req, res) => {
+const getMessages = async (req, res) => {
   try {
     const messages = await Message.find()
       .sort({ createdAt: -1 })
@@ -17,7 +17,7 @@ exports.getMessages = async (req, res) => {
 };
 
 // Créer un nouveau message
-exports.createMessage = async (req, res) => {
+const createMessage = async (req, res) => {
   try {
     const { adminId, type, subject, email, message } = req.body;
 
@@ -55,7 +55,7 @@ exports.createMessage = async (req, res) => {
 };
 
 // Marquer un message comme lu
-exports.markAsRead = async (req, res) => {
+const markAsRead = async (req, res) => {
   try {
     const message = await Message.findById(req.params.id);
     
@@ -78,7 +78,7 @@ exports.markAsRead = async (req, res) => {
 };
 
 // Supprimer un message
-exports.deleteMessage = async (req, res) => {
+const deleteMessage = async (req, res) => {
   try {
     const message = await Message.findById(req.params.id);
     
@@ -92,4 +92,11 @@ exports.deleteMessage = async (req, res) => {
     console.error('Erreur lors de la suppression du message:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
+};
+
+export default {
+  getMessages,
+  createMessage,
+  markAsRead,
+  deleteMessage
 }; 

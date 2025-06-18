@@ -1,7 +1,7 @@
-// Function to create notifications for all users
-const User = require("../models/User");
-const Notification = require('../models/Notification');
+import User from "../models/User.js";
+import Notification from '../models/Notification.js';
 
+// Function to create notifications for all users
 async function createNotificationForAllUsers(message, type = 'general') {
     try {
         const users = await User.find({}, '_id'); // Fetch all user IDs
@@ -32,4 +32,4 @@ const createNotificationForCenter = async (content, type = 'general', centerId) 
     }
 }
 
-module.exports = { createNotificationForCenter };
+export { createNotificationForCenter };

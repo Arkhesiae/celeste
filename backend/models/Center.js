@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const centerSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -17,4 +17,4 @@ centerSchema.index({ relatedCenters: 1 });
 
 const Center = mongoose.model('Center', centerSchema);
 
-module.exports = Center;
+export default Center;

@@ -1,8 +1,8 @@
-const Team = require('../models/Team');
-const Center = require('../models/Center');
-const Rotation = require('../models/Rotation');
-const User = require("../models/User");
-const { computeShiftOfTeam } = require('../utils/computeShiftOfTeam');
+import Team from '../models/Team.js';
+import Center from '../models/Center.js';
+import Rotation from '../models/Rotation.js';
+import User from "../models/User.js";
+import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 
 // Créer une nouvelle équipe dans un centre
 const createTeam = async (req, res) => {
@@ -181,7 +181,7 @@ const updateTeamsOrder = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     createTeam,
     deleteTeam,
     getTeamsByCenter,

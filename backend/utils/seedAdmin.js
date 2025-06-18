@@ -1,6 +1,6 @@
-const User = require('../models/User');
-const bcrypt = require('bcrypt');
-const dotenv = require('dotenv');
+import User from '../models/User.js';
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -35,4 +35,4 @@ async function createAdmin() {
   console.log('🚀 Admin account created:', admin.email);
 }
 
-module.exports = { createAdmin };
+export { createAdmin };

@@ -1,5 +1,5 @@
-const cron = require('node-cron');
-const { processPendingTransactions } = require('../services/transactionService');
+import cron from 'node-cron';
+import { processPendingTransactions } from '../services/transactionService.js';
 
 // Exécuter toutes les 1 minutes
 cron.schedule('*/1 * * * *', async () => {

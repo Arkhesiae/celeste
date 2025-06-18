@@ -41,4 +41,4 @@ const convertToCenterTime = (dateInput, centerTimezone = "Europe/Paris") => {
   return convertedDate;
 }
 
-module.exports = { convertToCenterTime };
+export { convertToCenterTime };

@@ -1,9 +1,8 @@
-const express = require('express');
+import express from 'express';
+import messageController from '../controllers/messageController.js';
+import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
+
 const router = express.Router();
-const messageController = require('../controllers/messageController');
-const { verifyToken, isAdmin, isMasterAdmin } = require('../middleware/authMiddleware');
-
-
 
 // Routes pour les messages
 // Seuls les administrateurs peuvent voir tous les messages
@@ -18,4 +17,4 @@ router.put('/:id/read', verifyToken, isAdmin, messageController.markAsRead);
 // Seuls les administrateurs principaux peuvent supprimer les messages
 router.delete('/:id', verifyToken, isMasterAdmin, messageController.deleteMessage);
 
-module.exports = router; 
+export default router; 

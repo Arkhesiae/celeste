@@ -1,6 +1,6 @@
 // middleware/auth.middleware.js
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 /**
  * Middleware pour vérifier le token JWT d'authentification
@@ -142,7 +142,7 @@ const isUserOrAdmin = (req, res, next) => {
     }
 };
 
-module.exports = {
+export {
     verifyToken,
     isAdmin,
     isMasterAdmin,

@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const ruleController = require('../controllers/ruleController');
-const { verifyToken, isMasterAdmin } = require('../middleware/authMiddleware');
+import ruleController from '../controllers/ruleController.js';
+import { verifyToken, isMasterAdmin } from '../middleware/authMiddleware.js';
 
 
 
@@ -15,4 +15,4 @@ router.use(verifyToken);
 router.post('/initialize', isMasterAdmin, ruleController.initializeRules);
 router.put('/:name', isMasterAdmin, ruleController.updateRule);
 
-module.exports = router; 
+export default router; 

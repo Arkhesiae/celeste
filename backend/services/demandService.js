@@ -1,4 +1,4 @@
-const Substitution = require('../models/Substitution');
+import Substitution from '../models/Substitution.js';
 
 /**
  * Archive les demandes de substitution ouvertes dont les dates sont passées
@@ -33,6 +33,4 @@ const processPastDemands = async () => {
     return pastDemands.length;
 };
 
-module.exports = {
-    processPastDemands
-};
+export { processPastDemands };

@@ -1,8 +1,11 @@
-const express = require('express');
+import express from 'express';
+import dotenv from 'dotenv';
+import generateTeamUsers from '../utils/generateTeamUsers.js';
+import { isMasterAdmin, verifyToken } from '../middleware/authMiddleware.js';
+
+dotenv.config();
+
 const router = express.Router();
-require('dotenv').config();
-const generateTeamUsers = require('../utils/generateTeamUsers');
-const { isMasterAdmin, verifyToken } = require('../middleware/authMiddleware');
 
 // Route pour générer les utilisateurs des équipes (uniquement en dev)
 router.post('/populate-users', verifyToken, isMasterAdmin, async (req, res) => {
@@ -22,4 +25,4 @@ router.post('/populate-users', verifyToken, isMasterAdmin, async (req, res) => {
     }
 });
 
-module.exports = router; 
+export default router; 

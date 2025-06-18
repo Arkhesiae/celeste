@@ -7,7 +7,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ../celeste-server/server_data:/app/public/avatars
+      - avatars_data:/app/public/avatars
     depends_on:
       - database
     environment:
@@ -54,4 +54,8 @@ services:
 networks:
   celeste:
     external: true
+
+volumes:
+  avatars_data:
+    driver: local
 

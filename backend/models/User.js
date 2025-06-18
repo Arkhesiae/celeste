@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const TeamOccurrenceSchema = new mongoose.Schema({
     teamId : { type: mongoose.Schema.Types.ObjectId, ref: 'Team', required: true },
@@ -94,4 +94,4 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 // Exporter les models
-module.exports = User
+export default User;

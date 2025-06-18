@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const TransactionSchema = new mongoose.Schema({
     sender: {
@@ -54,4 +54,4 @@ TransactionSchema.index({ effectiveDate: 1, status: 1 });
 
 const Transaction = mongoose.model('Transaction', TransactionSchema);
 
-module.exports = Transaction; 
+export default Transaction; 

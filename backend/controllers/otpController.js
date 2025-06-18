@@ -1,12 +1,12 @@
-const Otp = require('../models/Otp');
-const { sendEmailOtp } = require('../services/email/otpEmail');
-const crypto = require('crypto');
+import Otp from '../models/Otp.js';
+import { sendEmailOtp } from '../services/email/otpEmail.js';
+import crypto from 'crypto';
 
 const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
-exports.sendOtp = async (req, res) => {
+export const sendOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -43,7 +43,7 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
-exports.verifyOtp = async (req, res) => {
+export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
@@ -72,4 +72,9 @@ exports.verifyOtp = async (req, res) => {
     console.error('Erreur lors de la vérification de l\'OTP:', error);
     res.status(500).json({ message: 'Erreur lors de la vérification de l\'OTP' });
   }
+};
+
+export default {
+  sendOtp,
+  verifyOtp
 }; 

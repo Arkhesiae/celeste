@@ -196,7 +196,7 @@ const saveRule = async (rule) => {
 };
 
 onMounted(() => {
-  if (!authStore.isMasterAdmin) {
+  if (!authStore.isAdmin) {
     router.push('/');
     return;
   }

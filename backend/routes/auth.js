@@ -1,8 +1,11 @@
-const express = require('express');
-require('dotenv').config();
+import express from 'express';
+import dotenv from 'dotenv';
+import { verifyToken } from '../middleware/authMiddleware.js';
+import authController from '../controllers/authController.js';
+
+dotenv.config();
+
 const router = express.Router();
-const { verifyToken } = require('../middleware/authMiddleware');
-const authController = require('../controllers/authController');
 
 // Route pour demander une réinitialisation de mot de passe
 router.post('/reset-password-request', authController.requestPasswordReset);
@@ -16,4 +19,4 @@ router.post('/verify-password', verifyToken, authController.verifyPassword);
 // Route pour mettre à jour le mot de passe
 router.post('/update-password', verifyToken, authController.updatePassword);
 
-module.exports = router;
+export default router;

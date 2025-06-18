@@ -1,6 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {
+
+import {
     getAllCenters,
     addCenter,
     updateCenter,
@@ -9,7 +10,7 @@ const {
     getActiveRotationsByCenter,
     getUsersCountByCenter,
     getAdminsByCenter
-} = require('../controllers/centerController');
+} from '../controllers/centerController.js';
 
 // Routes pour les centres
 router.get('/', getAllCenters);
@@ -22,4 +23,4 @@ router.get('/all-active-rotations', getActiveRotationsByCenter);
 router.get('/users/count', getUsersCountByCenter);
 router.get('/admins', getAdminsByCenter);
 
-module.exports = router;
+export default router;

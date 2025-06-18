@@ -1,6 +1,6 @@
-const Rotation = require('../models/Rotation');
-const { createNotificationForCenter } = require("../utils/notificationFunctions");
-const { findLatestRotation } = require("../utils/findLatestRotation");
+import Rotation from '../models/Rotation.js';
+import { createNotificationForCenter } from "../utils/notificationFunctions.js";
+import { findLatestRotation } from "../utils/findLatestRotation.js";
 // Helper function to compute work duration
 const computeWorkDuration = (start, end) => {
     const [startHour, startMinute] = start.split(':').map(Number);
@@ -351,7 +351,7 @@ const updateRotation = async (req, res) => {
     }
 };
 
-module.exports = {
+export default {
     saveRotation,
     getAllRotations,
     getRotationsByCenter,

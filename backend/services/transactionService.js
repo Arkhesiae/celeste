@@ -1,4 +1,4 @@
-const Transaction = require('../models/Transaction');
+import Transaction from '../models/Transaction.js';
 
 /**
  * Crée une transaction différée
@@ -84,8 +84,4 @@ const cancelDelayedTransaction = async (transactionId) => {
     return transaction;
 };
 
-module.exports = {
-    createDelayedTransaction,
-    processPendingTransactions,
-    cancelDelayedTransaction
-}; 
+export { createDelayedTransaction, processPendingTransactions, cancelDelayedTransaction }; 

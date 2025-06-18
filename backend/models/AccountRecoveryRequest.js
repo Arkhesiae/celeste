@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const accountRecoveryRequestSchema = new mongoose.Schema({
   email: {
@@ -32,7 +32,7 @@ const accountRecoveryRequestSchema = new mongoose.Schema({
 
 const AccountRecoveryRequest = mongoose.model('AccountRecoveryRequest', accountRecoveryRequestSchema);
 
-module.exports = AccountRecoveryRequest;
+export default AccountRecoveryRequest;
 
 
 

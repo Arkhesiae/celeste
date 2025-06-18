@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-   
+import mongoose from 'mongoose';
+
 const ShiftSchema = new mongoose.Schema({
     name: {type: String, required: true},
     startTime: {
@@ -61,5 +61,5 @@ const ShiftSchema = new mongoose.Schema({
 
 const Shift = mongoose.model('Shift', ShiftSchema);
 
-module.exports = Shift;
+export default Shift;
 

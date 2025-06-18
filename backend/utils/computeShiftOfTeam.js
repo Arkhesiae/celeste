@@ -1,6 +1,6 @@
-const Team = require('../models/Team');
-const Center = require('../models/Center');
-const { findLatestRotation } = require('./findLatestRotation');
+import Team from '../models/Team.js';
+import Center from '../models/Center.js';
+import { findLatestRotation } from './findLatestRotation.js';
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée
 const computeShiftOfTeam = async (date, teamId) => {
@@ -57,4 +57,4 @@ const computeShiftOfTeam = async (date, teamId) => {
     }
 };
 
-module.exports = { computeShiftOfTeam };
+export { computeShiftOfTeam };

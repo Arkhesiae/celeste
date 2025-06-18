@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const ruleSchema = new mongoose.Schema({
   name: {
@@ -33,4 +33,6 @@ const ruleSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Rule', ruleSchema); 
+const Rule = mongoose.model('Rule', ruleSchema);
+
+export default Rule; 

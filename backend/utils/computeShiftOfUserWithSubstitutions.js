@@ -1,8 +1,8 @@
-const Team = require('../models/Team');
-const {computeShiftOfTeam} = require("./computeShiftOfTeam");
-const {getTeamAtGivenDate} = require("./getTeamAtGivenDate");
-const User = require("../models/User");
-const Substitution = require('../models/Substitution');
+import Team from '../models/Team.js';
+import {computeShiftOfTeam} from "./computeShiftOfTeam.js";
+import {getTeamAtGivenDate} from "./getTeamAtGivenDate.js";
+import User from "../models/User.js";
+import Substitution from '../models/Substitution.js';
 
 // Récupérer le shift d'un utilisateur à une date donnée en prenant en compte les substitutions
 const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
@@ -167,4 +167,4 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
     }       
 };
 
-module.exports = { computeShiftOfUserWithSubstitutions }; 
+export { computeShiftOfUserWithSubstitutions }; 

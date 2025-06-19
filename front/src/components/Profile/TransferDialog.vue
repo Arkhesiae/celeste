@@ -7,14 +7,14 @@
           <v-number-input v-model="transferAmount" class="text-primary" reverse controlVariant="split" label=""
                     rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
                     base-color="transparent" variant="outlined"
-                    min="0"
+                    :min="0"
                     :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']">
           </v-number-input>
     
           <v-autocomplete
             v-model="transferRecipient"
             :items="availableUsers"
-            item-title="name"
+            :item-title="getUserFullName"
             item-value="_id"
             label="Destinataire"
             variant="solo"
@@ -26,10 +26,10 @@
             class="mb-4"
           >
             <template v-slot:item="{ props, item }">
-              <v-list-item v-bind="props" :title="item.raw.name" :subtitle="item.raw.email">
+              <v-list-item v-bind="props" :title="getUserFullName(item.raw)" :subtitle="getUserSubtitle(item.raw)">
                 <template v-slot:prepend>
                   <v-avatar size="32" color="primary">
-                    {{ item.raw.name.charAt(0) }}
+                    {{ getUserFullName(item.raw).charAt(0) }}
                   </v-avatar>
                 </template>
               </v-list-item>
@@ -80,14 +80,14 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { userService } from "@/services/userService.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 import { usePointStore } from "@/stores/pointStore.js";
-
+import { useCenterStore } from "@/stores/centerStore.js";
 const pointStore = usePointStore();
-
+const centerStore = useCenterStore();
 const props = defineProps({
   dialogVisible: {
     type: Boolean,
@@ -129,7 +129,16 @@ watch(localDialogVisible, (newValue) => {
 const fetchAvailableUsers = async () => {
   try {
     isLoadingUsers.value = true;
-    const users = await userService.fetchUsersByCenter(authStore.centerId);
+    let users;
+    
+    // Si c'est un administrateur maître, récupérer tous les utilisateurs
+    if (authStore.isAdmin && authStore.adminType === 'master') {
+      users = await userService.getUsers();
+    } else {
+      // Sinon, récupérer seulement les utilisateurs du centre
+      users = await userService.fetchUsersByCenter(authStore.centerId);
+    }
+    
     // Filtrer l'utilisateur courant de la liste
     availableUsers.value = users.filter(user => user._id !== props.userId);
   } catch (error) {
@@ -166,12 +175,14 @@ const confirmTransfer = async () => {
     snackbarStore.showNotification(
       isDelayedTransfer.value 
         ? 'Virement différé programmé avec succès' 
-        : 'Transfert de points effectué avec succès', 
-      'onPrimary' , 'mdi-check-circle'
+        : 'Transfert de points effectué', 
+      'onPrimary' , 'mdi-check'
     );
     closeDialog();
+    console.log("Success");
     emit('transfer-success');
   } catch (error) {
+    console.log("error", error);
     snackbarStore.showNotification(error.message, 'onError' , 'mdi-alert-circle');
   } finally {
     isLoading.value = false;
@@ -180,7 +191,7 @@ const confirmTransfer = async () => {
 
 const closeDialog = () => {
   localDialogVisible.value = false;
-  transferAmount.value = null;
+  transferAmount.value = 0;
   transferRecipient.value = '';
   isDelayedTransfer.value = false;
   transferDate.value = '';
@@ -190,6 +201,23 @@ const isFutureDate = (date) => {
   const selectedDate = new Date(date);
   const today = new Date();
   return selectedDate > today;
+};
+
+const getCenterName = (centerId) => {
+  const center = centerStore.centers.find(center => center._id === centerId);
+  return center?.name;
+};
+
+const getUserSubtitle = (user) => {
+  if (authStore.isAdmin) {
+    return getCenterName(user.centerId);
+  }
+  return ' ';
+};
+
+const getUserFullName = (user) => {
+  if (!user) return '';
+  return `${user.name} ${user.lastName}`;
 };
 </script> 
 

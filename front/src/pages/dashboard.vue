@@ -355,7 +355,7 @@
       </v-col>
     </v-row> -->
     <TransferDialog :dialogVisible="transferDialog" :userId="authStore.userId"
-      @update:dialogVisible="transferDialog = $event" @transfer-success="handleTransferSuccess" />
+      @update:dialogVisible="transferDialog = $event" />
   </v-container>
 </template>
 
@@ -715,10 +715,10 @@ const handleRejectDemand = async (demand) => {
 
 const transferDialog = ref(false);
 
-const handleTransferSuccess = () => {
-  pointStore.fetchUserPoints();
-  pointStore.fetchTransactions();
-};
+// const handleTransferSuccess = () => {
+//   pointStore.fetchUserPoints();
+//   pointStore.fetchTransactions();
+// };
 
 const handleVacation = async (vacation) => {
   try {

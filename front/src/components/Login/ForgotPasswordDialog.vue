@@ -46,7 +46,7 @@
           rounded="xl"
           :loading="loading"
           :disabled="!valid"
-          type="submit"
+          @click="submit"
          
         >
           <v-icon icon="mdi-send" class="me-1"></v-icon>

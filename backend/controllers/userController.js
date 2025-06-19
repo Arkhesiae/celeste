@@ -730,7 +730,6 @@ const getTransactionHistory = async (req, res) => {
 };
 
 const updateAvatar = async (req, res) => {
-    console.log("req.file");
     try {
         const { id } = req.params;
         const avatar = req.file;
@@ -748,9 +747,9 @@ const updateAvatar = async (req, res) => {
 
         console.log(avatar.mimetype);
 
-        // Vérifier la taille du fichier (max 5MB)
-        if (avatar.size > 5 * 1024 * 1024) {
-            return res.status(400).json({ message: 'L\'image ne doit pas dépasser 5MB' });
+        // Vérifier la taille du fichier (max 10MB)
+        if (avatar.size > 10 * 1024 * 1024) {
+            return res.status(400).json({ message: 'L\'image ne doit pas dépasser 10MB' });
         }
 
 

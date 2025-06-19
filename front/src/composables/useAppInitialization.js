@@ -31,10 +31,13 @@ export function useAppInitialization() {
   };
 
   const initializeCenter = async (onProgress) => {
+    centerStore.fetchCenters();
+    
     if (!authStore.centerId) return;
 
     initializationStore.currentlyLoading = 'center';
     await Promise.all([
+     
       userStore.fetchUsersByCenter(authStore.centerId),
       centerStore.fetchAdminsByCenter(),
       centerStore.fetchUsersCountByCenter()

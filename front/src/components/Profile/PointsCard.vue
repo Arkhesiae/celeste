@@ -57,7 +57,7 @@
             color="primary"
             class="mx-auto my-4"
           ></v-progress-circular>
-          <div v-else-if="transactions.length > 0" class="ga-2">
+          <div v-else-if="transactions.length > 0" class="ga-2 d-flex flex-column">
             <TransactionItem 
                   v-for="(transaction, index) in processedTransactions.slice(0, 2)" 
                   :key="index"

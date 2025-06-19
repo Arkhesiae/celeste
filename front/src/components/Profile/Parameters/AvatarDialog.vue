@@ -9,6 +9,7 @@
         <template #prepend v-else>
           <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
         </template>
+        <span class="text-subtitle-2">Taille max : 10MB (une erreur ne permet pas la persistance pour le moment)</span>
       </v-card-item>
 
       <v-card-text class="px-6">

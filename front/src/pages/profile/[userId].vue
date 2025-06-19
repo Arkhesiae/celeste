@@ -59,7 +59,7 @@
 
       <v-row :class="smAndDown ? 'px-2' : ''">
         <v-col cols="12" md="4">
-          <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80" to="/center" link flat>
+          <v-card v-if="authStore.centerId" color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80" @click="router.push('/center/'+authStore.centerId+ '/teams')" link flat>
             <div class="d-flex align-center justify-space-between h-100">
               <span class="text-onBackground text-h6">Mon centre</span>
               <v-icon color="onBackground">mdi-chevron-right</v-icon>

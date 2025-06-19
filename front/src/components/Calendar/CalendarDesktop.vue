@@ -183,7 +183,7 @@ const emit = defineEmits(['select-day']);
 
 .today-center-highlight {
 
-  border : 1px solid  rgba(var(--v-theme-onBackground), 0.15)
+  border : 1px solid  rgba(var(--v-theme-onBackground), 0.25)
 }
 
 .isWorkDay {

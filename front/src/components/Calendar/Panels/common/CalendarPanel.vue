@@ -10,7 +10,8 @@
           <h2 class="text-h4 font-weight-medium" v-if="isRestDay">Repos</h2>
           <h2 class="text-h4 font-weight-medium" v-else>{{ getShiftName }}</h2>
         </v-card-title>
-        <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ getShiftTeam }}</v-card-subtitle>
+        <v-card-subtitle v-if="getShiftTeam" class="pt-0 text-caption">Dans équipe {{ getShiftTeam }}</v-card-subtitle>
+        <v-card-subtitle v-else class="pt-0 text-caption">Aucune équipe assignée</v-card-subtitle>
         <v-card-subtitle v-if="!isRestDay" class="pt-0">
           {{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}
         </v-card-subtitle>
@@ -48,13 +49,13 @@
             Congé
           </v-btn>
         </v-slide-group-item>
-        <v-slide-group-item>
+        <!-- <v-slide-group-item>
           <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-3"
             @click="$emit('openAbsenceDialog', 'VIC')">
             <v-icon start>mdi-calendar-clock</v-icon>
             VIC
           </v-btn>
-        </v-slide-group-item>
+        </v-slide-group-item> -->
         <v-slide-group-item>
           <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-2"
             @click="$emit('openAbsenceDialog', 'Stage')">
@@ -62,13 +63,13 @@
             Stage
           </v-btn>
         </v-slide-group-item>
-        <v-slide-group-item>
+        <!-- <v-slide-group-item>
           <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-2"
             @click="$emit('openAbsenceDialog', 'Autre')">
             <v-icon start>mdi-dots-horizontal</v-icon>
             Autre
           </v-btn>
-        </v-slide-group-item>
+        </v-slide-group-item> -->
         <v-slide-group-item>
           <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-2"
             @click="$emit('openAbsenceDialog', 'Autre')">
@@ -79,8 +80,7 @@
       </v-slide-group>
     </div>
 
-    <div class="d-flex align-center justify-center mb-4"
-      v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)">
+    <div class="d-flex align-center justify-center mb-4" v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)">
       <v-btn height="60px" color="permutation" text-color="permutation"
         class="flex-1-1 d-flex flex-column rounded-ts-xl rounded-bs-xl mr-1 text-none " :disabled="isRestDay || inPast"
         :class="{ 'opacity-10': isRestDay || inPast }" flat rounded="lg" @click="$emit('openRemplaDialog', 'switch')">
@@ -207,7 +207,7 @@ const getVacation = computed(() => {
 });
 
 const isRestDay = computed(() => {
-  return getVacation.value?.shift?.type === 'rest';
+  return  getVacation.value?.shift?.type === 'rest' || !getVacation.value?.shift;
 });
 
 const inPast = computed(() => {

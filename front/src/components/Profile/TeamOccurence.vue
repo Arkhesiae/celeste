@@ -19,7 +19,7 @@
 
 
           <v-chip class="" color="onBackground" size="small" rounded="lg" v-if="!smAndDown">
-            {{ "Dans xx jours" }}
+            {{ "Dans " + relativeDays + " jours" }}
           </v-chip>
 
 
@@ -65,6 +65,14 @@ const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const userId = computed(() => authStore.userId);
+
+const relativeDays = computed(() => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const changeDate = new Date(props.occurrence.fromDate);
+  const diffTime = changeDate - today;
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+});
 
 const formattedOccurenceDate = computed(() => (date) => {
   if (!date) return '';

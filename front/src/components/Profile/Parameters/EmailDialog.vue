@@ -24,7 +24,7 @@
           </div>
           <!-- Étape 1: Email -->
           <v-window-item :value="1">
-            <v-form ref="emailForm" v-model="emailValid">
+            <v-form ref="emailForm" v-model="emailValid" @submit.prevent="handleNext">
               <v-text-field
                 flat
                 v-model="email"
@@ -140,7 +140,14 @@ const handleBack = () => {
 }
 
 const handleNext = async () => {
-  if (!emailForm.value?.validate()) return
+  if (currentStep.value === 1) {
+    // Valider le formulaire email avant de passer à l'étape suivante
+    const { valid } = await emailForm.value.validate()
+    if (!valid) {
+      return
+    }
+  }
+  
   currentStep.value++
 }
 

@@ -7,15 +7,12 @@ dotenv.config();
 async function createAdmin() {
  
   const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
-  if (existingAdmin) {
-    console.log('✅ Admin already exists.');
-    return; 
-  }
+  
   console.log(process.env.ADMIN_PASSWORD);
   console.log(process.env.ADMIN_EMAIL);
   const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
 
-  const admin = new User({
+  const adminData = {
     name: 'Super',
     lastName: 'Admin',
     isAdmin: true,
@@ -23,16 +20,26 @@ async function createAdmin() {
     adminType: 'master',
     registrationStatus: 'verified',
     email: process.env.ADMIN_EMAIL,
+    points: Number.MAX_SAFE_INTEGER,
     password: hashedPassword,
     preferences: {
       theme: false,
       notifications: true,
       emailNotifications: true,
     },
-  });
+  };
 
-  await admin.save();
-  console.log('🚀 Admin account created:', admin.email);
+  if (existingAdmin) {
+    // Mettre à jour l'administrateur existant
+    Object.assign(existingAdmin, adminData);
+    await existingAdmin.save();
+    console.log('🔄 Admin account updated:', existingAdmin.email);
+  } else {
+    // Créer un nouvel administrateur
+    const admin = new User(adminData);
+    await admin.save();
+    console.log('🚀 Admin account created:', admin.email);
+  }
 }
 
 export { createAdmin };

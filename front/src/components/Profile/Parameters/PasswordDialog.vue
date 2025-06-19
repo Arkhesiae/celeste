@@ -14,7 +14,7 @@
       </v-card-item>
 
       <v-card-text class="px-6">
-        <v-form ref="form" v-model="valid">
+        <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
           <!-- Étape 1 : Vérification du mot de passe actuel -->
           <template v-if="step === 1">
             <v-text-field

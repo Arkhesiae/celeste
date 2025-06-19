@@ -1,6 +1,10 @@
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
+import { sendPasswordResetEmail } from '../services/email/resetPassword.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Configuration de l'URL de base
 const BASE_URL = process.env.FRONTEND_URL;
@@ -16,7 +20,7 @@ const authController = {
             }
 
             const resetToken = crypto.randomBytes(32).toString('hex');
-            const resetTokenExpiry = Date.now() + 3600000;
+            const resetTokenExpiry = Date.now() + 3600000; // 1 heure
 
             user.resetPasswordToken = resetToken;
             user.resetPasswordExpires = resetTokenExpiry;
@@ -24,10 +28,37 @@ const authController = {
 
             const resetLink = `${BASE_URL}/reset-password?token=${resetToken}`;
 
-            res.json({ 
-                message: 'Un email de réinitialisation a été envoyé',
-                resetLink: resetLink
-            });
+            // Envoyer l'email de réinitialisation en production
+            try {
+
+                // En mode développement, afficher le code dans la console
+                if (process.env.NODE_ENV !== 'production') {
+                    console.log('\n=== MODE DÉVELOPPEMENT ===');
+                    console.log(`📧 Email: ${email}`);
+                    console.log(`🔑 Reset Link: ${resetLink}`);
+                    console.log('========================\n');
+                } else {
+                    // En production, envoyer l'email
+                    await sendPasswordResetEmail(email, resetLink, user.firstName || user.name || '');
+                }
+
+
+                res.json({
+                    message: 'Un email de réinitialisation a été envoyé à votre adresse email',
+                    resetLink: process.env.NODE_ENV === 'development' ? resetLink : undefined
+                });
+            } catch (emailError) {
+                console.error('Erreur lors de l\'envoi de l\'email:', emailError);
+
+                // En cas d'erreur d'envoi d'email, nettoyer le token
+                user.resetPasswordToken = undefined;
+                user.resetPasswordExpires = undefined;
+                await user.save();
+
+                return res.status(500).json({
+                    message: 'Erreur lors de l\'envoi de l\'email de réinitialisation. Veuillez réessayer.'
+                });
+            }
         } catch (error) {
             console.error('Erreur lors de la demande de réinitialisation:', error);
             res.status(500).json({ message: 'Une erreur est survenue' });
@@ -92,7 +123,7 @@ const authController = {
             }
 
             const hashedPassword = await bcrypt.hash(newPassword, 10);
-            
+
             await User.findOneAndUpdate(
                 { _id: req.user.userId },
                 { $set: { password: hashedPassword } },

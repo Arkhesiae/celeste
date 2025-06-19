@@ -70,7 +70,7 @@
             </v-btn>
           </v-card-text>
         </v-card>
-        <v-card rounded="xl" elevation="0" class="pa-0" color="background">
+        <!-- <v-card rounded="xl" elevation="0" class="pa-0" color="background">
           <v-card-title class="text-h5">Notifications</v-card-title>
           <v-card-text>
             <v-btn block height="64" class="rounded-lg py-4 mb-4 d-flex " color="surface" elevation="0">
@@ -86,7 +86,7 @@
               </div>
             </v-btn>
           </v-card-text>
-        </v-card>
+        </v-card> -->
       </v-col>
     </v-row>
 

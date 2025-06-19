@@ -6,7 +6,6 @@ import Transaction from '../models/Transaction.js';
  * @returns {Promise<Object>} La transaction créée
  */
 const createDelayedTransaction = async (transactionData) => {
-    console.log(transactionData)
     const transaction = new Transaction({
         ...transactionData,
         status: 'pending',

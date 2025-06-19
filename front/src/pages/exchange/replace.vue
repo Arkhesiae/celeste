@@ -80,20 +80,20 @@
           <span class="opac text-subtitle-2 text-medium-emphasis">Toutes mes demandes</span>
         </div>
 
-        <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 position-sticky"
+        <v-card v-if="pendingDemands.length > 0" rounded="xl" elevation="0" color="transparent" class="pa-0 position-sticky"
           style="position: sticky !important; top: 100px !important;">
           <v-card-item @click="displayPending = !displayPending">
             <v-card-title>En attente</v-card-title>
-            <template #append>
+            <!-- <template #append>
               <v-icon icon="mdi-chevron-down"
                 :style="{ transform: displayPending ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
-            </template>
+            </template> -->
           </v-card-item>
 
           <v-expand-transition>
-            <v-card-text class="pa-0" v-if="pendingDemands.length > 0 && displayPending">
+            <v-card-text class="pa-0" v-if="pendingDemands.length > 0">
               <div v-if="pendingDemands.length > 0">
-                <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
+                <OwnDemandCard :isPoster="true" v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
               </div>
               <div v-else class="text-center py-4">
                 <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
@@ -104,45 +104,51 @@
         </v-card>
 
         
-        <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
+        <v-card v-if="acceptedAsPoster?.length > 0" rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
           style="position: sticky !important; top: 400px !important;">
           <v-card-item @click="displayAccepted = !displayAccepted">
             <v-card-title>Acceptées</v-card-title>
-            <template #append>
+            <!-- <template #append>
               <v-icon icon="mdi-chevron-down"
                 :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
-            </template>
+            </template> -->
           </v-card-item>
 
           <v-expand-transition>
-      
+            <v-card-text class="pa-0" v-if="acceptedAsPoster?.length > 0">
+              <div v-if="acceptedAsPoster.length > 0">
+                <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" />
+              </div>
+              <div v-else class="text-center py-4">
+                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
+                <div class="text-body-1">Aucune demande en attente</div>
+              </div>
+            </v-card-text>
           </v-expand-transition>
         </v-card>
 
         <div class="my-8 d-flex flex-column">
           <span class="text-h5 font-weight-medium">A venir</span>
-          <span class="opac text-subtitle-2 text-medium-emphasis">Vacations à venir</span>
+          <span class="opac text-subtitle-2 text-medium-emphasis">Les vacations que je dois faire</span>
         </div>
 
         <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
           style="position: sticky !important; top: 400px !important;">
           <v-card-item @click="displayAccepted = !displayAccepted">
-            <v-card-title>Acceptées</v-card-title>
-            <template #append>
+            <v-card-title v-if="acceptedAsAccepter.length > 0">Acceptées</v-card-title>
+            <v-card-title v-else>  <div class="text-body-1">Aucune demande acceptée</div></v-card-title>
+            <!-- <template #append>
               <v-icon icon="mdi-chevron-down"
                 :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
-            </template>
+            </template> -->
           </v-card-item>
 
           <v-expand-transition>
-            <v-card-text class="pa-0" v-if="acceptedDemands.length > 0 && displayAccepted">
-              <div v-if="acceptedDemands.length > 0">
-                <OwnDemandCard color="surface" v-for="demand in acceptedDemands" :key="demand.id" :demand="demand" />
+            <v-card-text class="pa-0">
+              <div v-if="acceptedAsAccepter.length > 0">
+                <OwnDemandCard :isPoster="false" v-for="demand in acceptedAsAccepter" :key="demand.id" :demand="demand" />
               </div>
-              <div v-else class="text-center py-4">
-                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
-                <div class="text-body-1">Aucune demande acceptée</div>
-              </div>
+              
             </v-card-text>
           </v-expand-transition>
         </v-card>
@@ -214,7 +220,9 @@ const pendingDemands = computed(() => [
   ...substitutionStore.ownPendingTrueSubstitutions,
   ...substitutionStore.ownPendingTrueSwitches
 ]);
-const acceptedDemands = computed(() => substitutionStore.acceptedAsAccepter);
+
+const acceptedAsPoster = computed(() => substitutionStore.acceptedAsPoster);
+const acceptedAsAccepter = computed(() => substitutionStore.acceptedAsAccepter);
 
 const getNestedValue = (obj, path) => {
   if (!path || typeof path !== 'string') {

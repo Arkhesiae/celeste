@@ -35,7 +35,7 @@ export function useAppInitialization() {
 
     initializationStore.currentlyLoading = 'center';
     await Promise.all([
-      centerStore.fetchUsersByCenter(authStore.centerId),
+      userStore.fetchUsersByCenter(authStore.centerId),
       centerStore.fetchAdminsByCenter(),
       centerStore.fetchUsersCountByCenter()
     ]);
@@ -70,8 +70,8 @@ export function useAppInitialization() {
 
     initializationStore.currentlyLoading = 'substitutions';
     await substitutionStore.fetchAllDemands({
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+      startDate: new Date(Date.UTC(new Date().getFullYear() - 1, new Date().getMonth() - 1, 1)).toISOString(),
+      endDate: new Date(Date.UTC(new Date().getFullYear() + 1, new Date().getMonth() + 2, 0, 23, 59, 59, 999)).toISOString()
     });
     initializationStore.updateInitializationState('substitutions', true);
     if (onProgress) onProgress('substitutions');
@@ -82,6 +82,7 @@ export function useAppInitialization() {
 
     initializationStore.currentlyLoading = 'rotations';
     await rotationStore.fetchRotations(authStore.centerId);
+    await centerStore.fetchActiveRotationOfCenter(authStore.centerId);
     initializationStore.updateInitializationState('rotations', true);
     if (onProgress) onProgress('rotations');
   };

@@ -57,6 +57,26 @@
           <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
         </div>
         </v-alert>
+        <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Conflit de demandes</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Certaines de vos demandes semble présenter des erreurs. Cela peut-être dû à un changement d'équipe ou de tour de service. Veuillez les résoudre avant de poster une nouvelle demande.
+            </div>
+            <div>
+              Pour résoudre les conflits, veuillez vous rendre sur la page de gestion des demandes.
+            </div>
+          </v-card-text>
+        </div>
+          <div class="font-weight-medium">
+            <!-- Résoudre -->
+            <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+          </div>
+ 
+        </div>
+        </v-alert>
       </v-col>
     </v-row>
 
@@ -85,7 +105,7 @@
                 </div>
                 <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
                   style="right: 0; top: 0;">
-                  Équipe {{ getVacation.teamObject.name }}
+                  Équipe {{ getVacation.teamObject?.name }}
                 </v-chip>
               </div>
             </div>
@@ -129,54 +149,37 @@
           </v-card-text>
         </v-card>
 
-        <!-- Carte de la prochaine substitution -->
-        <v-card rounded="xl" class="mb-4 shadow-alt pa-6" color="remplacement" z-index="-01000">
+        <!-- Carte des prochaines substitutions -->
+        <v-card rounded="xl" class="mb-4 shadow-alt pa-6" bg-color="remplacement"  z-index="-01000">
           <v-card-title class="text-h6 font-weight-medium pa-0 mb-4">A venir</v-card-title>
-          <v-card-text class="pa-0">
-          
-              <v-card color="" v-if="nextSubstitution" class="d-flex align-center justify-space-between pa-4" style="border-radius: 16px !important">
-                <div class="d-flex align-center justify-start">
-                  <v-card-title class="pa-0 mr-2">
-                    <h2 class="text-h4 font-weight-medium">{{ nextSubstitution?.posterShift?.name }}</h2>
-                  </v-card-title>
-                  <div class="d-flex align-start flex-column justify-space-between ma-0">
-                    <v-card-subtitle class="pa-0 ma-0">
-                      {{ nextSubstitution?.posterShift?.startTime }} - {{ nextSubstitution?.posterShift?.endTime }}
-                    </v-card-subtitle>
-                    <v-card-subtitle class="pa-0 ma-0 text-caption">Dans équipe {{ nextSubstitution?.teamName
-                      }}</v-card-subtitle>
-
-                  </div>
-                </div>
-                
-                <v-chip :color="nextSubstitution.type === 'substitution' ? 'remplacement' : 'permutation'"
-                  variant="flat" size="small" rounded="lg">
-                  {{ nextSubstitution.type === 'substitution' ? 'Remplacement' : 'Permutation' }}
-                </v-chip>
-                <v-chip color="onBackground" prepend-icon="mdi-unicorn-variant"
-                  variant="flat" size="small" rounded="lg">
-                  {{ nextSubstitution.points }}
-                </v-chip>
-                <v-icon icon="mdi-chevron-right" color="onBackground" size="24" />
-              </v-card>
-      
-            <div v-else class="text-onRemplacement">
-              Aucun remplacement ou permutation à venir
-            </div>
+          <v-card-text class="pa-0 ga-2 d-flex flex-column">
+              <div v-if="nextSubstitutions?.length > 0">
+                <OwnDemandCard  :isPoster="false" v-for="nextSubstitution in nextSubstitutions" :key="nextSubstitution.id" :demand="nextSubstitution" />
+              </div>
+              <div v-else class="text-onRemplacement">
+                Aucun remplacement ou permutation à venir
+              </div>
           </v-card-text>
         </v-card>
 
         <!-- Carte des demandes en attente -->
-        <v-card rounded="xl" class="mb-4 shadow-alt pa-1" color="surfaceContainer" z-index="-01000">
-          <v-card-title class="text-h6 font-weight-medium">Demande en attente</v-card-title>
+        <v-card rounded="xl" v-if="pendingDemands.length > 0 || acceptedAsPoster.length > 0" class="mb-4 shadow-alt pa-1" color="surfaceContainer" z-index="-01000">
+          <v-card-title class="text-h6 font-weight-medium">Mes demandes</v-card-title>
           <v-card-text>
-            <div v-if="pendingDemands.length > 0">
+            <div v-if="pendingDemands.length > 0"> 
+            <v-card-title class="text-body-1 font-weight-medium">En attente</v-card-title>
+            <div >
               <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
             </div>
-            <div v-else class="text-center py-4">
-              <v-icon icon="mdi-check-circle-outline" color="permutation" size="large" class="mb-2" />
-              <div class="text-body-1">Aucune demande en attente</div>
+     
+          </div>
+            <div v-if="acceptedAsPoster.length > 0">
+              <v-card-title class="text-body-1 font-weight-medium">Acceptées</v-card-title>
+              <div >
+                <OwnDemandCard v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" />
+              </div>
             </div>
+           
           </v-card-text>
         </v-card>
       </v-col>
@@ -585,7 +588,7 @@ const vacationName = computed(() => (vacation) => {
 });
 
 // Fonction pour obtenir la prochaine substitution
-const nextSubstitution = computed(() => {
+const nextSubstitutions = computed(() => {
   const today = new Date();
   const allSubstitutions = substitutionStore.acceptedAsAccepter
   // Filtrer les substitutions futures et les trier par date
@@ -593,12 +596,15 @@ const nextSubstitution = computed(() => {
     .filter(sub => new Date(sub.posterShift.date) > today)
     .sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
 
-  return futureSubstitutions[0] || null;
+  return futureSubstitutions || null;
 });
 
 const pendingDemands = computed(() => {
   return substitutionStore.ownPendingHybridSubstitutions.concat(substitutionStore.ownPendingTrueSubstitutions).concat(substitutionStore.ownPendingTrueSwitches);
 });
+
+const acceptedAsPoster = computed(() => substitutionStore.acceptedAsPoster);
+const acceptedAsAccepter = computed(() => substitutionStore.acceptedAsAccepter);
 
 // Chargement des données
 const isLoading = ref(true);

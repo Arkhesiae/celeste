@@ -42,6 +42,7 @@ export const useCenterStore = defineStore('center', () => {
    */
   const fetchUsersByCenter = async (centerId) => {
     try {
+      console.log("fetchUsersByCenter", centerId);
       loading.value = true;
       error.value = null;
       const users = await centerService.fetchUsersByCenter(centerId);

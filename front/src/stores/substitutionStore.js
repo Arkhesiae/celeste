@@ -505,6 +505,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     hasOwnPendingTrueSubstitutions,
     hasOwnPendingHybridSubstitutions,
 
+    acceptedAsPoster,
     acceptedAsAccepter,
     hasAcceptedAsAccepter,
     findAcceptedAsAccepter,

@@ -1,6 +1,6 @@
 <template>
   <v-card color="transparent" rounded="sm" elevation="0">
-    <v-card-item class="pa-0">
+    <v-card-item class="pa-0 my-1">
       <v-card-title class="text-body-2 d-flex align-center">
         <v-icon icon="mdi-calendar" size="small" class="mx-2"></v-icon>
         <span class="text-medium-emphasis font-weight-bold">
@@ -32,15 +32,15 @@
           </div>
           <v-chip v-if="demand?.comment" class="ms-2 text-medium-emphasis " size="small" rounded="pill"
             color="remplacement" variant="flat" @click="showCommentDialog = true" style="cursor: pointer"  >
-            <v-icon>mdi-comment-outline</v-icon>
+            <v-icon>mdi-comment-text-outline</v-icon>
           </v-chip>
           <v-chip class="ms-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
             color="onBackground" variant="tonal">
             {{ demand?.seenBy?.length || 0 }}
           </v-chip>
-          <v-btn variant="text" class="ms-2" color="onBackground" icon="mdi-dots-vertical" size="small">
+          <!-- <v-btn variant="text" class="ms-2" color="onBackground" icon="mdi-dots-vertical" size="small">
 
-          </v-btn>
+          </v-btn> -->
         </div>
       </template>
     </v-card-item>
@@ -92,10 +92,10 @@
 
 
 
-          <div v-if="demand?.comment" class="mt-4">
+          <!-- <div v-if="demand?.comment" class="mt-4">
             <v-icon color="primary" icon="mdi-comment-text-outline" class="me-2"></v-icon>
             <span class="text-body-2 text-medium-emphasis">{{ demand?.comment }}</span>
-          </div>
+          </div> -->
         </v-card-text>
 
         <v-card-actions class="pa-0">

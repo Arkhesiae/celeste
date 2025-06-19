@@ -461,7 +461,7 @@ onMounted(() => {
 }
 
 .img-mobile {
-  height: 800px;
+  height: 600px;
   width: 800px;
   position: absolute;
   top: 400px;
@@ -472,7 +472,7 @@ onMounted(() => {
 .img-desktop {
   z-index: 10;
   width: 900px;
-  height: 800px;
+  
   object-fit: cover;
   position: absolute;
   right: -250px;

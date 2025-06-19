@@ -33,4 +33,23 @@ const processPastDemands = async () => {
     return pastDemands.length;
 };
 
-export { processPastDemands };
+const processAndCompleteDemands = async () => {
+    const now = new Date();
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const completedDemands = await Substitution.find({
+        status: 'accepted',
+        'posterShift.date': { $lt: startOfToday },
+        deleted: false
+    });
+
+    const updatePromises = completedDemands.map(demand => 
+        Substitution.findByIdAndUpdate(
+            demand._id,
+            { $set: { deleted: true, status: 'completed', updatedAt: now } }
+        )
+    );
+    await Promise.all(updatePromises);
+    return completedDemands.length;
+};
+
+export { processPastDemands, processAndCompleteDemands };

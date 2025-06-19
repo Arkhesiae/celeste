@@ -5,7 +5,12 @@ import {computeShiftOfUser} from "../utils/computeShiftOfUser.js";
 import {computeShiftOfUserWithSubstitutions} from "../utils/computeShiftOfUserWithSubstitutions.js";
 import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
 import Transaction from '../models/Transaction.js';
+import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 
+
+
+const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
+const MIN_POINTS_TO_POST_REQUEST = -20;
 
 const getCenterDemands = async (req, res) => {
     try {
@@ -227,9 +232,13 @@ const createDemand = async (req, res) => {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
+        if (user.points - points < MIN_POINTS_TO_POST_REQUEST) {
+            return res.status(400).json({ error: 'Vous ne pouvez pas poster cette demande, vous n\'avez pas assez de points' });
+        }
+
         // Vérification du shift de l'utilisateur
         const givenDate = new Date(posterShift.date);
-            const userShifts = await computeShiftOfUserWithSubstitutions(givenDate, posterId);
+        const userShifts = await computeShiftOfUserWithSubstitutions(givenDate, posterId);
         const userShift = userShifts[0];
             
         if (!userShift || !userShift.shift) {
@@ -414,6 +423,7 @@ const markInterest = async (req, res) => {
     }
 };
 
+
 const acceptRequest = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -453,9 +463,12 @@ const acceptRequest = async (req, res) => {
             { new: true }
         );
 
-        console.log(request.points)
+    
         // Création d'une transaction différée si des points sont en jeu
         if (request.points > 0) {
+            if (user.points-request.points < MIN_POINTS_TO_ACCEPT_REQUEST) {
+                return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous n\'avez pas assez de points' });
+            }
             await createDelayedTransaction({
                 sender: request.posterId,
                 receiver: userId,
@@ -568,7 +581,9 @@ const swapShifts = async (req, res) => {
             return res.status(400).json({ error: 'Votre shift n\'est pas accepté pour cet échange' });
         }
 
-
+        const accepterShift = {...userShift[0].shift, teamId: userShift[0].teamObject._id};
+        console.log("accepterShift", accepterShift);
+        
         // Mise à jour de la demande
         const updatedDemand = await Substitution.findByIdAndUpdate(
             demandId,
@@ -576,7 +591,7 @@ const swapShifts = async (req, res) => {
                 accepterId: userId,
                 status: 'accepted',
                 updatedAt: new Date(),
-                accepterShift: userShift[0].shift
+                accepterShift: accepterShift
             },
         
             { new: true }
@@ -649,6 +664,45 @@ const unacceptRequest = async (req, res) => {
     }
 };
 
+// Détection des conflits de substitutions lors d'un changement d'équipe
+const detectTeamChangeConflicts = async (req, res) => {
+    try {
+        const { userId, newTeamId, fromDate } = req.body;
+        if (!userId || !newTeamId || !fromDate) {
+            return res.status(400).json({ error: "Paramètres manquants" });
+        }
+
+        // Récupérer toutes les substitutions de l'utilisateur à partir de la date
+        const substitutions = await Substitution.find({
+            posterId: userId,
+            deleted: false,
+            status: { $in: ['open', 'pending', 'accepted'] },
+            'posterShift.date': { $gte: new Date(fromDate) }
+        });
+
+        // Pour chaque substitution, simuler le shift dans la nouvelle équipe
+        const conflicts = [];
+        for (const sub of substitutions) {
+            const date = new Date(sub.posterShift.date);
+
+            // Shift original
+            const originalShiftId = sub.posterShift.shift?._id?.toString() || sub.posterShift._id?.toString();
+
+            // Shift simulé dans la nouvelle équipe
+            const newShift = await computeShiftOfTeam(date, newTeamId);
+
+            if (originalShiftId && newShift && originalShiftId !== newShift._id) {
+                conflicts.push({id : sub._id, newShift, originalShiftId, date});
+            }
+        }
+
+        res.json({ conflicts: conflicts });
+    } catch (error) {
+        console.error("Erreur lors de la détection des conflits de substitutions :", error);
+        res.status(500).json({ error: "Erreur serveur" });
+    }
+};
+
 export {
     getCenterDemands,
     getUserDemands,
@@ -662,5 +716,6 @@ export {
     checkUserShift,
     swapShifts,
     markInterest,
-    unacceptRequest
+    unacceptRequest,
+    detectTeamChangeConflicts
 }; 

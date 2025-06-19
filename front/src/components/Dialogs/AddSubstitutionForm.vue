@@ -52,6 +52,7 @@ const currentWindow = ref(0);
 const formValid = ref(false);
 const selectedVariant = ref(null);
 const showConfirmationDialog = ref(false);
+const defaultPoints = ref(0);
 
 // Règles de validation
 const rules = {
@@ -87,7 +88,9 @@ const selectedRotationDay = computed(() => {
   for (const rotation of rotationStore.rotations) {
     const foundDay = rotation.days?.find(day => day._id === props.selectedVacation.shift);
     if (foundDay) {
-    
+      
+      demand.value.points = foundDay.defaultPoints;
+      defaultPoints.value = foundDay.defaultPoints;
       return {
         shift: foundDay,
         teamObject: props.selectedVacation.teamObject,
@@ -228,8 +231,7 @@ onMounted(async () => {
   try {
     loadingRotations.value = true;
     rotationError.value = null;
-    await centerStore.fetchActiveRotationOfCenter(authStore.centerId);
-    await rotationStore.fetchRotations(authStore.centerId);
+
   } catch (error) {
     console.error('Erreur lors du chargement du tour de service:', error);
     rotationError.value = 'Erreur lors du chargement du tour de service. Veuillez réessayer.';
@@ -321,8 +323,9 @@ const isNextButtonDisabled = computed(() => {
               <v-text-field rounded="lg" class="cursor-pointer mt-00" bg-color="surface" v-model="formattedDate"
                 persistent-hint hint="Remplacement" label="Date de remplacement" :rules="[rules.required, rules.date]"
                 @blur="formatDateForDisplay" @focus="formatDateForInput"
+                disabled
                 @update:model-value="handleDateChange"></v-text-field>
-              <div v-if="dialogModeValue === 'substitution'" class="text-h4 ma-3">-</div>
+ 
             </div>
             <div class="my-12">
               <v-card rounded="xl" color="background" class="mb-2" flat>
@@ -414,12 +417,16 @@ const isNextButtonDisabled = computed(() => {
                     Points par vacation
                   </v-card-title>
                   <v-card-subtitle class="text-caption pa-0 mb-4">
+                    <span>Points par défaut : {{ selectedRotationDay?.shift?.defaultPoints }} </span>
+                  </v-card-subtitle>
+                  <v-card-subtitle class="text-caption pa-0 mb-4">
                     Définissez le nombre de points pour chaque vacation sélectionnée
                   </v-card-subtitle>
                   <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center mb-1">
                     <template v-if="demand.acceptedSwitches.includes(day._id)">
                       <span class="text-body-1 mr-4">{{ day.name }}</span>
                       <v-number-input v-model="demand.pointsPerSwitch[day._id]" class="text-primary secondary ml-4" reverse
+                        min="0"
                         controlVariant="split" label="" rounded="xl" bg-color="surfaceContainer" color="blue" glow
                         :hideInput="false" inset base-color="transparent" variant="outlined"></v-number-input>
                     </template>
@@ -427,7 +434,12 @@ const isNextButtonDisabled = computed(() => {
                 </v-card>
 
                 <div class="d-flex justify-start align-center mt-4">
-                  <v-number-input v-model="demand.points" class="text-primary" reverse controlVariant="split" label=""
+                  <v-number-input v-model="demand.points" class="text-primary" :class="{
+                    'excess': demand.points > defaultPoints + 2,
+                    'low': demand.points < defaultPoints - 2
+                  }"
+                    min="0"
+                    reverse controlVariant="split" label=""
                     rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
                     base-color="transparent" variant="outlined">
 
@@ -485,4 +497,43 @@ const isNextButtonDisabled = computed(() => {
 
 
 }
+
+
+:deep(.v-number-input.excess .v-field__field input) {
+  color: rgb(var(--v-theme-error)) !important;
+  font-size: 1.5rem;
+  font-weight: 600;
+
+}
+
+:deep(.v-number-input.excess .v-btn--icon) {
+  color: rgba(255, 0, 0, 0.5) !important;
+
+
+}
+
+
+:deep(.v-number-input.excess .v-field__overlay) {
+  background-color: rgba(255, 0, 0, 0.05) !important;
+
+
+}
+
+:deep(.v-number-input.low .v-field__field input) {
+  color: rgba(40, 140, 90, 0.9) !important;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+:deep(.v-number-input.low .v-field__overlay) {
+  background-color: rgba(40, 140, 90, 0.05) !important;
+
+}
+
+:deep(.v-number-input.low .v-btn--icon) {
+  color: rgba(40, 140, 90, 0.5) !important;
+}
+
+
+
 </style>

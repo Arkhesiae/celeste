@@ -1,6 +1,9 @@
 import Rotation from '../models/Rotation.js';
 import { createNotificationForCenter } from "../utils/notificationFunctions.js";
 import { findLatestRotation } from "../utils/findLatestRotation.js";
+
+const POINTS_PER_HOUR = 2;
+
 // Helper function to compute work duration
 const computeWorkDuration = (start, end) => {
     const [startHour, startMinute] = start.split(':').map(Number);
@@ -15,10 +18,9 @@ const computeWorkDuration = (start, end) => {
         endDate.setDate(endDate.getDate() + 1);
         endsNextDay = true;
     }
-
     const durationInMillis = endDate - startDate;
     const hours = Math.floor(durationInMillis / 3600000);
-    return { duration: hours, endsNextDay };
+    return { points: Math.floor(hours * POINTS_PER_HOUR), duration: hours, endsNextDay };
 };
 
 // Determine rotation status
@@ -47,9 +49,14 @@ const saveRotation = async (req, res) => {
                 if (day.startTime && day.endTime) {
                     day.endsNextDay = computeWorkDuration(day.startTime, day.endTime).endsNextDay;
                 }
-                if (!day.defaultPoints) {
-                    day.defaultPoints = computeWorkDuration(day.startTime, day.endTime).duration;
-                }
+               
+                    day.defaultPoints = computeWorkDuration(day.startTime, day.endTime).points;
+                
+            }
+            if (day.variants) {
+                day.variants.forEach((variant) => {
+                    variant.defaultPoints = computeWorkDuration(variant.startTime, variant.endTime).points;
+                });
             }
         });
         
@@ -257,11 +264,15 @@ const updateDayInRotation = async (req, res) => {
         // Calculer endsNextDay et defaultPoints si c'est un jour de travail
         if (updatedDay.type !== 'rest') {
             if (updatedDay.startTime && updatedDay.endTime) {
-                const { endsNextDay, duration } = computeWorkDuration(updatedDay.startTime, updatedDay.endTime);
+                const { endsNextDay, points } = computeWorkDuration(updatedDay.startTime, updatedDay.endTime);
                 updatedDay.endsNextDay = endsNextDay;
-                if (!updatedDay.defaultPoints) {
-                    updatedDay.defaultPoints = duration;
-                }
+                updatedDay.defaultPoints = points;
+                
+            }
+            if (updatedDay.variants) {
+                updatedDay.variants.forEach((variant) => {
+                    variant.defaultPoints = computeWorkDuration(variant.startTime, variant.endTime).points;
+                });
             }
         }
 
@@ -330,6 +341,18 @@ const updateRotation = async (req, res) => {
             rotation.name = updatedData.name;
         }
         if (updatedData.days) {
+            updatedData.days.forEach((day) => {
+                if (day.type !== 'rest') {
+                    if (day.startTime && day.endTime) {
+                        day.defaultPoints = computeWorkDuration(day.startTime, day.endTime).points;
+                    }
+                }
+                if (day.variants) {
+                    day.variants.forEach((variant) => {
+                        variant.defaultPoints = computeWorkDuration(variant.startTime, variant.endTime).points;
+                    });
+                }
+            });
             rotation.days = updatedData.days;
         }
         if (updatedData.activationDates) {

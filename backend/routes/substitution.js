@@ -14,7 +14,8 @@ import {
     cancelDemand,
     checkUserShift,
     markInterest,
-    unacceptRequest
+    unacceptRequest,
+    detectTeamChangeConflicts
 } from '../controllers/substitutionController.js';
 
 // Routes protégées par token
@@ -35,5 +36,7 @@ router.delete('/:id/delete', verifyToken, deleteDemand);
 router.get('/check-shift/:date', verifyToken, checkUserShift);
 
 router.get('/:id/seen-count', verifyToken, getSeenCount);
+
+router.post('/detect-team-change-conflicts', verifyToken, detectTeamChangeConflicts);
 
 export default router;

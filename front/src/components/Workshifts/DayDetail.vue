@@ -17,8 +17,9 @@
       <template v-if="day?.type === 'rest'">
       </template>
       <template v-else>
+        <div class="text-body-1 mb-4">Horaires de travail</div>
         <template v-if="day?.variants?.length === 0">
-          <div class="text-body-1 mb-4">Horaires de travail</div>
+          
           <div class="d-flex justify-space-between align-center">
             <div>
               <div class="text-caption text-medium-emphasis">Début</div>
@@ -31,7 +32,7 @@
           </div>
         </template>
         <template v-else>
-          <div class="text-body-1 mb-4">Horaires de travail</div>
+         
           <v-chip-group v-model="selectedVariant" color="background" variant="flat" class="mb-4">
             <v-chip value="default" color="onBackground" rounded="lg" variant="flat">
               Défaut
@@ -55,6 +56,13 @@
           </div>
         </template>
       </template>
+      <div class="d-flex justify-start align-center">
+        <div class="text-caption text-medium-emphasis">Nombre de points par défaut</div>
+        <div class="text-caption font-weight-bold ml-2">{{ selectedVariant === 'default' ? day?.defaultPoints : day?.variants[selectedVariant]?.defaultPoints }}</div>
+
+      </div>
+     
+      
     </v-card-text>
 
     <v-card-actions class="pa-6">

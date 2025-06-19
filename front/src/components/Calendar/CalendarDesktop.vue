@@ -182,8 +182,8 @@ const emit = defineEmits(['select-day']);
 }
 
 .today-center-highlight {
-  color: rgb(var(--v-theme-primary)) !important;
-  border : 1px solid  rgba(var(--v-theme-primary), 0.15)
+
+  border : 1px solid  rgba(var(--v-theme-onBackground), 0.15)
 }
 
 .isWorkDay {

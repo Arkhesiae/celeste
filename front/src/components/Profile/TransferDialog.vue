@@ -7,6 +7,7 @@
           <v-number-input v-model="transferAmount" class="text-primary" reverse controlVariant="split" label=""
                     rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
                     base-color="transparent" variant="outlined"
+                    min="0"
                     :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']">
           </v-number-input>
     
@@ -35,12 +36,12 @@
             </template>
           </v-autocomplete>
 
-          <v-checkbox
+          <!-- <v-checkbox
             v-model="isDelayedTransfer"
             label="Virement différé"
             color="primary"
             class="mb-4"
-          ></v-checkbox>
+          ></v-checkbox> -->
 
           <v-text-field
             v-if="isDelayedTransfer"
@@ -101,7 +102,7 @@ const props = defineProps({
 const emit = defineEmits(['update:dialogVisible', 'transfer-success']);
 
 const localDialogVisible = ref(props.dialogVisible);
-const transferAmount = ref(null);
+const transferAmount = ref( 0  );
 const transferRecipient = ref('');
 const isLoading = ref(false);
 const isLoadingUsers = ref(false);
@@ -194,13 +195,21 @@ const isFutureDate = (date) => {
 
 <style scoped>
 :deep(.v-number-input .v-field__field input) {
-  color: rgb(var(--v-theme-primary)) !important;
+  color: rgb(var(--v-theme-remplacement)) !important;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
+:deep(.v-number-input.secondary .v-field__field input) {
+  color: rgb(var(--v-theme-secondary)) !important;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
 :deep(.v-btn--icon) {
+  color: rgb(var(--v-theme-remplacement)) !important;
   background-color: rgb(var(--v-theme-surface-container)) !important;
-  color: rgb(var(--v-theme-onBackground)) !important;
+
+
 }
 </style>

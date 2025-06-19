@@ -81,8 +81,8 @@
               </v-window-item>
             </v-window>
 
-            <v-card-actions class="pa-0 mt-4" :class="smAndDown ? 'd-flex flex-column' : ''">
-              <v-spacer v-if="!smAndDown"></v-spacer>
+            <v-card-actions class="pa-0 mt-4" :class="smAndDown ? 'd-flex flex-column ' : ' justify-end'">
+        
 
               <v-btn v-if="currentStep === 1" variant="text" color="onBackground"
                 @click="router.push({ path: '/creation' })" append-icon="mdi-chevron-right" rounded="xl"
@@ -288,6 +288,7 @@ const handlePasswordResetError = (message) => {
 
 .login-button-mobile {
   border-radius: 16px !important;
+  display: flex;
   width: 100%;
   height: 48px !important;
 }

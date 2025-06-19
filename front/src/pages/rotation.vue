@@ -185,7 +185,7 @@ const getDayStyle = (startTime, endTime) => {
 
 const saveRotation = async (newRotation) => {
   try {
-    newRotation.centerId = selectedCenter.value;
+    newRotation.centerId = selectedCenterId.value;
     await rotationStore.saveRotation(newRotation);
     snackbarStore.showNotification('Tour de service créé', 'onPrimary', 'mdi-file-check-outline');
     closeAddDialog();
@@ -225,7 +225,7 @@ const deleteRotation = async (rotationId) => {
 
 const confirmDelete = async () => {
   try {
-    await rotationStore.deleteRotation(rotationToDelete.value, selectedCenter.value);
+    await rotationStore.deleteRotation(rotationToDelete.value, selectedCenterId.value);
     snackbarStore.showNotification('Tour de service supprimé', 'onPrimary', 'mdi-check');
     showConfirmationDialog.value = false;
     rotationToDelete.value = null;

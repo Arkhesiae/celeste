@@ -26,6 +26,7 @@ declare module 'vue' {
     ConfirmationChip: typeof import('./src/components/Calendar/Chips/Poster/ConfirmationChip.vue')['default']
     ConfirmationChipExtended: typeof import('./src/components/Calendar/Chips/Poster/ConfirmationChipExtended.vue')['default']
     ConfirmationDialog: typeof import('./src/components/common/ConfirmationDialog.vue')['default']
+    ConflictDialog: typeof import('./src/components/Dialogs/ConflictDialog.vue')['default']
     ContactAdminForm: typeof import('./src/components/Forms/ContactAdminForm.vue')['default']
     copy: typeof import('./src/components/Calendar/Chips/Accepter/AccepterChip.vue')['default']
     DayDetail: typeof import('./src/components/Workshifts/DayDetail.vue')['default']

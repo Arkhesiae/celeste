@@ -69,7 +69,7 @@
         </div>
 
         <!-- Appearance Section -->
-        <v-card class="d-flex px-4 mt-8 text-medium-emphasis text-body-2 justify-space-between align-center flex-0-0"
+        <!-- <v-card class="d-flex px-4 mt-8 text-medium-emphasis text-body-2 justify-space-between align-center flex-0-0"
                 max-width="400px" flat @click="$event.stopPropagation() ; $emit('update:theme', !theme)">
           <span>Apparence</span>
           <v-switch
@@ -80,7 +80,7 @@
             false-icon="mdi-weather-night"
             true-icon="mdi-weather-sunny"
           ></v-switch>
-        </v-card>
+        </v-card> -->
 
         <!-- Footer Links Section -->
         <v-list v-if="isLoggedIn" nav class="d-flex justify-space-around align-center pt-8 text-caption"

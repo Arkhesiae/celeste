@@ -37,6 +37,8 @@
 
       <!-- Layout mobile -->
       <template v-if="smAndDown">
+        <v-switch v-model="isDarkTheme" inset class="mr-2" hide-details false-icon="mdi-weather-sunny"
+        true-icon="mdi-weather-night"></v-switch>
         <v-app-bar-nav-icon @click="toggleMobileDrawer" />
       </template>
 

@@ -357,12 +357,9 @@ watch(calendarDays, async (newCalendarDays) => {
 // Lifecycle hooks
 onMounted(async () => {
   try {
-
     isLoading.value = true;
     await Promise.all([
-      
-    
-      getWorkdaysOfUser(),
+      // getWorkdaysOfUser(),
       getAllSubstitutions(),
     ]);
     // snackbarStore.showNotification('Substitutions et vacations chargées !', 'onPrimary', 'mdi-check');

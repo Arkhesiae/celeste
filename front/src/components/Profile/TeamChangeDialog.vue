@@ -170,15 +170,48 @@
       </v-card-item>
 
       <v-card-text class="opacity-50">
-        Vous avez déjà un changement prévu dans l'équipe <strong>{{ conflict.teamName }}</strong> pour le <strong>{{ toDisplayFormat(conflict.fromDate) }}</strong>.
+        Vous avez déjà un changement prévu dans l'équipe <strong>{{ conflict?.teamName || '?' }}</strong> pour le <strong>{{ toDisplayFormat(conflict?.fromDate) || '?' }}</strong>.
         Ecraser le changement ?
       </v-card-text>
       <v-card-actions class="justify-space-between">
         <v-btn variant="text" color="secondary" rounded="xl" @click="showConfirmationDialog = false">
           Annuler
         </v-btn>
-        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleConfirmChange">
+        <v-btn variant="tonal" rounded="xl" color="primary" @click="overrideDateConflict">
           Valider
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="showConflictDialog" max-width="600px">
+    <v-card rounded="xl" elevation="0" class="pa-6">
+      <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
+        <v-card-title>Conflits détectés</v-card-title>
+      </v-card-item>
+      <v-card-text class="pa-0 my-4 ma-0">
+        <div v-if="substitutionConflicts.length">
+          <p>Les demandes suivantes sont impactées par le changement d'équipe / annulation et seront annulées :</p>
+          <v-list class="pa-0 ga-3 my-2 d-flex flex-column">
+       
+                <v-card  v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl" elevation="0">
+                <v-list-item-title>
+                  Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Demande initiale : <strong>{{ conf.sub?.posterShift?.name }}</strong> → après changement : <strong>{{ conf.newShift?.name }}</strong>
+                </v-list-item-subtitle>
+              </v-card>
+        
+          </v-list>
+        </div>
+      </v-card-text>
+      <v-card-actions class="justify-space-between">
+        <v-btn variant="text" color="secondary" rounded="xl" @click="showConflictDialog = false">
+          Annuler
+        </v-btn>
+        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleDeleteAndSubmit">
+          Valider et annuler les demandes
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -186,11 +219,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useDate } from 'vuetify';
 import { toUTCNormalized } from "@/utils.js";
 import { useTeamStore } from "@/stores/teamStore";
+import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useAuthStore } from '@/stores/authStore';
+import { vacationService } from '@/services/vacationService';
+import { substitutionService } from '@/services/substitutionService';
 
 const props = defineProps({
   dialogMode: {
@@ -210,6 +247,9 @@ const { smAndDown } = useDisplay();
 const date = useDate();
 const teamStore = useTeamStore();
 const teams = computed(() => teamStore.centerTeams);
+const substitutionStore = useSubstitutionStore();
+const authStore = useAuthStore();
+const userId = computed(() => authStore.userId);
 
 const dialogModeValue = computed({
   get: () => props.dialogMode,
@@ -229,6 +269,20 @@ const formattedStartDate = ref('');
 const formattedEndDate = ref('');
 const formattedDate = ref('');
 const formValid = ref(false);
+const showConflictDialog = ref(false);
+const substitutionConflicts = ref([]);
+const substitutions = computed(() => {
+    return substitutionStore.substitutions;
+});
+
+
+const ownDemands = computed(() => {
+  return substitutionStore.substitutions.filter(sub => sub.posterId === userId.value);
+});
+
+const acceptedAsAccepter = computed(() => {
+  return substitutionStore.acceptedAsAccepter;
+});
 
 const selectedTeamName = computed(() => {
   const team = teams.value.find(t => t._id === selectedTeam.value);
@@ -292,15 +346,15 @@ const updateFormattedDate = (val) => {
   }
 };
 
-const enRenfort = computed(() => {
-  if (!selectedDates.value.startDate || !props.occurrences?.allOccurrences) return null;
-  const now = new Date(toUTCNormalized(selectedDates.value.startDate));
-  return props.occurrences?.allOccurrences.find((occurrence) => {
-    const startDate = new Date(occurrence.fromDate);
-    const endDate = occurrence.toDate ? new Date(occurrence.toDate) : null;
-    return startDate <= now && endDate >= now;
-  }) || null;
-});
+// const enRenfort = computed(() => {
+//   if (!selectedDates.value.startDate || !props.occurrences?.allOccurrences) return null;
+//   const now = new Date(toUTCNormalized(selectedDates.value.startDate));
+//   return props.occurrences?.allOccurrences.find((occurrence) => {
+//     const startDate = new Date(occurrence.fromDate);
+//     const endDate = occurrence.toDate ? new Date(occurrence.toDate) : null;
+//     return startDate <= now && endDate >= now;
+//   }) || null;
+// });
 
 const enRenfortConflict = computed(() => {
   if (!selectedDates.value.startDate || !selectedDates.value.endDate || !teamStore.teamOccurrences?.allOccurrences) return null;
@@ -328,52 +382,105 @@ watch(isFormValid, (newVal) => {
   formValid.value = newVal;
 });
 
-watch(() => props.dialogVisible, (value) => {
-  if (!value) {
-    selectedTeam.value = null;
-    pickerDates.value = null;
-    currentWindow.value = 0;
-    formValid.value = false;
+async function detectSubstitutionConflicts() {
+  // Appel à l'API backend pour détecter les conflits
+  const fromDate = toUTCNormalized(selectedDates.value.startDate);
+  const newTeamId = selectedTeam.value;
+  const params = {
+    userId: userId.value,
+    newTeamId,
+    fromDate
+  };
+  try {
+    const result = await substitutionService.detectTeamChangeConflicts(params);
+    // On récupère les IDs des substitutions conflictuelles
+    const conflicts = result.conflicts || [];
+
+    // On filtre les substitutions locales pour afficher les infos dans la modale
+    const allSubs = [
+      ...ownDemands.value,
+      ...acceptedAsAccepter.value
+    ];
+
+    conflicts.forEach(conflict => {
+      const sub = allSubs.find(sub => sub._id === conflict.id);
+      conflict.sub = sub;
+    });
+
+  
+    substitutionConflicts.value = conflicts;
+    return conflicts;
+  } catch (e) {
+    substitutionConflicts.value = [];
+    return [];
   }
-});
+}
 
 const handleTeamChange = async () => {
-  const teamData = {
-    teamId: selectedTeam.value,
-    fromDate: toUTCNormalized(selectedDates.value.startDate),
-    toDate: dialogModeValue.value === 'Renfort' ? toUTCNormalized(selectedDates.value.endDate) : null
-  };
-
-  if (conflict.value && dialogModeValue.value !== 'Renfort') {
-    showConfirmationDialog.value = true;
-  } else {
-    submit(teamData);
-  }
+  checkDateConflict()
 };
 
-const handleConfirmChange = () => {
+const checkDateConflict = () => {
+  if (conflict.value && dialogModeValue.value !== 'Renfort') {
+    showConfirmationDialog.value = true;
+  } 
+  else checkSubstitutionConflict()
+}
+
+const overrideDateConflict = () => {
+  showConfirmationDialog.value = false;
+  checkSubstitutionConflict()
+}
+
+const checkSubstitutionConflict = async () => { 
+  const conflicts = await detectSubstitutionConflicts();
+  if (conflicts.length > 0) {
+    showConflictDialog.value = true;
+    return;
+  } 
+  
+  else handleSubmit()
+}
+
+const handleDeleteAndSubmit = async () => {
+  showConflictDialog.value = false;
+  // DELETE THE CONFLICT
+  console.log("conflicts", substitutionConflicts.value);
+  for (const conflict of substitutionConflicts.value) {
+    await substitutionService.cancelDemand(conflict.id);
+  }
+  handleSubmit()
+}
+
+const handleSubmit = () => {
   const teamData = {
     teamId: selectedTeam.value,
     fromDate: toUTCNormalized(selectedDates.value.startDate),
     toDate: dialogModeValue.value === 'Renfort' ? toUTCNormalized(selectedDates.value.endDate) : null
   };
-  console.log('handleConfirmChange', teamData, conflict.value);
   submit(teamData, conflict.value);
-  showConfirmationDialog.value = false;
 };
 
 const submit = (teamData, conflictToReplace) => {
   if (formValid.value) {
     emit("onSubmit", teamData, conflictToReplace);
   }
+  resetForm()
 };
+
+const resetForm = () => {
+  selectedTeam.value = null;
+  pickerDates.value = null;
+  currentWindow.value = 0;
+  formValid.value = false;
+}
 
 const close = () => {
   localDialogVisible.value = false;
+  resetForm()
 };
 
-onMounted(() => {
-});
+
 
 </script>
 

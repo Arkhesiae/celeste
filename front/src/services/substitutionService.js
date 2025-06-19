@@ -176,5 +176,19 @@ export const substitutionService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Détecte les conflits de substitutions lors d'un changement d'équipe.
+   * @param {Object} params - { userId, newTeamId, fromDate }
+   * @returns {Promise<Object>} Liste des IDs de substitutions conflictuelles.
+   */
+  async detectTeamChangeConflicts(params) {
+    const response = await fetch(`${API_URL}/substitution/detect-team-change-conflicts`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(params)
+    });
+    return handleResponse(response);
   }
 };

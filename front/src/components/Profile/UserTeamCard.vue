@@ -179,6 +179,40 @@
     </v-card>
   </v-navigation-drawer>
 
+
+  <v-dialog v-model="showConflictDialog" max-width="600px">
+    <v-card rounded="xl" elevation="0" class="pa-6">
+      <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
+        <v-card-title>Conflits détectés</v-card-title>
+      </v-card-item>
+      <v-card-text class="pa-0 my-4 ma-0">
+        <div v-if="substitutionConflicts.length">
+          <p>Les demandes suivantes sont impactées par le changement d'équipe / annulation et seront annulées :</p>
+          <v-list class="pa-0 ga-3 my-2 d-flex flex-column">
+       
+                <v-card  v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl" elevation="0">
+                <v-list-item-title>
+                  Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Demande initiale : <strong>{{ conf.sub?.posterShift?.name }}</strong> → après changement : <strong>{{ conf.newShift?.name }}</strong>
+                </v-list-item-subtitle>
+              </v-card>
+        
+          </v-list>
+        </div>
+      </v-card-text>
+      <v-card-actions class="justify-space-between">
+        <v-btn variant="text" color="secondary" rounded="xl" @click="showConflictDialog = false">
+          Annuler
+        </v-btn>
+        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleDeleteAndSubmit">
+          Valider et annuler les demandes
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
   <ConfirmationDialog :isDialogVisible="showConfirmationDialog" title="Suppression du changement"
     text="Êtes-vous sûr de vouloir supprimer ce changement ? Cette action est irréversible." icon="mdi-delete-outline"
     iconColor="error" confirmText="Supprimer" @confirm="confirmDelete"
@@ -239,10 +273,46 @@ const showConfirmationDialog = ref(false);
 const occurrenceToDelete = ref(null);
 
 const handleDeleteOccurrence = (occurrenceId) => {
-  console.log('handleDeleteOccurrence', occurrenceId);
+  const conflicts = detectSubstitutionConflicts(occurrenceId);
+  console.log("conflicts", conflicts);
   occurrenceToDelete.value = occurrenceId;
   showConfirmationDialog.value = true;
 };
+
+
+async function detectSubstitutionConflicts() {
+  // Appel à l'API backend pour détecter les conflits
+  const fromDate = toUTCNormalized(selectedDates.value.startDate);
+  const newTeamId = selectedTeam.value;
+  const params = {
+    userId: userId.value,
+    newTeamId,
+    fromDate
+  };
+  try {
+    const result = await substitutionService.detectTeamChangeConflicts(params);
+    // On récupère les IDs des substitutions conflictuelles
+    const conflicts = result.conflicts || [];
+
+    // On filtre les substitutions locales pour afficher les infos dans la modale
+    const allSubs = [
+      ...ownDemands.value,
+      ...acceptedAsAccepter.value
+    ];
+
+    conflicts.forEach(conflict => {
+      const sub = allSubs.find(sub => sub._id === conflict.id);
+      conflict.sub = sub;
+    });
+
+  
+    substitutionConflicts.value = conflicts;
+    return conflicts;
+  } catch (e) {
+    substitutionConflicts.value = [];
+    return [];
+  }
+}
 
 const confirmDelete = async () => {
   try {

@@ -6,8 +6,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configuration de l'URL de base
-const BASE_URL = process.env.FRONTEND_URL;
+
 
 const authController = {
     requestPasswordReset: async (req, res) => {
@@ -26,7 +25,8 @@ const authController = {
             user.resetPasswordExpires = resetTokenExpiry;
             await user.save();
 
-            const resetLink = `${BASE_URL}/reset-password?token=${resetToken}`;
+            
+            const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
 
             // Envoyer l'email de réinitialisation en production
             try {

@@ -23,13 +23,13 @@ async function sendPasswordResetEmail(toEmail, resetLink, userName = '') {
   const greeting = userName ? `Bonjour ${userName},` : 'Bonjour,';
   
   const mailOptions = {
-    from: process.env.EMAIL_FROM,
+    from: 'Celeste <reset@celeste-app.fr>',
     to: toEmail,
     subject: 'Réinitialisation de votre mot de passe - Celeste',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <h2 style="color: #1976d2;">Celeste</h2>
+          <h2 style="color:rgb(00, 0, 0);">Celeste</h2>
         </div>
         
         <div style="background-color: #f5f5f5; padding: 20px; border-radius: 8px;">
@@ -45,7 +45,7 @@ async function sendPasswordResetEmail(toEmail, resetLink, userName = '') {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetLink}" 
-               style="background-color: #1976d2; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+               style="background-color: #000000; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
               Réinitialiser mon mot de passe
             </a>
           </div>
@@ -56,7 +56,7 @@ async function sendPasswordResetEmail(toEmail, resetLink, userName = '') {
           
           <p style="color: #666; line-height: 1.6; font-size: 14px;">
             Si le bouton ne fonctionne pas, copiez et collez ce lien dans votre navigateur :<br>
-            <a href="${resetLink}" style="color: #1976d2; word-break: break-all;">${resetLink}</a>
+            <a href="${resetLink}" style="color: #000000; word-break: break-all;">${resetLink}</a>
           </p>
         </div>
         

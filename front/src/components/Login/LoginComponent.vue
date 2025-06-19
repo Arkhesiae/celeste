@@ -270,7 +270,7 @@ const openForgotPasswordDialog = () => {
 };
 
 const handlePasswordResetSuccess = (message) => {
-  snackbarStore.showNotification(message, 'success', 'mdi-check');
+  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check');
 };
 
 const handlePasswordResetError = (message) => {

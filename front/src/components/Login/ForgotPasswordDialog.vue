@@ -11,7 +11,7 @@
           Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe.
           Si cet email existe, vous recevrez un lien de réinitialisation de votre mot de passe.
         </p>
-        <v-form ref="form" v-model="valid">
+        <v-form ref="form" v-model="valid" @submit.prevent="submit">
           <v-text-field
             v-model="email"
             :rules="emailRules"
@@ -46,7 +46,7 @@
           rounded="xl"
           :loading="loading"
           :disabled="!valid"
-          @click="submit"
+          type="submit"
          
         >
           <v-icon icon="mdi-send" class="me-1"></v-icon>
@@ -109,7 +109,12 @@ const closeDialog = () => {
 }
 
 const submit = async () => {
-  if (!form.value?.validate()) return
+  // Validate form before submitting
+  const { valid: formValid } = await form.value.validate()
+  
+  if (!formValid) {
+    return
+  }
 
   loading.value = true
   try {

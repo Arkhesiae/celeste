@@ -40,18 +40,18 @@ onMounted(async () => {
     <v-chip
  
       rounded="lg"
-      color="background"
+      color="acceptedDemand"
       variant="flat"
       size="x-small"
       style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
       class="text-caption font-weight-bold position-absolute px-2 overflow-visible d-flex align-center justify-center"
     >
       <v-icon color="error"  v-if="acceptedAsPoster.length > 1">mdi-alert-circle-outline</v-icon>
-      <v-icon color="acceptedDemand"  v-if="acceptedAsPoster.type === 'switch'">mdi-swap-horizontal-hidden</v-icon>
-      <v-icon color="acceptedDemand"  v-if="acceptedAsPoster.type === 'substitution'">mdi-account-arrow-left</v-icon>
+      <v-icon color="onAcceptedDemand"  v-if="acceptedAsPoster.type === 'switch'">mdi-swap-horizontal-hidden</v-icon>
+      <v-icon color="onAcceptedDemand"  v-if="acceptedAsPoster.type === 'substitution'">mdi-account-arrow-left</v-icon>
       <div v-if="acceptedAsPoster.type === 'hybrid'">
-        <v-icon color="acceptedDemand" v-if="!acceptedAsPoster.accepterShift">mdi-account-arrow-left</v-icon>
-        <v-icon color="acceptedDemand" v-if="acceptedAsPoster.accepterShift">mdi-swap-horizontal</v-icon>
+        <v-icon color="onAcceptedDemand" v-if="!acceptedAsPoster.accepterShift">mdi-account-arrow-left</v-icon>
+        <v-icon color="onAcceptedDemand" v-if="acceptedAsPoster.accepterShift">mdi-swap-horizontal</v-icon>
       </div>
       <div v-if="acceptedAsPoster" class="d-flex align-center justify-center">
         <v-avatar size="x-small" class="" variant="tonal">

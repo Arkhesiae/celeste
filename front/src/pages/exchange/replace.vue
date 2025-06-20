@@ -145,7 +145,7 @@
           <v-expand-transition>
             <v-card-text class="pa-0">
               <div v-if="acceptedAsAccepter.length > 0" class="d-flex flex-column ga-2">
-                <OwnDemandCard small :isPoster="false" v-for="demand in acceptedAsAccepter" :key="demand.id" :demand="demand" :small="xs || md"/>
+                <OwnDemandCard :isPoster="false" v-for="demand in acceptedAsAccepter" :key="demand.id" :demand="demand" :small="xs || md"/>
               </div>
               
             </v-card-text>

@@ -55,17 +55,17 @@ const hasMultiplePending = computed(() => {
     <v-chip
  
       rounded="lg"
-      color="background"
+      color="pendingDemand"
       variant="flat"
       size="x-small"
       style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
       class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
     >
       <v-icon color="error"  v-if="hasMultiplePending">mdi-alert-circle-outline</v-icon>
-      <v-icon color="pendingDemand"  v-if="isTrueSwitch">mdi-swap-horizontal-hidden</v-icon>
-      <v-icon color="pendingDemand"  v-if="isTrueSubstitution">mdi-account-arrow-left</v-icon>
-      <v-icon color="pendingDemand"  v-if="isHybridSubstitution">mdi-account-arrow-left</v-icon>
-      <v-icon color="pendingDemand"  v-if="isHybridSubstitution" class="ml-n2" style="top: 1px; font-size: 16px;" >mdi-swap-horizontal</v-icon>
+      <v-icon color="onPendingDemand"  v-if="isTrueSwitch">mdi-swap-horizontal-hidden</v-icon>
+      <v-icon color="onPendingDemand"  v-if="isTrueSubstitution">mdi-account-arrow-left</v-icon>
+      <v-icon color="onPendingDemand"  v-if="isHybridSubstitution">mdi-account-arrow-left</v-icon>
+      <v-icon color="onPendingDemand"  v-if="isHybridSubstitution" class="ml-n2" style="top: 1px; font-size: 16px;" >mdi-swap-horizontal</v-icon>
 
       <div v-if="text" >
         <span>{{text}}</span>

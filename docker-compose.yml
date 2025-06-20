@@ -7,7 +7,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - avatars_data:/app/public/avatars
+      - avatars_data:/app/backend/public/avatars
     depends_on:
       - database
     environment:

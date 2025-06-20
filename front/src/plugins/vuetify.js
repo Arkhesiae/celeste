@@ -150,6 +150,12 @@ export default createVuetify({
           "surfaceContainerHighest": "#DEE3E5",
           "remplacement": "#4e3e64",
           "permutation": "#9777a0",
+          "pendingDemand": "#4d3e25fc",
+          "onPendingDemand": "#fff2b2",
+          "acceptedDemand": "#1c4f3d",
+          "onAcceptedDemand": "#f3ffbc",
+          "toDoDemand": "#4e3e64",
+          "onToDoDemand": "#a000a0",
         }
       },
     },

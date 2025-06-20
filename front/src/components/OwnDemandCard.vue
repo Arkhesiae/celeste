@@ -112,7 +112,7 @@
 
     <v-expand-transition>
       <div v-if="expanded" class="d-flex justify-end mt-2">
-        <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand" color="error">
+        <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand"  color="onBackground" style="color: rgba(var(--v-theme-onError), 0.99) !important;">
           Annuler
         </v-btn>
       </div>
@@ -219,13 +219,13 @@ const toggleExpand = () => {
 .pending-demand-card {
   border: 1px dashed rgba(255, 196, 134, 0.157) !important;
   background: rgba(var(--v-theme-pendingDemand), 0.99) !important;
-  color: rgb(0, 0, 0) !important;
+  color: rgba(var(--v-theme-onPendingDemand), 0.99) !important;
 }
 
 .accepted-demand-card {
   border: 1px solid rgba(111, 185, 141, 0.0000057) !important;
   background: rgba(var(--v-theme-acceptedDemand), 0.99) !important;
-  color: rgba(19, 19, 19, 0.985) !important;
+  color: rgba(var(--v-theme-onAcceptedDemand), 0.99) !important;
 }
 
 .to-do-demand-card {

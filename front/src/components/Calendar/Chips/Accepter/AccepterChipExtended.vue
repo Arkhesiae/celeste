@@ -3,7 +3,9 @@ import { computed, onMounted } from 'vue';
 import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
 
+const userStore = useUserStore();
 const teamStore = useTeamStore();
 const substitutionStore = useSubstitutionStore();
 const authStore = useAuthStore();
@@ -29,6 +31,10 @@ const shiftType = computed(() => {
   return findAcceptedAsAccepter.value?.type;
 });
 
+const userName = computed(() => {
+  return userStore.users.find(user => user._id === findAcceptedAsAccepter.value?.posterId)?.name + ' ' + userStore.users.find(user => user._id === findAcceptedAsAccepter.value?.posterId)?.lastName;
+});
+
 
 </script>
 
@@ -52,7 +58,10 @@ const shiftType = computed(() => {
 
         <span v-if="findAcceptedAsAccepter.type === 'substitution'">Remplace dans équipe {{teamName}}</span>
         
-        <span v-if="findAcceptedAsAccepter.type === 'switch'">Permute dans équipe {{teamName}}</span>
+        <span v-if="findAcceptedAsAccepter.type === 'switch' || (findAcceptedAsAccepter.type === 'hybrid' && findAcceptedAsAccepter.accepterShift)">Permute avec {{ userName }}</span>
+        
+
+
       </div>
       <div  v-else>
        

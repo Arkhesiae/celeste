@@ -95,11 +95,12 @@
     </v-dialog>
 
     <!-- Dialog pour le sélecteur de date -->
-    <v-dialog v-model="datePickerDialog" max-width="380" persistent>
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title>Définir le début de cycle</v-card-title>
-        <v-card-text class="pa-0">
+    <v-dialog v-model="datePickerDialog" max-width="380"  persistent :fullscreen="xs">
+      <v-card rounded="xl" :class="xs ? 'pa-4' : 'pa-6'">
+        <v-card-title>Définir le  début de cycle</v-card-title>
+        <v-card-text class="pa-0  d-flex flex-column justify-space-between align-center">
           <v-date-picker
+            width="100%"
             elevation="0"
             flat
             rounded="xl"
@@ -276,7 +277,7 @@ const centerId = route.params.centerId;
 const teams = computed(() => teamStore.centerTeams);
 const usersGroupedByTeam = computed(() => userStore.usersGroupedByTeam);
 const users = computed(() => userStore.users);
-const { smAndDown } = useDisplay();
+const { smAndDown, xs } = useDisplay();
 
 // Ajout de la computed property pour le nom du centre
 const centerName = computed(() => {

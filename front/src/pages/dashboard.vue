@@ -151,10 +151,16 @@
 
         <!-- Carte des prochaines substitutions -->
         <v-card rounded="xl" class="mb-4 shadow-alt pa-6" bg-color="remplacement"  z-index="-01000">
-          <v-card-title class="text-h6 font-weight-medium pa-0 mb-4">A venir</v-card-title>
-          <v-card-text class="pa-0 ga-2 d-flex flex-column">
-              <div v-if="nextSubstitutions?.length > 0">
-                <OwnDemandCard  :isPoster="false" v-for="nextSubstitution in nextSubstitutions" :key="nextSubstitution.id" :demand="nextSubstitution" />
+          <div class="d-flex align-start flex-column justify-space-between mb-4">
+          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Je remplace</v-card-title>
+          <span class="text-subtitle-2 text-medium-emphasis">
+            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
+            Les remplacements et permutations que je dois faire sont affichés ici.
+          </span>
+          </div>
+          <v-card-text class="pa-0 ma-0 ">
+              <div v-if="nextSubstitutions?.length > 0" class="d-flex flex-column ga-2">
+                <OwnDemandCard  :isPoster="false" v-for="nextSubstitution in nextSubstitutions" :key="nextSubstitution.id" :demand="nextSubstitution" :small="xs"/>
               </div>
               <div v-else class="text-onRemplacement">
                 Aucun remplacement ou permutation à venir
@@ -163,20 +169,26 @@
         </v-card>
 
         <!-- Carte des demandes en attente -->
-        <v-card rounded="xl" v-if="pendingDemands.length > 0 || acceptedAsPoster.length > 0" class="mb-4 shadow-alt pa-1" color="surfaceContainer" z-index="-01000">
-          <v-card-title class="text-h6 font-weight-medium">Mes demandes</v-card-title>
-          <v-card-text>
-            <div v-if="pendingDemands.length > 0"> 
-            <v-card-title class="text-body-1 font-weight-medium">En attente</v-card-title>
-            <div >
-              <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
+        <v-card rounded="xl" v-if="pendingDemands.length > 0 || acceptedAsPoster.length > 0" class="mb-4 shadow-alt pa-6" color="surfaceContainer" z-index="-01000">
+          <div class="d-flex align-start flex-column justify-space-between mb-4">
+          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Mes demandes</v-card-title>
+          <span class="text-subtitle-2 text-medium-emphasis">
+            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
+            Mes demandes en attente et acceptées sont affichées ici.
+          </span>
+          </div>
+          <v-card-text class="pa-0 ga-2 d-flex flex-column">
+            <div v-if="pendingDemands.length > 0" class="d-flex flex-column"> 
+            <v-card-title class="text-body-1 font-weight-medium mb-2 pa-0">En attente</v-card-title>
+            <div class="d-flex flex-column ga-2">
+              <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" :isPoster="true"  :small="xs"/>
             </div>
      
           </div>
-            <div v-if="acceptedAsPoster.length > 0">
-              <v-card-title class="text-body-1 font-weight-medium">Acceptées</v-card-title>
-              <div >
-                <OwnDemandCard v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" />
+            <div v-if="acceptedAsPoster.length > 0" class="d-flex flex-column">
+              <v-card-title class="text-body-1 font-weight-medium mb-2 pa-0">Acceptées</v-card-title>
+              <div class="d-flex flex-column ga-2">
+                <OwnDemandCard v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" :isPoster="true" :small="smAndDown"/>
               </div>
             </div>
            
@@ -233,7 +245,10 @@
 
           <!-- Section Calendrier -->
 
-          <v-card ref="calendarCard" rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow pa-2 calendar-card" color="surfaceContainer">
+          <v-card ref="calendarCard" rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow  calendar-card" :color="xs ? 'onBackground' : 'surfaceContainer'"
+          :class="{'pa-0 py-2 ml-n4 mr-n4' : xs, 'pa-0' : !xs}"
+          
+          >
             <v-card-title class="text-h6 font-weight-medium">Calendrier</v-card-title>
             <v-card-text>
               <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected" :isToday="isToday" 
@@ -492,7 +507,7 @@ const substitutionStore = useSubstitutionStore()
 const snackbarStore = useSnackbarStore()
 const rotationStore = useRotationStore()
 const userName = authStore.name
-const { smAndDown } = useDisplay();
+const { smAndDown, xs } = useDisplay();
 const showAnnouncement = ref(true);
 const shiftStore = useShiftStore();
 

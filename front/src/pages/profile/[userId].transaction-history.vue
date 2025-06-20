@@ -12,7 +12,7 @@
     </div>
     <v-row class=" ma-0">
       <div class="d-flex justify-center chip-container pa-2">
-        <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 gap-2 d-flex justify-center">
+        <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 ga-2 d-flex justify-center">
           <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="all" size="large" rounded="lg"
             color="primary" variant="text">Toutes</v-chip>
           <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="received" size="large" rounded="lg"
@@ -57,7 +57,7 @@
             <v-progress-circular v-if="isLoadingPending" indeterminate color="primary"
               class="mx-auto my-4"></v-progress-circular>
 
-            <div v-else-if="pendingTransactions.length > 0">
+            <div v-else-if="pendingTransactions.length > 0" class="ga-2 d-flex flex-column">
               <TransactionItem 
                 v-for="(transaction, index) in pendingTransactions.slice(0, 2)" 
                 :key="'pending-'+index"

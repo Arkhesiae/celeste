@@ -101,7 +101,7 @@
 
     <div class="d-flex align-center justify-center mb-4"
       v-if="substitutionStore.hasOwnPendingDemand(selectedDate) ">
-      <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
+      <v-btn color="error" height="60px" variant="tonal" :disabled="inPast"
         class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
         Annuler ma demande
       </v-btn>
@@ -109,7 +109,7 @@
 
     <div class="d-flex align-center justify-center mb-4"
       v-if=" substitutionStore.hasAcceptedAsPoster(selectedDate)">
-      <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
+      <v-btn color="error" height="60px" variant="tonal" :disabled="inPast"
         class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
         Annuler 
       </v-btn>
@@ -117,7 +117,7 @@
 
     <div class="d-flex align-center justify-center mb-4"
       v-if="substitutionStore.hasAcceptedAsAccepter(selectedDate)">
-      <v-btn color="error" height="60px" variant="tonal" :disabled="isRestDay || inPast"
+      <v-btn color="error" height="60px" variant="tonal" :disabled="inPast"
         class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
         @click="$emit('unacceptDemand', substitutionStore.findAcceptedAsAccepter(selectedDate)._id)">
         Annuler mon rempla

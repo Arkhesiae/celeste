@@ -1,52 +1,59 @@
 <template>
-  <v-card
-    class="demand-card mb-2"
-     
-    color="surfaceContainerLow"
-   variant="flat"
+  <div>
 
-  >
-    <v-card-item>
-      
+    <v-card class="demand-card" :class="{
+      'pending-demand-card': demand?.status === 'open' && isPoster,
+      'accepted-demand-card': demand?.status === 'accepted' && isPoster,
+      'to-do-demand-card': demand?.status === 'accepted' && !isPoster
+    }" variant="flat" @click="toggleExpand">
+      <v-card-item>
 
-      <v-card-title class="text-subtitle-1 font-weight-medium">
-        <div class="d-flex align-start ">
-          <v-card-title class="pb-0 mb-0">
-            <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
-          </v-card-title>
-          <div class="d-flex align-start flex-column justify-space-between ml-2 ">
-            <v-card-subtitle class="py-0">
-              {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
-            </v-card-subtitle>
-            <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
-         
+
+        <v-card-title class="text-subtitle-1 font-weight-medium">
+          <div class="d-flex align-start ">
+            <v-card-title class="pb-0 mb-0">
+              <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
+            </v-card-title>
+            <div class="d-flex align-start flex-column justify-space-between ml-2 ">
+              <v-card-subtitle class="py-0">
+                {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
+              </v-card-subtitle>
+              <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
+
+            </div>
+          </div>
+        </v-card-title>
+
+        <div class=" pa-0 d-flex align-center justify-space-between" >
+
+
+
+
+          <v-card-subtitle class="text-caption d-flex align-center mt-1">
+            {{ formatDate(demand?.posterShift?.date) }}
+          </v-card-subtitle>
+          <div>
+          <div class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
+            <v-avatar v-if="isPoster && getAccepter"
+              :image="getAccepter?.avatar ? `${API_URL}${getAccepter.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
+              size="24" class="mr-2"> </v-avatar>
+            <div v-if="isPoster && getAccepter" class="d-flex align-center ">
+              <span class="text-caption font-weight-medium">Accepté par {{ getAccepter?.name }} {{ getAccepter?.lastName
+                }}</span>
+
+            </div>
+            <div v-if="!isPoster && getPoster" class="d-flex align-center">
+
+              <span class="text-caption font-weight-medium">De {{ getPoster?.name }} {{ getPoster?.lastName }}</span>
+            </div>
+
           </div>
         </div>
-      </v-card-title>
-     
-      <div class=" pa-0">
-        <div  class="d-flex align-center mt-1 ga-2">
-            <div v-if="isPoster && getAccepter" class="d-flex align-center mt-1">
-              <v-avatar :image="getAccepter?.avatar ? `${API_URL}${getAccepter.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'" size="24" class="mr-2" />
-              <span class="text-caption font-weight-medium">Par {{ getAccepter?.name }} {{ getAccepter?.lastName }}</span>
-            </div>  
-            <div v-if="!isPoster && getPoster" class="d-flex align-center mt-1">
-              <v-avatar :image="getPoster?.avatar ? `${API_URL}${getPoster.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'" size="24" class="mr-2" />
-              <span class="text-caption font-weight-medium">De {{ getPoster?.name }} {{ getPoster?.lastName }}</span>
-            </div>  
 
 
-
-
-            <v-card-subtitle class="text-caption d-flex align-center mt-1">  
-              {{ formatDate(demand?.posterShift?.date) }}
-            </v-card-subtitle>
         </div>
-       
-       
-      </div>
-
-      <!-- <template v-slot:append>
+        
+        <!-- <template v-slot:append>
         <v-chip
           :color="demand?.type === 'replacement' ? 'remplacement' : 'permutation'"
           variant="tonal"
@@ -56,69 +63,65 @@
           {{ demand?.posterShift?.shift?.name }}
         </v-chip>
       </template> -->
-    </v-card-item>
+      </v-card-item>
 
 
-       
 
-      
+
+
 
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
         <div class="d-flex align-center mr-2">
 
-        <v-chip color="onBackground" variant="flat" size="small" rounded="lg"
-          prepend-icon="mdi-unicorn-variant" class="font-weight-bold">
-          {{ demand?.points }}
-        
-        </v-chip>
-        <!-- <v-icon color="onBackground" class="ml-1"
+          <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
+            class="font-weight-bold point-chip">
+            {{ demand?.points }}
+
+          </v-chip>
+          <!-- <v-icon color="onBackground" class="ml-1"
         icon="mdi-information-outline" size="x-small"></v-icon> -->
         </div>
-        <v-chip v-if="demand?.comment" 
-          color="onBackground" 
-          variant="flat" 
-          size="small" 
-          rounded="lg"
-          class="mr-2 font-weight-bold"
-          @click="showCommentDialog = true"
-          style="cursor: pointer">
-          <v-icon color="background" 
-            icon="mdi-comment-text-outline"></v-icon>
+        <v-chip v-if="demand?.comment"  variant="flat" size="small" rounded="lg"
+          class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
+          <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
-     
-        <v-chip v-if="demand?.type === 'switch'" color="permutation" variant="flat" size="small" rounded="lg"
-          prepend-icon="mdi-swap-horizontal">
-          Permutation
+
+        <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="small"
+          rounded="lg">
+          <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
+          <span v-if="!small">Permutation</span>
         </v-chip>
-        <v-chip v-if="demand?.type === 'hybrid'" class="hybrid-chip" color="remplacement" variant="flat" size="small"
-          rounded="lg" prepend-icon="mdi-account-arrow-left"> <v-icon color="background" class="ml-n1"
-            icon="mdi-swap-horizontal"></v-icon>
-          Hybride
+        <v-chip v-if="demand?.type === 'hybrid'" class="hybrid-chip type-chip " color="remplacement" variant="flat"
+          size="small" rounded="lg">
+          <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
+          <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
+          <span v-if="!small">Hybride</span>
         </v-chip>
-        <v-chip v-if="demand?.type === 'substitution'" color="remplacement" variant="flat" size="small" rounded="lg"
-          prepend-icon="mdi-account-arrow-left-outline">
-          Remplacement
+        <v-chip v-if="demand?.type === 'substitution'" class="type-chip" color="remplacement" variant="flat"
+          size="small" rounded="lg">
+          <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
+          <span v-if="!small">Remplacement</span>
         </v-chip>
       </div>
 
 
-      <v-btn 
-       class="position-absolute bottom-0 right-0 ma-2"
-        variant="text"
-        color="error"
-        size="small"
-        @click="cancelDemand"
-      >
-        Annuler
-      </v-btn>
- 
 
-  </v-card>
 
+
+    </v-card>
+
+    <v-expand-transition>
+      <div v-if="expanded" class="d-flex justify-end mt-2">
+        <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand" color="error">
+          Annuler
+        </v-btn>
+      </div>
+    </v-expand-transition>
+  </div>
   <!-- Dialog pour afficher le commentaire -->
-  <v-dialog v-model="showCommentDialog" max-width="500px" >
+  <v-dialog v-model="showCommentDialog" max-width="500px">
     <v-card class="pa-6" rounded="xl">
-      <v-card-title class="text-h6 pa-0" >
+      <v-card-title class="text-h6 pa-0">
         Commentaire de {{ demand?.posterShift?.name }}
       </v-card-title>
       <v-card-text class="pa-0">
@@ -144,7 +147,7 @@ const teamStore = useTeamStore();
 
 const userStore = useUserStore();
 const substitutionStore = useSubstitutionStore();
-const props = defineProps({ 
+const props = defineProps({
   demand: {
     type: Object,
     required: true
@@ -153,7 +156,14 @@ const props = defineProps({
     type: Boolean,
     required: false,
     default: false
+  },
+  small: {
+    type: Boolean,
+    required: false,
+    default: false
   }
+
+
 
 });
 
@@ -177,7 +187,6 @@ const getPoster = computed(() => {
 
 const cancelDemand = async () => {
   try {
-    console.log(props.demand);
     if (props.isPoster) {
       await substitutionStore.cancelDemand(props.demand._id);
     } else {
@@ -189,20 +198,88 @@ const cancelDemand = async () => {
 };
 
 const showCommentDialog = ref(false);
+const expanded = ref(false);
 
 defineEmits(['accept', 'decline']);
 
+// Ajout du gestionnaire de clic pour la carte
+const toggleExpand = () => {
+  expanded.value = !expanded.value;
+};
 
 </script>
 
 <style scoped>
 .demand-card {
+  box-sizing: border-box;
   border-radius: 16px !important;
   transition: transform 0.2s ease-in-out;
 }
+
+.pending-demand-card {
+  border: 1px dashed rgba(255, 196, 134, 0.157) !important;
+  background: rgba(var(--v-theme-pendingDemand), 0.99) !important;
+  color: rgb(0, 0, 0) !important;
+}
+
+.accepted-demand-card {
+  border: 1px solid rgba(111, 185, 141, 0.0000057) !important;
+  background: rgba(var(--v-theme-acceptedDemand), 0.99) !important;
+  color: rgba(19, 19, 19, 0.985) !important;
+}
+
+.to-do-demand-card {
+  background-color: rgba(var(--v-theme-remplacement), 0.20) !important;
+  color: rgba(var(--v-theme-remplacement), 1) !important;
+}
+
 
 .hybrid-chip {
   background: linear-gradient(to right, rgba(var(--v-theme-permutation), 1), rgba(var(--v-theme-remplacement), 1) 50%);
 }
 
-</style> 
+.accepted-demand-card .point-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-onBackground), 0.99) !important;
+}
+
+.pending-demand-card .point-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-onBackground), 0.99) !important;
+}
+
+.to-do-demand-card .point-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-onBackground), 0.99) !important;
+}
+
+.accepted-demand-card .type-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-acceptedDemand), 0.99) !important;
+}
+
+.pending-demand-card .type-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-pendingDemand), 0.99) !important;
+}
+
+.to-do-demand-card .type-chip {
+  color: rgba(var(--v-theme-background), 0.99) !important;
+}
+
+.pending-demand-card .comment-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-onBackground), 0.99) !important;
+
+}
+
+.accepted-demand-card .comment-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-onBackground), 0.99) !important;
+}
+
+.to-do-demand-card .comment-chip {
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-remplacement), 0.99) !important;
+}
+</style>

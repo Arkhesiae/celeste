@@ -70,7 +70,7 @@
           </div>
 
           <!-- Transactions en attente -->
-          <div v-if="pendingTransactions.length > 0" class="mt-4">
+          <div v-if="pendingTransactions.length > 0" class="mt-4 ga-2 d-flex flex-column" >
             <div class="text-subtitle-2 opacity-50 mb-2">Prochaine transaction en attente</div>
             <TransactionItem 
                   v-for="(transaction, index) in pendingTransactions.slice(0, 2)" 

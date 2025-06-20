@@ -74,26 +74,28 @@
           width="100%" elevation="0" @click="showAddDialog = true">
           Ajouter une demande
         </v-btn> -->
+        
 
-        <div class="mb-8 d-flex flex-column">
-          <span class="text-h5 font-weight-medium">Mes demandes</span>
-          <span class="opac text-subtitle-2 text-medium-emphasis">Toutes mes demandes</span>
+        <div class="mb-4 d-flex flex-column">
+          <div class="d-flex align-start flex-column justify-space-between mb-4">
+          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Mes demandes</v-card-title>
+          <span class="text-subtitle-2 text-medium-emphasis">
+            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
+            Mes demandes en attente et acceptées sont affichées ici.
+          </span>
+          </div>
         </div>
 
-        <v-card v-if="pendingDemands.length > 0" rounded="xl" elevation="0" color="transparent" class="pa-0 position-sticky"
+        <v-card v-if="pendingDemands.length > 0" rounded="0" elevation="0" color="transparent" class="pa-0 ma-0" 
           style="position: sticky !important; top: 100px !important;">
-          <v-card-item @click="displayPending = !displayPending">
-            <v-card-title>En attente</v-card-title>
-            <!-- <template #append>
-              <v-icon icon="mdi-chevron-down"
-                :style="{ transform: displayPending ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
-            </template> -->
-          </v-card-item>
-
+          
+          <div class="mb-2"> 
+          <span class="ma-0 mb-2 pa-0 text-body-1 font-weight-medium">En attente</span>
+          </div>
           <v-expand-transition>
             <v-card-text class="pa-0" v-if="pendingDemands.length > 0">
-              <div v-if="pendingDemands.length > 0">
-                <OwnDemandCard :isPoster="true" v-for="demand in pendingDemands" :key="demand.id" :demand="demand" />
+              <div v-if="pendingDemands.length > 0" class="d-flex flex-column ga-2" >
+                <OwnDemandCard :isPoster="true" v-for="demand in pendingDemands" :key="demand.id" :demand="demand" :small="xs || md"/>
               </div>
               <div v-else class="text-center py-4">
                 <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
@@ -104,49 +106,46 @@
         </v-card>
 
         
-        <v-card v-if="acceptedAsPoster?.length > 0" rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
-          style="position: sticky !important; top: 400px !important;">
-          <v-card-item @click="displayAccepted = !displayAccepted">
-            <v-card-title>Acceptées</v-card-title>
+        <v-card v-if="acceptedAsPoster?.length > 0" rounded="0" elevation="0" color="transparent" class="pa-0 mt-4 "
+          >
+          <div class="mb-2">
+          <span class="pa-0 mb-2 text-body-1 font-weight-medium">Acceptées</span>
             <!-- <template #append>
               <v-icon icon="mdi-chevron-down"
                 :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
             </template> -->
-          </v-card-item>
+            </div>
 
           <v-expand-transition>
             <v-card-text class="pa-0" v-if="acceptedAsPoster?.length > 0">
-              <div v-if="acceptedAsPoster.length > 0">
-                <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" />
+              <div v-if="acceptedAsPoster.length > 0" class="d-flex flex-column ga-2">
+                <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" :small="xs || md"/>
               </div>
               <div v-else class="text-center py-4">
-                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
+                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />  
                 <div class="text-body-1">Aucune demande en attente</div>
               </div>
             </v-card-text>
           </v-expand-transition>
         </v-card>
 
-        <div class="my-8 d-flex flex-column">
-          <span class="text-h5 font-weight-medium">A venir</span>
-          <span class="opac text-subtitle-2 text-medium-emphasis">Les vacations que je dois faire</span>
-        </div>
 
-        <v-card rounded="xl" elevation="0" color="transparent" class="pa-0 mt-4 position-sticky"
+        <div class="d-flex align-start flex-column justify-space-between my-4 mt-16">
+          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Je remplace</v-card-title>
+          <span class="text-subtitle-2 text-medium-emphasis">
+            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
+            Les remplacements et permutations que je dois faire sont affichées ici.
+          </span>
+          </div>
+
+        <v-card rounded="0" elevation="0" color="transparent" class="pa-0 mt-4"
           style="position: sticky !important; top: 400px !important;">
-          <v-card-item @click="displayAccepted = !displayAccepted">
-            <v-card-title v-if="acceptedAsAccepter.length > 0">Acceptées</v-card-title>
-            <v-card-title v-else>  <div class="text-body-1">Aucune demande acceptée</div></v-card-title>
-            <!-- <template #append>
-              <v-icon icon="mdi-chevron-down"
-                :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
-            </template> -->
-          </v-card-item>
+          <!-- <span class="pa-0 mb-2 text-body-1 font-weight-medium">Je remplace</span>   -->
 
           <v-expand-transition>
             <v-card-text class="pa-0">
-              <div v-if="acceptedAsAccepter.length > 0">
-                <OwnDemandCard :isPoster="false" v-for="demand in acceptedAsAccepter" :key="demand.id" :demand="demand" />
+              <div v-if="acceptedAsAccepter.length > 0" class="d-flex flex-column ga-2">
+                <OwnDemandCard small :isPoster="false" v-for="demand in acceptedAsAccepter" :key="demand.id" :demand="demand" :small="xs || md"/>
               </div>
               
             </v-card-text>
@@ -184,7 +183,7 @@ import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
 const substitutionStore = useSubstitutionStore();
 const userStore = useUserStore();
 const authStore = useAuthStore();
-const { smAndDown } = useDisplay();
+const { smAndDown, md, xs, sm } = useDisplay();
 
 // État local
 const loadingUsers = ref(true);

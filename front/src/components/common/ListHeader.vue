@@ -22,7 +22,7 @@
             <div class="d-flex align-center flex-grow-1" ref="actions" 
             :class="smAndDown ? 'justify-space-between' : 'justify-end'">
 
-                <v-text-field v-model="searchQuery" :label="searchLabel" variant="solo" flat rounded="xl" min-width="200" single-line
+                <v-text-field v-model="searchQuery" :label="searchLabel" variant="solo" flat rounded="xl" min-width="150" single-line
                     hide-details density="compact" class="search-field flex-grow-1" clearable
                     @update:model-value="onSearch" />
 

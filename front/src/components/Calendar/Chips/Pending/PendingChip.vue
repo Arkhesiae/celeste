@@ -62,10 +62,10 @@ const hasMultiplePending = computed(() => {
       class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
     >
       <v-icon color="error"  v-if="hasMultiplePending">mdi-alert-circle-outline</v-icon>
-      <v-icon color="permutation"  v-if="isTrueSwitch">mdi-swap-horizontal-hidden</v-icon>
-      <v-icon color="remplacement"  v-if="isTrueSubstitution">mdi-account-arrow-left</v-icon>
-      <v-icon color="remplacement"  v-if="isHybridSubstitution">mdi-account-arrow-left</v-icon>
-      <v-icon color="permutation"  v-if="isHybridSubstitution">mdi-swap-horizontal</v-icon>
+      <v-icon color="pendingDemand"  v-if="isTrueSwitch">mdi-swap-horizontal-hidden</v-icon>
+      <v-icon color="pendingDemand"  v-if="isTrueSubstitution">mdi-account-arrow-left</v-icon>
+      <v-icon color="pendingDemand"  v-if="isHybridSubstitution">mdi-account-arrow-left</v-icon>
+      <v-icon color="pendingDemand"  v-if="isHybridSubstitution" class="ml-n2" style="top: 1px; font-size: 16px;" >mdi-swap-horizontal</v-icon>
 
       <div v-if="text" >
         <span>{{text}}</span>

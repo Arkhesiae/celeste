@@ -42,208 +42,36 @@
 
     <v-row>
       <v-col v-for="user in sortedAndFilteredUsers" :key="user._id" cols="12" md="6" lg="4" :class="smAndDown ? 'pa-0' : ''">
-        <v-card class="px-2 ma-0" :rounded="smAndDown ? 'lg' : 'xl'" variant="flat" @click="openUserDialog(user)" :color="smAndDown ? 'transparent ' : 'surface'">
-          <v-card-item>
-            <v-card-title class="d-flex justify-space-between align-center">
-              <div class="d-flex align-center">
-                <v-avatar color="primary" variant="tonal"  size="40" class="mr-2">
-                  {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
-                </v-avatar>
-                <div>
-                  <div class="text-subtitle-1">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
-                </div>
-              </div>
-              <v-menu  color="onBackground" rounded="lg">
-                <template v-slot:activator="{ props }">
-                  <v-btn icon variant="text" v-bind="props" @click.stop>
-                    <v-icon>mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-                <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-                  <v-list-item rounded="lg" @click.stop="approveUser(user)" v-if="user.registrationStatus=== 'pending' && (isLocalAdmin || isMasterAdmin)">
-                    <v-list-item-title>Approuver</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="makeAdmin(user)" v-if="!user.isAdmin && isMasterAdmin">
-                    <v-list-item-title>Octroyer statut admin</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="removeAdmin(user)" v-if="user.isAdmin && isMasterAdmin">
-                    <v-list-item-title>Enlever statut admin</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="openCenterDialog(user)" v-if="isMasterAdmin">
-                    <v-list-item-title>Modifier le centre</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="deleteUser(user)" v-if="isLocalAdmin || isMasterAdmin">
-                    <v-list-item-title class="text-onError">Supprimer</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </v-card-title>
-          </v-card-item>
-          <v-card-text class="pt-0 d-flex justify-start">
-            <div   v-if="user.isAdmin" class="d-flex mr-2"
-             :class="user.adminType === 'master' ? 'block' : ''"
-            >
-              <v-chip
-                rounded="lg"
-                variant="flat"
-              
-                color="surface"
-                size="small"
-               
-              > 
-              <v-icon class="mr-2" v-if="user.isAdmin && user.adminType === 'master'" color="primary">mdi-star-four-points</v-icon>
-              <v-icon class="mr-2" v-else color="secondary">mdi-shield-crown-outline</v-icon>
-              Admin</v-chip>
-            </div>
-           
-            <v-chip
-              color="onBackground"
-              rounded="lg"
-              size="small"
-              class="mr-2"
-            >{{ getCenterById(user.centerId)?.name || "No center" }}</v-chip>
-
-            <v-chip
-              color="onBackground"
-              rounded="lg"
-              size="small"
-              class="mr-2"
-            >{{ user.currentTeam?.name || "No team" }}</v-chip>
-
-            <v-chip
-              v-if="user.status === 'pending'"
-              :color="user.status === 'pending' ? 'warning' : 'success'"
-              size="small"
-            >{{ user.status === 'pending' ? 'En attente' : 'Approuvé' }}</v-chip>
-          </v-card-text>
-        </v-card>
-        <v-divider v-if="smAndDown" opacity="0.05" class="ma-0 pa-0"></v-divider>
+        <UserCard 
+          :user="user" 
+          @click="openUserDialog"
+          @approve="approveUser"
+          @makeAdmin="makeAdmin"
+          @removeAdmin="removeAdmin"
+          @assignCenter="openCenterDialog"
+          @delete="deleteUser"
+        />
       </v-col>
     </v-row>
 
     <!-- User Details Dialog -->
-    <v-dialog v-model="userDialog" max-width="600">
-      <v-card v-if="selectedUser" rounded="xl" variant="flat" class="pa-6">
-        <v-card-title class="d-flex justify-space-between align-center pa-0">
-          <div class="d-flex align-center">
-            <v-avatar color="primary" size="60" class="mr-3">
-              {{ selectedUser.name.charAt(0) }}{{ selectedUser.lastName.charAt(0) }}
-            </v-avatar>
-            <div>
-              <div class="text-h5">{{ selectedUser.name }} {{ selectedUser.lastName.toUpperCase() }}</div>
-              <div class="text-subtitle-1 text-medium-emphasis">{{ selectedUser.email }}</div>
-            </div>
-          </div>
-          <v-btn variant="text" icon @click="userDialog = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-
-        <v-card-text class="pa-0 mt-6">
-          <v-row>
-            <v-col cols="12" md="6">
-              <div class="text-subtitle-1 mb-2">Informations</div>
-              <v-list>
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon>mdi-account</v-icon>
-                  </template>
-                  <v-list-item-title>Statut</v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip
-                      rounded="lg"
-                      color="onBackground"
-                      :color="selectedUser.registrationStatus === 'pending' ? 'warning' : 'success'"
-                      size="small"
-                    >{{ selectedUser.registrationStatus === 'pending' ? 'Candidature en attente' : 'Candidature approuvée' }}</v-chip>
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon>mdi-office-building</v-icon>
-                  </template>
-                  <v-list-item-title>Centre</v-list-item-title>
-                  <v-list-item-subtitle>
-                    <v-chip
-                      color="onBackground"
-                      rounded="lg"
-                      size="small"
-                      class="mr-2"
-                    >{{ getCenterById(selectedUser.centerId)?.name || "No center" }}</v-chip>
-                  </v-list-item-subtitle>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon>mdi-calendar</v-icon>
-                  </template>
-                  <v-list-item-title>Date d'inscription</v-list-item-title>
-                  <v-list-item-subtitle>{{ new Date(selectedUser.createdAt).toLocaleDateString() }}</v-list-item-subtitle>
-                </v-list-item>
-              </v-list>
-            </v-col>
-            <v-col cols="12" md="6">
-              <div class="text-subtitle-1 mb-2">Actions</div>
-              <v-list>
-                <v-list-item @click="approveUser(selectedUser)" v-if="selectedUser.registrationStatus === 'pending' && (isLocalAdmin || isMasterAdmin)">
-                  <template v-slot:prepend>
-                    <v-icon>mdi-check</v-icon>
-                  </template>
-                  <v-list-item-title>Approuver la candidature</v-list-item-title>
-                </v-list-item>
-                <v-list-item rounded="lg" @click="makeAdmin(selectedUser)" v-if="!selectedUser.isAdmin && isMasterAdmin">
-                  <template v-slot:prepend>
-                    <v-icon>mdi-shield-account</v-icon>
-                  </template>
-                  <v-list-item-title>Octroyer statut admin</v-list-item-title>
-                </v-list-item>
-                <v-list-item rounded="lg" @click="removeAdmin(selectedUser)" v-if="selectedUser.isAdmin && isMasterAdmin">
-                  <template v-slot:prepend>
-                    <v-icon>mdi-shield-account</v-icon>
-                  </template>
-                  <v-list-item-title>Enlever statut admin</v-list-item-title>
-                </v-list-item>
-                <v-list-item rounded="lg" @click="openCenterDialog(selectedUser)" v-if="isMasterAdmin">
-                  <template v-slot:prepend>
-                    <v-icon>mdi-office-building-marker</v-icon>
-                  </template>
-                  <v-list-item-title>Modifier le centre</v-list-item-title>
-                </v-list-item>
-                <v-list-item rounded="lg" color="error" @click="deleteUser(selectedUser)" v-if="isLocalAdmin || isMasterAdmin">
-                  <template v-slot:prepend>
-                    <v-icon>mdi-delete</v-icon>
-                  </template>
-                  <v-list-item-title>Supprimer l'utilisateur</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <UserCardDetails
+      :user="selectedUser"
+      :dialogVisible="userDialog"
+      @update:dialogVisible="userDialog = $event"
+      @makeAdmin="makeAdmin"
+      @removeAdmin="removeAdmin"
+      @assignCenter="openCenterDialog"
+      @delete="deleteUser"
+    />
 
     <!-- Center Assignment Dialog -->
-    <v-dialog v-model="centerDialog" max-width="500">
-      <v-card>
-        <v-card-title>Assigner un centre</v-card-title>
-        <v-card-text>
-          <v-select
-            v-model="selectedCenter"
-            :items="centers"
-            :reduce="center => center._id"
-            item-title='name'
-            item-value="_id"
-            variant="outlined"
-            label="Sélectionner un centre"
-            dense
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text color="red" @click="centerDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="assignCenter">Assigner</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <AssignCenterDialog
+      :dialogVisible="centerDialog"
+      :user="selectedUser"
+      @update:dialogVisible="centerDialog = $event"
+      @centerAssigned="assignCenter"
+    />
   </v-container>
 </template>
 
@@ -256,6 +84,9 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
 import ListHeader from '@/components/common/ListHeader.vue';
+import UserCard from '@/components/Users/UserCard.vue';
+import UserCardDetails from '@/components/Users/UserCardDetails.vue';
+import AssignCenterDialog from '@/components/Users/AssignCenterDialog.vue';
 
 const centerStore = useCenterStore();
 const teamStore = useTeamStore();
@@ -266,12 +97,13 @@ const { smAndDown } = useDisplay();
 
 const centerDialog = ref(false);
 const selectedFilter = ref('all');
-const selectedCenter = ref(null);
 const selectedUser = ref(null);
 const sortBy = ref('');
 const sortDirection = ref('asc');
 const searchQuery = ref('');
 const selectedCenterId = ref(null);
+const userDialog = ref(false);
+
 const isMasterAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'master');
 const isLocalAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'local');
 const centers = computed(() => centerStore.centers);
@@ -335,21 +167,14 @@ const getCenterById = (centerId) => {
   return centers.value.find(center => center._id === centerId) || null;
 };
 
-
-
 const openCenterDialog = (user) => {
   selectedUser.value = user;
-  selectedCenter.value = user.centerId;
   centerDialog.value = true;
 };
 
-const assignCenter = async () => {
-  if (!selectedCenter.value || !selectedUser.value) return;
-
+const assignCenter = async ({ userId, centerId }) => {
   try {
-    await userStore.assignCenter(selectedUser.value._id, selectedCenter.value);
-    centerDialog.value = false;
-    snackbarStore.showNotification('Centre assigné', 'onSuccess', 'mdi-check-circle');
+    await userStore.assignCenter(userId, centerId);
   } catch (error) {
     console.error('Error assigning center:', error);
     snackbarStore.showNotification('Erreur lors de l\'assignation du centre', 'onError', 'mdi-alert-circle');
@@ -388,7 +213,15 @@ const removeAdmin = async (user) => {
   }
 };
 
-const userDialog = ref(false);
+const approveUser = async (user) => {
+  try {
+    await userStore.approveUser(user._id);
+    snackbarStore.showNotification('Utilisateur approuvé', 'onSuccess', 'mdi-check-circle');
+  } catch (error) {
+    console.error('Error approving user:', error);
+    snackbarStore.showNotification('Erreur lors de l\'approbation', 'onError', 'mdi-alert-circle');
+  }
+};
 
 const openUserDialog = (user) => {
   selectedUser.value = user;
@@ -398,7 +231,7 @@ const openUserDialog = (user) => {
 const handleCenterChange = async (centerId) => {
   try {
     if (centerId) {
-
+      await teamStore.fetchCenterTeams(centerId);
       await userStore.fetchUsersByCenter(centerId);
     } else {
       await userStore.fetchUsers();
@@ -412,77 +245,24 @@ const handleCenterChange = async (centerId) => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      centerStore.fetchCenters(),
-      teamStore.fetchCenterTeams(authStore.centerId)
-    ]);
-
-    // Charger les utilisateurs en fonction du type d'admin
     if (authStore.adminType === 'master') {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
     } else {
       await userStore.fetchUsersByCenter(authStore.centerId);
+      await teamStore.fetchCenterTeams(authStore.centerId);
       selectedCenterId.value = authStore.centerId;
     }
-
-
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {
     console.error('Error fetching initial data:', error);
     snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');
   }
 });
-
 </script>
 
 <style scoped>
-.block {
-  position: relative;
-  z-index: 0;
-  overflow: visible !important;
-  opacity: 1 !important;
-}
-
-.block:after, .block:before {
-  content: '';
-  position: absolute;
-  left: -1.5px;
-  top: -1.5px;
-  border-radius: 10px;
-  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-  rgba(159, 159, 248, 0.22), #ffccdd);
-  background-size: 400%;
-  width: calc(100% + 3px);
-  height: calc(100% + 3px);
-  z-index: -1;
-  animation: steam 7s linear infinite;
-}
-
-@keyframes steam {
-  0% {
-    background-position: 0 0;
-  }
-  80% {
-    background-position: 400% 0;
-  }
-  100% {
-    background-position: 400% 0;
-  }
-}
-
-.block:after {
-  filter: blur(5px);
-}
-
 .sort-select {
   max-width: 200px;
 }
-
-.v-card {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-
 </style>

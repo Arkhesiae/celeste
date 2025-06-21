@@ -54,10 +54,11 @@ const userName = computed(() => {
       <v-icon color="remplacement"  >mdi-crowd</v-icon>
     
     </div>
-      <div v-if="findAcceptedAsAccepter" >
+    
+      <div v-if="findAcceptedAsAccepter" > 
 
-        <span v-if="findAcceptedAsAccepter.type === 'substitution'">Remplace dans équipe {{teamName}}</span>
-        
+        <span v-if="findAcceptedAsAccepter.type === 'substitution'">Remplace dans équipe {{teamName}}</span> 
+        <span v-if="findAcceptedAsAccepter.type === 'hybrid' && !findAcceptedAsAccepter.accepterShift">Remplace dans équipe {{teamName}}</span> 
         <span v-if="findAcceptedAsAccepter.type === 'switch' || (findAcceptedAsAccepter.type === 'hybrid' && findAcceptedAsAccepter.accepterShift)">Permute avec {{ userName }}</span>
         
 

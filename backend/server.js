@@ -1,3 +1,4 @@
+// ─── Imports Node.js ──────────────────────────────────────────────────────────
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import express from 'express';
@@ -5,18 +6,22 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// ─── Configuration de l'environnement ─────────────────────────────────────────
 dotenv.config({
-    path: process.env.NODE_ENV === 'production'
-      ? '.env.production'
-      : '.env.development'
-  });
+  path: process.env.NODE_ENV === 'production'
+    ? '.env.production'
+    : '.env.development',
+});
 
+// ─── Définir __dirname pour ES Modules ────────────────────────────────────────
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ─── Création de l'application Express ────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ─── Imports des routes ───────────────────────────────────────────────────────
 import usersRouter from './routes/users.js';
 import rotationsRouter from './routes/rotations.js';
 import centerRouter from './routes/center.js';
@@ -30,31 +35,36 @@ import authRouter from './routes/auth.js';
 import devRouter from './routes/dev.js';
 import rulesRouter from './routes/rules.js';
 
+// ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
 import './cron/processTransactions.js';
 import './cron/processDemands.js';
+
+// ─── Initialisation de l'admin ────────────────────────────────────────────────
 import { createAdmin } from './utils/seedAdmin.js';
-console.log(process.env.EMAIL_HOST);
 
-console.log(process.env.SMTP_USERNAME);
-console.log(process.env.SMTP_PASSWORD);
-
-// CORS
+// ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
-  origin: ['http://192.168.1.36:30035', 'http://localhost:30035', 'http://167.235.244.249', 'http://celeste-app.fr', 'https://celeste-app.fr'],
+  origin: [
+    'http://192.168.1.36:30035',
+    'http://localhost:30035',
+    'http://167.235.244.249',
+    'http://celeste-app.fr',
+    'https://celeste-app.fr',
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// Middleware
+// ─── Middlewares Express ──────────────────────────────────────────────────────
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Fichiers statiques
-app.use('/api/avatars', express.static(path.join(__dirname, '/public/avatars')));
+// ─── Fichiers statiques ───────────────────────────────────────────────────────
+app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
 app.use('/', express.static(path.join(__dirname, 'public')));
 
-// Routes API
+// ─── Routes API ───────────────────────────────────────────────────────────────
 app.use('/api/users', usersRouter);
 app.use('/api/messages', messageRoutes);
 app.use('/api/login', loginRouter);
@@ -68,28 +78,28 @@ app.use('/api/otp', otpRoutes);
 app.use('/api/dev', devRouter);
 app.use('/api/rules', rulesRouter);
 
-// Routes par défaut
+// ─── Route API par défaut ─────────────────────────────────────────────────────
 app.get('/api', (req, res) => {
   res.send('Backend connecté à MongoDB via Docker 🚀');
 });
 
-// Route catch-all pour SPA
+// ─── Catch-all pour les routes SPA (Vue/React) ────────────────────────────────
 app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-// Connexion Mongo et lancement serveur
+// ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
   .then(async () => {
     console.log('✅ MongoDB connecté via Docker');
 
     await createAdmin(); // Créer l'admin si nécessaire
+
     app.listen(PORT, () => {
-      console.log(`🚀 Serveur lancé port ${PORT}`);
+      console.log(`🚀 Serveur lancé sur le port ${PORT}`);
     });
   })
   .catch((err) => {
     console.error('❌ Erreur de connexion à MongoDB :', err.message);
     process.exit(1);
   });
-  

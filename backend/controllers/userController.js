@@ -59,8 +59,17 @@ const checkEmailAvailability = async (req, res) => {
 // Obtenir tous les utilisateurs
 const getAllUsers = async (req, res) => {
     try {
-        const users = await User.find({});
-        res.status(200).json(users);
+        const users = await User.find({}).populate('teams');
+        
+        const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
+            const currentTeam = await getTeamAtGivenDate(user.teams, new Date());
+            return {
+                ...user.toObject(),
+                currentTeam
+            };
+        }));
+        
+        res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
         res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -213,7 +222,7 @@ const removeUserAdmin = async (req, res) => {
 // Assigner un utilisateur à un centre
 const assignUserToCenter = async (req, res) => {
     const userId = req.params.id;
-    const { centerId: newCenterId } = req.body;
+    const { centerId } = req.body;
 
     try {
         const user = await User.findById(userId);
@@ -221,11 +230,11 @@ const assignUserToCenter = async (req, res) => {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
-        if (user.centerId === newCenterId) {
+        if (user.centerId === centerId) {
             return res.status(400).json({ error: 'L\'utilisateur est déjà assigné à ce centre' });
         }
 
-        user.centerId = newCenterId;
+        user.centerId = centerId;
         user.isLocalAdmin = false;
         await user.save();
 

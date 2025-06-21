@@ -5,6 +5,8 @@
         <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
           <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
             <div class="text-overline subtitle-animation">Votre nouveau site de rempla</div>
+            <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
+
             <div class="font-weight-medium d-flex flex-wrap mt-4" :class="[
               mdAndUp ? 'text-h1' : 'text-h3',
               { 'justify-center': !mdAndUp }
@@ -520,4 +522,15 @@ onMounted(() => {
   transform: scale(0.5);
   transform: translateY(30px);
 }
+
+.celeste-logo {
+  width: 90px;
+  margin-left: -10px;
+  margin-bottom: -20px;
+  height: 90px;
+}
+
+.celeste-logo .cls-1{
+  fill: rgb(var(--v-theme-remplacement));
+} 
 </style>

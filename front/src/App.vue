@@ -21,9 +21,7 @@ const { initializeApp } = useAppInitialization();
 
 onMounted(async () => {
   await initializeApp();
-  if (authStore.isLoggedIn) {
-    theme.global.name.value = authStore.preferences.theme ? 'darkTheme' : 'lightTheme';
-  }
+ 
 });
 
 </script>

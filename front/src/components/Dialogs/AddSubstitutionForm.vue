@@ -36,13 +36,26 @@ const rotationStore = useRotationStore();
 const centerStore = useCenterStore();
 const authStore = useAuthStore();
 
+const pointsPerSwitch = ref({});
+const acceptedSwitches = ref([]);
+
+const acceptedSwitchesWithPoints = computed(() => {
+  return acceptedSwitches.value.map(dayId => ({
+    shift: dayId,
+    points: pointsPerSwitch.value[dayId]
+  }));
+});
+
 // États du composant
 const demand = ref({
   comment: '',
   points: 0,
-  acceptedSwitches: [],
-  pointsPerSwitch: {}
+  acceptedSwitches: []
 });
+
+
+
+
 const adjacentVacations = ref({ prev: null, next: null });
 const loadingRotations = ref(false);
 const rotationError = ref(null);
@@ -88,7 +101,6 @@ const selectedRotationDay = computed(() => {
   for (const rotation of rotationStore.rotations) {
     const foundDay = rotation.days?.find(day => day._id === props.selectedVacation.shift);
     if (foundDay) {
-      
       demand.value.points = foundDay.defaultPoints;
       defaultPoints.value = foundDay.defaultPoints;
       return {
@@ -114,20 +126,30 @@ const rotationDays = computed(() => {
 // Watcher pour mettre à jour formValid
 watch(
   [
-    () => demand.value.comment,
     () => demand.value.points,
     () => localDate.value,
-    () => demand.value.acceptedSwitches
+    () => acceptedSwitchesWithPoints.value
   ],
   () => {
     formValid.value =
-      demand.value.comment !== '' &&
       demand.value.points >= 0 &&
       localDate.value !== '' &&
-      demand.value.acceptedSwitches.length > 0;
-  },
+      ((dialogModeValue.value === 'switch' && acceptedSwitchesWithPoints.value.length > 0) ||
+      (dialogModeValue.value !== 'switch' && demand.value.points > 0));
+    },
   { immediate: true }
 );
+
+watch(acceptedSwitches, (newSwitches, oldSwitches) => {
+  if (oldSwitches) {
+    const newDays = newSwitches.filter(dayId => !oldSwitches.includes(dayId));
+    newDays.forEach(dayId => {
+      if (!(dayId in pointsPerSwitch)) {
+        pointsPerSwitch.value[dayId] = 0;
+      }
+    });
+  }
+});
 
 // Méthodes utilitaires
 const toDisplayFormat = (input) => (input ? dateUtil.format(input, 'fullDate') : '');
@@ -156,32 +178,33 @@ const getAdjacentVacations = async (date) => {
   return await vacationService.getAdjacentVacations(authStore.userId, date);
 };
 
+const getDayName = (dayId) => {
+  return rotationDays.value.find(day => day._id === dayId)?.name || 'Aucun shift sélectionné';
+};
+
 // État pour stocker les vacations adjacentes
 
 
 // Mettre à jour la fonction isDayAvailable
 const isDayAvailable = computed(() => (rotationDay) => {
   if (!props.selectedVacation || !rotationDay) return false;
-
   const rotationShift = activeRotation.value.days.filter(day => day.type !== 'rest')[rotationDay.index];
-
   // Vérifier le délai de repos minimum (par exemple 11h)
   const MIN_REST_HOURS = 11;
-
   // Vérifier le délai avec la vacation précédente
   if (adjacentVacations.value.prev?.shift) {
     const prevDelay = calculateRestDelay(adjacentVacations.value.prev.shift, rotationShift);
     if (prevDelay < MIN_REST_HOURS) return false;
   }
 
-
   // Vérifier le délai avec la vacation suivante
   if (adjacentVacations.value.next?.shift) {
     const nextDelay = calculateRestDelay(rotationShift, adjacentVacations.value.next.shift);
     if (nextDelay < MIN_REST_HOURS) return false;
   }
+  console.log(rotationShift._id, props.selectedVacation)
   // Vérifier s'il s'agit de la même vacation
-  if (rotationShift._id === props.selectedVacation.shift._id) {
+  if (rotationShift._id === props.selectedVacation.shift) {
     return false;
   }
 
@@ -212,7 +235,7 @@ const getUnavailabilityReason = computed(() => (rotationDay) => {
     }
   }
   // Vérifier s'il s'agit de la même vacation
-  if (rotationShift._id === props.selectedVacation.shift._id) {
+  if (rotationShift._id === props.selectedVacation.shift) {
     return "Vous ne pouvez pas permuter avec vous-même";
   }
 
@@ -263,8 +286,7 @@ const resetForm = () => {
   demand.value = {
     comment: '',
     points: 0,
-    acceptedSwitches: [],
-    pointsPerSwitch: {}
+    acceptedSwitches: []
   };
   selectedVariant.value = null;
   localDate.value = '';
@@ -272,15 +294,20 @@ const resetForm = () => {
 };
 
 const submit = () => {
-  if (demand.value.points === 0) {
+  if (demand.value.points === 0 && dialogModeValue.value !== 'switch') {
     showConfirmationDialog.value = true;
     return;
-  }
+  } else if (dialogModeValue.value === 'switch' && acceptedSwitchesWithPoints.value.every(switchItem => switchItem.points === 0)) {
+    showConfirmationDialog.value = true;
+    return;
+  } 
+
+
   emit('onSubmit', {
     ...demand.value,
     date: localDate.value,
     selectedVacation: props.selectedVacation,
-    acceptedSwitches: demand.value.acceptedSwitches,
+    acceptedSwitches: acceptedSwitchesWithPoints.value,
     isTrueSwitch: dialogModeValue.value === 'switch'
   });
 };
@@ -291,7 +318,7 @@ const confirmSubmit = () => {
     ...demand.value,
     date: localDate.value,
     selectedVacation: props.selectedVacation,
-    acceptedSwitches: demand.value.acceptedSwitches,
+    acceptedSwitches: acceptedSwitchesWithPoints.value,
     isTrueSwitch: dialogModeValue.value === 'switch'
   });
 };
@@ -322,10 +349,9 @@ const isNextButtonDisabled = computed(() => {
               <v-icon icon="mdi-calendar" class="mr-4 mt-4"></v-icon>
               <v-text-field rounded="lg" class="cursor-pointer mt-00" bg-color="surface" v-model="formattedDate"
                 persistent-hint hint="Remplacement" label="Date de remplacement" :rules="[rules.required, rules.date]"
-                @blur="formatDateForDisplay" @focus="formatDateForInput"
-                disabled
+                @blur="formatDateForDisplay" @focus="formatDateForInput" disabled
                 @update:model-value="handleDateChange"></v-text-field>
- 
+
             </div>
             <div class="my-12">
               <v-card rounded="xl" color="background" class="mb-2" flat>
@@ -337,18 +363,21 @@ const isNextButtonDisabled = computed(() => {
                   </v-card-title>
                   <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedRotationDay?.teamObject?.name ||
                     'Aucune équipe' }}</v-card-subtitle>
-                 
-                  <v-card-subtitle class="pt-0" v-if="selectedVariant && selectedRotationDay?.shift?.variants.length !== 0">
-                    {{ selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.startTime || '' }} - 
-                    {{ selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.endTime || '' }}
+
+                  <v-card-subtitle class="pt-0"
+                    v-if="selectedVariant && selectedRotationDay?.shift?.variants.length !== 0">
+                    {{selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.startTime || ''}} -
+                    {{selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.endTime || ''}}
                   </v-card-subtitle>
                   <v-card-subtitle class="pt-0" v-else>
                     {{ selectedRotationDay?.shift?.startTime || '' }} - {{ selectedRotationDay?.shift?.endTime || '' }}
                   </v-card-subtitle>
 
                   <div class="position-absolute top-0 right-0 mr-1 mt-1">
-                    <v-chip-group v-model="selectedVariant" base-color="background" variant="flat" rounded="lg" size="small">
-                      <v-chip v-for="variant in selectedRotationDay?.shift?.variants" :key="variant._id" :value="variant._id" color="onBackground" variant="flat" rounded="lg" size="small">
+                    <v-chip-group v-model="selectedVariant" base-color="background" variant="flat" rounded="lg"
+                      size="small">
+                      <v-chip v-for="variant in selectedRotationDay?.shift?.variants" :key="variant._id"
+                        :value="variant._id" color="onBackground" variant="flat" rounded="lg" size="small">
                         <v-icon start icon="mdi-clock-outline"></v-icon>
                         {{ variant.name }}
                       </v-chip>
@@ -380,7 +409,7 @@ const isNextButtonDisabled = computed(() => {
               {{ rotationError }}
             </v-alert>
             <template v-else>
-              <v-form ref="addForm" v-model="formValid">
+              <v-form ref="addForm" >
                 <v-card color="transparent" class="my-12 pa-0" elevation="0">
                   <v-card-item class="">
                     <v-card-title class="pa-0 mb-0">
@@ -389,9 +418,7 @@ const isNextButtonDisabled = computed(() => {
                     <v-card-subtitle class="pt-0 text-caption">Sélectionnez les vacations acceptées</v-card-subtitle>
                   </v-card-item>
                   <v-card-text class="">
-                    <v-chip-group v-model="demand.acceptedSwitches"
-                      @update:model-value="console.log(demand.acceptedSwitches)" multiple color="surface"
-                      :rules="[rules.rotations]">
+                    <v-chip-group v-model="acceptedSwitches" multiple color="surface" :rules="[rules.rotations]">
                       <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center">
                         <v-chip :value="day._id" class="ma-1" rounded="lg" variant="flat"
                           :class="isDayAvailable(day) ? '' : 'text-error'" base-color="transparent" color="transparent">
@@ -422,26 +449,22 @@ const isNextButtonDisabled = computed(() => {
                   <v-card-subtitle class="text-caption pa-0 mb-4">
                     Définissez le nombre de points pour chaque vacation sélectionnée
                   </v-card-subtitle>
-                  <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center mb-1">
-                    <template v-if="demand.acceptedSwitches.includes(day._id)">
-                      <span class="text-body-1 mr-4">{{ day.name }}</span>
-                      <v-number-input v-model="demand.pointsPerSwitch[day._id]" class="text-primary secondary ml-4" reverse
-                        min="0"
-                        controlVariant="split" label="" rounded="xl" bg-color="surfaceContainer" color="blue" glow
-                        :hideInput="false" inset base-color="transparent" variant="outlined"></v-number-input>
-                    </template>
+                  <div v-for="switchDay in acceptedSwitches" :key="switchDay" class="d-flex align-center mb-1">
+                    <div class="d-flex align-center justify-space-between flex-grow-1">
+                      <span class="text-body-1 mr-4">{{ getDayName(switchDay) }}</span>
+                      <v-number-input v-model="pointsPerSwitch[switchDay]" class="text-primary secondary ml-4" reverse
+                        :min="0" controlVariant="split" label="" rounded="xl" bg-color="surfaceContainer" color="blue"
+                        glow :hideInput="false" inset base-color="transparent" variant="outlined"></v-number-input>
+                    </div>
                   </div>
                 </v-card>
 
-                <div class="d-flex justify-start align-center mt-4">
+                <div class="d-flex justify-start align-center mt-4" v-if="dialogMode !== 'switch'">
                   <v-number-input v-model="demand.points" class="text-primary" :class="{
                     'excess': demand.points > defaultPoints + 2,
                     'low': demand.points < defaultPoints - 2
-                  }"
-                    min="0"
-                    reverse controlVariant="split" label=""
-                    rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
-                    base-color="transparent" variant="outlined">
+                  }" :min="0" reverse controlVariant="split" label="" rounded="xl" bg-color="surfaceContainer"
+                    color="blue" glow :hideInput="false" inset base-color="transparent" variant="outlined">
 
 
                   </v-number-input>
@@ -455,16 +478,17 @@ const isNextButtonDisabled = computed(() => {
 
       <v-card-actions class="justify-space-between pa-0">
         <template v-if="currentWindow === 0">
-          <v-btn variant="text" color="secondary"  @click="close">Annuler</v-btn>
-          <v-btn variant="tonal" rounded="xl"  color="secondary"
-            :disabled="isNextButtonDisabled" @click="currentWindow = 1">
+          <v-btn variant="text" color="secondary" @click="close">Annuler</v-btn>
+          <v-btn variant="tonal" rounded="xl" color="secondary" :disabled="isNextButtonDisabled"
+            @click="currentWindow = 1">
             Suivant
           </v-btn>
         </template>
         <template v-else>
-          <v-btn variant="text" color="secondary"  @click="currentWindow = 0">Retour</v-btn>
-          <v-btn variant="flat" rounded="xl"  color="remplacement"
-            :disabled="!formValid || !selectedVacation" @click="submit">
+          <v-btn variant="text" color="secondary" @click="currentWindow = 0">Retour</v-btn>
+          <v-btn variant="flat" rounded="xl" :color="dialogModeValue === 'switch' ? 'permutation' : 'remplacement'"
+            :disabled="!formValid || !selectedVacation"
+            @click="submit">
             Poster la demande
           </v-btn>
         </template>
@@ -533,7 +557,4 @@ const isNextButtonDisabled = computed(() => {
 :deep(.v-number-input.low .v-btn--icon) {
   color: rgba(40, 140, 90, 0.5) !important;
 }
-
-
-
 </style>

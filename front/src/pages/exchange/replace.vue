@@ -350,12 +350,14 @@ watch(
 // Lifecycle hooks
 onMounted(async () => {
   try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const oneYearFromNow = new Date();
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
     await Promise.all([
-
+  
       substitutionStore.fetchAllDemands({
-        startDate: new Date().toISOString(),
+        startDate: today.toISOString(),
         endDate: oneYearFromNow.toISOString()
       })
     ]);

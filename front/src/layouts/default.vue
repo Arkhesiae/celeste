@@ -99,11 +99,12 @@ a {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: all 0.1s ease-out;
 }
 
 .fade-enter-from,
 .fade-leave-to {
+  
   opacity: 0;
 }
 

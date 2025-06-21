@@ -60,10 +60,18 @@ const SubstitutionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         ref: 'Rotation'
     },
-    acceptedSwitches: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Rotation.days'
-    }],
+    acceptedSwitches: [
+        {
+            shift : {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Rotation.days'
+            },
+            points : {
+                type: Number,
+                default: 0,
+                min: [0, 'Les points doivent être positifs']
+            }
+        }],
     isTrueSwitch: {type: Boolean, default: false},
     type: {type: String, enum: ['switch', 'hybrid', 'substitution']},
     comment: {

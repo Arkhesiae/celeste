@@ -18,12 +18,15 @@
           :color="getColor(day.date)"
           class="d-flex flex-column calendar-day pa-0 overflow-visible"
           @click="$emit('select-day', day.date)"
-          style="border-radius: 16px !important ; opacity: 0.8"
+          :style="{
+            'border-radius': '16px !important',
+            'opacity': getOpacity(day)
+          }"
           :class="{
             'isWorkDay': isWorkDay(day.date),
             'today-center-highlight': isToday(day.date),
-            'empty-day': !day.isInMonth,
-            'selected': isSelected(day.date),
+           
+      
   
           }"
         >
@@ -114,8 +117,20 @@ const getColor = (date) => {
   }
 };
 
+const getOpacity = (day) => {
+  if (props.isSelected(day.date)) {
+    return 0.9;
+  } else if (isWorkDay(day.date) && !inPast(day.date)) {
+    return 1;
+  } else if (!day?.isInMonth) {
+    return 0.21;
+  } else {
+    return 0.8;
+  }
+};
+
 const inPast = (date) => {
-  return date < new Date();
+  return date <= new Date().setHours(0, 0, 0, 0);
 };
 
 
@@ -177,23 +192,19 @@ const emit = defineEmits(['select-day']);
   background: rgb(var(--v-theme-tertiary));
 }
 
-.empty-day {
-  opacity: 0.4 !important;
-}
+
 
 .today-center-highlight {
-
+ 
   border : 1px solid  rgba(var(--v-theme-onBackground), 0.25)
 }
 
 .isWorkDay {
-  opacity: 1 !important;
+
   color: rgb(var())
 }
 
-.isWorkDay.empty-day {
-  opacity: 0.4 !important;
-}
+
 
 .remplacement {
   background: rgb(var(--v-theme-remplacement)) !important;

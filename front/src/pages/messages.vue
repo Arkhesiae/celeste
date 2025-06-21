@@ -37,7 +37,7 @@
           </div>
 
           <!-- Filtres -->
-          <v-expand-transition>
+          <v-slide-y-transition>
             <div v-if="showFilters" class="mb-4">
               <v-row>
                 <v-col cols="12" sm="4">
@@ -81,7 +81,7 @@
                 </v-col>
               </v-row>
             </div>
-          </v-expand-transition>
+          </v-slide-y-transition>
 
           <!-- Liste des messages -->
           <v-list v-if="!messageStore.loading" bg-color="transparent" class="message-list pa-0 ma-0 mt-16">

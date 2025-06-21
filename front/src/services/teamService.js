@@ -16,6 +16,17 @@ export const teamService = {
     return handleResponse(response);
   },
 
+   /**
+   * Récupère toutes les équipes.
+   * @returns {Promise<Array>} Liste des équipes.
+   */
+  async getAllTeams() {
+    const response = await fetch(`${API_URL}/teams`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
   /**
    * Récupère une équipe par son ID.
    * @param {string} id - L'ID de l'équipe.

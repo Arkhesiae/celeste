@@ -3,7 +3,11 @@
 <template>
   <v-container>
     <div class="d-flex align-center mb-4">
-      <v-btn
+    
+    </div>
+    <Transition name="fade" mode="out-in">
+      <div class="d-flex align-center mb-4">
+        <v-btn
         icon
         variant="text"
         class="mr-4"
@@ -11,9 +15,8 @@
       >
         <v-icon>mdi-arrow-left</v-icon>
       </v-btn>
-    </div>
-    <Transition name="fade" mode="out-in">
       <div class="d-flex justify-space-between my-16 flex-column">
+        
         <div class="d-flex align-center">
           <span class="text-h4 font-weight-medium">Paramètres</span>
         </div>
@@ -21,20 +24,43 @@
           Gérez vos paramètres
         </span>
       </div>
+      </div>
     </Transition>
 
     <v-row>
       <v-col cols="12" md="6">
         <v-card rounded="xl" elevation="0" class="pa-0" color="transparent">
           <v-card-title class="text-h5">Profil</v-card-title>
-          <v-card-text>
-            <v-btn block height="64" class="rounded-lg py-4 mb-4" color="surface" elevation="0" @click="showEmailDialog = true">
+          <v-card-text class="d-flex flex-column ga-4">
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0" @click="showEmailDialog = true">
               <span class="text-h7">Modifier l'adresse email</span>
               <v-icon>mdi-chevron-right</v-icon>
             </v-btn>
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0" @click="showAvatarDialog = true">
               <span class="text-h7">Modifier l'avatar</span>
               <v-icon>mdi-chevron-right</v-icon>
+            </v-btn>
+            <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
+              <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+                <v-icon>mdi-phone</v-icon>
+              </v-chip>
+              <span class="text-h7">Numéro de téléphone</span>
+              
+            </v-btn>  
+
+            <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
+              <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+                <v-icon>mdi-baby</v-icon>
+              </v-chip>
+              <span class="text-h7">Date de naissance</span>
+              
+            </v-btn>  
+            <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
+              <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+                <v-icon>mdi-account-key</v-icon>
+              </v-chip>
+              <span class="text-h7">Connexion ICNAGENDA</span>
+              
             </v-btn>
           </v-card-text>
         </v-card>

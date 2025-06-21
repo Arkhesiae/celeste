@@ -5,18 +5,16 @@ const ruleSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    enum: [
-      'MIN_POINTS_TRANSFER',
-      'MIN_POINTS_SWITCH',
-      'MIN_REST_DAYS_7DAYS',
-      'MAX_WORK_DAYS',
-      'MIN_REST_BETWEEN_VACATIONS'
-    ]
+  },
+  type: {
+    type: String,
+    enum: ['Number', 'Boolean'],
+    required: true
   },
   value: {
-    type: Number,
+    type: mongoose.Schema.Types.Mixed,
     required: true,
-    min: 0
+
   },
   description: {
     type: String,
@@ -24,14 +22,15 @@ const ruleSchema = new mongoose.Schema({
   },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    ref: 'User'
   },
   updatedAt: {
     type: Date,
     default: Date.now
   }
 });
+
+
 
 const Rule = mongoose.model('Rule', ruleSchema);
 

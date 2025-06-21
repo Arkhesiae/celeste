@@ -1,11 +1,12 @@
 <template>
   <v-card  :class="smAndDown ? 'points-card-mobile' : 'points-card'" rounded="xl" elevation="0" class="pa-6">
     <v-card-text class="pa-0 height-transition" style="height: 100%"> 
+      <Logo color="remplacement" style="width: 100%; height: 100%; position: absolute; bottom: -55; left: 0; opacity: 0.05"/>
       <div class="d-flex flex-column justify-space-between height-transition" style=" height: 100% ">
         <!-- En-tête avec l'icône et le menu -->
         <div class="d-flex justify-space-between align-center mb-4">
-          <div class="points-icon">
-            <v-icon color="" size="32">mdi-unicorn-variant</v-icon>
+          <div class="points-icon d-flex justify-center align-center" >
+            <Logo color="remplacement" style="margin-top: -2px; margin-left: 2px; "/>
           </div>
           <!-- <v-btn icon variant="text">
             <v-icon>mdi-dots-horizontal</v-icon>
@@ -151,9 +152,11 @@ onMounted(() => {
 }
 
 .points-icon {
-  background: rgba(var(--v-theme-primary), 0.1);
+  background: rgba(var(--v-theme-background), 1);
   padding: 8px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 118px;
 }
 
 

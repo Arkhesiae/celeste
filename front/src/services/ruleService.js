@@ -25,5 +25,13 @@ export const ruleService = {
       headers: getAuthHeaders(),
     });
     return handleResponse(response);
+  },
+
+  async resetRules() {
+    const response = await fetch(`${API_URL}/rules/reset`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(response);
   }
 }; 

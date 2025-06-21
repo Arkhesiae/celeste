@@ -23,15 +23,21 @@
 
           <div class="d-flex align-center">
 
-            <v-chip color="onBackground" variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
-              class="font-weight-bold">
-              {{ 10 }}
+            <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
+              class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
+              <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
+
+              </span>
+              <span v-else>
+                {{ demand?.points }}
+              </span>
+              <v-icon v-if="demand?.acceptedSwitches.length > 0" icon="mdi-tune-variant"></v-icon>
 
             </v-chip>
 
           </div>
           <v-chip v-if="demand?.comment" class="ms-2 text-medium-emphasis " size="small" rounded="pill"
-            color="remplacement" variant="flat" @click="showCommentDialog = true" style="cursor: pointer"  >
+            color="remplacement" variant="flat" @click="showCommentDialog = true" style="cursor: pointer">
             <v-icon>mdi-comment-text-outline</v-icon>
           </v-chip>
           <v-chip class="ms-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
@@ -134,7 +140,7 @@
           </v-btn>
           <div v-if="demand?.status === 'open'" class="d-flex align-center  justify-end ga-2">
             <v-btn v-if="demand?.status === 'open' && (demand?.type === 'substitution' || demand?.type === 'hybrid')"
-              rounded="xl" color="remplacement" size="small" :slim="true" variant="flat"
+              rounded="xl" color="remplacement" size="small" :slim="true" variant="flat" ref="remplacementButton"
               prepend-icon="mdi-account-arrow-left-outline" @click="handleAccept" :loading="loading.accept">
               Remplacer
             </v-btn>
@@ -161,7 +167,8 @@
     </v-expand-transition>
 
     <!-- Dialog de confirmation -->
-    <v-dialog v-model="showConfirmationDialog" max-width="500">
+
+    <v-dialog v-model="showConfirmationDialog" max-width="500" persistent  style="z-index: 1000000 !important"> 
       <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
         <v-card-title class="text-h5 pa-0">
           Confirmation de remplacement
@@ -179,8 +186,8 @@
             Annuler
           </v-btn>
           <v-spacer></v-spacer>
-          <v-btn v-if="userHasShift  && demand?.canSwitch" color="permutation" variant="tonal" rounded="xl" @click="handleSwap"
-            :loading="loading.accept">
+          <v-btn v-if="userHasShift && demand?.canSwitch" color="permutation" variant="tonal" rounded="xl"
+            @click="handleSwap" :loading="loading.accept">
             Permuter
           </v-btn>
           <v-btn color="remplacement" variant="tonal" rounded="xl" @click="handleConfirmAccept"
@@ -191,7 +198,7 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showConfirmationSwapDialog" max-width="500">
+    <v-dialog v-model="showConfirmationSwapDialog" max-width="500" style="z-index: 1000000 !important" >
       <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
         <v-card-title class="text-h5 pa-0">
           Confirmation de permutation
@@ -215,9 +222,33 @@
     </v-dialog>
 
 
+    <!-- Dialog pour afficher les points -->
+    <v-dialog v-model="showPointsDialog" max-width="500px" attach="body" style="z-index: 1000000 !important">
+      <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
+        <v-card-title class="text-h6 pa-0 mb-2">
+          Points de {{ demand?.posterShift?.name }}
+        </v-card-title>
+        <v-card-text class="pa-0">
+          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation" variant="flat"
+            size="small" rounded="lg" class="mr-2">
+            <span>{{ 'Permutation ' + getDayName(switchDay.shift) }}</span>
+            <span class="ml-2">{{ switchDay.points }}</span>
+          </v-chip>
+          <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat"
+            size="small" rounded="lg" class="mr-2">
+            <span>{{ 'Remplacement' }}</span>
+            <span class="ml-2">{{ demand?.points }}</span>
+          </v-chip>
+
+
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
+
     <!-- Dialog d'informations utilisateur -->
-    <v-dialog v-model="showUserDialog" max-width="300">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-4">
+    <v-dialog v-model="showUserDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-4" style="z-index: 1000000 !important">
         <v-card-item class="pa-0">
           <template #prepend>
             <v-avatar
@@ -236,8 +267,8 @@
     </v-dialog>
 
     <!-- Dialog des limites -->
-    <v-dialog v-model="showLimitsDialog" max-width="300">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-4">
+    <v-dialog v-model="showLimitsDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-4" style="z-index: 1000000 !important">
         <v-card-title class="text-h6 pa-0">
           Limites de la demande
         </v-card-title>
@@ -266,8 +297,8 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="showErrorDialog" max-width="400">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-6">
+    <v-dialog v-model="showErrorDialog" max-width="400" attach="body" style="z-index: 1000000 !important">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
         <v-card-title class="text-h6 pa-0">
           Vous ne pouvez pas permuter
         </v-card-title>
@@ -284,23 +315,23 @@
       </v-card>
     </v-dialog>
 
-      <!-- Dialog pour afficher le commentaire -->
-  <v-dialog v-model="showCommentDialog" max-width="500px" >
-    <v-card class="pa-6" rounded="xl">
-      <v-card-title class="text-h6 pa-0" >
-        Commentaire de {{ demand?.posterShift?.name }}
-      </v-card-title>
-      <v-card-text class="pa-0">
-        {{ demand?.comment }}
-      </v-card-text>
-      <v-card-actions class="pa-0">
-        <v-spacer></v-spacer>
-        <v-btn color="primary" variant="text" @click="showCommentDialog = false">
-          Fermer
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <!-- Dialog pour afficher le commentaire -->
+    <v-dialog v-model="showCommentDialog" max-width="500px" attach="body" style="z-index: 1000000 !important">
+      <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
+        <v-card-title class="text-h6 pa-0">
+          Commentaire de {{ demand?.posterShift?.name }}
+        </v-card-title>
+        <v-card-text class="pa-0">
+          {{ demand?.comment }}
+        </v-card-text>
+        <v-card-actions class="pa-0">
+          <v-spacer></v-spacer>
+          <v-btn color="primary" variant="text" @click="showCommentDialog = false">
+            Fermer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -314,8 +345,9 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTeamStore } from '@/stores/teamStore'
 import { API_URL } from '@/config/api'
 import { useDisplay } from 'vuetify'
+import { useRotationStore } from '@/stores/rotationStore' 
 
-
+const rotationStore = useRotationStore()
 
 const props = defineProps({
   demand: {
@@ -476,6 +508,19 @@ const isExpanded = ref(false)
 const showUserDialog = ref(false)
 const showLimitsDialog = ref(false)
 const showCommentDialog = ref(false)
+const showPointsDialog = ref(false)
+
+const getDayName = (dayId) => {
+  const rotation = rotationStore.rotations.find(rotation => 
+    rotation.days?.find(day => day._id === dayId)
+  ); 
+  if (rotation) {
+    const day = rotation.days.find(day => day._id === dayId);
+    return day?.name || 'Aucune vacations';
+  }
+  
+  return 'Aucune vacations';
+};
 </script>
 
 <style scoped>
@@ -490,6 +535,7 @@ const showCommentDialog = ref(false)
 .card-radius-16 {
   border-radius: 16px !important;
 }
+
 
 /* .card-shadow {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.000096), 0 0 0 1px rgba(121, 121, 121, 0.034), 0 4px 8px rgba(0, 0, 0, 0.00048) !important;

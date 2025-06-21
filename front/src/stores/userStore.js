@@ -97,8 +97,9 @@ export const useUserStore = defineStore('user', () => {
     try {
       loading.value = true;
       error.value = null;
-      await userService.updateUser(userId, { centerId });
+      await userService.assignCenter(userId, centerId);
       await fetchUsers();
+    
     } catch (err) {
       error.value = err.message || 'Erreur lors de l\'attribution du centre';
       throw err;

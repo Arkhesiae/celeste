@@ -28,7 +28,7 @@ import {
     updateEmail,
     getUserInfoByEmail,
     removeUserAdmin,
-    getDevListUsers
+    getDevListUsers,
 } from '../controllers/userController.js';
 import multer from 'multer';
 const router = express.Router();
@@ -57,38 +57,41 @@ router.post('/check-email', checkEmailAvailability);
 router.get('/info/:email', getUserInfoByEmail);
 router.get('/devlist', getDevListUsers);
 
+
+router.use(verifyToken);
 // Routes pour les équipes (groupées par fonctionnalité)
-router.get('/teams/:centerId', verifyToken, getUsersAndGroupByTeam);
-router.get('/center/:centerId', verifyToken, getUsersByCenter);
-router.get('/:id/current-team', verifyToken, getUserCurrentTeam);
-router.get('/:id/team-at', verifyToken, isAdmin, checkUserCenter, getUserTeamAtDate);
-router.get('/:id/team-occurrences', verifyToken, isUserOrAdmin, getUserTeamOccurrences);
-router.delete('/:id/team-occurrences/:occurrenceId', verifyToken, isUserOrAdmin, deleteTeamOccurrence);
-router.post('/:id/assign-team', verifyToken, isUserOrAdmin, assignTeamToUser);
+
+router.get('/teams/:centerId', getUsersAndGroupByTeam);
+router.get('/center/:centerId', getUsersByCenter);
+router.get('/:id/current-team', getUserCurrentTeam);
+router.get('/:id/team-at', isAdmin, checkUserCenter, getUserTeamAtDate);
+router.get('/:id/team-occurrences', isUserOrAdmin, getUserTeamOccurrences);
+router.delete('/:id/team-occurrences/:occurrenceId', isUserOrAdmin, deleteTeamOccurrence);
+router.post('/:id/assign-team', isUserOrAdmin, assignTeamToUser);
 
 // Routes pour les shifts
-router.post('/:id/get-shifts', verifyToken, isUserOrAdmin, getUserShifts);
-router.post('/:id/get-shifts-with-substitutions', verifyToken, isUserOrAdmin, getUserShiftsWithSubstitutions);
+router.post('/:id/get-shifts', isUserOrAdmin, getUserShifts);
+router.post('/:id/get-shifts-with-substitutions', isUserOrAdmin, getUserShiftsWithSubstitutions);
 
 // Routes pour les points et transactions
-router.get('/:id/points', verifyToken, isUserOrAdmin, getPointsById);
-router.post('/:id/points/transfer', verifyToken, transferPoints);
-router.get('/:id/transactions', verifyToken, getTransactionHistory);
+router.get('/:id/points', isUserOrAdmin, getPointsById);
+router.post('/:id/points/transfer', transferPoints);
+router.get('/:id/transactions', getTransactionHistory);
 
 // Routes pour les préférences et profil utilisateur
-router.get('/:id/preferences', verifyToken, isUserOrAdmin, getUserPreferences);
-router.put('/:id/preferences', verifyToken, isUserOrAdmin, updateUserPreferences);
-router.post('/:id/avatar', verifyToken, upload.single('avatar'), updateAvatar);
-router.post('/update-email', verifyToken, updateEmail);
+router.get('/:id/preferences', isUserOrAdmin, getUserPreferences);
+router.put('/:id/preferences', isUserOrAdmin, updateUserPreferences);
+router.post('/:id/avatar', upload.single('avatar'), updateAvatar);
+router.post('/update-email', updateEmail);
 
 // Routes pour la gestion des utilisateurs (admin/master admin)
-router.get('/', verifyToken,  getAllUsers);
-router.get('/:id', verifyToken, isUserOrAdmin, getUserById);
-router.post('/pending/:id/approve', verifyToken, isAdmin, approveUser);
-router.delete('/pending/:id', verifyToken, isAdmin, deletePendingUser);
-router.post('/:id/make-admin', verifyToken, isMasterAdmin, makeUserAdmin);
-router.post('/:id/remove-admin', verifyToken, isMasterAdmin, removeUserAdmin);
-router.delete('/:id', verifyToken, isMasterAdmin, deleteUserById);
-router.post('/:id/assign-center', verifyToken, isMasterAdmin, assignUserToCenter);
+router.get('/',  getAllUsers);
+router.get('/:id', isUserOrAdmin, getUserById); 
+router.post('/pending/:id/approve', isAdmin, approveUser);
+router.delete('/pending/:id', isAdmin, deletePendingUser);
+router.post('/:id/make-admin', isMasterAdmin, makeUserAdmin);
+router.post('/:id/remove-admin', isMasterAdmin, removeUserAdmin);
+router.delete('/:id', isMasterAdmin, deleteUserById);
+router.post('/:id/assign-center', isMasterAdmin, assignUserToCenter);
 
 export default router;

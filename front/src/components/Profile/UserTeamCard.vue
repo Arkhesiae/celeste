@@ -30,7 +30,7 @@
     <v-card-title class="text-h4 d-flex flex-column align-center  ">
       <div v-if="permanentTeam" class="d-flex flex-column align-center">
         <p class="text-overline text-medium-emphasis  ">équipe</p>
-        <p class="text-h1 font-weight-medium gradient">{{ permanentTeam ? permanentTeam.name : 'Aucune équipe' }}</p>
+        <p class="text-h1 font-weight-medium text-remplacement">{{ permanentTeam ? permanentTeam.name : 'Aucune équipe' }}</p>
         <p class="text-subtitle-2 text-medium-emphasis ">depuis le {{ formattedPermanentTeamDate }}</p>
       </div>
       <p v-else>Aucune équipe</p>

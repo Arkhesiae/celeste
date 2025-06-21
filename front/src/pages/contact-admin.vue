@@ -23,7 +23,7 @@ defineOptions({
     <v-row >
       <v-col cols="12" md="8" lg="6">
         <v-slide-y-transition appear>
-          <ContactAdminForm />
+          <ContactAdminForm admins="master" />
         </v-slide-y-transition>
       </v-col>
     </v-row>

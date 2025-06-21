@@ -13,6 +13,7 @@ router.use(verifyToken);
 
 // Routes protégées pour les administrateurs maîtres uniquement
 router.post('/initialize', isMasterAdmin, ruleController.initializeRules);
+router.post('/reset', isMasterAdmin, ruleController.resetRules);
 router.put('/:name', isMasterAdmin, ruleController.updateRule);
 
 export default router; 

@@ -4,10 +4,12 @@
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     temporary
-    width="600"
+
     floating
-    style="z-index: 1000333 !important"
-    order="-7"
+    order="-10"
+    absolute
+    style="z-index: 2500;"
+    width="600"
   >
     <v-sheet class="pa-4">
       <v-card-item class="py-1 px-6 mb-2">
@@ -85,4 +87,8 @@ const filteredDemands = computed(() => {
 </script>
 
 <style scoped>
+
+.v-dialog {
+  z-index: 3000 !important;
+}
 </style> 

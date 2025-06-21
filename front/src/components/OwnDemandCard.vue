@@ -74,8 +74,14 @@
         <div class="d-flex align-center mr-2">
 
           <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
-            class="font-weight-bold point-chip">
-            {{ demand?.points }}
+            class="font-weight-bold point-chip"  @click.stop="showPointsDialog = true">
+            <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
+          
+            </span>
+            <span v-else>
+              {{ demand?.points }}
+            </span>
+            <v-icon v-if="demand?.acceptedSwitches.length > 0" icon="mdi-tune-variant"></v-icon>
 
           </v-chip>
           <!-- <v-icon color="onBackground" class="ml-1"
@@ -118,6 +124,30 @@
       </div>
     </v-expand-transition>
   </div>
+
+
+  <!-- Dialog pour afficher les points -->
+  <v-dialog v-model="showPointsDialog" max-width="500px">
+    <v-card class="pa-6" rounded="xl">
+      <v-card-title class="text-h6 pa-0 mb-2">
+        Points de {{ demand?.posterShift?.name }}
+      </v-card-title>
+      <v-card-text class="pa-0">
+        <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation"   variant="flat" size="small" rounded="lg" class="mr-2">
+          <span>{{ 'Permutation ' + getDayName(switchDay.shift) }}</span>
+          <span class="ml-2">{{ switchDay.points }}</span>
+        </v-chip> 
+        <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat" size="small" rounded="lg" class="mr-2">
+          <span>{{ 'Remplacement' }}</span>
+          <span class="ml-2">{{ demand?.points }}</span>
+        </v-chip> 
+
+
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+
   <!-- Dialog pour afficher le commentaire -->
   <v-dialog v-model="showCommentDialog" max-width="500px">
     <v-card class="pa-6" rounded="xl">
@@ -143,8 +173,9 @@ import { computed, ref } from 'vue';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { API_URL } from '@/config/api';
+import { useRotationStore } from '@/stores/rotationStore';
 const teamStore = useTeamStore();
-
+const rotationStore = useRotationStore();
 const userStore = useUserStore();
 const substitutionStore = useSubstitutionStore();
 const props = defineProps({
@@ -197,6 +228,7 @@ const cancelDemand = async () => {
   }
 };
 
+const showPointsDialog = ref(false);
 const showCommentDialog = ref(false);
 const expanded = ref(false);
 
@@ -205,6 +237,18 @@ defineEmits(['accept', 'decline']);
 // Ajout du gestionnaire de clic pour la carte
 const toggleExpand = () => {
   expanded.value = !expanded.value;
+};
+
+const getDayName = (dayId) => {
+  const rotation = rotationStore.rotations.find(rotation => 
+    rotation.days?.find(day => day._id === dayId)
+  ); 
+  if (rotation) {
+    const day = rotation.days.find(day => day._id === dayId);
+    return day?.name || 'Aucune vacations';
+  }
+  
+  return 'Aucune vacations';
 };
 
 </script>

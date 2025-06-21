@@ -65,7 +65,7 @@ const getTeamsByCenter = async (req, res) => {
 // Récupérer toutes les équipes
 const getAllTeams = async (req, res) => {
     try {
-        const teams = await Team.find();
+        const teams = await Team.find({ deleted: false });
         res.json(teams || { message: 'No teams' });
     } catch (error) {
         console.error('Error fetching teams:', error);

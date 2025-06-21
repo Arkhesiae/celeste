@@ -1,5 +1,5 @@
 <template>
-  <v-bottom-sheet v-model="localModelValue" order="-4">
+  <v-bottom-sheet v-model="localModelValue" inset>
     <CalendarPanel
       :formatted-date="formattedDate"
       :vacations-of-user="vacationsOfUser"

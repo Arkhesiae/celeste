@@ -77,6 +77,26 @@
  
         </div>
         </v-alert>
+        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" >
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Envoi de mails désactivé</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              L'envoi de mail est désactivé pour le moment afin de procéder à des tests.
+            </div>
+            <div>
+              Nous vous remercions de votre compréhension.
+            </div>
+          </v-card-text>
+        </div>
+          <!-- <div class="font-weight-medium"> -->
+            <!-- Résoudre -->
+            <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+          </div> -->
+ 
+        </div>
+        </v-alert>
       </v-col>
     </v-row>
 

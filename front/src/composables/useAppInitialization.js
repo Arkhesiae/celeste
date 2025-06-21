@@ -9,6 +9,8 @@ import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useInitializationStore } from '@/stores/initializationStore';
+import { useTheme } from 'vuetify';
+
 
 export function useAppInitialization() {
   const authStore = useAuthStore();
@@ -22,12 +24,20 @@ export function useAppInitialization() {
   const substitutionStore = useSubstitutionStore();
   const rotationStore = useRotationStore();
   const initializationStore = useInitializationStore();
-
+  const theme = useTheme();
   const initializeAuth = async () => {
     authStore.loadFromLocalStorage();
     if (authStore.isLoggedIn) {
       await userStore.fetchCurrentUser();
     }
+  };
+
+  const initializeTheme = async () => {
+    
+    if (authStore.isLoggedIn) {
+      theme.global.name.value = authStore.preferences.theme ? 'darkTheme' : 'lightTheme';
+    }
+   
   };
 
   const initializeCenter = async (onProgress) => {
@@ -48,7 +58,9 @@ export function useAppInitialization() {
 
   const initializeTeam = async (onProgress) => {
     if (!authStore.userId) return;
-
+    if (authStore.isAdmin && authStore.adminType === 'master') {
+      await teamStore.fetchAllTeams();
+    } 
     initializationStore.currentlyLoading = 'team';
     await Promise.all([
       teamStore.fetchCurrentTeamOfUser(authStore.userId),
@@ -110,11 +122,22 @@ export function useAppInitialization() {
     if (onProgress) onProgress('messages');
   };
 
+  
+  const initializeRules = async (onProgress) => {
+    if (!authStore.isAdmin) return;
+
+    initializationStore.currentlyLoading = 'rules';
+    await ruleStore.fetchRules();
+    initializationStore.updateInitializationState('rules', true);
+    if (onProgress) onProgress('rules');
+  };
+
   const initializeApp = async (onProgress) => {
     try {
       initializationStore.setLoading(true);
       
       await initializeAuth();
+      await initializeTheme();
       if (onProgress) onProgress('user');
 
       if (authStore.isLoggedIn) {

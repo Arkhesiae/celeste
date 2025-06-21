@@ -1,7 +1,6 @@
 import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
 import {getTeamAtGivenDate} from "../utils/getTeamAtGivenDate.js";
-import {computeShiftOfUser} from "../utils/computeShiftOfUser.js";
 import {computeShiftOfUserWithSubstitutions} from "../utils/computeShiftOfUserWithSubstitutions.js";
 import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
 import Transaction from '../models/Transaction.js';
@@ -121,7 +120,7 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
             if (vacationOfFetcher.shift?.name !== "Rest Day" && vacationOfFetcher.shift?.type !== "rest") {
                 // Vérifier si une permutation est possible
                 demandWithLimit.limit.push('alreadyWorking');
-                if (demand.acceptedSwitches && demand.acceptedSwitches.includes(vacationOfFetcher.shift._id.toString())) {
+                if (demand.acceptedSwitches.length > 0 && demand.acceptedSwitches.some(switchItem => switchItem?.shift?.toString() === vacationOfFetcher.shift?._id?.toString())) {
                     demandWithLimit.canSwitch = true;
                 }
             }
@@ -137,10 +136,19 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
             const previousShift = shifts[5].shift;
             const nextShift = shifts[7].shift;
 
+
+            const beforeRestTime = computeRestTime(previousShift, demand.posterShift);
+            const afterRestTime = computeRestTime(demand.posterShift, nextShift);
+
+
             demandWithLimit.rest = {
-                before:  calculateRestDelay(previousShift, demand.posterShift, 'before'),
-                after: calculateRestDelay(demand.posterShift, nextShift, 'after') 
+                before:  beforeRestTime,
+                after: afterRestTime
             }
+            
+            console.log("beforeRestTime", beforeRestTime);
+            console.log("afterRestTime", afterRestTime);
+
             const hasElevenHoursBefore = checkRestPeriod(previousShift, demand.posterShift, 'before');
             const hasElevenHoursAfter = checkRestPeriod(nextShift, demand.posterShift, 'after');
 
@@ -163,8 +171,15 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
     return categorizedDemands;
 };
 
-const calculateRestDelay = (shift, shift2) => {
+const computeRestTime = (shift, shift2) => {
     if (!shift || !shift2) return 0;
+    const baseRest = 0;
+    if (shift.type === 'rest') {
+        return 24;
+    }
+    else if (shift2.type === 'rest') {
+        return 24;
+    }
 
     const shiftEnd = new Date(`2000-01-01 ${shift.endTime}`);
     const shift2Start = new Date(`2000-01-02 ${shift2.startTime}`);
@@ -175,17 +190,17 @@ const calculateRestDelay = (shift, shift2) => {
     
     // Calculer la différence en heures
     const diffHours = (shift2Start - shiftEnd) / (1000 * 60 * 60);
-    return diffHours;
+    return diffHours + baseRest;
   } 
 
 const checkRestPeriod = (shift, demandShift, period) => {
     if (!shift || shift.type === 'rest') return true;
     if (period === 'before') {
         return demandShift.startTime && shift.endTime ? 
-            calculateRestDelay(shift, demandShift) >= 11 : true;
+            computeRestTime(shift, demandShift) >= 11 : true;
     } else {
         return demandShift.endTime && shift.startTime ?
-            calculateRestDelay(demandShift, shift) >= 11 : true;
+            computeRestTime(demandShift, shift) >= 11 : true;
     }
     
 };
@@ -568,17 +583,17 @@ const swapShifts = async (req, res) => {
         // Récupération du shift de l'utilisateur
         const userShift = await computeShiftOfUserWithSubstitutions(new Date(demand.posterShift.date), userId);
         if (!userShift) {
-            return res.status(404).json({ error: 'Shift utilisateur non trouvé' });
+            return res.status(404).json({ error: 'Vacation utilisateur non trouvée' });
         }
 
         
         // Vérification que le shift de l'utilisateur est dans la liste des shifts acceptés pour l'échange
         const isShiftAccepted = demand.acceptedSwitches.some(
-            acceptedShift => acceptedShift.toString() === userShift[0].shift._id.toString()
+            acceptedShift => acceptedShift.shift.toString() === userShift[0].shift._id.toString()
         );
 
         if (!isShiftAccepted) {
-            return res.status(400).json({ error: 'Votre shift n\'est pas accepté pour cet échange' });
+            return res.status(400).json({ error: 'Votre vacation n\'est pas accepté pour cet échange' });
         }
 
         const accepterShift = {...userShift[0].shift, teamId: userShift[0].teamObject._id};
@@ -600,12 +615,12 @@ const swapShifts = async (req, res) => {
   
 
         res.status(200).json({
-            message: 'Échange de shifts effectué avec succès',
+            message: 'Échange de vacations effectué avec succès',
             demand: updatedDemand
         });
     } catch (error) {
-        console.error('Erreur lors de l\'échange des shifts:', error);
-        res.status(500).json({ error: 'Une erreur est survenue lors de l\'échange des shifts' });
+        console.error('Erreur lors de l\'échange des vacations:', error);
+        res.status(500).json({ error: 'Une erreur est survenue lors de l\'échange des vacations' });
     }
 };
 
@@ -647,6 +662,7 @@ const unacceptRequest = async (req, res) => {
         const updatedRequest = await Substitution.findByIdAndUpdate(
             requestId,
             {
+                accepterShift: null,
                 accepterId: null,
                 status: 'open',
                 updatedAt: new Date()

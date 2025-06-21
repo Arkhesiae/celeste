@@ -51,7 +51,7 @@
                     :error-messages="stepErrors[1]"
                     @update:modelValue="onCenterSelect"
                   />
-                  <v-radio-group 
+                  <!-- <v-radio-group 
                     inline
                     
                     v-model="user.zone"
@@ -59,7 +59,7 @@
                   >
                     <v-radio label="Est" value="east"></v-radio>
                     <v-radio label="Ouest" value="west"></v-radio>
-                  </v-radio-group>
+                  </v-radio-group> -->
                   <span class="text-caption text-grey-darken-1">
                     Vous ne trouvez pas votre organisme dans la liste ?
                   </span>
@@ -458,23 +458,6 @@ const centerTeams = computed(() => teamStore.centerTeams);
 const showSidePanel = (panelType) => {
   activeSidePanel.value = panelType;
   sidePanelOpen.value = true;
-};
-
-const submitContactForm = async () => {
-  contactForm.value.submitting = true;
-  try {
-    // Implement your contact form submission logic here
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API call
-
-    sidePanelOpen.value = false;
-    // Reset form
-    contactForm.value.subject = "";
-    contactForm.value.message = "";
-  } catch (error) {
-
-  } finally {
-    contactForm.value.submitting = false;
-  }
 };
 
 // Item props for select inputs

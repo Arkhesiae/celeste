@@ -45,7 +45,7 @@ export const useTeamStore = defineStore('team', () => {
     try {
       loading.value = true;
       error.value = null;
-      teams.value = await teamService.getTeams();
+      teams.value = await teamService.getAllTeams();
     } catch (err) {
       console.error('Erreur lors de la récupération des équipes:', err);
       throw err;

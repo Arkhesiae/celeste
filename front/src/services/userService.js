@@ -188,5 +188,19 @@ export const userService = {
     return handleResponse(response);
   },
 
+  /**
+   * Assigne un utilisateur à un centre.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @param {string} centerId - L'ID du centre.
+   * @returns {Promise<Object>} La réponse de l'assignation.
+   */
+  async assignCenter(userId, centerId) {
+    const response = await fetch(`${API_URL}/users/${userId}/assign-center`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ centerId })
+    });
+    return handleResponse(response);
+  },
 
 };

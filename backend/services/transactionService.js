@@ -61,6 +61,7 @@ const processPendingTransactions = async () => {
             await transaction.save();
         }
     }
+    return pendingTransactions.length;
 };
 
 /**

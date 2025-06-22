@@ -40,13 +40,13 @@ const computeUserPool = async (demand) => {
                 switch (demand.type) {
                     case 'switch':
                         // Pour un switch, l'utilisateur doit pouvoir switcher
-                        canSwitch = categorizedDemand.canSwitch === true;
+                        canSwitch = categorizedDemand.canSwitch === true && categorizedDemand.limit.length === 1;
                         canAccept = canSwitch;
                         break;
 
                     case 'hybrid':
                         // Pour un hybrid, l'utilisateur peut soit switcher soit remplacer
-                        canSwitch = categorizedDemand.canSwitch === true;
+                        canSwitch = categorizedDemand.canSwitch === true && categorizedDemand.limit.length === 1;
                         canReplace = categorizedDemand.limit.length === 0;
                         canAccept = canSwitch || canReplace;
                         break;

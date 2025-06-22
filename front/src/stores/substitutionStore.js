@@ -135,11 +135,13 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     return [
       ...pendingHybridSubstitutions.value.filter(substitution => 
         substitution.posterId !== userId.value &&
-        substitution.canSwitch 
+        substitution.canSwitch && 
+        substitution.limit.length === 1
       ),
       ...pendingTrueSwitches.value.filter(substitution => 
         substitution.posterId !== userId.value &&
-        substitution.canSwitch 
+        substitution.canSwitch && 
+        substitution.limit.length === 1
       )
     ];
   });

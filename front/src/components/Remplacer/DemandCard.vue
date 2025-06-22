@@ -106,29 +106,29 @@
 
         <v-card-actions class="pa-0">
           <div v-if="demand?.limit?.length > 0">
-
-
             <v-chip v-if="smAndDown" rounded="lg" variant="tonal" color="error" size="small"
               @click="showLimitsDialog = true">
               <v-icon>mdi-alert-circle-outline</v-icon>
             </v-chip>
-            <v-chip v-else v-for="limit in demand?.limit" rounded="lg" variant="tonal" color="error" size="small">
+            <div v-else class="d-flex align-center ga-2">
+            <v-chip v-for="limit in demand?.limit" rounded="lg" variant="tonal" color="error" size="small">
               <div v-if="limit === 'alreadyWorking'">
                 Travaille ce jour
               </div>
               <div v-if="limit === 'insufficientRest'">
-                Pas assez de repos {{ demand.rest.before }} {{ demand.rest.after }}
+                Pas assez de repos
               </div>
               <div v-if="limit === 'consecutiveDaysLimit'">
                 Plus de 3 jours consécutifs
               </div>
             </v-chip>
+            </div>
           </div>
-          <v-chip rounded="lg" variant="tonal"
+          <!-- <v-chip rounded="lg" variant="tonal"
             v-if="(demand?.type === 'switch' || demand?.type === 'hybrid') && !smAndDown"
             :color="demand?.canSwitch ? 'permutation' : 'error'" size="small">
             {{ demand?.canSwitch ? 'Peut permuter' : 'Ne peut pas permuter' }}
-          </v-chip>
+          </v-chip> -->
 
 
           <v-spacer></v-spacer>

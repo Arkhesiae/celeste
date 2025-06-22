@@ -12,6 +12,7 @@ import { computeUserPool } from '../utils/computeUserPool.js';
 
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
 const MIN_POINTS_TO_POST_REQUEST = -20;
+const MAX_POINTS_TO_ACCEPT_REQUEST = 2000;
 
 const getCenterDemands = async (req, res) => {
     try {
@@ -409,8 +410,8 @@ const acceptRequest = async (req, res) => {
     
         // Création d'une transaction différée si des points sont en jeu
         if (request.points > 0) {
-            if (user.points-request.points < MIN_POINTS_TO_ACCEPT_REQUEST) {
-                return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous n\'avez pas assez de points' });
+            if (user.points + request.points > MAX_POINTS_TO_ACCEPT_REQUEST) {
+                return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous avez déjà assez de points' });
             }
             await createDelayedTransaction({
                 sender: request.posterId,
@@ -479,6 +480,11 @@ const swapShifts = async (req, res) => {
             return res.status(404).json({ error: 'Demande non trouvée' });
         }
 
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+        }
+
         // Vérification que la demande est ouverte
         if (demand.status !== 'open') {
             return res.status(400).json({ error: 'Cette demande n\'est plus disponible' });
@@ -497,16 +503,18 @@ const swapShifts = async (req, res) => {
 
         
         // Vérification que le shift de l'utilisateur est dans la liste des shifts acceptés pour l'échange
-        const isShiftAccepted = demand.acceptedSwitches.some(
+        const acceptedShiftData = demand.acceptedSwitches.find(
             acceptedShift => acceptedShift.shift.toString() === userShift[0].shift._id.toString()
         );
 
-        if (!isShiftAccepted) {
+        if (!acceptedShiftData) {
             return res.status(400).json({ error: 'Votre vacation n\'est pas accepté pour cet échange' });
         }
 
+        const acceptedShiftPoints = acceptedShiftData.points;
+
         const accepterShift = {...userShift[0].shift, teamId: userShift[0].teamObject._id};
-        console.log("accepterShift", accepterShift);
+   
         
         // Mise à jour de la demande
         const updatedDemand = await Substitution.findByIdAndUpdate(
@@ -521,11 +529,28 @@ const swapShifts = async (req, res) => {
             { new: true }
         );
 
+          // Création d'une transaction différée si des points sont en jeu
+          if (acceptedShiftPoints > 0) {
+            if (user.points + acceptedShiftPoints > MAX_POINTS_TO_ACCEPT_REQUEST) {
+                return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous avez déjà assez de points' });
+            }
+            await createDelayedTransaction({
+                sender: demand.posterId,
+                receiver: userId,
+                amount: acceptedShiftPoints,
+                type: 'replacement',
+                request: demandId,
+                description: `Permutation du ${new Date(demand.posterShift.date).toLocaleDateString()}`,
+                scheduledDate: new Date(demand.posterShift.date)
+            });
+        }
+
   
 
         res.status(200).json({
             message: 'Échange de vacations effectué avec succès',
-            demand: updatedDemand
+            demand: updatedDemand,
+            acceptedShiftPoints: acceptedShiftPoints
         });
     } catch (error) {
         console.error('Erreur lors de l\'échange des vacations:', error);

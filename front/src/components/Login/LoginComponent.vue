@@ -281,7 +281,9 @@ const handlePasswordResetError = (message) => {
 };
 
 const backToStep1 = () => {
-   tryGoToStep2();
+  if (currentStep.value === 2) {
+    tryGoToStep2();
+  }
 };
 </script>
 

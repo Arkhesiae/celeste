@@ -1,5 +1,22 @@
 <template>
   <v-container>
+    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Aucun tour de service n'est actuellement actif.
+            </div>
+            <div>
+              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez contacter un administrateur pour activer un tour de service.
+            </div>
+          </v-card-text>
+        </div>
+        
+ 
+        </div>
+        </v-alert> 
     <v-row class="mt-4">
       <!-- Section Calendrier --> 
 
@@ -126,6 +143,7 @@ const snackbarStore = useSnackbarStore();
 const teamStore = useTeamStore();
 const userStore = useUserStore();
 const shiftStore = useShiftStore();
+const rotationStore = useRotationStore();
 
 /**  États */
 const isLoading = ref(false);
@@ -142,6 +160,13 @@ const substitutionToUnaccept = ref(null);
 const shiftsWithSubstitutions = computed(() => {
   return shiftStore.shiftsWithSubstitutions;
 });
+
+
+const activeRotation = computed(() => {
+  return rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
+ 
+});
+
 
 const { mobile, smAndDown, mdAndDown } = useDisplay();
 const userId = computed(() => authStore.userId);

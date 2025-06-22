@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="500">
+  <v-dialog v-model="localDialogVisible" max-width="500" style="z-index: 3100 !important;">
     <v-card rounded="xl" color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
         <v-card-title class="">
@@ -87,7 +87,7 @@
     </v-card>
   </v-dialog>
 
-  <TimePickerDialog v-model="timePickerDialog.open" :type="timePickerDialog.type" :time="timePickerDialog.time"
+  <TimePickerDialog style="z-index: 3200 !important;" v-model="timePickerDialog.open" :type="timePickerDialog.type" :time="timePickerDialog.time"
     @update:time="(value) => timePickerDialog.time = value" @save="saveTimePicker" @close="closeTimePicker" />
 </template>
 

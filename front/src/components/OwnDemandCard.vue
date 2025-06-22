@@ -34,11 +34,12 @@
           </v-card-subtitle>
           <div>
             <div class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
-              <v-avatar size="24" variant="tonal" class="me-2">
+            
+              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
+                <v-avatar size="24" variant="tonal" class="me-2">
                 <v-img v-if="getAccepter?.avatar" :src="`${API_URL}${getAccepter?.avatar}`" alt="Avatar" />
                 <v-icon size="x-small" v-else>mdi-account</v-icon>
               </v-avatar>
-              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
                 <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
                   getAccepter?.lastName
                   }}</span>
@@ -173,6 +174,28 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <!-- Dialog de confirmation de suppression -->
+  <v-dialog v-model="showConfirmDeleteDialog" max-width="400px">
+    <v-card class="pa-6" rounded="xl">
+      <v-card-title class="text-h6 pa-0 mb-4">
+        Confirmer la suppression
+      </v-card-title>
+      <v-card-text class="pa-0 mb-4">
+        Êtes-vous sûr de vouloir {{ isPoster ? 'annuler' : 'refuser' }} cette demande ?
+        Cette action ne peut pas être annulée.
+      </v-card-text>
+      <v-card-actions class="pa-0">
+        <v-spacer></v-spacer>
+        <v-btn color="onBackground" variant="text" @click="showConfirmDeleteDialog = false">
+          Annuler
+        </v-btn>
+        <v-btn color="error" variant="flat" @click="confirmDelete">
+          Confirmer
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>
@@ -225,12 +248,17 @@ const getPoster = computed(() => {
 });
 
 const cancelDemand = async () => {
+  showConfirmDeleteDialog.value = true;
+};
+
+const confirmDelete = async () => {
   try {
     if (props.isPoster) {
       await substitutionStore.cancelDemand(props.demand._id);
     } else {
       await substitutionStore.unacceptDemand(props.demand._id);
     }
+    showConfirmDeleteDialog.value = false;
   } catch (error) {
     console.error('Erreur lors de la suppression de la demande:', error);
   }
@@ -238,6 +266,7 @@ const cancelDemand = async () => {
 
 const showPointsDialog = ref(false);
 const showCommentDialog = ref(false);
+const showConfirmDeleteDialog = ref(false);
 const expanded = ref(false);
 
 defineEmits(['accept', 'decline']);

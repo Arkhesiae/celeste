@@ -53,8 +53,8 @@ const close = () => {
 </script>
 
 <template>
-  <v-dialog v-model="localDialogVisible" width="400px" :fullscreen="smAndDown">
-    <v-card :rounded="!smAndDown ? 'xl' : ''"  class="pa-0 pt-6">
+  <v-dialog v-model="localDialogVisible" width="400px" :fullscreen="smAndDown" style="z-index: 3000 !important;">
+    <v-card :rounded="!smAndDown ? 'xl' : ''" elevation="0" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
        
        <v-card-title class="d-flex justify-space-between align-center">Programmer un TDS</v-card-title>

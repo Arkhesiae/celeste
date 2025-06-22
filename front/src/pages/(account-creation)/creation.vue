@@ -229,6 +229,7 @@
                 <v-btn
                   v-if="step > 1 && step < 8"
                   variant="text"
+                  color="onSurface"
                   @click="step--"
                 >
                   Retour
@@ -239,10 +240,10 @@
                 <v-btn
                   v-if="step < 7"
                   @click="step++"
-                  color="primary"
+                  color="remplacement"
                   variant="flat"
                   rounded="xl"
-                  class="px-6 text-onPrimary"
+                  class="px-6 text-background"
                   :disabled="!stepValid[step]"
                 >
                   Suivant

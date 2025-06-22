@@ -77,7 +77,26 @@
  
         </div>
         </v-alert>
-        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" >
+
+
+        <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4  " icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Aucun tour de service n'est actuellement actif.
+            </div>
+            <div>
+              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez contacter un administrateur pour activer un tour de service.
+            </div>
+          </v-card-text>
+        </div>
+        
+ 
+        </div>
+        </v-alert> 
+        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 " icon="mdi-alert-circle-outline" style="cursor: pointer;" >
           <div class="d-flex align-center justify-space-between">
             <div>
           <v-card-title class="text-h6 font-weight-medium">Envoi de mails désactivé</v-card-title>
@@ -87,6 +106,27 @@
             </div>
             <div>
               Nous vous remercions de votre compréhension.
+            </div>
+          </v-card-text>
+        </div>
+          <!-- <div class="font-weight-medium"> -->
+            <!-- Résoudre -->
+            <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+          </div> -->
+ 
+        </div>
+        </v-alert>
+
+        <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" >
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Version alpha</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Vous êtes sur une alpha du site.
+            </div>
+            <div>
+              Certaines fonctionnalités ne sont pas encore disponibles car nécissitant d'avantage de tests. Veuillez nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
             </div>
           </v-card-text>
         </div>
@@ -108,19 +148,19 @@
         <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-4" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
           <v-card-text>
-            <div v-if="getVacation && getVacation.shift.type === 'rest'">
+            <div v-if="getVacation && getVacation.shift?.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
                 <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                   style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
 
               </div>
             </div>
-            <div v-if="getVacation && getVacation.shift">
+            <div v-if="getVacation && getVacation.shift?.type !== 'rest'">
               <div class="d-flex align-center justify-space-between mb-2">
                 <div>
                   <div class="text-h5 font-weight-medium">{{ vacationName(getVacation) }}</div>
-                  <div class="text-medium-emphasis" v-if="getVacation.shift.type !== 'rest'">
-                    {{ getVacation.shift.startTime }} - {{ getVacation.shift.endTime }}
+                  <div class="text-medium-emphasis" v-if="getVacation.shift?.type !== 'rest'">
+                    {{ getVacation.shift?.startTime }} - {{ getVacation.shift?.endTime }}
                   </div>
                 </div>
                 <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
@@ -141,19 +181,19 @@
         <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Demain</v-card-title>
           <v-card-text>
-            <div v-if="getVacation && getVacation.shift.type === 'rest'">
+            <div v-if="getVacation && getVacation.shift?.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
                 <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                   style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
 
               </div>
             </div>
-            <div v-if="getTomorrowVacation && getTomorrowVacation.shift">
+            <div v-if="getTomorrowVacation && getTomorrowVacation.shift?.type !== 'rest'">
               <div class="d-flex align-center justify-space-between mb-2">
                 <div>
                   <div class="text-h5 font-weight-medium">{{ vacationName(getTomorrowVacation) }}</div>
-                  <div class="text-medium-emphasis" v-if="getTomorrowVacation.shift.type !== 'rest'">
-                    {{ getTomorrowVacation.shift.startTime }} - {{ getTomorrowVacation.shift.endTime }}
+                  <div class="text-medium-emphasis" v-if="getTomorrowVacation.shift?.type !== 'rest'">
+                    {{ getTomorrowVacation.shift?.startTime }} - {{ getTomorrowVacation.shift?.endTime }}
                   </div>
                 </div>
                 <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
@@ -400,6 +440,10 @@
 
 }
 
+.highlight-shadow{  
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148) ;
+}
+
 .new-demand-button.highlight-shadow{
   backface-visibility: hidden;
   transform: translateZ(0);
@@ -633,8 +677,8 @@ const activeRotation = computed(() => {
 
 const vacationName = computed(() => (vacation) => {
   if (!vacation) return null;
-  if (vacation.shift.type === 'rest') return 'Repos';
-  return vacation.shift.name;
+  if (vacation.shift?.type === 'rest') return 'Repos';
+  return vacation.shift?.name;
 });
 
 // Fonction pour obtenir la prochaine substitution

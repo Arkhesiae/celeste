@@ -112,6 +112,7 @@ const updateDay = (day) => {
       v-if="!smAndDown"
       v-model="showDetailsDialog"
       max-width="400"
+      style="z-index: 3150 !important;"
     >
       <DayDetail
         rounded="xl"
@@ -128,6 +129,7 @@ const updateDay = (day) => {
 
     <!-- Mobile Bottom Sheet -->
     <v-bottom-sheet
+      style="z-index: 3150 !important;"
       v-if="smAndDown"
       v-model="showDetailsDialog"
     >

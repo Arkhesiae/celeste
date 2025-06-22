@@ -1,5 +1,13 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
 
+// Constantes pour améliorer la lisibilité et la maintenance
+const REST_DAY_NAME = "Rest Day";
+const REST_TYPE = "rest";
+const MIN_REST_HOURS = 11;
+const MAX_CONSECUTIVE_DAYS = 6;
+const RANGE_SIZE = 13;
+const RANGE_OFFSET = 6;
+
 const categorize = async (demand, userId) => {
     try {
         const demandDate = new Date(demand.posterShift.date);
@@ -8,7 +16,7 @@ const categorize = async (demand, userId) => {
 
         const vacationOfFetcher = (await computeShiftOfUserWithSubstitutions(demandDate, userId))[0];
 
-        if (!vacationOfFetcher || !vacationOfFetcher.shift) {
+        if (!vacationOfFetcher?.shift) {
             console.log("Aucun shift trouvé pour l'utilisateur");
             demandWithLimit.limit.push('noShift');
             return demandWithLimit;
@@ -18,7 +26,11 @@ const categorize = async (demand, userId) => {
         if (vacationOfFetcher.shift?.name !== "Rest Day" && vacationOfFetcher.shift?.type !== "rest") {
             // Vérifier si une permutation est possible
             demandWithLimit.limit.push('alreadyWorking');
-            if (demand.acceptedSwitches.length > 0 && demand.acceptedSwitches.some(switchItem => switchItem?.shift?.toString() === vacationOfFetcher.shift?._id?.toString())) {
+            // Vérifier si une permutation est possible
+            if (demand.acceptedSwitches?.length > 0 && 
+                demand.acceptedSwitches.some(switchItem => 
+                    switchItem?.shift?.toString() === currentShift._id?.toString()
+                )) {
                 demandWithLimit.canSwitch = true;
             }
         }
@@ -34,6 +46,7 @@ const categorize = async (demand, userId) => {
         const previousShift = shifts[5].shift;
         const nextShift = shifts[7].shift;
 
+        // Calculer les temps de repos une seule fois
         const beforeRestTime = computeRestTime(previousShift, demand.posterShift);
         const afterRestTime = computeRestTime(demand.posterShift, nextShift);
 

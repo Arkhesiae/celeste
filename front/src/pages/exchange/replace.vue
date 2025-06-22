@@ -8,6 +8,24 @@
       </div>
     </div>
 
+
+    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Aucun tour de service n'est actuellement actif.
+            </div>
+            <div>
+              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez contacter un administrateur pour activer un tour de service.
+            </div>
+          </v-card-text>
+        </div>
+        
+ 
+        </div>
+        </v-alert> 
     <v-row class="mb-16">
       <!-- Colonne principale -->
       <v-col cols="12" sm="12" md="8">
@@ -154,6 +172,15 @@
       </v-col>
     </v-row>
 
+
+    <v-dialog v-model="loadingDemands" persistent width="300">
+      <v-card rounded="xl" class="pa-2">
+        <v-card-text class="d-flex align-center">
+          <v-progress-circular indeterminate color="primary"></v-progress-circular>
+          <p class="ml-4">Chargement...</p>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
     <!-- Bouton flottant pour mobile -->
     <!-- <v-fab v-if="smAndDown" prepend-icon="mdi-plus" class="fab" height="60px" rounded="0" flat color="remplacement"
       location="bottom end" text="Nouvelle demande" extended app @click="showAddDialog = true" /> -->
@@ -178,16 +205,19 @@ import { useDisplay } from "vuetify";
 import DemandCard from "@/components/Remplacer/DemandCard.vue";
 import ListHeader from "@/components/common/ListHeader.vue";
 import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
+import { useRotationStore } from "@/stores/rotationStore.js";
 
 // Stores
 const substitutionStore = useSubstitutionStore();
 const userStore = useUserStore();
 const authStore = useAuthStore();
 const { smAndDown, md, xs, sm } = useDisplay();
-
+const rotationStore = useRotationStore();
 // État local
 const loadingUsers = ref(true);
+const loadingDemands = ref(false);
 const userShift = ref(null);
+
 const displayPending = ref(false);
 const displayAccepted = ref(false);
 const searchQuery = ref('');
@@ -229,6 +259,13 @@ const getNestedValue = (obj, path) => {
   }
   return path.split('.').reduce((acc, part) => acc && acc[part], obj);
 };
+
+  
+const activeRotation = computed(() => {
+  return rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
+ 
+});
+
 
 // Fonction utilitaire pour le filtrage et le tri
 const filterAndSortDemands = (demands) => {
@@ -350,12 +387,13 @@ watch(
 // Lifecycle hooks
 onMounted(async () => {
   try {
+    loadingDemands.value = true;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const oneYearFromNow = new Date();
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
     await Promise.all([
-  
+ 
       substitutionStore.fetchAllDemands({
         startDate: today.toISOString(),
         endDate: oneYearFromNow.toISOString()
@@ -365,6 +403,7 @@ onMounted(async () => {
     console.error("Erreur lors du chargement initial:", err);
   } finally {
     loadingUsers.value = false;
+    loadingDemands.value = false;
   }
 });
 </script>

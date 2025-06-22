@@ -86,11 +86,11 @@
         <!-- Footer Links Section -->
         <v-list v-if="isLoggedIn" nav class="d-flex justify-space-around align-center pt-8 text-caption"
                 bg-color="background">
-          <span @click="" style="cursor: pointer">Assistance</span>
+          <span @click="router.push({ path: '/contact-admin' })" style="cursor: pointer">Assistance</span>
+          <!-- <v-divider vertical></v-divider> -->
+          <!-- <span @click="" style="cursor: pointer">Nouveautés</span>
           <v-divider vertical></v-divider>
-          <span @click="" style="cursor: pointer">Nouveautés</span>
-          <v-divider vertical></v-divider>
-          <span @click="" style="cursor: pointer">A propos</span>
+          <span @click="" style="cursor: pointer">A propos</span> -->
         </v-list>
 
         <!-- Footer Links Section -->

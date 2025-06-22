@@ -1,7 +1,12 @@
 <template>
   <v-container fluid class="fill-height">
     <v-row justify="center" style="min-height: 800px">
-      <v-col cols="12" sm="12" md="8" lg="8" class="py-16 mt-16">
+      <v-col cols="12" sm="12" md="12" lg="12" class="py-16 mt-16">
+        <div class="d-flex align-center" :class="mdAndUp ? 'justify-space-between' : 'justify-center'">
+
+         
+
+        
         <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
           <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
             <div class="text-overline subtitle-animation">Votre nouveau site de rempla</div>
@@ -40,9 +45,11 @@
             </div>
           </v-card-actions>
         </v-card>
+        <v-img src="@/assets/CRNA.png" alt="landing" :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }" />
+      </div>
       </v-col>
 
-      <v-img src="@/assets/CRNA.png" alt="landing" :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }" />
+     
 
 
     </v-row>
@@ -473,12 +480,12 @@ onMounted(() => {
 
 .img-desktop {
   z-index: 10;
-  width: 900px;
-  
+  width: 500px;
+  transform: translateX(20%) translateY(20%) scale(1.6);
   object-fit: cover;
-  position: absolute;
-  right: -250px;
-  top: 200px;
+  /* position: absolute; */
+  /* right: -250px; */
+  /* top: 200px; */
 }
 
 .card-hover {

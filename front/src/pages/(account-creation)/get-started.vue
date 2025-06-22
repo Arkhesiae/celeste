@@ -73,26 +73,26 @@ h1 {
 }
 
 .option-card {
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(var(--v-theme-surfaceContainer), 1);
+  border-radius: 16px;
   padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.005);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s, box-shadow 0.4s;
 }
 
 .option-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.20);
 }
 
 .option-card h2 {
-  color: #2c3e50;
+  color: rgba(var(--v-theme-onSurface), 1);
   margin-bottom: 1rem;
 }
 
 .option-card p {
-  color: #666;
+  color: rgba(var(--v-theme-onSurface), 0.7);
   line-height: 1.5;
 }
 

@@ -33,6 +33,7 @@
             <v-window v-model="currentStep">
               <v-window-item :value="1">
                 <v-text-field color="tertiary" variant="outlined" label="Adresse e-mail" type="email"
+                  @update:model-value="backToStep1"
                   rounded="xl" v-model="email" :rules="[rules.required, rules.email]" :error-messages="emailError"
                   :loading="isCheckingEmail" required class="mobile-input mt-2" 
                   @input="emailError = ''" @keyup.enter="tryGoToStep2" />
@@ -217,6 +218,8 @@ const tryGoToStep2 = async () => {
   if (ok) {
     currentStep.value = 2;
     await fetchUserInfo();
+  } else {
+    currentStep.value = 1;
   }
 };
 
@@ -275,6 +278,10 @@ const handlePasswordResetSuccess = (message) => {
 
 const handlePasswordResetError = (message) => {
   snackbarStore.showNotification(message, 'onError', 'mdi-alert-circle');
+};
+
+const backToStep1 = () => {
+   tryGoToStep2();
 };
 </script>
 

@@ -22,19 +22,15 @@
           </div>
 
           <div class="d-flex align-center">
-
             <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
               class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
-              <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
-
+              <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
               </span>
               <span v-else>
                 {{ demand?.points }}
               </span>
               <v-icon v-if="demand?.acceptedSwitches.length > 0" icon="mdi-tune-variant"></v-icon>
-
             </v-chip>
-
           </div>
           <v-chip v-if="demand?.comment" class="ms-2 text-medium-emphasis " size="small" rounded="pill"
             color="remplacement" variant="flat" @click="showCommentDialog = true" style="cursor: pointer">

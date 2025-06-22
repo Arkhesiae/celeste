@@ -398,6 +398,10 @@ const isNextButtonDisabled = computed(() => {
                 <v-icon start icon="mdi-information-outline"></v-icon>
                 En cliquant sur une <b>variante</b>, votre pouvez définir l'horaire de votre remplacement.
               </span>
+              <span class="text-caption mt-8 pa-4 text-error">
+               
+                Fonctionnalité à venir
+              </span>
             </div>
           </v-window-item>
 

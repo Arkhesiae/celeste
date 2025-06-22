@@ -71,7 +71,7 @@
                   </v-fade-transition>
                 </v-card>
                 <v-text-field variant="outlined" color="primary" class="mt-3 mobile-input" label="Mot de passe" required
-                  rounded="xl" v-model="password" type="password" autocomplete="off"
+                  rounded="xl" v-model="password" type="password" autocomplete="new-password"
                   :rules="[rules.required]" @keyup.enter="handleLogin" />
 
                 <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" />
@@ -132,13 +132,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { accountCreationService } from '@/services/accountCreationService';
-import LoadingScreen from '@/components/Loading/LoadingScreen.vue';
 import { useAppInitialization } from '@/composables/useAppInitialization';
 
 const router = useRouter();

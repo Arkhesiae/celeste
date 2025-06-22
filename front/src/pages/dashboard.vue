@@ -12,9 +12,9 @@
         </div>
         <span class="text-h4 text-overline text-medium-emphasis">Tableau de bord</span>
       </div>
-      <v-btn v-if="!smAndDown" color="remplacement" height="48px" class="px-6" style="border-radius: 16px !important"
-        prepend-icon="mdi-plus" @click="$router.push('/exchange/replace')">
-        Nouveau remplacement
+      <v-btn v-if="!smAndDown"  height="48px" class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow new-demand-button" flat style="border-radius: 16px !important"
+        prepend-icon="mdi-plus" @click="$router.push('/calendar')">
+        Nouvelle demande
       </v-btn>
     </div>
 
@@ -289,10 +289,10 @@
                   <v-icon icon="mdi-crowd" size="32"></v-icon>
                 </v-avatar>
                 <div class="text-h5 font-weight-bold mb-2">Equipe {{ teamStore.currentTeam.name }}</div>
-                <div class="text-medium-emphasis text-center">
+                <!-- <div class="text-medium-emphasis text-center">
                   <v-icon icon="mdi-calendar-start" class="mr-2"></v-icon>
                   Cycle depuis le {{ new Date(teamStore.currentTeam.cycleStartDate).toLocaleDateString() }}
-                </div>
+                </div> -->
               </div>
               <div v-else class="text-center text-medium-emphasis">
                 Aucune équipe assignée
@@ -398,6 +398,21 @@
 .v-card-dashboard {
   background: rgba(var(--v-theme-background), 0.4);
 
+}
+
+.new-demand-button.highlight-shadow{
+  backface-visibility: hidden;
+  transform: translateZ(0);
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.026), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 4px rgba(0, 0, 0, 0.018) ;
+}
+
+.new-demand-button.highlight-shadow:hover{
+  transform: scale(1.05) translateZ(0);
+
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148) ;
+  
+  transition: transform 0.2s ease-in-out;
 }
 
 .shadow {

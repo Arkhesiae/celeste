@@ -552,7 +552,7 @@ const vacationsOfUser = computed(() => {
   return map;
 });
 const rotationsMap = ref(new Map());
-const currentActiveRotation = ref(null);
+
 
 // Utilisation du composable useCalendar
 const { calendarDays } = useCalendar(currentYear, currentMonth);
@@ -651,23 +651,23 @@ const stats = ref({
   points: 0
 });
 
-// Actions rapides
-const quickActions = [
-  { icon: 'mdi-calendar-plus', label: 'Créer un remplacement', route: '/exchange/replace' },
-  { icon: 'mdi-swap-horizontal', label: 'Proposer une permutation', route: '/exchange/switch' },
-  { icon: 'mdi-calendar-clock', label: 'Voir le calendrier', route: '/calendar' }
-];
-
 // Charger les données
 const loadData = async () => {
   try {
     isLoading.value = true;
+    await substitutionStore.fetchAllDemands({
+      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+    });
 
-    // // Charger les substitutions
-    // await substitutionStore.fetchAllDemands({
-    //   startDate: new Date().toISOString(),
-    //   endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    // });
+    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    await shiftStore.fetchShiftsWithSubstitutions({
+      startDate: new Date(startDate).setUTCHours(0, 0, 0, 0),
+      endDate: new Date(endDate).setUTCHours(23, 59, 59, 999)
+    });
+
 
     // // Charger les jours de travail
     // const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));

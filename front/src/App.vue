@@ -69,5 +69,10 @@ input:-webkit-autofill:active {
   transform: translateX(100%);
 }
 
+@media (min-width: 1400px) {
+    .v-container {
+        max-width: 1400px;
+    }
+}
 
 </style>

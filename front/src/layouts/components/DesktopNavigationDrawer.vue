@@ -112,6 +112,16 @@ defineProps({
 :deep(.v-list-item) .v-list-item__overlay {
   background-color: transparent !important;
 }
+
+:deep(.v-list-item) .v-list-item__prepend{
+  transition: transform 0.2s ease-out;
+  transform-origin: left;
+} 
+
+:deep(.v-list-item):hover .v-list-item__prepend{
+  transform: scale(1.15);
+
+}
 </style>
 
 

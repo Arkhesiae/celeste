@@ -5,6 +5,8 @@ import {computeShiftOfUserWithSubstitutions} from "../utils/computeShiftOfUserWi
 import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
 import Transaction from '../models/Transaction.js';
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
+import { categorize } from '../utils/categorizeDemand.js';
+import { computeUserPool } from '../utils/computeUserPool.js';
 
 
 
@@ -102,66 +104,8 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
 
     await Promise.all(otherDemands.map(async (demand) => {
         try {
-            const demandDate = new Date(demand.posterShift.date);
-            const demandWithLimit = demand.toObject();
-            demandWithLimit.limit = [];
-
-            const vacationOfFetcher = (await computeShiftOfUserWithSubstitutions(demandDate, userId))[0];
-
-            if (!vacationOfFetcher || !vacationOfFetcher.shift) {
-                console.log("Aucun shift trouvé pour l'utilisateur");
-                demandWithLimit.limit.push('noShift');
-                categorizedDemands.push(demandWithLimit);
-                return;
-            }
-
-           
-            // Vérifier si l'utilisateur travaille déjà ce jour-là
-            if (vacationOfFetcher.shift?.name !== "Rest Day" && vacationOfFetcher.shift?.type !== "rest") {
-                // Vérifier si une permutation est possible
-                demandWithLimit.limit.push('alreadyWorking');
-                if (demand.acceptedSwitches.length > 0 && demand.acceptedSwitches.some(switchItem => switchItem?.shift?.toString() === vacationOfFetcher.shift?._id?.toString())) {
-                    demandWithLimit.canSwitch = true;
-                }
-            }
-
-            // Vérifier les périodes de repos
-            const range = Array.from({ length: 13 }, (_, i) => {
-                const newDate = new Date(demandDate);
-                newDate.setDate(demandDate.getDate() + i - 6);
-                return newDate;
-            });
-
-            const shifts = await computeShiftOfUserWithSubstitutions(range, userId);
-            const previousShift = shifts[5].shift;
-            const nextShift = shifts[7].shift;
-
-
-            const beforeRestTime = computeRestTime(previousShift, demand.posterShift);
-            const afterRestTime = computeRestTime(demand.posterShift, nextShift);
-
-
-            demandWithLimit.rest = {
-                before:  beforeRestTime,
-                after: afterRestTime
-            }
-            
-            console.log("beforeRestTime", beforeRestTime);
-            console.log("afterRestTime", afterRestTime);
-
-            const hasElevenHoursBefore = checkRestPeriod(previousShift, demand.posterShift, 'before');
-            const hasElevenHoursAfter = checkRestPeriod(nextShift, demand.posterShift, 'after');
-
-            if (!hasElevenHoursBefore || !hasElevenHoursAfter) {
-                demandWithLimit.limit.push('insufficientRest');
-            }
-
-            // Vérifier la limite de jours consécutifs
-            if (checkConsecutiveDays(shifts, demandDate) >= 6) {
-                demandWithLimit.limit.push('consecutiveDaysLimit');
-            }
-
-            categorizedDemands.push(demandWithLimit);
+            const categorizedDemand = await categorize(demand, userId);
+            categorizedDemands.push(categorizedDemand);
         } catch (err) {
             console.error(`Erreur lors du traitement de la demande ${demand._id}:`, err);
             throw err;
@@ -169,40 +113,6 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
     }));
     
     return categorizedDemands;
-};
-
-const computeRestTime = (shift, shift2) => {
-    if (!shift || !shift2) return 0;
-    const baseRest = 0;
-    if (shift.type === 'rest') {
-        return 24;
-    }
-    else if (shift2.type === 'rest') {
-        return 24;
-    }
-
-    const shiftEnd = new Date(`2000-01-01 ${shift.endTime}`);
-    const shift2Start = new Date(`2000-01-02 ${shift2.startTime}`);
-    
-    if (shift.endsNextDay) {
-      shiftEnd.setDate(shiftEnd.getDate() + 1);
-    }
-    
-    // Calculer la différence en heures
-    const diffHours = (shift2Start - shiftEnd) / (1000 * 60 * 60);
-    return diffHours + baseRest;
-  } 
-
-const checkRestPeriod = (shift, demandShift, period) => {
-    if (!shift || shift.type === 'rest') return true;
-    if (period === 'before') {
-        return demandShift.startTime && shift.endTime ? 
-            computeRestTime(shift, demandShift) >= 11 : true;
-    } else {
-        return demandShift.endTime && shift.startTime ?
-            computeRestTime(demandShift, shift) >= 11 : true;
-    }
-    
 };
 
 const getUserDemands = async (req, res) => {
@@ -306,6 +216,24 @@ const createDemand = async (req, res) => {
         });
 
         await demand.save();
+        
+        // Calculer et afficher le pool d'utilisateurs pouvant accepter cette demande
+        try {
+            const userPool = await computeUserPool(demand);
+            console.log(`Pool d'utilisateurs pour la demande ${demand._id} (${demand.type}):`, {
+                totalUsers: userPool.length,
+                users: userPool.map(user => ({
+                    name: `${user.name} ${user.lastName}`,
+                    canSwitch: user.canSwitch,
+                    canReplace: user.canReplace,
+                    points: user.points,
+                    limit: user.limit
+                }))
+            });
+        } catch (error) {
+            console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
+        }
+        
         res.status(201).json(demand);
     } catch (error) {
         console.error('Erreur lors de la création de la demande:', error);
@@ -522,25 +450,6 @@ const getSeenCount = async (req, res) => {
     }
 };
 
-function checkConsecutiveDays(shifts, demandDate) {
-    const demandDay = new Date(demandDate).getDay();
-    let consecutiveDays = 0;
-
-    for (let i = 0; i < shifts.length; i++) {
-        const shiftDay = new Date(shifts[i].date).getDay();
-        if (shiftDay === demandDay) {
-            consecutiveDays++;
-        } else {
-            consecutiveDays = 0;
-        }
-
-        if (consecutiveDays >= 6) {
-            break;
-        }
-    }
-    return consecutiveDays;
-}
-
 const checkUserShift = async (req, res) => {
     try {
         const userId = req.user.userId;
@@ -670,9 +579,11 @@ const unacceptRequest = async (req, res) => {
             { new: true }
         );
 
+        const requestToReturn = await categorize(updatedRequest, userId);
+
         res.status(200).json({
             message: 'Acceptation annulée avec succès',
-            request: updatedRequest
+            request: requestToReturn
         });
     } catch (error) {
         console.error('Erreur lors de l\'annulation de l\'acceptation:', error);
@@ -719,6 +630,36 @@ const detectTeamChangeConflicts = async (req, res) => {
     }
 };
 
+// Obtenir le pool d'utilisateurs pouvant accepter une demande
+const getUserPool = async (req, res) => {
+    try {
+        const demandId = req.params.id;
+
+        // Récupération de la demande
+        const demand = await Substitution.findById(demandId);
+        if (!demand) {
+            return res.status(404).json({ error: 'Demande non trouvée' });
+        }
+
+        // Vérification que la demande est ouverte
+        if (demand.status !== 'open') {
+            return res.status(400).json({ error: 'Cette demande n\'est plus disponible' });
+        }
+
+        // Calculer le pool d'utilisateurs
+        const userPool = await computeUserPool(demand);
+
+        res.status(200).json({
+            message: 'Pool d\'utilisateurs calculé avec succès',
+            userPool,
+            totalUsers: userPool.length
+        });
+    } catch (error) {
+        console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
+        res.status(500).json({ error: 'Une erreur est survenue lors du calcul du pool d\'utilisateurs' });
+    }
+};
+
 export {
     getCenterDemands,
     getUserDemands,
@@ -733,5 +674,6 @@ export {
     swapShifts,
     markInterest,
     unacceptRequest,
-    detectTeamChangeConflicts
+    detectTeamChangeConflicts,
+    getUserPool
 }; 

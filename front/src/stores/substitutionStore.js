@@ -341,10 +341,79 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     try {
       loading.value = true;
       error.value = null;
-      await substitutionService.createSubstitutionDemand(substitutionData);
-      await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+      const newSubstitution = await substitutionService.createSubstitutionDemand(substitutionData);
+      substitutions.value.push(newSubstitution);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la création de la substitution';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const cancelDemand = async (demandId) => {
+    try {
+      loading.value = true;
+      error.value = null;
+      await substitutionService.cancelDemand(demandId);
+      const index = substitutions.value.findIndex(s => s._id === demandId);
+      if (index !== -1) {
+        substitutions.value.splice(index, 1);
+      }
+      await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
+    } catch (err) {
+      error.value = err.message || 'Erreur lors de la suppression de la substitution';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  // ----- Gestion des acceptations -----
+  const acceptDemand = async (demandId) => {
+    loading.value = true;
+    try {
+      const updatedSubstitution = await substitutionService.acceptDemand(demandId);
+      console.log(updatedSubstitution);
+      const index = substitutions.value.findIndex(s => s._id === demandId);
+      if (index !== -1) {
+        substitutions.value[index] = updatedSubstitution.request;
+      }
+      // await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
+      await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
+    } catch (err) {
+      console.error('Erreur lors de l\'acceptation de la demande:', err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const unacceptDemand = async (demandId) => {
+    try {
+      const updatedSubstitution = await substitutionService.unacceptDemand(demandId);
+      const index = substitutions.value.findIndex(s => s._id === demandId);
+      if (index !== -1) {
+        substitutions.value[index] = updatedSubstitution.request;
+      }
+      await shiftStore.fetchShiftsWithSubstitutions();
+      await pointStore.fetchTransactions();
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation de l\'acceptation:', error.message);
+      throw error;
+    }
+  };
+
+  const updateDemandStatus = async (id, status) => {
+    loading.value = true;
+    try {
+      const updatedDemand = await substitutionService.updateDemandStatus(id, status);
+      const index = substitutions.value.findIndex((d) => d._id === id);
+      if (index !== -1) substitutions.value[index].status = updatedDemand.status;
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du statut:', err);
       throw err;
     } finally {
       loading.value = false;
@@ -371,63 +440,6 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
-  const cancelDemand = async (demandId) => {
-    try {
-      loading.value = true;
-      error.value = null;
-      await substitutionService.cancelDemand(demandId);
-      await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
-      await shiftStore.fetchShiftsWithSubstitutions();
-      await pointStore.fetchTransactions();
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la suppression de la substitution';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  // ----- Gestion des acceptations -----
-  const acceptDemand = async (demandId) => {
-    loading.value = true;
-    try {
-      await substitutionService.acceptDemand(demandId);
-      await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
-      await shiftStore.fetchShiftsWithSubstitutions();
-      await pointStore.fetchTransactions();
-    } catch (err) {
-      console.error('Erreur lors de l\'acceptation de la demande:', err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  const unacceptDemand = async (demandId) => {
-    try {
-      await substitutionService.unacceptDemand(demandId);
-      await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
-      await shiftStore.fetchShiftsWithSubstitutions();
-      await pointStore.fetchTransactions();
-    } catch (error) {
-      console.error('Erreur lors de l\'annulation de l\'acceptation:', error.message);
-      throw error;
-    }
-  };
-
-  const updateDemandStatus = async (id, status) => {
-    loading.value = true;
-    try {
-      const updatedDemand = await substitutionService.updateDemandStatus(id, status);
-      const index = substitutions.value.findIndex((d) => d._id === id);
-      if (index !== -1) substitutions.value[index].status = updatedDemand.status;
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour du statut:', err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
 
   // ----- Gestion des échanges -----
   const checkUserShift = async (date) => {

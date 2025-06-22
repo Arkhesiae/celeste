@@ -151,6 +151,12 @@ onMounted(() => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.048) ;
 }
 
+.transaction-button:hover{
+  transform: scale(1.07);
+  background: rgba(var(--v-theme-background), 1);
+  transition: transform 0.2s ease-in-out;
+}
+
 .points-icon {
   background: rgba(var(--v-theme-background), 1);
   padding: 8px;

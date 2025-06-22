@@ -39,9 +39,8 @@ export const useShiftStore = defineStore('shift', () => {
             endDate: period.value.endDate
           };
         } else {
-          let startDate = new Date();
-          let endDate = new Date(startDate);
-          endDate.setMonth(endDate.getMonth() + 1);
+          let startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+          let endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
           dates = {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString()

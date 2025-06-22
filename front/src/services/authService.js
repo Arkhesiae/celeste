@@ -12,6 +12,7 @@ export const authService = {
    * @returns {Promise<Object>} Les informations d'authentification.
    */
   async login(credentials) {
+    console.log(credentials);
     const response = await fetch(`${API_URL}/login`, {
       method: 'POST',
       headers: {

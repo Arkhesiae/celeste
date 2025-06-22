@@ -79,8 +79,9 @@
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
         <div class="d-flex align-center mr-2">
 
-          <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
+          <v-chip variant="flat" size="small" rounded="lg" 
             class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
+            <LogoCopy class="unicorn-logo" style="top:-2px; position: relative;" />
             <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
 
             </span>
@@ -290,7 +291,7 @@ const getDayName = (dayId) => {
 
 </script>
 
-<style scoped>
+<style>
 .demand-card {
   box-sizing: border-box;
   border-radius: 16px !important;
@@ -362,5 +363,12 @@ const getDayName = (dayId) => {
 .to-do-demand-card .comment-chip {
   background: rgba(var(--v-theme-background), 0.99) !important;
   color: rgba(var(--v-theme-remplacement), 0.99) !important;
+}
+
+.unicorn-logo .path1 {
+  fill: rgb(var(--v-theme-onBackground)) !important;
+}
+.unicorn-logo .path2 {
+  fill: rgb(var(--v-theme-onBackground)) !important;
 }
 </style>

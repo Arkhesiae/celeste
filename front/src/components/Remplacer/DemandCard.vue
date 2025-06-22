@@ -25,10 +25,10 @@
           </div>
 
           <div class="d-flex align-center">
-            <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
-              class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
-              <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
-              </span>
+            <v-chip variant="flat" size="small" rounded="lg" 
+              class="font-weight-bold point-chip" @click.stop="showPointsDialog = true" color="onBackground">
+              <LogoCopy class="unicorn-logo" style="top:-2px; position: relative; " />
+              <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0"> </span>
               <span v-else>
                 {{ demand?.points }}
               </span>
@@ -523,7 +523,7 @@ const getDayName = (dayId) => {
 };
 </script>
 
-<style scoped>
+<style >
 .dashed {
   border-style: dashed;
 }
@@ -544,6 +544,17 @@ const getDayName = (dayId) => {
 .hybrid-chip {
   background: linear-gradient(to right, rgba(var(--v-theme-permutation), 1), rgba(var(--v-theme-remplacement), 1) 50%);
 }
+
+.unicorn-logo .path1 {
+  fill: rgb(var(--v-theme-onPrimary)) !important;
+}
+.unicorn-logo .path2 {
+  fill: rgb(var(--v-theme-onPrimary)) !important;
+}
+
+
+
+
 
 .cursor-pointer {
   cursor: pointer;

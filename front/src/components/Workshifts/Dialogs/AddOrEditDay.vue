@@ -94,7 +94,7 @@
   <TimePickerDialog style="z-index: 3200 !important;" v-model="timePickerDialog.open" :type="timePickerDialog.type" :time="timePickerDialog.time"
     @update:time="(value) => timePickerDialog.time = value" @save="saveTimePicker" @close="closeTimePicker" />
 
-  <v-dialog v-model="showVariantNameDialog" max-width="500" style="z-index: 3300 !important;" persistent>
+  <v-dialog v-model="showVariantNameDialog" max-width="500" style="z-index: 3300 !important;" >
     <v-card rounded="xl" color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
         <v-card-title class="">

@@ -419,7 +419,7 @@ const acceptRequest = async (req, res) => {
                 amount: request.points,
                 type: 'replacement',
                 request: requestId,
-                description: `Remplacement du ${new Date(request.posterShift.date).toLocaleDateString()}`,
+                description: `Remplacement du ${new Date(request.posterShift.date).toLocaleDateString('fr-FR')}`,
                 scheduledDate: new Date(request.posterShift.date)
             });
         }
@@ -540,7 +540,7 @@ const swapShifts = async (req, res) => {
                 amount: acceptedShiftPoints,
                 type: 'replacement',
                 request: demandId,
-                description: `Permutation du ${new Date(demand.posterShift.date).toLocaleDateString()}`,
+                description: `Permutation du ${new Date(demand.posterShift.date).toLocaleDateString('fr-FR')}`,
                 scheduledDate: new Date(demand.posterShift.date)
             });
         }

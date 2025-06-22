@@ -2,7 +2,8 @@ import Rotation from '../models/Rotation.js';
 import { createNotificationForCenter } from "../utils/notificationFunctions.js";
 import { findLatestRotation } from "../utils/findLatestRotation.js";
 
-const POINTS_PER_HOUR = 2;
+const POINTS_PER_HOUR = 1;
+const BASE_VALUE = 1;
 
 // Helper function to compute work duration
 const computeWorkDuration = (start, end) => {
@@ -20,7 +21,7 @@ const computeWorkDuration = (start, end) => {
     }
     const durationInMillis = endDate - startDate;
     const hours = Math.floor(durationInMillis / 3600000);
-    return { points: Math.floor(hours * POINTS_PER_HOUR), duration: hours, endsNextDay };
+    return { points: Math.floor(hours * POINTS_PER_HOUR) + BASE_VALUE, duration: hours, endsNextDay };
 };
 
 // Determine rotation status

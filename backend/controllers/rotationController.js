@@ -3,7 +3,7 @@ import { createNotificationForCenter } from "../utils/notificationFunctions.js";
 import { findLatestRotation } from "../utils/findLatestRotation.js";
 
 const POINTS_PER_HOUR = 1;
-const BASE_VALUE = 1;
+const BASE_VALUE = 5;
 
 // Helper function to compute work duration
 const computeWorkDuration = (start, end) => {

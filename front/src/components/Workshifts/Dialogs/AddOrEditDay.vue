@@ -15,13 +15,13 @@
       </v-card-item>
 
       <v-card-text class="pa-6 pt-0">
-        <div class="d-flex justify-start align-center">
-          <v-text-field v-model="newDay.name" label="Nom du jour" variant="outlined" class="mb-6" bg-color="surface"
-            max-width="200px" rounded="lg" hide-details placeholder="Ex: Jour 1"></v-text-field>
-          <div class="d-flex justify-space-between flex-column align-start ml-6 mt-n1">
+        <div class="d-flex justify-start flex-wrap ga-4" >
+          <v-text-field v-model="newDay.name" label="Nom du jour" variant="outlined" class="mb-6 flex-grow-1" bg-color="surface"
+             min-width="100px" rounded="lg" hide-details placeholder="Ex: Jour 1"></v-text-field>
+          <div class="d-flex justify-space-between flex-column align-start mt-n1 flex-grow-1">
 
             <v-card-title class="text-subtitle-1 font-weight-medium ma-0  pa-0">Horaires</v-card-title>
-            <div class="d-flex align-center mb-6">
+            <div class="d-flex align-center mb-6 flex-wrap ga-2">
               <v-chip class="m-2 px-4" rounded="lg" @click="openTimePicker('startTime')" append-icon="mdi-menu-down">
                 {{ newDay.startTime ? "Début à " + newDay.startTime : 'Début' }}
               </v-chip>
@@ -35,9 +35,9 @@
           </div>
         </div>
         <v-card-title class="text-subtitle-1 font-weight-medium pa-0 mb-4">Variantes</v-card-title>
-        <v-card :rounded="smAndDown ? 'xl' : 'lg'" elevation="0" class="pa-0 v-card__bordered">
+        <v-card :rounded="smAndDown ? 'xl' : 'lg'" elevation="0" class="pa-0" :class="!xs ? 'v-card__bordered' : 'bg-transparent'">
 
-          <v-card-text class="pa-2" v-if="newDay.variants.length > 0">
+          <v-card-text :class="xs ? 'pa-0' : 'pa-2'" v-if="newDay.variants.length > 0">
 
             <!-- Horaires par défaut -->
 
@@ -48,17 +48,21 @@
               <v-card class="d-flex align-center justify-space-between" flat color="transparent" height="48"
                 :rounded="smAndDown ? 'xl' : 'lg'">
                 <div class="d-flex align-center justify-space-between">
-                  <v-chip class="ma-2" color="primary" variant="flat" rounded="xl">
+                  <v-chip class="ma-2" color="primary" variant="flat" rounded="xl" @click="handleChangeVariantName(index)">
                     {{ variant.name }}
 
                   </v-chip>
                   <v-chip class="m-2 px-4" rounded="lg" @click="openTimePicker('startTime', index)"
                     append-icon="mdi-menu-down">
-                    {{ variant.startTime ? "Début à " + variant.startTime : 'Début' }}
+                    <span v-if="!variant.startTime">Début</span>
+                    <span v-if="!xs && variant.startTime">Début à</span>
+                    <span v-if="variant.startTime" class="ml-1">{{ variant.startTime }}</span>
                   </v-chip>
                   <v-chip class="mx-2 px-4" rounded="lg" @click="openTimePicker('endTime', index)"
                     append-icon="mdi-menu-down">
-                    {{ variant.endTime ? "Fin à " + variant.endTime : 'Fin' }}
+                    <span v-if="!variant.endTime">Fin</span>
+                    <span v-if="!xs && variant.endTime">Fin à</span>
+                    <span v-if="variant.endTime" class="ml-1">{{ variant.endTime }}</span>
                     <span v-if="endsNextDay(index)" class="ml-1">+1</span>
                   </v-chip>
                 </div>
@@ -67,7 +71,7 @@
               </v-card>
             </div>
           </v-card-text>
-          <v-card-actions class="pa-2" v-if="newDay.variants.length < variants.length">
+          <v-card-actions :class="xs ? 'pa-0' : 'pa-2'" v-if="newDay.variants.length < variants.length">
             <v-spacer v-if="!smAndDown"></v-spacer>
             <v-btn color="primary" variant="tonal" prepend-icon="mdi-plus" @click="addVariant"
               :height="smAndDown ? 48 : 36" :block="smAndDown" :rounded="smAndDown ? 'xl' : 'lg'" class="px-6"> Ajouter
@@ -89,7 +93,27 @@
 
   <TimePickerDialog style="z-index: 3200 !important;" v-model="timePickerDialog.open" :type="timePickerDialog.type" :time="timePickerDialog.time"
     @update:time="(value) => timePickerDialog.time = value" @save="saveTimePicker" @close="closeTimePicker" />
-</template>
+
+  <v-dialog v-model="showVariantNameDialog" max-width="500" style="z-index: 3300 !important;" persistent>
+    <v-card rounded="xl" color="surfaceContainer">
+      <v-card-item class="pa-6  mb-4">
+        <v-card-title class="">
+          <div class="text-h6 font-weight-medium">Modifier le nom de la variante</div>
+        </v-card-title>
+      </v-card-item>
+      <v-card-text class="pa-6 pt-0">
+        <v-text-field v-model="newVariantName" label="Nom de la variante" variant="outlined" class="mb-6 flex-grow-1" bg-color="surface"
+          min-width="100px" rounded="lg"  placeholder="Ex: Variante 1" :rules="[rules.required, rules.maxLength(5)]"></v-text-field>
+      </v-card-text>
+      <v-card-actions class="pa-6 d-flex justify-end">
+        <v-btn color="primary" variant="text" rounded="xl" class="ml-4" @click="submitVariantName" :disabled="!isValidVariantName">
+          Modifier
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
@@ -97,7 +121,7 @@ import { useDisplay } from 'vuetify';
 import { VCard } from 'vuetify/components';
 import TimePickerDialog from './TimePicker.vue';
 
-const { smAndDown } = useDisplay();
+const { smAndDown, xs } = useDisplay();
 
 const props = defineProps({
   isDialogVisible: {
@@ -141,6 +165,10 @@ const newDay = ref({
   type: 'work'
 });
 
+const rules = {
+  required: (value) => !!value || 'Ce champ est requis',
+  maxLength: (max) => (value) => value.length <= max || `Le nom ne doit pas dépasser ${max} caractères`,
+};
 
 // Initialiser les données si on est en mode édition
 watch(() => props.day, (newValue) => {
@@ -269,7 +297,7 @@ const isValid = computed(() => {
 
   // Vérifier les horaires des variantes
   return newDay.value.variants.every(variant =>
-    variant.startTime && variant.endTime
+    variant.startTime && variant.endTime && variant.name.length > 0
   );
 });
 
@@ -283,6 +311,24 @@ const close = () => {
   reset();
   localDialogVisible.value = false;
 };
+
+const handleChangeVariantName = (index) => {
+  showVariantNameDialog.value = true;
+  variantIndex.value = index;
+};
+
+const submitVariantName = () => {
+  newDay.value.variants[variantIndex.value].name = newVariantName.value;
+  showVariantNameDialog.value = false;
+};
+
+const isValidVariantName = computed(() => {
+  return newVariantName.value.length <= 3 && newVariantName.value.length > 0;
+});
+
+const showVariantNameDialog = ref(false);
+const variantIndex = ref(null);
+const newVariantName = ref('');
 
 </script>
 

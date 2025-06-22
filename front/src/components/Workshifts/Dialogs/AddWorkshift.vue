@@ -1,7 +1,6 @@
 <script setup>
   import { ref, computed, reactive, watch } from 'vue';
 import { useDisplay } from 'vuetify';
-import AddDayDialog from './AddOrEditDay.vue';
 import WorkshiftSummary from '../Summary/WorkshiftSummary.vue';
 
 const props = defineProps({
@@ -65,8 +64,10 @@ const variants = ref(['A', 'B', 'C']);
 const showAddDayDialog = ref(false);
 const isSummaryExpanded = ref(true);
 const dayToEdit = ref(null);
+const dayToEditIndex = ref(null);
 
 const handleEditDay = (day) => {
+  dayToEditIndex.value = newRotation.value.days.indexOf(day);
   dayToEdit.value = { ...day }; // Créer une copie du jour à éditer
   showAddDayDialog.value = true;
 };
@@ -74,13 +75,20 @@ const handleEditDay = (day) => {
 const handleSubmitDay = (day) => {
   if (dayToEdit.value) {
     // Mode édition : remplacer le jour existant
-    const index = newRotation.value.days.findIndex(d => d._id === dayToEdit.value._id);
-    if (index !== -1) {
-      newRotation.value.days[index] = day;
+    // console.log("EDITION")
+    // console.log("day", day);
+    // console.log("dayToEdit.value", dayToEdit.value);
+    console.log("newRotation.value.days", newRotation.value.days);
+  
+    if (dayToEditIndex.value !== -1) {
+      newRotation.value.days[dayToEditIndex.value] = day;
     }
     dayToEdit.value = null; // Réinitialiser après l'édition
   } else {
     // Mode ajout : ajouter un nouveau jour
+    console.log("AJOUT")
+    console.log("day", day);
+    console.log("newRotation.value.days", newRotation.value.days);
     newRotation.value.days.push(day);
   }
   updateRestDayNames();
@@ -109,27 +117,10 @@ const updateRestDayNames = () => {
   });
 };
 
-const computeWorkDuration = (start, end) => {
-  const [startHour, startMinute] = start.split(':').map(Number);
-  const [endHour, endMinute] = end.split(':').map(Number);
-  let endsNextDay = false;
-  let startDate = new Date();
-  startDate.setHours(startHour, startMinute);
-  let endDate = new Date();
-  endDate.setHours(endHour, endMinute);
-
-  if (endDate <= startDate) {
-    endDate.setDate(endDate.getDate() + 1);
-    endsNextDay = true;
-  }
-
-  const durationInMillis = endDate - startDate;
-  const hours = Math.floor(durationInMillis / 3600000);
-  const minutes = Math.floor((durationInMillis % 3600000) / 60000);
-  return { duration: `${hours}h ${minutes}m`, endsNextDay };
-};
-
 const addDay = () => {
+  if (dayToEdit.value) {
+    dayToEdit.value = null;
+  }
   showAddDayDialog.value = true;
 };
 
@@ -163,6 +154,7 @@ const close = () => {
 
 <template>
   <v-dialog v-model="localDialogVisible" max-width="900" :fullscreen="smAndDown" style="z-index: 3000 !important;">
+
     <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
        
@@ -319,6 +311,7 @@ const close = () => {
         </v-btn>
       </div>
     </v-card>
+ 
   </v-dialog>
 
   <!-- Add Day Dialog -->

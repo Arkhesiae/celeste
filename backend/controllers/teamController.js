@@ -29,10 +29,10 @@ const createTeam = async (req, res) => {
 
 // Supprimer une équipe
 const deleteTeam = async (req, res) => {
-    const { teamId } = req.params;
+    const { id } = req.params;
 
     try {
-        const team = await Team.findById(teamId);
+        const team = await Team.findById(id);
         if (!team) {
             return res.status(404).json({ error: 'Team not found' });
         }
@@ -40,7 +40,7 @@ const deleteTeam = async (req, res) => {
         team.deleted = true;
         await team.save();
 
-        await User.updateMany({ "teams.team": teamId }, { $pull: { teams: { team: teamId } } });
+        await User.updateMany({ "teams.team": id }, { $pull: { teams: { team: id } } });
 
         res.status(200).json({ message: 'Team deleted successfully' });
     } catch (error) {

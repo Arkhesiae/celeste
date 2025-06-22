@@ -18,7 +18,7 @@ router.post('/create-team', verifyToken, isAdmin, createTeam);
 router.put('/:id/cycle-start-date', verifyToken, isAdmin, updateTeamCycleStartDate);
 router.put('/:id/name', verifyToken, isAdmin, updateTeamName);
 // Supprimer une équipe
-router.delete('/delete-team/:teamId', verifyToken, isAdmin, deleteTeam);
+router.delete('/:id', verifyToken, isAdmin, deleteTeam);
 
 // Récupérer les équipes d'un centre
 router.get('/:id', getTeamsByCenter);

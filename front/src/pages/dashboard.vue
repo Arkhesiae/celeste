@@ -126,7 +126,7 @@
               Vous êtes sur une alpha du site.
             </div>
             <div>
-              Certaines fonctionnalités ne sont pas encore disponibles car nécissitant d'avantage de tests. Veuillez nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
+              Certaines fonctionnalités ne sont pas encore disponibles car nécissitant davantage de tests. Veuillez nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
             </div>
           </v-card-text>
         </div>

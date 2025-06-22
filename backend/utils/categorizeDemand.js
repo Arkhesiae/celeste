@@ -29,7 +29,7 @@ const categorize = async (demand, userId) => {
             // Vérifier si une permutation est possible
             if (demand.acceptedSwitches?.length > 0 && 
                 demand.acceptedSwitches.some(switchItem => 
-                    switchItem?.shift?.toString() === currentShift._id?.toString()
+                    switchItem?.shift?.toString() === vacationOfFetcher.shift._id?.toString()
                 )) {
                 demandWithLimit.canSwitch = true;
             }

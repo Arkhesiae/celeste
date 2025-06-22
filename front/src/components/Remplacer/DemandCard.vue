@@ -16,9 +16,12 @@
             <span v-if="!smAndDown" class="text-medium-emphasis font-weight-bold text-caption me-2">
               {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
             </span>
-            <v-avatar
-              :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
-              size="x-small" class="cursor-pointer" @click="showUserDialog = true"></v-avatar>
+
+            <v-avatar size="24" variant="tonal" class="cursor-pointer" @click="showUserDialog = true">
+              <v-img v-if="getUserById(demand?.posterId)?.avatar" :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
+              <v-icon size="x-small" v-else>mdi-account</v-icon>
+            </v-avatar>
+           
           </div>
 
           <div class="d-flex align-center">
@@ -247,9 +250,10 @@
       <v-card rounded="xl" color="surfaceContainer" class="pa-4" style="z-index: 1000000 !important">
         <v-card-item class="pa-0">
           <template #prepend>
-            <v-avatar
-              :image="getUserById(demand?.posterId)?.avatar ? `${API_URL}${getUserById(demand?.posterId)?.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
-              class="me-3"></v-avatar>
+            <v-avatar size="48" variant="tonal" class="me-3">
+              <v-img v-if="getUserById(demand?.posterId)?.avatar" :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
+              <v-icon size="x-small" v-else>mdi-account</v-icon>
+            </v-avatar>
           </template>
           <v-card-title class="text-h6 pa-0">
             {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}

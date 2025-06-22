@@ -4,17 +4,24 @@
 
     <v-card rounded="xl" color="background" class="mb-4 card-shadow" elevation="0">
       <v-card-item class="d-flex align-start justify-space-between pa-4">
-        <v-card-title
-         
-          class="pb-0 mb-0">
-          <h2 class="text-h4 font-weight-medium" v-if="isRestDay">Repos</h2>
-          <h2 class="text-h4 font-weight-medium" v-else>{{ getShiftName }}</h2>
+
+        <v-card-title class="text-subtitle-1 font-weight-medium">
+          <div class="d-flex align-start ">
+            <v-card-title class="pb-0 mb-0">
+              <h2 class="text-h4 font-weight-medium" v-if="isRestDay">Repos</h2>
+              <h2 class="text-h4 font-weight-medium" v-else>{{ getShiftName }}</h2>
+            </v-card-title>
+            <div class="d-flex align-start flex-column justify-space-between ml-2 ">
+              <v-card-subtitle class="py-0 " style="margin-top: 3px;" v-if="!isRestDay">
+                {{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}
+              </v-card-subtitle>
+              <v-card-subtitle class="py-0 text-caption" style="margin-top: -4px;" v-if="!isRestDay && getShiftTeam">Dans équipe {{ getShiftTeam }}</v-card-subtitle>
+
+            </div>
+          </div>
         </v-card-title>
-        <v-card-subtitle v-if="getShiftTeam" class="pt-0 text-caption">Dans équipe {{ getShiftTeam }}</v-card-subtitle>
-        <v-card-subtitle v-else class="pt-0 text-caption">Aucune équipe assignée</v-card-subtitle>
-        <v-card-subtitle v-if="!isRestDay" class="pt-0">
-          {{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}
-        </v-card-subtitle>
+
+
 
         <template #append>
           <div class="d-flex flex-column">
@@ -40,7 +47,7 @@
 
 
 
-    <div>
+    <div v-if="false">
       <v-slide-group :mobile="smAndDown" class="mb-4 mx-2">
         <v-slide-group-item >
           <v-btn color="onBackground" rounded="lg" size="small" class="text-none mr-3"

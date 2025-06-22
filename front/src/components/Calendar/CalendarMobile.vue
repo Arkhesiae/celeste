@@ -35,7 +35,7 @@
           <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 16" type="switch" status="accepted"/>-->
           <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 17" type="rempla" status="pending"/>-->
 
-          <span class="text-body-2" :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'">
+          <span class="text-body-2" :style="isWorkDay(day.date) && !inPast(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'">
             {{ day.date.getUTCDate() }}
           </span>
           <span class="text-caption position-absolute opacity-50" v-if="isWorkDay(day.date)"
@@ -112,6 +112,10 @@ const isWorkDay = computed(() => (date) => {
 const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.name;
 const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.type;
 
+const inPast = (date) => {
+  return date < new Date();
+};
+
 
 </script>
 
@@ -132,11 +136,11 @@ const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString())?.sh
 }
 
 .selected {
-  background: rgb(var(--v-theme-surface)) !important;
+  background: rgba(var(--v-theme-surface), 0.5) !important;
 }
 
 .today-center-highlight {
-  border: 1px solid rgba(var(--v-theme-surface-light), 0.42) !important;
+  border: 1px solid rgba(var(--v-theme-surfaceContainerHighest), 0.92) !important;
 }
 
 .empty-day {

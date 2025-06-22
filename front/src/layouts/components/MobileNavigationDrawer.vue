@@ -1,6 +1,7 @@
 <template>
   <v-dialog
     z-index="1900"
+    style="z-index: 2000 !important;"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
     scrollable
@@ -12,11 +13,11 @@
   >
     <!-- Parent Container -->
     <v-card
-      class="pt-16 pa-8 d-flex flex-column align-center flex-0-0"
+      class="pt-16 pa-8 d-flex flex-column align-center flex-0-0 pb-8"
       tile
       color="background"
       flat
-      style="width: 100%; height: 100vh; overflow-y: auto;"
+      style="width: 100%; height: 100vh; overflow-y: auto; z-index: 25000 !important;"
     >
       <!-- User Avatar Section -->
       <v-scale-transition appear>

@@ -24,7 +24,7 @@
           </div>
         </v-card-title>
 
-        <div class=" pa-0 d-flex align-center justify-space-between" >
+        <div class=" pa-0 d-flex align-center justify-space-between">
 
 
 
@@ -33,26 +33,31 @@
             {{ formatDate(demand?.posterShift?.date) }}
           </v-card-subtitle>
           <div>
-          <div class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
-            <v-avatar v-if="isPoster && getAccepter"
-              :image="getAccepter?.avatar ? `${API_URL}${getAccepter.avatar}` : 'https://cdn.vuetifyjs.com/images/john-smirk.png'"
-              size="24" class="mr-2"> </v-avatar>
-            <div v-if="isPoster && getAccepter" class="d-flex align-center ">
-              <span class="text-caption font-weight-medium">Accepté par {{ getAccepter?.name }} {{ getAccepter?.lastName
-                }}</span>
+            <div class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
+              <v-avatar size="24" variant="tonal" class="me-2">
+                <v-img v-if="getAccepter?.avatar" :src="`${API_URL}${getAccepter?.avatar}`" alt="Avatar" />
+                <v-icon size="x-small" v-else>mdi-account</v-icon>
+              </v-avatar>
+              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
+                <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
+                  getAccepter?.lastName
+                  }}</span>
+
+              </div>
+              <div v-if="!isPoster && getPoster" class="d-flex align-center">
+                <v-avatar size="24" variant="tonal" class="me-2">
+                  <v-img v-if="getPoster?.avatar" :src="`${API_URL}${getPoster?.avatar}`" alt="Avatar" />
+                  <v-icon size="x-small" v-else>mdi-account</v-icon>
+                </v-avatar>
+                <span class="text-caption font-weight-medium"> {{ getPoster?.name }} {{ getPoster?.lastName }}</span>
+              </div>
 
             </div>
-            <div v-if="!isPoster && getPoster" class="d-flex align-center">
-
-              <span class="text-caption font-weight-medium">De {{ getPoster?.name }} {{ getPoster?.lastName }}</span>
-            </div>
-
           </div>
-        </div>
 
 
         </div>
-        
+
         <!-- <template v-slot:append>
         <v-chip
           :color="demand?.type === 'replacement' ? 'remplacement' : 'permutation'"
@@ -74,9 +79,9 @@
         <div class="d-flex align-center mr-2">
 
           <v-chip variant="flat" size="small" rounded="lg" prepend-icon="mdi-unicorn-variant"
-            class="font-weight-bold point-chip"  @click.stop="showPointsDialog = true">
+            class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
             <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
-          
+
             </span>
             <span v-else>
               {{ demand?.points }}
@@ -87,7 +92,7 @@
           <!-- <v-icon color="onBackground" class="ml-1"
         icon="mdi-information-outline" size="x-small"></v-icon> -->
         </div>
-        <v-chip v-if="demand?.comment"  variant="flat" size="small" rounded="lg"
+        <v-chip v-if="demand?.comment" variant="flat" size="small" rounded="lg"
           class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
           <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
@@ -118,7 +123,8 @@
 
     <v-expand-transition>
       <div v-if="expanded" class="d-flex justify-end mt-2">
-        <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand"  color="onBackground" style="color: rgba(var(--v-theme-onError), 0.99) !important;">
+        <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand" color="onBackground"
+          style="color: rgba(var(--v-theme-onError), 0.99) !important;">
           Annuler
         </v-btn>
       </div>
@@ -133,14 +139,16 @@
         Points de {{ demand?.posterShift?.name }}
       </v-card-title>
       <v-card-text class="pa-0">
-        <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation"   variant="flat" size="small" rounded="lg" class="mr-2">
+        <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation" variant="flat"
+          size="small" rounded="lg" class="mr-2">
           <span>{{ 'Permutation ' + getDayName(switchDay.shift) }}</span>
           <span class="ml-2">{{ switchDay.points }}</span>
-        </v-chip> 
-        <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat" size="small" rounded="lg" class="mr-2">
+        </v-chip>
+        <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat" size="small"
+          rounded="lg" class="mr-2">
           <span>{{ 'Remplacement' }}</span>
           <span class="ml-2">{{ demand?.points }}</span>
-        </v-chip> 
+        </v-chip>
 
 
       </v-card-text>
@@ -240,14 +248,14 @@ const toggleExpand = () => {
 };
 
 const getDayName = (dayId) => {
-  const rotation = rotationStore.rotations.find(rotation => 
+  const rotation = rotationStore.rotations.find(rotation =>
     rotation.days?.find(day => day._id === dayId)
-  ); 
+  );
   if (rotation) {
     const day = rotation.days.find(day => day._id === dayId);
     return day?.name || 'Aucune vacations';
   }
-  
+
   return 'Aucune vacations';
 };
 

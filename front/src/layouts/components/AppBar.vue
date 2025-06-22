@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar style="z-index: 2000 !important;" scroll-behavior="elevate" color="background">
+  <v-app-bar style="z-index: 2300 !important;" scroll-behavior="elevate" color="background">
     <!-- Bouton navigation pour écran large -->
     <template v-slot:prepend>
       <template v-if="!smAndDown && isLoggedIn">

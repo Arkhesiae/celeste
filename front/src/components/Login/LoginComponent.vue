@@ -71,7 +71,7 @@
                   </v-fade-transition>
                 </v-card>
                 <v-text-field variant="outlined" color="primary" class="mt-3 mobile-input" label="Mot de passe" required
-                  rounded="xl" v-model="password" type="password" autocomplete="current-password"
+                  rounded="xl" v-model="password" type="password" autocomplete="off"
                   :rules="[rules.required]" @keyup.enter="handleLogin" />
 
                 <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" />

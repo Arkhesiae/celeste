@@ -139,9 +139,9 @@ export function useAppInitialization() {
       await initializeAuth();
       await initializeTheme();
       if (onProgress) onProgress('user');
-
+      await initializeCenter(onProgress);
       if (authStore.isLoggedIn) {
-        await initializeCenter(onProgress);
+       
         await initializeTeam(onProgress);
         await initializeShiftsAndSubstitutions(onProgress);
         await initializeRotations(onProgress);

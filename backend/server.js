@@ -34,6 +34,8 @@ import otpRoutes from './routes/otpRoutes.js';
 import authRouter from './routes/auth.js';
 import devRouter from './routes/dev.js';
 import rulesRouter from './routes/rules.js';
+import accountRecoveryRouter from './routes/accountRecovery.js';
+
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
 import './cron/processTransactions.js';
@@ -77,6 +79,7 @@ app.use('/api/teams', teamsRouter);
 app.use('/api/otp', otpRoutes);
 app.use('/api/dev', devRouter);
 app.use('/api/rules', rulesRouter);
+app.use('/api/account-recovery', accountRecoveryRouter);
 
 // ─── Route API par défaut ─────────────────────────────────────────────────────
 app.get('/api', (req, res) => {

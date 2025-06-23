@@ -41,6 +41,22 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
+        <v-alert v-if="!authStore.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Aucun centre assigné</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Vous n'avez pas de centre assigné. 
+            </div>
+            <div>
+              Vous n'appartenez à aucun centre. Le site ne sera pas fonctionnel.
+            </div>
+          </v-card-text>
+        </div>
+          <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+        </div>
+        </v-alert>
         <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -57,6 +73,7 @@
           <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
         </div>
         </v-alert>
+      
         <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -198,7 +215,7 @@
                 </div>
                 <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
                   style="right: 0; top: 0;">
-                  Équipe {{ getTomorrowVacation.teamObject.name }}
+                  Équipe {{ getTomorrowVacation.teamObject?.name }}
                 </v-chip>
               </div>
             </div>
@@ -363,7 +380,7 @@
       </v-col>
 
     </v-row>
-    <!-- <v-row :class="smAndDown ? 'my-16' : ''">
+    <v-row :class="smAndDown ? 'my-16' : ''">
       
         
         <v-col cols="12" md="12" class="pa-2" >
@@ -398,7 +415,7 @@
           </v-card>
         </div>
         </v-col>
-    </v-row> -->
+    </v-row>
     <!-- Statistiques -->
     <!-- <v-row class="mt-4">
       <v-col cols="12" md="4">

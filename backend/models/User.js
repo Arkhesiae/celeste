@@ -88,10 +88,29 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-
+const legacyUserSchema = new mongoose.Schema({
+    _id: mongoose.Schema.Types.ObjectId,
+    ID: { type: Number, required: true },
+    nom: { type: String, required: true },
+    prenom: { type: String, required: true },
+    login: { type: String, required: true },
+    pass: { type: String, required: true },
+    email: { type: String, required: true },
+    tel: { type: String },
+    mailing: { type: Number },
+    rappel: { type: Number },
+    centre: { type: String, required: true },
+    equipe: { type: Number },
+    compte: { type: Number },
+    recovered: { type: Boolean, default: false },
+}, {
+    timestamps: true
+});
 
 // Crée un model depuis le schéma
 const User = mongoose.model('User', userSchema);
+const LegacyUser = mongoose.model('LegacyUser', legacyUserSchema, 'legacyUsers');
 
 // Exporter les models
 export default User;
+export { LegacyUser, User };

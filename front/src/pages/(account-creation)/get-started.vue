@@ -30,19 +30,21 @@ const handleExistingAccount = () => {
           <p class="subtitle animate-subtitle">Comment souhaitez-vous commencer ?</p>
         </div>
         <div class="options-container">
-          <Transition name="slide-up" appear>
-            <div class="option-card" @click="handleNewAccount">
-              <h2>Nouveau compte</h2>
-              <p>Je souhaite créer un nouveau compte</p>
-            </div>
-          </Transition>
-          
+
+              
           <Transition name="slide-up" appear>
             <div class="option-card" @click="handleExistingAccount">
               <h2>Compte existant</h2>
               <p>Je possède déjà un compte et je souhaite le récupérer</p>
             </div>
           </Transition>
+          <Transition name="slide-up" appear>
+            <div class="option-card" @click="handleNewAccount">
+              <h2>Nouveau compte</h2>
+              <p>Je souhaite créer un nouveau compte</p>
+            </div>
+          </Transition>
+      
         </div>
       </div>
     </Transition>

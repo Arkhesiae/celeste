@@ -1,11 +1,12 @@
 import express from 'express';
-import accountRecoveryController from '../controllers/accountRecoveryController.js';
-import { isAdmin } from '../middleware/authMiddleware.js';
+
+import { fetchLegacyUser, initiateAccountRecovery } from '../controllers/recoveryController.js';
+import { createUser } from '../controllers/userController.js';
 
 const router = express.Router();
 
-router.post('/', accountRecoveryController.createRequest);
-router.get('/', isAdmin, accountRecoveryController.getAllRequests);
-router.patch('/:id', isAdmin, accountRecoveryController.updateRequestStatus);
+
+router.get('/legacy-user', fetchLegacyUser);
+router.post('/recover', initiateAccountRecovery, createUser);
 
 export default router; 

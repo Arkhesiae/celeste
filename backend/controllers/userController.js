@@ -18,17 +18,20 @@ const __dirname = path.dirname(__filename);
 
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
-    const { name, lastName, password, email, centerId, team, zone } = req.body;
+    const { name, lastName, password, email, centerId, team, zone, points } = req.body;
 
     try {
         const hashedPassword = await hash(password, 10);
         const user = new User({
+
             name,
             lastName,
             email,
             id: uuidv4(),
             password: hashedPassword,
-            centerId
+            centerId,
+            points : points || 0,
+         
         });
         const firstTeam = await Team.findById(team);
         if (!firstTeam) {

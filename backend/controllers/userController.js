@@ -37,7 +37,9 @@ const createUser = async (req, res) => {
         if (!firstTeam) {
             return res.status(404).json({ message: 'Equipe non trouvée' });
         }
-        user.teams.push({ teamId: firstTeam._id, fromDate: new Date(), toDate: null });
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
+        user.teams.push({ teamId: firstTeam._id, fromDate: today , toDate: null });
 
         await user.save();
         res.json({ status: 'Utilisateur créé avec succès.', user: user });

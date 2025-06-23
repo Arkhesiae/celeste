@@ -133,8 +133,8 @@ async function handleRecovery() {
     
       const newAccount = {
         login: form.value.login,
-        firstName: oldAccount.value.firstName,
-        lastName: oldAccount.value.lastName,
+        firstName: oldAccount.value.firstName.charAt(0).toUpperCase() + oldAccount.value.firstName.slice(1),
+        lastName: oldAccount.value.lastName.toUpperCase(),
         center: oldAccount.value.center,
         email: useOldEmail.value ? oldAccount.value.email : newEmail.value,
         password: newPassword.value,
@@ -265,7 +265,7 @@ async function handleRecovery() {
             />
             </v-slide-y-transition>
             </div>
-            <v-alert v-if="step2Error" type="error" class="mb-2">{{ step2Error }}</v-alert>
+            <v-alert v-if="step2Error" type="error" class="mb-2" color="error" variant="tonal" rounded="xl" icon="mdi-alert-outline">{{ step2Error }}</v-alert>
           </v-window-item>
 
           <!-- Étape 3 : OTP -->
@@ -306,7 +306,7 @@ async function handleRecovery() {
                 :rules="confirmPasswordRules"
                 class="mb-2"
               />
-              <v-alert v-if="step4Error" type="error" class="mb-2">{{ step4Error }}</v-alert>
+              <v-alert v-if="step4Error" type="error" class="mb-2" color="error" variant="tonal" rounded="xl" icon="mdi-alert-outline">{{ step4Error }}</v-alert>
             </v-form>
           </v-window-item>
 

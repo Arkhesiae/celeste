@@ -75,6 +75,7 @@ export const initiateAccountRecovery = async (req, res, next) => {
 
         const team = await Team.findOne({
             name: equipe,
+            center: center
         });
 
         if (!team) {

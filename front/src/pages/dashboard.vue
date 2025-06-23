@@ -198,7 +198,7 @@
         <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Demain</v-card-title>
           <v-card-text>
-            <div v-if="getVacation && getVacation.shift?.type === 'rest'">
+            <div v-if="getTomorrowVacation && getTomorrowVacation.shift?.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
                 <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                   style="filter: blur(0px); z-index: -1; opacity: 0.070;" />

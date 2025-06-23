@@ -23,12 +23,7 @@ const centers = computed(() => {
 
 
 // Étape 2 : Affichage infos + choix email
-const oldAccount = ref({
-  firstName: 'Jean',
-  lastName: 'Dupont',
-  email: 'jean.dupont@email.com',
-  center: 'Orly'
-})
+const oldAccount = ref(null)
 const useOldEmail = ref(true)
 const newEmail = ref('')
 const step2Error = ref('')
@@ -142,7 +137,7 @@ async function handleRecovery() {
         equipe: oldAccount.value.equipe
       }
 
-      console.log(newAccount)
+      console.log("in handleRecovery", newAccount)
 
       // Possibilité d'ajouter login ici si besoin
       const res = await fetch(`${API_URL}/account-recovery/recover`, {

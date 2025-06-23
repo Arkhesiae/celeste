@@ -52,6 +52,10 @@ const DaySchema = new mongoose.Schema({
         required: true,
         min: [0, 'Les points par défaut doivent être positifs']
     },
+    adminPoints: {
+        type: Number,
+        min: [0, 'Les points par défaut doivent être positifs']
+    },
     type: {
         type: String,
         enum: ['work', 'rest'],

@@ -467,18 +467,7 @@ const itemProps = (item) => ({
   subtitle: item.OACI,
 });
 
-// Data fetching
-const fetchCenters = async () => {
-  loadingCenters.value = true;
-  try {
-    await centerStore.fetchCenters();
-  } catch (error) {
-    stepErrors.value[1] = "Erreur lors de la récupération des centres";
-    console.error("Erreur lors de la récupération des centres", "error");
-  } finally {
-    loadingCenters.value = false;
-  }
-};
+
 
 const fetchCenterTeams = async () => {
   if (!user.value.centerId) return;
@@ -635,8 +624,7 @@ const validateStep = async (stepNum) => {
 };
 
 
-onMounted(
-  fetchCenters);
+
 </script>
 
 <style scoped>

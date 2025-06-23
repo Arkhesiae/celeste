@@ -21,6 +21,7 @@ const createUser = async (req, res) => {
     const { name, lastName, password, email, centerId, team, zone, points, approved } = req.body;
 
     try {
+        console.log("in createUser", req.body)
         const hashedPassword = await hash(password, 10);
         const user = new User({
 
@@ -40,6 +41,8 @@ const createUser = async (req, res) => {
             return res.status(404).json({ message: 'Equipe non trouvée' });
         }
         const today = new Date();
+        console.log("user", user)
+        console.log("Server date : ", today)
         today.setUTCHours(0, 0, 0, 0);
         user.teams.push({ teamId: firstTeam._id, fromDate: today , toDate: null });
 
@@ -576,7 +579,7 @@ const getUserShiftsWithSubstitutions = async (req, res) => {
         }
 
         const dateArray = generateDateArray(dates.startDate, dates.endDate);
-        console.log("-------------- EXE ------------------");
+        console.log("-------------- COMPUTING ------------------" + dateArray.length);
         const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
         res.json(results);
     } catch (error) {
@@ -696,7 +699,7 @@ const transferPoints = async (req, res) => {
         }
 
         // Pour les transferts immédiats, vérifier le solde
-        if (sender.points - amount < 0) {
+        if (sender.points - amount < -20) {
             return res.status(400).json({ message: 'Solde insuffisant' });
         }
 

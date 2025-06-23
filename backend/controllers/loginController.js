@@ -26,6 +26,8 @@ const loginController = {
             { expiresIn: stayConnected ? '365d' : '2h' }
         );
 
+        console.log("Se connecte : ", user.name + " " + user.lastName)
+
         // Réponse avec toutes les informations nécessaires
         res.json({
             name: user.name,

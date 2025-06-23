@@ -50,7 +50,7 @@ export const fetchLegacyUser = async (req, res) => {
 export const initiateAccountRecovery = async (req, res, next) => { 
     try {
         console.log(req.body)
-        const { login, center, email, password, firstName, lastName, equipe, points } = req.body;
+        const { login, center, email, password, firstName, lastName, equipe, points} = req.body;
 
         const user = await LegacyUser.findOne({
             $or: [
@@ -92,7 +92,7 @@ export const initiateAccountRecovery = async (req, res, next) => {
             centerId: center,
             team: team._id,
             points: points,
-          
+            approved: true,
         }
         next()
 

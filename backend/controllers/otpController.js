@@ -33,7 +33,7 @@ export const sendOtp = async (req, res) => {
       console.log('========================\n');
     } else {
       // En production, envoyer l'email
-      await sendEmailOtp(email, otp);
+      await sendEmailOtp(email.toLowerCase(), otp);
     }
 
     res.json({ message: 'Code OTP envoyé avec succès' });

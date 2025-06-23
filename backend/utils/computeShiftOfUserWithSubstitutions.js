@@ -7,7 +7,6 @@ import Substitution from '../models/Substitution.js';
 // Récupérer le shift d'un utilisateur à une date donnée en prenant en compte les substitutions
 const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
     try {
-        console.log("--------------  computeShiftOfUserWithSubstitutions ------------------");
         const user = await User.findById(userId).populate('teams');
         if (!user) {
             throw new Error('Utilisateur non trouvé');
@@ -43,6 +42,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 }
 
                 const initialShift = await computeShiftOfTeam(date, team.teamId);
+           
                 
                 // Vérifier les substitutions où l'utilisateur est impliqué
                 const substitutions = await Substitution.find({

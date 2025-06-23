@@ -370,7 +370,7 @@ const enRenfortConflict = computed(() => {
 const conflict = computed(() => {
   if (!selectedDates.value.startDate || !teamStore.teamOccurrences?.allOccurrences || props.dialogMode === 'Renfort')  return null;
   return teamStore.teamOccurrences?.allOccurrences.find(
-    (occurrence) => occurrence.fromDate === toUTCNormalized(selectedDates.value.startDate) && !occurrence.toDate
+    (occurrence) => toUTCNormalized(occurrence.fromDate) === toUTCNormalized(selectedDates.value.startDate) && !occurrence.toDate
   ) || null;
 });
 

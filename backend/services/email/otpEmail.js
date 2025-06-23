@@ -8,8 +8,6 @@ dotenv.config();
  * @param {string} otp
  */
 async function sendEmailOtp(toEmail, otp) {
-  console.log("SMTP USER:", process.env.SMTP_USERNAME);
-  console.log("SMTP PASS:", process.env.SMTP_PASSWORD);
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT, 10),
@@ -28,8 +26,8 @@ async function sendEmailOtp(toEmail, otp) {
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Email OTP envoyé :', info.messageId);
+    await transporter.sendMail(mailOptions);
+    console.log('📧 Email OTP envoyé à:', toEmail, ' :');
   } catch (err) {
     console.error('❌ Erreur envoi OTP :', err);
     throw err;

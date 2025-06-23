@@ -82,9 +82,8 @@ L'équipe Celeste`
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Email de réinitialisation envoyé :', info.messageId);
-    return info;
+    await transporter.sendMail(mailOptions);
+    console.log('📧 Email de réinitialisation envoyé à:', toEmail);
   } catch (err) {
     console.error('❌ Erreur envoi email de réinitialisation :', err);
     throw err;

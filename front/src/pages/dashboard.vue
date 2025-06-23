@@ -57,6 +57,7 @@
           <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
         </div>
         </v-alert>
+
         <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -73,7 +74,22 @@
           <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
         </div>
         </v-alert>
-      
+        <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/contact-admin')">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+          <v-card-title class="text-h6 font-weight-medium">Equipe inactive</v-card-title>
+          <v-card-text>
+            <div class="text-medium-emphasis">
+              Votre équipe est inactive. 
+            </div>
+            <div>
+              Vous ne pouvez pas effectuer de remplacements ou de permutations car votre équipé n'a pas encore de début de cycle défini, veuillez contacter un administrateur pour activer un tour de service.
+            </div>
+          </v-card-text>
+        </div>
+          <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+        </div>
+        </v-alert>
         <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -594,6 +610,7 @@ import OwnDemandCard from "@/components/OwnDemandCard.vue";
 import TransferDialog from '@/components/Profile/TransferDialog.vue';
 import { useRouter } from 'vue-router';
 import { useShiftStore } from "@/stores/shiftStore.js";
+import { toUTCNormalized } from "@/utils/toUTCNormalized";
 
 const router = useRouter();
 
@@ -636,7 +653,7 @@ const { calendarDays } = useCalendar(currentYear, currentMonth);
 // Fonctions pour le calendrier
 const isSelected = (date) => {
   if (!selectedDate.value) return false;
-  return date.toISOString() === selectedDate.value.toISOString();
+  return toUTCNormalized(date) === toUTCNormalized(selectedDate.value);
 };
 
 const isWorkDay = (date) => {
@@ -654,25 +671,14 @@ const isToday = (date) => {
 // Fonction pour obtenir la vacation actuelle ou la prochaine
 const getVacation = computed(() => {
   const today = new Date();
-  const todayISO = new Date(today.toISOString().split('T')[0]);
+  const todayISO = toUTCNormalized(today);
 
   // Vérifier d'abord la vacation d'aujourd'hui
-  const todayVacation = vacationsOfUser.value.get(todayISO.toISOString());
-
+  const todayVacation = vacationsOfUser.value.get(todayISO);
+  
+  console.log(todayVacation)
   if (todayVacation && todayVacation.shift) {
     return todayVacation;
-  }
-
-
-  // Si pas de vacation aujourd'hui, chercher la prochaine
-  const sortedDates = Array.from(vacationsOfUser.value.keys())
-    .map(date => new Date(date))
-    .filter(date => date > today)
-    .sort((a, b) => a - b);
-
-  if (sortedDates.length > 0) {
-    const nextDate = sortedDates[0].toISOString();
-    return vacationsOfUser.value.get(nextDate);
   }
 
   return null;
@@ -682,9 +688,15 @@ const getVacation = computed(() => {
 const getTomorrowVacation = computed(() => {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowISO = new Date(tomorrow.toISOString().split('T')[0]);
+  const tomorrowISO = toUTCNormalized(tomorrow);
 
-  return vacationsOfUser.value.get(tomorrowISO.toISOString());
+  const tomorrowVacation = vacationsOfUser.value.get(tomorrowISO);
+
+  if (tomorrowVacation && tomorrowVacation.shift) {
+    return tomorrowVacation;
+  }
+
+  return null;
 });
 
 const activeRotation = computed(() => {

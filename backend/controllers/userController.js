@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
-    const { name, lastName, password, email, centerId, team, zone, points } = req.body;
+    const { name, lastName, password, email, centerId, team, zone, points, approved } = req.body;
 
     try {
         const hashedPassword = await hash(password, 10);
@@ -31,9 +31,11 @@ const createUser = async (req, res) => {
             password: hashedPassword,
             centerId,
             points : points || 0,
-         
+            registrationStatus: approved ? 'verified' : 'pending',
         });
-        const firstTeam = await Team.findById(team);
+
+
+        const firstTeam = await Team.findOne({_id: team, center: centerId});
         if (!firstTeam) {
             return res.status(404).json({ message: 'Equipe non trouvée' });
         }
@@ -240,6 +242,7 @@ const assignUserToCenter = async (req, res) => {
         }
 
         user.centerId = centerId;
+        user.teams = [];
         user.isLocalAdmin = false;
         await user.save();
 
@@ -519,13 +522,21 @@ const assignTeamToUser = async (req, res) => {
     }
 
     try {
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
         const teamExists = await Team.findById(newTeam.teamId);
+
+        if (teamExists.center.toString() !== user.centerId.toString()) {
+            return res.status(400).json({ error: "Erreur dans la correspondance entre l'équipe et le centre" });
+        }
+
         if (!teamExists) {
             return res.status(404).json({ error: "Team not found" });
         }
 
-        const user = await User.findById(id);
-        if (!user) return res.status(404).json({ message: "User not found" });
+      
 
         user.teams.push({ teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate });
         await user.save();

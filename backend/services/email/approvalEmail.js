@@ -20,14 +20,14 @@ async function sendEmailApproval(toEmail) {
 
   const mailOptions = {
     from: process.env.EMAIL_FROM,
-    to: toEmail,
+    to: toEmail.toLowerCase(),
     subject: 'Votre inscription à été approuvée - Celeste',
     text: `Bonjour,\n\nVotre inscription à été approuvée. Vous pouvez désormais accéder à l'application.\n\nCordialement,\nL'équipe Celeste`
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Email approbation envoyé :', info.messageId);
+    await transporter.sendMail(mailOptions);
+    console.log('📧 Email approbation envoyé à:', toEmail);
   } catch (err) {
     console.error('❌ Erreur envoi approbation :', err);
     throw err;
@@ -47,14 +47,14 @@ async function sendEmailRejection(toEmail) {
 
     const mailOptions = {
         from: process.env.EMAIL_FROM,
-        to: toEmail,
+        to: toEmail.toLowerCase(),
         subject: 'Votre inscription à été rejetée - Celeste',
         text: `Bonjour,\n\nVotre inscription à été rejetée. Veuillez réessayer ou contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`
     };
 
     try {
-        const info = await transporter.sendMail(mailOptions);
-        console.log('📧 Email rejet envoyé :', info.messageId);
+        await transporter.sendMail(mailOptions);
+        console.log('📧 Email rejet envoyé à:', toEmail);
     } catch (err) {
         console.error('❌ Erreur envoi rejet :', err);
         throw err;

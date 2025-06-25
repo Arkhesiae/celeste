@@ -1,5 +1,5 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-6 bite" color="">
+  <v-card rounded="xl" elevation="0" class="pa-6 bite" color="" height="100%">
     <!-- En-tête avec l'icône et le menu -->
     <div class="d-flex justify-space-between align-center pa-0">
       <div class="d-flex align-center">
@@ -135,50 +135,48 @@
   </v-card>
 
   <!-- Dialogue d'information pour mobile -->
+ 
   <v-dialog v-model="showInfo" fullscreen :scrim="false" transition="dialog-bottom-transition" class="d-md-none">
     <v-card>
-      <v-toolbar color="primary">
+      <v-toolbar color="surfaceContainer">
         <v-btn icon @click="showInfo = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
-        <v-toolbar-title>À propos de mon équipe</v-toolbar-title>
+       
       </v-toolbar>
 
       <v-card-text class="pa-6">
         <h2 class="text-h5 mb-4">Comment fonctionne mon équipe ?</h2>
         <p class="mb-4">Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :</p>
-        <ul class="mb-4">
-          <li>Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</li>
-          <li>Renforcer une autre équipe en cliquant sur le bouton "Renfort"</li>
-          <li>Consulter votre historique et vos changements à venir</li>
-        </ul>
+        <div class="mb-4 d-flex flex-column ga-2">
+          <span class="text-subtitle-2">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
+          <span class="text-subtitle-2">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
+          <span class="text-subtitle-2">Consulter votre historique et vos changements à venir</span>
+        </div>
       </v-card-text>
     </v-card>
   </v-dialog>
 
+
   <!-- Panneau latéral pour desktop -->
-  <v-navigation-drawer v-model="showInfo" location="right" temporary="" order="-4" width="400"
+  <teleport to="body"> 
+  <v-navigation-drawer style="z-index: 3500 !important;" v-model="showInfo" location="right" temporary="" order="-4" width="500"
     class="d-none d-md-block">
-    <v-card>
-      <v-toolbar color="primary">
-        <v-btn icon @click="showInfo = false">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-        <v-toolbar-title>À propos de mon équipe</v-toolbar-title>
-      </v-toolbar>
+    <v-card class="pa-6" flat>
+     
 
       <v-card-text class="pa-6">
         <h2 class="text-h5 mb-4">Comment fonctionne mon équipe ?</h2>
         <p class="mb-4">Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :</p>
-        <ul class="mb-4">
-          <li>Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</li>
-          <li>Renforcer une autre équipe en cliquant sur le bouton "Renfort"</li>
-          <li>Consulter votre historique et vos changements à venir</li>
-        </ul>
+        <div class="mb-4 d-flex flex-column ga-2">
+          <span class="text-subtitle-2">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
+          <span class="text-subtitle-2">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
+          <span class="text-subtitle-2">Consulter votre historique et vos changements à venir</span>
+        </div>
       </v-card-text>
     </v-card>
   </v-navigation-drawer>
-
+  </teleport>
 
   <v-dialog v-model="showConflictDialog" max-width="600px">
     <v-card rounded="xl" elevation="0" class="pa-6">
@@ -327,6 +325,9 @@ const confirmDelete = async () => {
 };
 
 const showInfo = ref(false);
+const isMounted = ref(false);
+
+
 </script>
 <style>
 .elevated-shadow {

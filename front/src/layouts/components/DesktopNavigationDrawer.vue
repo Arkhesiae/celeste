@@ -68,7 +68,7 @@
                    @click="router.push({ path: '/center/'+authStore.centerId+'/teams' })"
                    rounded="xl"
                    :class="isActive('/center/'+authStore.centerId+'/teams') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/center/'+authStore.centerId+'/teams') ? 'mdi-home' : 'mdi-home-outline'"
+                   :prepend-icon="isActive('/center/'+authStore.centerId+'/teams') ? 'mdi-airport' : 'mdi-airport'"
                    title="Mon centre"
                    value="my-center"></v-list-item>
     </v-list>

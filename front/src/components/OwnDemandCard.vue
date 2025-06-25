@@ -81,7 +81,7 @@
 
           <v-chip variant="flat" size="small" rounded="lg" 
             class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
-            <LogoCopy class="unicorn-logo" style="top:-2px; position: relative;" />
+            <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
             <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
 
             </span>
@@ -143,13 +143,17 @@
       <v-card-text class="pa-0">
         <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation" variant="flat"
           size="small" rounded="lg" class="mr-2">
-          <span>{{ 'Permutation ' + getDayName(switchDay.shift) }}</span>
-          <span class="ml-2">{{ switchDay.points }}</span>
+          <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
+          <span class="font-weight-bold mr-2">{{  getDayName(switchDay.shift) }}</span>
+          <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
+          <span class="font-weight-bold">{{ switchDay.points }}</span>
         </v-chip>
         <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat" size="small"
           rounded="lg" class="mr-2">
-          <span>{{ 'Remplacement' }}</span>
-          <span class="ml-2">{{ demand?.points }}</span>
+          <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
+          <span>{{  }}</span>
+          <LogoCopy color="background" style="top:-2px; position: relative;" />
+          <span class="font-weight-bold">{{ demand?.points }}</span>
         </v-chip>
 
 
@@ -291,7 +295,7 @@ const getDayName = (dayId) => {
 
 </script>
 
-<style>
+<style scoped>
 .demand-card {
   box-sizing: border-box;
   border-radius: 16px !important;
@@ -371,4 +375,6 @@ const getDayName = (dayId) => {
 .unicorn-logo .path2 {
   fill: rgb(var(--v-theme-onBackground)) !important;
 }
+
+
 </style>

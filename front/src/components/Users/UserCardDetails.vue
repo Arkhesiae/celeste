@@ -23,9 +23,9 @@
             <v-list>
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon>mdi-account</v-icon>
+                  <v-icon>mdi-account-check-outline</v-icon>
                 </template>
-                <v-list-item-title>Statut</v-list-item-title>
+             
                 <v-list-item-subtitle>
                   <v-chip
                     rounded="lg"
@@ -39,9 +39,9 @@
               </v-list-item>
               <v-list-item>
                 <template v-slot:prepend>
-                  <v-icon>mdi-office-building</v-icon>
+                  <v-icon>mdi-airport</v-icon>
                 </template>
-                <v-list-item-title>Centre</v-list-item-title>
+       
                 <v-list-item-subtitle>
                   <v-chip
                     color="onBackground"
@@ -49,7 +49,7 @@
                     size="small"
                     class="mr-2"
                   >
-                    {{ getCenterById(user.centerId)?.name || "No center" }}
+                    {{ getCenterName?.name || "No center" }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -87,7 +87,7 @@
               v-if="user.isAdmin && isMasterAdmin"
             >
               <div class="d-flex align-center ga-3">
-                <v-icon>mdi-shield-account</v-icon>
+                <v-icon>mdi-shield-crown-outline</v-icon>
                 <v-list-item-title>Enlever statut admin</v-list-item-title>
               </div>
             </v-card>
@@ -98,11 +98,11 @@
               class="pa-4" 
               color="surfaceContainerHighest" 
               rounded="xl" 
-              @click="$emit('assignCenter', user)" 
+              @click="$emit('assignCenter', userId)" 
               v-if="isMasterAdmin"
             > 
               <div class="d-flex align-center ga-3">
-                <v-icon>mdi-office-building-marker</v-icon>
+                <v-icon>mdi-airport</v-icon>
                 <v-list-item-title>Modifier le centre</v-list-item-title>
               </div>
             </v-card>
@@ -132,13 +132,14 @@
 import { computed } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterStore } from '@/stores/centerStore';
+import { useUserStore } from '@/stores/userStore';
 
 const authStore = useAuthStore();
 const centerStore = useCenterStore();
-
+const userStore = useUserStore();
 const props = defineProps({
-  user: {
-    type: Object,
+  userId: {
+    type: String,
     required: true
   },
   dialogVisible: {
@@ -152,7 +153,11 @@ const emit = defineEmits(['update:dialogVisible', 'makeAdmin', 'removeAdmin', 'a
 const isMasterAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'master');
 const isLocalAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'local');
 
-const getCenterById = (centerId) => {
-  return centerStore.centers.find(center => center._id === centerId) || null;
-};
+const user = computed(() => {
+  return userStore.users.find(user => user._id === props.userId) || null;
+});
+
+const getCenterName = computed(() => {
+  return centerStore.centers.find(center => center._id === user.value.centerId) || null;
+});
 </script> 

@@ -5,6 +5,7 @@
  */
 
 // Styles
+// Import optimisé des polices Material Design Icons
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 import { md3 } from 'vuetify/blueprints'

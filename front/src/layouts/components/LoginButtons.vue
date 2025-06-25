@@ -65,7 +65,9 @@ const showTeamUsers = ref(false);
 const teamUsers = ref([]);
 const generatingUsers = ref(false);
 const showLoadingScreen = ref(false);
-
+const adminEmail = import.meta.env.VITE_ADMIN_MAIL;
+const adminPassword = import.meta.env.VITE_ADMIN_PASS;
+console.log(import.meta.env)
 
 const handleLogout = async () => {
   await authStore.logOut();
@@ -88,9 +90,10 @@ const autoLogin = async (role) => {
         password: 'userpassword',
       });
     } else if (role === 'master') {
+      console.log(adminEmail, adminPassword)
       await authStore.logIn({
-        email: 'admin@celeste.com',
-        password: 'celeste',
+        email: adminEmail,
+        password: adminPassword,
       });
     }
 

@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import User from '../models/User.js';
+import {LegacyUser} from '../models/User.js';
 import Center from '../models/Center.js';
 import { hash } from "bcrypt";
 import Team from '../models/Team.js';
@@ -59,7 +60,8 @@ const checkEmailAvailability = async (req, res) => {
 
     try {
         const existingUser = await User.findOne({ email });
-        res.json({ available: !existingUser });
+        const existingLegacyUser = await LegacyUser.findOne({ email });
+        res.json({ available: !existingUser, legacy: !!existingLegacyUser });
     } catch (error) {
         console.error('Erreur lors de la vérification de l\'email:', error);
         res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -577,10 +579,12 @@ const getUserShiftsWithSubstitutions = async (req, res) => {
         if (!dates || !dates.startDate || !dates.endDate || !userId) {
             return res.status(400).json({ message: !dates ? 'No dates provided' : !dates.startDate ? 'No start date provided' : !dates.endDate ? 'No end date provided' : 'No user provided' });
         }
-
+        const timer = new Date();
         const dateArray = generateDateArray(dates.startDate, dates.endDate);
+       
         console.log("-------------- COMPUTING ------------------" + dateArray.length);
         const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
+        console.log("-------------- COMPUTING TIME ------------------" + (new Date() - timer));
         res.json(results);
     } catch (error) {
         console.error(error.message);

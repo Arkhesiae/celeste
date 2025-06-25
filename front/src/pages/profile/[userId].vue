@@ -44,7 +44,7 @@
             <PointsCard height="100%" @transfer="transferDialog = true" />
           </v-col>
           <v-col :class="smAndDown ? 'my-16' : ''" cols="12" md="8">
-            <UserTeamCard @show-team-change-dialog="openAddDialog" />
+            <UserTeamCard height="100%" @show-team-change-dialog="openAddDialog" />
           </v-col>
         </v-row>
       </v-slide-y-transition>

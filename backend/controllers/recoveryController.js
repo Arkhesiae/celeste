@@ -18,12 +18,12 @@ export const fetchLegacyUser = async (req, res) => {
             ],
         });
 
-        if (user.recovered) {
-            return res.status(400).json({ message: 'Ce compte a déjà été récupéré.' });
-        }
-
+       
         if (!user) {
             return res.status(404).json({ message: 'Aucun utilisateur trouvé.' });
+        }
+        if (user.recovered) {
+            return res.status(400).json({ message: 'Ce compte a déjà été récupéré.' });
         }
 
   

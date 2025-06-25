@@ -26,11 +26,11 @@
           }">
 
 
-          <PendingChip v-if="substitutionStore.hasOwnPendingDemand(day.date.toISOString())"
+          <PendingChip v-if="substitutionStore?.hasOwnPendingDemand(day.date.toISOString())"
             style="bottom:-4px !important; " :date="day.date" />
-          <AccepterChip v-if="substitutionStore.hasAcceptedAsAccepter(day.date.toISOString())"
+          <AccepterChip v-if="substitutionStore?.hasAcceptedAsAccepter(day.date.toISOString())"
             style="bottom:-4px !important; " :date="day.date" />
-          <ConfirmationChip v-if="substitutionStore.hasAcceptedAsPoster(day.date.toISOString())"
+          <ConfirmationChip v-if="substitutionStore?.hasAcceptedAsPoster(day.date.toISOString())"
             style="bottom:-4px !important; " :date="day.date" />
           <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 16" type="switch" status="accepted"/>-->
           <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 17" type="rempla" status="pending"/>-->
@@ -44,13 +44,13 @@
           <div style="position: absolute; width: 100%; bottom: 0" class="d-flex justify-center">
 
             <div class="d-flex justify-center">
-              <div v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
+              <div v-if="substitutionStore?.hasAvailableSubstitutions(day.date.toISOString())"
                 class="indicator-dot remplacement " style="background: rgb(var(--v-theme-remplacement)) !important">
               </div>
-              <div v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
+              <div v-if="substitutionStore?.hasAvailableSwitches(day.date.toISOString())"
                 class="indicator-dot permutation ml-1" style="background: rgb(var(--v-theme-permutation)) !important">
               </div>
-              <div v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
+              <div v-if="substitutionStore?.hasOtherDemands(day.date.toISOString())"
                 class="indicator-dot other-demand ml-1"
                 style="background: rgba(var(--v-theme-surfaceContainerHighest), 1) !important"></div>
             </div>

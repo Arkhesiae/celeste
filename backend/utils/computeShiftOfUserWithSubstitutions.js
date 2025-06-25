@@ -19,7 +19,6 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
         }
 
         const dateArray = Array.isArray(dates) ? dates : [dates];
-
         const results = await Promise.all(
             dateArray.map(async (dateStr) => {
                 const date = new Date(dateStr);
@@ -27,23 +26,29 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     throw new Error(`Date invalide: ${dateStr}`);
                 }
 
+               
                 // Calculer d'abord le shift initial pour vérification
                 const team = await getTeamAtGivenDate(teams, date);
                 if (!team) {
                     return {
                         date: dateStr,
-                        status: "Pas d'équipe"
+                        teamObject : null,
+                        shift : null,
                     };
                 }
+
+              
 
                 const teamObject = await Team.findById(team.teamId);
                 if (!teamObject) {
                     throw new Error(`Équipe non trouvée pour l'ID: ${team.teamId}`);
                 }
 
+               
+
                 const initialShift = await computeShiftOfTeam(date, team.teamId);
-           
-                
+               
+
                 // Vérifier les substitutions où l'utilisateur est impliqué
                 const substitutions = await Substitution.find({
                     $and: [
@@ -166,6 +171,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 };
             })
         );
+       
         return results;
     } catch (error) {
         console.error('Erreur dans computeShiftOfUserWithSubstitutions:', error.message);

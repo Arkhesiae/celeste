@@ -44,7 +44,7 @@
       <v-col v-for="user in sortedAndFilteredUsers" :key="user._id" cols="12" md="6" lg="4" :class="smAndDown ? 'pa-0' : ''">
         <UserCard 
           :user="user" 
-          @click="openUserDialog"
+          @click="openUserDialog(user._id)"
           @approve="approveUser"
           @makeAdmin="makeAdmin"
           @removeAdmin="removeAdmin"
@@ -56,7 +56,7 @@
 
     <!-- User Details Dialog -->
     <UserCardDetails
-      :user="selectedUser"
+      :userId="selectedUser"
       :dialogVisible="userDialog"
       @update:dialogVisible="userDialog = $event"
       @makeAdmin="makeAdmin"
@@ -64,11 +64,11 @@
       @assignCenter="openCenterDialog"
       @delete="deleteUser"
     />
-
-    <!-- Center Assignment Dialog -->
+  <!-- 
+    Center Assignment Dialog -->
     <AssignCenterDialog
       :dialogVisible="centerDialog"
-      :user="selectedUser"
+      :userId="selectedUser"
       @update:dialogVisible="centerDialog = $event"
       @centerAssigned="assignCenter"
     />
@@ -97,7 +97,7 @@ const { smAndDown } = useDisplay();
 
 const centerDialog = ref(false);
 const selectedFilter = ref('all');
-const selectedUser = ref(null);
+const selectedUser = ref('');
 const sortBy = ref('');
 const sortDirection = ref('asc');
 const searchQuery = ref('');
@@ -167,8 +167,9 @@ const getCenterById = (centerId) => {
   return centers.value.find(center => center._id === centerId) || null;
 };
 
-const openCenterDialog = (user) => {
-  selectedUser.value = user;
+const openCenterDialog = (userId) => {
+  console.log(userId)
+  selectedUser.value = userId;
   centerDialog.value = true;
 };
 
@@ -223,8 +224,9 @@ const approveUser = async (user) => {
   }
 };
 
-const openUserDialog = (user) => {
-  selectedUser.value = user;
+const openUserDialog = (userId) => {
+  console.log(userId)
+  selectedUser.value = userId;
   userDialog.value = true;
 };
 

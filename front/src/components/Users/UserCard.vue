@@ -17,7 +17,8 @@
             <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
           </div>
         </div>
-        <v-menu color="onBackground" rounded="lg">
+        <v-icon class="position-absolute top-0 right-0 ma-4 opacity-50" color="onBackground" size="x-small" >mdi-arrow-expand</v-icon>
+        <!-- <v-menu color="onBackground" rounded="lg">
           <template v-slot:activator="{ props }">
             <v-btn icon variant="text" v-bind="props" @click.stop>
               <v-icon>mdi-dots-vertical</v-icon>
@@ -60,7 +61,7 @@
               <v-list-item-title class="text-onError">Supprimer</v-list-item-title>
             </v-list-item>
           </v-list>
-        </v-menu>
+        </v-menu> -->
       </v-card-title>
     </v-card-item>
     <v-card-text class="pt-0 d-flex justify-start">
@@ -101,14 +102,21 @@
       >
         {{ getCenterById(user.centerId)?.name || "No center" }}
       </v-chip>
-
+      <div class="d-flex justify-space-between align-center flex-column position-absolute bottom-0 right-0 mr-6 mb-4">
+              <div v-if="user.points > 99999">
+                <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
+              </div>
+              <div v-else class="text-h6 font-weight-bold"> {{ user.points }}</div>
+              <div class="text-body-2 text-medium-emphasis mt-n2">Points </div>
+             
+            </div>
       <v-chip
         color="onBackground"
         rounded="lg"
         size="small"
         class="mr-2"
       >
-        Equipe {{ getTeamName(user.currentTeam?.teamId) || "No team" }}
+       {{ getTeamName(user.currentTeam?.teamId) }}
       </v-chip>
 
       <v-chip
@@ -152,11 +160,11 @@ const getCenterById = (centerId) => {
 };
 
 const getTeamName = (team) => {
-  if (!team) return "No team";
+  if (!team) return "Aucune équipe";
   if (isMasterAdmin.value) {
-    return teamStore.teams.find(t => t._id === team)?.name || team;
+    return "Equipe " + teamStore.teams.find(t => t._id === team)?.name || team;
   } else {
-    return teamStore.centerTeams.find(t => t._id === team)?.name || team;
+    return "Equipe " + teamStore.centerTeams.find(t => t._id === team)?.name || team;
   }
 };
 </script>

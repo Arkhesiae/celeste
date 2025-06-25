@@ -3,12 +3,12 @@
     :color="transaction.status === 'pending' ? 'surfaceContainerHigh' : 'surfaceContainer'" 
     flat
     class="transaction-item pa-4 d-flex justify-space-between align-center py-2"
-    :class="transaction.status === 'pending' ? 'opacity-50' : ''"
+    :class="transaction.status === 'pending' ? 'low-opacity' : ''"
   >
     <div class="d-flex align-center">
       <v-icon 
         v-if="transaction.status === 'completed'" 
-        :color="transaction.flow === 'sent' ? 'red' : 'green'" 
+        :color="transaction.flow === 'sent' ? 'error' : 'green'" 
         class="mr-2"
       >
         {{ transaction.flow === 'sent' ? 'mdi-bank-transfer-out' : 'mdi-bank-transfer-in' }}
@@ -34,8 +34,8 @@
     <div 
       v-else 
       :class="{
-        'text-green': transaction.flow === 'received',
-        'text-red': transaction.flow === 'sent'
+        'text-success': transaction.flow === 'received',
+        'text-error': transaction.flow === 'sent'
       }"
     >
       {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
@@ -56,5 +56,8 @@ defineProps({
 .transaction-item{
   border-bottom: none;
   border-radius: 16px !important;
+}
+.low-opacity {
+  opacity: 0.8;
 }
 </style> 

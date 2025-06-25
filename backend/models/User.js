@@ -77,6 +77,10 @@ const userSchema = new mongoose.Schema({
             default: true 
         },
     },
+    personalData : {
+        phoneNumber : { type: String, default: '' },
+        birthDate : { type: Date, default: null },
+    },
     lastLogin: Date,
     isActive: {
         type: Boolean,

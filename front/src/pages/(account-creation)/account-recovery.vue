@@ -220,7 +220,7 @@ async function handleRecovery() {
 
           <!-- Étape 2 : Affichage infos + choix email -->
           <v-window-item :value="2" >
-            <v-card-title class="pl-0 text-h5">Informations du compte</v-card-title>
+            <!-- <v-card-title class="pl-0 text-h5">Informations du compte</v-card-title> -->
             <v-card style="border-radius: 16px !important;" color="surfaceContainerHigh" flat class="pa-4 d-flex justify-space-between">
               <div class="d-flex flex-column">
               <div class="text-h7">  {{ oldAccount.firstName.charAt(0).toUpperCase() + oldAccount.firstName.slice(1) }} </div>

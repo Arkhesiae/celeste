@@ -311,9 +311,9 @@ const filteredAndSortedTeams = computed(() => {
   let filtered = teams.value;
 
   if (selectedFilter.value === 'active') {
-    filtered = filtered.filter(team => team.isActive);
+    filtered = filtered.filter(team => team.cycleStartDate);
   } else if (selectedFilter.value === 'inactive') {
-    filtered = filtered.filter(team => !team.isActive);
+    filtered = filtered.filter(team => !team.cycleStartDate);
   }
 
   if (searchQuery.value) {
@@ -364,7 +364,7 @@ const addNewTeam = async () => {
   
   try {
     await teamStore.addTeam(centerId, newTeamName.value);
-    snackbarStore.showNotification('Equipe ajoutée avec succès', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Equipe ajoutée', 'onPrimary', "mdi-check");
     addTeamDialog.value = false;
     newTeamName.value = '';
   } catch (error) {
@@ -378,7 +378,7 @@ const removeTeam = async (teamId) => {
   
   try {
     await teamStore.deleteTeam(teamId);
-    snackbarStore.showNotification('Équipe supprimée avec succès', 'primary');
+    snackbarStore.showNotification('Équipe supprimée', 'onPrimary', "mdi-check");
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'équipe:', error);
     snackbarStore.showNotification('Erreur lors de la suppression de l\'équipe : ' + error.message, 'onError');
@@ -411,7 +411,7 @@ const setCycleStartDate = async () => {
     ));
 
     await teamStore.updateTeamCycleStartDate(selectedTeam.value._id, utcDate.toISOString());
-    snackbarStore.showNotification('Date de cycle mise à jour avec succès', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Date de cycle mise à jour', 'onPrimary', "mdi-check");
     datePickerDialog.value = false;
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la mise à jour de la date de cycle : ' + error.message, 'onError', "mdi-alert-circle-outline");
@@ -429,7 +429,7 @@ const addUserToTeam = async () => {
   
   try {
     await teamStore.assignUserToTeam(selectedUser.value._id, selectedTeam.value._id);
-    snackbarStore.showNotification('Membre ajouté avec succès', 'success');
+    snackbarStore.showNotification('Membre ajouté', 'onPrimary', "mdi-check");
     addMemberDialog.value = false;
   } catch (error) {
     console.error('Erreur lors de l\'ajout du membre:', error);
@@ -448,7 +448,7 @@ const renameTeam = async () => {
   
   try {
     await teamStore.renameTeam(selectedTeamForEdit.value._id, editedTeamName.value);
-    snackbarStore.showNotification('Nom de l\'équipe mis à jour avec succès', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Nom de l\'équipe mis à jour', 'onPrimary', "mdi-check");
     editTeamNameDialog.value = false;
   } catch (error) {
     console.error('Erreur lors de la mise à jour du nom de l\'équipe:', error);
@@ -460,7 +460,7 @@ const onDragEnd = async () => {
   try {
     // Mettre à jour l'ordre des équipes dans le store
     await teamStore.updateTeamsOrder(orderedTeams.value.map(team => team._id));
-    snackbarStore.showNotification('Ordre des équipes mis à jour avec succès', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Ordre des équipes mis à jour', 'onPrimary', "mdi-sort");
   } catch (error) {
     console.error('Erreur lors de la mise à jour de l\'ordre des équipes:', error);
     snackbarStore.showNotification('Erreur lors de la mise à jour de l\'ordre des équipes', 'onError');

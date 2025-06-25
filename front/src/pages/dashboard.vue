@@ -1,6 +1,3 @@
-
-
-
 <template>
   <v-container :class="smAndDown ? 'mb-n16' : ''">
     <!-- En-tête -->
@@ -12,8 +9,9 @@
         </div>
         <span class="text-h4 text-overline text-medium-emphasis">Tableau de bord</span>
       </div>
-      <v-btn v-if="!smAndDown"  height="48px" class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow new-demand-button" flat style="border-radius: 16px !important"
-        prepend-icon="mdi-plus" @click="$router.push('/calendar')">
+      <v-btn v-if="!smAndDown" height="48px"
+        class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow new-demand-button" flat
+        style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="$router.push('/calendar')">
         Nouvelle demande
       </v-btn>
     </div>
@@ -41,134 +39,146 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
-        <v-alert v-if="!authStore.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+        <v-alert v-if="!authStore.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+          icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
-          <v-card-title class="text-h6 font-weight-medium">Aucun centre assigné</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Vous n'avez pas de centre assigné. 
+              <v-card-title class="text-h6 font-weight-medium">Aucun centre assigné</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Vous n'avez pas de centre assigné.
+                </div>
+                <div>
+                  Vous n'appartenez à aucun centre. Le site ne sera pas fonctionnel.
+                </div>
+              </v-card-text>
             </div>
-            <div>
-              Vous n'appartenez à aucun centre. Le site ne sera pas fonctionnel.
-            </div>
-          </v-card-text>
-        </div>
-          <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-        </div>
-        </v-alert>
-
-        <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-          <v-card-title class="text-h6 font-weight-medium">Aucune équipe assignée</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Vous n'avez pas d'équipe assignée. Vous ne pourrez pas effectuer de remplacements ou de permutations.
-            </div>
-            <div>
-              Pour assigner une équipe, veuillez vous rendre sur la page profil
-            </div>
-          </v-card-text>
-        </div>
-          <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-        </div>
-        </v-alert>
-        <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/contact-admin')">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-          <v-card-title class="text-h6 font-weight-medium">Equipe inactive</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Votre équipe est inactive. 
-            </div>
-            <div>
-              Vous ne pouvez pas effectuer de remplacements ou de permutations car votre équipé n'a pas encore de début de cycle défini, veuillez contacter un administrateur pour activer un tour de service.
-            </div>
-          </v-card-text>
-        </div>
-          <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-        </div>
-        </v-alert>
-        <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-          <v-card-title class="text-h6 font-weight-medium">Conflit de demandes</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Certaines de vos demandes semble présenter des erreurs. Cela peut-être dû à un changement d'équipe ou de tour de service. Veuillez les résoudre avant de poster une nouvelle demande.
-            </div>
-            <div>
-              Pour résoudre les conflits, veuillez vous rendre sur la page de gestion des demandes.
-            </div>
-          </v-card-text>
-        </div>
-          <div class="font-weight-medium">
-            <!-- Résoudre -->
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
- 
-        </div>
+        </v-alert>
+
+        <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+          icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <v-card-title class="text-h6 font-weight-medium">Aucune équipe assignée</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Vous n'avez pas d'équipe assignée. Vous ne pourrez pas effectuer de remplacements ou de permutations.
+                </div>
+                <div>
+                  Pour assigner une équipe, veuillez vous rendre sur la page profil
+                </div>
+              </v-card-text>
+            </div>
+            <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+          </div>
+        </v-alert>
+        <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal"
+          rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;"
+          @click="router.push('/contact-admin')">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <v-card-title class="text-h6 font-weight-medium">Equipe inactive</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Votre équipe est inactive.
+                </div>
+                <div>
+                  Vous ne pouvez pas effectuer de remplacements ou de permutations car votre équipé n'a pas encore de
+                  début de cycle défini, veuillez contacter un administrateur pour activer un tour de service.
+                </div>
+              </v-card-text>
+            </div>
+            <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+          </div>
+        </v-alert>
+        <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+          icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <v-card-title class="text-h6 font-weight-medium">Conflit de demandes</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Certaines de vos demandes semble présenter des erreurs. Cela peut-être dû à un changement d'équipe ou
+                  de tour de service. Veuillez les résoudre avant de poster une nouvelle demande.
+                </div>
+                <div>
+                  Pour résoudre les conflits, veuillez vous rendre sur la page de gestion des demandes.
+                </div>
+              </v-card-text>
+            </div>
+            <div class="font-weight-medium">
+              <!-- Résoudre -->
+              <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+            </div>
+
+          </div>
         </v-alert>
 
 
-        <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4  " icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+        <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4  "
+          icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
-          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Aucun tour de service n'est actuellement actif.
+              <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Aucun tour de service n'est actuellement actif.
+                </div>
+                <div>
+                  Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations.
+                  Veuillez contacter un administrateur pour activer un tour de service.
+                </div>
+              </v-card-text>
             </div>
-            <div>
-              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez contacter un administrateur pour activer un tour de service.
-            </div>
-          </v-card-text>
-        </div>
-        
- 
-        </div>
-        </v-alert> 
-        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 " icon="mdi-alert-circle-outline" style="cursor: pointer;" >
+
+
+          </div>
+        </v-alert>
+        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 "
+          icon="mdi-alert-circle-outline" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
-          <v-card-title class="text-h6 font-weight-medium">Envoi de mails désactivé</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              L'envoi de mail est désactivé pour le moment afin de procéder à des tests.
+              <v-card-title class="text-h6 font-weight-medium">Envoi de mails désactivé</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  L'envoi de mail est désactivé pour le moment afin de procéder à des tests.
+                </div>
+                <div>
+                  Nous vous remercions de votre compréhension.
+                </div>
+              </v-card-text>
             </div>
-            <div>
-              Nous vous remercions de votre compréhension.
-            </div>
-          </v-card-text>
-        </div>
-          <!-- <div class="font-weight-medium"> -->
+            <!-- <div class="font-weight-medium"> -->
             <!-- Résoudre -->
             <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div> -->
- 
-        </div>
+
+          </div>
         </v-alert>
 
-        <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-circle-outline" style="cursor: pointer;" >
+        <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-4"
+          icon="mdi-alert-circle-outline" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
-          <v-card-title class="text-h6 font-weight-medium">Version alpha</v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Vous êtes sur une alpha du site.
+              <v-card-title class="text-h6 font-weight-medium">Version alpha</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Vous êtes sur une alpha du site.
+                </div>
+                <div>
+                  Certaines fonctionnalités ne sont pas encore disponibles car nécissitant davantage de tests. Veuillez
+                  nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
+                </div>
+              </v-card-text>
             </div>
-            <div>
-              Certaines fonctionnalités ne sont pas encore disponibles car nécissitant davantage de tests. Veuillez nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
-            </div>
-          </v-card-text>
-        </div>
-          <!-- <div class="font-weight-medium"> -->
+            <!-- <div class="font-weight-medium"> -->
             <!-- Résoudre -->
             <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div> -->
- 
-        </div>
+
+          </div>
         </v-alert>
       </v-col>
     </v-row>
@@ -243,48 +253,52 @@
         </v-card>
 
         <!-- Carte des prochaines substitutions -->
-        <v-card rounded="xl" class="mb-4 shadow-alt pa-6" bg-color="remplacement"  z-index="-01000">
+        <v-card rounded="xl" class="mb-4 shadow-alt pa-6" bg-color="remplacement" z-index="-01000">
           <div class="d-flex align-start flex-column justify-space-between mb-4">
-          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Je remplace</v-card-title>
-          <span class="text-subtitle-2 text-medium-emphasis">
-            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
-            Les remplacements et permutations que je dois faire sont affichés ici.
-          </span>
+            <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Je remplace</v-card-title>
+            <span class="text-subtitle-2 text-medium-emphasis">
+              <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
+              Les remplacements et permutations que je dois faire sont affichés ici.
+            </span>
           </div>
           <v-card-text class="pa-0 ma-0 ">
-              <div v-if="nextSubstitutions?.length > 0" class="d-flex flex-column ga-2">
-                <OwnDemandCard  :isPoster="false" v-for="nextSubstitution in nextSubstitutions" :key="nextSubstitution.id" :demand="nextSubstitution" :small="xs"/>
-              </div>
-              <div v-else class="text-onRemplacement">
-                Aucun remplacement ou permutation à venir
-              </div>
+            <div v-if="nextSubstitutions?.length > 0" class="d-flex flex-column ga-2">
+              <OwnDemandCard :isPoster="false" v-for="nextSubstitution in nextSubstitutions" :key="nextSubstitution.id"
+                :demand="nextSubstitution" :small="xs" />
+            </div>
+            <div v-else class="text-onRemplacement">
+              Aucun remplacement ou permutation à venir
+            </div>
           </v-card-text>
         </v-card>
 
         <!-- Carte des demandes en attente -->
-        <v-card rounded="xl" v-if="pendingDemands.length > 0 || acceptedAsPoster.length > 0" class="mb-4 shadow-alt pa-6" color="surfaceContainer" z-index="-01000">
+        <v-card rounded="xl" v-if="pendingDemands.length > 0 || acceptedAsPoster.length > 0"
+          class="mb-4 shadow-alt pa-6" color="surfaceContainer" z-index="-01000">
           <div class="d-flex align-start flex-column justify-space-between mb-4">
-          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Mes demandes</v-card-title>
-          <span class="text-subtitle-2 text-medium-emphasis">
-            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
-            Mes demandes en attente et acceptées sont affichées ici.
-          </span>
+            <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Mes demandes</v-card-title>
+            <span class="text-subtitle-2 text-medium-emphasis">
+              <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
+              Mes demandes en attente et acceptées sont affichées ici.
+            </span>
           </div>
           <v-card-text class="pa-0 ga-2 d-flex flex-column">
-            <div v-if="pendingDemands.length > 0" class="d-flex flex-column"> 
-            <v-card-title class="text-body-1 font-weight-medium mb-2 pa-0">En attente</v-card-title>
-            <div class="d-flex flex-column ga-2">
-              <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" :isPoster="true"  :small="xs"/>
+            <div v-if="pendingDemands.length > 0" class="d-flex flex-column">
+              <v-card-title class="text-body-1 font-weight-medium mb-2 pa-0">En attente</v-card-title>
+              <div class="d-flex flex-column ga-2">
+                <OwnDemandCard v-for="demand in pendingDemands" :key="demand.id" :demand="demand" :isPoster="true"
+                  :small="xs" />
+              </div>
+
             </div>
-     
-          </div>
             <div v-if="acceptedAsPoster.length > 0" class="d-flex flex-column">
               <v-card-title class="text-body-1 font-weight-medium mb-2 pa-0">Acceptées</v-card-title>
               <div class="d-flex flex-column ga-2">
-                <OwnDemandCard v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" :isPoster="true" :small="smAndDown"/>
+                <OwnDemandCard v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" :isPoster="true"
+                  :small="smAndDown" />
               </div>
             </div>
-           
+
           </v-card-text>
         </v-card>
       </v-col>
@@ -324,6 +338,29 @@
           </div>
         </v-card>
 
+        <div class="d-flex mb-8 " style=" position: relative; overflow-x: hidden;" :class="smAndDown ? 'mx-4' : ''">
+          <v-card width="100%" rounded="xl" elevation="0" class="pa-4" 
+            @click="router.push('/center/'+authStore.centerId+'/teams')"
+            :color="smAndDown ? 'onBackground' : 'onBackground'" style="margin-top: 24px !important;">
+            <div class="d-flex  flex-column" style="width: 100%; height: 100%">
+              <v-card-title class="text-h6 font-weight-medium">Mon centre</v-card-title>
+              <v-card-text>
+                <span class="font-weight-bold"
+                :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'"
+                >{{ getCenterName }}</span>
+
+              </v-card-text>
+            </div>
+
+
+          </v-card>
+          <img :src="`${getCenterLogo}`" alt="logo" class="mt-4"
+            v-if="getCenterName?.includes('CRNA Nord')"
+            :class="md ? 'logo-md' : xs ? 'logo-xs' : ''"
+            style="position: absolute; bottom: 15px; right: -40px; width: 300px; cursor: pointer;"    
+            @click="router.push('/center/'+authStore.centerId+'/teams')"
+            />
+        </div>
 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16' : ''"
           :color="smAndDown ? 'onBackground' : 'surfaceContainer'">
@@ -338,14 +375,12 @@
 
           <!-- Section Calendrier -->
 
-          <v-card ref="calendarCard" rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow  calendar-card" :color="xs ? 'onBackground' : 'surfaceContainer'"
-          :class="{'pa-0 py-2 ml-n4 mr-n4' : xs, 'pa-0' : !xs}"
-          
-          >
+          <v-card ref="calendarCard" rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow  calendar-card"
+            :color="xs ? 'onBackground' : 'surfaceContainer'" :class="{ 'pa-0 py-2 ml-n4 mr-n4': xs, 'pa-0': !xs }">
             <v-card-title class="text-h6 font-weight-medium">Calendrier</v-card-title>
             <v-card-text>
-              <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected" :isToday="isToday" 
-                :rotationsMap="rotationsMap" @select-day="selectedDate = $event"
+              <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected"
+                :isToday="isToday" :rotationsMap="rotationsMap" @select-day="selectedDate = $event"
                 @swipe-left="currentMonth = (currentMonth + 1) % 12"
                 @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12" />
             </v-card-text>
@@ -396,12 +431,12 @@
       </v-col>
 
     </v-row>
-    <v-row :class="smAndDown ? 'my-16' : ''">
-      
-        
-        <v-col cols="12" md="12" class="pa-2" >
-          <div class="d-flex block " >
-        <v-card rounded="xl" elevation="0" class="pa-6 flex-grow-1">
+    <!-- <v-row :class="smAndDown ? 'my-16' : ''">
+
+
+      <v-col cols="12" md="12" class="pa-2">
+        <div class="d-flex  ">
+          <v-card rounded="xl" elevation="0" class="pa-6 flex-grow-1" color="transparent">
             <v-card-title class="text-h6 font-weight-medium pa-0">Soutenez le projet</v-card-title>
             <v-icon icon="mdi-coffee" size="16" color="onBackground"
               style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.050;" />
@@ -410,28 +445,21 @@
                 <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
                   <v-icon icon="mdi-coffee" size="32" color="remplacement"></v-icon>
                 </v-avatar>
-                
+
                 <div class="text-medium-emphasis text-center mb-4">
-                  Si vous appréciez mon travail, vous pouvez m'offrir un café pour me soutenir
+                  Si vous appréciez mon travail, vous pouvez offrir un café pour me soutenir
                 </div>
-                <v-btn
-                  color="remplacement"
-                  variant="flat"
-                  rounded="lg"
-                  prepend-icon="mdi-coffee"
-                  style="  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-      rgba(159, 159, 248, 0.22));"
-                  target="_blank"
-                  class="px-6"
-                >
+                <div class="d-flex justify-center block">
+                <v-btn color="background" variant="flat" rounded="lg" prepend-icon="mdi-coffee"  target="_blank" class="px-6">
                   Offrir un café
                 </v-btn>
+              </div>
               </div>
             </v-card-text>
           </v-card>
         </div>
-        </v-col>
-    </v-row>
+      </v-col>
+    </v-row> -->
     <!-- Statistiques -->
     <!-- <v-row class="mt-4">
       <v-col cols="12" md="4">
@@ -473,22 +501,22 @@
 
 }
 
-.highlight-shadow{  
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148) ;
+.highlight-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148);
 }
 
-.new-demand-button.highlight-shadow{
+.new-demand-button.highlight-shadow {
   backface-visibility: hidden;
   transform: translateZ(0);
 
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.026), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 4px rgba(0, 0, 0, 0.018) ;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.026), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 4px rgba(0, 0, 0, 0.018);
 }
 
-.new-demand-button.highlight-shadow:hover{
+.new-demand-button.highlight-shadow:hover {
   transform: scale(1.05) translateZ(0);
 
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148) ;
-  
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148);
+
   transition: transform 0.2s ease-in-out;
 }
 
@@ -507,7 +535,7 @@
 
 .calendar-card.not-visible {
   opacity: 0.01;
-  transition: all 0.3s ease-in-out ;
+  transition: all 0.3s ease-in-out;
   transform: translateY(20px) scale(0.90);
 }
 
@@ -519,7 +547,7 @@
 
 .team-card.not-visible {
   opacity: 0.01;
-  transition: all 0.3s ease-in-out ;
+  transition: all 0.3s ease-in-out;
   transform: translateY(20px) scale(0.90);
 }
 
@@ -588,6 +616,16 @@
 .block:before {
   filter: blur(3px);
 }
+
+img.logo-md {
+  transform-origin: bottom right;
+   transform: scale(0.7);
+}
+
+img.logo-xs {
+  transform-origin: bottom right;
+   transform: scale(0.8) translateX(20px);
+}
 </style>
 
 
@@ -611,6 +649,8 @@ import TransferDialog from '@/components/Profile/TransferDialog.vue';
 import { useRouter } from 'vue-router';
 import { useShiftStore } from "@/stores/shiftStore.js";
 import { toUTCNormalized } from "@/utils/toUTCNormalized";
+import { useCenterStore } from "@/stores/centerStore.js";
+import CRNALogo from "@/assets/CRNA_croped.png";
 
 const router = useRouter();
 
@@ -620,9 +660,10 @@ const substitutionStore = useSubstitutionStore()
 const snackbarStore = useSnackbarStore()
 const rotationStore = useRotationStore()
 const userName = authStore.name
-const { smAndDown, xs } = useDisplay();
+const { smAndDown, xs, md } = useDisplay();
 const showAnnouncement = ref(true);
 const shiftStore = useShiftStore();
+const centerStore = useCenterStore();
 
 const shiftsWithSubstitutions = computed(() => {
   return shiftStore.shiftsWithSubstitutions;
@@ -637,7 +678,7 @@ const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const vacationsOfUser = computed(() => {
   const map = new Map();
   const shifts = shiftsWithSubstitutions.value;
-  if (shifts && shifts.length > 0) { 
+  if (shifts && shifts.length > 0) {
     shifts.forEach(({ date, shift, teamObject }) => {
       map.set(date, { shift, teamObject });
     });
@@ -645,6 +686,14 @@ const vacationsOfUser = computed(() => {
   return map;
 });
 const rotationsMap = ref(new Map());
+
+const getCenterName = computed(() => {
+  return centerStore.centers.find(center => center._id === authStore.centerId)?.name;
+});
+
+const getCenterLogo = computed(() => {
+  return CRNALogo;
+});
 
 
 // Utilisation du composable useCalendar
@@ -675,7 +724,7 @@ const getVacation = computed(() => {
 
   // Vérifier d'abord la vacation d'aujourd'hui
   const todayVacation = vacationsOfUser.value.get(todayISO);
-  
+
   console.log(todayVacation)
   if (todayVacation && todayVacation.shift) {
     return todayVacation;
@@ -701,7 +750,7 @@ const getTomorrowVacation = computed(() => {
 
 const activeRotation = computed(() => {
   return rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
- 
+
 });
 
 const vacationName = computed(() => (vacation) => {
@@ -804,7 +853,7 @@ onMounted(() => {
     threshold: 0.1
   });
 
-  
+
   if (calendarCard.value) {
     observer.observe(calendarCard.value.$el);
   }

@@ -27,8 +27,9 @@
 import { ref, watch, computed } from 'vue';
 import { useCenterStore } from '@/stores/centerStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-
+import { useUserStore } from '@/stores/userStore';
 const centerStore = useCenterStore();
+const userStore = useUserStore();
 const snackbarStore = useSnackbarStore();
 
 const props = defineProps({
@@ -36,8 +37,8 @@ const props = defineProps({
     type: Boolean,
     required: true
   },
-  user: {
-    type: Object,
+  userId: {
+    type: String,
     default: null
   }
 });
@@ -47,20 +48,21 @@ const emit = defineEmits(['update:dialogVisible', 'centerAssigned']);
 const selectedCenter = ref(null);
 
 const centers = computed(() => centerStore.centers);
+const user = computed(() => userStore.users.find(user => user._id === props.userId) || null);
 
 // Réinitialiser la sélection quand l'utilisateur change
-watch(() => props.user, (newUser) => {
-  if (newUser) {
-    selectedCenter.value = newUser.centerId;
+watch(() => props.userId, (newUserId) => {
+  if (newUserId) {
+    selectedCenter.value = user.value?.centerId;
   }
 }, { immediate: true });
 
 const handleAssignCenter = async () => {
-  if (!selectedCenter.value || !props.user) return;
+  if (!selectedCenter.value || !user.value) return;
 
   try {
     emit('centerAssigned', {
-      userId: props.user._id,
+      userId: user.value._id,
       centerId: selectedCenter.value
     });
     emit('update:dialogVisible', false);

@@ -21,6 +21,15 @@
                 <span class="text-body-2 text-medium-emphasis pl-0">
                   Accéder à toutes vos demandes de remplacements, permutations et bien d'autres nouvelles fonctionnalités !
                 </span>
+                <a
+                    class="text-caption d-flex align-center"
+                    style="color: rgb(var(--v-theme-pendingDemand)); text-decoration: none; cursor: pointer"
+                    @click="router.push('/account-recovery')"
+                  >
+                    
+                    J'ai déjà un compte et je souhaite le récupérer ?
+                    
+                  </a>
               </div>
               <div v-else-if="step === 6">
                 <v-card-title class=" pl-0 text-h4">Collecte des données</v-card-title>
@@ -90,6 +99,20 @@
                     @update:modelValue="onEmailChange"
                   />
                   <span class="text-caption text-grey-darken-1">Veuillez entrer votre adresse e-mail</span>
+                  <v-slide-y-transition>
+                  <v-alert v-if="showLegacyAlert" color="error" rounded="lg"  variant="tonal"  class="mt-2">
+                    <p class="text-caption" >Cette adresse email correspond à un compte <b>REMPLACER.OVH</b></p>
+                    <a
+                    class="text-caption d-flex align-center"
+                    style="color: rgb(var(--v-theme-onBackground)); text-decoration: none; cursor: pointer"
+                    @click="router.push('/account-recovery')"
+                  >
+                    
+                    Récupérer mon compte <v-icon>mdi-chevron-right</v-icon>
+                    
+                  </a>
+                  </v-alert>
+                  </v-slide-y-transition>
                 </v-window-item>
 
                 <!-- Étape 3: Mot de passe -->
@@ -433,6 +456,7 @@ const loadingCenters = ref(false);
 const loadingTeams = ref(false);
 const isSubmitting = ref(false);
 const checkingEmail = ref(false);
+const showLegacyAlert = ref(false);
 
 // Side panel state
 const sidePanelOpen = ref(false);
@@ -531,7 +555,12 @@ const navigateToLogin = () => {
 
 // Validation rules
 const rules = {
-  email: (value) => (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/).test(value) || "Adresse email invalide",
+  email: (value) => {
+    if (!value) return "Adresse email requise";
+    // Regex plus simple et performante pour valider les emails
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
+    return emailRegex.test(value) || "Adresse email invalide";
+  },
   min: (min) => (value) => value?.length >= min || `Doit contenir au moins ${min} caractères`,
   matchPassword: (value) => value === user.value.password || "Les mots de passe ne correspondent pas",
   required: (value) => !!value || "Champ requis"
@@ -549,21 +578,25 @@ const validateStep = async (stepNum) => {
       break;
 
     case 2: // Email
+      showLegacyAlert.value = false;
       // Check for email validity
       if (rules.email(user.value.email) !== true) {
         isValid = false;
         stepErrors.value[2] = "Adresse e-mail invalide";
         break;
       }
-
+     
       // Check if email already exists
       checkingEmail.value = true;
       try {
-        const isAvailable = await accountCreationService.checkEmailAvailability(user.value.email);
-        if (!isAvailable.available) {
+        const data = await accountCreationService.checkEmailAvailability(user.value.email);
+        if (!data.available || data.legacy) {
           emailExists.value = true;
           isValid = false;
           stepErrors.value[2] = "Adresse e-mail déjà utilisée";
+        }
+        if (data.legacy) {
+          showLegacyAlert.value = true;
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de l'email :", error);

@@ -49,13 +49,13 @@ export const fetchLegacyUser = async (req, res) => {
 
 export const initiateAccountRecovery = async (req, res, next) => { 
     try {
-        console.log(req.body)
-        const { login, center, email, password, firstName, lastName, equipe, points } = req.body;
-        console.log("in initiateAccountRecovery", req.body)
+       
+        const { login, center, oldEmail, email, password, firstName, lastName, equipe, points } = req.body;
+      
         const user = await LegacyUser.findOne({
             $or: [
                 { login: login },
-                { email: email }
+                { email: oldEmail }
             ],
         });
         if (!user) {

@@ -131,6 +131,7 @@ async function handleRecovery() {
         firstName: oldAccount.value.firstName.charAt(0).toUpperCase() + oldAccount.value.firstName.slice(1),
         lastName: oldAccount.value.lastName.toUpperCase(),
         center: oldAccount.value.center,
+        oldEmail: oldAccount.value.email,
         email: useOldEmail.value ? oldAccount.value.email : newEmail.value,
         password: newPassword.value,
         points: oldAccount.value.points,

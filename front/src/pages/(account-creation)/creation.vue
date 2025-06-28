@@ -144,17 +144,7 @@
 
                 <!-- Étape 4: Informations personnelles -->
                 <v-window-item :value="4">
-                  <v-text-field
-                    label="Nom"
-                    flat
-                    v-model="user.lastName"
-                    required
-                    variant="solo-filled"
-                    rounded="xl"
-                    :rules="[rules.required]"
 
-                    @update:modelValue="validateStep(4)"
-                  />
                   <v-text-field
                     label="Prénom"
                     flat
@@ -166,6 +156,18 @@
 
                     @update:modelValue="validateStep(4)"
                   />
+                  <v-text-field
+                    label="Nom"
+                    flat
+                    v-model="user.lastName"
+                    required
+                    variant="solo-filled"
+                    rounded="xl"
+                    :rules="[rules.required]"
+
+                    @update:modelValue="validateStep(4)"
+                  />
+               
                 </v-window-item>
 
                 <!-- Étape 5: Equipe -->

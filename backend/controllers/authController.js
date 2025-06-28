@@ -6,8 +6,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-
-
 const authController = {
     requestPasswordReset: async (req, res) => {
         try {

@@ -56,9 +56,7 @@ router.beforeEach(async (to, from, next) => {
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
     return next(); // Let the request through without redirection
   }
-  const authStore = useAuthStore();
-  authStore.validateAccessToken(); // Important si asynchrone
-
+ 
   // Gestion des transitions selon layout
   if (to.meta.layout === 'parameter') {
     to.meta.transition = transitionConfigs.parameter.forward;
@@ -79,6 +77,16 @@ router.beforeEach(async (to, from, next) => {
   applyTransition(transitionConfigs.auth);
   applyTransition(transitionConfigs.teams);
 
+
+  const authStore = useAuthStore();
+  try {
+    console.log(to.name, from.name);
+    await authStore.validateAccessToken(); 
+    
+  } catch (error) {
+    console.error("Aucun token : ", error);
+  }
+  
   if (authStore.isLoggedIn) {
     if (to.name !== '/pending-approval' && authStore.status === 'pending') {
       return next({ name: '/pending-approval' });

@@ -21,7 +21,6 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = ref(false);
   const adminType = ref(''); // 'localAdmin' ou 'masterAdmin'
   const centerId = ref('');
-  const error = ref(null);
   const preferences = ref({
     theme: false
   });
@@ -61,11 +60,12 @@ export const useAuthStore = defineStore('auth', () => {
       if (userData?.accessToken) {
         setUser(userData);
         validateAccessToken();
+
       }
     } catch (err) {
       console.error('Erreur lors du chargement des données:', err);
       logOut();
-    }
+    } 
   };
 
   /**
@@ -73,7 +73,19 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const saveToLocalStorage = (data) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      const dataToSave = {
+        name: data.name,
+        email: data.email,
+        accessToken: data.accessToken,
+        isAdmin: data.isAdmin,
+        adminType: data.adminType,
+        userId: data.userId,
+        centerId: data.centerId,
+        preferences: data.preferences,
+        avatar: data.avatar,
+        status: data.status
+      } 
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (err) {
       console.error('Erreur lors de la sauvegarde des données:', err);
       throw new Error('Impossible de sauvegarder les données d\'authentification');
@@ -89,27 +101,15 @@ export const useAuthStore = defineStore('auth', () => {
     userId.value = data.userId;
     email.value = data.email;
     accessToken.value = data.accessToken;
-    isLoggedIn.value = true;
     isAdmin.value = data.isAdmin || false;
     adminType.value = data.adminType || '';
     centerId.value = data.centerId || '';
     preferences.value = data.preferences || { theme: false };
     avatar.value = data.avatar || '';
     status.value = data.status || 'pending'; // Ajout du statut
-    error.value = null;
+   
 
-    saveToLocalStorage({
-      name: name.value,
-      email: email.value,
-      accessToken: accessToken.value,
-      isAdmin: isAdmin.value,
-      adminType: adminType.value,
-      userId: userId.value,
-      centerId: centerId.value,
-      preferences: preferences.value,
-      avatar: avatar.value,
-      status: status.value // Ajout du statut
-    });
+    saveToLocalStorage(data);
   };
 
   /**
@@ -120,15 +120,15 @@ export const useAuthStore = defineStore('auth', () => {
     email.value = '';
     userId.value = null;
     accessToken.value = '';
-    isLoggedIn.value = false;
     isAdmin.value = false;
     adminType.value = '';
     centerId.value = '';
     preferences.value = { theme: false };
     avatar.value = '';
     status.value = ''; // Réinitialisation du statut
-    error.value = null;
+    isLoggedIn.value = false;
     localStorage.removeItem(STORAGE_KEY);
+  
   };
 
   /**
@@ -150,7 +150,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (isTokenExpiringSoon()) {
         await refreshToken();
       }
-
+      isLoggedIn.value = true;
       return true;
     } catch (err) {
       console.error('Échec de la validation du token:', err.message);
@@ -165,24 +165,14 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const logIn = async (credentials) => {
     try {
-      error.value = null;
       const result = await authService.login(credentials);
-      setUser({
-        name: result.name,
-        email: credentials.email,
-        isAdmin: result.isAdmin,
-        adminType: result.adminType,
-        status: result.status,
-        avatar: result.avatar,
-        userId: result.userId,
-        accessToken: result.accessToken,
-        centerId: result.centerId,
-        preferences: result.preferences || { theme: false }
-      });
+      setUser(result);
+      isLoggedIn.value = true;
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la connexion';
+      console.error('Erreur lors de la connexion:', err.message);
       throw err;
-    }
+    } 
+  
   };
 
   /**
@@ -190,24 +180,11 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const refreshToken = async () => {
     try {
-      error.value = null;
       const data = await authService.refreshToken(accessToken.value);
       accessToken.value = data.accessToken;
-      saveToLocalStorage({
-        name: name.value,
-        email: email.value,
-        accessToken: accessToken.value,
-        isAdmin: isAdmin.value,
-        adminType: adminType.value,
-        status: status.value,
-        userId: userId.value,
-        centerId: centerId.value,
-        preferences: preferences.value,
-        avatar: avatar.value
-      });
+      saveToLocalStorage(data);
     } catch (err) {
       console.error('Échec du rafraîchissement du token:', err.message);
-      error.value = err.message || 'Erreur lors du rafraîchissement du token';
       logOut();
       throw err;
     }
@@ -221,25 +198,13 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       if (!isLoggedIn.value) return;
       
-      // Mise à jour locale
       preferences.value = { ...preferences.value, ...preferences };
       
-      // Mise à jour sur le backend
-      await userService.updateUserPreferences(userId.value, preferences);
-      
-      // Sauvegarde dans le localStorage
-      saveToLocalStorage({
-        name: name.value,
-        email: email.value,
-        accessToken: accessToken.value,
-        isAdmin: isAdmin.value,
-        adminType: adminType.value,
-        status: status.value,
-        userId: userId.value,
-        centerId: centerId.value,
-        preferences: preferences.value,
-        avatar: avatar.value
-      });
+      const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      existingData.preferences = preferences.value;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+
+      isLoggedIn.value = true;
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
       throw error;
@@ -250,20 +215,14 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const data = await userService.updateAvatar(userId.value, formData);
       avatar.value = data.avatar;
-      saveToLocalStorage({
-        name: name.value,
-        email: email.value,
-        accessToken: accessToken.value,
-        isAdmin: isAdmin.value,
-        adminType: adminType.value,
-        status: status.value,
-        userId: userId.value,
-        centerId: centerId.value,
-        preferences: preferences.value,
-        avatar: avatar.value
-      });
+
+      const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      existingData.avatar = avatar.value;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+
+      isLoggedIn.value = true;
     } catch (err) {
-      error.value = err.message;
+      console.error('Erreur lors de la mise à jour de l\'avatar:', err.message);
       throw err;
     }
   };
@@ -277,7 +236,7 @@ export const useAuthStore = defineStore('auth', () => {
     adminType,
     userId,
     centerId,
-    error,
+    
     preferences,
     avatar,
     status, // Ajout du statut dans le retour

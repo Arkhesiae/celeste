@@ -29,7 +29,11 @@
             :isSelected="isSelected" :isWorkDay="isWorkDay" :isToday="isToday" :vacationsOfUser="vacationsOfUser"
            :rotationsMap="rotationsMap" @select-day="selectDay" />
 
-
+<!-- 
+           <CalendarMobileSwipe v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
+          :isWorkDay="isWorkDay" 
+          :isToday="isToday" :rotationsMap="rotationsMap"
+          :vacationsOfUser="vacationsOfUser" @select-day="selectDay"  /> -->
         <CalendarMobile v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
           :isWorkDay="isWorkDay" 
           :isToday="isToday" :rotationsMap="rotationsMap"

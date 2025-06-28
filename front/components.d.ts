@@ -21,6 +21,8 @@ declare module 'vue' {
     CalendarDesktop: typeof import('./src/components/Calendar/CalendarDesktop.vue')['default']
     CalendarHeader: typeof import('./src/components/Calendar/CalendarHeader.vue')['default']
     CalendarMobile: typeof import('./src/components/Calendar/CalendarMobile.vue')['default']
+    CalendarMobileSwipe: typeof import('./src/components/Calendar/CalendarMobileSwipe.vue')['default']
+    CalendarMonth: typeof import('./src/components/Calendar/CalendarMonth.vue')['default']
     CalendarPanel: typeof import('./src/components/Calendar/Panels/common/CalendarPanel.vue')['default']
     CalendarSidePanel: typeof import('./src/components/Calendar/Panels/CalendarSidePanel.vue')['default']
     CallendarBottomSheet: typeof import('./src/components/Calendar/CallendarBottomSheet.vue')['default']

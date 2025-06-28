@@ -10,6 +10,7 @@ export const useInitializationStore = defineStore('initialization', () => {
     rotations: false,
     personal: false
   });
+
   const currentlyLoading = ref('');
 
   function setLoading(value) {
@@ -24,6 +25,7 @@ export const useInitializationStore = defineStore('initialization', () => {
     isLoading,
     initializationState,
     setLoading,
-    updateInitializationState
+    updateInitializationState,
+    currentlyLoading
   };
 }); 

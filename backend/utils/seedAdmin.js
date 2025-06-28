@@ -5,11 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function createAdmin() {
- 
   const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });
-  
-  console.log(process.env.ADMIN_PASSWORD);
-  console.log(process.env.ADMIN_EMAIL);
   const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD, 10);
 
   const adminData = {

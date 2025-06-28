@@ -252,6 +252,7 @@
           </v-card-text>
         </v-card>
 
+      
         <!-- Carte des prochaines substitutions -->
         <v-card rounded="xl" class="mb-4 shadow-alt pa-6" bg-color="remplacement" z-index="-01000">
           <div class="d-flex align-start flex-column justify-space-between mb-4">
@@ -307,6 +308,34 @@
 
       <!-- Section Points et Équipe -->
       <v-col cols="12" md="5" xl="4" offset-xl="0" :class="smAndDown ? 'pa-0  mt-16' : 'pa-2'">
+        <v-card rounded="xl" elevation="0" class="mb-4 pa-6 " :class="smAndDown ? 'mx-4' : 'mx-0'"  color="surfaceContainer">
+          <v-card-title class="text-h6 font-weight-medium pa-0 ma-0">Recommandations locales</v-card-title>
+          <span class="text-subtitle-2  text-medium-emphasis">
+            <v-icon icon="mdi-information-outline " color="remplacement" size="16" class="mr-2" />
+            Ces recommandations ne prennent pas en compte les différences d'horaires et sont fournies à titre indicatif.
+          </span>
+          <v-card-text class="pa-0 ma-0 mt-4">
+            <div class="rounded-xl" style="overflow-x: auto;">
+            <v-table>
+             
+              <tbody>
+                <tr>
+                  <th></th>
+                  <td class="text-center font-weight-bold" v-for="row in vacationTable" :key="row.vac">{{ row.vac }}</td>
+                </tr>
+                <tr>
+                  <th class=" font-weight-medium">Semaine</th>
+                  <td class="text-center font-weight-medium opacity-50" v-for="row in vacationTable" :key="row.vac">{{ row.semaine }}</td>
+                </tr>
+                <tr>
+                  <th class=" font-weight-medium">WE/JF</th>
+                  <td class="text-center font-weight-medium opacity-50" v-for="row in vacationTable" :key="row.vac">{{ row.wejf }}</td>
+                </tr>
+              </tbody>
+            </v-table>
+            </div>
+          </v-card-text>
+        </v-card>
 
         <!-- Carte du tour de service actif -->
         <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-4' : 'mx-0'"
@@ -339,27 +368,24 @@
         </v-card>
 
         <div class="d-flex mb-8 " style=" position: relative; overflow-x: hidden;" :class="smAndDown ? 'mx-4' : ''">
-          <v-card width="100%" rounded="xl" elevation="0" class="pa-4" 
-            @click="router.push('/center/'+authStore.centerId+'/teams')"
+          <v-card width="100%" rounded="xl" elevation="0" class="pa-4"
+            @click="router.push('/center/' + authStore.centerId + '/teams')"
             :color="smAndDown ? 'onBackground' : 'onBackground'" style="margin-top: 24px !important;">
             <div class="d-flex  flex-column" style="width: 100%; height: 100%">
               <v-card-title class="text-h6 font-weight-medium">Mon centre</v-card-title>
               <v-card-text>
-                <span class="font-weight-bold"
-                :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'"
-                >{{ getCenterName }}</span>
+                <span class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">{{ getCenterName
+                  }}</span>
 
               </v-card-text>
             </div>
 
 
           </v-card>
-          <img :src="`${getCenterLogo}`" alt="logo" class="mt-4"
-            v-if="getCenterName?.includes('CRNA Nord')"
+          <img :src="`${getCenterLogo}`" alt="logo" class="mt-4" v-if="getCenterName?.includes('CRNA Nord')"
             :class="md ? 'logo-md' : xs ? 'logo-xs' : ''"
-            style="position: absolute; bottom: 15px; right: -40px; width: 300px; cursor: pointer;"    
-            @click="router.push('/center/'+authStore.centerId+'/teams')"
-            />
+            style="position: absolute; bottom: 15px; right: -40px; width: 300px; cursor: pointer;"
+            @click="router.push('/center/' + authStore.centerId + '/teams')" />
         </div>
 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16' : ''"
@@ -619,12 +645,12 @@
 
 img.logo-md {
   transform-origin: bottom right;
-   transform: scale(0.7);
+  transform: scale(0.7);
 }
 
 img.logo-xs {
   transform-origin: bottom right;
-   transform: scale(0.8) translateX(20px);
+  transform: scale(0.8) translateX(20px);
 }
 </style>
 
@@ -695,6 +721,15 @@ const getCenterLogo = computed(() => {
   return CRNALogo;
 });
 
+const vacationTable = [
+  { vac: 'M', semaine: 9, wejf: 10 },
+  { vac: 'J2', semaine: 10, wejf: 11 },
+  { vac: 'S2', semaine: 9, wejf: 10 },
+  { vac: 'J1', semaine: 10, wejf: 11 },
+  { vac: 'S1', semaine: 9, wejf: 10 },
+  { vac: 'N', semaine: 10, wejf: 11 },
+  { vac: 'JE', semaine: 0, wejf: 1 }
+];
 
 // Utilisation du composable useCalendar
 const { calendarDays } = useCalendar(currentYear, currentMonth);

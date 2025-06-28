@@ -25,15 +25,15 @@ export function useAppInitialization() {
   const rotationStore = useRotationStore();
   const initializationStore = useInitializationStore();
   const theme = useTheme();
+
+
   const initializeAuth = async () => {
     authStore.loadFromLocalStorage();
-    if (authStore.isLoggedIn) {
-      await userStore.fetchCurrentUser();
-    }
+    console.log(authStore.isLoggedIn);
   };
 
   const initializeTheme = async () => {
-    
+    initializationStore.currentlyLoading = 'theme';
     if (authStore.isLoggedIn) {
       theme.global.name.value = authStore.preferences.theme ? 'darkTheme' : 'lightTheme';
     }
@@ -41,13 +41,11 @@ export function useAppInitialization() {
   };
 
   const initializeCenter = async (onProgress) => {
-    centerStore.fetchCenters();
-    
-    if (!authStore.centerId) return;
-
     initializationStore.currentlyLoading = 'center';
+    centerStore.fetchCenters();
+    if (!authStore.centerId) return;
+  
     await Promise.all([
-     
       userStore.fetchUsersByCenter(authStore.centerId),
       centerStore.fetchAdminsByCenter(),
       centerStore.fetchUsersCountByCenter()
@@ -138,10 +136,8 @@ export function useAppInitialization() {
       
       await initializeAuth();
       await initializeTheme();
-      if (onProgress) onProgress('user');
       await initializeCenter(onProgress);
       if (authStore.isLoggedIn) {
-       
         await initializeTeam(onProgress);
         await initializeShiftsAndSubstitutions(onProgress);
         await initializeRotations(onProgress);

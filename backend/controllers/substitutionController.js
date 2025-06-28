@@ -457,8 +457,10 @@ const checkUserShift = async (req, res) => {
         const date = req.params.date;
 
         const userShift = await computeShiftOfUserWithSubstitutions(new Date(date), userId);
-        const hasShift = userShift[0] && userShift[0].shift.type !== 'rest'
+        const hasShift = userShift[0] && userShift[0].shift && userShift[0].shift.type !== 'rest'
 
+        console.log(userShift);
+        console.log(hasShift);
         res.status(200).json({
             hasShift: hasShift,
             shift: userShift

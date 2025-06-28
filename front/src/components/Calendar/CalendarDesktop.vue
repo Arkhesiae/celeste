@@ -66,7 +66,7 @@
               <div 
                 v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
                 class="indicator-dot other-demand ml-1"
-                style="background: rgba(var(--v-theme-background), 1) !important"
+                style="background: rgba(var(--v-theme-background), 1) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.25) !important"
               ></div>
             </div>
           </div>      

@@ -23,10 +23,17 @@
                    value="permutations"></v-list-item> -->
       <v-list-item @click="router.push({ path: '/exchange/replace' })"
          rounded="xl"
+         class="d-flex align-center"
          :class="isActive('/exchange/replace') ? 'active-item' : 'inactive-item'"
          :prepend-icon="isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'"
          title="Demandes"
-         value="replace"></v-list-item>
+         value="replace"> 
+        <template #append>
+          <v-chip color="background" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2 "  v-if="demandsCount > 0">
+            <span class="font-weight-bold">{{ demandsCount }}</span>
+          </v-chip>
+        </template>
+      </v-list-item>
 
       <v-list-item @click="router.push({ path: '/calendar' })"
                    rounded="xl"
@@ -80,11 +87,17 @@ import { useRouter } from 'vue-router';
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore.js";
 import { computed } from 'vue';
+import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useNotificationStore } from '@/stores/notificationStore';
 
+
+const substitutionStore = useSubstitutionStore();
 const router = useRouter();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
+const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
+
 
 const isActive = (path) => {
   return router.currentRoute.value.path === path;
@@ -100,12 +113,12 @@ defineProps({
 
 <style scoped>
 .active-item {
-  color: rgba(var(--v-theme-onPrimary), 1) !important;
+  color: rgba(var(--v-theme-background), 1) !important;
   font-weight: 900 !important;
   background-color: transparent !important;
 }
 .inactive-item {
-  color: rgba(var(--v-theme-onPrimary), .51) !important;
+  color: rgba(var(--v-theme-background), .51) !important;
   font-weight: 400 !important;
   background-color: transparent !important;
 }

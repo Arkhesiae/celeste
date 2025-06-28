@@ -15,7 +15,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
         const { teams } = user;
         if (!teams || teams.length === 0) {
             console.log('Aucune équipe trouvée pour cet utilisateur');
-            return [];
+           
         }
 
         const dateArray = Array.isArray(dates) ? dates : [dates];
@@ -26,27 +26,39 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     throw new Error(`Date invalide: ${dateStr}`);
                 }
 
-               
+
+                let initialShift = null;
+                let teamObject = null;
+                let team = null;
+                
+                if (!teams || teams.length === 0) {
+                    team = null;
+                }
+                else {
+                    team = await getTeamAtGivenDate(teams, date);
+                }
+
                 // Calculer d'abord le shift initial pour vérification
-                const team = await getTeamAtGivenDate(teams, date);
-                if (!team) {
-                    return {
-                        date: dateStr,
-                        teamObject : null,
-                        shift : null,
-                    };
+                
+                if (team) {
+                    teamObject = await Team.findById(team.teamId);
+                    if (!teamObject) {
+                        throw new Error(`Équipe non trouvée pour l'ID: ${team.teamId}`);
+                    }
+    
+                   
+    
+                    initialShift = await computeShiftOfTeam(date, team.teamId);
+                }
+
+                else {
+                    teamObject = null;
+                    initialShift = null;
                 }
 
               
 
-                const teamObject = await Team.findById(team.teamId);
-                if (!teamObject) {
-                    throw new Error(`Équipe non trouvée pour l'ID: ${team.teamId}`);
-                }
-
                
-
-                const initialShift = await computeShiftOfTeam(date, team.teamId);
                
 
                 // Vérifier les substitutions où l'utilisateur est impliqué

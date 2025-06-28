@@ -9,9 +9,9 @@ import { categorize } from '../utils/categorizeDemand.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 
 
-
+    
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
-const MIN_POINTS_TO_POST_REQUEST = -20;
+const MIN_POINTS_TO_POST_REQUEST = -40;
 const MAX_POINTS_TO_ACCEPT_REQUEST = 2000;
 
 const getCenterDemands = async (req, res) => {

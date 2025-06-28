@@ -703,7 +703,7 @@ const transferPoints = async (req, res) => {
         }
 
         // Pour les transferts immédiats, vérifier le solde
-        if (sender.points - amount < -20) {
+        if (sender.points - amount < -40) {
             return res.status(400).json({ message: 'Solde insuffisant' });
         }
 

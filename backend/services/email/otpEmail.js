@@ -18,8 +18,12 @@ async function sendEmailOtp(toEmail, otp) {
     }
   });
 
+  console.log("process.env.SMTP_USERNAME", process.env.SMTP_USERNAME);
+  console.log("process.env.SMTP_PASSWORD", process.env.SMTP_PASSWORD);
+  console.log("process.env.EMAIL_HOST", process.env.EMAIL_HOST);
+
   const mailOptions = {
-    from: process.env.EMAIL_FROM,
+    from: 'Celeste <otp@celeste-app.fr>',
     to: toEmail,
     subject: 'Votre code OTP - Celeste',
     text: `Bonjour,\n\nVoici votre code OTP : ${otp}\nIl est valable 5 minutes.\n\nCordialement,\nL'équipe Celeste`

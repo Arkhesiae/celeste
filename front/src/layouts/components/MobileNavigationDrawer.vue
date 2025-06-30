@@ -48,7 +48,9 @@
               </span>
               <v-divider v-if="index < menuItemsLogged.length - 1"></v-divider>
             </div>
+            <v-divider v-if="authStore.isAdmin"></v-divider>
             <div v-for="(item, index) in menuItemsLoggedAdmin" v-if="authStore.isAdmin" :key="item.key" class="d-flex flex-column">
+            
               <span class="pt-4 pb-4 cursor-pointer" @click="router.push({ path: item.path })" :title="item.title">
                 {{ item.label }}
               </span>

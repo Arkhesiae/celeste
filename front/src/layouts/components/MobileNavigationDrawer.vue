@@ -148,7 +148,7 @@ const menuItemsLogged = [
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.adminType === 'master' ? '/center/centers' : '/center/' + authStore.centerId + '/teams', title: authStore.adminType === 'master' ? 'Centres' : 'Mon centre' },
-  { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
+  // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
   { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
 ];
 

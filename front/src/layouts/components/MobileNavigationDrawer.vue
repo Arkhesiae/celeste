@@ -48,6 +48,12 @@
               </span>
               <v-divider v-if="index < menuItemsLogged.length - 1"></v-divider>
             </div>
+            <div v-for="(item, index) in menuItemsLoggedAdmin" v-if="authStore.isAdmin" :key="item.key" class="d-flex flex-column">
+              <span class="pt-4 pb-4 cursor-pointer" @click="router.push({ path: item.path })" :title="item.title">
+                {{ item.label }}
+              </span>
+              <v-divider v-if="index < menuItemsLoggedAdmin.length - 1"></v-divider>
+            </div>
           </v-fade-transition>
 
           <v-btn @click="handleLogout" style="height: 48px; border-radius: 16px !important;" color="error"
@@ -149,6 +155,11 @@ const menuItemsLogged = [
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.adminType === 'master' ? '/center/centers' : '/center/' + authStore.centerId + '/teams', title: authStore.adminType === 'master' ? 'Centres' : 'Mon centre' },
   // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
+  // { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
+];
+
+const menuItemsLoggedAdmin = [
+  { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
   { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
 ];
 

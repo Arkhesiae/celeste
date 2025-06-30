@@ -168,6 +168,7 @@ async function handleRecovery() {
         <v-card-title class="pl-0 text-overline font-weight-bold">CéLESTE</v-card-title>
         <v-row style="transition: all 0.3s ease-in-out;">
           <v-col cols="12" md="6">
+        
             <v-scroll-y-transition appear hide-on-leave>
               <div class="d-flex flex-column justify-center align-start mt-8">
                 <span class="pl-0 text-h4" style="font-weight: 500;">Récupérer mon compte</span>
@@ -176,9 +177,12 @@ async function handleRecovery() {
                 </span>
               </div>
             </v-scroll-y-transition>
+            <v-alert  class="mt-4" color="pendingDemand" variant="tonal" rounded="xl" icon="mdi-mail">
+              L'affluence de demandes de récupération de compte est élevée. Le service de mail (externe) semble être saturé et ne délivre pas correctement les emails, nous sommes en train de résoudre le problème.<b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayez dans l'après-midi. </b>
+            </v-alert>
           </v-col>
           <v-col cols="12" md="6" style="transition: all 0.3s ease-in-out;">
-          
+         
             <v-window v-model="step" class="mt-8" style="transition: all 0.3s ease-in-out;">
           <!-- Étape 1 : Identification -->
           <v-window-item :value="1">

@@ -3,7 +3,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { usePointStore } from '@/stores/pointStore';
-import { useMessageStore } from '@/stores/messageStore';
+import { useTicketStore } from '@/stores/ticketStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
@@ -18,7 +18,7 @@ export function useAppInitialization() {
   const centerStore = useCenterStore();
   const teamStore = useTeamStore();
   const pointStore = usePointStore();
-  const messageStore = useMessageStore();
+  const ticketStore = useTicketStore();
   const shiftStore = useShiftStore();
   const notificationStore = useNotificationStore();
   const substitutionStore = useSubstitutionStore();
@@ -111,13 +111,13 @@ export function useAppInitialization() {
     if (onProgress) onProgress('personal');
   };
 
-  const initializeMessages = async (onProgress) => {
+  const initializeTickets = async (onProgress) => {
     if (!authStore.isAdmin) return;
 
-    initializationStore.currentlyLoading = 'messages';
-    await messageStore.fetchMessages();
-    initializationStore.updateInitializationState('messages', true);
-    if (onProgress) onProgress('messages');
+    initializationStore.currentlyLoading = 'tickets';
+    await ticketStore.fetchTickets();
+    initializationStore.updateInitializationState('tickets', true);
+    if (onProgress) onProgress('tickets');
   };
 
   
@@ -142,7 +142,7 @@ export function useAppInitialization() {
         await initializeShiftsAndSubstitutions(onProgress);
         await initializeRotations(onProgress);
         await initializePersonalData(onProgress);
-        await initializeMessages(onProgress);
+        await initializeTickets(onProgress);
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de l\'application:', error);

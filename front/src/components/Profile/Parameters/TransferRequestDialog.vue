@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
+  <v-dialog transition="scroll-x-reverse-transition" v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
     <v-card :rounded="smAndDown ? '' : 'xl'"  class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">Demander une mutation</v-card-title>

@@ -29,7 +29,7 @@
 
 
 
-          <v-card-subtitle class="text-caption d-flex align-center mt-1">
+          <v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
             {{ formatDate(demand?.posterShift?.date) }}
           </v-card-subtitle>
           <div>
@@ -72,7 +72,7 @@
       </v-card-item>
 
 
-
+    
 
 
 
@@ -82,7 +82,7 @@
           <v-chip variant="flat" size="small" rounded="lg" 
             class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
             <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
-            <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
+            <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
 
             </span>
             <span v-else>
@@ -98,7 +98,7 @@
           class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
           <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
-
+   
         <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="small"
           rounded="lg">
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
@@ -114,6 +114,10 @@
           size="small" rounded="lg">
           <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
           <span v-if="!small">Remplacement</span>
+        </v-chip>
+        <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
+            color="background" variant="flat">
+            {{ demand?.seenBy?.length || 0 }}
         </v-chip>
       </div>
 

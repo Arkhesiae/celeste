@@ -135,7 +135,7 @@ watch(
       demand.value.points >= 0 &&
       localDate.value !== '' &&
       ((dialogModeValue.value === 'switch' && acceptedSwitchesWithPoints.value.length > 0) ||
-      (dialogModeValue.value !== 'switch' && demand.value.points > 0));
+      (dialogModeValue.value !== 'switch' && demand.value.points >= 0));
     },
   { immediate: true }
 );

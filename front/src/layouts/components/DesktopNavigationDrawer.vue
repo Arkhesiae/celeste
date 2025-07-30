@@ -48,6 +48,18 @@
                    :prepend-icon="isActive('/rotation') ? 'mdi-file-plus' : 'mdi-file-plus-outline'"
                    title="Tour de service"
                    value="tservice"></v-list-item>
+      <v-list-item @click="router.push({ path: '/patchnotes' })"
+                   rounded="xl"
+                   :class="isActive('/patchnotes') ? 'active-item' : 'inactive-item'"
+                   :prepend-icon="isActive('/patchnotes') ? 'mdi-update' : 'mdi-update'"
+                   title="Patch Notes"
+                   value="patchnotes"></v-list-item>
+      <v-list-item @click="router.push({ path: '/financement' })"
+                   rounded="xl"
+                   :class="isActive('/financement') ? 'active-item' : 'inactive-item'"
+                   :prepend-icon="isActive('/financement') ? 'mdi-currency-eur' : 'mdi-currency-eur'"
+                   title="Financement"
+                   value="financement"></v-list-item>
       <v-divider opacity=".01"></v-divider>
       <v-list-item 
                v-if="authStore.isAdmin"
@@ -134,6 +146,9 @@ defineProps({
 :deep(.v-list-item):hover .v-list-item__prepend{
   transform: scale(1.15);
 
+}
+.user-safe-area {
+  padding-top: env(safe-area-inset-top) !important;
 }
 </style>
 

@@ -120,8 +120,10 @@ const getColor = (date) => {
 const getOpacity = (day) => {
   if (props.isSelected(day.date)) {
     return 0.9;
-  } else if (isWorkDay(day.date) && !inPast(day.date)) {
+  } else if (isWorkDay(day.date) && !inPast(day.date) && (day?.isInMonth)) {
     return 1;
+  } else if (isWorkDay(day.date) && !inPast(day.date) && (!day?.isInMonth)) {
+    return 0.60;
   } else if (!day?.isInMonth) {
     return 0.21;
   } else {

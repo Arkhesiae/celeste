@@ -96,10 +96,10 @@
         <!-- Footer Links Section -->
         <v-list nav class="d-flex justify-space-around align-center pt-8 text-caption" bg-color="background">
           <span @click="router.push({ path: '/contact-admin' })" style="cursor: pointer">Assistance</span>
-          <!-- <v-divider vertical></v-divider> -->
-          <!-- <span @click="" style="cursor: pointer">Nouveautés</span>
           <v-divider vertical></v-divider>
-          <span @click="" style="cursor: pointer">A propos</span> -->
+          <span @click="router.push({ path: '/patchnotes' })" style="cursor: pointer">Patch Notes</span>
+          <v-divider vertical></v-divider>
+          <span @click="router.push({ path: '/financement' })" style="cursor: pointer">Financement</span>
         </v-list>
 
         <!-- Footer Links Section -->
@@ -156,6 +156,8 @@ const menuItemsLogged = [
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.adminType === 'master' ? '/center/centers' : '/center/' + authStore.centerId + '/teams', title: authStore.adminType === 'master' ? 'Centres' : 'Mon centre' },
+  { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
+  { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
   // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
   // { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
 ];

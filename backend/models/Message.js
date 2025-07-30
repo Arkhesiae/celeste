@@ -21,6 +21,11 @@ const messageSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  centerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Center',
+    default: null
+  },
   senderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

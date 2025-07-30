@@ -15,6 +15,8 @@ export const useAuthStore = defineStore('auth', () => {
   // State
   const name = ref('');
   const email = ref('');
+  const phone = ref('');
+  const birthDate = ref('');
   const userId = ref(null);
   const accessToken = ref('');
   const isLoggedIn = ref(false);
@@ -76,6 +78,8 @@ export const useAuthStore = defineStore('auth', () => {
       const dataToSave = {
         name: data.name,
         email: data.email,
+        phone: data.phone,
+        birthDate: data.birthDate,
         accessToken: data.accessToken,
         isAdmin: data.isAdmin,
         adminType: data.adminType,
@@ -100,6 +104,8 @@ export const useAuthStore = defineStore('auth', () => {
     name.value = data.name;
     userId.value = data.userId;
     email.value = data.email;
+    phone.value = data.phone || '';
+    birthDate.value = data.birthDate || '';
     accessToken.value = data.accessToken;
     isAdmin.value = data.isAdmin || false;
     adminType.value = data.adminType || '';
@@ -118,6 +124,8 @@ export const useAuthStore = defineStore('auth', () => {
   const logOut = () => {
     name.value = '';
     email.value = '';
+    phone.value = '';
+    birthDate.value = '';
     userId.value = null;
     accessToken.value = '';
     isAdmin.value = false;
@@ -197,9 +205,10 @@ export const useAuthStore = defineStore('auth', () => {
   const updateUserPreferences = async (preferences) => {
     try {
       if (!isLoggedIn.value) return;
-      
+  
+
       preferences.value = { ...preferences.value, ...preferences };
-      
+      const data = await userService.updateUserPreferences(userId.value, preferences.value);
       const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
       existingData.preferences = preferences.value;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
@@ -230,6 +239,8 @@ export const useAuthStore = defineStore('auth', () => {
   return {
     name,
     email,
+    phone,
+    birthDate,
     isLoggedIn,
     accessToken,
     isAdmin,

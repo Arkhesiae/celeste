@@ -1,12 +1,7 @@
 <template>
   <v-container>
     <!-- En-tête -->
-    <div class="d-flex justify-space-between">
-      <div class="my-16 d-flex flex-column">
-        <span class="text-h4 font-weight-medium">Remplacements</span>
-        <span class="text-h4 text-overline text-medium-emphasis">Créer et consulter les demandes de rempla</span>
-      </div>
-    </div>
+    <MainTitle title="Remplacements" subtitle="Créer et consulter les demandes de rempla"  />
 
 
     <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
@@ -54,8 +49,10 @@
             <v-col cols="12" class="pa-0 ma-0">
               <v-chip color="remplacement" v-if="filteredSubstitutions.length > 0" rounded="lg"
                 class="text-h7 font-weight-medium">Remplaçable</v-chip>
+                <div v-if="filteredSubstitutions.length > 0" class="d-flex flex-column ga-2 mt-8"> 
               <DemandCard v-for="demand in filteredSubstitutions" :key="demand._id" :demand="demand"
                 class="pa-0 ma-0 my-2" />
+                </div>
 
             </v-col>
           </v-row>
@@ -66,7 +63,9 @@
                 class="text-h7 mt-16 font-weight-medium" variant="tonal">
                 Permutables
               </v-chip>
+              <div v-if="filteredSwitches.length > 0" class="d-flex flex-column ga-2 mt-8"> 
               <DemandCard v-for="demand in filteredSwitches" :key="demand._id" :demand="demand" class="pa-0 ma-0" />
+              </div>
             </v-col>
           </v-row>
           </div>
@@ -79,7 +78,9 @@
                 class="mt-16 text-h7 font-weight-medium">
                 Autres demandes
               </v-chip>
-              <DemandCard v-for="demand in filteredOthers" :key="demand._id" :demand="demand" />
+              <div v-if="filteredOthers.length > 0" class="mt-8 d-flex flex-column ga-4">
+                <DemandCard v-for="demand in filteredOthers" :key="demand._id" :demand="demand" />
+              </div>
             </v-col>
           </v-row>
 
@@ -87,14 +88,14 @@
       </v-col>
 
       <!-- Colonne latérale -->
-      <v-col cols="12" sm="12" md="4">
+      <v-col cols="12" sm="12" md="4" >
         <!-- <v-btn v-if="!smAndDown" class="mb-4" prepend-icon="mdi-plus" variant="tonal" color="remplacement" height="80px"
           width="100%" elevation="0" @click="showAddDialog = true">
           Ajouter une demande
         </v-btn> -->
         
-
-        <div class="mb-4 d-flex flex-column">
+        <div class="d-flex flex-column ga-2" style="position: sticky !important; top: 200px !important;">
+        <div class="mb-4 d-flex flex-column" >
           <div class="d-flex align-start flex-column justify-space-between mb-4">
           <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Mes demandes</v-card-title>
           <span class="text-subtitle-2 text-medium-emphasis">
@@ -105,7 +106,7 @@
         </div>
 
         <v-card v-if="pendingDemands.length > 0" rounded="0" elevation="0" color="transparent" class="pa-0 ma-0" 
-          style="position: sticky !important; top: 100px !important;">
+          >
           
           <div class="mb-2"> 
           <span class="ma-0 mb-2 pa-0 text-body-1 font-weight-medium">En attente</span>
@@ -169,6 +170,7 @@
             </v-card-text>
           </v-expand-transition>
         </v-card>
+        </div>
       </v-col>
     </v-row>
 

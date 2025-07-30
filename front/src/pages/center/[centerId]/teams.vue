@@ -500,6 +500,29 @@ const getNextCycleDate = (team) => {
   return nextCycleDate.toLocaleDateString();
 };
 
+// Fonction pour calculer le jour actuel dans le cycle
+const getCurrentDay = (team) => {
+  if (!team.cycleStartDate) return 'Non défini';
+  
+  const activeRotation = centerStore.activeRotationsByCenter[centerId];
+  if (!activeRotation || !activeRotation.days?.length) return 'Rotation non définie';
+  
+  const cycleStartDate = new Date(team.cycleStartDate);
+  const now = new Date();
+  const rotationDays = activeRotation.days.length;
+  
+  // Calculer combien de jours se sont écoulés depuis la date de début
+  const daysSinceStart = Math.floor((now - cycleStartDate) / (1000 * 60 * 60 * 24));
+  
+  // Calculer le jour actuel dans le cycle (1-indexed)
+  const currentDayInCycle = (daysSinceStart % rotationDays) + 1;
+  
+  // Trouver le nom du jour correspondant
+  const currentDayName = activeRotation.days[currentDayInCycle - 1]?.name || `Jour ${currentDayInCycle}`;
+  
+  return currentDayName;
+};
+
 const openMembersPanel = (team) => {
   selectedTeamForMembers.value = team;
   membersPanel.value = true;

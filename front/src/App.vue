@@ -35,6 +35,25 @@ input:-webkit-autofill:active {
     transition: background-color 50000000000s ease-in-out 0s;
 }
 
+/* :root {
+  --inset-top: 80px;
+  --inset-bottom: env(safe-area-inset-bottom);
+}
+
+body,
+.v-navigation-drawer,
+.v-overlay__content > .v-card {
+  padding-top: var(--inset-top) !important;
+  padding-bottom: var(--inset-bottom) !important;
+}
+
+.v-app-bar:not(.v-app-bar--bottom) {
+  padding-top: var(--inset-top) !important;
+}
+
+.v-app-bar--bottom {
+  padding-bottom: var(--inset-bottom) !important;
+} */
 
 /* Add this to your main CSS file or in the <style> section of your main Vue component */
 .v-btn {
@@ -75,4 +94,31 @@ input:-webkit-autofill:active {
     }
 }
 
+
+.slide-custom-enter-active,
+.slide-custom-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  position: relative;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+.slide-custom-enter-from {
+  left: 100%;
+  opacity: 0;
+}
+.slide-custom-enter-to {
+  left: 0;
+  opacity: 1;
+}
+
+.slide-custom-leave-from {
+  left: 0;
+  opacity: 1;
+}
+.slide-custom-leave-to {
+  left: -20%;
+  opacity: 0;
+}
 </style>

@@ -32,6 +32,8 @@ const loginController = {
         res.json({
             name: user.name,
             email: user.email,
+            phone: user.personalData?.phoneNumber || '',
+            birthDate: user.personalData?.birthDate || '',
             isAdmin: user.isAdmin,
             adminType: user.adminType,
             userId: user._id,

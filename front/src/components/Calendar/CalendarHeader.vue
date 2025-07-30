@@ -3,10 +3,15 @@
     :style="smAndDown ? 'max-width : 600px' : ''">
 
     <div class="d-flex align-center">
-      <h2 class="text-h4 font-weight-medium mb-0">{{ currentMonthName }} {{ currentYear }}</h2>
-      <v-btn v-if="!isCurrentMonthAndYear" icon variant="text" class="ml-2" @click="goToToday">
-        <v-icon>mdi-calendar-today</v-icon>
-      </v-btn>
+      <div class="d-flex align-center bg-surfaceContainerHighest rounded-lg pa-2 px-4">
+        <h2 class="text-body-2 font-weight-medium mb-0">{{ currentMonthName }} {{ currentYear }}</h2>
+      </div>
+     
+      <v-slide-x-reverse-transition>
+        <v-btn v-if="!isCurrentMonthAndYear" icon variant="text" class="ml-2" @click="goToToday">
+          <v-icon>mdi-calendar-refresh-outline</v-icon>
+        </v-btn>
+      </v-slide-x-reverse-transition>
     </div>
 
 

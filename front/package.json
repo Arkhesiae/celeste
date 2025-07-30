@@ -16,8 +16,9 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.3.0",
-    "@capacitor/core": "^7.3.0",
+    "@capacitor/core": "^7.4.0",
     "@capacitor/ios": "^7.3.0",
+    "@capgo/capacitor-native-biometric": "^7.1.7",
     "@mdi/font": "7.4.47",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
@@ -29,7 +30,7 @@
     "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.3.0",
+    "@capacitor/cli": "^7.4.0",
     "@eslint/js": "^9.14.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "eslint": "^9.14.0",

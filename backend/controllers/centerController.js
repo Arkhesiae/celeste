@@ -226,7 +226,6 @@ const getActiveRotationsByCenter = async (req, res) => {
 
         for (const center of centers) {
             const lastActiveRotation = await findLatestRotation(center._id, new Date());
-
             activeRotationsByCenter[center._id] = lastActiveRotation;
         }
 

@@ -2,30 +2,7 @@
 
 <template>
   <v-container>
-    <div class="d-flex align-center mb-4">
-    
-    </div>
-    <Transition name="fade" mode="out-in">
-      <div class="d-flex align-center mb-4">
-        <v-btn
-        icon
-        variant="text"
-        class="mr-4"
-        @click="router.back()"
-      >
-        <v-icon>mdi-arrow-left</v-icon>
-      </v-btn>
-      <div class="d-flex justify-space-between my-16 flex-column">
-        
-        <div class="d-flex align-center">
-          <span class="text-h4 font-weight-medium">Paramètres</span>
-        </div>
-        <span class="text-h4 text-overline text-medium-emphasis">
-          Gérez vos paramètres
-        </span>
-      </div>
-      </div>
-    </Transition>
+    <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" back-button="true" />
 
     <v-row>
       <v-col cols="12" md="6">
@@ -40,28 +17,28 @@
               <span class="text-h7">Modifier l'avatar</span>
               <v-icon>mdi-chevron-right</v-icon>
             </v-btn>
-            <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
-              <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0" @click="showPhoneDialog = true"> 
+              <v-chip :color="authStore.phone ? 'remplacement' : 'error'" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-phone</v-icon>
               </v-chip>
               <span class="text-h7">Numéro de téléphone</span>
               
             </v-btn>  
 
-            <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
-              <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"  @click="showBirthDateDialog = true">
+              <v-chip :color="authStore.birthDate ? 'remplacement' : 'error'" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-baby</v-icon>
               </v-chip>
               <span class="text-h7">Date de naissance</span>
               
             </v-btn>  
-            <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
+            <!-- <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
               <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-account-key</v-icon>
               </v-chip>
               <span class="text-h7">Connexion ICNAGENDA</span>
               
-            </v-btn>
+            </v-btn> -->
           </v-card-text>
         </v-card>
         <v-card rounded="xl" elevation="0" class="pa-0" color="background">
@@ -132,6 +109,16 @@
       @success="handleAvatarSuccess"
       @error="handleAvatarError"
     />
+    <PhoneDialog
+      v-model="showPhoneDialog"
+      @success="handlePhoneSuccess"
+      @error="handlePhoneError"
+    />
+    <BirthDateDialog
+      v-model="showBirthDateDialog"
+      @success="handleBirthDateSuccess"
+      @error="handleBirthDateError"
+    />
     <TransferRequestDialog
       v-model="showTransferRequestDialog"
   
@@ -149,6 +136,8 @@ import { ref } from 'vue'
 import EmailDialog from '@/components/Profile/Parameters/EmailDialog.vue'
 import PasswordDialog from '@/components/Profile/Parameters/PasswordDialog.vue'
 import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue'
+import PhoneDialog from '@/components/Profile/Parameters/PhoneDialog.vue'
+import BirthDateDialog from '@/components/Profile/Parameters/BirthDateDialog.vue'
 import TransferRequestDialog from '@/components/Profile/Parameters/TransferRequestDialog.vue'
 
 import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -174,6 +163,8 @@ const authStore = useAuthStore()
 const showEmailDialog = ref(false)
 const showPasswordDialog = ref(false)
 const showAvatarDialog = ref(false)
+const showPhoneDialog = ref(false)
+const showBirthDateDialog = ref(false)
 const showTransferRequestDialog = ref(false)
 
 // États des notifications
@@ -205,6 +196,21 @@ const handleAvatarError = (message) => {
   snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
 }
 
+const handlePhoneSuccess = (message) => {
+  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check')
+}
+
+const handlePhoneError = (message) => {
+  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
+}
+
+const handleBirthDateSuccess = (message) => {
+  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle')
+}
+
+const handleBirthDateError = (message) => {
+  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
+}
 </script>
 
 <style scoped>

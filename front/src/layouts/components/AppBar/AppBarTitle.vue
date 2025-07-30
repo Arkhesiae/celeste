@@ -13,16 +13,38 @@
       {{ APP_TITLE }} 
     </v-btn>
 
-    <span class="text-overline text-medium-emphasis ml-2">
-      alpha 6.25
-    </span>
+    <v-hover v-slot="{ isHovering, props }">
+      <v-slide-y-transition mode="out-in"> 
+       <div v-if="!isHovering">
+        <span 
+        v-bind="props"
+        class="text-overline text-medium-emphasis ml-2"
+        >
+          alpha 0.625v1
+        </span>
+      </div>
+      <div v-else>
+        <span 
+        v-bind="props"
+        class="text-overline text-medium-emphasis ml-2"
+        >
+          30/06/2025
+        </span>
+      </div>
+      </v-slide-y-transition>
+    </v-hover>
     </div>
   </v-app-bar-title>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
+
 // Constants
 const APP_TITLE = "Céleste";
+
+// Reactive data
+const currentDate = ref('');
 
 // Props
 defineProps({
@@ -38,6 +60,21 @@ defineProps({
 
 // Emits
 defineEmits(['title-click']);
+
+// Methods
+const updateDate = () => {
+  const now = new Date();
+  currentDate.value = now.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
+
+// Lifecycle
+onMounted(() => {
+  updateDate();
+});
 </script> 
 <style scoped>
 .celeste-logo {

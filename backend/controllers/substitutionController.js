@@ -102,17 +102,23 @@ const getCenterDemands = async (req, res) => {
 
 const categorizeDemands = async (otherDemands, userId, myDemands) => {
     const categorizedDemands = [...myDemands];
-
+  
+  
     await Promise.all(otherDemands.map(async (demand) => {
         try {
-            const categorizedDemand = await categorize(demand, userId);
-            categorizedDemands.push(categorizedDemand);
+            if (demand.status === 'open') {
+                const categorizedDemand = await categorize(demand, userId);
+                categorizedDemands.push(categorizedDemand);
+            }
+            else {
+                categorizedDemands.push(demand);
+            }
         } catch (err) {
             console.error(`Erreur lors du traitement de la demande ${demand._id}:`, err);
             throw err;
         }
     }));
-    
+
     return categorizedDemands;
 };
 
@@ -150,7 +156,6 @@ const createDemand = async (req, res) => {
             isTrueSwitch
         } = req.body;
 
-        console.log(acceptedSwitches);
 
         // Validation de l'utilisateur
         const user = await User.findById(posterId).populate('teams');

@@ -26,10 +26,13 @@ import {
     updateAvatar,
     checkEmailAvailability,
     updateEmail,
+    updatePhone,
+    updateBirthDate,
     getUserInfoByEmail,
     removeUserAdmin,
     getDevListUsers,
-} from '../controllers/userController.js';
+    deletePhone,
+  } from '../controllers/userController.js';
 import multer from 'multer';
 const router = express.Router();
 
@@ -83,6 +86,9 @@ router.get('/:id/preferences', isUserOrAdmin, getUserPreferences);
 router.put('/:id/preferences', isUserOrAdmin, updateUserPreferences);
 router.post('/:id/avatar', upload.single('avatar'), updateAvatar);
 router.post('/update-email', updateEmail);
+router.post('/update-phone', updatePhone);
+router.post('/update-birthDate', updateBirthDate);
+router.delete('/delete-phone', deletePhone);
 
 // Routes pour la gestion des utilisateurs (admin/master admin)
 router.get('/',  getAllUsers);

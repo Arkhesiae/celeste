@@ -26,7 +26,7 @@
       </div>
 
       <p v-if="timer > 0" class="text-caption text-medium-emphasis">
-        Le code expirera dans 5 minutes
+        Le code expirera dans 10 minutes
       </p>
 
       <v-alert

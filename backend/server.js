@@ -30,7 +30,7 @@ import substitutionRouter from './routes/substitution.js';
 import loginRouter from './routes/login.js';
 import notificationRouter from './routes/notifications.js';
 import messageRoutes from './routes/messageRoutes.js';
-import ticketRoutes from './routes/ticketRoutes.js';
+// import ticketRoutes from './routes/ticketRoutes.js';
 import otpRoutes from './routes/otpRoutes.js';
 import authRouter from './routes/auth.js';
 import devRouter from './routes/dev.js';
@@ -71,7 +71,7 @@ app.use('/', express.static(path.join(__dirname, 'public')));
 // ─── Routes API ───────────────────────────────────────────────────────────────
 app.use('/api/users', usersRouter);
 app.use('/api/messages', messageRoutes);
-app.use('/api/tickets', ticketRoutes);
+// app.use('/api/tickets', ticketRoutes);
 app.use('/api/login', loginRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/substitution', substitutionRouter);

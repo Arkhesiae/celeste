@@ -15,11 +15,6 @@ const announcementSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  sentBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
   sentAt: {
     type: Date,
     default: Date.now
@@ -53,7 +48,6 @@ const announcementSchema = new mongoose.Schema({
 // Index pour améliorer les performances des requêtes
 announcementSchema.index({ sentAt: -1 });
 announcementSchema.index({ templateType: 1 });
-announcementSchema.index({ sentBy: 1 });
 announcementSchema.index({ testMode: 1 });
 
 // Méthodes statiques
@@ -89,10 +83,9 @@ announcementSchema.statics.getTemplateStats = function() {
 
 announcementSchema.statics.getRecentActivity = function(limit = 5) {
   return this.find()
-    .populate('sentBy', 'name lastName email')
-    .sort({ sentAt: -1 })
+      .sort({ sentAt: -1 })
     .limit(limit)
-    .select('templateType message sentAt results testMode sentBy')
+    .select('templateType message sentAt results testMode')
     .lean();
 };
 

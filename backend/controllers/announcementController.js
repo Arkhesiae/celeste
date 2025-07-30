@@ -121,7 +121,6 @@ const sendAnnouncement = async (req, res) => {
       templateType,
       message,
       duration,
-      sentBy: req.user._id,
       sentAt: new Date(),
       results: {
         total: results.total,

@@ -9,8 +9,8 @@ const EMAIL_TEMPLATES = {
   maintenance: {
     subject: 'Maintenance prévue - Celeste',
     html: (data) => `
-      <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0px;">
-        <div style="background: ; color: black; margin-bottom: 16px ; margin-top: 16px; border-radius: 10px 10px 0 0; text-align: start;">
+      <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding-top: 40px; padding-bottom: 40px;">
+        <div style="background: ; color: black; margin-bottom: 32px ; margin-top: 32px; border-radius: 10px 10px 0 0; text-align: start;">
           <h1 style="margin: 0; font-size: 28px;">Maintenance prévue</h1>
         </div>
         <div style="background: #f8f9fa; padding: 30px; border-radius: 16px; border: 1px solid rgba(0, 0, 0, 0.012);">
@@ -59,8 +59,8 @@ L'équipe Celeste
   update: {
     subject: 'Nouvelle mise à jour - Celeste',
     html: (data) => `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: ; color: black; margin-bottom: 16px ; margin-top: 16px; border-radius: 10px 10px 0 0; text-align: start;">
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding-top: 40px; padding-bottom: 40px;">
+        <div style="background: ; color: black; margin-bottom: 32px ; margin-top: 32px; border-radius: 10px 10px 0 0; text-align: start;">
           <h1 style="margin: 0; font-size: 28px;">Nouvelle mise à jour</h1>
         </div>
         <div style="background: #f8f9fa; padding: 30px; border-radius: 16px; border: 1px solid rgba(0, 0, 0, 0.012);">
@@ -105,11 +105,11 @@ L'équipe Celeste
     `
   },
   general: {
-    subject: 'Annonce importante - Celeste',
+    subject: 'Test - Celeste',
     html: (data) => `
-      <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 0px;">
-        <div style="background: ; color: black; margin-bottom: 16px ; margin-top: 16px; border-radius: 10px 10px 0 0; text-align: start;">
-          <h1 style="margin: 0; font-size: 28px;">Annonce importante</h1>
+      <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding-top: 40px; padding-bottom: 40px;">
+        <div style="background: ; color: black; margin-bottom: 32px ; margin-top: 32px; border-radius: 10px 10px 0 0; text-align: start;">
+          <h1 style="margin: 0; font-size: 28px;">Test</h1>
         </div>
         <div style="background: #f8f9fa; padding: 30px; border-radius: 16px; border: 1px solid rgba(0, 0, 0, 0.012);">
           <p style="font-size: 16px; line-height: 1.6; color: #333;">
@@ -128,7 +128,7 @@ L'équipe Celeste
       </div>
     `,
     text: (data) => `
-Annonce importante - Celeste
+Test - Celeste
 
 Bonjour,
 
@@ -181,7 +181,7 @@ async function sendBulkAnnouncementEmail(userEmails, templateType, data) {
 
   for (const toEmail of userEmails) {
     const mailOptions = {
-      from: 'Celeste <notification@celeste-app.fr>',
+      from: 'Test Celeste <notification@celeste-app.fr>',
       to: toEmail,
       subject,
       html,

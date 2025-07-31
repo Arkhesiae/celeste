@@ -1,14 +1,16 @@
-FROM node:18
+# Dockerfile.dev
+FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app/backend
 
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm install
 
-COPY . .
+COPY backend ./
 
-RUN npm install --save-dev nodemon
+ENV NODE_ENV=development
+ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["nodemon", "server.js"]
+CMD ["npm", "run", "dev"]

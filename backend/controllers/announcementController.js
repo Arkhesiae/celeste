@@ -114,7 +114,24 @@ const sendAnnouncement = async (req, res) => {
     };
 
     // Envoi des emails
-    const results = await sendBulkAnnouncementEmail(userEmails, templateType, templateData);
+
+    let results;
+    if (process.env.NODE_ENV !== 'production') {  
+      console.log('🔑 Bulk Announcement Email: ', userEmails);
+      console.log('🔑 Template Type: ', templateType);
+      console.log('🔑 Template Data: ', templateData);
+      
+      results = {
+        total: userEmails.length,
+        sent: userEmails.length,
+        failed: 0,
+        errors: []
+      };
+    }
+
+    else {
+      results = await sendBulkAnnouncementEmail(userEmails, templateType, templateData);
+    }
 
     // Sauvegarde de l'annonce en base
     const announcement = new Announcement({
@@ -134,7 +151,7 @@ const sendAnnouncement = async (req, res) => {
     await announcement.save();
 
     // Log de l'action
-    console.log(`📧 Annonce envoyée par ${req.user.email}:`, {
+    console.log(`📧 Annonce envoyée`, {
       templateType,
       totalRecipients: results.total,
       sent: results.sent,
@@ -172,7 +189,6 @@ const getHistory = async (req, res) => {
 
     const [announcements, total] = await Promise.all([
       Announcement.find()
-        .populate('sentBy', 'name lastName email')
         .sort(sort)
         .skip(skip)
         .limit(parseInt(limit))

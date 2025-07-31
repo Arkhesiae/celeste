@@ -43,6 +43,7 @@ export const sendOtp = async (req, res) => {
       console.log(`📧 Email: ${email}`);
       console.log(`🔑 Code OTP: ${otp}`);
       console.log('========================\n');
+      
     } else {
       // En production, envoyer l'email
       await sendEmailOtp(email.toLowerCase(), otp);

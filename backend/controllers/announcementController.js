@@ -98,6 +98,7 @@ const sendAnnouncement = async (req, res) => {
         isActive: true 
       }).select('email');
       userEmails = users.map(user => user.email);
+      console.log('🔑 User Emails: ', userEmails);
     }
 
     if (userEmails.length === 0) {

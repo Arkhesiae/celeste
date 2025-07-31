@@ -6,16 +6,22 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+console.log(process.env.NODE_ENV);
+console.log(path.resolve(__dirname, '.env.prod'));
+
 // ─── Configuration de l'environnement ─────────────────────────────────────────
 dotenv.config({
   path: process.env.NODE_ENV === 'production'
-    ? '.env.production'
+    ? path.resolve(__dirname, '.env.prod')
     : '.env.development',
 });
 
-// ─── Définir __dirname pour ES Modules ────────────────────────────────────────
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 // ─── Création de l'application Express ────────────────────────────────────────
 const app = express();

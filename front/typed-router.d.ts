@@ -30,6 +30,7 @@ declare module 'vue-router/auto-routes' {
     '/center/centers': RouteRecordInfo<'/center/centers', '/center/centers', Record<never, never>, Record<never, never>>,
     '/contact-admin': RouteRecordInfo<'/contact-admin', '/contact-admin', Record<never, never>, Record<never, never>>,
     '/dashboard': RouteRecordInfo<'/dashboard', '/dashboard', Record<never, never>, Record<never, never>>,
+    '/emails': RouteRecordInfo<'/emails', '/emails', Record<never, never>, Record<never, never>>,
     '/exchange/replace': RouteRecordInfo<'/exchange/replace', '/exchange/replace', Record<never, never>, Record<never, never>>,
     '/exchange/switch': RouteRecordInfo<'/exchange/switch', '/exchange/switch', Record<never, never>, Record<never, never>>,
     '/landing': RouteRecordInfo<'/landing', '/landing', Record<never, never>, Record<never, never>>,

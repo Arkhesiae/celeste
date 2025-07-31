@@ -14,10 +14,6 @@ COPY --from=builder /app/front/dist ./backend/public
 WORKDIR /app/backend
 RUN npm install
 
-ENV NODE_ENV=production
-ENV ADMIN_EMAIL=admin@celeste.com
-ENV ADMIN_PASSWORD=celeste
-
 EXPOSE 3000
 
 CMD sh -c "node server.js"

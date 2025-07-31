@@ -9,8 +9,7 @@
       style="font-weight: 900 !important;" 
       :active="isHomepage || isDashboard"
     >
-    MAINTENANCE
-      <!-- {{ APP_TITLE }}  -->
+      {{ APP_TITLE }} 
     </v-btn>
 
     <span class="text-overline text-medium-emphasis ml-2">

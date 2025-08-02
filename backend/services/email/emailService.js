@@ -6,8 +6,9 @@ dotenv.config();
  * Service d'email unifié qui gère différents fournisseurs selon MAIL_SERVICE
  */
 
+console.log(process.env.MAIL_SERVICE);
 const mailService = process.env.MAIL_SERVICE || 'console';
-const isDevelopment = process.env.NODE_ENV !== 'production' || true;
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 /**
  * Crée un transporteur MailerSend
@@ -74,9 +75,14 @@ function createConsoleTransporter() {
  */
 function createTransporter() {
   // En développement, on utilise un transporteur de test
+
+  console.log(isDevelopment);
+  
   if (isDevelopment) {
     return createConsoleTransporter();
   }
+
+  console.log(mailService);
 
   // Configuration selon le service choisi
   switch (mailService.toLowerCase()) {

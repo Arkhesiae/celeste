@@ -6,16 +6,19 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // ─── Configuration de l'environnement ─────────────────────────────────────────
 dotenv.config({
   path: process.env.NODE_ENV === 'production'
-    ? '.env.production'
+    ? path.resolve(__dirname, '../.env.prod')
     : '.env.development',
 });
 
-// ─── Définir __dirname pour ES Modules ────────────────────────────────────────
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 // ─── Création de l'application Express ────────────────────────────────────────
 const app = express();
@@ -44,7 +47,7 @@ import './cron/processTransactions.js';
 import './cron/processDemands.js';
 
 // ─── Initialisation de l'admin ────────────────────────────────────────────────
-import { createAdmin } from './utils/seedAdmin.js';
+import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
 
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
@@ -101,7 +104,8 @@ mongoose.connect(process.env.MONGO_URI)
     console.log('✅ MongoDB connecté via Docker');
 
     await createAdmin(); // Créer l'admin si nécessaire
-
+    await createLocalAdmin(); // Créer les admins locaux si nécessaire
+    
     app.listen(PORT, () => {
       console.log(`🚀 Serveur lancé sur le port ${PORT}`);
     });

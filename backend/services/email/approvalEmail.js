@@ -1,32 +1,19 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-dotenv.config();
+import emailService from './emailService.js';
 
 /**
- * Envoie un OTP par email via AWS SES + Nodemailer
+ * Envoie un email d'approbation d'inscription
  * @param {string} toEmail
- * @param {string} otp
  */
 async function sendEmailApproval(toEmail) {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: false, // TLS, pas SSL
-    auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
-    }
-  });
-
   const mailOptions = {
-    from: process.env.EMAIL_FROM,
+    from: process.env.EMAIL_FROM || 'Celeste <noreply@celeste-app.fr>',
     to: toEmail.toLowerCase(),
-    subject: 'Votre inscription à été approuvée - Celeste',
-    text: `Bonjour,\n\nVotre inscription à été approuvée. Vous pouvez désormais accéder à l'application.\n\nCordialement,\nL'équipe Celeste`
+    subject: 'Votre inscription a été approuvée - Celeste',
+    text: `Bonjour,\n\nVotre inscription a été approuvée. Vous pouvez désormais accéder à l'application.\n\nCordialement,\nL'équipe Celeste`
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await emailService.sendEmail(mailOptions);
     console.log('📧 Email approbation envoyé à:', toEmail);
   } catch (err) {
     console.error('❌ Erreur envoi approbation :', err);
@@ -34,31 +21,25 @@ async function sendEmailApproval(toEmail) {
   }
 }
 
+/**
+ * Envoie un email de rejet d'inscription
+ * @param {string} toEmail
+ */
 async function sendEmailRejection(toEmail) {
-    const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: parseInt(process.env.EMAIL_PORT, 10),
-        secure: false, // TLS, pas SSL
-        auth: {
-            user: process.env.SMTP_USERNAME,
-            pass: process.env.SMTP_PASSWORD,
-        }
-    });
+  const mailOptions = {
+    from: process.env.EMAIL_FROM || 'Celeste <noreply@celeste-app.fr>',
+    to: toEmail.toLowerCase(),
+    subject: 'Votre inscription a été rejetée - Celeste',
+    text: `Bonjour,\n\nVotre inscription a été rejetée. Veuillez réessayer ou contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`
+  };
 
-    const mailOptions = {
-        from: process.env.EMAIL_FROM,
-        to: toEmail.toLowerCase(),
-        subject: 'Votre inscription à été rejetée - Celeste',
-        text: `Bonjour,\n\nVotre inscription à été rejetée. Veuillez réessayer ou contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`
-    };
-
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('📧 Email rejet envoyé à:', toEmail);
-    } catch (err) {
-        console.error('❌ Erreur envoi rejet :', err);
-        throw err;
-    }
+  try {
+    await emailService.sendEmail(mailOptions);
+    console.log('📧 Email rejet envoyé à:', toEmail);
+  } catch (err) {
+    console.error('❌ Erreur envoi rejet :', err);
+    throw err;
+  }
 }
 
 export { sendEmailApproval, sendEmailRejection }; 

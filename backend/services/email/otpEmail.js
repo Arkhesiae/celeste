@@ -1,27 +1,11 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-dotenv.config();
+import emailService from './emailService.js';
 
 /**
- * Envoie un OTP par email via AWS SES + Nodemailer
+ * Envoie un OTP par email via le service configuré
  * @param {string} toEmail
  * @param {string} otp
  */
 async function sendEmailOtp(toEmail, otp) {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: false, // TLS, pas SSL
-    auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
-    }
-  });
-
-  console.log("process.env.SMTP_USERNAME", process.env.SMTP_USERNAME);
-  console.log("process.env.SMTP_PASSWORD", process.env.SMTP_PASSWORD);
-  console.log("process.env.EMAIL_HOST", process.env.EMAIL_HOST);
-
   const mailOptions = {
     from: 'Celeste <otp@celeste-app.fr>',
     to: toEmail,
@@ -30,8 +14,8 @@ async function sendEmailOtp(toEmail, otp) {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('📧 Email OTP envoyé à:', toEmail, ' :');
+    await emailService.sendEmail(mailOptions);
+    console.log('📧 Email OTP envoyé à:', toEmail);
   } catch (err) {
     console.error('❌ Erreur envoi OTP :', err);
     throw err;

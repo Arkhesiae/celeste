@@ -1,7 +1,4 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-dotenv.config();
-
+import emailService from './emailService.js';
 
 /**
  * Envoie un email de réinitialisation de mot de passe
@@ -10,16 +7,6 @@ dotenv.config();
  * @param {string} userName - Nom de l'utilisateur (optionnel)
  */
 async function sendPasswordResetEmail(toEmail, resetLink, userName = '') {
-  const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: false, // TLS, pas SSL
-    auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
-    }
-  });
-
   const greeting = userName ? `Bonjour ${userName},` : 'Bonjour,';
   
   const mailOptions = {
@@ -82,7 +69,7 @@ L'équipe Celeste`
   };
 
   try {
-    await transporter.sendMail(mailOptions);
+    await emailService.sendEmail(mailOptions);
     console.log('📧 Email de réinitialisation envoyé à:', toEmail);
   } catch (err) {
     console.error('❌ Erreur envoi email de réinitialisation :', err);

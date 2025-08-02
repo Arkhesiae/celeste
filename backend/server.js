@@ -11,17 +11,12 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log(process.env.ADMIN_PASSWORD);
-console.log(path.resolve(__dirname, '../.env.prod'));
-
 // ─── Configuration de l'environnement ─────────────────────────────────────────
 dotenv.config({
   path: process.env.NODE_ENV === 'production'
     ? path.resolve(__dirname, '../.env.prod')
     : '.env.development',
 });
-
-console.log(process.env.ADMIN_PASSWORD);
 
 
 

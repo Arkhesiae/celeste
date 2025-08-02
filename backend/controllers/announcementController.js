@@ -172,7 +172,6 @@ const getHistory = async (req, res) => {
 
     const [announcements, total] = await Promise.all([
       Announcement.find()
-        .populate('sentBy', 'name lastName email')
         .sort(sort)
         .skip(skip)
         .limit(parseInt(limit))
@@ -231,10 +230,9 @@ const getStats = async (req, res) => {
     ]);
 
     const recentActivity = await Announcement.find()
-      .populate('sentBy', 'name lastName')
       .sort({ sentAt: -1 })
       .limit(5)
-      .select('templateType message sentAt results testMode sentBy')
+      .select('templateType message sentAt results testMode')
       .lean();
 
     res.json({

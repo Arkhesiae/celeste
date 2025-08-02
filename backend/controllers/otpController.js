@@ -25,16 +25,8 @@ export const sendOtp = async (req, res) => {
       expiresAt
     });
 
-    // En mode développement, afficher le code dans la console
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('\n=== MODE DÉVELOPPEMENT ===');
-      console.log(`📧 Email: ${email}`);
-      console.log(`🔑 Code OTP: ${otp}`);
-      console.log('========================\n');
-    } else {
-      // En production, envoyer l'email
-      await sendEmailOtp(email.toLowerCase(), otp);
-    }
+    // Envoyer l'email OTP (le service gère automatiquement le mode développement)
+    await sendEmailOtp(email.toLowerCase(), otp);
 
     res.json({ message: 'Code OTP envoyé avec succès' });
   } catch (error) {

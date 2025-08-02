@@ -1,6 +1,4 @@
-import nodemailer from 'nodemailer';
-import dotenv from 'dotenv';
-dotenv.config();
+import emailService from './emailService.js';
 
 /**
  * Templates d'emails d'annonce prédéfinis
@@ -153,56 +151,20 @@ async function sendBulkAnnouncementEmail(userEmails, templateType, data) {
     throw new Error(`Template '${templateType}' non trouvé`);
   }
 
-  const transporter = nodemailer.createTransport({
-    pool: true,
-    maxConnections: 5,
-    maxMessages: 5,
-    host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
-    }
-  });
-
   const { subject, html, text } = {
     subject: template.subject,
     html: template.html(data),
     text: template.text(data)
   };
 
-  const results = {
-    total: userEmails.length,
-    sent: 0,
-    failed: 0,
-    errors: []
+  const mailOptions = {
+    from: 'Celeste <notification@celeste-app.fr>',
+    subject,
+    html,
+    text
   };
 
-  for (const toEmail of userEmails) {
-    const mailOptions = {
-      from: 'Test Celeste <notification@celeste-app.fr>',
-      to: toEmail,
-      subject,
-      html,
-      text
-    };
-
-    try {
-      await transporter.sendMail(mailOptions);
-      results.sent++;
-      console.log('📧 Annonce envoyée à:', toEmail);
-    } catch (err) {
-      results.failed++;
-      results.errors.push({ email: toEmail, error: err.message });
-      console.error('❌ Erreur envoi annonce à', toEmail, ':', err);
-    }
-  }
-
-  // Fermer le pool après l'envoi
-  transporter.close();
-  
-  return results;
+  return await emailService.sendBulkEmail(userEmails, mailOptions);
 }
 
 /**

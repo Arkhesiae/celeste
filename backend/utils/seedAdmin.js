@@ -49,12 +49,12 @@ async function createLocalAdmin() {
     const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, 10);
 
     const adminData = {
-      name: 'Super',
+      name: center.OACI.charAt(0).toUpperCase() + center.OACI.slice(1),
       lastName: 'Admin',
       isAdmin: true,
       isActive: true,
       adminType: 'local',
-      center: center._id,
+      centerId: center._id,
       registrationStatus: 'verified',
       email: ADMIN_EMAIL,
       points: Number.MAX_SAFE_INTEGER,

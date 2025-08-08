@@ -116,9 +116,7 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 
 const avatar = computed(() => {
-  console.log(props.transaction.userId);
   const user = userStore.users.find(user => user._id === props.transaction.userId);
-  console.log(user );
   return user ? user.avatar : '';
 });
 
@@ -155,7 +153,6 @@ function getInitials(name) {
 }
 
 function formatDate(date) {
-  console.log(date);
   if (!date) return '';
   const d = new Date(date);
   return d.toLocaleDateString('fr-FR');

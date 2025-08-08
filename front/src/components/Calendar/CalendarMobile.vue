@@ -89,28 +89,19 @@ const handleSwipe = (direction) => {
   }
 };
 
-const shiftsWithSubstitutions = computed(() => {
-  return shiftStore.shiftsWithSubstitutions;
-});
+
 
 const vacationsOfUser = computed(() => {
-  const map = new Map();
-  const shifts = shiftsWithSubstitutions.value;
-  if (shifts && shifts.length > 0) {
-    shifts.forEach(({ date, shift, teamObject }) => {
-      map.set(date, { shift, teamObject });
-    });
-  }
-  return map;
+  return shiftStore.persistentVacationsMap;
 });
 
 const isWorkDay = computed(() => (date) => {
-  const shift = vacationsOfUser.value.get(date.toISOString())?.shift;
+  const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift;
   return shift ? shift.type !== 'rest' : false;
 });
 
-const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.name;
-const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.type;
+const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.name;
+const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
 
 const inPast = (date) => {
   return date < new Date();

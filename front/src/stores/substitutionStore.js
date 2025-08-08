@@ -288,6 +288,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     return availableSubstitutions.value.filter(substitution => substitution.posterShift.date === date).length;
   });
 
+
   // =============== ACTIONS ===============
 
   // ----- Récupération des données -----
@@ -329,7 +330,19 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const fetchAllDemands = async (dates) => {
     loading.value = true;
     try {
-      substitutions.value = await fetchDemands(dates);
+      const newDemands = await fetchDemands(dates);
+
+      newDemands.forEach(newDemand => {
+        const existingIndex = substitutions.value.findIndex(s => s._id === newDemand._id);
+        
+        if (existingIndex !== -1) {
+          // Remplacer la substitution existante
+          substitutions.value[existingIndex] = newDemand;
+        } else {
+          // Ajouter la nouvelle substitution
+          substitutions.value.push(newDemand);
+        }
+      });
     } catch (err) {
       console.error(err.message);
       throw err;
@@ -362,7 +375,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       if (index !== -1) {
         substitutions.value.splice(index, 1);
       }
-      await shiftStore.fetchShiftsWithSubstitutions();
+
       await pointStore.fetchTransactions();
     } catch (err) {
       error.value = err.message || 'Erreur lors de la suppression de la substitution';
@@ -377,19 +390,38 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     loading.value = true;
     try {
       const updatedSubstitution = await substitutionService.acceptDemand(demandId);
-      console.log(updatedSubstitution);
       const index = substitutions.value.findIndex(s => s._id === demandId);
       if (index !== -1) {
         substitutions.value[index] = updatedSubstitution.request;
       }
-      // await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
-      await shiftStore.fetchShiftsWithSubstitutions();
+
+      shiftStore.addEntry(updatedSubstitution.newShiftData);
+      recategorizeSubstitutions(updatedSubstitution.newShiftData.date);
       await pointStore.fetchTransactions();
     } catch (err) {
       console.error('Erreur lors de l\'acceptation de la demande:', err);
       throw err;
     } finally {
       loading.value = false;
+    }
+  };
+
+  
+  const swapShifts = async (demandId) => {
+    try {
+      const response = await substitutionService.swapShifts(demandId);
+      const index = substitutions.value.findIndex(s => s._id === demandId);
+      if (index !== -1) {
+        substitutions.value[index] = response.demand;
+      } 
+    
+      shiftStore.addEntry(response.newShiftData);
+      recategorizeSubstitutions(response.newShiftData.date);
+      await pointStore.fetchTransactions();
+      
+    } catch (error) {
+      console.error('Erreur lors de l\'échange des shifts:', error);
+      throw error;
     }
   };
 
@@ -400,7 +432,9 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       if (index !== -1) {
         substitutions.value[index] = updatedSubstitution.request;
       }
-      await shiftStore.fetchShiftsWithSubstitutions();
+
+      shiftStore.addEntry(updatedSubstitution.newShiftData);
+      recategorizeSubstitutions(updatedSubstitution.newShiftData.date);
       await pointStore.fetchTransactions();
     } catch (error) {
       console.error('Erreur lors de l\'annulation de l\'acceptation:', error.message);
@@ -408,39 +442,39 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
-  const updateDemandStatus = async (id, status) => {
-    loading.value = true;
-    try {
-      const updatedDemand = await substitutionService.updateDemandStatus(id, status);
-      const index = substitutions.value.findIndex((d) => d._id === id);
-      if (index !== -1) substitutions.value[index].status = updatedDemand.status;
-    } catch (err) {
-      console.error('Erreur lors de la mise à jour du statut:', err);
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+  // const updateDemandStatus = async (id, status) => {
+  //   loading.value = true;
+  //   try {
+  //     const updatedDemand = await substitutionService.updateDemandStatus(id, status);
+  //     const index = substitutions.value.findIndex((d) => d._id === id);
+  //     if (index !== -1) substitutions.value[index].status = updatedDemand.status;
+  //   } catch (err) {
+  //     console.error('Erreur lors de la mise à jour du statut:', err);
+  //     throw err;
+  //   } finally {
+  //     loading.value = false;
+  //   }
+  // };
 
-  const updateSubstitution = async (substitutionId, substitutionData) => {
-    try {
-      loading.value = true;
-      error.value = null;
-      const updatedSubstitution = await substitutionService.updateSubstitution(substitutionId, substitutionData);
-      const index = substitutions.value.findIndex(s => s._id === substitutionId);
-      if (index !== -1) {
-        substitutions.value[index] = updatedSubstitution;
-      }
-      if (currentSubstitution.value?._id === substitutionId) {
-        currentSubstitution.value = updatedSubstitution;
-      }
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la mise à jour de la substitution';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+  // const updateSubstitution = async (substitutionId, substitutionData) => {
+  //   try {
+  //     loading.value = true;
+  //     error.value = null;
+  //     const updatedSubstitution = await substitutionService.updateSubstitution(substitutionId, substitutionData);
+  //     const index = substitutions.value.findIndex(s => s._id === substitutionId);
+  //     if (index !== -1) {
+  //       substitutions.value[index] = updatedSubstitution;
+  //     }
+  //     if (currentSubstitution.value?._id === substitutionId) {
+  //       currentSubstitution.value = updatedSubstitution;
+  //     }
+  //   } catch (err) {
+  //     error.value = err.message || 'Erreur lors de la mise à jour de la substitution';
+  //     throw err;
+  //   } finally {
+  //     loading.value = false;
+  //   }
+  // };
 
 
   // ----- Gestion des échanges -----
@@ -453,18 +487,6 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
-  const swapShifts = async (demandId) => {
-    try {
-      await substitutionService.swapShifts(demandId);
-      await fetchAllDemands({startDate: startDate.value, endDate: endDate.value});
-      await shiftStore.fetchShiftsWithSubstitutions();
-      await pointStore.fetchTransactions();
-      
-    } catch (error) {
-      console.error('Erreur lors de l\'échange des shifts:', error);
-      throw error;
-    }
-  };
 
   const markInterest = async (demandId) => {
     try {
@@ -486,6 +508,45 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       throw err;
     } finally {
       loading.value = false;
+    }
+  };
+
+    // ----- Get open substitution IDs from others within date range -----
+  const getOpenSubstitutionIdsFromOthers = (dateKey) => {
+      if (!userId.value) return [];
+      
+      const targetDate = new Date(dateKey);
+      const startDate = new Date(targetDate);
+      startDate.setDate(startDate.getDate() - 6);
+      const endDate = new Date(targetDate);
+      endDate.setDate(endDate.getDate() + 6);
+      
+      return substitutions.value
+        .filter(substitution => 
+          substitution.status === 'open' &&
+          substitution.posterId !== userId.value &&
+          new Date(substitution.posterShift.date) >= startDate &&
+          new Date(substitution.posterShift.date) <= endDate
+        )
+        .map(substitution => substitution._id);
+    };
+  
+
+  const recategorizeSubstitutions = async (dateKey) => {
+    try {
+      const openSubstitutionIds = getOpenSubstitutionIdsFromOthers(dateKey);
+      if (openSubstitutionIds.length > 0) {
+        const recategorizedSubstitutions = await substitutionService.recategorizeSubstitutions(openSubstitutionIds) ;
+        recategorizedSubstitutions.categorizedSubstitutions.forEach(updatedSubstitution => {
+          const index = substitutions.value.findIndex(sub => sub._id === updatedSubstitution._id);
+          if (index !== -1) {
+            substitutions.value[index] = updatedSubstitution;
+          }
+        });
+      }
+    } catch (err) {
+      error.value = err.message || 'Erreur lors de la récategorisation des substitutions';
+      throw err;
     }
   };
 
@@ -537,14 +598,15 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     fetchDemands,
     fetchAllDemands,
     createSubstitutionDemand,
-    updateSubstitution,
+    // updateSubstitution, 
     cancelDemand,
     acceptDemand,
     unacceptDemand,
-    updateDemandStatus,
+    // updateDemandStatus,
     checkUserShift,
     swapShifts,
     markInterest,
-    fetchSubstitutions
+    fetchSubstitutions,
+    recategorizeSubstitutions
   };
 });

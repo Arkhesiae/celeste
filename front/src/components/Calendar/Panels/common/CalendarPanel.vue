@@ -43,7 +43,12 @@
           </div>
         </template>
       </v-card-item>
-  
+
+      <v-btn v-if="hasNoDemand" color="onBackground" rounded="lg" size="small" variant="outlined" style="bottom: 22px; right: 20px; position: absolute;" class="text-none "
+            @click="$emit('openAbsenceDialog', 'Congé')">
+            <v-icon start>mdi-account-question-outline</v-icon>
+            Absence
+      </v-btn> 
     </v-card>
   
 
@@ -172,6 +177,7 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useDisplay } from 'vuetify';
+import { useShiftStore } from '@/stores/shiftStore';
 
 const substitutionStore = useSubstitutionStore();
 const teamStore = useTeamStore();
@@ -184,10 +190,7 @@ const props = defineProps({
     type: String,
     required: true
   },
-  vacationsOfUser: {
-    type: Map,
-    required: true
-  },
+
   selectedDate: {
     type: [Date, String, null],
     required: true
@@ -209,9 +212,15 @@ const props = defineProps({
 
 defineEmits(['openRemplaDialog', 'openDrawer', 'cancelDemand', 'openAbsenceDialog', 'unacceptDemand']);
 
+const shiftStore = useShiftStore();
+
+const vacationsOfUser = computed(() => {
+  return shiftStore.persistentVacationsMap;
+});
+
 const getVacation = computed(() => {
   if (!props.selectedDate) return null;
-  return props.vacationsOfUser.get(new Date(props.selectedDate).toISOString());
+  return vacationsOfUser.value.get(new Date(props.selectedDate).toISOString().split('T')[0]);
 });
 
 const isRestDay = computed(() => {
@@ -232,6 +241,10 @@ const getShiftHours = computed(() => {
     startTime: getVacation.value?.shift?.startTime || '',
     endTime: getVacation.value?.shift?.endTime || ''
   };
+});
+
+const hasNoDemand = computed(() => {  
+  return !substitutionStore.hasOwnPendingDemand(props.selectedDate) && !substitutionStore.hasAcceptedAsPoster(props.selectedDate) && !substitutionStore.hasAcceptedAsAccepter(props.selectedDate);
 });
 
 const substitutionId = computed(() => {

@@ -1,179 +1,163 @@
 <template>
   <v-container>
     <!-- En-tête -->
-    <MainTitle title="Remplacements" subtitle="Créer et consulter les demandes de rempla"  />
+    <MainTitle title="Remplacements" subtitle="Créer et consulter les demandes de rempla">
+      <template #actions>
+
+        <!-- Bouton pour afficher/masquer la colonne latérale sur mobile -->
+        <div v-if="smAndDown" class="d-flex position-relative flex-column align-end ga-1">
+          <v-btn size="small" variant="flat" rounded="lg" color="surfaceContainerHigh" @click="showSidebar = !showSidebar" class="d-flex align-center">
+             Mes demandes
+            <template #prepend>
+              <div class="d-flex  ga-1" style="right: 0px; top: -18px;">
+              <div v-if="pendingDemands.length > 0" class="category-indicator pending"
+                :title="`${pendingDemands.length} demande(s) en attente`">
+                {{ pendingDemands.length }}
+              </div>
+              <div v-if="acceptedAsPoster?.length > 0" class="category-indicator accepted"
+                :title="`${acceptedAsPoster.length} demande(s) acceptée(s)`">
+                {{ acceptedAsPoster.length }}
+              </div>
+              <div v-if="acceptedAsAccepter.length > 0" class="category-indicator todo"
+                :title="`${acceptedAsAccepter.length} remplacement(s) à faire`">
+                {{ acceptedAsAccepter.length }}
+              </div>
+              
+          </div>
+            </template>
+          </v-btn>
+          
+          <v-btn color="onSurface" size="small" variant="text" prepend-icon="mdi-book-open-variant"
+                  @click="showRulesDialog = true">
+                  Règles de travail
+                </v-btn>
+            
+        </div>
+        <div v-else>
+          <v-btn color="onSurface"  rounded="lg" prepend-icon="mdi-book-open-variant"
+                  @click="showRulesDialog = true">
+                  Règles de travail
+                </v-btn>
+        </div>
+      </template>
+    </MainTitle>
 
 
-    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
-          <div class="d-flex align-center justify-space-between">
-            <div>
+    <!-- Indicateurs de catégories sur mobile -->
+
+
+    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+      icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+      <div class="d-flex align-center justify-space-between">
+        <div>
           <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
               Aucun tour de service n'est actuellement actif.
             </div>
             <div>
-              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez contacter un administrateur pour activer un tour de service.
+              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez
+              contacter un administrateur pour activer un tour de service.
             </div>
           </v-card-text>
         </div>
-        
- 
-        </div>
-        </v-alert> 
+
+
+      </div>
+    </v-alert>
     <v-row class="mb-16">
       <!-- Colonne principale -->
       <v-col cols="12" sm="12" md="8">
-          <div>
+        
           <!-- Filtres et recherche -->
-          <ListHeader :filters="[
+          <!-- <ListHeader :filters="[
             { label: 'Permutations', value: 'switch' },
             { label: 'Remplacements', value: 'substitution', color: 'tertiary' },
             { label: 'Hybrides', value: 'hybrid' },
             { label: 'Tout', value: 'all' }
           ]" :sort-options="sortOptions" v-model:filter="selectedFilter" v-model:search="searchQuery"
+            v-model:sort="sortBy" /> -->
+
+          <ListHeaderV2 :filters="[
+            { label: 'Permutations', value: 'switch' },
+            { label: 'Remplacements', value: 'substitution'},
+        
+          ]" :sort-options="sortOptions" v-model:filter="selectedFilter" v-model:search="searchQuery"
             v-model:sort="sortBy" />
 
-
-          <span v-if="filteredSubstitutions.length === 0 && filteredSwitches.length === 0"
-            class="text-medium-emphasis text-subtitle-2 ">
+ 
+          <div class="d-flex justify-center align-center my-16" v-if="filteredSubstitutions.length === 0 && filteredSwitches.length === 0">
+          <span class="text-medium-emphasis text-subtitle-2">
             Aucune demande disponible
           </span>
-
+     
+          </div>
 
           <!-- Liste des demandes -->
 
           <!-- Demandes remplaçables -->
-          <div v-else>
-          <v-row class="ma-0 pa-0">
-            <v-col cols="12" class="pa-0 ma-0">
-              <v-chip color="remplacement" v-if="filteredSubstitutions.length > 0" rounded="lg"
-                class="text-h7 font-weight-medium">Remplaçable</v-chip>
-                <div v-if="filteredSubstitutions.length > 0" class="d-flex flex-column ga-2 mt-8"> 
-              <DemandCard v-for="demand in filteredSubstitutions" :key="demand._id" :demand="demand"
-                class="pa-0 ma-0 my-2" />
+          
+          <div v-else class="mt-8">
+            <v-row class="ma-0 pa-0">
+              <v-col cols="12" class="pa-0 ma-0">
+                <v-chip color="remplacement" v-if="filteredSubstitutions.length > 0" rounded="lg"
+                  class="text-h7 font-weight-medium">Remplaçable</v-chip>
+                <div v-if="filteredSubstitutions.length > 0" class="d-flex flex-column ga-2 mt-8">
+                  <DemandCard v-for="demand in filteredSubstitutions" :key="demand._id" :demand="demand"
+                    class="pa-0 ma-0 my-2" />
                 </div>
 
-            </v-col>
-          </v-row>
-          <!-- Demandes permutables -->
+              </v-col>
+            </v-row>
+            <!-- Demandes permutables -->
+            <v-row class="ma-0 pa-0">
+              <v-col cols="12" class="pa-0 ma-0">
+                <v-chip color="permutation" v-if="filteredSwitches.length > 0" rounded="lg"
+                  class="text-h7 mt-16 font-weight-medium" variant="tonal">
+                  Permutables
+                </v-chip>
+                <div v-if="filteredSwitches.length > 0" class="d-flex flex-column ga-2 mt-8">
+                  <DemandCard v-for="demand in filteredSwitches" :key="demand._id" :demand="demand" class="pa-0 ma-0" />
+                </div>
+              </v-col>
+            </v-row>
+          </div>
+      
+          <!-- Autres demandes -->
+          <div v-if="filteredOthers.length > 0" class="mt-8">
           <v-row class="ma-0 pa-0">
             <v-col cols="12" class="pa-0 ma-0">
-              <v-chip color="permutation" v-if="filteredSwitches.length > 0" rounded="lg"
-                class="text-h7 mt-16 font-weight-medium" variant="tonal">
-                Permutables
-              </v-chip>
-              <div v-if="filteredSwitches.length > 0" class="d-flex flex-column ga-2 mt-8"> 
-              <DemandCard v-for="demand in filteredSwitches" :key="demand._id" :demand="demand" class="pa-0 ma-0" />
+              
+              <div class="d-flex align-center ga-2">
+                <v-chip color="error" v-if="filteredOthers.length > 0" rounded="lg"
+                  class="flex-shrink-0 text-h7 font-weight-medium">
+                  Demandes incompatibles
+                </v-chip>
+                <!-- Bouton pour ouvrir les règles de travail -->
+         
               </div>
-            </v-col>
-          </v-row>
-          </div>
-          <!-- Autres demandes -->
-          <!-- Demandes permutables -->
-          <v-row class="ma-0 pa-0" >
-            <v-col cols="12" class="pa-0 ma-0">
-              <v-divider color="primary" opacity="0.01" class="my-0" />
-              <v-chip color="error" v-if="filteredOthers.length > 0" rounded="lg"
-                class="mt-16 text-h7 font-weight-medium">
-                Autres demandes
-              </v-chip>
+
               <div v-if="filteredOthers.length > 0" class="mt-8 d-flex flex-column ga-4">
                 <DemandCard v-for="demand in filteredOthers" :key="demand._id" :demand="demand" />
               </div>
             </v-col>
           </v-row>
+          </div>
 
-        </div>
+        
       </v-col>
 
       <!-- Colonne latérale -->
-      <v-col cols="12" sm="12" md="4" >
-        <!-- <v-btn v-if="!smAndDown" class="mb-4" prepend-icon="mdi-plus" variant="tonal" color="remplacement" height="80px"
-          width="100%" elevation="0" @click="showAddDialog = true">
-          Ajouter une demande
-        </v-btn> -->
-        
-        <div class="d-flex flex-column ga-2" style="position: sticky !important; top: 200px !important;">
-        <div class="mb-4 d-flex flex-column" >
-          <div class="d-flex align-start flex-column justify-space-between mb-4">
-          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Mes demandes</v-card-title>
-          <span class="text-subtitle-2 text-medium-emphasis">
-            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
-            Mes demandes en attente et acceptées sont affichées ici.
-          </span>
-          </div>
-        </div>
-
-        <v-card v-if="pendingDemands.length > 0" rounded="0" elevation="0" color="transparent" class="pa-0 ma-0" 
-          >
-          
-          <div class="mb-2"> 
-          <span class="ma-0 mb-2 pa-0 text-body-1 font-weight-medium">En attente</span>
-          </div>
-          <v-expand-transition>
-            <v-card-text class="pa-0" v-if="pendingDemands.length > 0">
-              <div v-if="pendingDemands.length > 0" class="d-flex flex-column ga-2" >
-                <OwnDemandCard :isPoster="true" v-for="demand in pendingDemands" :key="demand.id" :demand="demand" :small="xs || md"/>
-              </div>
-              <div v-else class="text-center py-4">
-                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
-                <div class="text-body-1">Aucune demande en attente</div>
-              </div>
-            </v-card-text>
-          </v-expand-transition>
-        </v-card>
-
-        
-        <v-card v-if="acceptedAsPoster?.length > 0" rounded="0" elevation="0" color="transparent" class="pa-0 mt-4 "
-          >
-          <div class="mb-2">
-          <span class="pa-0 mb-2 text-body-1 font-weight-medium">Acceptées</span>
-            <!-- <template #append>
-              <v-icon icon="mdi-chevron-down"
-                :style="{ transform: displayAccepted ? 'rotate(-180deg)' : '', transition: 'all ease-in-out 0.2s' }" />
-            </template> -->
-            </div>
-
-          <v-expand-transition>
-            <v-card-text class="pa-0" v-if="acceptedAsPoster?.length > 0">
-              <div v-if="acceptedAsPoster.length > 0" class="d-flex flex-column ga-2">
-                <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster" :key="demand.id" :demand="demand" :small="xs || md"/>
-              </div>
-              <div v-else class="text-center py-4">
-                <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />  
-                <div class="text-body-1">Aucune demande en attente</div>
-              </div>
-            </v-card-text>
-          </v-expand-transition>
-        </v-card>
-
-
-        <div class="d-flex align-start flex-column justify-space-between my-4 mt-16">
-          <v-card-title class="text-h6 font-weight-medium pa-0 mb-0">Je remplace</v-card-title>
-          <span class="text-subtitle-2 text-medium-emphasis">
-            <v-icon icon="mdi-information-outline" color="remplacement" size="16" class="mr-2" />
-            Les remplacements et permutations que je dois faire sont affichées ici.
-          </span>
-          </div>
-
-        <v-card rounded="0" elevation="0" color="transparent" class="pa-0 mt-4"
-          style="position: sticky !important; top: 400px !important;">
-          <!-- <span class="pa-0 mb-2 text-body-1 font-weight-medium">Je remplace</span>   -->
-
-          <v-expand-transition>
-            <v-card-text class="pa-0">
-              <div v-if="acceptedAsAccepter.length > 0" class="d-flex flex-column ga-2">
-                <OwnDemandCard :isPoster="false" v-for="demand in acceptedAsAccepter" :key="demand.id" :demand="demand" :small="xs || md"/>
-              </div>
-              
-            </v-card-text>
-          </v-expand-transition>
-        </v-card>
-        </div>
+      <v-col cols="12" sm="12" md="4" v-if="!smAndDown">
+        <UserDemandsSidebar :pending-demands="pendingDemands" :accepted-as-poster="acceptedAsPoster"
+          :accepted-as-accepter="acceptedAsAccepter" />
       </v-col>
     </v-row>
 
+    <SidebarDrawer v-if="smAndDown" v-model="showSidebar">
+      <UserDemandsSidebar :pending-demands="pendingDemands" :accepted-as-poster="acceptedAsPoster"
+        :accepted-as-accepter="acceptedAsAccepter" />
+    </SidebarDrawer>
 
     <v-dialog v-model="loadingDemands" persistent width="300">
       <v-card rounded="xl" class="pa-2">
@@ -189,11 +173,11 @@
 
     <!-- Dialog pour ajouter une demande -->
 
-      <AddSubstitutionForm 
-        dialogMode="add" 
-        v-model:dialogVisible="showAddDialog"
-      />
- 
+    <AddSubstitutionForm dialogMode="add" v-model:dialogVisible="showAddDialog" />
+
+    <!-- Dialogue pour les règles de travail -->
+    <RulesDialog v-model="showRulesDialog" />
+
   </v-container>
 </template>
 
@@ -207,7 +191,9 @@ import { useDisplay } from "vuetify";
 import DemandCard from "@/components/Remplacer/DemandCard.vue";
 import ListHeader from "@/components/common/ListHeader.vue";
 import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
+import RulesDialog from "@/components/Dialogs/RulesDialog.vue";
 import { useRotationStore } from "@/stores/rotationStore.js";
+
 
 // Stores
 const substitutionStore = useSubstitutionStore();
@@ -219,6 +205,7 @@ const rotationStore = useRotationStore();
 const loadingUsers = ref(true);
 const loadingDemands = ref(false);
 const userShift = ref(null);
+const showSidebar = ref(false);
 
 const displayPending = ref(false);
 const displayAccepted = ref(false);
@@ -226,6 +213,7 @@ const searchQuery = ref('');
 const sortBy = ref('createdAt');
 const selectedFilter = ref('all');
 const showAddDialog = ref(false);
+const showRulesDialog = ref(false);
 
 // Options de tri
 const sortOptions = [
@@ -262,10 +250,10 @@ const getNestedValue = (obj, path) => {
   return path.split('.').reduce((acc, part) => acc && acc[part], obj);
 };
 
-  
+
 const activeRotation = computed(() => {
   return rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
- 
+
 });
 
 
@@ -284,7 +272,7 @@ const filterAndSortDemands = (demands) => {
 
   // Filtrage par statut
   if (selectedFilter.value && selectedFilter.value !== 'all') {
-    filteredDemands = filteredDemands.filter(demand => demand.type === selectedFilter.value);
+    filteredDemands = filteredDemands.filter(demand => demand.type === selectedFilter.value || demand.type === 'hybrid');
   }
 
   // Tri
@@ -390,17 +378,7 @@ watch(
 onMounted(async () => {
   try {
     loadingDemands.value = true;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const oneYearFromNow = new Date();
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-    await Promise.all([
- 
-      substitutionStore.fetchAllDemands({
-        startDate: today.toISOString(),
-        endDate: oneYearFromNow.toISOString()
-      })
-    ]);
+  
   } catch (err) {
     console.error("Erreur lors du chargement initial:", err);
   } finally {
@@ -435,5 +413,39 @@ onMounted(async () => {
 :deep(.v-fab__container) {
   margin-right: 16px !important;
   margin-bottom: 96px !important;
+}
+
+/* Indicateurs de catégories */
+.category-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 8px;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-indicator:hover {
+  transform: scale(1.1);
+}
+
+.category-indicator.pending {
+  background-color: rgb(var(--v-theme-pendingDemand));
+  color: rgb(var(--v-theme-onPendingDemand));
+}
+
+.category-indicator.accepted {
+  background-color: rgb(var(--v-theme-acceptedDemand));
+  color: rgb(var(--v-theme-onAcceptedDemand));
+}
+
+.category-indicator.todo {
+  background-color: rgb(var(--v-theme-remplacement));
+  color: rgb(var(--v-theme-background));
 }
 </style>

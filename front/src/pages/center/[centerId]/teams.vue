@@ -1,23 +1,15 @@
 <template>
   <v-container>
-    <div class="my-16 d-flex justify-space-between align-center">
-      <div class="d-flex flex-column">
-        <div class="d-flex align-center gap-2">
-          <v-btn
-            v-if="authStore.adminType === 'master'"
-            icon
-            variant="text"
-            @click="router.push('/center/centers')"
-            class="back-btn mr-2"
-          >
-            <v-icon>mdi-arrow-left</v-icon>
-          </v-btn>
-          <span class="text-h4 font-weight-medium">{{centerName}}</span>
-        </div>
-        <span class="text-h4 text-overline text-medium-emphasis">Liste des équipes et leurs membres</span>
-      </div>
-      <v-btn @click="openAddTeamDialog" color="onBackground" style="border-radius: 16px !important" height="48px"  class="px-4   add-team-btn" prepend-icon="mdi-plus">Ajouter une équipe</v-btn>
-    </div>
+
+
+     <MainTitle :title="centerName" subtitle="Liste des équipes et leurs membres" :backButton="authStore.adminType === 'master'">
+
+      <template #actions> 
+        <v-btn @click="openAddTeamDialog" color="onBackground" style="border-radius: 16px !important" height="48px"  class="px-4   add-team-btn" prepend-icon="mdi-plus">Ajouter une équipe</v-btn>
+      </template>
+
+      </MainTitle>
+
 
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6">

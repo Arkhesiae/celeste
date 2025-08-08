@@ -12,10 +12,7 @@ const props = defineProps({
   dialogMode: { type: String, required: true },
   dialogVisible: { type: Boolean, required: true },
   date: { type: String },
-  vacationsOfUser: {
-    type: Map,
-    required: true
-  },
+
   selectedVacation: {
     type: Object,
   }

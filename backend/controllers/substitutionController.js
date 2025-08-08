@@ -6,7 +6,9 @@ import { createDelayedTransaction, cancelDelayedTransaction } from '../services/
 import Transaction from '../models/Transaction.js';
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { categorize } from '../utils/categorizeDemand.js';
+import { generateShiftsMap } from '../utils/generateShiftsMap.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
+import { sendUserPoolNotification, buildUserPoolNotificationEmail } from '../services/email/userPoolNotificationEmail.js';
 
 
     
@@ -53,17 +55,13 @@ const getCenterDemands = async (req, res) => {
             }
         } : {};
 
-        const statusFilter = req.query.status && req.query.status !== 'undefined' 
-            ? { status: req.query.status } 
-            : { status: { $ne: 'canceled' } };
-
         const baseFilter = {
             centerId: user.centerId,
             deleted: false,
-            ...statusFilter
+            status: { $nin: ['canceled', 'completed'] }
         };
 
-        const [otherDemands, myDemands] = await Promise.all([
+        const [demands, myDemands] = await Promise.all([
             Substitution.find({
                 deleted: false,
                 ...baseFilter,
@@ -78,7 +76,7 @@ const getCenterDemands = async (req, res) => {
             }).sort({ 'posterShift.date': 1 })
         ]);
 
-        const unseenDemandIds = otherDemands
+        const unseenDemandIds = demands
             .filter(d => !d.seenBy.includes(userId))
             .map(d => d._id);
 
@@ -89,8 +87,11 @@ const getCenterDemands = async (req, res) => {
             );
         }
 
-        const categorizedDemands = await categorizeDemands(otherDemands, userId, myDemands);
-        res.status(200).json(categorizedDemands);
+
+        const categorizedDemands = await categorizeDemands(demands, userId);
+
+        const result = [...categorizedDemands, ...myDemands];
+        res.status(200).json(result);
     } catch (error) {
         console.error('Erreur en récupérant les demandes de substitution:', error);
         res.status(500).json({ 
@@ -100,14 +101,25 @@ const getCenterDemands = async (req, res) => {
     }
 };
 
-const categorizeDemands = async (otherDemands, userId, myDemands) => {
-    const categorizedDemands = [...myDemands];
+const categorizeDemands = async (demands, userId) => {
+    const categorizedDemands = [];
   
+    // Pré-calculer la map des shifts pour optimiser les performances
+    const openDemands = demands.filter(d => d.status === 'open');
+    let shiftsMap = null;
+    
+    if (openDemands.length > 0) {
+        try {
+            shiftsMap = await generateShiftsMap(openDemands, userId);
+        } catch (error) {
+            console.error('Erreur lors de la préparation de la map des shifts:', error);
+        }
+    }
   
-    await Promise.all(otherDemands.map(async (demand) => {
+    await Promise.all(demands.map(async (demand) => {
         try {
             if (demand.status === 'open') {
-                const categorizedDemand = await categorize(demand, userId);
+                const categorizedDemand = await categorize(demand, shiftsMap);
                 categorizedDemands.push(categorizedDemand);
             }
             else {
@@ -118,6 +130,7 @@ const categorizeDemands = async (otherDemands, userId, myDemands) => {
             throw err;
         }
     }));
+
 
     return categorizedDemands;
 };
@@ -226,16 +239,39 @@ const createDemand = async (req, res) => {
         // Calculer et afficher le pool d'utilisateurs pouvant accepter cette demande
         try {
             const userPool = await computeUserPool(demand);
-            console.log(`Pool d'utilisateurs pour la demande ${demand._id} (${demand.type}):`, {
-                totalUsers: userPool.length,
-                users: userPool.map(user => ({
-                    name: `${user.name} ${user.lastName}`,
-                    canSwitch: user.canSwitch,
-                    canReplace: user.canReplace,
-                    points: user.points,
-                    limit: user.limit
-                }))
-            });
+            // console.log(`Pool d'utilisateurs pour la demande ${demand._id} (${demand.type}):`, {
+            //     totalUsers: userPool.length,
+            //     users: userPool.map(user => ({
+            //         name: `${user.name} ${user.lastName}`,
+            //         canSwitch: user.canSwitch,
+            //         canReplace: user.canReplace,
+            //         points: user.points,
+            //         limit: user.limit
+            //     }))
+            // });
+
+            
+            // Envoyer les notifications par email aux utilisateurs du pool
+            if (userPool.length > 0) {
+                try {
+                    // Populer la demande avec les informations de l'utilisateur avant d'envoyer la notification
+                    const populatedDemand = await Substitution.findById(demand._id).populate('posterId', 'name lastName');
+                    
+                    sendUserPoolNotification(userPool, populatedDemand)
+                        .then(results => {
+                            console.log(`📧 Notifications envoyées avec succès:`, {
+                                demandId: demand._id,
+                                totalSent: results.sent,
+                                totalFailed: results.failed
+                            });
+                        })
+                        .catch(error => {
+                            console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                        });
+                } catch (emailError) {
+                    console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+                }
+            }
         } catch (error) {
             console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
         }
@@ -399,8 +435,7 @@ const acceptRequest = async (req, res) => {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
-        const shift = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
-
+       
         // Mise à jour de la demande
         const updatedRequest = await Substitution.findByIdAndUpdate(
             requestId,
@@ -412,12 +447,14 @@ const acceptRequest = async (req, res) => {
             { new: true }
         );
 
+        const shift = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
+
     
         // Création d'une transaction différée si des points sont en jeu
         if (request.points > 0) {
-            if (user.points + request.points > MAX_POINTS_TO_ACCEPT_REQUEST) {
-                return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous avez déjà assez de points' });
-            }
+            // if (user.points + request.points > MAX_POINTS_TO_ACCEPT_REQUEST) {
+            //     return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous avez déjà assez de points' });
+            // }
             await createDelayedTransaction({
                 sender: request.posterId,
                 receiver: userId,
@@ -429,9 +466,12 @@ const acceptRequest = async (req, res) => {
             });
         }
 
+
+ 
         res.status(200).json({
             message: 'Demande acceptée avec succès',
-            request: updatedRequest
+            request: updatedRequest,
+            newShiftData: shift[0]
         });
     } catch (error) {
         console.error('Erreur lors de l\'acceptation de la demande:', error);
@@ -552,12 +592,14 @@ const swapShifts = async (req, res) => {
             });
         }
 
-  
+
+        const shift = await computeShiftOfUserWithSubstitutions(new Date(demand.posterShift.date), userId);
 
         res.status(200).json({
             message: 'Échange de vacations effectué avec succès',
             demand: updatedDemand,
-            acceptedShiftPoints: acceptedShiftPoints
+            acceptedShiftPoints: acceptedShiftPoints,
+            newShiftData: shift[0]
         });
     } catch (error) {
         console.error('Erreur lors de l\'échange des vacations:', error);
@@ -611,11 +653,14 @@ const unacceptRequest = async (req, res) => {
             { new: true }
         );
 
-        const requestToReturn = await categorize(updatedRequest, userId);
+        const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);
+        const requestToReturn = await categorizeDemands([updatedRequest], userId);
+
 
         res.status(200).json({
             message: 'Acceptation annulée avec succès',
-            request: requestToReturn
+            request: requestToReturn[0],
+            newShiftData: shift[0]
         });
     } catch (error) {
         console.error('Erreur lors de l\'annulation de l\'acceptation:', error);
@@ -692,6 +737,59 @@ const getUserPool = async (req, res) => {
     }
 };
 
+const recategorizeSubstitutions = async (req, res) => {
+    const userId = req.user.userId;
+    const { substitutionIds } = req.body;
+
+    if (!userId || !substitutionIds) {
+        return res.status(400).json({ error: 'Paramètres manquants' });
+    }
+
+    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } });
+
+
+    const categorizedSubstitutions = await categorizeDemands(substitutions, userId);
+
+    res.status(200).json({ message: 'Substitutions recatégorisées avec succès', categorizedSubstitutions });
+};
+
+// Endpoint pour visualiser le template d'email
+const previewEmailTemplate = async (req, res) => {
+    try {
+        const demandId = req.params.id;
+
+        // Récupération de la demande avec populate
+        const demand = await Substitution.findById(demandId).populate('posterId', 'name lastName');
+        if (!demand) {
+            return res.status(404).json({ error: 'Demande non trouvée' });
+        }
+
+        // Générer le template d'email
+        const { subject, html, text } = buildUserPoolNotificationEmail(demand);
+
+        res.status(200).json({
+            subject,
+            html,
+            text,
+            demand: {
+                id: demand._id,
+                type: demand.type,
+                posterName: demand.posterId?.name,
+                posterLastName: demand.posterId?.lastName,
+                shiftDate: demand.posterShift.date,
+                shiftName: demand.posterShift.name,
+                startTime: demand.posterShift.startTime,
+                endTime: demand.posterShift.endTime,
+                points: demand.points,
+                comment: demand.comment
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de la génération du template:', error);
+        res.status(500).json({ error: 'Une erreur est survenue lors de la génération du template' });
+    }
+};
+
 export {
     getCenterDemands,
     getUserDemands,
@@ -707,5 +805,7 @@ export {
     markInterest,
     unacceptRequest,
     detectTeamChangeConflicts,
-    getUserPool
+    getUserPool,
+    recategorizeSubstitutions,
+    previewEmailTemplate
 }; 

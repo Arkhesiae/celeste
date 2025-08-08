@@ -1,11 +1,9 @@
 <template>
   <v-container>
-    <div class=" my-16 d-flex justify-space-between align-start flex-wrap">
-      <div class="d-flex flex-column">
-      <span class="text-h4 font-weight-medium">Liste des utilisateurs</span>
-      <span class="text-h4 text-overline text-medium-emphasis">gérer et organiser les membres</span>
-    </div>
-      <v-select
+    <MainTitle title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
+
+      <template #actions> 
+        <v-select
           v-if="authStore.adminType === 'master'"
           v-model="selectedCenterId"
           :items="centers"
@@ -24,7 +22,10 @@
           max-width="300px"
           @update:model-value="handleCenterChange"
         />
-    </div>
+      </template>
+
+    </MainTitle>
+
 
     <div class="list-header-container"> 
     <ListHeader

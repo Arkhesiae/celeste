@@ -104,7 +104,7 @@
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Permutation</span>
         </v-chip>
-        <v-chip v-if="demand?.type === 'hybrid'" class="hybrid-chip type-chip " color="remplacement" variant="flat"
+        <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="remplacement" variant="flat"
           size="small" rounded="lg">
           <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
           <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
@@ -139,31 +139,35 @@
 
 
   <!-- Dialog pour afficher les points -->
-  <v-dialog v-model="showPointsDialog" max-width="500px">
-    <v-card class="pa-6" rounded="xl">
-      <v-card-title class="text-h6 pa-0 mb-2">
-        Points de {{ demand?.posterShift?.name }}
-      </v-card-title>
-      <v-card-text class="pa-0">
-        <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation" variant="flat"
-          size="small" rounded="lg" class="mr-2">
-          <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
-          <span class="font-weight-bold mr-2">{{  getDayName(switchDay.shift) }}</span>
-          <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
-          <span class="font-weight-bold">{{ switchDay.points }}</span>
-        </v-chip>
-        <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat" size="small"
-          rounded="lg" class="mr-2">
-          <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
-          <span>{{  }}</span>
-          <LogoCopy color="background" style="top:-2px; position: relative;" />
-          <span class="font-weight-bold">{{ demand?.points }}</span>
-        </v-chip>
+    <!-- Dialog pour afficher les points -->
+    <v-dialog v-model="showPointsDialog" max-width="300px">
+      <v-card class="pa-6" rounded="xl">
+        <v-card-title class="text-h6 pa-0 mb-2">
+          Points de {{ demand?.posterShift?.name }}
+        </v-card-title>
+        <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
+        <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
+          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh" variant="flat"
+            size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
+            <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
+            <span class="font-weight-bold mr-2">{{ getDayName(switchDay.shift) }}</span>
+            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
+            <span class="font-weight-bold">{{ switchDay.points }}</span>
+          </v-chip>
+          <span class="text-overline" v-if="demand?.points > 0 && demand?.type !== 'switch'"> Remplacement </span>
+          <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="surfaceContainerHigh" variant="flat"
+            size="small" rounded="lg" class="font-weight-bold point-chip flex-grow-1">
+            <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
+            <span>{{ }}</span>
+            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
+            <span class="font-weight-bold">{{ demand?.points }}</span>
+          </v-chip>
 
 
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
 
 
   <!-- Dialog pour afficher le commentaire -->
@@ -354,7 +358,8 @@ const getDayName = (dayId) => {
 }
 
 .to-do-demand-card .type-chip {
-  color: rgba(var(--v-theme-background), 0.99) !important;
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-remplacement), 0.99) !important;
 }
 
 .pending-demand-card .comment-chip {

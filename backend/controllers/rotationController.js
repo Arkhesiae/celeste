@@ -50,13 +50,15 @@ const saveRotation = async (req, res) => {
                 if (day.startTime && day.endTime) {
                     day.endsNextDay = computeWorkDuration(day.startTime, day.endTime).endsNextDay;
                 }
-               
+                
                     day.defaultPoints = computeWorkDuration(day.startTime, day.endTime).points;
+                    day.defaultPoints = 10
                 
             }
             if (day.variants) {
                 day.variants.forEach((variant) => {
                     variant.defaultPoints = computeWorkDuration(variant.startTime, variant.endTime).points;
+                    variant.defaultPoints = 10
                 });
             }
         });
@@ -268,11 +270,12 @@ const updateDayInRotation = async (req, res) => {
                 const { endsNextDay, points } = computeWorkDuration(updatedDay.startTime, updatedDay.endTime);
                 updatedDay.endsNextDay = endsNextDay;
                 updatedDay.defaultPoints = points;
-                
+                updatedDay.defaultPoints = 10
             }
             if (updatedDay.variants) {
                 updatedDay.variants.forEach((variant) => {
                     variant.defaultPoints = computeWorkDuration(variant.startTime, variant.endTime).points;
+                    variant.defaultPoints = 10
                 });
             }
         }
@@ -346,11 +349,13 @@ const updateRotation = async (req, res) => {
                 if (day.type !== 'rest') {
                     if (day.startTime && day.endTime) {
                         day.defaultPoints = computeWorkDuration(day.startTime, day.endTime).points;
+                        day.defaultPoints = 10
                     }
                 }
                 if (day.variants) {
                     day.variants.forEach((variant) => {
                         variant.defaultPoints = computeWorkDuration(variant.startTime, variant.endTime).points;
+                        variant.defaultPoints = 10
                     });
                 }
             });

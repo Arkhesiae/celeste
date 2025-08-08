@@ -1,12 +1,14 @@
 <template>
   <v-container>
-    <div class="my-16 d-flex justify-space-between align-center">
-      <div class="d-flex flex-column">
-        <span class="text-h4 font-weight-medium ">Liste des centres</span>
-        <span class="text-h4 text-overline text-medium-emphasis">gérer et organiser les centres</span>
-      </div>
-      <v-btn @click="openAddCenterDialog" color="onBackground" height="48px" style="border-radius: 16px !important" class='px-4 add-center-btn' prepend-icon="mdi-plus">Ajouter un centre</v-btn>
-    </div>
+
+    <MainTitle title="Liste des centres" subtitle="Gérer et organiser les centres">
+
+      <template #actions> 
+        <v-btn @click="openAddCenterDialog" color="onBackground" height="48px" style="border-radius: 16px !important" class='px-4 add-center-btn' prepend-icon="mdi-plus">Ajouter un centre</v-btn>
+      </template>
+
+      </MainTitle>
+
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6" >
         <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground"  >

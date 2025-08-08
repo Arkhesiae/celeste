@@ -82,10 +82,16 @@ export function useAppInitialization() {
     if (onProgress) onProgress('shifts');
 
     initializationStore.currentlyLoading = 'substitutions';
-    await substitutionStore.fetchAllDemands({
-      startDate: new Date(Date.UTC(new Date().getFullYear() - 1, new Date().getMonth() - 1, 1)).toISOString(),
-      endDate: new Date(Date.UTC(new Date().getFullYear() + 1, new Date().getMonth() + 2, 0, 23, 59, 59, 999)).toISOString()
-    });
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const oneYearFromNow = new Date();
+    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
+ 
+      substitutionStore.fetchAllDemands({
+        startDate: today.toISOString(),
+        endDate: oneYearFromNow.toISOString()
+      })
+    
     initializationStore.updateInitializationState('substitutions', true);
     if (onProgress) onProgress('substitutions');
   };

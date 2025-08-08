@@ -813,8 +813,6 @@ const getVacation = computed(() => {
 
   // Vérifier d'abord la vacation d'aujourd'hui
   const todayVacation = vacationsOfUser.value.get(todayISO);
-
-  console.log(todayVacation)
   if (todayVacation && todayVacation.shift) {
     return todayVacation;
   }
@@ -877,44 +875,34 @@ const stats = ref({
   points: 0
 });
 
-// Charger les données
-const loadData = async () => {
-  try {
-    isLoading.value = true;
-    await substitutionStore.fetchAllDemands({
-      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-    });
-
-    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-    await shiftStore.fetchShiftsWithSubstitutions({
-      startDate: new Date(startDate).setUTCHours(0, 0, 0, 0),
-      endDate: new Date(endDate).setUTCHours(23, 59, 59, 999)
-    });
-
-
-    // // Charger les jours de travail
-    // const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));
-    // const result = await vacationService.fetchWorkdaysOfUser(authStore.userId, flatArray);
-    // result.forEach(({ date, shift, teamObject }) => {
-    //   vacationsOfUser.value.set(date, { shift, teamObject });
-    // });
-
-
-  } catch (error) {
-    console.error('Erreur lors du chargement des données:', error);
-
-  } finally {
-    isLoading.value = false;
+watch(calendarDays, async (newCalendarDays) => {
+  if (newCalendarDays && newCalendarDays.length > 0) {
+    const startDate = newCalendarDays[0][0].date.toISOString();
+    const endDate = newCalendarDays[newCalendarDays.length - 1][6].date.toISOString();
+    await Promise.all([
+      fetchUserVacations(startDate, endDate),
+      fetchSubstitutions(startDate, endDate)
+    ]);
   }
+});
+
+const fetchUserVacations = async (startDate, endDate) => {
+  await shiftStore.fetchShiftsWithSubstitutions({
+    startDate: startDate,
+    endDate: endDate
+  });
+
 };
 
-// Observer les changements de mois pour recharger les données
-watch([currentMonth, currentYear], () => {
-  loadData();
-});
+const fetchSubstitutions = async (startDate, endDate) => {
+  await substitutionStore.fetchAllDemands({
+    startDate: startDate,
+    endDate: endDate
+  });
+};
+
+
+
 
 let observer = null;
 const calendarCard = ref(null);
@@ -929,7 +917,7 @@ onUnmounted(() => {
 
 const targetNumber = 500;
 
-onMounted(() => {
+onMounted(async   () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -951,7 +939,15 @@ onMounted(() => {
     observer.observe(teamCard.value.$el);
   }
 
-  loadData();
+  // Vérifier que calendarDays est défini et a des éléments
+  if (calendarDays.value && calendarDays.value.length > 0) {
+    const startDate = calendarDays.value[0][0].date.toISOString();
+    const endDate = calendarDays.value[calendarDays.value.length - 1][6].date.toISOString();
+    await Promise.all([
+        fetchUserVacations(startDate, endDate),
+        fetchSubstitutions(startDate, endDate)
+      ]);
+  }
 });
 
 

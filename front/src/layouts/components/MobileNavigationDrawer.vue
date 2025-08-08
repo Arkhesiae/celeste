@@ -4,7 +4,7 @@
     close-on-content-click scrim="rgba(0,0,0,1)" v-if="smAndDown">
     <!-- Parent Container -->
     <v-card class="pt-16 pa-8 d-flex flex-column align-center flex-0-0 pb-8" tile color="background" flat
-      style="width: 100%; height: 100vh; overflow-y: auto; z-index: 25000 !important;">
+      style="width: 100%; overflow-y: auto; z-index: 25000 !important;">
       <!-- User Avatar Section -->
       <v-scale-transition appear>
 
@@ -156,8 +156,8 @@ const menuItemsLogged = [
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.adminType === 'master' ? '/center/centers' : '/center/' + authStore.centerId + '/teams', title: authStore.adminType === 'master' ? 'Centres' : 'Mon centre' },
-  { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
-  { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
+  // { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
+  // { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
   // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
   // { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
 ];

@@ -98,7 +98,6 @@ const sendAnnouncement = async (req, res) => {
         isActive: true 
       }).select('email');
       userEmails = users.map(user => user.email);
-      console.log('🔑 User Emails: ', userEmails);
     }
 
     if (userEmails.length === 0) {
@@ -115,24 +114,7 @@ const sendAnnouncement = async (req, res) => {
     };
 
     // Envoi des emails
-
-    let results;
-    if (process.env.NODE_ENV !== 'production') {  
-      console.log('🔑 Bulk Announcement Email: ', userEmails);
-      console.log('🔑 Template Type: ', templateType);
-      console.log('🔑 Template Data: ', templateData);
-      
-      results = {
-        total: userEmails.length,
-        sent: userEmails.length,
-        failed: 0,
-        errors: []
-      };
-    }
-
-    else {
-      results = await sendBulkAnnouncementEmail(userEmails, templateType, templateData);
-    }
+    const results = await sendBulkAnnouncementEmail(userEmails, templateType, templateData);
 
     // Sauvegarde de l'annonce en base
     const announcement = new Announcement({
@@ -152,7 +134,7 @@ const sendAnnouncement = async (req, res) => {
     await announcement.save();
 
     // Log de l'action
-    console.log(`📧 Annonce envoyée`, {
+    console.log(`📧 Annonce envoyée par ${req.user.email}:`, {
       templateType,
       totalRecipients: results.total,
       sent: results.sent,
@@ -248,10 +230,9 @@ const getStats = async (req, res) => {
     ]);
 
     const recentActivity = await Announcement.find()
-      .populate('sentBy', 'name lastName')
       .sort({ sentAt: -1 })
       .limit(5)
-      .select('templateType message sentAt results testMode sentBy')
+      .select('templateType message sentAt results testMode')
       .lean();
 
     res.json({

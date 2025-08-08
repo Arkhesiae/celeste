@@ -20,7 +20,7 @@
         v-bind="props"
         class="text-overline text-medium-emphasis ml-2"
         >
-          alpha 0.625v1
+          alpha-20250810.1
         </span>
       </div>
       <div v-else>
@@ -28,7 +28,7 @@
         v-bind="props"
         class="text-overline text-medium-emphasis ml-2"
         >
-          30/06/2025
+          10/08/2025
         </span>
       </div>
       </v-slide-y-transition>

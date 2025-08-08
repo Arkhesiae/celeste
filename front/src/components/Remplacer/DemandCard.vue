@@ -12,13 +12,13 @@
       </v-card-title>
       <template #append>
         <div class="d-flex align-center ga-2">
-          <div class="d-flex align-center ga-2" v-if="!smAndDown">
+          <div class="d-flex align-center ga-2" v-if="!smAndDown && !small">
             <v-avatar size="24" variant="tonal" class="cursor-pointer" @click="showUserDialog = true">
               <v-img v-if="getUserById(demand?.posterId)?.avatar"
                 :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
               <v-icon size="x-small" v-else>mdi-account</v-icon>
             </v-avatar>
-            <span v-if="!smAndDown" class="text-medium-emphasis font-weight-bold text-caption me-2">
+            <span v-if="!smAndDown && !small" class="text-medium-emphasis font-weight-bold text-caption me-2">
               {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
             </span>
 
@@ -30,18 +30,18 @@
               <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="surfaceContainerHighest" variant="flat" size="small"
           rounded="lg">
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
-          <span v-if="!smAndDown">Permutation</span>
+          <span v-if="!smAndDown && !small">Permutation</span>
         </v-chip>
         <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="surfaceContainerHighest" variant="flat"
           size="small" rounded="lg">
           <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
           <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
-          <span v-if="!smAndDown">Hybride</span>
+          <span v-if="!smAndDown && !small">Hybride</span>
         </v-chip>
         <v-chip v-if="demand?.type === 'substitution'" class="type-chip" color="surfaceContainerHighest" variant="flat"
           size="small" rounded="lg">
           <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
-          <span v-if="!smAndDown">Remplacement</span>
+          <span v-if="!smAndDown && !small">Remplacement</span>
         </v-chip>
 
 
@@ -98,7 +98,7 @@
 
           <div class="d-flex align-self-start justify-end flex-column ga-2">
 
-            <div v-if="smAndDown" class="d-flex align-center ga-2 justify-end">
+            <div v-if="smAndDown || small" class="d-flex align-center ga-2 justify-end">
               <v-avatar size="24" variant="tonal" class="cursor-pointer" @click.stop="showUserDialog = true">
                 <v-img v-if="getUserById(demand?.posterId)?.avatar"
                   :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
@@ -137,20 +137,15 @@
               <v-icon>mdi-alert-circle-outline</v-icon>
             </v-chip>
             <div v-else class="d-flex align-center ga-2">
-              <v-chip v-for="limit in demand?.limit" rounded="lg" variant="tonal" color="error" size="small">
-                <div v-if="limit === 'alreadyWorking'">
-                  Travaille ce jour
-                </div>
-                <div v-if="limit === 'insufficientRest'">
-                  Pas assez de repos
-                </div>
-                <div v-if="limit === '35limit'">
-                  Pas de repos de 35h
-                </div>
-                <div v-if="limit === '48hLimit'">
-                  Limite 48h
-                </div>
-              </v-chip>
+              <v-tooltip style="z-index: 3001 !important" class="rounded-lg" v-for="limit in demand?.limit" :text="basicRules.find(rule => rule.code === limit)?.text" location="top">
+                <template #activator="{ props }">
+                  <v-chip rounded="lg" variant="tonal" color="error" size="small" v-bind="props">
+                    <v-icon class="mr-1" >{{ basicRules.find(rule => rule.code === limit)?.icon }}</v-icon>
+                    {{ basicRules.find(rule => rule.code === limit)?.shortName }}
+                  </v-chip>
+                </template>
+              </v-tooltip>
+              
             </div>
           </div>
           <!-- <v-chip rounded="lg" variant="tonal"
@@ -250,27 +245,27 @@
 
     </v-dialog>
 
-
     <!-- Dialog pour afficher les points -->
-    <!-- Dialog pour afficher les points -->
-    <v-dialog v-model="showPointsDialog" max-width="500px">
+    <v-dialog v-model="showPointsDialog" max-width="300px">
       <v-card class="pa-6" rounded="xl">
         <v-card-title class="text-h6 pa-0 mb-2">
           Points de {{ demand?.posterShift?.name }}
         </v-card-title>
-        <v-card-text class="pa-0">
-          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation" variant="flat"
-            size="small" rounded="lg" class="mr-2">
+        <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
+        <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
+          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh" variant="flat"
+            size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
             <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
             <span class="font-weight-bold mr-2">{{ getDayName(switchDay.shift) }}</span>
-            <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
+            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
             <span class="font-weight-bold">{{ switchDay.points }}</span>
           </v-chip>
-          <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat"
-            size="small" rounded="lg" class="mr-2">
+          <span class="text-overline" v-if="demand?.points > 0 && demand?.type !== 'switch'"> Remplacement </span>
+          <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="surfaceContainerHigh" variant="flat"
+            size="small" rounded="lg" class="font-weight-bold point-chip flex-grow-1">
             <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
             <span>{{ }}</span>
-            <LogoCopy color="background" style="top:-2px; position: relative;" />
+            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
             <span class="font-weight-bold">{{ demand?.points }}</span>
           </v-chip>
 
@@ -278,6 +273,7 @@
         </v-card-text>
       </v-card>
     </v-dialog>
+
 
     <!-- Dialog d'informations utilisateur -->
     <v-dialog v-model="showUserDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
@@ -311,18 +307,8 @@
           <div v-for="limit in demand?.limit" :key="limit" class="d-flex align-center mb-2">
             <v-icon color="error" class="me-2">mdi-alert-circle-outline</v-icon>
             <span class="text-body-2">
-              <div v-if="limit === 'alreadyWorking'">
-                Travaille ce jour
-              </div>
-              <div v-if="limit === 'insufficientRest'">
-                Pas assez de repos
-              </div>
-              <div v-if="limit === '35limit'">
-                Pas de repos de 35h
-              </div>
-              <div v-if="limit === '48hLimit'">
-                Limite 48h
-              </div>
+              {{ basicRules.find(rule => rule.code === limit)?.shortName }}
+    
             </span>
           </div>
         </v-card-text>
@@ -391,6 +377,10 @@ const props = defineProps({
   demand: {
     type: Object,
     required: true
+  },
+  small: {
+    type: Boolean,
+    default: false
   }
 })
 const { smAndDown } = useDisplay()
@@ -436,6 +426,66 @@ const showConfirmationSwapDialog = ref(false)
 const userHasShift = ref(false)
 const userShift = ref(null)
 const showErrorDialog = ref(false)
+// Règles de base avec propriété computed
+const basicRules = [
+  {
+    id: 0,
+    shortName: 'Travaille ce jour',
+    icon: 'mdi-account-arrow-left-outline',
+    text: 'Une vacation est déjà prévue pour ce jour',
+    code: 'alreadyWorking'
+  },
+  {
+    id: 1,
+    shortName: 'Pas assez de repos',
+    icon: 'mdi-clock-outline',
+    text: 'Une période de repos minimale de 11 heures après une période de service.',
+    code: 'insufficientRest'
+  },
+  {
+    id: 2,
+    shortName: 'Repos <35h consécutives',
+    icon: 'mdi-calendar-week',
+    text: 'Un agent doit bénéficier d\'une période de repos de 35 heures consécutives pour toute période de 7 jours glissants.',
+    code: '35limit'
+  },
+  {
+    id: 3,
+    shortName: 'Limite 48h max',
+    icon: 'mdi-chart-timeline-variant',
+    text: 'Une durée hebdomadaire du travail effectif ne pouvant excéder ni 48 heures sur 7 jours glissants',
+    code: '48hlimit'
+  }
+]
+
+// Règles supplémentaires avec propriété computed
+const additionalRules = [
+  {
+    id: 4,
+    icon: 'mdi-calendar-remove',
+    text: 'Un agent ne peut travailler plus de 5 jours consécutifs, temps de trajet exclu.',
+    computed: false
+  },
+  {
+    id: 5,
+    icon: 'mdi-bed',
+    text: 'Un agent bénéficie d\'une période de repos minimale de 12 heures après une vacation de contrôle de nuit.',
+    computed: false
+  },
+  {
+    id: 6,
+    icon: 'mdi-bread-slice',
+    text: 'Un agent ne peut exercer plus de deux vacations de contrôle consécutives empiétant sur la plage 00 h 00-06 h 00.',
+    computed: false
+  },
+  {
+    id: 7,
+    icon: 'mdi-moon-waning-crescent ',
+    text: 'Un agent bénéficie d\'une période de repos minimale de 48 heures après deux vacations consécutives de contrôle de nuit.',
+    computed: false
+  }
+]
+
 
 const isInterested = computed(() => {
   return props.demand?.interested?.includes(authStore.userId)

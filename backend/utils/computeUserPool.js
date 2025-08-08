@@ -1,7 +1,6 @@
 import User from '../models/User.js';
-import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
 import { categorize } from './categorizeDemand.js';
-import { getTeamAtGivenDate } from './getTeamAtGivenDate.js';
+import { generateShiftsMap } from './generateShiftsMap.js';
 
 /**
  * Calcule le pool d'utilisateurs pouvant potentiellement accepter une demande
@@ -22,14 +21,39 @@ const computeUserPool = async (demand) => {
             registrationStatus: 'verified'
         });
 
-    
         const userPool = [];
+
+        // Générer un map de shifts pour chaque utilisateur
+        const userShiftsMap = new Map();
+        
+        // Pré-calculer les maps des shifts pour tous les utilisateurs en parallèle
+        const shiftsMapPromises = users.map(async (user) => {
+            try {
+                const shiftsMap = await generateShiftsMap([demand], user._id);
+                return { userId: user._id.toString(), shiftsMap };
+            } catch (error) {
+                return { userId: user._id.toString(), shiftsMap: new Map() };
+            }
+        });
+
+        // Attendre que toutes les maps soient générées
+        const shiftsMapResults = await Promise.all(shiftsMapPromises);
+        
+        // Stocker les maps dans un objet avec l'ID de l'utilisateur comme clé
+        shiftsMapResults.forEach(({ userId, shiftsMap }) => {
+            userShiftsMap.set(userId, shiftsMap);
+        });
+
+       
 
         // Analyser chaque utilisateur
         for (const user of users) {
             try {
+                // Récupérer la map des shifts pour cet utilisateur
+                const userShifts = userShiftsMap.get(user._id.toString()) || new Map();
+                
                 // Utiliser la fonction categorize pour obtenir les limites de l'utilisateur
-                const categorizedDemand = await categorize(demand, user._id);
+                const categorizedDemand = await categorize(demand, userShifts);
                 
                 // Déterminer si l'utilisateur peut accepter la demande selon le type
                 let canAccept = false;
@@ -75,7 +99,8 @@ const computeUserPool = async (demand) => {
                         canSwitch,
                         canReplace,
                         limit: categorizedDemand.limit,
-                        rest: categorizedDemand.rest
+                        rest: categorizedDemand.rest,
+                        shiftsMap: userShifts // Inclure la map des shifts pour cet utilisateur
                     });
                 }
             } catch (error) {
@@ -84,6 +109,7 @@ const computeUserPool = async (demand) => {
             }
         }
 
+        //console.log("User pool généré pour la demande", demand._id, userPool);
         return userPool;
     } catch (error) {
         console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);

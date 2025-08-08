@@ -13,9 +13,11 @@ import {
     swapShifts,
     cancelDemand,
     checkUserShift,
+    recategorizeSubstitutions,
     markInterest,
     unacceptRequest,
-    detectTeamChangeConflicts
+    detectTeamChangeConflicts,
+    previewEmailTemplate
 } from '../controllers/substitutionController.js';
 
 // Routes protégées par token
@@ -32,11 +34,15 @@ router.post('/:id/swap', verifyToken, swapShifts);
 router.post('/:id/cancel', verifyToken, cancelDemand);
 router.post('/:id/unaccept', verifyToken, unacceptRequest);
 router.delete('/:id/delete', verifyToken, deleteDemand);
+router.post('/recategorize', verifyToken, recategorizeSubstitutions);
 
 router.get('/check-shift/:date', verifyToken, checkUserShift);
 
 router.get('/:id/seen-count', verifyToken, getSeenCount);
 
 router.post('/detect-team-change-conflicts', verifyToken, detectTeamChangeConflicts);
+
+// Route pour visualiser le template d'email (dev uniquement)
+router.get('/:id/preview-email', verifyToken, previewEmailTemplate);
 
 export default router;

@@ -1,12 +1,9 @@
 <template>
   <v-container>
-    <div class=" my-16 d-flex justify-space-between align-center">
+    <MainTitle title="Nouvelles inscriptions" subtitle="Gérer les nouvelles inscriptions">
 
-      <div class="d-flex flex-column">
-      <span class="text-h4 font-weight-medium">Nouvelles inscriptions</span>
-      <span class="text-h4 text-overline text-medium-emphasis">gérer les nouvelles inscriptions</span>
-    </div>
-      <v-select
+      <template #actions> 
+        <v-select
           v-if="authStore.adminType === 'master'"
           v-model="selectedCenterId"
           :items="centers"
@@ -23,7 +20,10 @@
           max-width="300px"
           @update:model-value="handleCenterChange"
         />
-    </div>
+      </template>
+
+    </MainTitle>
+    
     
 
     <v-row class="justify-space-between align-center mb-4">

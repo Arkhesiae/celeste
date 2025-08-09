@@ -4,12 +4,12 @@
     close-on-content-click scrim="rgba(0,0,0,1)" v-if="smAndDown">
     <!-- Parent Container -->
     <v-card class="pt-16 pa-8 d-flex flex-column align-center flex-0-0 pb-8" tile color="background" flat
-      style="width: 100%; overflow-y: auto; z-index: 25000 !important;">
+      style="width: 100%; height: 100%; overflow-y: auto; z-index: 25000 !important;">
       <!-- User Avatar Section -->
       <v-scale-transition appear>
 
         <v-card max-width="400px" style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
-          class="my-16 pa-4 d-flex justify-space-between" width="100%"
+          class="flex-0-0 my-16 pa-4 d-flex justify-space-between" width="100%"
           @click="router.push({ path: '/profile/' + authStore.userId })" v-if="isLoggedIn">
 
           <div class="d-flex justify-space-between align-center ga-2">

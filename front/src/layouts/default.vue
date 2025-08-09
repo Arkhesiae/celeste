@@ -34,7 +34,7 @@
       </v-main>
     </v-fade-transition>
     <BottomNavigation />
-
+    <AdditionnalSnackbar /> 
     <GlobalSnackbar />
   </div>
 </template>
@@ -48,7 +48,7 @@ import AppBar from './components/AppBar.vue';
 import LoginButtons from './components/LoginButtons.vue';
 import GlobalSnackbar from './components/GlobalSnackbar.vue';
 import BottomNavigation from './components/BottomNavigation.vue';
-
+import AdditionnalSnackbar from './components/AdditionnalSnackbar.vue';
 
 const isDev = ref(import.meta.env.DEV);
 const initializationStore = useInitializationStore();

@@ -237,11 +237,12 @@ const dialogOpen = ref(false); // Pour le dialog mobile
 
 function parseReleaseDate(dateStr) {
   // Si c'est déjà un format ISO ou reconnu, ça marche directement
-  let date = new Date(dateStr);
-  if (!isNaN(date)) return date;
+  
+
 
   // Sinon, on tente le format dd/mm/yyyy
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dateStr);
+
   if (match) {
     const [, day, month, year] = match;
     return new Date(`${year}-${month}-${day}T00:00:00`);
@@ -256,7 +257,8 @@ function getStatus(versions) {
   const sorted = [...versions].sort((a, b) => parseReleaseDate(b.releaseDate) - parseReleaseDate(a.releaseDate));
   return sorted.map((v, idx) => {
     const releaseDate = parseReleaseDate(v.releaseDate);
-    if (releaseDate > today) {
+    console.log(releaseDate, today);
+    if (releaseDate >= today) {
       return { ...v, status: 'future' };
     }
     if (idx === 0) {

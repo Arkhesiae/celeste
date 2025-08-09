@@ -75,7 +75,7 @@
                     required rounded="xl" v-model="password" type="password" autocomplete="new-password"
                     :rules="[rules.required]" @keyup.enter="handleLogin" />
 
-                  <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" />
+                  <v-checkbox label="Rester connecté" v-model="stayConnected" class="mobile-checkbox" />
 
                   <v-btn variant="text" color="primary" @click="openForgotPasswordDialog" class="mb-4 ps-1">
                     Mot de passe oublié ?

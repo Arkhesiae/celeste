@@ -43,12 +43,12 @@
           </div>
         </template>
       </v-card-item>
-
+<!-- 
       <v-btn v-if="hasNoDemand" color="onBackground" rounded="lg" size="small" variant="outlined" style="bottom: 22px; right: 20px; position: absolute;" class="text-none "
             @click="$emit('openAbsenceDialog', 'Congé')">
             <v-icon start>mdi-account-question-outline</v-icon>
             Absence
-      </v-btn> 
+      </v-btn>  -->
     </v-card>
   
 

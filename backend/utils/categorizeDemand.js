@@ -47,17 +47,17 @@ const categorize = async (demand, shiftsMap = null) => {
        
         const has35hRest = restOk;
 
-        if (!computeRest.ok) console.warn('Repos minimum de 11h non respecté');
-        if (!has35hRest) console.warn('Pas de repos de 35h trouvé dans les 7 jours glissants');
-        if (invalidWindow) console.log("invalidWindow", invalidWindow);
-        if (!isWithin48h) console.warn('Plus de 48h de travail sur 7 jours glissants');
+        // if (!computeRest.ok) console.warn('Repos minimum de 11h non respecté');
+        // if (!has35hRest) console.warn('Pas de repos de 35h trouvé dans les 7 jours glissants');
+        // if (invalidWindow) console.log("invalidWindow", invalidWindow);
+        // if (!isWithin48h) console.warn('Plus de 48h de travail sur 7 jours glissants');
 
         demandWithLimit.rest = {
             before: computeRest.restBefore,
             after: computeRest.restAfter
         };
 
-        console.log("demandWithLimit", demandWithLimit.rest.before/60, demandWithLimit.rest.after/60);
+        // console.log("demandWithLimit", demandWithLimit.rest.before/60, demandWithLimit.rest.after/60);
         if (!computeRest.ok) {
             demandWithLimit.limit.push('insufficientRest');
         }
@@ -141,7 +141,7 @@ function getAllShiftsSorted(shiftsMap) {
     }
 
 
-    console.log("result", result.length);
+    //  console.log("result", result.length);
     return result.sort((a, b) => new Date(a.date) - new Date(b.date));
 }
 

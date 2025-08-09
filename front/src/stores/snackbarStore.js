@@ -13,7 +13,7 @@ export const useSnackbarStore = defineStore('snackbar', () => {
   const show = ref(false);
   const timeout = ref(3000);
   const messageQueue = ref([]);
-
+  const additionalMessageQueue = ref([]);
 
   // Actions
 
@@ -70,11 +70,21 @@ export const useSnackbarStore = defineStore('snackbar', () => {
       timeout: newTimeout,
       iconColor:  newColor,
     })
+    showAdditionalSnackbar(newText, newColor, newIcon, newTimeout);
     message.value = newText;
     color.value = newColor;
     icon.value = newIcon;
     timeout.value = newTimeout;
     show.value = true;
+  }
+
+  const showAdditionalSnackbar = (newText, newColor = 'success', newIcon = 'mdi-check-circle', newTimeout = 3000) => {
+    additionalMessageQueue.value.push({
+      message: newText,
+      icon: newIcon,
+      timeout: newTimeout,
+      iconColor:  newColor,
+    })
   }
 
   /**
@@ -106,6 +116,7 @@ export const useSnackbarStore = defineStore('snackbar', () => {
     showInfo,
     pushQueue,
     showNotification,
+    showAdditionalSnackbar,
     hide
   };
 });

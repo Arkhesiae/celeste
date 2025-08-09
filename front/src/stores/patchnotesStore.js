@@ -5,8 +5,8 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
   // État réactif
   const patchNotes = ref([
     {
-      id: '0.625',
-      version: 'v0.625',
+      id: '0.202506.1',
+      version: 'alpha-202506.1',
       releaseDate: '30/06/2025',
       description: 'Alpha initiale, version de test pour les utilisateurs de LFFF',
       technicalNotes: [
@@ -21,9 +21,9 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
       ]
     },
     {
-      id: '0.825',
-      version: 'v0.825',
-      releaseDate: '15/08/2025',
+      id: '0.202508.1',
+      version: 'alpha-202508.1',
+      releaseDate: '09/08/2025',
       description: 'Nouvelle version avec des améliorations majeures de l\'interface utilisateur et de nouvelles fonctionnalités.',
       improvements: [
         {
@@ -54,15 +54,18 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
           title: 'Modification de l\'interface de la page d\'accueil',
           description: 'Modification de l\'interface de la page d\'accueil pour une meilleure lisibilité et une meilleure expérience utilisateur.'
         },
+        {
+          title: 'Intégration des règles',
+          description: 'Ajout des règles de calcul au regarde l\'arrété 2024 (3/7) pour le calcul des compatibilités.'
+        },
      
-
 
 
       ],
       bugFixes: [
         {
           title: 'Correction du problème de synchronisation',
-          description: 'Résolution du problème de synchronisation des données entre appareils.'
+          description: 'Résolution du problème de synchronisation des données entre pages.'
         },
         {
           title: 'Correction des erreurs d\'affichage',
@@ -71,8 +74,8 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
       ],
       technicalNotes: [
         {
-          title: 'Migration vers Vue 3.4',
-          description: 'Mise à jour vers la dernière version de Vue.js pour de meilleures performances.'
+          title: 'Tests de l\'email',
+          description: 'Tests de l\'email pour la notification des utilisateurs.'
         }
       ],
       links: [

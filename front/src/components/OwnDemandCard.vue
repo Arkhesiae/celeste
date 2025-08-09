@@ -218,9 +218,11 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { API_URL } from '@/config/api';
 import { useRotationStore } from '@/stores/rotationStore';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 const teamStore = useTeamStore();
 const rotationStore = useRotationStore();
 const userStore = useUserStore();
+const snackbarStore = useSnackbarStore();
 const substitutionStore = useSubstitutionStore();
 const props = defineProps({
   demand: {
@@ -268,8 +270,10 @@ const confirmDelete = async () => {
   try {
     if (props.isPoster) {
       await substitutionStore.cancelDemand(props.demand._id);
+      snackbarStore.showNotification("Demande annulée", "success", "mdi-close") 
     } else {
       await substitutionStore.unacceptDemand(props.demand._id);
+      snackbarStore.showNotification("Votre proposition de remplacement a été annulée", "onError", "mdi-close") 
     }
     showConfirmDeleteDialog.value = false;
   } catch (error) {

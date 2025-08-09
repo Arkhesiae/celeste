@@ -28,13 +28,13 @@
               <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
               <span class="font-weight-medium text-overline">Annonce</span>
             </div>
-            <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement"
-              @click="showAnnouncement = false" />
+            <!-- <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement"
+              @click="showAnnouncement = false" /> -->
           </div>
           <v-card-title class="text-h6 py-0 font-weight-medium ">Mise à jour du site</v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
-              Mise à jour version alpha 0.825a, consultez la page patch notes pour plus d'informations.
+              Mise à jour version alpha 0.202508.1, consultez la page patch notes pour plus d'informations.
             </div>
           </v-card-text>
         </v-card>
@@ -88,7 +88,7 @@
                   Pour renseigner votre numéro de téléphone, veuillez vous rendre dans les paramètres de votre profil.
                 </div>
               </v-card-text>
-              <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn>
+              <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
 
 
             </div>
@@ -159,7 +159,7 @@
 
           </div>
         </v-alert>
-        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 "
+        <!-- <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 "
           icon="mdi-alert-circle-outline" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -174,13 +174,10 @@
               </v-card-text>
               <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn>
             </div>
-            <!-- <div class="font-weight-medium"> -->
-            <!-- Résoudre -->
-            <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-          </div> -->
+      
 
           </div>
-        </v-alert>
+        </v-alert> -->
 
         <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-alert-circle-outline" style="cursor: pointer;">
@@ -196,7 +193,7 @@
                   nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
                 </div>
               </v-card-text>
-              <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn>
+              <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
             </div>
             <!-- <div class="font-weight-medium"> -->
             <!-- Résoudre -->

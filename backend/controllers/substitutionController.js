@@ -8,7 +8,8 @@ import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { categorize } from '../utils/categorizeDemand.js';
 import { generateShiftsMap } from '../utils/generateShiftsMap.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
-import { sendUserPoolNotification, buildUserPoolNotificationEmail } from '../services/email/userPoolNotificationEmail.js';
+import { sendUserPoolNotification, sendUserNotification } from '../services/email/userPoolNotificationEmail.js';
+import { buildUserPoolNotificationEmail } from '../services/email/demandEmailModels.js';
 
 
     
@@ -239,24 +240,9 @@ const createDemand = async (req, res) => {
         // Calculer et afficher le pool d'utilisateurs pouvant accepter cette demande
         try {
             const userPool = await computeUserPool(demand);
-            // console.log(`Pool d'utilisateurs pour la demande ${demand._id} (${demand.type}):`, {
-            //     totalUsers: userPool.length,
-            //     users: userPool.map(user => ({
-            //         name: `${user.name} ${user.lastName}`,
-            //         canSwitch: user.canSwitch,
-            //         canReplace: user.canReplace,
-            //         points: user.points,
-            //         limit: user.limit
-            //     }))
-            // });
-
-            
-            // Envoyer les notifications par email aux utilisateurs du pool
             if (userPool.length > 0) {
                 try {
-                    // Populer la demande avec les informations de l'utilisateur avant d'envoyer la notification
                     const populatedDemand = await Substitution.findById(demand._id).populate('posterId', 'name lastName');
-                    
                     sendUserPoolNotification(userPool, populatedDemand)
                         .then(results => {
                             console.log(`📧 Notifications envoyées avec succès:`, {
@@ -467,6 +453,23 @@ const acceptRequest = async (req, res) => {
         }
 
 
+
+        try {
+            const populatedDemand = await Substitution.findById(updatedRequest._id).populate('posterId', 'name lastName email').populate('accepterId', 'name lastName email ');
+            sendUserNotification(populatedDemand, 'accepted')
+                .then(results => {
+                    console.log(`📧 Notifications envoyées avec succès:`, {
+                        demandId: updatedRequest._id,
+                        totalSent: results.sent,
+                        totalFailed: results.failed
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                });
+        } catch (emailError) {
+            console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+        }
  
         res.status(200).json({
             message: 'Demande acceptée avec succès',
@@ -595,6 +598,24 @@ const swapShifts = async (req, res) => {
 
         const shift = await computeShiftOfUserWithSubstitutions(new Date(demand.posterShift.date), userId);
 
+
+        try {
+            const populatedDemand = await Substitution.findById(updatedDemand._id).populate('posterId', 'name lastName email').populate('accepterId', 'name lastName email ');
+            sendUserNotification(populatedDemand, 'accepted')
+                .then(results => {
+                    console.log(`📧 Notifications envoyées avec succès:`, {
+                        demandId: updatedDemand._id,
+                        totalSent: results.sent,
+                        totalFailed: results.failed
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                });
+        } catch (emailError) {
+            console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+        }
+
         res.status(200).json({
             message: 'Échange de vacations effectué avec succès',
             demand: updatedDemand,
@@ -656,6 +677,23 @@ const unacceptRequest = async (req, res) => {
         const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);
         const requestToReturn = await categorizeDemands([updatedRequest], userId);
 
+        try {
+            const populatedDemand = await Substitution.findById(updatedRequest._id).populate('posterId', 'name lastName email')
+            const originalAccepter = await User.findById(userId);
+            sendUserNotification(populatedDemand, 'cancelled', originalAccepter)
+                .then(results => {
+                    console.log(`📧 Notifications envoyées avec succès:`, {
+                        demandId: updatedRequest._id,
+                        totalSent: results.sent,
+                        totalFailed: results.failed
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                });
+        } catch (emailError) {
+            console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+        }
 
         res.status(200).json({
             message: 'Acceptation annulée avec succès',

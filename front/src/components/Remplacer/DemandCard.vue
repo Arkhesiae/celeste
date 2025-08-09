@@ -509,7 +509,7 @@ const handleConfirmAccept = async () => {
   loading.value.accept = true
   try {
     await substitutionStore.acceptDemand(props.demand._id)
-    snackbarStore.showNotification('Remplacement accepté', "onPrimary", "mdi-check")
+    snackbarStore.showNotification('Remplacement accepté', "onRemplacement", "mdi-account-arrow-left-outline")
     showConfirmationDialog.value = false
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'acceptation du remplacement : ' + error.message, 'onError', "mdi-alert-circle-outline")
@@ -539,7 +539,7 @@ const handleConfirmSwap = async () => {
   loading.value.accept = true
   try {
     await substitutionStore.swapShifts(props.demand._id)
-    snackbarStore.showNotification('Échange de shifts effectué avec succès')
+    snackbarStore.showNotification('Échange de shifts effectué avec succès', "onRemplacement  ", "mdi-swap-horizontal")
     showConfirmationSwapDialog.value = false
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de l\'échange des shifts', 'onError', "mdi-alert-circle-outline")

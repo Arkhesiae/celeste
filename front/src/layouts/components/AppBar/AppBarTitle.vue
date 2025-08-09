@@ -20,7 +20,8 @@
         v-bind="props"
         class="text-overline text-medium-emphasis ml-2"
         >
-          alpha-20250810.1
+        {{ APP_VERSION }}
+          
         </span>
       </div>
       <div v-else>
@@ -28,7 +29,8 @@
         v-bind="props"
         class="text-overline text-medium-emphasis ml-2"
         >
-          10/08/2025
+        {{ RELEASE_DATE }}
+          
         </span>
       </div>
       </v-slide-y-transition>
@@ -42,6 +44,8 @@ import { ref, onMounted } from 'vue';
 
 // Constants
 const APP_TITLE = "Céleste";
+const APP_VERSION = "alpha-202508.1";
+const RELEASE_DATE = "09/08/2025";
 
 // Reactive data
 const currentDate = ref('');

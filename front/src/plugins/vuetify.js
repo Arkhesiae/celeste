@@ -9,8 +9,8 @@
 import 'vuetify/styles'
 import { md3 } from 'vuetify/blueprints'
 import { VTimePicker } from 'vuetify/labs/VTimePicker'
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
 
+import '@mdi/font/css/materialdesignicons.css' 
 
 // Composables
 import { createVuetify } from 'vuetify'
@@ -20,13 +20,7 @@ import {VDateInput} from "vuetify/labs/components";
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
   blueprint: md3,
-  icons: {
-    defaultSet: 'mdi',
-    aliases,
-    sets: {
-      mdi,
-    },
-  },
+
   date: {
     locale: {
       fr: 'fr-FR',

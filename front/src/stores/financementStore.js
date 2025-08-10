@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
+import { useUserStore } from './userStore';
 
 export const useFundingStore = defineStore('funding', () => {
   // Reactive state
-  const userCount = ref(45);
   const totalMonthlyCost = ref(180);
   const nextCampaign = ref('15 Mars 2026');
   const campaignGoal = ref(500);
@@ -54,8 +54,8 @@ export const useFundingStore = defineStore('funding', () => {
     },
     {
       nom: 'Développement agent IA',
-      description: "Développement d'un agent IA pour la gestion des demandes",
-      cout: 10,
+      description: "Utilisation d'un agent IA",
+      cout: 2,
       periodicite: 'mois',
       icon: 'mdi-robot',
       color: 'success'
@@ -71,7 +71,7 @@ export const useFundingStore = defineStore('funding', () => {
     {
       nom: 'Envoi de mail',
       description: 'Envoi de mail',
-      cout: 10,
+      cout: 5,
       periodicite: 'mois',
       icon: 'mdi-email',
       color: 'error'
@@ -174,9 +174,7 @@ export const useFundingStore = defineStore('funding', () => {
   const currentBudget = computed(() => initialBudget.value - usedBudget.value);
 
 
-  const costPerUser = computed(() => {
-    return Math.round((totalMonthlyCost.value * 12) / userCount.value);
-  });
+
 
   const remainingTime = computed(() => {
     return Math.round(currentBudget.value / totalMonthlyCost.value);
@@ -212,6 +210,16 @@ export const useFundingStore = defineStore('funding', () => {
     // but kept for compatibility
     console.warn('updateBudget is deprecated. Use updateBudgetEvolution instead.');
   };
+
+  const userCount = computed(() => {
+    const userStore = useUserStore();
+    const users = userStore.users;
+    return users.length;
+  });
+
+  const costPerUser = computed(() => {
+    return Math.round(totalAnnualCost.value / userCount.value);
+  });
 
   const updateUserCount = (newUserCount) => {
     userCount.value = newUserCount;

@@ -1,4 +1,4 @@
-// router/index.ts
+// router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes'
 import { useAuthStore } from '@/stores/authStore.js';
@@ -22,11 +22,13 @@ const router = createRouter({
     ];
 
     if (forceTopRoutes.includes(to.name)) {
-      return { top: 0 };
+      return { top: 0, behavior: 'smooth' };
     }
 
     // Comportement par défaut : défilement vers le haut
     return { top: 0 };
+
+    
   }
 });
 
@@ -80,7 +82,6 @@ router.beforeEach(async (to, from, next) => {
 
   const authStore = useAuthStore();
   try {
-    console.log(to.name, from.name);
     await authStore.validateAccessToken(); 
     
   } catch (error) {
@@ -92,21 +93,28 @@ router.beforeEach(async (to, from, next) => {
       return next({ name: '/pending-approval' });
     }
 
+    if (to.name === '/') {
+      return next({ name: '/dashboard' });
+    }
+
     if (to.name !== '/dashboard' && noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ name: '/dashboard' });
     }
   }
   else {
-    if (!noAuth.includes(to.name) && !both.includes(to.name) && to.name !== '/login') {
+    if (to.name === '/') {
+      return next({ name: '/landing' });
+    }
+
+    if (to.name !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ name: '/login' });
     }
   }
  
-
- 
-
   return next();
 });
+
+
 
 // Gestion des hot updates
 if (import.meta.hot) {

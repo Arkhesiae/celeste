@@ -26,7 +26,7 @@
 
 
         <CalendarDesktop v-if="!smAndDown" :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays"
-            :isSelected="isSelected" :isWorkDay="isWorkDay" :isToday="isToday" :vacationsOfUser="vacationsOfUser"
+            :isSelected="isSelected" :isToday="isToday"
            :rotationsMap="rotationsMap" @select-day="selectDay" />
 
 <!-- 
@@ -35,9 +35,9 @@
           :isToday="isToday" :rotationsMap="rotationsMap"
           :vacationsOfUser="vacationsOfUser" @select-day="selectDay"  /> -->
         <CalendarMobile v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
-          :isWorkDay="isWorkDay" 
+          
           :isToday="isToday" :rotationsMap="rotationsMap"
-          :vacationsOfUser="vacationsOfUser" @select-day="selectDay" @swipe-left="handleSwipeLeft"
+          @select-day="selectDay" @swipe-left="handleSwipeLeft"
           @swipe-right="handleSwipeRight" />
 
       </v-col>
@@ -45,7 +45,7 @@
       <!-- Side Panel (Desktop) -->
     
       <CalendarSidePanel v-if="selectedDate && !mdAndDown":cols="4" :formattedDate="formattedDate"
-        :vacationsOfUser="vacationsOfUser" :selectedDate="selectedDate"
+        :selectedDate="selectedDate"
         @openRemplaDialog="openRemplaDialog"
         @openDrawer="handleOpenDrawer"
         @cancelDemand="handleCancelDemand"
@@ -54,7 +54,7 @@
 
       <!-- Bottom Sheet (Mobile) -->
       <CalendarBottomSheet v-if="mdAndDown" v-model="showBottomSheet" :formattedDate="formattedDate"
-        :vacationsOfUser="vacationsOfUser" :selectedDate="selectedDate"
+        :selectedDate="selectedDate"
         @update:modelValue="onBottomSheetClose"
         @openRemplaDialog="openRemplaDialog" 
         @openDrawer="handleOpenDrawer"
@@ -62,7 +62,7 @@
         @unacceptDemand="handleUnacceptDemand" />
     </v-row>
 
-    <AddSubstitutionForm :dialogMode="dialogMode" :dialogVisible="remplaDialog" :vacationsOfUser="vacationsOfUser"
+    <AddSubstitutionForm :dialogMode="dialogMode" :dialogVisible="remplaDialog"
       :date="selectedDate" :selectedVacation="selectedVacation" @onClose="closeRemplaDialog" @onSubmit="handleSubmit"
       @update:dialogModeValue="dialogMode = $event" @update:dialogVisible="remplaDialog = $event">
     </AddSubstitutionForm>
@@ -114,15 +114,12 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from "@/stores/authStore.js";
 import { useDisplay } from "vuetify";
-import { useTeamStore } from "@/stores/teamStore.js";
 import { useUserStore } from '@/stores/userStore';
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useShiftStore } from "@/stores/shiftStore.js";
 import { useCalendar } from '@/composables/useCalendar';
-import { vacationService } from "@/services/vacationService.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
-import { useSubstitutionManagement } from '@/composables/useSubstitutionManagement';
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import CalendarHeader from "@/components/Calendar/CalendarHeader.vue";
 import CalendarDesktop from "@/components/Calendar/CalendarDesktop.vue";
@@ -144,7 +141,6 @@ const DIALOG_MODES = {
 const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
-const teamStore = useTeamStore();
 const userStore = useUserStore();
 const shiftStore = useShiftStore();
 const rotationStore = useRotationStore();
@@ -160,10 +156,6 @@ const showCancelConfirmationDialog = ref(false);
 const showUnacceptConfirmationDialog = ref(false);
 const substitutionToCancel = ref(null);
 const substitutionToUnaccept = ref(null);
-
-const shiftsWithSubstitutions = computed(() => {
-  return shiftStore.shiftsWithSubstitutions;
-});
 
 
 const activeRotation = computed(() => {
@@ -184,11 +176,13 @@ const {
   selectedYear,
   handleMonthUpdate,
   handleYearUpdate,
-  navigateMonth,
   handleSwipeLeft,
   handleSwipeRight
 } = useCalendarNavigation();
 
+const vacationsOfUser = computed(() => {
+  return shiftStore.persistentVacationsMap;
+}); 
 
 const { calendarDays } = useCalendar(selectedYear, selectedMonth);
 const rotationsMap = ref(new Map());
@@ -196,7 +190,7 @@ const rotationsMap = ref(new Map());
 // Computed properties
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
-  return {shift : vacationsOfUser.value.get(selectedDate.value)?.shift?._id, teamObject : vacationsOfUser.value.get(selectedDate.value)?.teamObject};
+  return {shift : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.shift?._id, teamObject : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.teamObject};
 });
 
 const accepterName = computed(() => {
@@ -214,10 +208,7 @@ const isToday = (date) => {
     date.getFullYear() === today.getFullYear();
 };
 
-const isWorkDay = (date) => {
-  const shift = vacationsOfUser.value.get(date.toISOString())?.shift;
-  return shift ? shift.type !== 'rest' : false;
-};
+
 
 // Handlers
 const selectDay = (date) => {
@@ -244,16 +235,6 @@ const onBottomSheetClose = (isOpen) => {
   }
 };
 
-const vacationsOfUser = computed(() => {
-  const map = new Map();
-  const shifts = shiftsWithSubstitutions.value;
-  if (shifts && shifts.length > 0) { 
-    shifts.forEach(({ date, shift, teamObject }) => {
-      map.set(date, { shift, teamObject });
-    });
-  }
-  return map;
-});
 
 // Data fetching
 const getWorkdaysOfUser = async () => {
@@ -273,7 +254,7 @@ const getWorkdaysOfUser = async () => {
   }
 };
 
-const getAllSubstitutions = async () => {
+const fetchSubstitutions = async () => {
   if (!calendarDays.value || calendarDays.value.length === 0) {
     return;
   }
@@ -378,7 +359,7 @@ watch(calendarDays, async (newCalendarDays) => {
   if (newCalendarDays && newCalendarDays.length > 0) {
     await Promise.all([
       getWorkdaysOfUser(),
-      getAllSubstitutions()
+      fetchSubstitutions()
     ]);
   }
 });
@@ -389,7 +370,7 @@ onMounted(async () => {
     isLoading.value = true;
     await Promise.all([
       getWorkdaysOfUser(),
-      getAllSubstitutions()
+      fetchSubstitutions()
     ]);
     // snackbarStore.showNotification('Substitutions et vacations chargées !', 'onPrimary', 'mdi-check');
   } catch (err) {

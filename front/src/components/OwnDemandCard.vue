@@ -29,7 +29,7 @@
 
 
 
-          <v-card-subtitle class="text-caption d-flex align-center mt-1">
+          <v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
             {{ formatDate(demand?.posterShift?.date) }}
           </v-card-subtitle>
           <div>
@@ -72,7 +72,7 @@
       </v-card-item>
 
 
-
+    
 
 
 
@@ -82,7 +82,7 @@
           <v-chip variant="flat" size="small" rounded="lg" 
             class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
             <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
-            <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 1">
+            <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
 
             </span>
             <span v-else>
@@ -98,13 +98,13 @@
           class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
           <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
-
+   
         <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="small"
           rounded="lg">
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Permutation</span>
         </v-chip>
-        <v-chip v-if="demand?.type === 'hybrid'" class="hybrid-chip type-chip " color="remplacement" variant="flat"
+        <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="remplacement" variant="flat"
           size="small" rounded="lg">
           <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
           <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
@@ -114,6 +114,10 @@
           size="small" rounded="lg">
           <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
           <span v-if="!small">Remplacement</span>
+        </v-chip>
+        <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
+            color="background" variant="flat">
+            {{ demand?.seenBy?.length || 0 }}
         </v-chip>
       </div>
 
@@ -135,31 +139,35 @@
 
 
   <!-- Dialog pour afficher les points -->
-  <v-dialog v-model="showPointsDialog" max-width="500px">
-    <v-card class="pa-6" rounded="xl">
-      <v-card-title class="text-h6 pa-0 mb-2">
-        Points de {{ demand?.posterShift?.name }}
-      </v-card-title>
-      <v-card-text class="pa-0">
-        <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="permutation" variant="flat"
-          size="small" rounded="lg" class="mr-2">
-          <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
-          <span class="font-weight-bold mr-2">{{  getDayName(switchDay.shift) }}</span>
-          <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
-          <span class="font-weight-bold">{{ switchDay.points }}</span>
-        </v-chip>
-        <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="remplacement" variant="flat" size="small"
-          rounded="lg" class="mr-2">
-          <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
-          <span>{{  }}</span>
-          <LogoCopy color="background" style="top:-2px; position: relative;" />
-          <span class="font-weight-bold">{{ demand?.points }}</span>
-        </v-chip>
+    <!-- Dialog pour afficher les points -->
+    <v-dialog v-model="showPointsDialog" max-width="300px">
+      <v-card class="pa-6" rounded="xl">
+        <v-card-title class="text-h6 pa-0 mb-2">
+          Points de {{ demand?.posterShift?.name }}
+        </v-card-title>
+        <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
+        <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
+          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh" variant="flat"
+            size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
+            <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
+            <span class="font-weight-bold mr-2">{{ getDayName(switchDay.shift) }}</span>
+            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
+            <span class="font-weight-bold">{{ switchDay.points }}</span>
+          </v-chip>
+          <span class="text-overline" v-if="demand?.points > 0 && demand?.type !== 'switch'"> Remplacement </span>
+          <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="surfaceContainerHigh" variant="flat"
+            size="small" rounded="lg" class="font-weight-bold point-chip flex-grow-1">
+            <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
+            <span>{{ }}</span>
+            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
+            <span class="font-weight-bold">{{ demand?.points }}</span>
+          </v-chip>
 
 
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+
 
 
   <!-- Dialog pour afficher le commentaire -->
@@ -210,9 +218,11 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { API_URL } from '@/config/api';
 import { useRotationStore } from '@/stores/rotationStore';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 const teamStore = useTeamStore();
 const rotationStore = useRotationStore();
 const userStore = useUserStore();
+const snackbarStore = useSnackbarStore();
 const substitutionStore = useSubstitutionStore();
 const props = defineProps({
   demand: {
@@ -260,8 +270,10 @@ const confirmDelete = async () => {
   try {
     if (props.isPoster) {
       await substitutionStore.cancelDemand(props.demand._id);
+      snackbarStore.showNotification("Demande annulée", "success", "mdi-close") 
     } else {
       await substitutionStore.unacceptDemand(props.demand._id);
+      snackbarStore.showNotification("Votre proposition de remplacement a été annulée", "onError", "mdi-close") 
     }
     showConfirmDeleteDialog.value = false;
   } catch (error) {
@@ -350,7 +362,8 @@ const getDayName = (dayId) => {
 }
 
 .to-do-demand-card .type-chip {
-  color: rgba(var(--v-theme-background), 0.99) !important;
+  background: rgba(var(--v-theme-background), 0.99) !important;
+  color: rgba(var(--v-theme-remplacement), 0.99) !important;
 }
 
 .pending-demand-card .comment-chip {

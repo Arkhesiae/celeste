@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar style="z-index: 2300 !important;" scroll-behavior="elevate" color="background">
+  <v-app-bar style="z-index: 2300 !important;"  scroll-behavior="elevate" color="background">
     <!-- Bouton navigation pour écran large -->
     <template v-slot:prepend>
       <template v-if="!smAndDown && isLoggedIn">
@@ -40,9 +40,10 @@
           <AdminSection 
             :is-admin="isAdmin" 
             :admin-type="authStore.adminType"
-            :message-count="messageStore.messages.length"
+            :message-count="ticketStore.tickets.length"
             @navigate-rules="router.push({path:'/admin/rules'})"
-            @navigate-messages="router.push({ path : '/messages' })"
+            @navigate-tickets="router.push({ path : '/tickets' })"
+            @navigate-email="router.push({ path : '/emails' })"
           />
         </template>
 
@@ -100,7 +101,7 @@ import { useAuthStore } from "@/stores/authStore.js";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { usePointStore } from '@/stores/pointStore.js';
 import { useNotificationStore } from '../../stores/notificationStore';
-import { useMessageStore } from '../../stores/messageStore';
+import { useTicketStore } from '../../stores/ticketStore';
 
 // Components
 import NotificationsDialog from "@/components/NotificationsDialog.vue";
@@ -136,7 +137,7 @@ const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const pointStore = usePointStore();
 const notificationStore = useNotificationStore();
-const messageStore = useMessageStore();
+const ticketStore = useTicketStore();
 
 // State
 const isDialogOpen = ref(false);
@@ -229,5 +230,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.user-safe-area {
+  padding-top: env(safe-area-inset-top) !important;
+}
 /* Styles spécifiques à AppBar si nécessaire */
 </style>

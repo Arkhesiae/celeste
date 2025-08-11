@@ -755,8 +755,8 @@ const getTransactionHistory = async (req, res) => {
         })
             .sort({ createdAt: -1 })
             .limit(limit)
-            .populate('sender', 'name')
-            .populate('receiver', 'name');
+            .populate('sender', 'name lastName _id')
+            .populate('receiver', 'name lastName _id');
 
         res.status(200).json(transactions);
     } catch (error) {
@@ -848,7 +848,73 @@ const updateEmail = async (req, res) => {
     }
 };
 
-// Récupérer les informations d'un utilisateur par email
+const updatePhone = async (req, res) => {
+    const { phone } = req.body;
+    const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
+
+    try {
+        // Mettre à jour le numéro de téléphone dans personalData
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { 'personalData.phoneNumber': phone },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json({ message: 'Numéro de téléphone mis à jour avec succès', user });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du numéro de téléphone:', error);
+        res.status(500).json({ message: 'Erreur lors de la mise à jour du numéro de téléphone' });
+    }
+};
+
+const updateBirthDate = async (req, res) => {
+    const { birthDate } = req.body;
+    const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
+
+    try {
+        // Mettre à jour la date de naissance dans personalData
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { 'personalData.birthDate': birthDate },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json({ message: 'Date de naissance mise à jour avec succès', user });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de la date de naissance:', error);
+        res.status(500).json({ message: 'Erreur lors de la mise à jour de la date de naissance' });
+    }
+};
+
+const deletePhone = async (req, res) => {
+    const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
+    try {
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { 'personalData.phoneNumber': null },
+            { new: true }
+        );
+
+        if (!user) {
+            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+        }
+
+        res.json({ message: 'Numéro de téléphone supprimé avec succès', user });
+    } catch (error) {
+        console.error('Erreur lors de la suppression du numéro de téléphone:', error);
+        res.status(500).json({ message: 'Erreur lors de la suppression du numéro de téléphone' });
+    }
+};
+
+        // Récupérer les informations d'un utilisateur par email
 const getUserInfoByEmail = async (req, res) => {
     const { email } = req.params;
 
@@ -931,6 +997,9 @@ export {
     updateAvatar,
     checkEmailAvailability,
     updateEmail,
+    updatePhone,
+    updateBirthDate,
     getUserInfoByEmail,
-    getDevListUsers
+    getDevListUsers,
+    deletePhone
 };

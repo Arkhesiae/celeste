@@ -60,7 +60,8 @@ export const usePointStore = defineStore('points', () => {
         description: t.description || (t.type === 'transfer' ? 'Transfert de points' : 'Remplacement'),
         date: formatDate(t.createdAt),
         effectiveDate: formatDate(t.effectiveDate),
-        user: t.sender._id === authStore.userId ? t.receiver?.name : t.sender?.name
+        userId: t.sender._id === authStore.userId ? t.receiver?._id : t.sender?._id,
+        userName: t.sender._id === authStore.userId ? t.receiver?.name + ' ' + t.receiver?.lastName : t.sender?.name + ' ' + t.sender?.lastName
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions:', error);

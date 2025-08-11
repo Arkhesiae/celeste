@@ -4,12 +4,12 @@
     close-on-content-click scrim="rgba(0,0,0,1)" v-if="smAndDown">
     <!-- Parent Container -->
     <v-card class="pt-16 pa-8 d-flex flex-column align-center flex-0-0 pb-8" tile color="background" flat
-      style="width: 100%; height: 100vh; overflow-y: auto; z-index: 25000 !important;">
+      style="width: 100%; height: 100%; overflow-y: auto; z-index: 25000 !important;">
       <!-- User Avatar Section -->
       <v-scale-transition appear>
 
         <v-card max-width="400px" style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
-          class="my-16 pa-4 d-flex justify-space-between" width="100%"
+          class="flex-0-0 my-16 pa-4 d-flex justify-space-between" width="100%"
           @click="router.push({ path: '/profile/' + authStore.userId })" v-if="isLoggedIn">
 
           <div class="d-flex justify-space-between align-center ga-2">
@@ -96,10 +96,10 @@
         <!-- Footer Links Section -->
         <v-list nav class="d-flex justify-space-around align-center pt-8 text-caption" bg-color="background">
           <span @click="router.push({ path: '/contact-admin' })" style="cursor: pointer">Assistance</span>
-          <!-- <v-divider vertical></v-divider> -->
-          <!-- <span @click="" style="cursor: pointer">Nouveautés</span>
           <v-divider vertical></v-divider>
-          <span @click="" style="cursor: pointer">A propos</span> -->
+          <span @click="router.push({ path: '/patchnotes' })" style="cursor: pointer">Patch Notes</span>
+          <v-divider vertical></v-divider>
+          <span @click="router.push({ path: '/financement' })" style="cursor: pointer">Financement</span>
         </v-list>
 
         <!-- Footer Links Section -->
@@ -156,6 +156,8 @@ const menuItemsLogged = [
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.adminType === 'master' ? '/center/centers' : '/center/' + authStore.centerId + '/teams', title: authStore.adminType === 'master' ? 'Centres' : 'Mon centre' },
+  // { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
+  // { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
   // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
   // { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
 ];

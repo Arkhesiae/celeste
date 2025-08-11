@@ -1,16 +1,19 @@
 <template>
   <v-container class="pa-4">
-    <div class="d-flex justify-space-between my-16 flex-column">
+    <!-- <div class="d-flex justify-space-between my-16 flex-column">
       <div class="d-flex align-center"> 
-        <v-btn icon="mdi-arrow-left" variant="text" @click="router.back()" />
+        
         <span class="text-h4 font-weight-medium">Historique des transactions</span>
 
       </div>
       <span class="text-h4 text-overline text-medium-emphasis">
         Voir toutes les transactions
       </span>
-    </div>
-    <v-row class=" ma-0">
+    </div> -->
+
+    <MainTitle title="Historique des transactions" :backButton="true" subtitle="Voir toutes les transactions" />
+
+    <v-row class="ma-0 pt-0 mt-16 position-sticky top-0">
       <div class="d-flex justify-center chip-container pa-2">
         <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 ga-2 d-flex justify-center">
           <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="all" size="large" rounded="lg"

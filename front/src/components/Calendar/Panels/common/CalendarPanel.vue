@@ -1,5 +1,5 @@
 <template>
-  <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4" color="surfaceContainerHigh">
+  <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4 position-relative" color="surfaceContainerHigh">
     <h2 class="text-h5 text-overline text-center">{{ formattedDate }}</h2>
 
     <v-card rounded="xl" color="background" class="mb-4 card-shadow" elevation="0">
@@ -43,8 +43,14 @@
           </div>
         </template>
       </v-card-item>
+<!-- 
+      <v-btn v-if="hasNoDemand" color="onBackground" rounded="lg" size="small" variant="outlined" style="bottom: 22px; right: 20px; position: absolute;" class="text-none "
+            @click="$emit('openAbsenceDialog', 'Congé')">
+            <v-icon start>mdi-account-question-outline</v-icon>
+            Absence
+      </v-btn>  -->
     </v-card>
-
+  
 
 
     <div v-if="false">
@@ -87,17 +93,17 @@
       </v-slide-group>
     </div>
 
-    <div class="d-flex align-center justify-center mb-4" v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)">
-      <v-btn height="60px" color="permutation" text-color="permutation"
-        class="flex-1-1 d-flex flex-column rounded-ts-xl rounded-bs-xl mr-1 text-none " :disabled="isRestDay || inPast"
+    <div class="d-flex align-center ga-2 mb-4 px-4" v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)">
+      <v-btn height="36px" color="onBackground" text-color="permutation"
+        class="flex-grow-1 d-flex text-none text-subtitle-2" :disabled="isRestDay || inPast"
         :class="{ 'opacity-10': isRestDay || inPast }" flat rounded="lg" @click="$emit('openRemplaDialog', 'switch')">
         <template #prepend>
           <v-icon>mdi-swap-horizontal-hidden</v-icon>
         </template>
         Permutation
       </v-btn>
-      <v-btn height="60px" color="remplacement" :disabled="isRestDay || inPast"
-        class="flex-1-1 d-flex flex-column rounded-te-xl rounded-be-xl text-none " flat rounded="lg"
+      <v-btn height="36px" color="background" :disabled="isRestDay || inPast"
+        class="flex-grow-1 text-none text-subtitle-2" flat rounded="lg"
         :class="{ 'opacity-10': isRestDay || inPast }" @click="$emit('openRemplaDialog', 'substitution')">
         <template #prepend>
           <v-icon>mdi-account-arrow-left-outline</v-icon>
@@ -106,25 +112,25 @@
       </v-btn>
     </div>
 
-    <div class="d-flex align-center justify-center mb-4"
+    <div class="d-flex align-center justify-center mb-4 mx-4"
       v-if="substitutionStore.hasOwnPendingDemand(selectedDate) ">
-      <v-btn color="error" height="60px" variant="tonal" :disabled="inPast"
+      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast"
         class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
         Annuler ma demande
       </v-btn>
     </div>
 
-    <div class="d-flex align-center justify-center mb-4"
+    <div class="d-flex align-center justify-center mb-4 mx-4"
       v-if=" substitutionStore.hasAcceptedAsPoster(selectedDate)">
-      <v-btn color="error" height="60px" variant="tonal" :disabled="inPast"
+      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast"
         class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancelDemand', substitutionId)">
         Annuler 
       </v-btn>
     </div>
 
-    <div class="d-flex align-center justify-center mb-4"
+    <div class="d-flex align-center justify-center mb-4 mx-4"
       v-if="substitutionStore.hasAcceptedAsAccepter(selectedDate)">
-      <v-btn color="error" height="60px" variant="tonal" :disabled="inPast"
+      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast"
         class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
         @click="$emit('unacceptDemand', substitutionStore.findAcceptedAsAccepter(selectedDate)._id)">
         Annuler mon rempla
@@ -171,6 +177,7 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useDisplay } from 'vuetify';
+import { useShiftStore } from '@/stores/shiftStore';
 
 const substitutionStore = useSubstitutionStore();
 const teamStore = useTeamStore();
@@ -183,10 +190,7 @@ const props = defineProps({
     type: String,
     required: true
   },
-  vacationsOfUser: {
-    type: Map,
-    required: true
-  },
+
   selectedDate: {
     type: [Date, String, null],
     required: true
@@ -208,9 +212,15 @@ const props = defineProps({
 
 defineEmits(['openRemplaDialog', 'openDrawer', 'cancelDemand', 'openAbsenceDialog', 'unacceptDemand']);
 
+const shiftStore = useShiftStore();
+
+const vacationsOfUser = computed(() => {
+  return shiftStore.persistentVacationsMap;
+});
+
 const getVacation = computed(() => {
   if (!props.selectedDate) return null;
-  return props.vacationsOfUser.get(new Date(props.selectedDate).toISOString());
+  return vacationsOfUser.value.get(new Date(props.selectedDate).toISOString().split('T')[0]);
 });
 
 const isRestDay = computed(() => {
@@ -231,6 +241,10 @@ const getShiftHours = computed(() => {
     startTime: getVacation.value?.shift?.startTime || '',
     endTime: getVacation.value?.shift?.endTime || ''
   };
+});
+
+const hasNoDemand = computed(() => {  
+  return !substitutionStore.hasOwnPendingDemand(props.selectedDate) && !substitutionStore.hasAcceptedAsPoster(props.selectedDate) && !substitutionStore.hasAcceptedAsAccepter(props.selectedDate);
 });
 
 const substitutionId = computed(() => {

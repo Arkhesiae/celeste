@@ -75,7 +75,7 @@
                     required rounded="xl" v-model="password" type="password" autocomplete="new-password"
                     :rules="[rules.required]" @keyup.enter="handleLogin" />
 
-                  <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" />
+                  <v-checkbox label="Rester connecté" v-model="stayConnected" class="mobile-checkbox" />
 
                   <v-btn variant="text" color="primary" @click="openForgotPasswordDialog" class="mb-4 ps-1">
                     Mot de passe oublié ?
@@ -110,6 +110,10 @@
                     :disabled="!validStep2 || loggingIn" :loading="loggingIn" type="button" @click="handleLogin">
                     Se connecter
                   </v-btn>
+
+                  <!-- <v-btn variant="flat" prepend-icon="mdi-fingerprint" color="onBackground" rounded="lg" class="my-2 px-4" @click="loginWithBiometrics">
+                    Connexion biométrique
+                  </v-btn> -->
                 </div>
               </v-card-actions>
             </v-col>
@@ -140,6 +144,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { accountCreationService } from '@/services/accountCreationService';
 import { useAppInitialization } from '@/composables/useAppInitialization';
+import { useBiometricLogin } from '@/utils/useBiometric';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -267,6 +272,21 @@ const handleLogin = async () => {
 
   }
 };
+
+async function loginWithBiometrics() {
+  const ok = await useBiometricLogin()
+  if (ok) {
+    // Ici, tu peux soit appeler une API spéciale, soit stocker un token local déjà existant
+    const storedToken = localStorage.getItem('token')
+    if (storedToken) {
+      router.push('/home')
+    } else {
+      error.value = 'Aucun token en cache. Connecte-toi manuellement une fois.'
+    }
+  } else {
+    error.value = 'Authentification biométrique échouée ou annulée.'
+  }
+}
 
 const openForgotPasswordDialog = () => {
   showForgotPasswordDialog.value = true;

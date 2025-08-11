@@ -13,10 +13,22 @@ export const sendOtp = async (req, res) => {
     if (!email) {
       return res.status(400).json({ message: 'L\'email est requis' });
     }
+    
+
+    // Check if there is an OTP already for this email
+    const existingOtp = await Otp.findOne({ email });
+
+    if (existingOtp) {
+      const timeSinceLastOtp = Math.floor((new Date() - existingOtp.createdAt) / 1000);
+      const nextTryMinutes = Math.floor((10 * 60 - timeSinceLastOtp) / 60);
+      const nextTrySeconds = (10 * 60 - timeSinceLastOtp) % 60;
+      
+      return res.status(400).json({ message: 'Le code envoyé précédemment est toujours valide. Prochaine tentative dans ' + nextTryMinutes + 'm' + nextTrySeconds + 's'  });
+    }
 
     // Générer un nouveau code OTP
     const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // Expire dans 5 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expire dans 10 minutes
 
     // Sauvegarder l'OTP dans la base de données
     await Otp.create({
@@ -25,8 +37,17 @@ export const sendOtp = async (req, res) => {
       expiresAt
     });
 
-    // Envoyer l'email OTP (le service gère automatiquement le mode développement)
-    await sendEmailOtp(email.toLowerCase(), otp);
+    // En mode développement, afficher le code dans la console
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('\n=== MODE DÉVELOPPEMENT ===');
+      console.log(`📧 Email: ${email}`);
+      console.log(`🔑 Code OTP: ${otp}`);
+      console.log('========================\n');
+      
+    } else {
+      // En production, envoyer l'email
+      await sendEmailOtp(email.toLowerCase(), otp);
+    }
 
     res.json({ message: 'Code OTP envoyé avec succès' });
   } catch (error) {

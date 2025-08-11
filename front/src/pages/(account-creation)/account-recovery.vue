@@ -178,7 +178,7 @@ async function handleRecovery() {
               </div>
             </v-scroll-y-transition>
             <v-alert  class="mt-4" color="pendingDemand" variant="tonal" rounded="xl" icon="mdi-mail">
-              L'affluence de demandes de récupération de compte est élevée. Le service de mail (externe) semble être saturé et ne délivre pas correctement les emails, nous sommes en train de résoudre le problème.<b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayez dans l'après-midi. </b>
+              En cas de forte affluence des demandes de récupération de compte, le service de mail (externe) peut saturer et ne délivre pas correctement les emails, nous sommes en train de résoudre le problème.<b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayer  </b>
             </v-alert>
           </v-col>
           <v-col cols="12" md="6" style="transition: all 0.3s ease-in-out;">

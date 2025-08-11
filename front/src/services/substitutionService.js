@@ -190,5 +190,19 @@ export const substitutionService = {
       body: JSON.stringify(params)
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Recatégorise les substitutions ouvertes pour une date donnée.
+   * @param {Array<string>} substitutionIds - Liste des IDs de substitutions à recatégoriser
+   * @returns {Promise<Array>} Liste des substitutions recatégorisées
+   */
+  async recategorizeSubstitutions(substitutionIds) {
+    const response = await fetch(`${API_URL}/substitution/recategorize`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ substitutionIds })
+    });
+    return handleResponse(response);
   }
 };

@@ -94,15 +94,11 @@ const props = defineProps({
   calendarDays: Array,
   isSelected: Function,
   isToday: Function,
-  vacationsOfUser: Map,
   rotationsMap: Map,
 });
 
 
-const isWorkDay = (date) => {
-  const shift = vacationsOfUser.value.get(date.toISOString())?.shift;
-  return shift ? shift.type !== 'rest' : false;
-};
+
 
 
 const getColor = (date) => {
@@ -120,8 +116,10 @@ const getColor = (date) => {
 const getOpacity = (day) => {
   if (props.isSelected(day.date)) {
     return 0.9;
-  } else if (isWorkDay(day.date) && !inPast(day.date)) {
+  } else if (isWorkDay(day.date) && !inPast(day.date) && (day?.isInMonth)) {
     return 1;
+  } else if (isWorkDay(day.date) && !inPast(day.date) && (!day?.isInMonth)) {
+    return 0.60;
   } else if (!day?.isInMonth) {
     return 0.21;
   } else {
@@ -134,24 +132,19 @@ const inPast = (date) => {
 };
 
 
-const shiftsWithSubstitutions = computed(() => {
-  return shiftStore.shiftsWithSubstitutions;
-});
+
 
 const vacationsOfUser = computed(() => {
-  const map = new Map();
-  const shifts = shiftsWithSubstitutions.value;
-  if (shifts && shifts.length > 0) {
-    shifts.forEach(({ date, shift, teamObject }) => {
-      map.set(date, { shift, teamObject });
-    });
-  }
-  return map;
+  return shiftStore.persistentVacationsMap;
 });
 
+const isWorkDay = (date) => {
+  const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift;
+  return shift ? shift.type !== 'rest' : false;
+};
 
-const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.name;
-const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString())?.shift?.type;
+const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.name;
+const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
 
 // const getStatus = (date) => {
 //   if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {

@@ -1,8 +1,8 @@
 <template>
   <v-container :class="smAndDown ? 'mb-n16' : ''">
     <!-- En-tête -->
-    <div class="d-flex justify-space-between align-center mb-8">
-      <div class="d-flex flex-column">
+    <!-- <div class="d-flex justify-space-between align-center mb-8"> -->
+      <!-- <div class="d-flex flex-column">
         <div class="d-flex align-center">
           <span class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
           <span class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold">{{ userName }}</span>
@@ -14,9 +14,10 @@
         style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="$router.push('/calendar')">
         Nouvelle demande
       </v-btn>
-    </div>
+    </div> -->
+    <WelcomeTitle :userName="userName"  />
 
-    <v-row>
+    <v-row class="mt-2">
       <v-col cols="12" class="pa-2">
         <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4"
           color="surfaceContainer">
@@ -27,13 +28,13 @@
               <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
               <span class="font-weight-medium text-overline">Annonce</span>
             </div>
-            <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement"
-              @click="showAnnouncement = false" />
+            <!-- <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement"
+              @click="showAnnouncement = false" /> -->
           </div>
-          <v-card-title class="text-h6 py-0 font-weight-medium ">Lancement du nouveau site</v-card-title>
+          <v-card-title class="text-h6 py-0 font-weight-medium ">Mise à jour du site</v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
-              Bienvenue à tous !
+              Mise à jour version alpha 0.202508.1, consultez la page patch notes pour plus d'informations.
             </div>
           </v-card-text>
         </v-card>
@@ -74,6 +75,27 @@
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
         </v-alert>
+        <v-alert v-if="!authStore.phone" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+          icon="mdi-phone-plus" style="cursor: pointer;" @click="router.push('/parameter')">
+          <div class="d-flex align-center justify-space-between">
+            <div>
+              <v-card-title class="text-h6 font-weight-medium">Numéro de téléphone non renseigné</v-card-title>
+              <v-card-text>
+                <div class="text-medium-emphasis">
+                  Vous n'avez pas renseigné votre numéro de téléphone.
+                </div>
+                <div>
+                  Pour renseigner votre numéro de téléphone, veuillez vous rendre dans les paramètres de votre profil.
+                </div>
+              </v-card-text>
+              <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
+
+
+            </div>
+            <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
+          </div>
+         
+        </v-alert>
         <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal"
           rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;"
           @click="router.push('/contact-admin')">
@@ -89,6 +111,7 @@
                   début de cycle défini, veuillez contacter un administrateur pour activer un tour de service.
                 </div>
               </v-card-text>
+              
             </div>
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
@@ -136,7 +159,7 @@
 
           </div>
         </v-alert>
-        <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 "
+        <!-- <v-alert v-if="true" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4 "
           icon="mdi-alert-circle-outline" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -149,14 +172,12 @@
                   Nous vous remercions de votre compréhension.
                 </div>
               </v-card-text>
+              <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn>
             </div>
-            <!-- <div class="font-weight-medium"> -->
-            <!-- Résoudre -->
-            <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-          </div> -->
+      
 
           </div>
-        </v-alert>
+        </v-alert> -->
 
         <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-alert-circle-outline" style="cursor: pointer;">
@@ -172,6 +193,7 @@
                   nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
                 </div>
               </v-card-text>
+              <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
             </div>
             <!-- <div class="font-weight-medium"> -->
             <!-- Résoudre -->
@@ -368,20 +390,34 @@
         </v-card>
 
         <div class="d-flex mb-8 " style=" position: relative; overflow-x: hidden;" :class="smAndDown ? 'mx-4' : ''">
-          <v-card width="100%" rounded="xl" elevation="0" class="pa-4"
-            @click="router.push('/center/' + authStore.centerId + '/teams')"
-            :color="smAndDown ? 'onBackground' : 'onBackground'" style="margin-top: 24px !important;">
-            <div class="d-flex  flex-column" style="width: 100%; height: 100%">
-              <v-card-title class="text-h6 font-weight-medium">Mon centre</v-card-title>
-              <v-card-text>
-                <span class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">{{ getCenterName
-                  }}</span>
+          <v-hover v-slot="{ isHovering, props }">
+            <v-card width="100%" rounded="xl" elevation="0" class=" transition-all"
+              :class="[
+                { 'elevation-4': isHovering },
+                xs ? 'pa-2 px-4' : 'pa-4'
+              ]"
+              v-bind="props"
+              @click="router.push('/center/' + authStore.centerId + '/teams')"
+              :color="smAndDown ? 'onBackground' : 'onBackground'" style="margin-top: 24px !important;">
+              <div class="d-flex  flex-column" style="width: 100%; height: 100%">
+                <v-card-title class="text-h6 font-weight-medium">Mon centre</v-card-title>
+                <v-card-text>
+                  <v-slide-y-transition mode="out-in">
+                    <div v-if="!isHovering" class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">
+                      <span>{{ getCenterName }}</span>
+                      </div>
+                      <div v-else class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">
+                        <span>LFFF</span>
+                      </div>
+                  </v-slide-y-transition>
+                  
 
-              </v-card-text>
-            </div>
+                </v-card-text>
+              </div>
 
 
-          </v-card>
+            </v-card>
+          </v-hover>
           <img :src="`${getCenterLogo}`" alt="logo" class="mt-4" v-if="getCenterName?.includes('CRNA Nord')"
             :class="md ? 'logo-md' : xs ? 'logo-xs' : ''"
             style="position: absolute; bottom: 15px; right: -40px; width: 300px; cursor: pointer;"
@@ -389,21 +425,22 @@
         </div>
 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16' : ''"
-          :color="smAndDown ? 'onBackground' : 'surfaceContainer'">
+          color="surfaceContainer">
 
 
 
           <!-- Carte des points -->
           <div class="mb-4 smooth-shadow rounded-xl">
-            <PointsCard :points="stats.points" :transactions="[]" color="onBackground"
+            <PointsCard color="surfaceContainer" class="pa-0" :points="stats.points" :transactions="[]" 
               @transfer="transferDialog = true" />
           </div>
 
           <!-- Section Calendrier -->
 
-          <v-card ref="calendarCard" rounded="xl" flat class="mb-4 v-card-dashboard smooth-shadow  calendar-card"
-            :color="xs ? 'onBackground' : 'surfaceContainer'" :class="{ 'pa-0 py-2 ml-n4 mr-n4': xs, 'pa-0': !xs }">
-            <v-card-title class="text-h6 font-weight-medium">Calendrier</v-card-title>
+          <v-card ref="calendarCard" rounded="xl" flat class="mb-8 mt-8 v-card-dashboard smooth-shadow  calendar-card"
+            color="surfaceContainer" :class="{ 'pa-0 py-2 ml-n4 mr-n4': xs, 'pa-0': !xs }">
+            <CalendarHeader :class="smAndDown ? 'pa-2' : 'pa-4  '" :currentMonth="currentMonth" :currentYear="currentYear"
+            @update:currentMonth="handleMonthUpdate" @update:currentYear="handleYearUpdate"></CalendarHeader>
             <v-card-text>
               <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected"
                 :isToday="isToday" :rotationsMap="rotationsMap" @select-day="selectedDate = $event"
@@ -662,7 +699,7 @@ import { useDate } from 'vuetify';
 import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
 import PointsCard from "@/components/Profile/PointsCard.vue";
 
-import { useDisplay } from "vuetify";
+import { useDisplay, useTheme } from "vuetify";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
@@ -677,6 +714,7 @@ import { useShiftStore } from "@/stores/shiftStore.js";
 import { toUTCNormalized } from "@/utils/toUTCNormalized";
 import { useCenterStore } from "@/stores/centerStore.js";
 import CRNALogo from "@/assets/CRNA_croped.png";
+
 
 const router = useRouter();
 
@@ -694,6 +732,11 @@ const centerStore = useCenterStore();
 const shiftsWithSubstitutions = computed(() => {
   return shiftStore.shiftsWithSubstitutions;
 });
+
+const theme = useTheme();
+const invertedTheme = computed(() => {
+  return theme.global.current.value.dark ? 'lightTheme' : 'darkTheme';
+}); 
 
 // État pour le calendrier
 const selectedDate = ref(new Date());
@@ -734,6 +777,14 @@ const vacationTable = [
 // Utilisation du composable useCalendar
 const { calendarDays } = useCalendar(currentYear, currentMonth);
 
+const handleMonthUpdate = (month) => {
+  currentMonth.value = month;
+};
+
+const handleYearUpdate = (year) => {
+  currentYear.value = year;
+};
+
 // Fonctions pour le calendrier
 const isSelected = (date) => {
   if (!selectedDate.value) return false;
@@ -759,8 +810,6 @@ const getVacation = computed(() => {
 
   // Vérifier d'abord la vacation d'aujourd'hui
   const todayVacation = vacationsOfUser.value.get(todayISO);
-
-  console.log(todayVacation)
   if (todayVacation && todayVacation.shift) {
     return todayVacation;
   }
@@ -823,44 +872,34 @@ const stats = ref({
   points: 0
 });
 
-// Charger les données
-const loadData = async () => {
-  try {
-    isLoading.value = true;
-    await substitutionStore.fetchAllDemands({
-      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-    });
-
-    const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-    const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-
-    await shiftStore.fetchShiftsWithSubstitutions({
-      startDate: new Date(startDate).setUTCHours(0, 0, 0, 0),
-      endDate: new Date(endDate).setUTCHours(23, 59, 59, 999)
-    });
-
-
-    // // Charger les jours de travail
-    // const flatArray = calendarDays.value.flatMap(group => group.map(item => item.date));
-    // const result = await vacationService.fetchWorkdaysOfUser(authStore.userId, flatArray);
-    // result.forEach(({ date, shift, teamObject }) => {
-    //   vacationsOfUser.value.set(date, { shift, teamObject });
-    // });
-
-
-  } catch (error) {
-    console.error('Erreur lors du chargement des données:', error);
-
-  } finally {
-    isLoading.value = false;
+watch(calendarDays, async (newCalendarDays) => {
+  if (newCalendarDays && newCalendarDays.length > 0) {
+    const startDate = newCalendarDays[0][0].date.toISOString();
+    const endDate = newCalendarDays[newCalendarDays.length - 1][6].date.toISOString();
+    await Promise.all([
+      fetchUserVacations(startDate, endDate),
+      fetchSubstitutions(startDate, endDate)
+    ]);
   }
+});
+
+const fetchUserVacations = async (startDate, endDate) => {
+  await shiftStore.fetchShiftsWithSubstitutions({
+    startDate: startDate,
+    endDate: endDate
+  });
+
 };
 
-// Observer les changements de mois pour recharger les données
-watch([currentMonth, currentYear], () => {
-  loadData();
-});
+const fetchSubstitutions = async (startDate, endDate) => {
+  await substitutionStore.fetchAllDemands({
+    startDate: startDate,
+    endDate: endDate
+  });
+};
+
+
+
 
 let observer = null;
 const calendarCard = ref(null);
@@ -875,7 +914,7 @@ onUnmounted(() => {
 
 const targetNumber = 500;
 
-onMounted(() => {
+onMounted(async   () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -897,7 +936,15 @@ onMounted(() => {
     observer.observe(teamCard.value.$el);
   }
 
-  loadData();
+  // Vérifier que calendarDays est défini et a des éléments
+  if (calendarDays.value && calendarDays.value.length > 0) {
+    const startDate = calendarDays.value[0][0].date.toISOString();
+    const endDate = calendarDays.value[calendarDays.value.length - 1][6].date.toISOString();
+    await Promise.all([
+        fetchUserVacations(startDate, endDate),
+        fetchSubstitutions(startDate, endDate)
+      ]);
+  }
 });
 
 

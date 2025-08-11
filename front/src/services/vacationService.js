@@ -77,5 +77,6 @@ export const vacationService = {
       console.error("Erreur lors de la récupération des vacations adjacentes:", error);
       return { prev: null, next: null };
     }
-  }
+  },
+
 }

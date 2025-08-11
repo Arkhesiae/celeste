@@ -2,21 +2,19 @@
   <v-container class="mb-16">
     
 
-      <div class="  my-16 d-flex justify-space-between align-center flex-wrap">
-        <div class="d-flex align-start flex-column">
-          <span class="text-h4 font-weight-medium">Tours de service</span>
-          <span class="text-h4 text-overline text-medium-emphasis">
-            Créer, modifier et activer un tour de service
-          </span>
-        </div>
 
+      <MainTitle title="Tours de service" subtitle="Créer, modifier et activer un tour de service">
         <v-select v-if="authStore.adminType === 'master'" v-model="selectedCenterId" :items="centers" :item-props="center => ({
           title: center.name,
           subtitle: center.oaci
         })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
           min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
-      </div>
- 
+
+
+      </MainTitle>
+
+      
+      
 
     <v-row class="position-relative">
       <v-col cols="12" md="8">
@@ -56,7 +54,7 @@
             </span>
           </div>
           <Timeline :current-active="currentActive" :sorted-rotations="sortedRotations"
-            @remove-activation-date="removeActivationDate" />
+            @remove-activation-date="handleRemoveActivationDate" />
         </div>
       </v-col>
     </v-row>
@@ -73,7 +71,7 @@
           </div>
         </div>
         <Timeline :current-active="currentActive" :sorted-rotations="sortedRotations"
-          @remove-activation-date="removeActivationDate" />
+          @remove-activation-date="handleRemoveActivationDate" />
       </v-card>
     </v-bottom-sheet>
 
@@ -91,6 +89,11 @@
       :text="'Êtes-vous sûr de vouloir supprimer ce tour de service ? Cette action est irréversible.'"
       :icon="'mdi-delete-outline'" :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmDelete"
       @update:isDialogVisible="showConfirmationDialog = $event"></ConfirmationDialog>
+
+    <ConfirmationDialog :isDialogVisible="showDateConfirmationDialog" :title="'Suppression de la date d\'activation'"
+      :text="'Êtes-vous sûr de vouloir supprimer cette date d\'activation ? Cette action est irréversible.'"
+       :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmRemoveActivationDate"
+      @update:isDialogVisible="showDateConfirmationDialog = $event"></ConfirmationDialog>
 
     <AddWorkshift :isDialogVisible="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
       @rotationEditSubmit="updateRotation" @rotationEditCancel="closeAddDialog" @update:dialogVisible="closeAddDialog">
@@ -143,8 +146,9 @@ const showErrorDialog = ref(false);
 const errorMessage = ref('');
 const showConfirmationDialog = ref(false);
 const rotationToDelete = ref(null);
-
+const removeParams = ref({});
 const showTimelineDrawer = ref(false);
+const showDateConfirmationDialog = ref(false);
 
 const router = useRouter();
 
@@ -214,8 +218,15 @@ const handleSetActivationDate = (rotation) => {
   showActivateDialog.value = true
 };
 
-const removeActivationDate = (shiftId, date, centerId) => {
-  rotationStore.removeActivationDate(shiftId, date, centerId);
+const handleRemoveActivationDate = (shiftId, date, centerId) => {
+  removeParams.value = {shiftId, date, centerId};
+  showDateConfirmationDialog.value = true;
+};
+
+const confirmRemoveActivationDate = () => {
+  rotationStore.removeActivationDate(removeParams.value.shiftId, removeParams.value.date, removeParams.value.centerId);
+  showConfirmationDialog.value = false;
+  removeParams.value = {};
 };
 
 const deleteRotation = async (rotationId) => {

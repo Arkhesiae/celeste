@@ -1,5 +1,5 @@
 <template>
-  <v-card :class="smAndDown ? 'points-card-mobile' : 'points-card'" rounded="xl" elevation="0" class="pa-6">
+  <v-card :class="smAndDown ? 'points-card-mobile' : 'points-card'"  elevation="0" class="">
     <v-card-text class="pa-0 height-transition" style="height: 100%">
       <Logo color="remplacement"
         style="width: 100%; height: 100%; position: absolute; bottom: -60; left: 0; opacity: 0.05; filter: blur(10px);"  />
@@ -60,7 +60,7 @@
           <!-- Transactions en attente -->
           <div v-if="pendingTransactions.length > 0" class="mt-4 ga-2 d-flex flex-column">
             <div class="text-subtitle-2 opacity-50 mb-2">Prochaines transactions en attente</div>
-            <TransactionItem v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="index"
+            <TransactionItem v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="index" color="surfaceContainerHighest"
               :transaction="transaction" />
           </div>
         </div>
@@ -106,29 +106,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.points-card {
-
-  transition: height 0.4s ease-in-out;
-  /* border: 2px solid rgba(0, 0, 0, 0.027); */
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
 
 .height-transition {
   transition: height 0.4s ease-in-out !important;
 }
 
-.points-card-mobile {
 
-  /* background: linear-gradient(180deg, 
-    rgba(255, 255, 255, 0) 0%,
-    rgba(var(--v-theme-surface), 0.4) 15%,
-    rgba(var(--v-theme-surface), 0.9) 100%
-  ); */
-  /* border: 2px solid rgba(0, 0, 0, 0.027); */
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
 
 
 .transaction-button {

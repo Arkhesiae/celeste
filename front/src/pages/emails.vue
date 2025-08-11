@@ -71,7 +71,7 @@
           density="compact"
         >
           <template v-slot:item.templateType="{ item }">
-            <v-chip :color="emailStore.getTemplateColor(item.templateType)" size="small">
+            <v-chip :color="emailStore.getTemplateColor(item.templateType)" size="small" rounded="lg">
               {{ emailStore.getTemplateLabel(item.templateType) }}
             </v-chip>
           </template>
@@ -144,6 +144,7 @@
             <v-alert
               v-model="formData.testMode"
               type="info"
+              rounded="xl"
               variant="tonal"
               class="mb-4"
             >
@@ -152,11 +153,7 @@
               </template>
               <div class="d-flex align-center justify-space-between">
                 <span>Mode test - L'email sera envoyé uniquement à votre adresse</span>
-                <v-switch
-                  v-model="formData.testMode"
-                  color="primary"
-                  hide-details
-                />
+             
               </div>
             </v-alert>
 
@@ -355,8 +352,7 @@ const confirmSend = async () => {
 
 // Lifecycle
 onMounted(async () => {
-  await emailStore.initializeStore();
-  console.log(templates.value);
+  await emailStore.initializeStore(); 
 });
 
 

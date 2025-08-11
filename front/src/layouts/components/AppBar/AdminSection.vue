@@ -1,6 +1,7 @@
 <template>
   <!-- Badge d'admin -->
-  <v-chip class="mr-2" rounded="lg" v-if="isAdmin"> 
+   <div class="d-flex align-center ga-2 mx-2" >
+  <v-chip  rounded="lg" size="small" v-if="isAdmin"> 
     <v-icon 
       class="mr-2" 
       :color="adminType === 'master' ? 'primary' : 'secondary'"
@@ -22,21 +23,34 @@
     <v-icon>mdi-server-security</v-icon>
   </v-btn>
 
-  <!-- Lien vers les messages pour admin master -->
+  <!-- Lien vers les tickets pour admin master -->
   <v-btn
-    v-if="isAdmin && adminType === 'master'"
+    v-if="isAdmin"
     icon
-    class="mr-2"
-    @click="$emit('navigate-messages')"
+   
+    @click="$emit('navigate-tickets')"
   >
     <v-badge
       :content="messageCount"
       :model-value="messageCount > 0"
       color="error"
+      
     >
-      <v-icon>mdi-message-text</v-icon>
+      <v-icon>mdi-ticket</v-icon>
     </v-badge>
   </v-btn>
+    <!-- Lien vers les tickets pour admin master -->
+    <v-btn
+    v-if="isAdmin"
+    icon
+   
+    @click="$emit('navigate-email')"
+  >
+   
+      <v-icon>mdi-email-outline</v-icon>
+
+  </v-btn>
+</div>
 </template>
 
 <script setup>
@@ -57,5 +71,5 @@ defineProps({
 });
 
 // Emits
-defineEmits(['navigate-rules', 'navigate-messages']);
+defineEmits(['navigate-rules', 'navigate-tickets', 'navigate-email']);
 </script> 

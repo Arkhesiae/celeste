@@ -3,11 +3,10 @@
     location="right"
     :model-value="modelValue"
     @update:model-value="$emit('update:modelValue', $event)"
-    temporary
-
+ 
     floating
-    order="-10"
-    absolute
+    order="-5"
+    temporary
     style="z-index: 2500;"
     width="600"
   >
@@ -29,6 +28,7 @@
         v-for="demand in filteredDemands"
         :key="demand.id"
         :demand="demand"
+        :small="true"
       ></DemandCard>
     </v-sheet>
   </v-navigation-drawer>

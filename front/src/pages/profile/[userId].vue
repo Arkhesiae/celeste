@@ -41,7 +41,7 @@
       <v-slide-y-transition appear>
         <v-row :class="smAndDown ? 'px-4' : ''">
           <v-col cols="12" md="4">
-            <PointsCard height="100%" @transfer="transferDialog = true" />
+            <PointsCard rounded="xl" color="surfaceContainer" class="pa-6" height="100%" @transfer="transferDialog = true" />
           </v-col>
           <v-col :class="smAndDown ? 'my-16' : ''" cols="12" md="8">
             <UserTeamCard height="100%" @show-team-change-dialog="openAddDialog" />

@@ -6,6 +6,7 @@
   "scripts": {
     "front": "vite --host",
     "build": "vite build",
+    "dev": "vite",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "cap:add:android": "npx cap add android",
@@ -16,9 +17,9 @@
   },
   "dependencies": {
     "@capacitor/android": "^7.3.0",
-    "@capacitor/core": "^7.3.0",
+    "@capacitor/core": "^7.4.0",
     "@capacitor/ios": "^7.3.0",
-    "@mdi/font": "7.4.47",
+    "@capgo/capacitor-native-biometric": "^7.1.7",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "npm-check-updates": "^17.1.13",
@@ -29,8 +30,9 @@
     "vuex": "^4.1.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.3.0",
+    "@capacitor/cli": "^7.4.0",
     "@eslint/js": "^9.14.0",
+    "@mdi/font": "^7.4.47",
     "@vitejs/plugin-vue": "^5.2.1",
     "eslint": "^9.14.0",
     "eslint-plugin-import": "^2.29.1",

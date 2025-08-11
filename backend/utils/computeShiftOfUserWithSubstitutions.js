@@ -3,8 +3,9 @@ import {computeShiftOfTeam} from "./computeShiftOfTeam.js";
 import {getTeamAtGivenDate} from "./getTeamAtGivenDate.js";
 import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
+import PlanningModification from '../models/PlanningModification.js';
 
-// Récupérer le shift d'un utilisateur à une date donnée en prenant en compte les substitutions
+// Récupérer le shift d'un utilisateur à une date donnée en prenant en compte les substitutions et modifications de planning
 const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
     try {
         const user = await User.findById(userId).populate('teams');
@@ -26,7 +27,6 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     throw new Error(`Date invalide: ${dateStr}`);
                 }
 
-
                 let initialShift = null;
                 let teamObject = null;
                 let team = null;
@@ -46,22 +46,58 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                         throw new Error(`Équipe non trouvée pour l'ID: ${team.teamId}`);
                     }
     
-                   
-    
                     initialShift = await computeShiftOfTeam(date, team.teamId);
                 }
-
                 else {
                     teamObject = null;
                     initialShift = null;
                 }
 
-              
+                // Vérifier les modifications de planning approuvées pour cette date (priorité maximale)
+                const planningModifications = await PlanningModification.find({
+                    userId: userId,
+                    date: date,
+                    status: 'approved'
+                }).sort({ createdAt: 1 });
 
-               
-               
+                // Si l'utilisateur a des modifications de planning approuvées pour cette date
+                if (planningModifications.length > 0) {
+                    const modification = planningModifications[0]; // Prendre la première modification approuvée
+                    
+                    // Si c'est une absence ou un jour de congé
+                    if (modification.type === 'absence' || modification.type === 'off_day') {
+                        return {
+                            date: dateStr,
+                            status: modification.type === 'absence' ? "Absence" : "Jour de congé",
+                            isPlanningModification: true,
+                            planningModificationType: modification.type,
+                            planningModification: modification,
+                            initialShift,
+                            teamObject
+                        };
+                    }
+                    
+                    // Si c'est une modification personnalisée
+                    if (modification.type === 'custom_modification') {
+                        // Retourner le shift modifié selon les données de modification
+                        return {
+                            date: dateStr,
+                            teamObject,
+                            shift: {
+                                ...initialShift,
+                                startTime: modification.startTime || initialShift?.startTime,
+                                endTime: modification.endTime || initialShift?.endTime,
+                                // Autres modifications selon modificationData
+                            },
+                            isPlanningModification: true,
+                            planningModificationType: modification.type,
+                            planningModification: modification,
+                            initialShift
+                        };
+                    }
+                }
 
-                // Vérifier les substitutions où l'utilisateur est impliqué
+                // Vérifier les substitutions où l'utilisateur est impliqué (priorité inférieure aux modifications de planning)
                 const substitutions = await Substitution.find({
                     $and: [
                         {
@@ -79,8 +115,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                         { status: 'accepted' },
                         { deleted: false }
                     ]
-                }).sort({ createdAt: 1 }); // Tri par date de création croissante
-
+                }).sort({ createdAt: 1 });
 
                 // Si l'utilisateur a des substitutions acceptées pour cette date
                 if (substitutions.length > 0) {
@@ -158,10 +193,6 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                         };
                     }
 
-
-                    
-        
-
                     return {
                         date: dateStr,
                         teamObject: currentTeam,
@@ -173,7 +204,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     };
                 }
 
-                // Si pas de substitution, on retourne le shift normal
+                // Si pas de substitution ni de modification, on retourne le shift normal
                 return {
                     date: dateStr,
                     teamObject,

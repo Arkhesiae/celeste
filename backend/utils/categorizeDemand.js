@@ -1,72 +1,75 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
 
 // Constantes pour améliorer la lisibilité et la maintenance
-const REST_DAY_NAME = "Rest Day";
-const REST_TYPE = "rest";
-const MIN_REST_HOURS = 11;
-const MAX_CONSECUTIVE_DAYS = 6;
-const RANGE_SIZE = 13;
-const RANGE_OFFSET = 6;
+const MIN_REST_MINUTES = 11 * 60;
 
-const categorize = async (demand, userId) => {
+
+
+const categorize = async (demand, shiftsMap = null) => {
     try {
+ 
+
         const demandDate = new Date(demand.posterShift.date);
         const demandWithLimit = demand.toObject();
         demandWithLimit.limit = [];
 
-        const vacationOfFetcher = (await computeShiftOfUserWithSubstitutions(demandDate, userId))[0];
-
-        if (!vacationOfFetcher?.shift) {
-            console.log("Aucun shift trouvé pour l'utilisateur");
-            demandWithLimit.limit.push('noShift');
-            return demandWithLimit;
+        // Utiliser la map pré-calculée si disponible, sinon calculer normalement
+        let vacationOfFetcher;
+        if (shiftsMap) {
+            vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
+        } 
+        else {
+            throw new Error("Shifts map not found");
         }
 
+        // if (!vacationOfFetcher?.shift) {
+        //     demandWithLimit.limit.push('noShift');
+        // }
+
         // Vérifier si l'utilisateur travaille déjà ce jour-là
-        if (vacationOfFetcher.shift?.name !== "Rest Day" && vacationOfFetcher.shift?.type !== "rest") {
+        if (vacationOfFetcher?.shift && vacationOfFetcher.shift.type !== "rest") {
             // Vérifier si une permutation est possible
             demandWithLimit.limit.push('alreadyWorking');
             // Vérifier si une permutation est possible
-            if (demand.acceptedSwitches?.length > 0 && 
-                demand.acceptedSwitches.some(switchItem => 
+            if (demand.acceptedSwitches?.length > 0 &&
+                demand.acceptedSwitches.some(switchItem =>
                     switchItem?.shift?.toString() === vacationOfFetcher.shift._id?.toString()
                 )) {
                 demandWithLimit.canSwitch = true;
             }
         }
 
-        // Vérifier les périodes de repos
-        const range = Array.from({ length: 13 }, (_, i) => {
-            const newDate = new Date(demandDate);
-            newDate.setDate(demandDate.getDate() + i - 6);
-            return newDate;
-        });
 
-        const shifts = await computeShiftOfUserWithSubstitutions(range, userId);
-        const previousShift = shifts[5].shift;
-        const nextShift = shifts[7].shift;
+        const shiftsSorted = getAllShiftsSorted(shiftsMap);
+        const computeRest = checkMinimumRestTime(demand.posterShift, demandDate, shiftsSorted);
+        const {restOk, invalidWindow} = checkWeeklyRestPeriod(demand.posterShift, demandDate, shiftsSorted);
+        const isWithin48h = checkWeeklyWorkHours(demand.posterShift, demandDate, shiftsSorted);
+       
+        const has35hRest = restOk;
 
-        // Calculer les temps de repos une seule fois
-        const beforeRestTime = computeRestTime(previousShift, demand.posterShift);
-        const afterRestTime = computeRestTime(demand.posterShift, nextShift);
+        // if (!computeRest.ok) console.warn('Repos minimum de 11h non respecté');
+        // if (!has35hRest) console.warn('Pas de repos de 35h trouvé dans les 7 jours glissants');
+        // if (invalidWindow) console.log("invalidWindow", invalidWindow);
+        // if (!isWithin48h) console.warn('Plus de 48h de travail sur 7 jours glissants');
 
         demandWithLimit.rest = {
-            before: beforeRestTime,
-            after: afterRestTime
+            before: computeRest.restBefore,
+            after: computeRest.restAfter
         };
 
-
-        const hasElevenHoursBefore = checkRestPeriod(previousShift, demand.posterShift, 'before');
-        const hasElevenHoursAfter = checkRestPeriod(nextShift, demand.posterShift, 'after');
-
-        if (!hasElevenHoursBefore || !hasElevenHoursAfter) {
+        // console.log("demandWithLimit", demandWithLimit.rest.before/60, demandWithLimit.rest.after/60);
+        if (!computeRest.ok) {
             demandWithLimit.limit.push('insufficientRest');
         }
 
-        // Vérifier la limite de jours consécutifs
-        if (checkConsecutiveDays(shifts, demandDate) >= 6) {
-            demandWithLimit.limit.push('consecutiveDaysLimit');
+        if (!has35hRest) {
+            demandWithLimit.limit.push('35limit');
         }
+
+        if (!isWithin48h) {
+            demandWithLimit.limit.push('48hLimit');
+        }
+
 
         return demandWithLimit;
     } catch (err) {
@@ -75,240 +78,487 @@ const categorize = async (demand, userId) => {
     }
 };
 
-const computeRestTime = (shift, shift2) => {
-    if (!shift || !shift2) return 0;
-    const baseRest = 0;
-    if (shift.type === 'rest') {
-        return 24;
-    }
-    else if (shift2.type === 'rest') {
-        return 24;
-    }
-
-    const shiftEnd = new Date(`2000-01-01 ${shift.endTime}`);
-    const shift2Start = new Date(`2000-01-02 ${shift2.startTime}`);
-    
-    if (shift.endsNextDay) {
-      shiftEnd.setDate(shiftEnd.getDate() + 1);
-    }
-    
-    // Calculer la différence en heures
-    const diffHours = (shift2Start - shiftEnd) / (1000 * 60 * 60);
-    return diffHours + baseRest;
-};
-
-const checkRestPeriod = (shift, demandShift, period) => {
-    if (!shift || shift.type === 'rest') return true;
-    if (period === 'before') {
-        return demandShift.startTime && shift.endTime ? 
-            computeRestTime(shift, demandShift) >= 11 : true;
-    } else {
-        return demandShift.endTime && shift.startTime ?
-            computeRestTime(demandShift, shift) >= 11 : true;
-    }
-};
-
-function checkConsecutiveDays(shifts, demandDate) {
-    const demandDay = new Date(demandDate).getDay();
-    let consecutiveDays = 0;
-
-    for (let i = 0; i < shifts.length; i++) {
-        const shiftDay = new Date(shifts[i].date).getDay();
-        if (shiftDay === demandDay) {
-            consecutiveDays++;
-        } else {
-            consecutiveDays = 0;
-        }
-
-        if (consecutiveDays >= 6) {
-            break;
-        }
-    }
-    return consecutiveDays;
+/**
+ * Parse un horaire de shift en Date JS complète
+ * @param {string} date - Date au format YYYY-MM-DD
+ * @param {string} time - Heure au format HH:mm
+ * @param {boolean} endsNextDay - Si true, décale au lendemain
+ * @returns {Date}
+ */
+function parseShiftDateTime(date, time, endsNextDay = false) {
+    const [hour, minute] = time.split(':').map(Number);
+    const d = new Date(date);
+    d.setHours(hour, minute, 0, 0);
+    if (endsNextDay) d.setDate(d.getDate() + 1);
+    return d;
 }
 
 /**
- * Vérifie si un shift cible respecte la période de repos minimale de 11 heures
- * après une période de service par rapport aux shifts précédent et suivant
- * @param {Object} previousShift - Le shift précédent
- * @param {Object} targetShift - Le shift cible à vérifier
- * @param {Object} nextShift - Le shift suivant
- * @returns {Object} - { isCompliant: boolean, restBefore: number, restAfter: number }
+ * Simule l'insertion d'un shift dans une liste triée chronologiquement
+ * @param {Object} targetShift - Le shift à insérer
+ * @param {string} targetDate - Date au format YYYY-MM-DD
+ * @param {Array} shiftsSorted - Liste des shifts triés chronologiquement
+ * @returns {Array} Nouvelle liste avec le shift inséré
  */
-const checkMinimumRestPeriod = (previousShift, targetShift, nextShift) => {
-    const restBefore = computeRestTime(previousShift, targetShift);
-    const restAfter = computeRestTime(targetShift, nextShift);
-    
-    const isCompliant = restBefore >= MIN_REST_HOURS && restAfter >= MIN_REST_HOURS;
-    
-    return {
-        isCompliant,
-        restBefore,
-        restAfter,
-        minRequired: MIN_REST_HOURS
-    };
-};
+function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
+    const localShiftsSorted = shiftsSorted.slice();
+    const start = parseShiftDateTime(targetDate, targetShift.startTime);
+    const end = parseShiftDateTime(targetDate, targetShift.endTime, targetShift.endsNextDay);
 
-/**
- * Vérifie si un shift cible respecte la période de repos de 35 heures consécutives
- * sur 7 jours glissants
- * @param {Array} shifts - Array des shifts sur 7 jours glissants
- * @param {Object} targetShift - Shift cible
- * @returns {Object} - { isCompliant: boolean, consecutiveRestHours: number, requiredHours: number }
- */
-const checkConsecutiveRestPeriod = (shifts, targetShift) => {
-    const REQUIRED_CONSECUTIVE_REST = 35;
+    const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
     
-    // Pour chaque position possible de la fenêtre glissante de 7 jours
-    let maxConsecutiveRest = 0;
+    const targetShiftIndex = localShiftsSorted.findIndex(s => s.date === targetDate.toISOString().split('T')[0]);
     
-    // Parcourir toutes les fenêtres glissantes de 7 jours possibles dans la plage de 13 jours
-    for (let windowStart = 0; windowStart <= shifts.length - 7; windowStart++) {
-        const windowEnd = windowStart + 7;
-        const windowShifts = shifts.slice(windowStart, windowEnd);
-        
-        let currentConsecutiveRest = 0;
-        let windowMaxConsecutiveRest = 0;
-        
-        // Analyser cette fenêtre de 7 jours
-        for (let i = 0; i < windowShifts.length; i++) {
-            const shift = windowShifts[i].shift;
-            
-            if (shift && shift.type === REST_TYPE) {
-                currentConsecutiveRest += 24; // Un jour de repos = 24h
-            } else if (shift && shift.type !== REST_TYPE) {
-                // Calculer le temps de repos entre ce shift et le suivant
-                if (i < windowShifts.length - 1) {
-                    const nextShift = windowShifts[i + 1].shift;
-                    const restTime = computeRestTime(shift, nextShift);
-                    currentConsecutiveRest += restTime;
-                }
-            }
-            
-            // Mettre à jour le maximum pour cette fenêtre
-            if (currentConsecutiveRest > windowMaxConsecutiveRest) {
-                windowMaxConsecutiveRest = currentConsecutiveRest;
-            }
-            
-            // Réinitialiser si on trouve un shift de travail
-            if (shift && shift.type !== REST_TYPE) {
-                currentConsecutiveRest = 0;
-            }
-        }
-        
-        // Mettre à jour le maximum global
-        if (windowMaxConsecutiveRest > maxConsecutiveRest) {
-            maxConsecutiveRest = windowMaxConsecutiveRest;
-        }
-        
-        // Si on trouve une fenêtre avec pas assez de repos, on peut s'arrêter
-        if (windowMaxConsecutiveRest < REQUIRED_CONSECUTIVE_REST) {
-            break;
+    if (targetShiftIndex !== -1) {
+        // Si le shift existe déjà à cette date, on le remplace
+        localShiftsSorted[targetShiftIndex] = newShift;
+    } else {
+        // Sinon, on l'insère au bon endroit selon la date
+        const insertIndex = localShiftsSorted.findIndex(s => new Date(s.date) > new Date(targetDate));
+        if (insertIndex === -1) {
+            // Si aucune date plus grande n'est trouvée, on ajoute à la fin
+            localShiftsSorted.push(newShift);
+        } else {
+            // Sinon on insère à la position trouvée
+            localShiftsSorted.splice(insertIndex, 0, newShift);
         }
     }
     
-    return {
-        isCompliant: maxConsecutiveRest >= REQUIRED_CONSECUTIVE_REST,
-        consecutiveRestHours: maxConsecutiveRest,
-        requiredHours: REQUIRED_CONSECUTIVE_REST
-    };
-};
+    return localShiftsSorted;
+}
 
 /**
- * Vérifie si un shift cible respecte la durée hebdomadaire du travail
- * ne pouvant excéder 48 heures sur 7 jours glissants
- * @param {Array} shifts - Array des shifts sur 7 jours glissants
- * @param {Object} targetShift - Shift cible
- * @returns {Object} - { isCompliant: boolean, totalWorkHours: number, maxAllowedHours: number }
+ * Récupère tous les shifts de type "work", triés chronologiquement
+ * @param {Object} shiftsMap - Objet avec clés de date et valeurs { date, shift }
+ * @returns {Array<{ shift, date: string, start: Date, end: Date }>}
  */
-const checkWeeklyWorkDuration = (shifts, targetShift) => {
-    const MAX_WEEKLY_HOURS = 48;
-    
-    // Pour chaque position possible de la fenêtre glissante de 7 jours
-    let maxWorkHours = 0;
-    
-    // Parcourir toutes les fenêtres glissantes de 7 jours possibles dans la plage de 13 jours
-    for (let windowStart = 0; windowStart <= shifts.length - 7; windowStart++) {
-        const windowEnd = windowStart + 7;
-        const windowShifts = shifts.slice(windowStart, windowEnd);
-        
-        let windowWorkHours = 0;
-        
-        // Calculer le total des heures de travail pour cette fenêtre de 7 jours
-        for (let i = 0; i < windowShifts.length; i++) {
-            const shift = windowShifts[i].shift;
-            
-            if (shift && shift.type !== REST_TYPE) {
-                // Calculer la durée du shift en heures
-                const startTime = new Date(`2000-01-01 ${shift.startTime}`);
-                const endTime = new Date(`2000-01-01 ${shift.endTime}`);
-                
-                if (shift.endsNextDay) {
-                    endTime.setDate(endTime.getDate() + 1);
-                }
-                
-                const shiftDuration = (endTime - startTime) / (1000 * 60 * 60);
-                windowWorkHours += shiftDuration;
-            }
-        }
-        
-        // Mettre à jour le maximum
-        if (windowWorkHours > maxWorkHours) {
-            maxWorkHours = windowWorkHours;
-        }
-        
-        // Si on trouve une fenêtre qui dépasse la limite, on peut s'arrêter
-        if (maxWorkHours > MAX_WEEKLY_HOURS) {
+function getAllShiftsSorted(shiftsMap) {
+    const result = [];
+    for (const [date, entry] of shiftsMap) {
+        const shift = entry.shift;
+        result.push({ shift, date, start: entry.start, end: entry.end, team: entry.team });
+        // console.log("pushing : ", { shift, date, start: entry.start, end: entry.end, team: entry.team });
+    }
+
+
+    //  console.log("result", result.length);
+    return result.sort((a, b) => new Date(a.date) - new Date(b.date));
+}
+
+/**
+ * Vérifie s'il y a au moins 11h de repos avant et après le shift cible
+ * @param {Object} targetShift - Le shift en question
+ * @param {string} targetDate - Date au format YYYY-MM-DD
+ * @param {Object} shiftsMap - Objet avec les shifts autour
+ * @returns {boolean}
+ */
+function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
+    if (targetShift.type !== 'work') return true;
+
+    const targetStart = parseShiftDateTime(targetDate, targetShift.startTime);
+    const targetEnd = parseShiftDateTime(targetDate, targetShift.endTime, targetShift.endsNextDay);
+
+
+    let lastShift = null;
+    let nextShift = null;
+
+    for (const s of shiftsSorted) {
+      
+        if (s.end <= targetStart) {
+            lastShift = s;
+        } else if (s.start >= targetEnd) {
+            nextShift = s;
             break;
         }
     }
-    
-    return {
-        isCompliant: maxWorkHours <= MAX_WEEKLY_HOURS,
-        totalWorkHours: Math.round(maxWorkHours * 100) / 100, // Arrondir à 2 décimales
-        maxAllowedHours: MAX_WEEKLY_HOURS
-    };
-};
+
+    let result = {
+        restBefore: 0,
+        restAfter: 0,
+        ok: true,
+    }
+
+    if (lastShift) {
+        result.restBefore = (targetStart - lastShift.end) / (60 * 1000);
+        if (result.restBefore < MIN_REST_MINUTES) result.ok = false;
+    }
+
+    if (nextShift) {
+        result.restAfter = (nextShift.start - targetEnd) / (60 * 1000);
+        if (result.restAfter < MIN_REST_MINUTES) result.ok = false;
+    }
+
+    return result;
+}
+
+
+
+
+function checkWeeklyRestPeriod(targetShift, targetDate, shiftsSorted) {
+    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+
+    let restOk
+    let invalidWindow 
+
+    for (let i = 0; i < 7; i++) {
+        restOk = false;
+        const windowStart = new Date(targetDate);
+        windowStart.setDate(windowStart.getDate() + i - 6);
+        const windowEnd = new Date(targetDate);
+        windowEnd.setDate(windowEnd.getDate() + i + 1);
+        const windowShifts = localShiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+
+        let lastEnd = new Date(windowStart);
+
+        for (let j = 0; j < windowShifts.length; j++) {
+            const s = windowShifts[j];
+            const restMinutes = (s.start - lastEnd) / (60 * 1000);
+            if (restMinutes >= 35 * 60) {
+
+                restOk = true;
+                break;
+            }
+            if (s.end > lastEnd) lastEnd = s.end;
+
+            // Action spécifique pour le dernier index de windowShifts
+            if (j === windowShifts.length - 1) {
+                // Vérifier s'il y a une période de repos de 35h entre le dernier shift et la fin de la fenêtre
+                const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
+                if (restMinutesToEnd >= 35 * 60) {
+                    restOk = true;
+                }
+            }
+        }
+
+        if (!restOk) {
+            invalidWindow = {windowStart, windowEnd};
+            break;
+        }
+
+
+
+    }
+    return {restOk, invalidWindow};
+
+}
+
+function checkWeeklyWorkHours(targetShift, targetDate, shiftsSorted) {
+    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+  
+    let workOk
+
+    for (let i = 0; i < 7; i++) {
+        workOk = true;
+        let totalWorkMinutes = 0;
+        const windowStart = new Date(targetDate);
+        windowStart.setDate(windowStart.getDate() + i - 6);
+        const windowEnd = new Date(targetDate);
+        windowEnd.setDate(windowEnd.getDate() + i + 1);
+        const windowShifts = localShiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+
+        for (let j = 0; j < windowShifts.length; j++) {
+
+            const s = windowShifts[j];
+
+            if (j === 0 && s.start < windowStart) {
+
+                const workMinutesToStart = (s.end - windowStart) / (60 * 1000);
+
+                totalWorkMinutes += workMinutesToStart;
+            }
+
+            else if (j === windowShifts.length - 1 && s.end > windowEnd) {
+                const workMinutesToEnd = (windowEnd - s.start) / (60 * 1000);
+
+                totalWorkMinutes += workMinutesToEnd;
+            }
+
+            else {
+                const workMinutes = (s.end - s.start) / (60 * 1000);
+
+                totalWorkMinutes += workMinutes;
+            }
+
+
+
+
+            if (totalWorkMinutes > 48 * 60) {
+                workOk = false;
+                break;
+            }
+
+        }
+
+
+
+        if (!workOk) break;
+    }
+    return workOk;
+}
+
 
 /**
- * Fonction principale pour vérifier la conformité complète d'un shift cible
- * @param {Object} targetShift - Le shift cible à vérifier
- * @param {Array} surroundingShifts - Array des shifts environnants (7 jours glissants)
- * @returns {Object} - Résultat complet de la conformité
+ * Vérifie qu'un agent ne travaille pas plus de 5 jours consécutifs (temps de trajet exclu)
+ * @param {Object} targetShift - Le shift en question
+ * @param {string} targetDate - Date au format YYYY-MM-DD
+ * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
+ * @returns {Object} { ok: boolean, consecutiveDays: number }
  */
-const checkShiftCompliance = (targetShift, surroundingShifts) => {
-    const previousShift = surroundingShifts[5]?.shift; // Shift précédent
-    const nextShift = surroundingShifts[7]?.shift; // Shift suivant
-    
-    const restPeriodCheck = checkMinimumRestPeriod(previousShift, targetShift, nextShift);
-    const consecutiveRestCheck = checkConsecutiveRestPeriod(surroundingShifts, targetShift);
-    const weeklyWorkCheck = checkWeeklyWorkDuration(surroundingShifts, targetShift);
-    
-    const isFullyCompliant = restPeriodCheck.isCompliant && 
-                            consecutiveRestCheck.isCompliant && 
-                            weeklyWorkCheck.isCompliant;
-    
-    return {
-        isCompliant: isFullyCompliant,
-        checks: {
-            minimumRestPeriod: restPeriodCheck,
-            consecutiveRestPeriod: consecutiveRestCheck,
-            weeklyWorkDuration: weeklyWorkCheck
-        },
-        summary: {
-            totalIssues: [
-                !restPeriodCheck.isCompliant && 'Période de repos insuffisante',
-                !consecutiveRestCheck.isCompliant && 'Repos consécutif insuffisant',
-                !weeklyWorkCheck.isCompliant && 'Durée hebdomadaire dépassée'
-            ].filter(Boolean)
-        }
-    };
-};
+function checkConsecutiveWorkDays(targetShift, targetDate, shiftsSorted) {
+    if (targetShift.type !== 'work') return { ok: true, consecutiveDays: 0 };
 
-export { 
-    categorize, 
-    checkMinimumRestPeriod, 
-    checkConsecutiveRestPeriod, 
-    checkWeeklyWorkDuration, 
-    checkShiftCompliance 
+    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+
+    let maxConsecutiveDays = 0;
+    let currentConsecutiveDays = 0;
+    let currentDate = null;
+
+    for (const shift of localShiftsSorted) {
+        if (shift.shift.type === 'work') {
+            const shiftDate = new Date(shift.date);
+            
+            if (currentDate === null) {
+                currentConsecutiveDays = 1;
+                currentDate = shiftDate;
+            } else {
+                const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
+                
+                if (daysDiff === 1) {
+                    // Jour consécutif
+                    currentConsecutiveDays++;
+                } else if (daysDiff === 0) {
+                    // Même jour, on ne compte pas
+                    continue;
+                } else {
+                    // Jour non consécutif, on réinitialise
+                    maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
+                    currentConsecutiveDays = 1;
+                }
+                currentDate = shiftDate;
+            }
+        } else {
+            // Shift de repos, on réinitialise le compteur
+            maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
+            currentConsecutiveDays = 0;
+            currentDate = null;
+        }
+    }
+
+    // Vérifier le dernier groupe
+    maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
+
+    return {
+        ok: maxConsecutiveDays <= 5,
+        consecutiveDays: maxConsecutiveDays
+    };
+}
+
+/**
+ * Vérifie qu'un agent bénéficie d'une période de repos minimale de 12 heures après une vacation de contrôle de nuit
+ * @param {Object} targetShift - Le shift en question
+ * @param {string} targetDate - Date au format YYYY-MM-DD
+ * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
+ * @returns {Object} { ok: boolean, restAfterNightControl: number }
+ */
+function checkRestAfterNightControl(targetShift, targetDate, shiftsSorted) {
+    if (targetShift.type !== 'work') return { ok: true, restAfterNightControl: 0 };
+
+    const targetStart = parseShiftDateTime(targetDate, targetShift.startTime);
+    const targetEnd = parseShiftDateTime(targetDate, targetShift.endTime, targetShift.endsNextDay);
+
+    // Vérifier si c'est un contrôle de nuit (entre 00h00 et 06h00)
+    const isNightControl = targetStart.getHours() >= 0 && targetStart.getHours() < 6;
+
+    if (!isNightControl) return { ok: true, restAfterNightControl: 0 };
+
+    // Chercher le prochain shift après ce contrôle de nuit
+    let nextShift = null;
+    for (const shift of shiftsSorted) {
+        if (shift.shift.type === 'work' && shift.start > targetEnd) {
+            nextShift = shift;
+            break;
+        }
+    }
+
+    if (!nextShift) return { ok: true, restAfterNightControl: 0 };
+
+    const restMinutes = (nextShift.start - targetEnd) / (60 * 1000);
+    const requiredRestMinutes = 12 * 60; // 12 heures
+
+    return {
+        ok: restMinutes >= requiredRestMinutes,
+        restAfterNightControl: restMinutes
+    };
+}
+
+/**
+ * Vérifie qu'un agent ne peut exercer plus de deux vacations de contrôle consécutives empiétant sur la plage 00h00-06h00
+ * @param {Object} targetShift - Le shift en question
+ * @param {string} targetDate - Date au format YYYY-MM-DD
+ * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
+ * @returns {Object} { ok: boolean, consecutiveNightControls: number }
+ */
+function checkConsecutiveNightControls(targetShift, targetDate, shiftsSorted) {
+    if (targetShift.type !== 'work') return { ok: true, consecutiveNightControls: 0 };
+
+    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+
+    let maxConsecutiveNightControls = 0;
+    let currentConsecutiveNightControls = 0;
+    let currentDate = null;
+
+    for (const shift of localShiftsSorted) {
+        if (shift.shift.type === 'work') {
+            const shiftStart = parseShiftDateTime(shift.date, shift.shift.startTime);
+            const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
+            
+            if (isNightControl) {
+                const shiftDate = new Date(shift.date);
+                
+                if (currentDate === null) {
+                    currentConsecutiveNightControls = 1;
+                    currentDate = shiftDate;
+                } else {
+                    const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysDiff === 1) {
+                        // Jour consécutif
+                        currentConsecutiveNightControls++;
+                    } else if (daysDiff === 0) {
+                        // Même jour, on ne compte pas
+                        continue;
+                    } else {
+                        // Jour non consécutif, on réinitialise
+                        maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
+                        currentConsecutiveNightControls = 1;
+                    }
+                    currentDate = shiftDate;
+                }
+            } else {
+                // Shift de jour, on réinitialise le compteur
+                maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
+                currentConsecutiveNightControls = 0;
+                currentDate = null;
+            }
+        } else {
+            // Shift de repos, on réinitialise le compteur
+            maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
+            currentConsecutiveNightControls = 0;
+            currentDate = null;
+        }
+    }
+
+    // Vérifier le dernier groupe
+    maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
+
+    return {
+        ok: maxConsecutiveNightControls <= 2,
+        consecutiveNightControls: maxConsecutiveNightControls
+    };
+}
+
+/**
+ * Vérifie qu'un agent bénéficie d'une période de repos minimale de 48 heures après deux vacations consécutives de contrôle de nuit
+ * @param {Object} targetShift - Le shift en question
+ * @param {string} targetDate - Date au format YYYY-MM-DD
+ * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
+ * @returns {Object} { ok: boolean, restAfterTwoNightControls: number }
+ */
+function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
+    if (targetShift.type !== 'work') return { ok: true, restAfterTwoNightControls: 0 };
+
+    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+
+    // Chercher les séquences de deux vacations de contrôle de nuit consécutives
+    let consecutiveNightControls = [];
+    let currentSequence = [];
+    let currentDate = null;
+
+    for (const shift of localShiftsSorted) {
+        if (shift.shift.type === 'work') {
+            const shiftStart = parseShiftDateTime(shift.date, shift.shift.startTime);
+            const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
+            
+            if (isNightControl) {
+                const shiftDate = new Date(shift.date);
+                
+                if (currentDate === null) {
+                    currentSequence = [shift];
+                    currentDate = shiftDate;
+                } else {
+                    const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
+                    
+                    if (daysDiff === 1) {
+                        // Jour consécutif
+                        currentSequence.push(shift);
+                        if (currentSequence.length === 2) {
+                            consecutiveNightControls.push([...currentSequence]);
+                        }
+                    } else if (daysDiff === 0) {
+                        // Même jour, on ne compte pas
+                        continue;
+                    } else {
+                        // Jour non consécutif, on réinitialise
+                        currentSequence = [shift];
+                    }
+                    currentDate = shiftDate;
+                }
+            } else {
+                // Shift de jour, on réinitialise le compteur
+                currentSequence = [];
+                currentDate = null;
+            }
+        } else {
+            // Shift de repos, on réinitialise le compteur
+            currentSequence = [];
+            currentDate = null;
+        }
+    }
+
+    // Vérifier le repos après chaque séquence de deux vacations consécutives
+    for (const sequence of consecutiveNightControls) {
+        if (sequence.length === 2) {
+            const lastShiftEnd = parseShiftDateTime(sequence[1].date, sequence[1].shift.endTime, sequence[1].shift.endsNextDay);
+            
+            // Chercher le prochain shift après cette séquence
+            let nextShift = null;
+            for (const shift of localShiftsSorted) {
+                if (shift.shift.type === 'work' && shift.start > lastShiftEnd) {
+                    nextShift = shift;
+                    break;
+                }
+            }
+
+            if (nextShift) {
+                const restMinutes = (nextShift.start - lastShiftEnd) / (60 * 1000);
+                const requiredRestMinutes = 48 * 60; // 48 heures
+
+                if (restMinutes < requiredRestMinutes) {
+                    return {
+                        ok: false,
+                        restAfterTwoNightControls: restMinutes
+                    };
+                }
+            }
+        }
+    }
+
+    return {
+        ok: true,
+        restAfterTwoNightControls: 0
+    };
+}
+
+
+
+export {
+    categorize,     
+    checkMinimumRestTime,
+    checkWeeklyRestPeriod,
+    checkWeeklyWorkHours,
+    checkConsecutiveWorkDays,
+    checkRestAfterNightControl,
+    checkConsecutiveNightControls,
+    checkRestAfterTwoNightControls,
+    simulateInsertShift
 };

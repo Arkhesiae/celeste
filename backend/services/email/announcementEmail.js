@@ -66,7 +66,7 @@ L'équipe Celeste
             Bonjour,
           </p>
           <p style="font-size: 16px; line-height: 1.6; color: #333;">
-            Une nouvelle mise à jour de Celeste sera bientôt disponible ! Rendez-vous sur la page patchnotes pour plus d'informations.
+            Une nouvelle mise à jour de Celeste est disponible ! Rendez-vous sur la page patchnotes pour plus d'informations.
           </p>
           <div style="background: #f0f4f6; border: 1px solid #e9ecef01; border-radius: 8px; padding: 24px; margin: 25px 0; ">
             <div style="margin-right: 10px; display: flex; align-items: center; justify-content: start;">

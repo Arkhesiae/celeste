@@ -4,10 +4,7 @@ const config: CapacitorConfig = {
   appId: 'fr.celeste.app',
   appName: 'celeste',
   webDir: 'dist',
-  server: {
-    url: 'https://celeste-app.fr',
-    cleartext: false
-  },
+  
   plugins: {
     SplashScreen: {
       launchShowDuration: 0

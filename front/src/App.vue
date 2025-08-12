@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="app-container">
    
       <router-view v-slot="{ Component, route }">
         <transition :name="route.meta.transition || ''"  mode="out-in">
@@ -27,6 +27,20 @@ onMounted(async () => {
 </script>
 
 <style>
+.app-container {
+  /* Marges de sécurité pour éviter le notch et les barres de statut */
+  padding-top: var(--safe-area-top) !important;
+  padding-bottom: var(--safe-area-bottom) !important;
+  padding-left: var(--safe-area-left) !important;
+  padding-right: var(--safe-area-right) !important;
+  
+
+}
+
+.debug {
+  border: 1px solid red;
+}
+
 /* Remove chrome autofill color from inputs */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

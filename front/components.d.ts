@@ -32,7 +32,6 @@ declare module 'vue' {
     ConfirmationDialog: typeof import('./src/components/common/ConfirmationDialog.vue')['default']
     ConflictDialog: typeof import('./src/components/Dialogs/ConflictDialog.vue')['default']
     ContactAdminForm: typeof import('./src/components/Forms/ContactAdminForm.vue')['default']
-    copy: typeof import('./src/components/common/ListHeaderV2.vue')['default']
     CurrentBudgetCard: typeof import('./src/components/Financement/CurrentBudgetCard.vue')['default']
     DayDetail: typeof import('./src/components/Workshifts/DayDetail.vue')['default']
     DayList: typeof import('./src/components/Workshifts/visualization/DayList.vue')['default']

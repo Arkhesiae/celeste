@@ -2,7 +2,7 @@
   <div class="transition-wrapper d-flex">
 
 
-    <AppBar :showButtons="inScreen" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
+    <AppBar :showButtons="inScreen" :isMobileDrawerOpen="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
 
     <DesktopNavigationDrawer v-model:navExpanded="navExpanded" />
 

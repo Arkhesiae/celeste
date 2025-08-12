@@ -246,8 +246,8 @@
     </v-dialog>
 
     <!-- Dialog pour afficher les points -->
-    <v-dialog v-model="showPointsDialog" max-width="300px">
-      <v-card class="pa-6" rounded="xl">
+    <v-dialog v-model="showPointsDialog" max-width="300px" attach="body" style="z-index: 1000000 !important">
+      <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
         <v-card-title class="text-h6 pa-0 mb-2">
           Points de {{ demand?.posterShift?.name }}
         </v-card-title>

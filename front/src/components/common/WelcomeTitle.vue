@@ -163,8 +163,11 @@ const headerStyle = reactive({
 
 } */
 
+
+
  
 .gradient {
+
   fill: transparent;
   color: #000;
   font-weight: 900 !important;

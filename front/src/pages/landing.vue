@@ -84,18 +84,18 @@
       </v-col>
     </v-row>
 
-    <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch">
+    <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
       <v-fade-transition group appear>
         <v-col key="center" cols="12" md="4">
           <v-card ref="statsRef" color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold gradient">{{ Math.floor(animatedCenters) }}</span>
+            <span class="text-h1 mt-2 font-weight-bold text-remplacement">{{ Math.floor(animatedCenters) }}</span>
             <span class="text-h7 text-medium-emphasis">centres</span>
           </v-card>
         </v-col>
         <v-col key="controllers" cols="12" md="4">
           <v-card color="transparent" flat height="100%" rounded="xl"
             class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold gradient">{{ Math.floor(animatedNumber) }}</span>
+            <span class="text-h1 mt-2 font-weight-bold text-onSurface">{{ Math.floor(animatedNumber) }}</span>
             <span class="text-h7 text-medium-emphasis">contrôleurs</span>
           </v-card>
         </v-col>
@@ -125,6 +125,9 @@
 import { useDisplay } from 'vuetify'
 import { useRouter } from 'vue-router';
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { useStatStore } from '@/stores/statStore';
+
+const statStore = useStatStore();
 
 
 const emit = defineEmits(["update-topbar"]);
@@ -227,14 +230,14 @@ const animationIntervals = {
 };
 const statsRef = ref(null);
 
-const startAnimation = (target, current, key) => {
+const startAnimation = (target, current, key, duration) => {
   if (animationIntervals[key]) {
     clearInterval(animationIntervals[key]);
   }
 
-  const duration = 2000;
+  const animationDuration = duration || 2000;
   const delay = 20;
-  const increment = target / (duration / delay);
+  const increment = target / (animationDuration / delay);
 
   animationIntervals[key] = setInterval(() => {
     if (current.value < target) {
@@ -244,6 +247,12 @@ const startAnimation = (target, current, key) => {
     }
   }, delay);
 };
+
+const getStats = async () => {
+  const response = await statStore.fetchStats();
+  console.log(response);
+ 
+}
 
 const setupStatsObserver = async () => {
   await nextTick();
@@ -258,9 +267,9 @@ const setupStatsObserver = async () => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         console.log("ae")
-        startAnimation(999, animatedNumber, 'controllers');
-        startAnimation(999, animatedCenters, 'centers');
-        startAnimation(999, animatedReplacements, 'replacements');
+        startAnimation(statStore.totalUsers, animatedNumber, 'controllers', 1000);
+        startAnimation(statStore.totalCenters, animatedCenters, 'centers', 1500);
+        startAnimation(statStore.totalSubstitutions, animatedReplacements, 'replacements', 2000);
       } else {
         animatedNumber.value = 0;
         animatedCenters.value = 0;
@@ -288,6 +297,7 @@ const setupStatsObserver = async () => {
 let statsObserver = null;
 
 onMounted(async () => {
+  getStats();
   await setupIntersectionObserver();
   topbarObserver = await setupTopbarObserver();
   statsObserver = await setupStatsObserver();
@@ -335,6 +345,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 .gradient {
   fill: transparent;
   color: #000;
@@ -499,12 +510,12 @@ onMounted(() => {
 }
 
 .v-card {
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: all 0.3s ease;
 }
 
 .v-card:hover .v-icon {
   transform: scale(1.1);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 

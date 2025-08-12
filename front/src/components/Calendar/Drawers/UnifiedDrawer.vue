@@ -1,17 +1,23 @@
 <template>
-  <v-navigation-drawer
-    location="right"
-    :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)"
- 
-    floating
-    order="-5"
-    temporary
-    style="z-index: 2500;"
-    width="600"
-  >
-    <v-sheet class="pa-4">
-      <v-card-item class="py-1 px-6 mb-2">
+  <v-slide-x-reverse-transition>
+    <div
+      class="d-flex"
+      v-if="modelValue"
+      style="
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        max-width: 600px;
+        height: 100vh;
+        z-index: 2500 !important;
+        background: white;
+        
+        overflow-y: auto;
+      "
+    >
+    <v-sheet class="pa-6 w-100">
+      <v-card-item class="pa-0 ma-0 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           {{ drawerTitle }}
         </v-card-title>
@@ -31,7 +37,8 @@
         :small="true"
       ></DemandCard>
     </v-sheet>
-  </v-navigation-drawer>
+  </div>
+  </v-slide-x-reverse-transition>
 </template>
 
 <script setup>

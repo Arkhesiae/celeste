@@ -6,7 +6,8 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-
+// ─── Import du routeur principal ─────────────────────────────────────────────
+import mainRouter from './routes/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,23 +25,7 @@ dotenv.config({
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ─── Imports des routes ───────────────────────────────────────────────────────
-import usersRouter from './routes/users.js';
-import rotationsRouter from './routes/rotations.js';
-import centerRouter from './routes/center.js';
-import teamsRouter from './routes/teams.js';
-import substitutionRouter from './routes/substitution.js';
-import loginRouter from './routes/login.js';
-import notificationRouter from './routes/notifications.js';
-import messageRoutes from './routes/messageRoutes.js';
-import ticketRoutes from './routes/ticketRoutes.js';
-import otpRoutes from './routes/otpRoutes.js';
-import authRouter from './routes/auth.js';
-import devRouter from './routes/dev.js';
-import rulesRouter from './routes/rules.js';
-import accountRecoveryRouter from './routes/accountRecovery.js';
-import announcementRoutes from './routes/announcementRoutes.js';
-import planningModificationsRouter from './routes/planningModifications.js';
+
 
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
@@ -72,23 +57,9 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
 app.use('/', express.static(path.join(__dirname, 'public')));
 
+
 // ─── Routes API ───────────────────────────────────────────────────────────────
-app.use('/api/users', usersRouter);
-app.use('/api/messages', messageRoutes);
-app.use('/api/tickets', ticketRoutes);
-app.use('/api/login', loginRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/substitution', substitutionRouter);
-app.use('/api/rotations', rotationsRouter);
-app.use('/api/notifications', notificationRouter);
-app.use('/api/center', centerRouter);
-app.use('/api/teams', teamsRouter);
-app.use('/api/otp', otpRoutes);
-app.use('/api/dev', devRouter);
-app.use('/api/rules', rulesRouter);
-app.use('/api/account-recovery', accountRecoveryRouter);
-app.use('/api/announcements', announcementRoutes);
-app.use('/api/planning-modifications', planningModificationsRouter);
+app.use('/api', mainRouter);
 
 // ─── Route API par défaut ─────────────────────────────────────────────────────
 app.get('/api', (req, res) => {

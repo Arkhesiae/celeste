@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar style="z-index: 2300 !important;"  scroll-behavior="elevate" color="background">
+  <v-app-bar class="user-safe-area" style="z-index: 2300 !important;"  scroll-behavior="elevate" color="background">
     <!-- Bouton navigation pour écran large -->
     <template v-slot:prepend>
       <template v-if="!smAndDown && isLoggedIn">
@@ -30,7 +30,7 @@
       <!-- Layout mobile -->
       <template v-if="smAndDown">
         <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
-        <v-app-bar-nav-icon @click="toggleMobileDrawer" />
+        <v-app-bar-nav-icon @click="toggleMobileDrawer" :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'" />
       </template>
 
       <!-- Layout desktop -->
@@ -118,6 +118,10 @@ const PARAMETER_PATH = "/parameter";
 // Props
 const props = defineProps({
   showButtons: {
+    type: Boolean,
+    default: false,
+  },
+  isMobileDrawerOpen: {
     type: Boolean,
     default: false,
   },
@@ -231,7 +235,7 @@ onUnmounted(() => {
 
 <style scoped>
 .user-safe-area {
-  padding-top: env(safe-area-inset-top) !important;
+  padding-top: var(--safe-area-top) !important;
 }
 /* Styles spécifiques à AppBar si nécessaire */
 </style>

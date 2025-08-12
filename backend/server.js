@@ -58,6 +58,7 @@ app.use(cors({
     'http://167.235.244.249',
     'http://celeste-app.fr',
     'https://celeste-app.fr',
+    'https://localhost',
     'capacitor://localhost',
     'capacitor://192.168.1.36:30035',
     'capacitor://localhost:30035',

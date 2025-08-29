@@ -46,9 +46,6 @@ const categorize = async (demand, shiftsMap = null) => {
             }
         }
 
-        console.log("demand.posterShift.shift", demand.posterShift.shift);
-        let shift = await Shift.findById(demand.posterShift.shift);
-        console.log("shift", shift);
 
         const shiftsSorted = getAllShiftsSorted(shiftsMap);
         const computeRest = checkMinimumRestTime(demand.posterShift.shift, demandDate, shiftsSorted);
@@ -112,9 +109,9 @@ function parseShiftDateTime(date, time, endsNextDay = false) {
  */
 function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
     const localShiftsSorted = shiftsSorted.slice();
-    console.log("targetShift", targetShift);
-    let startTime = targetShift?.shift?.default?.startTime ? targetShift?.shift?.default?.startTime : targetShift?.startTime;
-    let endTime = targetShift?.shift?.default?.endTime ? targetShift?.shift?.default?.endTime : targetShift?.endTime;
+  
+    let startTime = targetShift?.default?.startTime ? targetShift?.default?.startTime : targetShift?.startTime;
+    let endTime = targetShift?.default?.endTime ? targetShift?.default?.endTime : targetShift?.endTime;
     if (!startTime || !endTime) {
         throw new Error("Invalid shift" + targetShift);
     }
@@ -171,8 +168,10 @@ function getAllShiftsSorted(shiftsMap) {
 function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return true;
 
-    const targetStart = parseShiftDateTime(targetDate, targetShift.startTime);
-    const targetEnd = parseShiftDateTime(targetDate, targetShift.endTime, targetShift.endsNextDay);
+    let startTime = targetShift?.default?.startTime ? targetShift?.default?.startTime : targetShift?.startTime;
+    let endTime = targetShift?.default?.endTime ? targetShift?.default?.endTime : targetShift?.endTime;
+    const targetStart = parseShiftDateTime(targetDate, startTime);
+    const targetEnd = parseShiftDateTime(targetDate, endTime, targetShift.endsNextDay);
 
 
     let lastShift = null;

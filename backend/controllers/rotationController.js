@@ -794,12 +794,12 @@ const updateRotation = async (req, res) => {
         // Mettre à jour les jours (shifts) si fournis
         if (updatedData.days) {
             // Supprimer les anciens shifts et leurs variations
-            for (const oldShift of rotation.days) {
-                if (oldShift.variations && oldShift.variations.length > 0) {
-                    await Variation.deleteMany({ _id: { $in: oldShift.variations } });
-                }
-                await Shift.findByIdAndDelete(oldShift._id);
-            }
+            // for (const oldShift of rotation.days) {
+            //     if (oldShift.variations && oldShift.variations.length > 0) {
+            //         await Variation.deleteMany({ _id: { $in: oldShift.variations } });
+            //     }
+            //     await Shift.findByIdAndDelete(oldShift._id);
+            // }
 
             // Créer les nouveaux shifts
             rotation.days = [];

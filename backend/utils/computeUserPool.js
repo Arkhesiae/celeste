@@ -45,7 +45,7 @@ const computeUserPool = async (demand) => {
         });
 
        
-
+        console.log(demand);
         // Analyser chaque utilisateur
         for (const user of users) {
             try {

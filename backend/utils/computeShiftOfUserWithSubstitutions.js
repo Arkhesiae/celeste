@@ -4,7 +4,7 @@ import {getTeamAtGivenDate} from "./getTeamAtGivenDate.js";
 import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
 import PlanningModification from '../models/PlanningModification.js';
-
+import Shift from '../models/Shift.js';
 // Récupérer le shift d'un utilisateur à une date donnée en prenant en compte les substitutions et modifications de planning
 const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
     try {
@@ -47,6 +47,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     }
     
                     initialShift = await computeShiftOfTeam(date, team.teamId);
+                 
                 }
                 else {
                     teamObject = null;
@@ -129,7 +130,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                         // Vérifier la cohérence de la substitution
                         if (substitution.posterId.toString() === userId) {
                             if (currentShift && substitution.posterShift) {
-                                if (currentShift._id.toString() !== substitution.posterShift._id.toString()) {
+                                if (currentShift._id.toString() !== substitution.posterShift?._id?.toString() && currentShift._id.toString() !== substitution.posterShift?.shift?._id?.toString()) {
                                     console.warn(`Incohérence détectée pour l'utilisateur ${userId} à la date ${dateStr}:
                                         Shift actuel: ${currentShift._id}
                                         Shift dans la substitution: ${substitution.posterShift._id}`);
@@ -170,7 +171,13 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                                 });
                             } else  {
                                 // L'utilisateur est le remplaçant, il prend le shift du poster
-                                currentShift = substitution.posterShift;
+                                if (substitution.posterShift.shift) {
+                                    currentShift = await Shift.findById(substitution.posterShift.shift);
+                                }
+                                else {
+                                    currentShift = substitution.posterShift;
+                                }
+                               
                                 currentTeam = await Team.findById(substitution.posterShift.teamId);
                                 substitutionHistory.push({
                                     type: 'replacement',
@@ -222,4 +229,48 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
     }       
 };
 
-export { computeShiftOfUserWithSubstitutions }; 
+const computeShiftOfUserWithoutSubstitutions = async (dates, userId) => {
+    try {
+        const user = await User.findById(userId).populate('teams');
+        if (!user) {
+            throw new Error('Utilisateur non trouvé');
+        }
+
+        const dateArray = Array.isArray(dates) ? dates : [dates];
+        const results = await Promise.all(
+            dateArray.map(async (dateStr) => {
+                const date = new Date(dateStr);
+                if (isNaN(date.getTime())) {
+                    throw new Error(`Date invalide: ${dateStr}`);
+                }
+
+                const team = await getTeamAtGivenDate(user.teams, date);
+                if (!team) {
+                    return {
+                        date: dateStr,
+                        status: "Pas d'équipe"
+                    };
+                }
+
+                const teamObject = await Team.findById(team.teamId);
+                if (!teamObject) {
+                    throw new Error(`Équipe non trouvée pour l'ID: ${team.teamId}`);
+                }
+
+                const shift = await computeShiftOfTeam(date, team.teamId);
+                return {
+                    date: dateStr,
+                    teamObject,
+                    shift
+                };
+            })
+        );
+        return results;
+    }
+    catch (error) {
+        console.error('Erreur dans computeShiftOfUserWithoutSubstitutions:', error.message);
+        throw error;
+    }
+}   
+
+export { computeShiftOfUserWithSubstitutions, computeShiftOfUserWithoutSubstitutions }; 

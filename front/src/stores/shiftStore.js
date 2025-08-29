@@ -76,13 +76,15 @@ export const useShiftStore = defineStore('shift', () => {
 
     let start = null;
     let end = null;
+    let startTime = shift?.default?.startTime ? shift?.default?.startTime : shift?.startTime;
+    let endTime = shift?.default?.endTime ? shift?.default?.endTime : shift?.endTime;
     if (shift && shift.type !== 'rest') {
-      if (!date || !shift || !shift.startTime || !shift.endTime) {
+      if (!date || !shift || !startTime || !endTime ) {
         return;
       }
 
-      start = parseShiftDateTime(date, shift.startTime, shift.endsNextDay);
-      end = parseShiftDateTime(date, shift.endTime, shift.endsNextDay);
+      start = parseShiftDateTime(date, startTime, shift.endsNextDay);
+      end = parseShiftDateTime(date, endTime, shift.endsNextDay);
     }
 
     const newValue = {

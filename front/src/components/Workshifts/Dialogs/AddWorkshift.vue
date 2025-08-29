@@ -2,9 +2,10 @@
   import { ref, computed, reactive, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import WorkshiftSummary from '../Summary/WorkshiftSummary.vue';
+import GenericDialog from '../../Dialogs/GenericDialog.vue';
 
 const props = defineProps({
-  isDialogVisible: {
+  modelValue: {
     type: Boolean,
     required: true,
   },
@@ -16,16 +17,17 @@ const props = defineProps({
 
 const emit = defineEmits([
   'rotationSubmit', 
-  'update:dialogVisible', 
+  'update:modelValue', 
   'rotationEditSubmit', 
-  'rotationEditCancel'
+  'rotationEditCancel',
+  'close'
 ]);
 
 const { smAndDown } = useDisplay();
 
 const localDialogVisible = computed({
-  get: () => props.isDialogVisible,
-  set: (value) => emit('update:dialogVisible', value),
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
 });
 
 const newRotation = ref({
@@ -40,7 +42,8 @@ const currentWindow = ref(0);
 watch(() => props.rotation, (newValue) => {
   if (newValue) {
     newRotation.value = { ...newValue };
-    currentWindow.value = 1; // Passer directement à la fenêtre de configuration des jours
+    console.log("newRotation.value", newRotation.value);
+    currentWindow.value = 0; // Passer directement à la fenêtre de configuration des jours
   } else {
     // Réinitialiser le formulaire si on ferme le dialogue
     newRotation.value = {
@@ -75,7 +78,7 @@ const handleEditDay = (day) => {
 const handleSubmitDay = (day) => {
   if (dayToEdit.value) {
     // Mode édition : remplacer le jour existant
-    // console.log("EDITION")
+    console.log("EDITION")
     // console.log("day", day);
     // console.log("dayToEdit.value", dayToEdit.value);
     console.log("newRotation.value.days", newRotation.value.days);
@@ -148,132 +151,127 @@ const close = () => {
   if (props.rotation) {
     emit('rotationEditCancel');
   }
+  emit('close');
   localDialogVisible.value = false;
 };
 </script>
 
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="900" :fullscreen="smAndDown" style="z-index: 3000 !important;">
+  <GenericDialog
+    v-model="localDialogVisible"
+    :title="props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS'"
+    max-width="900"
+    @close="close"
+  >
+    <template #content>
+      <v-window v-model="currentWindow" class="pt-1 pa-0" >
+        <!-- Première fenêtre -->
+        <v-window-item :value="0">
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-card-item class="pa-0 mb-6">
+                <v-card-subtitle class="text-medium-emphasis">
+                  Configurez les vacations et les périodes de repos pour votre tour de service
+                </v-card-subtitle>
+              </v-card-item>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field
+                v-model="newRotation.name"
+                label="Nom du tour de service"
+                variant="outlined"
+                class="mb-8"
+                bg-color="surface"
+                rounded="lg"
+                :rules="nameRules"
+                placeholder="Ex: Tour de service principal"
+              ></v-text-field>
+            </v-col>
+          </v-row>
+        </v-window-item>
 
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
-      <v-card-item class="py-1 px-6 mb-2">
-       
-        <v-card-title class="d-flex justify-space-between align-center">{{ props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS' }}</v-card-title>
-        <template #append v-if="!smAndDown">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
-        </template>
-        <template #prepend v-else>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
-        </template>
-      </v-card-item>
-      <v-card-text class="px-6">
-        <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
-          <!-- Première fenêtre -->
-          <v-window-item :value="0">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-card-item class="pa-0 mb-6">
-                
-                  <v-card-subtitle class="text-medium-emphasis">
-                    Configurez les vacations et les périodes de repos pour votre tour de service
-                  </v-card-subtitle>
-                </v-card-item>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="newRotation.name"
-                  label="Nom du tour de service"
-                  variant="outlined"
-                  class="mb-8"
-                  bg-color="surface"
-                  rounded="lg"
-                  :rules="nameRules"
-                  placeholder="Ex: Tour de service principal"
-                ></v-text-field>
-              </v-col>
-            </v-row>
-          </v-window-item>
-
-          <!-- Deuxième fenêtre -->
-          <v-window-item :value="1">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-card-item class="pa-0 mb-6">
-                  <span class="text-overline font-weight-medium">{{ newRotation.name }}</span>
-                  <v-card-title class="d-flex justify-space-between align-center">
-                    <div class="text-h5 font-weight-medium">Configuration des jours</div>
-                  </v-card-title>
-                  <v-card-subtitle class="text-medium-emphasis">
-                    {{ props.rotation ? 'Modifiez les vacations et les périodes de repos' : 'Ajoutez les vacations et les périodes de repos pour votre tour de service' }}
-                  </v-card-subtitle>
-                </v-card-item>
-              </v-col>
-              <v-col cols="12" md="6">
-                <!-- Résumé schématique -->
-                <v-fade-transition>
-                  <v-card v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
-                    <v-card-item>
-                      <div class="d-flex justify-space-between align-center">
-                        <v-card-title class="text-subtitle-1 font-weight-medium">Tour de service</v-card-title>
-                        <v-chip
-                          class="ml-4"
-                          color="onBackground"
-                          size="small"
-                          rounded="lg"
-                        >
-                          {{ newRotation.days.length }} jour{{ newRotation.days.length > 1 ? 's' : '' }}
-                        </v-chip>
-                        <v-btn
-                          icon
-                          variant="text"
-                          @click="isSummaryExpanded = !isSummaryExpanded"
-                        >
-                          <v-icon>{{ isSummaryExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
-                        </v-btn>
-                      </div>
-                    </v-card-item>
-                    <WorkshiftSummary
-                      :days="newRotation.days"
-                      :isExpanded="isSummaryExpanded"
-                      @onDeleteDay="handleRemoveDay"
-                      @onEditDay="handleEditDay"
-                    />
-                  </v-card>
-                </v-fade-transition>
-              </v-col>
-            </v-row>
-            <div class="d-flex"
-              :class="smAndDown ? 'justify-space-between flex-column' : 'justify-end'"
+        <!-- Deuxième fenêtre -->
+        <v-window-item :value="1">
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-card-item class="pa-0 mb-6">
+                <span class="text-overline font-weight-medium">{{ newRotation.name }}</span>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <div class="text-h5 font-weight-medium">Configuration des jours</div>
+                </v-card-title>
+                <v-card-subtitle class="text-medium-emphasis">
+                  {{ props.rotation ? 'Modifiez les vacations et les périodes de repos' : 'Ajoutez les vacations et les périodes de repos pour votre tour de service' }}
+                </v-card-subtitle>
+              </v-card-item>
+            </v-col>
+            <v-col cols="12" md="6">
+              <!-- Résumé schématique -->
+              <v-fade-transition>
+                <v-card v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
+                  <v-card-item>
+                    <div class="d-flex justify-space-between align-center">
+                      <v-card-title class="text-subtitle-1 font-weight-medium">Tour de service</v-card-title>
+                      <v-chip
+                        class="ml-4"
+                        color="onBackground"
+                        size="small"
+                        rounded="lg"
+                      >
+                        {{ newRotation.days.length }} jour{{ newRotation.days.length > 1 ? 's' : '' }}
+                      </v-chip>
+                      <v-btn
+                        icon
+                        variant="text"
+                        @click="isSummaryExpanded = !isSummaryExpanded"
+                      >
+                        <v-icon>{{ isSummaryExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                      </v-btn>
+                    </div>
+                  </v-card-item>
+                  <WorkshiftSummary
+                    :days="newRotation.days"
+                    :isExpanded="isSummaryExpanded"
+                    @onDeleteDay="handleRemoveDay"
+                    @onEditDay="handleEditDay"
+                  />
+                </v-card>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+          <div class="d-flex"
+            :class="smAndDown ? 'justify-space-between flex-column' : 'justify-end'"
+          >
+            <v-btn
+              color="onBackground"
+              prepend-icon="mdi-plus"
+              @click="addDay"
+              class=""
+              :rounded="smAndDown ? 'xl' : 'lg'"
+              :height="smAndDown ? 48 : 36"
+              :block="smAndDown"
             >
-              <v-btn
-                color="primary"
-                prepend-icon="mdi-plus"
-                @click="addDay"
-                class=""
-                :rounded="smAndDown ? 'xl' : 'lg'"
-                :height="smAndDown ? 48 : 36"
-                :block="smAndDown"
-              >
-                Ajouter une vacation
-              </v-btn>
+              Ajouter une vacation
+            </v-btn>
 
-              <v-btn
-                color="secondary"
-                :class="!smAndDown ? 'ml-2' : 'mt-2'"
-                variant="tonal"
-                prepend-icon="mdi-sleep"
-                @click="handleAddRestDay"
-                :rounded="smAndDown ? 'xl' : 'lg'"
-                :height="smAndDown ? 48 : 36"
-                :block="smAndDown"
-              >
-                Ajouter un repos
-              </v-btn>
-            </div>
-          </v-window-item>
-        </v-window>
-      </v-card-text>
-      <v-card-actions v-if="currentWindow === 0" class="pa-6">
+            <v-btn
+              color="secondary"
+              :class="!smAndDown ? 'ml-2' : 'mt-2'"
+              variant="tonal"
+              prepend-icon="mdi-sleep"
+              @click="handleAddRestDay"
+              :rounded="smAndDown ? 'xl' : 'lg'"
+              :height="smAndDown ? 48 : 36"
+              :block="smAndDown"
+            >
+              Ajouter un repos
+            </v-btn>
+          </div>
+        </v-window-item>
+      </v-window>
+    </template>
+
+    <template #footer>
+      <div v-if="currentWindow === 0" class="pa-0 ma-0 d-flex flex-grow-1">
         <v-spacer></v-spacer>
         <v-btn
           color="primary"
@@ -281,20 +279,18 @@ const close = () => {
           rounded="xl"
           @click="currentWindow = 1"
           :disabled="isNextButtonDisabled"
-         
         >
           Suivant
         </v-btn>
-      </v-card-actions>
+      </div>
       
-      <div v-if="currentWindow === 1" class="pa-6 d-flex">
+      <div v-if="currentWindow === 1" class="pa-0 ma-0 d-flex flex-grow-1">
         <v-btn
           v-if="!props.rotation"
           color="primary"
           variant="text"
           rounded="xl"
           @click="currentWindow = 0"
-         
         >
           Retour
         </v-btn>
@@ -305,24 +301,22 @@ const close = () => {
           rounded="xl"
           :disabled="newRotation.days.length === 0"
           @click="submit"
-         
         >
           {{ props.rotation ? 'Enregistrer les modifications' : 'Enregistrer' }}
         </v-btn>
       </div>
-    </v-card>
- 
-  </v-dialog>
+    </template>
+  </GenericDialog>
 
   <!-- Add Day Dialog -->
   <AddOrEditDay
-    :isDialogVisible="showAddDayDialog"
+    :modelValue="showAddDayDialog"
     :dayNumber="newRotation.days.filter(day => day.type === 'work').length + 1"
     :variants="variants"
     :day="dayToEdit"
     :mode="dayToEdit ? 'edit' : 'add'"
     @onSubmit="handleSubmitDay"
-    @update:dialogVisible="showAddDayDialog = $event"
+    @update:modelValue="showAddDayDialog = $event"
   />
 </template>
 

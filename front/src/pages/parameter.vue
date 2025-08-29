@@ -2,7 +2,7 @@
 
 <template>
   <v-container>
-    <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" back-button="true" />
+    <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" :back-button="true" />
 
     <v-row>
       <v-col cols="12" md="6">

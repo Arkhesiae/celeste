@@ -1,7 +1,18 @@
 <template>
-  <v-app-bar-title @click="$emit('title-click')" class="d-flex align-center" >
+  <v-app-bar-title style="margin-left: 10px;" @click="$emit('title-click')" class="d-flex align-center" >
     <div class="d-flex align-center ">
+    <v-btn v-if="smAndDown"
+      flat 
+      size="small"
+      icon
+      color="remplacement" 
+      :active="isHomepage || isDashboard"
+    >
+    <Logo style="left: 1px; top: -2px; position: relative;" />
+    </v-btn>
+    <div class="d-flex align-center" v-else>
     <Logo />
+
     <v-btn 
       flat 
       color="remplacement" 
@@ -11,7 +22,7 @@
     >
       {{ APP_TITLE }} 
     </v-btn>
-
+  </div>
     <v-hover v-slot="{ isHovering, props }">
       <v-slide-y-transition mode="out-in"> 
        <div v-if="!isHovering">
@@ -40,6 +51,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useDisplay } from 'vuetify';
 
 // Constants
 const APP_TITLE = "Céleste";
@@ -48,6 +60,7 @@ const RELEASE_DATE = "09/08/2025";
 
 // Reactive data
 const currentDate = ref('');
+const { smAndDown } = useDisplay();
 
 // Props
 defineProps({

@@ -12,11 +12,11 @@
         <v-card-title class="text-subtitle-1 font-weight-medium">
           <div class="d-flex align-start ">
             <v-card-title class="pb-0 mb-0">
-              <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
+              <h2 class="text-h4 font-weight-medium">{{ shift?.name }}</h2>
             </v-card-title>
             <div class="d-flex align-start flex-column justify-space-between ml-2 ">
               <v-card-subtitle class="py-0">
-                {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
+                  {{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime }}
               </v-card-subtitle>
               <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
 
@@ -140,8 +140,8 @@
 
   <!-- Dialog pour afficher les points -->
     <!-- Dialog pour afficher les points -->
-    <v-dialog v-model="showPointsDialog" max-width="300px">
-      <v-card class="pa-6" rounded="xl">
+    <v-dialog v-model="showPointsDialog" max-width="300px" attach="body" style="z-index: 1000000 !important">
+      <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
         <v-card-title class="text-h6 pa-0 mb-2">
           Points de {{ demand?.posterShift?.name }}
         </v-card-title>
@@ -171,8 +171,8 @@
 
 
   <!-- Dialog pour afficher le commentaire -->
-  <v-dialog v-model="showCommentDialog" max-width="500px">
-    <v-card class="pa-6" rounded="xl">
+  <v-dialog v-model="showCommentDialog" max-width="500px" attach="body" style="z-index: 1000000 !important">
+    <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
       <v-card-title class="text-h6 pa-0">
         Commentaire de {{ demand?.posterShift?.name }}
       </v-card-title>
@@ -189,22 +189,23 @@
   </v-dialog>
 
   <!-- Dialog de confirmation de suppression -->
-  <v-dialog v-model="showConfirmDeleteDialog" max-width="400px">
-    <v-card class="pa-6" rounded="xl">
+  <v-dialog v-model="showConfirmDeleteDialog" max-width="400px" attach="body" style="z-index: 1000000 !important">
+    <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
       <v-card-title class="text-h6 pa-0 mb-4">
-        Confirmer la suppression
+        Confirmer {{ isPoster ? 'l\'annulation' : 'le désistement' }}
       </v-card-title>
       <v-card-text class="pa-0 mb-4">
-        Êtes-vous sûr de vouloir {{ isPoster ? 'annuler' : 'refuser' }} cette demande ?
-        Cette action ne peut pas être annulée.
+        Êtes-vous sûr de vouloir {{ isPoster ? 'annuler' : 'vous désister de' }} cette demande ?
+        Cette action est irréversible.
       </v-card-text>
       <v-card-actions class="pa-0">
-        <v-spacer></v-spacer>
+     
         <v-btn color="onBackground" variant="text" @click="showConfirmDeleteDialog = false">
-          Annuler
+          Retour
         </v-btn>
+        <v-spacer></v-spacer>
         <v-btn color="error" variant="flat" @click="confirmDelete">
-          Confirmer
+          {{ isPoster ? 'Annuler' : 'Se désister' }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -255,6 +256,15 @@ const getTeamName = computed(() => {
 const getAccepter = computed(() => {
   if (!props.demand?.accepterId) return null;
   return userStore.users.find(user => user._id === props.demand.accepterId);
+});
+
+const shift = computed(() => {
+  if (props.demand?.posterShift?.shift) {
+    return props.demand?.posterShift?.shift;
+  }
+  else {
+    return props.demand?.posterShift;
+  }
 });
 
 const getPoster = computed(() => {

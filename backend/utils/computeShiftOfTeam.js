@@ -1,6 +1,8 @@
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
 import { findLatestRotation } from './findLatestRotation.js';
+import Shift from '../models/Shift.js';
+import Rotation from '../models/Rotation.js';
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée
 const computeShiftOfTeam = async (date, teamId) => {
@@ -27,10 +29,26 @@ const computeShiftOfTeam = async (date, teamId) => {
             throw new Error(`Centre non trouvé pour l'ID: ${team.center}`);
         }
 
-        const latestRotation = await findLatestRotation(center._id, date);
+        let latestRotation = await findLatestRotation(center._id, date);
         if (!latestRotation) {
             return null;
-        }
+        }   
+
+        if (latestRotation.days.length > 0) {
+            const firstDay = latestRotation.days[0];
+                // Vérifier si les days sont déjà populés en testant si c'est un ObjectId ou un objet Shift
+                if (typeof firstDay === 'string' || firstDay.constructor.name === 'ObjectId') {
+                    // Les days ne sont pas populés, on les populate
+                    latestRotation = await Rotation.findById(latestRotation._id).populate({
+                        path: 'days',
+                        populate: {
+                            path: 'variations'
+                        }
+                    });
+                }
+                // Si c'est déjà un objet avec des propriétés de Shift, pas besoin de populate
+            }
+        
 
         const diffInMilliseconds = date - new Date(team.cycleStartDate);
         const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
@@ -49,8 +67,9 @@ const computeShiftOfTeam = async (date, teamId) => {
             // Pour les dates antérieures, on calcule l'index en remontant dans le pattern
             dayIndex = (totalPatternDays - (Math.abs(diffInDays) % totalPatternDays)) % totalPatternDays;
         }
-        
-        return rotationPattern[dayIndex];
+
+        const shift = rotationPattern[dayIndex];
+        return shift;
     } catch (error) {
         console.error('Erreur dans computeShiftOfTeam:', error.message);
         throw error;

@@ -10,7 +10,7 @@ import { generateShiftsMap } from '../utils/generateShiftsMap.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 import { sendUserPoolNotification, sendUserNotification } from '../services/email/userPoolNotificationEmail.js';
 import { buildUserPoolNotificationEmail } from '../services/email/demandEmailModels.js';
-
+import Shift from '../models/Shift.js';
 
     
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
@@ -63,19 +63,79 @@ const getCenterDemands = async (req, res) => {
         };
 
         const [demands, myDemands] = await Promise.all([
-            Substitution.find({
-                deleted: false,
-                ...baseFilter,
-                posterId: { $ne: userId },
-                ...dateFilter
-            }).sort({ 'posterShift.date': 1 }),
-            Substitution.find({
-                deleted: false,
-                ...baseFilter,
-                posterId: user._id,
-                ...dateFilter
-            }).sort({ 'posterShift.date': 1 })
+            Substitution.aggregate([
+                {
+                    $match: {
+                        deleted: false,
+                        ...baseFilter,
+                        posterId: { $ne: userId },
+                        ...dateFilter
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'shifts',
+                        localField: 'posterShift.shift',
+                        foreignField: '_id',
+                        as: 'posterShift.populatedShift'
+                    }
+                },
+                {
+                    $addFields: {
+                        'posterShift.shift': {
+                            $cond: {
+                                if: { $gt: [{ $size: '$posterShift.populatedShift' }, 0] },
+                                then: { $arrayElemAt: ['$posterShift.populatedShift', 0] },
+                                else: '$posterShift.shift'
+                            }
+                        }
+                    }
+                },
+                {
+                    $unset: 'posterShift.populatedShift'
+                },
+                {
+                    $sort: { 'posterShift.date': 1 }
+                }
+            ]),
+            Substitution.aggregate([
+                {
+                    $match: {
+                        deleted: false,
+                        ...baseFilter,
+                        posterId: user._id,
+                        ...dateFilter
+                    }
+                },
+                {
+                    $lookup: {
+                        from: 'shifts',
+                        localField: 'posterShift.shift',
+                        foreignField: '_id',
+                        as: 'posterShift.populatedShift'
+                    }
+                },
+                {
+                    $addFields: {
+                        'posterShift.shift': {
+                            $cond: {
+                                if: { $gt: [{ $size: '$posterShift.populatedShift' }, 0] },
+                                then: { $arrayElemAt: ['$posterShift.populatedShift', 0] },
+                                else: '$posterShift.shift'
+                            }
+                        }
+                    }
+                },
+                {
+                    $unset: 'posterShift.populatedShift'
+                },
+                {
+                    $sort: { 'posterShift.date': 1 }
+                }
+            ])
         ]);
+
+     
 
         const unseenDemandIds = demands
             .filter(d => !d.seenBy.includes(userId))
@@ -218,7 +278,8 @@ const createDemand = async (req, res) => {
         const demand = new Substitution({
             posterId,
             posterShift: {
-                ...userShift.shift,
+                shift: userShift.shift._id,
+                selectedVariation: null,
                 teamId: userShift.teamObject._id,
                 date: userShift.date
             },
@@ -231,14 +292,17 @@ const createDemand = async (req, res) => {
             seenBy: [],
             interested: [],
             acceptedSwitches: acceptedSwitches || [],
-            isTrueSwitch: isTrueSwitch || false,
+            isTrueSwitch: isTrueSwitch || false,    
             type : type
         });
 
+    
         await demand.save();
-        
+        demand.posterShift.shift = await Shift.findById(demand.posterShift.shift)
+        res.status(201).json(demand);
         // Calculer et afficher le pool d'utilisateurs pouvant accepter cette demande
         try {
+        
             const userPool = await computeUserPool(demand);
             if (userPool.length > 0) {
                 try {
@@ -262,7 +326,7 @@ const createDemand = async (req, res) => {
             console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
         }
         
-        res.status(201).json(demand);
+    
     } catch (error) {
         console.error('Erreur lors de la création de la demande:', error);
         if (error.name === 'ValidationError') {

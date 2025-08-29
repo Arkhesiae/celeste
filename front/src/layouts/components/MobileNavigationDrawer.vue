@@ -1,19 +1,23 @@
 <template>
-  <v-dialog z-index="1900" style="z-index: 2000 !important;" :model-value="modelValue"
-    @update:model-value="$emit('update:modelValue', $event)" scrollable transition="scroll-y-transition" fullscreen
-    close-on-content-click scrim="rgba(0,0,0,1)" v-if="smAndDown">
+  <v-slide-y-reverse-transition>
+  <div v-if="modelValue && smAndDown" 
+    class="d-flex"
+    @update:model-value="$emit('update:modelValue', $event)" 
+    close-on-content-click 
+    style ="margin-top: calc(64px + var(--safe-area-top)); height: calc(100vh - 64px - var(--safe-area-top) - var(--safe-area-bottom)); width: 100%; z-index: 4000 !important; position: fixed; top: 0; left: 0;"
+    >
     <!-- Parent Container -->
-    <v-card class="pt-16 pa-8 d-flex flex-column align-center flex-0-0 pb-8" tile color="background" flat
-      style="width: 100%; height: 100%; overflow-y: auto; z-index: 25000 !important;">
+    <v-card class="pa-0 px-6 d-flex flex-column align-center flex-0-0 rounded-0" tile color="background" flat
+      style="width: 100%; height: 100%; overflow-y: auto;">
       <!-- User Avatar Section -->
       <v-scale-transition appear>
 
         <v-card max-width="400px" style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
           class="flex-0-0 my-16 pa-4 d-flex justify-space-between" width="100%"
-          @click="router.push({ path: '/profile/' + authStore.userId })" v-if="isLoggedIn">
+          @click="handleClick('/profile/' + authStore.userId)" v-if="isLoggedIn">
 
           <div class="d-flex justify-space-between align-center ga-2">
-            <v-avatar size="large" color="primary" variant="tonal">
+            <v-avatar size="large" color="primary" >
               <img v-if="getUserInfo?.avatar" :src="`${API_URL}${getUserInfo?.avatar}`" alt="avatar" />
               <v-icon v-else>mdi-account</v-icon>
             </v-avatar>
@@ -25,7 +29,12 @@
           </div>
         </div>
           <div class="d-flex justify-space-between flex-column align-center">
-            <div class="text-h5 font-weight-bold"> {{ points }}</div>
+            <div v-if="points > 99999" class="text-center text-h6 ">
+                <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
+            </div>
+            <div v-else :key="points" class="text-h3 font-weight-bold text-center"> 
+              {{ points }}
+            </div>
             <div class="text-body-2 text-medium-emphasis mt-n3">Points </div>
 
           </div>
@@ -38,12 +47,12 @@
       </v-scale-transition>
 
       <!-- Navigation Links Section -->
-      <v-card class="d-flex flex-column pb-8 flex-0-0" color="transparent" elevation="0" tile flat
+      <v-card class="d-flex flex-column flex-0-0" color="transparent" elevation="0" tile flat
         style="width: 100%; max-width: 400px;">
         <div v-if="isLoggedIn" class="text-h7 d-flex flex-column">
           <v-fade-transition group appear>
             <div v-for="(item, index) in menuItemsLogged" :key="item.key" class="d-flex flex-column">
-              <span class="pt-4 pb-4 cursor-pointer" @click="router.push({ path: item.path })" :title="item.title">
+              <span class="pt-4 pb-4 cursor-pointer" @click="handleClick(item.path)" :title="item.title">
                 {{ item.label }}
               </span>
               <v-divider v-if="index < menuItemsLogged.length - 1"></v-divider>
@@ -51,21 +60,21 @@
             <v-divider v-if="authStore.isAdmin"></v-divider>
             <div v-for="(item, index) in menuItemsLoggedAdmin" v-if="authStore.isAdmin" :key="item.key" class="d-flex flex-column">
             
-              <span class="pt-4 pb-4 cursor-pointer" @click="router.push({ path: item.path })" :title="item.title">
+              <span class="pt-4 pb-4 cursor-pointer" @click="handleClick(item.path)" :title="item.title">
                 {{ item.label }}
               </span>
               <v-divider v-if="index < menuItemsLoggedAdmin.length - 1"></v-divider>
             </div>
           </v-fade-transition>
 
-          <v-btn @click="handleLogout" style="height: 48px; border-radius: 16px !important;" color="error"
-            variant="tonal" class="mt-3">Se déconnecter
+          <v-btn @click="handleLogout" style="height: 48px; border-radius: 16px !important;" color="surfaceContainerHigh"
+            variant="flat" class="mt-3 text-error font-weight-bold ">Se déconnecter
           </v-btn>
         </div>
 
         <div v-else class="text-h7 d-flex flex-column">
           <v-btn v-if="!isLoggedIn" class="my-8" variant="flat" rounded="lg" color="onBackground"
-            append-icon="mdi-arrow-right" @click="router.push({ path: '/login' })" width="100%"
+            append-icon="mdi-arrow-right" @click="handleClick('/login')" width="100%"
             style="height: 48px; border-radius: 16px !important;">Se connecter
           </v-btn>
 
@@ -95,11 +104,11 @@
 
         <!-- Footer Links Section -->
         <v-list nav class="d-flex justify-space-around align-center pt-8 text-caption" bg-color="background">
-          <span @click="router.push({ path: '/contact-admin' })" style="cursor: pointer">Assistance</span>
+          <span @click="handleClick('/contact-admin')" style="cursor: pointer">Assistance</span>
           <v-divider vertical></v-divider>
-          <span @click="router.push({ path: '/patchnotes' })" style="cursor: pointer">Patch Notes</span>
+          <span @click="handleClick('/patchnotes')" style="cursor: pointer">Patchnotes</span>
           <v-divider vertical></v-divider>
-          <span @click="router.push({ path: '/financement' })" style="cursor: pointer">Financement</span>
+          <span @click="handleClick('/financement')" style="cursor: pointer">Financement</span>
         </v-list>
 
         <!-- Footer Links Section -->
@@ -116,8 +125,15 @@
           </div>
         </v-list>
       </v-card>
+       <!-- <span>{{ API_URL }}</span> -->
+      <!-- <span>{{ safeAreaTop }}</span>
+      <span>{{ safeAreaBottom }}</span>
+      <span>{{ safeAreaLeft }}</span>
+      <span>{{ safeAreaRight }}</span> -->
     </v-card>
-  </v-dialog>
+  
+  </div>
+  </v-slide-y-reverse-transition>
 </template>
 
 <script setup>
@@ -128,6 +144,8 @@ import { computed, onMounted, ref } from 'vue';
 import { useUserStore } from "@/stores/userStore.js";
 import { API_URL } from "@/config/api.js"; 
 import { usePointStore } from "@/stores/pointStore.js";
+
+
 
 const router = useRouter();
 const { smAndDown } = useDisplay();
@@ -149,7 +167,24 @@ const props = defineProps({
   }
 });
 
-defineEmits(['update:modelValue', 'update:theme']);
+
+const safeAreaTop = computed(() => {
+  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top');
+});
+
+const safeAreaBottom = computed(() => {
+  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom');
+});
+
+const safeAreaLeft = computed(() => {
+  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-left');
+});
+
+const safeAreaRight = computed(() => {
+  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-right');
+}); 
+
+const emit = defineEmits(['update:modelValue', 'update:theme']);
 
 const menuItemsLogged = [
   { key: 'remplacements', label: 'Demandes', path: '/exchange/replace', title: 'Remplacements' },
@@ -183,6 +218,11 @@ const getUserInfo = computed(() => {
   console.log(userInfo);
   return userInfo;
 });
+
+const handleClick = (path) => {
+  router.push({ path: path });
+  emit('update:modelValue', false);
+}
 
 
 </script>

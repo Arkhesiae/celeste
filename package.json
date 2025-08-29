@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "ssh:connect": "powershell -ExecutionPolicy Bypass -File scripts/connect_ssh.ps1"
+  },
+  "dependencies": {
+    "git-filter-repo": "^0.0.30"
+  }
+}

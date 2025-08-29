@@ -58,8 +58,10 @@ const generateShiftsMap = async (demands, userId) => {
         if (!entry.shift || entry.shift?.type !== 'work') continue;
 
         const shift = entry.shift;
-        const start = parseShiftDateTime(date, shift.startTime);
-        const end = parseShiftDateTime(date, shift.endTime, shift.endsNextDay);
+        let startTime = shift?.default?.startTime ? shift?.default?.startTime : shift?.startTime;
+        let endTime = shift?.default?.endTime ? shift?.default?.endTime : shift?.endTime;
+        const start = parseShiftDateTime(date, startTime);
+        const end = parseShiftDateTime(date, endTime, shift.endsNextDay);
 
         finalMap.set(date, { shift, team: entry.teamObject, date, start, end });
     }

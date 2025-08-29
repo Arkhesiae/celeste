@@ -31,6 +31,13 @@ const ShiftSchema = new mongoose.Schema({
     type: {type: String},
 });
 
+const NewShiftSchema = new mongoose.Schema({
+    shift: {type: mongoose.Schema.Types.ObjectId, ref: 'Shift'},
+    date: {type: Date, required: true},
+    teamId: {type: mongoose.Schema.Types.ObjectId, ref: 'Team'},
+    selectedVariation : {type : mongoose.Schema.Types.ObjectId, ref: 'Variation', default: null},
+});
+
 const SubstitutionSchema = new mongoose.Schema({
     posterId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -44,11 +51,11 @@ const SubstitutionSchema = new mongoose.Schema({
         default: null
     },
     posterShift: {
-        type: ShiftSchema,
+        type: mongoose.Schema.Types.Mixed, // Permet les deux formats (ancien et nouveau)
         required: true
     },
     accepterShift: {
-        type: ShiftSchema,
+        type: mongoose.Schema.Types.Mixed, // Permet les deux formats (ancien et nouveau)
         default: null
     },
     centerId: {
@@ -62,10 +69,7 @@ const SubstitutionSchema = new mongoose.Schema({
     },
     acceptedSwitches: [
         {
-            shift : {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Rotation.days'
-            },
+            shift : { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
             points : {
                 type: Number,
                 default: 0,

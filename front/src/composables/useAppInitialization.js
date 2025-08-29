@@ -28,8 +28,7 @@ export function useAppInitialization() {
 
 
   const initializeAuth = async () => {
-    authStore.loadFromLocalStorage();
-    console.log(authStore.isLoggedIn);
+    await authStore.loadFromLocalStorage();
   };
 
   const initializeTheme = async () => {
@@ -139,7 +138,7 @@ export function useAppInitialization() {
   const initializeApp = async (onProgress) => {
     try {
       initializationStore.setLoading(true);
-      
+      console.log("initializeApp");
       await initializeAuth();
       await initializeTheme();
       await initializeCenter(onProgress);

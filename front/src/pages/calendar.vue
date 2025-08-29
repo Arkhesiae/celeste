@@ -62,8 +62,8 @@
         @unacceptDemand="handleUnacceptDemand" />
     </v-row>
 
-    <AddSubstitutionForm :dialogMode="dialogMode" :dialogVisible="remplaDialog"
-      :date="selectedDate" :selectedVacation="selectedVacation" @onClose="closeRemplaDialog" @onSubmit="handleSubmit"
+    <AddSubstitutionForm :submitting="subInProgress" :dialogMode="dialogMode" :dialogVisible="remplaDialog"
+      :date="selectedDate" :selectedShift="selectedVacation" @onClose="closeRemplaDialog" @onSubmit="handleSubmit"
       @update:dialogModeValue="dialogMode = $event" @update:dialogVisible="remplaDialog = $event">
     </AddSubstitutionForm>
 
@@ -156,7 +156,7 @@ const showCancelConfirmationDialog = ref(false);
 const showUnacceptConfirmationDialog = ref(false);
 const substitutionToCancel = ref(null);
 const substitutionToUnaccept = ref(null);
-
+const subInProgress = ref(false);
 
 const activeRotation = computed(() => {
   return rotationStore.sortedRotations.find(rotation => rotation.status === 'active') || null;
@@ -190,7 +190,7 @@ const rotationsMap = ref(new Map());
 // Computed properties
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
-  return {shift : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.shift?._id, teamObject : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.teamObject};
+  return {shift : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.shift, teamObject : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.teamObject};
 });
 
 const accepterName = computed(() => {
@@ -272,11 +272,12 @@ const fetchSubstitutions = async () => {
 
 const handleSubmit = async (demand) => {
     try {
+      subInProgress.value = true;
       const posterId = userId.value;
       const posterShift = {
         date: demand.date,
-        shift: demand.selectedVacation.shift,
-        teamId: demand.selectedVacation.teamObject._id
+        shift: demand.selectedShift.shift,
+        teamId: demand.selectedShift.teamObject._id
       };
 
       const requestData = {
@@ -291,6 +292,7 @@ const handleSubmit = async (demand) => {
 
       await substitutionStore.createSubstitutionDemand(requestData);
       snackbarStore.showNotification('Demande créée !', 'onPrimary', 'mdi-check');
+      subInProgress.value = false;
       closeRemplaDialog();
       showBottomSheet.value = false
       return true;

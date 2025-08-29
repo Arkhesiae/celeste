@@ -2,7 +2,7 @@
   <div class="transition-wrapper d-flex">
 
 
-    <AppBar :showButtons="inScreen" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
+    <AppBar :showButtons="inScreen" :isMobileDrawerOpen="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
 
     <DesktopNavigationDrawer v-model:navExpanded="navExpanded" />
 
@@ -241,6 +241,8 @@ const onAfterLeave = (el) => {
 .v-main {
   position: relative !important;
   width: 100% !important;
+  padding-top: calc(var(--safe-area-top) + var(--v-layout-top)) !important;
+  /* height: calc(100vh - var(--safe-area-top)) !important; */
   /* inherits width from parent */
   box-sizing: border-box;
 }

@@ -52,8 +52,8 @@
     </v-expand-transition>
   </v-card>
 
-  <AddOrEditDay :isDialogVisible="showEditDayDialog" mode="edit" :day="selectedDay" @onSubmit="handleQuickDayEdit"
-    @update:dialogVisible="showEditDayDialog = $event" />
+  <AddOrEditDay :modelValue="showEditDayDialog" mode="edit" :day="selectedDay" @onSubmit="handleQuickDayEdit"
+    @update:modelValue="showEditDayDialog = $event" />
 
   <!-- Desktop Dialog -->
   <v-dialog v-if="!smAndDown" v-model="showDayDetail" max-width="400">
@@ -191,7 +191,7 @@ const handleNameEdit = async (updatedRotation) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(var(--v-theme-remplacement), 0.15) 0%, rgba(var(--v-theme-surface), 0) 80%);
+  background: linear-gradient(135deg, rgba(var(--v-theme-remplacement), 0.15) 0%, rgba(var(--v-theme-surfaceContainerHighest), 0.25) 80%);
   pointer-events: none;
   z-index: 0;
 }

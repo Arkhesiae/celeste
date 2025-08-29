@@ -4,6 +4,7 @@ const config: CapacitorConfig = {
   appId: 'fr.celeste.app',
   appName: 'celeste',
   webDir: 'dist',
+  
   plugins: {
     SplashScreen: {
       launchShowDuration: 0

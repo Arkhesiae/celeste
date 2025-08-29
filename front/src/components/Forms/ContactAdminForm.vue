@@ -50,7 +50,7 @@
         </div>
           
         <div  class="my-6" >
-        <VersionSelector :modelValue="formData.center" :title="formData.center ? formData.center.name : 'Selectionnez un centre' "  :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'">
+        <VersionSelector :hasData="!!centers && centers.length > 0" :modelValue="formData.center" :title="formData.center ? formData.center.name : 'Selectionnez un centre' "  :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'">
           <template #dialog>  
             <EntitySelector
               title=""

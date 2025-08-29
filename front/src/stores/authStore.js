@@ -56,12 +56,14 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Charge les données de l'utilisateur depuis le localStorage.
    */
-  const loadFromLocalStorage = () => {
+  const loadFromLocalStorage = async () => {
     try {
+      console.log("loadFromLocalStorage");
       const userData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    
       if (userData?.accessToken) {
         setUser(userData);
-        validateAccessToken();
+        await validateAccessToken();
 
       }
     } catch (err) {
@@ -74,6 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
    * Sauvegarde les données dans le localStorage.
    */
   const saveToLocalStorage = (data) => {
+    console.log("saveToLocalStorage");
     try {
       const dataToSave = {
         name: data.name,
@@ -144,12 +147,12 @@ export const useAuthStore = defineStore('auth', () => {
    * @returns {Promise<boolean>} True si le token est valide.
    */
   const validateAccessToken = async () => {
-    if (!accessToken.value) {
-      logOut();
-      throw new Error('Aucun token d\'accès trouvé.');
-    }
+   try {
+      if (!accessToken.value) {
+        logOut();
+        throw new Error('Aucun token d\'accès trouvé.');
+      }
 
-    try {
       if (isTokenExpired()) {
         logOut();
         throw new Error('Le token d\'accès a expiré.');
@@ -213,7 +216,7 @@ export const useAuthStore = defineStore('auth', () => {
       existingData.preferences = preferences.value;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
-      isLoggedIn.value = true;
+    
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
       throw error;

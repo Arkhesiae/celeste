@@ -8,3 +8,9 @@
 // @use 'vuetify/settings' with (
 //   $color-pack: false
 // );
+:root {
+    --safe-area-top: env(safe-area-inset-top, 20px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 20px);
+    --safe-area-left: env(safe-area-inset-left, 20px);
+    --safe-area-right: env(safe-area-inset-right, 20px);
+  }

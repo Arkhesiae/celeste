@@ -1,14 +1,6 @@
 <template>
   <v-container class="pa-4">
-    <div class="d-flex justify-space-between my-16 flex-column">
-      <div class="d-flex align-center"> 
-        <v-btn icon="mdi-arrow-left" variant="text" @click="router.back()" />
-        <span class="text-h4 font-weight-medium">Historique des changements d'équipe</span>
-      </div>
-      <span class="text-h4 text-overline text-medium-emphasis">
-        Voir tous les changements d'équipe
-      </span>
-    </div>
+    <MainTitle title="Historique des changements d'équipe" :backButton="true" subtitle="Voir tous les changements d'équipe" />
 
     <v-row class="ma-0">
       <div class="d-flex justify-center chip-container pa-2">

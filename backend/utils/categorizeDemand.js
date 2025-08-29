@@ -1,4 +1,5 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
+import Shift  from '../models/Shift.js';
 
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
@@ -7,10 +8,8 @@ const MIN_REST_MINUTES = 11 * 60;
 
 const categorize = async (demand, shiftsMap = null) => {
     try {
- 
-
         const demandDate = new Date(demand.posterShift.date);
-        const demandWithLimit = demand.toObject();
+        let demandWithLimit = demand
         demandWithLimit.limit = [];
 
         // Utiliser la map pré-calculée si disponible, sinon calculer normalement
@@ -31,11 +30,19 @@ const categorize = async (demand, shiftsMap = null) => {
             // Vérifier si une permutation est possible
             demandWithLimit.limit.push('alreadyWorking');
             // Vérifier si une permutation est possible
-            if (demand.acceptedSwitches?.length > 0 &&
-                demand.acceptedSwitches.some(switchItem =>
-                    switchItem?.shift?.toString() === vacationOfFetcher.shift._id?.toString()
-                )) {
-                demandWithLimit.canSwitch = true;
+            if (demand.acceptedSwitches?.length > 0) {
+                let canSwitch = false;
+                for (const switchItem of demand.acceptedSwitches) {
+                    const shift = await Shift.findById(switchItem.shift);
+                   
+                    if ((shift?._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name)) {
+                        canSwitch = true;
+                        break;
+                    }
+                }
+                if (canSwitch) {
+                    demandWithLimit.canSwitch = true;
+                }
             }
         }
 
@@ -102,8 +109,13 @@ function parseShiftDateTime(date, time, endsNextDay = false) {
  */
 function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
     const localShiftsSorted = shiftsSorted.slice();
-    const start = parseShiftDateTime(targetDate, targetShift.startTime);
-    const end = parseShiftDateTime(targetDate, targetShift.endTime, targetShift.endsNextDay);
+    let startTime = targetShift?.shift?.default?.startTime ? targetShift?.shift?.default?.startTime : targetShift?.startTime;
+    let endTime = targetShift?.shift?.default?.endTime ? targetShift?.shift?.default?.endTime : targetShift?.endTime;
+    if (!startTime || !endTime) {
+        throw new Error("Invalid shift" + targetShift);
+    }
+    const start = parseShiftDateTime(targetDate, startTime);
+    const end = parseShiftDateTime(targetDate, endTime, targetShift.endsNextDay);
 
     const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
     

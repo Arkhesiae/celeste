@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar style="z-index: 2300 !important;"  scroll-behavior="elevate" color="background">
+  <v-app-bar class="user-safe-area" scroll-behavior="elevate" color="background">
     <!-- Bouton navigation pour écran large -->
     <template v-slot:prepend>
       <template v-if="!smAndDown && isLoggedIn">
@@ -8,86 +8,66 @@
     </template>
 
     <!-- Titre de l'application -->
-    <AppBarTitle 
-      :is-homepage="isHomepage" 
-      :is-dashboard="isDashboard" 
-      @title-click="handleTitleClick" 
-    />
+    <AppBarTitle :is-homepage="isHomepage" :is-dashboard="isDashboard" @title-click="handleTitleClick" />
 
     <template v-slot:append>
       <!-- Boutons de notifications -->
       <v-tooltip location="bottom" text="Notifications" v-if="false">
         <template v-slot:activator="{ props }">
           <v-btn v-bind="props" v-if="isLoggedIn" icon @click="toggleNotifications" class="mr-2">
-            <v-badge color="tertiary"  :content="'COMMING SOON'" :model-value="'COMMING SOON'">
+            <v-badge color="tertiary" :content="'COMMING SOON'" :model-value="'COMMING SOON'">
               <v-icon icon="mdi-bell-outline"></v-icon>
             </v-badge>
-         
+
           </v-btn>
         </template>
       </v-tooltip>
-      
+
+
+      <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
+      <v-chip rounded="lg" size="small" v-if="isAdmin" @click="navigateToAdminPanel" class="cursor-pointer" >
+        <v-icon class="mr-2" :color="authStore.adminType === 'master' ? 'primary' : 'secondary'">
+          {{ authStore.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
+        </v-icon>
+        {{ authStore.adminType === 'master' ? 'Master' : 'Admin' }}
+      </v-chip>
       <!-- Layout mobile -->
       <template v-if="smAndDown">
-        <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
-        <v-app-bar-nav-icon @click="toggleMobileDrawer" />
+
+        <v-app-bar-nav-icon @click="toggleMobileDrawer" :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'" />
       </template>
 
       <!-- Layout desktop -->
       <template v-else>
         <template v-if="isLoggedIn">
-          <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
-          <AdminSection 
-            :is-admin="isAdmin" 
-            :admin-type="authStore.adminType"
-            :message-count="ticketStore.tickets.length"
-            @navigate-rules="router.push({path:'/admin/rules'})"
+
+          <AdminSection :is-admin="isAdmin" :admin-type="authStore.adminType"
+            :message-count="ticketStore.tickets.length" @navigate-rules="router.push({path:'/admin/rules'})"
             @navigate-tickets="router.push({ path : '/tickets' })"
-            @navigate-email="router.push({ path : '/emails' })"
-          />
+            @navigate-email="router.push({ path : '/emails' })" />
         </template>
 
         <!-- Navigation accueil -->
         <template v-else>
-          <HomeNavigation 
-            :show-buttons="showButtons"
-            :is-dark-theme="isDarkTheme"
-            @update-theme="isDarkTheme = $event"
-            @navigate-contact="navigateToContact"
-            @navigate-get-started="router.push({ path: '/get-started' })"
-            @navigate-login="router.push({ path: '/login' })"
-            @open-icnagenda="openIcnagenda"
-            @open-olafatco="openOlafatco"
-          />
+          <HomeNavigation :show-buttons="showButtons" :is-dark-theme="isDarkTheme" @update-theme="isDarkTheme = $event"
+            @navigate-contact="navigateToContact" @navigate-get-started="router.push({ path: '/get-started' })"
+            @navigate-login="router.push({ path: '/login' })" @open-icnagenda="openIcnagenda"
+            @open-olafatco="openOlafatco" />
         </template>
 
         <v-spacer />
 
         <!-- Menu utilisateur -->
-        <UserMenu 
-          v-if="isLoggedIn"
-          :username="username"
-          :email="authStore.email"
-          :avatar="authStore.avatar"
-          :points="points"
-          :current-team="currentTeam"
-          @navigate-profile="navigateToProfile"
-          @navigate-parameter="navigateToParameter"
-          @logout="handleLogout"
-          @navigate-contact="navigateToContact"
-        />
+        <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.email" :avatar="authStore.avatar"
+          :points="points" :current-team="currentTeam" @navigate-profile="navigateToProfile"
+          @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
       </template>
     </template>
   </v-app-bar>
 
-  <NotificationsDialog 
-    v-model:isDialogOpen="isDialogOpen" 
-    v-if="isLoggedIn" 
-    :user-id="authStore.userId"
-    :notifications="notificationStore.notifications" 
-    @markAsRead="handleMarkAsRead"
-    @clearNotifications="handleClearNotifications" 
-  />
+  <NotificationsDialog v-model:isDialogOpen="isDialogOpen" v-if="isLoggedIn" :user-id="authStore.userId"
+    :notifications="notificationStore.notifications" @markAsRead="handleMarkAsRead"
+    @clearNotifications="handleClearNotifications" />
 </template>
 
 <script setup>
@@ -118,6 +98,10 @@ const PARAMETER_PATH = "/parameter";
 // Props
 const props = defineProps({
   showButtons: {
+    type: Boolean,
+    default: false,
+  },
+  isMobileDrawerOpen: {
     type: Boolean,
     default: false,
   },
@@ -164,6 +148,10 @@ const isDarkTheme = computed({
 // Methods
 const handleTitleClick = () => {
   router.push({ path: HOME_PATH });
+};
+
+const navigateToAdminPanel = () => {
+  router.push({ path: '/admin-panel' });
 };
 
 const toggleNotifications = (event) => {
@@ -229,9 +217,24 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style>
+/* .v-app {
+  box-sizing: border-box !important;
+  border: 1px solid red !important;
+}
+
+.v-app-bar {
+  opacity: 0.5 !important;
+  border: 1px solid green !important;
+}
+
+.v-main {
+  box-sizing: border-box !important;
+  border: 1px solid blue !important;
+} */
+
 .user-safe-area {
-  padding-top: env(safe-area-inset-top) !important;
+  padding-top: var(--safe-area-top) !important;
 }
 /* Styles spécifiques à AppBar si nécessaire */
 </style>

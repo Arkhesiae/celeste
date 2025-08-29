@@ -1,10 +1,10 @@
 <template>
   <div class="d-flex justify-center align-center">
-    <ThemeSwitch 
+    <!-- <ThemeSwitch 
       :model-value="isDarkTheme" 
       @update:model-value="$emit('update-theme', $event)" 
       class="mr-2" 
-    />
+    /> -->
     
     <v-btn 
       variant="text" 
@@ -35,7 +35,7 @@
   
   <v-scroll-y-reverse-transition>
     <div v-if="!showButtons" class="d-flex">
-      <div class="block d-flex">
+      <!-- <div class="block d-flex">
         <v-btn 
           prepend-icon="mdi-lightning-bolt" 
           variant="flat" 
@@ -44,7 +44,7 @@
         >
           Get started
         </v-btn>
-      </div>
+      </div> -->
       <div class="d-flex mx-5">
         <v-btn 
           variant="flat" 

@@ -42,6 +42,15 @@ const handleEdit = () => {
   showDetailsDialog.value = false;
 };
 
+const variantKey = (day) => {
+  if (day.variants && day.variants.length > 0) {
+    return 'variants';
+  } else if (day.variations && day.variations.length > 0) {
+    return 'variations';
+  }
+
+};
+
 const handleUpdate = (updatedDay) => {
   updatedDay.value = updatedDay;
   emit('onUpdateDay', selectedDayIndex.value, updatedDay.value);
@@ -57,7 +66,7 @@ const updateDay = (day) => {
 <template>
   <div class="workshift-summary" >
     <v-expand-transition>
-      <div v-if="isExpanded" :style="smAndDown ? '' : 'max-height: 400px; overflow-y: auto;  overflow-x: hidden '">
+      <div v-if="isExpanded" :style="smAndDown ? '' : 'max-height: 400px; overflow-y: auto;  overflow-x: hidden '" class="hide-scrollbar">
         <v-row  class="px-2 py-0">
           <v-col
             v-for="(day, index) in days"
@@ -75,30 +84,54 @@ const updateDay = (day) => {
               <v-card-item class="my-0 flex-grow-1 py-0 align-center d-flex justify-space-between" >
                 <div class="d-flex align-center">
                 <div class="d-flex flex-column justify-center align-start ">
+                  <div class="d-flex align-center ga-3">
                   <div class="text-subtitle-1 font-weight-medium">{{ day.name }}</div>
-                  <v-card-subtitle v-if="day.type !== 'rest'">{{ day.startTime || '--:--' }} - {{ day.endTime || '--:--' }}</v-card-subtitle>
+                  <v-chip
+                    v-if="day.optional"
+                      color="surfaceContainer"
+                      size="x-small"
+                     variant="flat"
+                      rounded="lg"
+                      flat
+                  >
+                  <div class="d-flex align-center ga-2">
+                    <span class="text-caption text-onSurface">Option</span>
+                    <v-icon  size="small" icon="mdi-plus-box-outline" class="text-onSurface"></v-icon>
+                  </div>
+                   
+                  </v-chip>
+                  </div>
+                  <v-card-subtitle v-if="day.type !== 'rest'">{{ day?.default?.startTime ? day.default.startTime : day.startTime || '--:--' }} - {{ day?.default?.endTime ? day.default.endTime : day.endTime || '--:--' }}<span v-if="day?.default?.endsNextDay || day?.endsNextDay" class="ml-1 0"
+                    style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
+</v-card-subtitle>
                 </div>
-                <v-chip 
-                        color="secondary"
-                        variant="flat"
-                        rounded="xl"
-                        class="ml-2"
-                        size="small"
-                        v-if="day.variants?.length > 0" v-for="(variant) in day.variants"
-                      >
-                        {{ variant.name }}
-                      </v-chip>
+               
               </div>
 
                 <template #append>
+                  <div class="ml-2 ga-1 d-flex align-start">
+                  <v-chip 
+                        color="secondary"
+                        variant="flat"
+                        rounded="xl"
+                        class=""
+                        size="x-small"
+                        v-if="day[variantKey(day)]?.length > 0" v-for="(variant) in day[variantKey(day)]"
+                      >
+                        <span class="text-caption">{{ day.name + ' ' + variant.name }}</span>
+                      </v-chip>
+                      </div>
                     <v-chip
+                    v-if="day.type === 'rest'"
                       :color="day.type === 'rest' ? 'secondary' : 'primary'"
-                      size="small"
+                      size="x-small"
                       rounded="lg"
                     variant="elevated"
                   >
-                    {{ day.type === 'rest' ? 'Repos' : 'Travail' }}
-                  </v-chip> </template>
+                    <v-icon v-if="day.type === 'rest'" size="small" icon="mdi-sleep"></v-icon>
+                   
+                  </v-chip>
+                  </template>
         
               </v-card-item>
             </v-card>

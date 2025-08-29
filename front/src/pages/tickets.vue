@@ -151,7 +151,7 @@
                   color="primary"
                   class="ml-2"
                 >
-                  {{ ticket.centerId.name }}
+                  {{ ticket.centerId?.name }}
                 </v-chip>
               </v-list-item-title>
 

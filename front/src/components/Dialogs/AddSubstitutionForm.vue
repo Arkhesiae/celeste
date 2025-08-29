@@ -7,13 +7,14 @@ import { useAuthStore } from '@/stores/authStore';
 import { vacationService } from '@/services/vacationService';
 import { calculateRestDelay } from '@/utils/shiftUtils';
 import ConfirmationDialog from '@/components/common/ConfirmationDialog.vue';
+import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
 
 const props = defineProps({
   dialogMode: { type: String, required: true },
   dialogVisible: { type: Boolean, required: true },
   date: { type: String },
-
-  selectedVacation: {
+  submitting: { type: Boolean, required: true },
+  selectedShift: {
     type: Object,
   }
 });
@@ -88,27 +89,17 @@ const dialogTitle = computed(() =>
 );
 
 const activeRotation = computed(() => {
-  const centerId = authStore.centerId;
-  return centerStore.activeRotationsByCenter[centerId];
-});
-
-const selectedRotationDay = computed(() => {
-  if (!props.selectedVacation?.shift || !rotationStore.rotations) return null;
-  // Parcourir toutes les rotations pour trouver le jour correspondant
-  for (const rotation of rotationStore.rotations) {
-    const foundDay = rotation.days?.find(day => day._id === props.selectedVacation.shift);
-    if (foundDay) {
-      demand.value.points = foundDay.defaultPoints;
-      defaultPoints.value = foundDay.defaultPoints;
-      return {
-        shift: foundDay,
-        teamObject: props.selectedVacation.teamObject,
-        rotationName: rotation.name // Ajouter le nom de la rotation pour référence
-      };
+  const rotations = rotationStore.sortedRotations;
+  const demandDate = new Date(props.date);
+  for (const rotation of rotations) {
+    if (new Date(rotation.startDate) <= demandDate && (new Date(rotation.endDate)  >= demandDate || !rotation.endDate)) {
+      const rotationObject = rotationStore.rotations.find(r => r._id === rotation._id);
+      return rotationObject;
     }
   }
   return null;
 });
+
 
 const rotationDays = computed(() => {
   if (!activeRotation.value) return [];
@@ -184,67 +175,67 @@ const getDayName = (dayId) => {
 
 // Mettre à jour la fonction isDayAvailable
 const isDayAvailable = computed(() => (rotationDay) => {
-  if (!props.selectedVacation || !rotationDay) return false;
-  const rotationShift = activeRotation.value.days.filter(day => day.type !== 'rest')[rotationDay.index];
-  // Vérifier le délai de repos minimum (par exemple 11h)
-  const MIN_REST_HOURS = 11;
-  // Vérifier le délai avec la vacation précédente
-  if (adjacentVacations.value.prev?.shift) {
-    const prevDelay = calculateRestDelay(adjacentVacations.value.prev.shift, rotationShift);
-    if (prevDelay < MIN_REST_HOURS) return false;
-  }
+  // if (!props.selectedVacation || !rotationDay) return false;
+  // const rotationShift = activeRotation.value.days.filter(day => day.type !== 'rest')[rotationDay.index];
+  // // Vérifier le délai de repos minimum (par exemple 11h)
+  // const MIN_REST_HOURS = 11;
+  // // Vérifier le délai avec la vacation précédente
+  // if (adjacentVacations.value.prev?.shift) {
+  //   const prevDelay = calculateRestDelay(adjacentVacations.value.prev.shift, rotationShift);
+  //   if (prevDelay < MIN_REST_HOURS) return false;
+  // }
 
-  // Vérifier le délai avec la vacation suivante
-  if (adjacentVacations.value.next?.shift) {
-    const nextDelay = calculateRestDelay(rotationShift, adjacentVacations.value.next.shift);
-    if (nextDelay < MIN_REST_HOURS) return false;
-  }
-  console.log(rotationShift._id, props.selectedVacation)
-  // Vérifier s'il s'agit de la même vacation
-  if (rotationShift._id === props.selectedVacation.shift) {
-    return false;
-  }
+  // // Vérifier le délai avec la vacation suivante
+  // if (adjacentVacations.value.next?.shift) {
+  //   const nextDelay = calculateRestDelay(rotationShift, adjacentVacations.value.next.shift);
+  //   if (nextDelay < MIN_REST_HOURS) return false;
+  // }
+  // console.log(rotationShift._id, props.selectedVacation)
+  // // Vérifier s'il s'agit de la même vacation
+  // if (rotationShift._id === props.selectedVacation.shift) {
+  //   return false;
+  // }
 
   return true;
 });
 
 // Fonction pour obtenir le message d'erreur pour un jour
 const getUnavailabilityReason = computed(() => (rotationDay) => {
-  if (!props.selectedVacation || !rotationDay) return "Vacation non sélectionnée";
-  if (rotationDay.type === 'rest') return "Jour de repos";
+  // if (!props.selectedVacation || !rotationDay) return "Vacation non sélectionnée";
+  // if (rotationDay.type === 'rest') return "Jour de repos";
 
-  const rotationShift = activeRotation.value.days.filter(day => day.type !== 'rest')[rotationDay.index];
-  const MIN_REST_HOURS = 11;
+  // const rotationShift = activeRotation.value.days.filter(day => day.type !== 'rest')[rotationDay.index];
+  // const MIN_REST_HOURS = 11;
 
-  // Vérifier le délai avec la vacation précédente
-  if (adjacentVacations.value.prev?.shift) {
-    const prevDelay = calculateRestDelay(adjacentVacations.value.prev.shift, rotationShift);
-    if (prevDelay < MIN_REST_HOURS) {
-      return `Délai de repos insuffisant avec la vacation précédente (${Math.round(prevDelay)}h)`;
-    }
-  }
+  // // Vérifier le délai avec la vacation précédente
+  // if (adjacentVacations.value.prev?.shift) {
+  //   const prevDelay = calculateRestDelay(adjacentVacations.value.prev.shift, rotationShift);
+  //   if (prevDelay < MIN_REST_HOURS) {
+  //     return `Délai de repos insuffisant avec la vacation précédente (${Math.round(prevDelay)}h)`;
+  //   }
+  // }
 
-  // Vérifier le délai avec la vacation suivante
-  if (adjacentVacations.value.next?.shift) {
-    const nextDelay = calculateRestDelay(rotationShift, adjacentVacations.value.next.shift);
-    if (nextDelay < MIN_REST_HOURS) {
-      return `Délai de repos insuffisant avec la vacation suivante (${Math.round(nextDelay)}h)`;
-    }
-  }
-  // Vérifier s'il s'agit de la même vacation
-  if (rotationShift._id === props.selectedVacation.shift) {
-    return "Vous ne pouvez pas permuter avec vous-même";
-  }
+  // // Vérifier le délai avec la vacation suivante
+  // if (adjacentVacations.value.next?.shift) {
+  //   const nextDelay = calculateRestDelay(rotationShift, adjacentVacations.value.next.shift);
+  //   if (nextDelay < MIN_REST_HOURS) {
+  //     return `Délai de repos insuffisant avec la vacation suivante (${Math.round(nextDelay)}h)`;
+  //   }
+  // }
+  // // Vérifier s'il s'agit de la même vacation
+  // if (rotationShift._id === props.selectedVacation.shift) {
+  //   return "Vous ne pouvez pas permuter avec vous-même";
+  // }
 
   return null;
 });
 
-// Mettre à jour les vacations adjacentes lorsque la date change
-watch(() => props.date, async (newDate) => {
-  if (newDate) {
-    adjacentVacations.value = await getAdjacentVacations(newDate);
-  }
-}, { immediate: true });
+// // Mettre à jour les vacations adjacentes lorsque la date change
+// watch(() => props.date, async (newDate) => {
+//   if (newDate) {
+//     adjacentVacations.value = await getAdjacentVacations(newDate);
+//   }
+// }, { immediate: true });
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -279,6 +270,7 @@ watch(() => props.date, (newDate) => {
 
 // Méthodes de gestion du formulaire
 const resetForm = () => {
+  currentWindow.value = 0;  
   formValid.value = false;
   demand.value = {
     comment: '',
@@ -303,7 +295,7 @@ const submit = () => {
   emit('onSubmit', {
     ...demand.value,
     date: localDate.value,
-    selectedVacation: props.selectedVacation,
+    selectedShift: props.selectedShift,
     acceptedSwitches: acceptedSwitchesWithPoints.value,
     isTrueSwitch: dialogModeValue.value === 'switch'
   });
@@ -314,31 +306,39 @@ const confirmSubmit = () => {
   emit('onSubmit', {
     ...demand.value,
     date: localDate.value,
-    selectedVacation: props.selectedVacation,
+    selectedShift: props.selectedShift,
     acceptedSwitches: acceptedSwitchesWithPoints.value,
     isTrueSwitch: dialogModeValue.value === 'switch'
   });
 };
 
 const close = () => {
+  resetForm();
   isDialogVisible.value = false;
 };
 
 // Computed properties
 const isNextButtonDisabled = computed(() => {
-  return !localDate.value || !props.selectedVacation;
+  return !localDate.value || !props.selectedShift;
 });
 </script>
 
 <template>
-  <v-dialog v-model="isDialogVisible" max-width="600px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="8" class="pa-6">
-      <v-card-title class="d-flex justify-space-between align-center pa-0">
-        <div class="text-h5">{{ dialogTitle }}</div>
-        <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
-      </v-card-title>
-
-      <v-card-text class="pa-0">
+  <GenericDialog 
+    v-model="isDialogVisible" 
+    :title="dialogTitle"
+    max-width="600px"
+    @close="close"
+  >
+    <template #actions> 
+      <v-btn v-if="currentWindow === 1" variant="flat" rounded="xl" size="small" color="onBackground" :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-right-outline'"
+            :loading="submitting"
+            :disabled="!formValid || !selectedShift || submitting"
+            @click="submit">
+            Poster
+      </v-btn>
+    </template>
+    <template #content>
         <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
           <!-- Première fenêtre : Sélection de la date et de la vacation -->
           <v-window-item :value="0">
@@ -354,26 +354,26 @@ const isNextButtonDisabled = computed(() => {
               <v-card rounded="xl" color="background" class="mb-2" flat>
                 <v-card-item>
                   <v-card-title class="pb-0 mb-0">
-                    <h2 class="text-h4 font-weight-medium">{{ selectedRotationDay?.shift?.name || 'Aucun shift sélectionné'
+                    <h2 class="text-h4 font-weight-medium">{{ selectedShift?.shift?.name || 'Aucun shift sélectionné'
                       }}
                     </h2>
                   </v-card-title>
-                  <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedRotationDay?.teamObject?.name ||
+                  <v-card-subtitle class="pt-0 text-caption">Dans équipe {{ selectedShift?.teamObject?.name ||
                     'Aucune équipe' }}</v-card-subtitle>
 
                   <v-card-subtitle class="pt-0"
-                    v-if="selectedVariant && selectedRotationDay?.shift?.variants.length !== 0">
-                    {{selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.startTime || ''}} -
-                    {{selectedRotationDay?.shift?.variants.find(v => v._id === selectedVariant)?.endTime || ''}}
+                    v-if="selectedVariant && selectedShift?.shift?.variations.length !== 0">
+                    {{selectedShift?.shift?.variations.find(v => v._id === selectedVariant)?.startTime || ''}} -
+                    {{selectedShift?.shift?.variations.find(v => v._id === selectedVariant)?.endTime || ''}}
                   </v-card-subtitle>
                   <v-card-subtitle class="pt-0" v-else>
-                    {{ selectedRotationDay?.shift?.startTime || '' }} - {{ selectedRotationDay?.shift?.endTime || '' }}
+                    {{ selectedShift?.shift?.startTime || selectedShift?.shift?.default?.startTime || '' }} - {{ selectedShift?.shift?.endTime || selectedShift?.shift?.default?.endTime || '' }}
                   </v-card-subtitle>
 
                   <div class="position-absolute top-0 right-0 mr-1 mt-1">
                     <v-chip-group v-model="selectedVariant" base-color="background" variant="flat" rounded="lg"
                       size="small">
-                      <v-chip v-for="variant in selectedRotationDay?.shift?.variants" :key="variant._id"
+                      <v-chip v-for="variant in selectedShift?.shift?.variations" :key="variant._id"
                         :value="variant._id" color="onBackground" variant="flat" rounded="lg" size="small">
                         <v-icon start icon="mdi-clock-outline"></v-icon>
                         {{ variant.name }}
@@ -445,7 +445,7 @@ const isNextButtonDisabled = computed(() => {
                     Points par vacation
                   </v-card-title>
                   <v-card-subtitle class="text-caption pa-0 mb-4">
-                    <span>Points par défaut : {{ selectedRotationDay?.shift?.defaultPoints }} </span>
+                    <span>Points par défaut : {{ selectedShift?.shift?.default?.points }} </span>
                   </v-card-subtitle>
                   <v-card-subtitle class="text-caption pa-0 mb-4">
                     Définissez le nombre de points pour chaque vacation sélectionnée
@@ -475,27 +475,28 @@ const isNextButtonDisabled = computed(() => {
             </template>
           </v-window-item>
         </v-window>
-      </v-card-text>
+    </template>
 
-      <v-card-actions class="justify-space-between pa-0">
+    <template #footer>
+      <div class="d-flex justify-space-between pa-0">
         <template v-if="currentWindow === 0">
-          <v-btn variant="text" color="secondary" @click="close">Annuler</v-btn>
-          <v-btn variant="tonal" rounded="xl" color="secondary" :disabled="isNextButtonDisabled"
+          <v-spacer />
+          <v-btn variant="tonal" size="small" rounded="xl" color="secondary" :disabled="isNextButtonDisabled"
             @click="currentWindow = 1">
             Suivant
           </v-btn>
         </template>
         <template v-else>
-          <v-btn variant="text" color="secondary" @click="currentWindow = 0">Retour</v-btn>
-          <v-btn variant="flat" rounded="xl" :color="dialogModeValue === 'switch' ? 'permutation' : 'remplacement'"
-            :disabled="!formValid || !selectedVacation"
+          <v-btn variant="text" color="secondary" size="small" @click="currentWindow = 0">Retour</v-btn>
+          <v-btn variant="flat" rounded="xl" size="small" color="onBackground" :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-left-outline'"
+            :disabled="!formValid || !selectedShift || submitting" :loading="submitting"
             @click="submit">
             Poster la demande
           </v-btn>
         </template>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </template>
+  </GenericDialog>
 
   <ConfirmationDialog :isDialogVisible="showConfirmationDialog" :title="'Nombre de points'"
     :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirmColor="'remplacement'"

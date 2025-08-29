@@ -1,15 +1,7 @@
 <template>
   <!-- Badge d'admin -->
    <div class="d-flex align-center ga-2 mx-2" >
-  <v-chip  rounded="lg" size="small" v-if="isAdmin"> 
-    <v-icon 
-      class="mr-2" 
-      :color="adminType === 'master' ? 'primary' : 'secondary'"
-    >
-      {{ adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
-    </v-icon>
-    {{ adminType === 'master' ? 'Master' : 'Admin' }}
-  </v-chip>
+ 
 
   <!-- Bouton règles pour admin master -->
   <v-btn  
@@ -20,7 +12,7 @@
     class="text-body-2" 
     @click="$emit('navigate-rules')"
   >
-    <v-icon>mdi-server-security</v-icon>
+    <v-icon size="small">mdi-server-security</v-icon>
   </v-btn>
 
   <!-- Lien vers les tickets pour admin master -->
@@ -31,12 +23,13 @@
     @click="$emit('navigate-tickets')"
   >
     <v-badge
+    rounded="lg" offset-x="10" offset-y="28"
       :content="messageCount"
       :model-value="messageCount > 0"
-      color="error"
+      color="remplacement"
       
     >
-      <v-icon>mdi-ticket</v-icon>
+      <v-icon size="small">mdi-account-question-outline</v-icon>
     </v-badge>
   </v-btn>
     <!-- Lien vers les tickets pour admin master -->
@@ -47,7 +40,7 @@
     @click="$emit('navigate-email')"
   >
    
-      <v-icon>mdi-email-outline</v-icon>
+      <v-icon size="small">mdi-email-outline</v-icon>
 
   </v-btn>
 </div>

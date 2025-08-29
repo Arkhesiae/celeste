@@ -238,8 +238,8 @@ const getShiftName = computed(() => {
 
 const getShiftHours = computed(() => {
   return {
-    startTime: getVacation.value?.shift?.startTime || '',
-    endTime: getVacation.value?.shift?.endTime || ''
+    startTime: getVacation.value?.shift?.default?.startTime || getVacation.value?.shift?.startTime || '',
+    endTime: getVacation.value?.shift?.default?.endTime || getVacation.value?.shift?.endTime || ''
   };
 });
 

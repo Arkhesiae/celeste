@@ -29,7 +29,12 @@
           </div>
         </div>
           <div class="d-flex justify-space-between flex-column align-center">
-            <div class="text-h5 font-weight-bold"> {{ points }}</div>
+            <div v-if="points > 99999" class="text-center text-h6 ">
+                <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
+            </div>
+            <div v-else :key="points" class="text-h3 font-weight-bold text-center"> 
+              {{ points }}
+            </div>
             <div class="text-body-2 text-medium-emphasis mt-n3">Points </div>
 
           </div>
@@ -62,8 +67,8 @@
             </div>
           </v-fade-transition>
 
-          <v-btn @click="handleLogout" style="height: 48px; border-radius: 16px !important;" color="error"
-            variant="tonal" class="mt-3">Se déconnecter
+          <v-btn @click="handleLogout" style="height: 48px; border-radius: 16px !important;" color="surfaceContainerHigh"
+            variant="flat" class="mt-3 text-error font-weight-bold ">Se déconnecter
           </v-btn>
         </div>
 
@@ -101,7 +106,7 @@
         <v-list nav class="d-flex justify-space-around align-center pt-8 text-caption" bg-color="background">
           <span @click="handleClick('/contact-admin')" style="cursor: pointer">Assistance</span>
           <v-divider vertical></v-divider>
-          <span @click="handleClick('/patchnotes')" style="cursor: pointer">Patch Notes</span>
+          <span @click="handleClick('/patchnotes')" style="cursor: pointer">Patchnotes</span>
           <v-divider vertical></v-divider>
           <span @click="handleClick('/financement')" style="cursor: pointer">Financement</span>
         </v-list>
@@ -120,11 +125,11 @@
           </div>
         </v-list>
       </v-card>
-      <span>{{ API_URL }}</span>
-      <span>{{ safeAreaTop }}</span>
+       <!-- <span>{{ API_URL }}</span> -->
+      <!-- <span>{{ safeAreaTop }}</span>
       <span>{{ safeAreaBottom }}</span>
       <span>{{ safeAreaLeft }}</span>
-      <span>{{ safeAreaRight }}</span>
+      <span>{{ safeAreaRight }}</span> -->
     </v-card>
   
   </div>

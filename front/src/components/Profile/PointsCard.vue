@@ -20,7 +20,7 @@
           <transition v-if="points || points === 0" name="slide-points" mode="out-in">
             <div v-if="points > 99999" class="text-center text-h6 ">
                 <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
-              </div>
+            </div>
             <div v-else :key="points" class="text-h3 font-weight-bold text-center"> 
               {{ points }}
             </div>

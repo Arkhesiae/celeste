@@ -84,11 +84,11 @@
         <div class="d-flex align-center justify-space-between py-1">
           <div class="d-flex align-start ">
             <v-card-title class="pb-0 mb-0">
-              <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
+              <h2 class="text-h4 font-weight-medium">{{ shift?.name }}</h2>
             </v-card-title>
             <div class="d-flex align-start flex-column justify-space-between ml-2">
               <v-card-subtitle class="py-0">
-                {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
+                {{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime }}
               </v-card-subtitle>
               <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
 
@@ -249,7 +249,7 @@
     <v-dialog v-model="showPointsDialog" max-width="300px" attach="body" style="z-index: 1000000 !important">
       <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
         <v-card-title class="text-h6 pa-0 mb-2">
-          Points de {{ demand?.posterShift?.name }}
+          Points de {{ shift?.name }}
         </v-card-title>
         <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
         <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
@@ -343,7 +343,7 @@
     <v-dialog v-model="showCommentDialog" max-width="500px" attach="body" style="z-index: 1000000 !important">
       <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
         <v-card-title class="text-h6 pa-0">
-          Commentaire de {{ demand?.posterShift?.name }}
+          Commentaire de {{ shift?.name }}
         </v-card-title>
         <v-card-text class="pa-0">
           {{ demand?.comment }}
@@ -393,6 +393,15 @@ const loading = ref({
   interest: false
 })
 let intervalId = null
+
+const shift = computed(() => {
+  if (props.demand?.posterShift?.shift) {
+    return props.demand?.posterShift?.shift;
+  }
+  else {
+    return props.demand?.posterShift;
+  }
+});
 
 const snackbarStore = useSnackbarStore()
 

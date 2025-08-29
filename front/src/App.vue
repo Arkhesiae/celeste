@@ -1,12 +1,12 @@
 <template>
   <v-app class="app-container">
-   
-      <router-view v-slot="{ Component, route }">
-        <transition :name="route.meta.transition || ''"  mode="out-in">
-          <component :is="Component" class="page"/>
-        </transition>
-      </router-view>
- 
+    <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
+    <router-view v-slot="{ Component, route }">
+      <transition :name="route.meta.transition || ''" mode="out-in">
+        <component :is="Component" class="page" />
+      </transition>
+    </router-view>
+
   </v-app>
 </template>
 
@@ -14,26 +14,105 @@
 import { useAuthStore } from "@/stores/authStore.js";
 import { useTheme } from 'vuetify';
 import { useAppInitialization } from '@/composables/useAppInitialization';
+import { SafeArea } from 'capacitor-plugin-safe-area';
+import { ref } from 'vue';
+
+const safeAreaTop = ref([]);
+const safeAreaBottom = ref([]);
+
 
 const authStore = useAuthStore();
 const theme = useTheme();
 const { initializeApp } = useAppInitialization();
 
 onMounted(async () => {
+  await getSafeAreaAndApply();
   await initializeApp();
- 
+  
 });
+
+
+
+
+async function getSafeAreaAndApply() {
+  try {
+    await SafeArea.getSafeAreaInsets().then(({ insets }) => {
+      console.log(insets, 'insets');
+      let top = insets.top;
+      let bottom = insets.bottom;
+
+      safeAreaTop.value.push(top);
+      safeAreaBottom.value.push(bottom);
+    
+      for (const [key, value] of Object.entries(insets)) {
+        document.documentElement.style.setProperty(
+          `--safe-area-${key}`,
+          `${value}px`,
+        );
+        document.documentElement.style.setProperty(
+          `--safe-area-inset-${key}`,
+          `${value}px`,
+        );
+        document.documentElement.style.setProperty(
+          `safe-area-inset-${key}`,
+          `${value}px`,
+        );
+      }
+
+    });
+
+
+    await SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
+      console.log(statusBarHeight, 'statusbarHeight');
+    });
+
+    await SafeArea.removeAllListeners();
+
+    // when safe-area changed
+    await SafeArea.addListener('safeAreaChanged', data => {
+      const { insets } = data;
+      console.log(insets, 'insets');
+      let top = insets.top;
+
+      safeAreaTop.value.push(top);
+    
+      for (const [key, value] of Object.entries(insets)) {
+        document.documentElement.style.setProperty(
+          `--safe-area-${key}`,
+          `${value}px`,
+        );
+        document.documentElement.style.setProperty(
+          `--safe-area-inset-${key}`,
+          `${value}px`,
+        );
+        document.documentElement.style.setProperty(
+          `safe-area-inset-${key}`,
+          `${value}px`,
+        );
+      }
+    });
+
+  } catch (error) {
+
+  }
+
+
+
+}
+
+
 
 </script>
 
 <style>
 .app-container {
   /* Marges de sécurité pour éviter le notch et les barres de statut */
-  padding-top: var(--safe-area-top) !important;
-  padding-bottom: var(--safe-area-bottom) !important;
+  /* padding-top: var(--safe-area-top) !important; */
+
+  /* padding-bottom: var(--safe-area-bottom) !important; */
   padding-left: var(--safe-area-left) !important;
   padding-right: var(--safe-area-right) !important;
-  
+
 
 }
 
@@ -46,7 +125,7 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    transition: background-color 50000000000s ease-in-out 0s;
+  transition: background-color 50000000000s ease-in-out 0s;
 }
 
 /* :root {
@@ -94,8 +173,9 @@ body,
 }
 
 .slide-righty-enter-from {
-  opacity: 0;  transform: scale(0.98);
-} 
+  opacity: 0;
+  transform: scale(0.98);
+}
 
 .slide-righty-leave-to {
   opacity: 0;
@@ -103,9 +183,9 @@ body,
 }
 
 @media (min-width: 1400px) {
-    .v-container {
-        max-width: 1400px;
-    }
+  .v-container {
+    max-width: 1400px;
+  }
 }
 
 
@@ -122,6 +202,7 @@ body,
   left: 100%;
   opacity: 0;
 }
+
 .slide-custom-enter-to {
   left: 0;
   opacity: 1;
@@ -131,6 +212,7 @@ body,
   left: 0;
   opacity: 1;
 }
+
 .slide-custom-leave-to {
   left: -20%;
   opacity: 0;

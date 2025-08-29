@@ -8,9 +8,17 @@
     >
       <v-tooltip :text="day?.type === 'rest' ? 'Repos' : 'Travail'" location="top">
         <template v-slot:activator="{ props }">
-          <div class="day-content" v-bind="props">
-            <div class="text-subtitle-1 font-weight-bold text-medium-emphasis ">
-              {{ day?.name === 'Rest Day' ? 'R' : day?.name?.slice(0, 2) }}
+          <div class="day-content position-relative" v-bind="props">
+            <div v-if="day.optional" class="day-content-optional" >
+                  <v-icon>mdi-plus-box-outline</v-icon>
+            </div>
+            <div class="text-subtitle-1 font-weight-bold text-medium-emphasis d-flex align-center justify-center">
+              <div class="d-flex align-center ga-2">
+                <div class="text-subtitle-1 font-weight-bold text-medium-emphasis ">
+                  {{ day?.name === 'Rest Day' ? 'R' : day?.name?.slice(0, 2) }}
+                </div>
+                
+              </div>
             </div>
           </div>
         </template>
@@ -76,6 +84,18 @@ const getProgressStyle = (startTime, endTime) => {
   transition: transform 0.2s ease;
 }
 
+.day-content-optional {
+  position: absolute; 
+  top: -5px; 
+  right: -5px; 
+  height: 20px; 
+  padding: 4px;
+  
+  font-size: 8px;
+  width: 20px; 
+  border-radius: 10px; 
+  background-color: rgb(var(--v-theme-surfaceContainerHighest));
+}
 
 
 </style> 

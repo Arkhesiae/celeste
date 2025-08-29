@@ -1,20 +1,8 @@
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="900" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
-      <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">
-          {{ dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe' }}
-        </v-card-title>
-        <template #append v-if="!smAndDown">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
-        </template>
-        <template #prepend v-else>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
-        </template>
-      </v-card-item>
 
-      <v-card-text class="py-0 px-6">
-        <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
+  <GenericDialog max-width="900" v-model="dialogVisible" :title="dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe'" :subtitle="dialogModeValue === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement'" :icon="dialogModeValue === 'Renfort' ? 'mdi-calendar-plus' : 'mdi-account-outline'" @close="close">
+    <template #content>
+      <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
           <!-- Première fenêtre - Sélection de l'équipe -->
           <v-window-item :value="0">
             <v-row>
@@ -138,19 +126,31 @@
 
           </v-window-item>
         </v-window>
-
-      </v-card-text>
-
-      <!-- Actions pour la première fenêtre -->
-      <v-card-actions v-if="currentWindow === 0" class="pa-6">
-        <v-spacer></v-spacer>
-        <v-btn color="primary" variant="tonal" rounded="xl" @click="currentWindow = 1" :disabled="!selectedTeam">
+    </template>
+    <template #actions>
+    
+      
+        <v-btn v-if="currentWindow === 0" color="primary" variant="tonal" rounded="xl" @click="currentWindow = 1" :disabled="!selectedTeam">
           Suivant
         </v-btn>
-      </v-card-actions>
+   
+
+
+        <v-btn v-if="currentWindow === 1" color="primary" variant="tonal" :disabled="!formValid" rounded="xl" @click="handleTeamChange">
+          Valider
+        </v-btn>
+    
+    </template>
+    <template #footer>  
+      <div v-if="currentWindow === 0" class="pa-0 ma-0 d-flex flex-grow-1">
+        <v-spacer></v-spacer>
+        <v-btn class="flex-shrink-0" color="primary" variant="tonal" rounded="xl" @click="currentWindow = 1" :disabled="!selectedTeam">
+          Suivant
+        </v-btn>
+      </div>
 
       <!-- Actions pour la deuxième fenêtre -->
-      <div v-if="currentWindow === 1" class="pa-6 d-flex">
+      <div v-if="currentWindow === 1" class="pa-0 ma-0 d-flex flex-grow-1">
         <v-btn color="primary" variant="text" rounded="xl" @click="currentWindow = 0">
           Retour
         </v-btn>
@@ -159,8 +159,37 @@
           Valider
         </v-btn>
       </div>
-    </v-card>
-  </v-dialog>
+    </template>
+  </GenericDialog>
+
+
+
+
+
+
+  <!-- <v-dialog v-model="localDialogVisible" max-width="900" :fullscreen="smAndDown">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
+      <v-card-item class="py-1 px-6 mb-2">
+        <v-card-title class="d-flex justify-space-between align-center">
+          {{ dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe' }}
+        </v-card-title>
+        <template #append v-if="!smAndDown">
+          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+        </template>
+        <template #prepend v-else>
+          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
+        </template>
+      </v-card-item>
+
+      <v-card-text class="py-0 px-6">
+      
+
+      </v-card-text>
+
+     Actions pour la première fenêtre 
+     
+   </v-card>
+  </v-dialog> --> 
 
   <!-- Confirmation Dialog -->
   <v-dialog v-model="showConfirmationDialog" max-width="400px">
@@ -234,16 +263,15 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  dialogVisible: {
+  modelValue: {
     type: Boolean,
     required: true,
   },
 
 });
 
-const emit = defineEmits(["onClose", "onSubmit", "update:dialogMode", "update:dialogVisible"]);
+const emit = defineEmits(["onClose", "onSubmit", "update:dialogMode", "update:modelValue"]);
 
-const { smAndDown } = useDisplay();
 const date = useDate();
 const teamStore = useTeamStore();
 const teams = computed(() => teamStore.centerTeams);
@@ -256,9 +284,9 @@ const dialogModeValue = computed({
   set: (value) => emit("update:dialogMode", value),
 });
 
-const localDialogVisible = computed({
-  get: () => props.dialogVisible,
-  set: (value) => emit("update:dialogVisible", value),
+const dialogVisible = computed({
+  get: () => props.modelValue,
+  set: (value) => emit("update:modelValue", value),
 });
 
 const currentWindow = ref(0);
@@ -476,7 +504,7 @@ const resetForm = () => {
 }
 
 const close = () => {
-  localDialogVisible.value = false;
+  dialogVisible.value = false;
   resetForm()
 };
 

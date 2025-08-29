@@ -2,7 +2,7 @@
   <v-container :class="smAndDown ? 'mb-n16' : ''">
     <!-- En-tête -->
     <!-- <div class="d-flex justify-space-between align-center mb-8"> -->
-      <!-- <div class="d-flex flex-column">
+    <!-- <div class="d-flex flex-column">
         <div class="d-flex align-center">
           <span class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
           <span class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold">{{ userName }}</span>
@@ -15,7 +15,7 @@
         Nouvelle demande
       </v-btn>
     </div> -->
-    <WelcomeTitle :userName="userName"  />
+    <WelcomeTitle :userName="userName" />
 
     <v-row class="mt-2">
       <v-col cols="12" class="pa-2">
@@ -94,7 +94,7 @@
             </div>
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
-         
+
         </v-alert>
         <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal"
           rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;"
@@ -111,7 +111,7 @@
                   début de cycle défini, veuillez contacter un administrateur pour activer un tour de service.
                 </div>
               </v-card-text>
-              
+
             </div>
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
@@ -274,7 +274,7 @@
           </v-card-text>
         </v-card>
 
-      
+
         <!-- Carte des prochaines substitutions -->
         <v-card rounded="xl" class="mb-4 shadow-alt pa-6" bg-color="remplacement" z-index="-01000">
           <div class="d-flex align-start flex-column justify-space-between mb-4">
@@ -289,7 +289,7 @@
               <OwnDemandCard :isPoster="false" v-for="nextSubstitution in nextSubstitutions" :key="nextSubstitution.id"
                 :demand="nextSubstitution" :small="xs" />
             </div>
-            <div v-else class="text-onRemplacement">
+            <div v-else class="text-onSurface opacity-50">
               Aucun remplacement ou permutation à venir
             </div>
           </v-card-text>
@@ -329,8 +329,9 @@
 
 
       <!-- Section Points et Équipe -->
-      <v-col cols="12" md="5" xl="4" offset-xl="0" :class="smAndDown ? 'pa-0  mt-16' : 'pa-2'">
-        <v-card rounded="xl" elevation="0" class="mb-4 pa-6 " :class="smAndDown ? 'mx-4' : 'mx-0'"  color="surfaceContainer">
+      <v-col cols="12" md="5" xl="4" offset-xl="0" :class="smAndDown ? 'pa-0  mt-16 ' : 'pa-2'">
+        <v-card rounded="xl" elevation="0" class="mb-4 pa-6 " :class="smAndDown ? 'mx-4 ' : 'mx-0'"
+          color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium pa-0 ma-0">Recommandations locales</v-card-title>
           <span class="text-subtitle-2  text-medium-emphasis">
             <v-icon icon="mdi-information-outline " color="remplacement" size="16" class="mr-2" />
@@ -338,23 +339,26 @@
           </span>
           <v-card-text class="pa-0 ma-0 mt-4">
             <div class="rounded-xl" style="overflow-x: auto;">
-            <v-table>
-             
-              <tbody>
-                <tr>
-                  <th></th>
-                  <td class="text-center font-weight-bold" v-for="row in vacationTable" :key="row.vac">{{ row.vac }}</td>
-                </tr>
-                <tr>
-                  <th class=" font-weight-medium">Semaine</th>
-                  <td class="text-center font-weight-medium opacity-50" v-for="row in vacationTable" :key="row.vac">{{ row.semaine }}</td>
-                </tr>
-                <tr>
-                  <th class=" font-weight-medium">WE/JF</th>
-                  <td class="text-center font-weight-medium opacity-50" v-for="row in vacationTable" :key="row.vac">{{ row.wejf }}</td>
-                </tr>
-              </tbody>
-            </v-table>
+              <v-table>
+
+                <tbody>
+                  <tr>
+                    <th></th>
+                    <td class="text-center font-weight-bold" v-for="row in vacationTable" :key="row.vac">{{ row.vac }}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th class=" font-weight-medium">Semaine</th>
+                    <td class="text-center font-weight-medium opacity-50" v-for="row in vacationTable" :key="row.vac">{{
+                      row.semaine }}</td>
+                  </tr>
+                  <tr>
+                    <th class=" font-weight-medium">WE/JF</th>
+                    <td class="text-center font-weight-medium opacity-50" v-for="row in vacationTable" :key="row.vac">{{
+                      row.wejf }}</td>
+                  </tr>
+                </tbody>
+              </v-table>
             </div>
           </v-card-text>
         </v-card>
@@ -391,26 +395,24 @@
 
         <div class="d-flex mb-8 " style=" position: relative; overflow-x: hidden;" :class="smAndDown ? 'mx-4' : ''">
           <v-hover v-slot="{ isHovering, props }">
-            <v-card width="100%" rounded="xl" elevation="0" class=" transition-all"
-              :class="[
-                { 'elevation-4': isHovering },
-                xs ? 'pa-2 px-4' : 'pa-4'
-              ]"
-              v-bind="props"
-              @click="router.push('/center/' + authStore.centerId + '/teams')"
+            <v-card width="100%" rounded="xl" elevation="0" class=" transition-all" :class="[
+              { 'elevation-4': isHovering },
+              xs ? 'pa-2 px-4' : 'pa-4'
+            ]" v-bind="props" @click="router.push('/center/' + authStore.centerId + '/teams')"
               :color="smAndDown ? 'onBackground' : 'onBackground'" style="margin-top: 24px !important;">
               <div class="d-flex  flex-column" style="width: 100%; height: 100%">
                 <v-card-title class="text-h6 font-weight-medium">Mon centre</v-card-title>
                 <v-card-text>
                   <v-slide-y-transition mode="out-in">
-                    <div v-if="!isHovering" class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">
+                    <div v-if="!isHovering" class="font-weight-bold"
+                      :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">
                       <span>{{ getCenterName }}</span>
-                      </div>
-                      <div v-else class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">
-                        <span>LFFF</span>
-                      </div>
+                    </div>
+                    <div v-else class="font-weight-bold" :class="md ? 'text-h7' : xs ? 'text-h7' : 'text-h6'">
+                      <span>LFFF</span>
+                    </div>
                   </v-slide-y-transition>
-                  
+
 
                 </v-card-text>
               </div>
@@ -424,14 +426,13 @@
             @click="router.push('/center/' + authStore.centerId + '/teams')" />
         </div>
 
-        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16' : ''"
-          color="surfaceContainer">
+        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-32 ' : ''" color="surfaceContainer">
 
 
 
           <!-- Carte des points -->
           <div class="mb-4 smooth-shadow rounded-xl">
-            <PointsCard color="surfaceContainer" class="pa-0" :points="stats.points" :transactions="[]" 
+            <PointsCard color="surfaceContainer" class="pa-0" :points="stats.points" :transactions="[]"
               @transfer="transferDialog = true" />
           </div>
 
@@ -439,8 +440,9 @@
 
           <v-card ref="calendarCard" rounded="xl" flat class="mb-8 mt-8 v-card-dashboard smooth-shadow  calendar-card"
             color="surfaceContainer" :class="{ 'pa-0 py-2 ml-n4 mr-n4': xs, 'pa-0': !xs }">
-            <CalendarHeader :class="smAndDown ? 'pa-2' : 'pa-4  '" :currentMonth="currentMonth" :currentYear="currentYear"
-            @update:currentMonth="handleMonthUpdate" @update:currentYear="handleYearUpdate"></CalendarHeader>
+            <CalendarHeader :class="smAndDown ? 'pa-2' : 'pa-4  '" :currentMonth="currentMonth"
+              :currentYear="currentYear" @update:currentMonth="handleMonthUpdate"
+              @update:currentYear="handleYearUpdate"></CalendarHeader>
             <v-card-text>
               <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected"
                 :isToday="isToday" :rotationsMap="rotationsMap" @select-day="selectedDate = $event"
@@ -451,15 +453,18 @@
 
           <!-- Carte de l'équipe -->
           <v-card ref="teamCard" rounded="xl" elevation="0" class="pa-2 team-card">
-            <v-card-title class="text-h6 font-weight-medium">Mon équipe</v-card-title>
-            <v-icon icon="mdi-crowd" size="16" color="onBackground"
-              style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
-            <v-card-text>
-              <div v-if="teamStore.currentTeam" class="d-flex flex-column align-center">
-                <v-avatar color="background" size="64" class="mb-4 smooth-shadow">
-                  <v-icon icon="mdi-crowd" size="32"></v-icon>
-                </v-avatar>
-                <div class="text-h5 font-weight-bold mb-2">Equipe {{ teamStore.currentTeam.name }}</div>
+            <div class="d-flex align-start justify-space-between">
+              <v-card-title class="text-body-1 font-weight-bold">Mon équipe</v-card-title>
+              <v-icon icon="mdi-crowd" size="16" color="onBackground"
+                style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
+
+              <div v-if="teamStore.currentTeam" class="d-flex flex-column align-end pa-2">
+                <div class="d-flex align-center flex-column justify-space-between ga-2">
+                  <v-avatar color="background" size="48" class=" smooth-shadow">
+                    <v-icon icon="mdi-crowd" size="24"></v-icon>
+                  </v-avatar>
+                  <div class="text-h7 font-weight-bold ">Equipe {{ teamStore.currentTeam.name }}</div>
+                </div>
                 <!-- <div class="text-medium-emphasis text-center">
                   <v-icon icon="mdi-calendar-start" class="mr-2"></v-icon>
                   Cycle depuis le {{ new Date(teamStore.currentTeam.cycleStartDate).toLocaleDateString() }}
@@ -468,7 +473,10 @@
               <div v-else class="text-center text-medium-emphasis">
                 Aucune équipe assignée
               </div>
-            </v-card-text>
+            </div>
+
+
+
           </v-card>
 
 
@@ -689,6 +697,10 @@ img.logo-xs {
   transform-origin: bottom right;
   transform: scale(0.8) translateX(20px);
 }
+
+.pb-32 {
+  padding-bottom: 128px !important;
+}
 </style>
 
 
@@ -736,7 +748,7 @@ const shiftsWithSubstitutions = computed(() => {
 const theme = useTheme();
 const invertedTheme = computed(() => {
   return theme.global.current.value.dark ? 'lightTheme' : 'darkTheme';
-}); 
+});
 
 // État pour le calendrier
 const selectedDate = ref(new Date());
@@ -914,7 +926,7 @@ onUnmounted(() => {
 
 const targetNumber = 500;
 
-onMounted(async   () => {
+onMounted(async () => {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -941,9 +953,9 @@ onMounted(async   () => {
     const startDate = calendarDays.value[0][0].date.toISOString();
     const endDate = calendarDays.value[calendarDays.value.length - 1][6].date.toISOString();
     await Promise.all([
-        fetchUserVacations(startDate, endDate),
-        fetchSubstitutions(startDate, endDate)
-      ]);
+      fetchUserVacations(startDate, endDate),
+      fetchSubstitutions(startDate, endDate)
+    ]);
   }
 });
 

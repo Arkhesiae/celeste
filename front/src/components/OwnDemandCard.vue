@@ -12,11 +12,11 @@
         <v-card-title class="text-subtitle-1 font-weight-medium">
           <div class="d-flex align-start ">
             <v-card-title class="pb-0 mb-0">
-              <h2 class="text-h4 font-weight-medium">{{ demand?.posterShift?.name }}</h2>
+              <h2 class="text-h4 font-weight-medium">{{ shift?.name }}</h2>
             </v-card-title>
             <div class="d-flex align-start flex-column justify-space-between ml-2 ">
               <v-card-subtitle class="py-0">
-                {{ demand?.posterShift?.startTime }} - {{ demand?.posterShift?.endTime }}
+                  {{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime }}
               </v-card-subtitle>
               <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
 
@@ -256,6 +256,15 @@ const getTeamName = computed(() => {
 const getAccepter = computed(() => {
   if (!props.demand?.accepterId) return null;
   return userStore.users.find(user => user._id === props.demand.accepterId);
+});
+
+const shift = computed(() => {
+  if (props.demand?.posterShift?.shift) {
+    return props.demand?.posterShift?.shift;
+  }
+  else {
+    return props.demand?.posterShift;
+  }
 });
 
 const getPoster = computed(() => {

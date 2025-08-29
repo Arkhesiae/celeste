@@ -213,7 +213,7 @@ export const useAuthStore = defineStore('auth', () => {
       existingData.preferences = preferences.value;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
-      isLoggedIn.value = true;
+    
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
       throw error;

@@ -9,7 +9,7 @@
         
         <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
           <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
-            <div class="text-overline subtitle-animation">Votre nouveau site de rempla</div>
+            <div class="text-overline subtitle-animation">Votre site de rempla</div>
             <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
 
             <div class="font-weight-medium d-flex flex-wrap mt-4" :class="[
@@ -29,7 +29,7 @@
 
           <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
             <div class="block d-flex button-animation" style="animation-delay: 1.1s;">
-              <v-btn prepend-icon="mdi-lightning-bolt" style="border-radius: 12px !important;" height="48px"
+              <v-btn prepend-icon="mdi-lightning-bolt" style="border-radius: 12px !important;" height="48px "
                 class="px-8" variant="flat" rounded="lg" color="surface" @click="router.push({ path: '/get-started' })">
                 Get started
               </v-btn>
@@ -350,22 +350,32 @@ onMounted(() => {
   fill: transparent;
   color: #000;
   font-weight: 900 !important;
-  background: linear-gradient(to right, rgb(var(--v-theme-remplacement)) 00%, #a779cd 20%, rgb(var(--v-theme-permutation)) 75%, rgb(var(--v-theme-remplacement)) 100%);
+  background: linear-gradient(to right,
+  rgb(var(--v-theme-remplacement)) 00%,
+  rgba(var(--v-theme-remplacement),.55) 20%,
+  rgba(var(--v-theme-remplacement),.25) 50%,
+  rgba(var(--v-theme-remplacement),.55) 90%,
+  rgba(var(--v-theme-remplacement),100) 100%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-fill-color: transparent;
-  animation: animatedTextGradient 15s linear infinite;
+  animation: animatedTextGradient 10s linear infinite;
 }
 
 @keyframes animatedTextGradient {
-  to {
+  0% {
+    background-position: 0 0;
+  }
+
+  100% {
     background-position: 200% center;
   }
 }
 
 .block {
   position: relative;
+ 
   z-index: 0;
   overflow: visible !important;
 
@@ -377,14 +387,14 @@ onMounted(() => {
   position: absolute;
   left: -1.5px;
   top: -1.5px;
-  border-radius: 10px;
-  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-      rgba(159, 159, 248, 0.22), #ffccdd);
+  border-radius: 13px;
+  background: linear-gradient(45deg, #ffffff00, rgba(var(--v-theme-remplacement),.05), rgba(var(--v-theme-remplacement),.4), rgba(250, 152, 248, 0.05),
+      rgba(159, 159, 248, 0.22), #ffffff00);
   background-size: 400%;
   width: calc(100% + 3px);
   height: calc(100% + 3px);
   z-index: -1;
-  animation: steam 7s linear infinite;
+  animation: steam 10s linear infinite;
 }
 
 @keyframes steam {
@@ -392,7 +402,7 @@ onMounted(() => {
     background-position: 0 0;
   }
 
-  80% {
+  99% {
     background-position: 400% 0;
   }
 
@@ -402,7 +412,7 @@ onMounted(() => {
 }
 
 .block:after {
-  filter: blur(5px);
+  filter: blur(0px);
 }
 
 
@@ -468,7 +478,7 @@ onMounted(() => {
 }
 
 .title-animation {
-  animation: titleEntrance 0.6s ease forwards;
+  animation: titleEntrance 0.6s ease forwards, animatedTextGradient 10s linear infinite;
   animation-delay: .5s;
   opacity: 0;
 }

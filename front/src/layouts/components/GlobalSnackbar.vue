@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar-queue v-model="snackbarStore.messageQueue" color="onBackground" :timeout="3000" location="top"
+  <v-snackbar-queue content-class="adjustedMarginSnackbar"  v-model="snackbarStore.messageQueue" color="onBackground" :timeout="3000" location="top"
     height="64px" rounded="xl">
     <template #text="{item}">
       <div class="d-flex align-center">
@@ -14,4 +14,17 @@
 import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const snackbarStore = useSnackbarStore();
+const safeAreaTop = computed(() => {
+  return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top').replace('px', '')
+})
+console.log(safeAreaTop.value)
+
+
 </script> 
+
+<style >
+.adjustedMarginSnackbar{
+  margin-top: calc(var(--safe-area-top,0px) + 0px) !important;
+  /* padding-top: 100px !important; */
+}
+</style>

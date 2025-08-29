@@ -1,8 +1,8 @@
 <template>
   <div class="position-relative mx-n2 d-flex flex-column" :style="{ height: `${headerHeight}px` }">
-    <div ref="placeholder" :style="{ height: `${headerHeight}px`, width: '100%' }" class="position-absolute" />
-    <div ref="titleRef" :class="['main-title px-4  py-16']" :style=headerStyle>
-      <div class="d-flex justify-space-between align-center flex-shrink-0">
+    <div ref="placeholder" :style="{ height: `${headerHeight}px`, width: '100%' }" class="position-absolute " />
+    <div ref="titleRef" :class="['main-title px-4  py-16']" :style=headerStyle class="">
+      <div class="d-flex justify-space-between align-center flex-shrink-0 ">
         <div class="d-flex align-center ga-4 ">
           <v-btn v-if="backButton" icon="mdi-arrow-left" variant="text" @click="router.back()" />
           <div
@@ -58,6 +58,8 @@ const headerHeight = ref(0)
 const headerWidth = ref('100%')
 const titleMaxWidth = ref(0)
 const scrolledValue = ref(1) 
+
+const safeMarginTop = ref(0)
 const titleFontSize = computed(() => {
   const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-h5/text-h4
   const minSize = smAndDown.value ? 10 : 10
@@ -72,6 +74,13 @@ const subtitleFontSize = computed(() => {
   const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value )
   return scaledSize
 })
+
+
+
+const safeAreaTop = computed(() => {
+  return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top') || '0px'
+})
+
 // Update width when window resizes
 function updateHeaderWidth() {
   if (placeholder.value) {
@@ -102,17 +111,33 @@ onMounted(() => {
   headerHeight.value = titleRef.value?.offsetHeight || 0
   updateHeaderWidth()
   updateTitleMaxWidth()
-
+ 
+  safeMarginTop.value = 64 + parseInt(safeAreaTop.value?.replace('px', ''))
+  console.log(safeMarginTop.value)
 
   // Observe intersection to toggle sticky state
   observer.value = new IntersectionObserver(
-    ([entry]) => {
-      scrolledValue.value = Math.min(1, Math.max(0.6, (entry.boundingClientRect.top + 64) / 64))
-      isSticky.value = entry.boundingClientRect.top < 4
+    entries => {
+      entries.forEach(entry => {  
+    
+      let titlePadding = 60
+      let initialTop = safeMarginTop.value
+      let threshold = (initialTop - titlePadding) * -1
+      let threshold2 = (initialTop - headerHeight.value) * -1
+      
+      let maxScrolledValue = 1
+      let minScrolledValue = 0.6
+
+      let A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
+      let B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
+
+      scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top)*A + B))
+      isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0
+      })
     },
     {
       threshold: Array.from({ length: 101 }, (_, i) => i * 0.01),
-      rootMargin: '-64px',
+      rootMargin: `-${safeMarginTop.value}px 0px 0px 0px `,
       root: null
     }
   )
@@ -148,6 +173,7 @@ onUnmounted(() => {
 const headerStyle = reactive({
   position: computed(() => (isSticky.value ? 'fixed' : 'relative')),
   background: 'rgba(var(--v-theme-background), 0.99)',
+  top: computed(() => (isSticky.value ? safeMarginTop.value+'px' : '0px')),
   padding: computed(() => (isSticky.value ? '4px 16px !important' : '64px 16px !important')),
   width: computed(() => headerWidth.value),
   zIndex: '10',
@@ -168,4 +194,12 @@ const headerStyle = reactive({
   background: rgba(var(--v-theme-background), 0.99);
 
 } */
+
+.debug {
+  border: 1px solid red !important;
+}
+
+.debug-title {
+  border: 1px solid blue !important;
+}
 </style>

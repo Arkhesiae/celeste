@@ -4,12 +4,13 @@
 
 
       <MainTitle title="Tours de service" subtitle="Créer, modifier et activer un tour de service">
+        <template #actions> 
         <v-select v-if="authStore.adminType === 'master'" v-model="selectedCenterId" :items="centers" :item-props="center => ({
           title: center.name,
           subtitle: center.oaci
         })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
           min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
-
+</template>
 
       </MainTitle>
 
@@ -95,8 +96,8 @@
        :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmRemoveActivationDate"
       @update:isDialogVisible="showDateConfirmationDialog = $event"></ConfirmationDialog>
 
-    <AddWorkshift :isDialogVisible="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
-      @rotationEditSubmit="updateRotation" @rotationEditCancel="closeAddDialog" @update:dialogVisible="closeAddDialog">
+    <AddWorkshift :modelValue="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
+      @rotationEditSubmit="updateRotation" @rotationEditCancel="closeAddDialog" @update:modelValue="closeAddDialog">
     </AddWorkshift>
 
     <ActivateWorkshift :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActivationDate"

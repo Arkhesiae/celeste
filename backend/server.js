@@ -12,6 +12,7 @@ import mainRouter from './routes/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 // ─── Configuration de l'environnement ─────────────────────────────────────────
 dotenv.config({
   path: process.env.NODE_ENV === 'production'

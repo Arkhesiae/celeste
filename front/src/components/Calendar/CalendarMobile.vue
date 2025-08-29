@@ -16,7 +16,7 @@
       class="calendar-row d-flex justify-space-between align-center my-4" dense>
       <div style="height: 48px" v-for="day in week" :key="day.date"
         class="day-container d-flex justify-space-around align-center">
-        <v-sheet @click="$emit('select-day', day.date)" color="transparent"
+        <v-sheet @click="hapticsImpact(); $emit('select-day', day.date) " color="transparent"
           class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
           style="width: 48px; height: 48px; border-radius: 50%; position: relative; font-weight: 400 " :class="{
             'isWorkDay': isWorkDay(day.date),
@@ -66,6 +66,7 @@
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { computed } from 'vue';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
@@ -89,6 +90,9 @@ const handleSwipe = (direction) => {
   }
 };
 
+const hapticsImpact= async () => {
+  await Haptics.impact({ style: ImpactStyle.Light });
+};
 
 
 const vacationsOfUser = computed(() => {
@@ -100,7 +104,13 @@ const isWorkDay = computed(() => (date) => {
   return shift ? shift.type !== 'rest' : false;
 });
 
-const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.name;
+
+
+const getShiftName = (date) => {
+  const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift
+  return shift ? shift.name : '';
+};
+
 const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
 
 const inPast = (date) => {

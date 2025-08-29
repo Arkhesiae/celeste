@@ -71,32 +71,8 @@ const getCenterDemands = async (req, res) => {
                         posterId: { $ne: userId },
                         ...dateFilter
                     }
-                },
-                {
-                    $lookup: {
-                        from: 'shifts',
-                        localField: 'posterShift.shift',
-                        foreignField: '_id',
-                        as: 'posterShift.populatedShift'
-                    }
-                },
-                {
-                    $addFields: {
-                        'posterShift.shift': {
-                            $cond: {
-                                if: { $gt: [{ $size: '$posterShift.populatedShift' }, 0] },
-                                then: { $arrayElemAt: ['$posterShift.populatedShift', 0] },
-                                else: '$posterShift.shift'
-                            }
-                        }
-                    }
-                },
-                {
-                    $unset: 'posterShift.populatedShift'
-                },
-                {
-                    $sort: { 'posterShift.date': 1 }
-                }
+                }.populate( 'posterShift.shift')
+              
             ]),
             Substitution.aggregate([
                 {
@@ -106,32 +82,8 @@ const getCenterDemands = async (req, res) => {
                         posterId: user._id,
                         ...dateFilter
                     }
-                },
-                {
-                    $lookup: {
-                        from: 'shifts',
-                        localField: 'posterShift.shift',
-                        foreignField: '_id',
-                        as: 'posterShift.populatedShift'
-                    }
-                },
-                {
-                    $addFields: {
-                        'posterShift.shift': {
-                            $cond: {
-                                if: { $gt: [{ $size: '$posterShift.populatedShift' }, 0] },
-                                then: { $arrayElemAt: ['$posterShift.populatedShift', 0] },
-                                else: '$posterShift.shift'
-                            }
-                        }
-                    }
-                },
-                {
-                    $unset: 'posterShift.populatedShift'
-                },
-                {
-                    $sort: { 'posterShift.date': 1 }
-                }
+                }.populate( 'posterShift.shift')
+               
             ])
         ]);
 

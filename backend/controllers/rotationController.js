@@ -71,14 +71,16 @@ const registerShift = async (shift, order, newRotation) => {
 
     let points
     let endsNextDay = false;
+    let startTime = shift.default.startTime || shift.startTime;
+    let endTime = shift.default.endTime || shift.endTime;
 
     if (shift.type === 'rest') {
         points = 0;
     } else {
-        if (!shift.startTime || !shift.endTime) {
+        if (!startTime || !endTime) {
             throw new Error('Le jour de travail doit avoir un début et une fin');
         }
-        const workDuration = computeWorkDuration(shift.startTime, shift.endTime);
+        const workDuration = computeWorkDuration(startTime, endTime);
         endsNextDay = workDuration.endsNextDay;
         points = workDuration.points;
     }
@@ -86,9 +88,9 @@ const registerShift = async (shift, order, newRotation) => {
     const newShift = new Shift({
         name: shift.name,
         order: order,
-        default: {
-            startTime: shift.startTime,
-            endTime: shift.endTime,
+        default: { 
+            startTime:  startTime,
+            endTime: endTime,
             points: points,
             endsNextDay: endsNextDay
         },

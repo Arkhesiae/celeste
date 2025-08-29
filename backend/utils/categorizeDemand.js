@@ -48,9 +48,9 @@ const categorize = async (demand, shiftsMap = null) => {
 
 
         const shiftsSorted = getAllShiftsSorted(shiftsMap);
-        const computeRest = checkMinimumRestTime(demand.posterShift, demandDate, shiftsSorted);
-        const {restOk, invalidWindow} = checkWeeklyRestPeriod(demand.posterShift, demandDate, shiftsSorted);
-        const isWithin48h = checkWeeklyWorkHours(demand.posterShift, demandDate, shiftsSorted);
+        const computeRest = checkMinimumRestTime(demand.posterShift.shift, demandDate, shiftsSorted);
+        const {restOk, invalidWindow} = checkWeeklyRestPeriod(demand.posterShift.shift, demandDate, shiftsSorted);
+        const isWithin48h = checkWeeklyWorkHours(demand.posterShift.shift, demandDate, shiftsSorted);
        
         const has35hRest = restOk;
 

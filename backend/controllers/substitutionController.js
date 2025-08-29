@@ -122,6 +122,7 @@ const categorizeDemands = async (demands, userId) => {
     await Promise.all(demands.map(async (demand) => {
         try {
             if (demand.status === 'open') {
+                console.log(demand);
                 const categorizedDemand = await categorize(demand, shiftsMap);
                 categorizedDemands.push(categorizedDemand);
             }

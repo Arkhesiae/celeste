@@ -46,6 +46,9 @@ const categorize = async (demand, shiftsMap = null) => {
             }
         }
 
+        console.log("demand.posterShift.shift", demand.posterShift.shift);
+        let shift = await Shift.findById(demand.posterShift.shift);
+        console.log("shift", shift);
 
         const shiftsSorted = getAllShiftsSorted(shiftsMap);
         const computeRest = checkMinimumRestTime(demand.posterShift.shift, demandDate, shiftsSorted);

@@ -582,7 +582,8 @@ const updateDayInRotation = async (req, res) => {
         if (!isDayInRotation) {
             return res.status(400).json({ message: 'Jour non trouvé dans la rotation' });
         }
-
+ 
+        console.log("updatedDay", updatedDay);
 
         if (updatedDay.type !== 'rest') {
             if (!updatedDay.startTime || !updatedDay.endTime) {
@@ -791,8 +792,9 @@ const updateRotation = async (req, res) => {
             rotation.activationDates = updatedData.activationDates;
         }
 
-        // Mettre à jour les jours (shifts) si fournis
+        // // Mettre à jour les jours (shifts) si fournis
         if (updatedData.days) {
+            console.log("updatedData.days", updatedData.days);
             // Supprimer les anciens shifts et leurs variations
             // for (const oldShift of rotation.days) {
             //     if (oldShift.variations && oldShift.variations.length > 0) {
@@ -802,24 +804,24 @@ const updateRotation = async (req, res) => {
             // }
 
             // Créer les nouveaux shifts
-            rotation.days = [];
-            for (const dayData of updatedData.days) {
-                const order = updatedData.days.indexOf(dayData) + 1;
+            // rotation.days = [];
+            // for (const dayData of updatedData.days) {
+            //     const order = updatedData.days.indexOf(dayData) + 1;
 
-                // Créer le nouveau shift
-                const newShift = await registerShift(dayData, order, rotation);
-                rotation.days.push(newShift._id);
+            //     // Créer le nouveau shift
+            //     const newShift = await registerShift(dayData, order, rotation);
+            //     rotation.days.push(newShift._id);
 
-                // Traiter les variations si elles existent
-                if (dayData.variations && dayData.variations.length > 0) {
-                    for (const variantData of dayData.variations) {
-                        const newVariation = await registerVariation(variantData, newShift);
-                        newShift.variations.push(newVariation._id);
-                        await newVariation.save();
-                    }
-                    await newShift.save();
-                }
-            }
+            //     // Traiter les variations si elles existent
+            //     if (dayData.variations && dayData.variations.length > 0) {
+            //         for (const variantData of dayData.variations) {
+            //             const newVariation = await registerVariation(variantData, newShift);
+            //             newShift.variations.push(newVariation._id);
+            //             await newVariation.save();
+            //         }
+            //         await newShift.save();
+            //     }
+            // }
         }
 
         // Sauvegarder les modifications

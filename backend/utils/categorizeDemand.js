@@ -9,7 +9,7 @@ const MIN_REST_MINUTES = 11 * 60;
 const categorize = async (demand, shiftsMap = null) => {
     try {
         const demandDate = new Date(demand.posterShift.date);
-        let demandWithLimit = demand
+        let demandWithLimit = demand.toObject();
         demandWithLimit.limit = [];
 
         // Utiliser la map pré-calculée si disponible, sinon calculer normalement

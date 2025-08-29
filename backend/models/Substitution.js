@@ -51,11 +51,11 @@ const SubstitutionSchema = new mongoose.Schema({
         default: null
     },
     posterShift: {
-        type: mongoose.Schema.Types.Mixed, // Permet les deux formats (ancien et nouveau)
+        type: NewShiftSchema,
         required: true
     },
     accepterShift: {
-        type: mongoose.Schema.Types.Mixed, // Permet les deux formats (ancien et nouveau)
+        type: NewShiftSchema, 
         default: null
     },
     centerId: {

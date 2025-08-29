@@ -63,28 +63,18 @@ const getCenterDemands = async (req, res) => {
         };
 
         const [demands, myDemands] = await Promise.all([
-            Substitution.aggregate([
-                {
-                    $match: {
-                        deleted: false,
-                        ...baseFilter,
-                        posterId: { $ne: userId },
-                        ...dateFilter
-                    }
-                }.populate( 'posterShift.shift')
-              
-            ]),
-            Substitution.aggregate([
-                {
-                    $match: {
-                        deleted: false,
-                        ...baseFilter,
-                        posterId: user._id,
-                        ...dateFilter
-                    }
-                }.populate( 'posterShift.shift')
-               
-            ])
+            Substitution.find({
+                deleted: false,
+                ...baseFilter,
+                posterId: { $ne: user._id },
+                ...dateFilter
+            }).populate('posterShift.shift'),
+            Substitution.find({
+                deleted: false,
+                ...baseFilter,
+                posterId: user._id,
+                ...dateFilter
+            }).populate('posterShift.shift')
         ]);
 
      

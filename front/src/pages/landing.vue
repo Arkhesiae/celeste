@@ -101,7 +101,7 @@
         </v-col>
         <v-col key="replace" cols="12" md="4">
           <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold">{{ Math.floor(animatedReplacements) }}</span>
+            <span class="text-h1 mt-2 font-weight-bold" style="opacity: 0.7;">{{ Math.floor(animatedReplacements) }}</span>
             <span class="text-h7 text-medium-emphasis">remplacements</span>
           </v-card>
         </v-col>

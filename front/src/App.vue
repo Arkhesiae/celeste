@@ -15,7 +15,7 @@ import { useAuthStore } from "@/stores/authStore.js";
 import { useTheme } from 'vuetify';
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const safeAreaTop = ref([]);
 const safeAreaBottom = ref([]);

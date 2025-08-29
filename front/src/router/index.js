@@ -7,7 +7,7 @@ import { setupLayouts } from 'virtual:generated-layouts'
 const router = createRouter({
   history: createWebHistory(),
   routes: setupLayouts(routes),
-  scrollBehavior (to, from, savedPosition) {
+  scrollBehavior(to, from, savedPosition) {
     // Utiliser la position sauvegardée si elle existe
     if (savedPosition) {
       return savedPosition;
@@ -27,8 +27,6 @@ const router = createRouter({
 
     // Comportement par défaut : défilement vers le haut
     return { top: 0 };
-
-    
   }
 });
 
@@ -52,44 +50,52 @@ const transitionConfigs = {
     backward: 'slide-righty'
   }
 };
-
 router.beforeEach(async (to, from, next) => {
-
+  // 🔒 Bypass pour Let's Encrypt (ACME challenge)
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
-    return next(); // Let the request through without redirection
-  }
- 
-  // Gestion des transitions selon layout
-  if (to.meta.layout === 'parameter') {
-    to.meta.transition = transitionConfigs.parameter.forward;
-  } else if (from.meta.layout === 'parameter') {
-    to.meta.transition = transitionConfigs.parameter.backward;
+    return next();
   }
 
-  // Transition personnalisée pour certaines routes
-  const applyTransition = (config) => {
-    const { routes, forward, backward } = config;
-    if (routes.includes(to.name) && routes.includes(from.name)) {
-      const toIndex = routes.indexOf(to.name);
-      const fromIndex = routes.indexOf(from.name);
-      to.meta.transition = toIndex > fromIndex ? forward : backward;
+  // 🎬 Gestion des transitions
+  const applyTransitions = (to, from) => {
+    // Layout "parameter"
+    if (to.meta.layout === 'parameter') {
+      to.meta.transition = transitionConfigs.parameter.forward;
+    } else if (from.meta.layout === 'parameter') {
+      to.meta.transition = transitionConfigs.parameter.backward;
     }
+
+    // Configs personnalisées
+    const applyTransitionConfig = (config) => {
+      const { routes, forward, backward } = config;
+      if (routes.includes(to.name) && routes.includes(from.name)) {
+        const toIndex = routes.indexOf(to.name);
+        const fromIndex = routes.indexOf(from.name);
+        to.meta.transition = toIndex > fromIndex ? forward : backward;
+      }
+    };
+
+    applyTransitionConfig(transitionConfigs.auth);
+    applyTransitionConfig(transitionConfigs.teams);
   };
 
-  applyTransition(transitionConfigs.auth);
-  applyTransition(transitionConfigs.teams);
+  applyTransitions(to, from);
 
 
+
+  // 👤 Authentification
   const authStore = useAuthStore();
+
   try {
-    await authStore.validateAccessToken(); 
-    
+    await authStore.validateAccessToken();
   } catch (error) {
-    console.error("Aucun token : ", error);
+    console.warn("⚠️ Token invalide ou expiré", error);
+    
   }
-  
+
+ 
   if (authStore.isLoggedIn) {
-    if (to.name !== '/pending-approval' && authStore.status === 'pending') {
+    if (authStore.status === 'pending' && to.name !== '/pending-approval') {
       return next({ name: '/pending-approval' });
     }
 
@@ -97,30 +103,34 @@ router.beforeEach(async (to, from, next) => {
       return next({ name: '/dashboard' });
     }
 
-    if (to.name !== '/dashboard' && noAuth.includes(to.name) && !both.includes(to.name)) {
+    if (noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ name: '/dashboard' });
     }
-  }
-  else {
-    if (to.name === '/') {
-      return next({ name: '/landing' });
-    }
 
-    if (to.name !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
-      return next({ name: '/login' });
-    }
+    return next();
   }
- 
+
+  if (to.name === '/') {
+    return next({ name: '/landing' });
+  }
+
+  if (to.name !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
+    return next({ name: '/login' });
+  }
+
   return next();
 });
 
 
 
-// Gestion des hot updates
+
 if (import.meta.hot) {
   import.meta.hot.accept('./auto-routes.js', (mod) => {
-    if (mod) {
+    if (mod?.default) {
+      console.log('♻️ Hot update des routes détecté');
       handleHotUpdate(mod.default);
+    } else {
+      console.warn('⚠️ Hot update: module auto-routes vide ou invalide');
     }
   });
 }
@@ -129,15 +139,16 @@ if (import.meta.hot) {
 router.onError((err, to) => {
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
     const hasReloaded = localStorage.getItem('vuetify:dynamic-reload');
+
     if (!hasReloaded) {
-      console.log('Reloading page to fix dynamic import error');
+      console.warn('⚡ Dynamic import error, forcing reload');
       localStorage.setItem('vuetify:dynamic-reload', 'true');
-      location.assign(to.fullPath);
+      window.location.reload(); // Hard reload
     } else {
-      console.error('Dynamic import error, reloading page did not fix it', err);
+      console.error('❌ Reload did not fix dynamic import error:', err);
     }
   } else {
-    console.error('Router error:', err);
+    console.error('Router navigation error:', err);
   }
 });
 

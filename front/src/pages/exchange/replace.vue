@@ -173,7 +173,7 @@
 
     <!-- Dialog pour ajouter une demande -->
 
-    <AddSubstitutionForm dialogMode="add" v-model:dialogVisible="showAddDialog" />
+  
 
     <!-- Dialogue pour les règles de travail -->
     <RulesDialog v-model="showRulesDialog" />

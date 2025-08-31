@@ -1,5 +1,5 @@
 <template>
-  <v-bottom-sheet v-model="localModelValue" inset>
+  <v-bottom-sheet v-model="localModelValue" inset class="safe-area-bottom">
     <CalendarPanel
       :formatted-date="formattedDate"
       :selected-date="selectedDate"
@@ -64,7 +64,6 @@ const handleUnacceptDemand = (substitutionId) => {
 </script>
 
 <style scoped>
-.v-bottom-sheet {
-  border-radius: 16px 16px 0 0;
-}
+
+
 </style>

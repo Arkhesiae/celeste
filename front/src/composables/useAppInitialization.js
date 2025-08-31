@@ -28,7 +28,13 @@ export function useAppInitialization() {
 
 
   const initializeAuth = async () => {
-    await authStore.loadFromLocalStorage();
+    // Ne charger que si pas déjà chargé (éviter les appels redondants)
+    if (!authStore.accessToken) {
+      await authStore.loadFromLocalStorage();
+    } else {
+      await authStore.validateAccessToken();
+    }
+
   };
 
   const initializeTheme = async () => {
@@ -39,7 +45,7 @@ export function useAppInitialization() {
    
   };
 
-  const initializeCenter = async (onProgress) => {
+  const initializeCenter = async () => {
     initializationStore.currentlyLoading = 'center';
     centerStore.fetchCenters();
     if (!authStore.centerId) return;
@@ -50,10 +56,9 @@ export function useAppInitialization() {
       centerStore.fetchUsersCountByCenter()
     ]);
     initializationStore.updateInitializationState('center', true);
-    if (onProgress) onProgress('center');
   };
 
-  const initializeTeam = async (onProgress) => {
+  const initializeTeam = async () => {
     if (!authStore.userId) return;
     if (authStore.isAdmin && authStore.adminType === 'master') {
       await teamStore.fetchAllTeams();
@@ -65,10 +70,9 @@ export function useAppInitialization() {
       teamStore.fetchCenterTeams(authStore.centerId)
     ]);
     initializationStore.updateInitializationState('team', true);
-    if (onProgress) onProgress('team');
   };
 
-  const initializeShiftsAndSubstitutions = async (onProgress) => {
+  const initializeShiftsAndSubstitutions = async () => {
     if (!authStore.userId) return;
 
     initializationStore.currentlyLoading = 'shifts';
@@ -78,7 +82,6 @@ export function useAppInitialization() {
     }
     await shiftStore.fetchShiftsWithSubstitutions(dates);
     initializationStore.updateInitializationState('shifts', true);
-    if (onProgress) onProgress('shifts');
 
     initializationStore.currentlyLoading = 'substitutions';
     const today = new Date();
@@ -92,20 +95,18 @@ export function useAppInitialization() {
       })
     
     initializationStore.updateInitializationState('substitutions', true);
-    if (onProgress) onProgress('substitutions');
   };
 
-  const initializeRotations = async (onProgress) => {
+  const initializeRotations = async () => {
     if (!authStore.centerId) return;
 
     initializationStore.currentlyLoading = 'rotations';
     await rotationStore.fetchRotations(authStore.centerId);
     await centerStore.fetchActiveRotationOfCenter(authStore.centerId);
     initializationStore.updateInitializationState('rotations', true);
-    if (onProgress) onProgress('rotations');
   };
 
-  const initializePersonalData = async (onProgress) => {
+  const initializePersonalData = async () => {
     initializationStore.currentlyLoading = 'personal';
     await Promise.all([
       pointStore.fetchUserPoints(),
@@ -113,41 +114,31 @@ export function useAppInitialization() {
       notificationStore.fetchNotifications(authStore.userId)
     ]);
     initializationStore.updateInitializationState('personal', true);
-    if (onProgress) onProgress('personal');
   };
 
-  const initializeTickets = async (onProgress) => {
+  const initializeTickets = async () => {
     if (!authStore.isAdmin) return;
 
     initializationStore.currentlyLoading = 'tickets';
     await ticketStore.fetchTickets();
     initializationStore.updateInitializationState('tickets', true);
-    if (onProgress) onProgress('tickets');
   };
 
-  
-  const initializeRules = async (onProgress) => {
-    if (!authStore.isAdmin) return;
 
-    initializationStore.currentlyLoading = 'rules';
-    await ruleStore.fetchRules();
-    initializationStore.updateInitializationState('rules', true);
-    if (onProgress) onProgress('rules');
-  };
 
-  const initializeApp = async (onProgress) => {
+  const initializeApp = async () => {
     try {
       initializationStore.setLoading(true);
-      console.log("initializeApp");
+  
       await initializeAuth();
       await initializeTheme();
-      await initializeCenter(onProgress);
+      await initializeCenter();
       if (authStore.isLoggedIn) {
-        await initializeTeam(onProgress);
-        await initializeShiftsAndSubstitutions(onProgress);
-        await initializeRotations(onProgress);
-        await initializePersonalData(onProgress);
-        await initializeTickets(onProgress);
+        await initializeTeam();
+        await initializeShiftsAndSubstitutions();
+        await initializeRotations();
+        await initializePersonalData();
+        await initializeTickets();
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de l\'application:', error);

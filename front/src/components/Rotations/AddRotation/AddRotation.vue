@@ -1,7 +1,7 @@
 <script setup>
   import { ref, computed, reactive, watch } from 'vue';
 import { useDisplay } from 'vuetify';
-import WorkshiftSummary from '../Summary/WorkshiftSummary.vue';
+import WorkshiftSummary from './WorkshiftSummary.vue';
 import GenericDialog from '../../Dialogs/GenericDialog.vue';
 
 const props = defineProps({
@@ -77,38 +77,42 @@ const handleEditDay = (day) => {
 
 const handleSubmitDay = (day) => {
   if (dayToEdit.value) {
-    // Mode édition : remplacer le jour existant
-    console.log("EDITION")
-    // console.log("day", day);
-    // console.log("dayToEdit.value", dayToEdit.value);
-    console.log("newRotation.value.days", newRotation.value.days);
-  
     if (dayToEditIndex.value !== -1) {
       newRotation.value.days[dayToEditIndex.value] = day;
     }
     dayToEdit.value = null; // Réinitialiser après l'édition
   } else {
-    // Mode ajout : ajouter un nouveau jour
-    console.log("AJOUT")
-    console.log("day", day);
-    console.log("newRotation.value.days", newRotation.value.days);
     newRotation.value.days.push(day);
   }
   updateRestDayNames();
+  updateOrder();
+};
+
+const updateOrder = () => {
+  newRotation.value.days.forEach((day, index) => {
+    day.order = index + 1;
+  });
 };
 
 const handleAddRestDay = () => {
   newRotation.value.days.push({
     name: '', // Le nom sera calculé dynamiquement par la computed property
     type: 'rest',
-    defaultPoints: 0
+    default: {
+      points: 0,
+      startTime: null,
+      endTime: null,
+      endsNextDay: false
+    }
   });
   updateRestDayNames();
+  updateOrder();
 };
 
 const handleRemoveDay = (index) => {
   newRotation.value.days.splice(index, 1);
   updateRestDayNames(); // Recalculer les noms des jours de repos
+  updateOrder();
 };
 
 // Nouvelle fonction pour mettre à jour les noms des jours de repos
@@ -312,7 +316,6 @@ const close = () => {
   <AddOrEditDay
     :modelValue="showAddDayDialog"
     :dayNumber="newRotation.days.filter(day => day.type === 'work').length + 1"
-    :variants="variants"
     :day="dayToEdit"
     :mode="dayToEdit ? 'edit' : 'add'"
     @onSubmit="handleSubmitDay"

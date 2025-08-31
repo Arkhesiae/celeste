@@ -582,9 +582,10 @@ const getUserShiftsWithSubstitutions = async (req, res) => {
         const timer = new Date();
         const dateArray = generateDateArray(dates.startDate, dates.endDate);
        
-        console.log("-------------- COMPUTING ------------------" + dateArray.length);
+        // console.log("-------------- COMPUTING ------------------" + dateArray.length);
         const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
-        console.log("-------------- COMPUTING TIME ------------------" + (new Date() - timer));
+        // console.log("-------------- COMPUTING TIME ------------------" + (new Date() - timer));
+        
         res.json(results);
     } catch (error) {
         console.error(error.message);

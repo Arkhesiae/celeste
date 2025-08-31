@@ -25,9 +25,9 @@
             </v-btn>
           </template>
           <v-list rounded="xl" class="pa-4" bg-color="onBackground">
-            <v-list-item @click="handleEdit(rotation)" prepend-icon="mdi-pencil" rounded="lg">
+            <!-- <v-list-item @click="handleEdit(rotation)" prepend-icon="mdi-pencil" rounded="lg">
               <v-list-item-title>Modifier</v-list-item-title>
-            </v-list-item>
+            </v-list-item> -->
             <v-list-item @click="handleDuplicate(rotation)" prepend-icon="mdi-content-copy" rounded="lg">
               <v-list-item-title>Dupliquer</v-list-item-title>
             </v-list-item>
@@ -68,18 +68,14 @@
   </v-bottom-sheet>
 
   <!-- Edit Name Dialog -->
-  <EditRotationName v-if="smAndDown" :is-dialog-visible="showEditNameDialog" :rotation="rotation"
+  <EditRotationNameDialog v-if="smAndDown" :is-dialog-visible="showEditNameDialog" :rotation="rotation"
     @update:dialogVisible="showEditNameDialog = $event" @onSubmit="handleNameEdit" />
 </template>
 
 <script setup>
 import { ref, computed, nextTick } from 'vue';
-import DayList from "./visualization/DayList.vue";
-import DayDetail from "./DayDetail.vue";
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from "@/stores/authStore.js";
-import AddOrEditDay from "./Dialogs/AddOrEditDay.vue";
-import EditRotationName from "./Dialogs/EditRotationName.vue";
 import { useRotationStore } from "@/stores/rotationStore";
 import { useSnackbarStore } from '@/stores/snackbarStore';
 

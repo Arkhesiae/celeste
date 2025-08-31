@@ -221,8 +221,8 @@ import { ref, computed, onMounted } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { usePatchnotesStore } from '@/stores/patchnotesStore';
-import VersionSelector from '@/components/common/VersionSelector.vue';
-import EntitySelector from '@/components/common/EntitySelector.vue';
+import VersionSelector from '@/components/common/Selector/VersionSelector.vue';
+import EntitySelector from '@/components/common/Selector/EntitySelector.vue';
 
 const { smAndDown } = useDisplay();
 const snackbarStore = useSnackbarStore();

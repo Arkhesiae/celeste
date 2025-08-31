@@ -533,6 +533,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   
 
   const recategorizeSubstitutions = async (dateKey) => {
+    console.log(dateKey)
     try {
       const openSubstitutionIds = getOpenSubstitutionIdsFromOthers(dateKey);
       if (openSubstitutionIds.length > 0) {

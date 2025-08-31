@@ -14,18 +14,20 @@
           width="100%"
           min-width="100%"
           flat
-       
+          
           :color="getColor(day.date)"
           class="d-flex flex-column calendar-day pa-0 overflow-visible"
           @click="$emit('select-day', day.date)"
           :style="{
-            'border-radius': '16px !important',
             'opacity': getOpacity(day)
           }"
           :class="{
             'isWorkDay': isWorkDay(day.date),
             'today-center-highlight': isToday(day.date),
-           
+            'top-left-corner': index === 0 && week.indexOf(day) === 0,
+            'top-right-corner': index === 0 && week.indexOf(day) === week.length - 1,
+            'bottom-left-corner': index === calendarDays.length - 1 && week.indexOf(day) === 0,
+            'bottom-right-corner': index === calendarDays.length - 1 && week.indexOf(day) === week.length - 1,
       
   
           }"
@@ -46,9 +48,8 @@
 
           <div class="d-flex justify-space-between align-center px-4">
  <!-- Informations du shift -->
- <v-card-subtitle class="pa-0" v-if=" getShiftType(day.date) !== 'rest'">
+          <v-card-subtitle class="pa-0" v-if=" getShiftType(day.date) !== 'rest'" :class="isOff(day.date) ? 'offDay' : ''">
             {{ getShiftName(day.date) }}
-                  
           </v-card-subtitle>
               <!-- Indicateurs de substitution -->
           <div  class="position-absolute pr-4 pb-4" style="bottom: 0; right: 0;">
@@ -140,10 +141,21 @@ const vacationsOfUser = computed(() => {
 
 const isWorkDay = (date) => {
   const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift;
-  return shift ? shift.type !== 'rest' : false;
+  return shift ? shift.type !== 'rest' && !isOff(date) : false;
 };
 
-const getShiftName = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.name;
+const isOff = (date) => {
+
+  return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff;
+};
+
+const getShiftName = (date) => {
+  if (isOff(date)) {
+    return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.initialShift?.name
+  }
+  return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.name;
+}
+
 const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
 
 // const getStatus = (date) => {
@@ -197,6 +209,23 @@ const emit = defineEmits(['select-day']);
   color: rgb(var())
 }
 
+.offDay {
+  color: rgb(var(--v-theme-error)) !important;
+  opacity: 0.5 !important;
+}
+
+.top-left-corner {
+  border-top-left-radius: 24px  !important;
+}
+.top-right-corner {
+  border-top-right-radius: 24px  !important;
+}
+.bottom-left-corner {
+  border-bottom-left-radius: 24px  !important;
+}
+.bottom-right-corner {
+  border-bottom-right-radius: 24px  !important;
+}
 
 
 .remplacement {

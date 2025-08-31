@@ -1,5 +1,5 @@
 <template>
-  <v-container class="d-flex fill-height">
+  <v-container v-if="isReady" class="d-flex fill-height">
     <v-row justify="center" align-content="center">
       <v-slide-y-reverse-transition hide-on-leave appear>
         <v-card width="100%" class="mt-n16 pa-6 pt-10" :color="smAndDown ? 'transparent' : ''" rounded="xl"
@@ -35,7 +35,12 @@
                   <v-text-field color="tertiary" variant="outlined" label="Adresse e-mail" type="email"
                     @update:model-value="backToStep1" rounded="xl" v-model="email"
                     :rules="[rules.required, rules.email]" :error-messages="emailError" :loading="isCheckingEmail"
-                    required class="mobile-input mt-2" @input="emailError = ''" @keyup.enter="tryGoToStep2" />
+                    required class="mobile-input mt-2" @input="emailError = ''" @keyup.enter="tryGoToStep2">
+                    <template v-slot:append-inner v-if="email && stayConnected">
+                      <v-btn icon="mdi-close" variant="text" size="small" @click="clearRememberedEmail"
+                        class="text-medium-emphasis" />
+                    </template>
+                  </v-text-field>
                 </v-window-item>
 
                 <v-window-item :value="2">
@@ -54,7 +59,7 @@
                               </template>
                               <template v-else>
                                 {{ userInfo?.name ? userInfo.name.charAt(0).toUpperCase() :
-                                email.charAt(0).toUpperCase() }}
+                                  email.charAt(0).toUpperCase() }}
                               </template>
                             </v-avatar>
                             <div class="d-flex flex-column align-start ml-3">
@@ -75,7 +80,33 @@
                     required rounded="xl" v-model="password" type="password" autocomplete="new-password"
                     :rules="[rules.required]" @keyup.enter="handleLogin" />
 
-                  <v-checkbox label="Rester connecté" v-model="stayConnected" class="mobile-checkbox" />
+
+                  <div
+                    class="remember-me d-flex align-center justify-center mb-4 ga-3 overflow-hidden cursor-pointer position-relative"
+                    :class="{ 'active': stayConnected, 'desktop': !smAndDown }" @click="stayConnected = !stayConnected">
+                    <div class="d-flex align-center ga-3 overflow-hidden cursor-pointer position-relative">
+                      <!-- Conteneur avec largeur fixe pour l'icône pour éviter le décalage -->
+                      <div class="icon-container d-flex align-center justify-center"
+                        style="width: 24px; transition: all 0.5s ease;"
+                        :style="{ 'width': stayConnected ? '24px' : '0px' }">
+                        <v-slide-x-reverse-transition mode="out-in">
+                          <div v-if="stayConnected" key="icon">
+                            <v-icon color="primary" icon="mdi-identifier" size="16" />
+                          </div>
+                          <div v-else key="empty" style="width: 16px; height: 16px;"></div>
+                        </v-slide-x-reverse-transition>
+                      </div>
+                      <div class="d-flex align-center ga-3 overflow-hidden cursor-pointer position-relative">
+                        <span class="text-body-2 position-relative" style="transition: all 0.3s ease;">Se souvenir de
+                          moi</span><span class="text-body-2 position-relative"
+                          :style="{ 'opacity': stayConnected ? 0 : 1 }">?</span>
+                      </div>
+
+                    </div>
+
+
+                  </div>
+                  <!-- <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" /> -->
 
                   <v-btn variant="text" color="primary" @click="openForgotPasswordDialog" class="mb-4 ps-1">
                     Mot de passe oublié ?
@@ -135,7 +166,6 @@
     :class="{'img-mobile': smAndDown, 'img-desktop': !smAndDown}"/> -->
   </v-container>
 </template>
-
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
@@ -155,7 +185,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const email = ref('');
 const password = ref('');
-const currentStep = ref(1);
+const currentStep = ref(null);   // 👈 Étape inconnue au départ
+const isReady = ref(false);      // 👈 Bloque le rendu tant qu’on n’a pas fini
 const stayConnected = ref(false);
 const isCheckingEmail = ref(false);
 const emailError = ref('');
@@ -166,10 +197,44 @@ const showForgotPasswordDialog = ref(false);
 const userInfo = ref(null);
 const isLoadingUserInfo = ref(false);
 
+// Constantes pour la mémorisation de l'email
+const REMEMBERED_EMAIL_KEY = 'rememberedEmail';
+const REMEMBER_EMAIL_KEY = 'rememberEmail';
 
 const rules = {
   required: value => !!value || 'Champ requis',
   email: value => /.+@.+\..+/.test(value) || 'Adresse e-mail invalide'
+};
+
+/**
+ * Charge l'email mémorisé depuis le localStorage et détermine l'étape initiale
+ */
+const loadRememberedEmail = async () => {
+  try {
+    const rememberedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+    const shouldRemember = localStorage.getItem(REMEMBER_EMAIL_KEY) === 'true';
+
+    if (rememberedEmail && shouldRemember) {
+      email.value = rememberedEmail;
+      stayConnected.value = true;
+
+      try {
+        const ok = await checkEmailExists();
+        if (ok) {
+          await fetchUserInfo();
+          return 2; // Aller directement à l'étape 2 si l'email est valide
+        }
+      } catch (error) {
+        console.error('Erreur lors de la vérification de l\'email:', error);
+        return 1; // Rester à l'étape 1 en cas d'erreur
+      }
+    }
+
+    return 1; // Par défaut, commencer à l'étape 1
+  } catch (error) {
+    console.error('Erreur lors du chargement de l\'email mémorisé:', error);
+    return 1; // En cas d'erreur, commencer à l'étape 1
+  }
 };
 
 /**
@@ -229,6 +294,36 @@ const tryGoToStep2 = async () => {
 };
 
 /**
+ * Sauvegarde l'email si "Se souvenir de moi"
+ */
+const saveRememberedEmail = () => {
+  try {
+    if (stayConnected.value && email.value) {
+      localStorage.setItem(REMEMBERED_EMAIL_KEY, email.value);
+      localStorage.setItem(REMEMBER_EMAIL_KEY, 'true');
+    } else {
+      clearRememberedEmail();
+    }
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde de l\'email:', error);
+  }
+};
+
+/**
+ * Efface l'email mémorisé
+ */
+const clearRememberedEmail = () => {
+  try {
+    localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+    localStorage.removeItem(REMEMBER_EMAIL_KEY);
+    email.value = '';
+    stayConnected.value = false;
+  } catch (error) {
+    console.error('Erreur lors de l\'effacement de l\'email mémorisé:', error);
+  }
+};
+
+/**
  * Gère la tentative de connexion.
  */
 const handleLogin = async () => {
@@ -236,12 +331,12 @@ const handleLogin = async () => {
 
   loggingIn.value = true;
   try {
-
     await authStore.logIn({
       email: email.value,
       password: password.value,
-      stayConnected: stayConnected.value
     });
+
+    saveRememberedEmail();
 
     try {
       await initializeApp();
@@ -249,17 +344,13 @@ const handleLogin = async () => {
 
       if (authStore.status === 'pending') {
         router.push({ path: '/pending-approval', replace: true });
-      }
-      else {
+      } else {
         router.push({ path: '/dashboard', replace: true });
       }
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
-      throw error;  
-      //snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');
+      throw error;
     }
-
-
   } catch (error) {
     if (error.status === 401) {
       snackbarStore.showNotification('Identifiants incorrects', 'onError', 'mdi-alert-circle');
@@ -269,24 +360,8 @@ const handleLogin = async () => {
     console.error('Erreur de connexion:', error);
   } finally {
     loggingIn.value = false;
-
   }
 };
-
-async function loginWithBiometrics() {
-  const ok = await useBiometricLogin()
-  if (ok) {
-    // Ici, tu peux soit appeler une API spéciale, soit stocker un token local déjà existant
-    const storedToken = localStorage.getItem('token')
-    if (storedToken) {
-      router.push('/home')
-    } else {
-      error.value = 'Aucun token en cache. Connecte-toi manuellement une fois.'
-    }
-  } else {
-    error.value = 'Authentification biométrique échouée ou annulée.'
-  }
-}
 
 const openForgotPasswordDialog = () => {
   showForgotPasswordDialog.value = true;
@@ -305,6 +380,17 @@ const backToStep1 = () => {
     currentStep.value = 1;
   }
 };
+
+/**
+ * Initialisation : déterminer l’étape avant rendu
+ */
+(async () => {
+  const step = await loadRememberedEmail();
+  currentStep.value = step;
+  isReady.value = true; // 👈 maintenant on peut afficher
+})();
+
+
 </script>
 
 <style scoped>
@@ -355,5 +441,37 @@ const backToStep1 = () => {
   object-fit: cover;
   position: absolute;
   right: -100px;
+}
+
+.remember-me {
+  width: 100%;
+  color: rgba(var(--v-theme-onSurface), .8);
+  background-color: rgba(var(--v-theme-surfaceContainerHighest), 0.1);
+  border-radius: 16px;
+  border: 2px solid rgba(var(--v-theme-surfaceContainer), 0.3);
+  height: 48px;
+
+}
+
+.remember-me.desktop {
+
+
+  background-color: rgba(var(--v-theme-background), 0.4);
+
+  border: 2px solid rgba(var(--v-theme-background), 0.6);
+
+
+
+}
+
+.remember-me.desktop.active {
+  background-color: rgba(var(--v-theme-background), 1);
+  color: rgba(var(--v-theme-onSurface), 1);
+}
+
+.remember-me.active {
+  background-color: rgba(var(--v-theme-surfaceContainer), 1);
+  color: rgba(var(--v-theme-onSurface), 1);
+
 }
 </style>

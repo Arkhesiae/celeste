@@ -22,6 +22,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
         const dateArray = Array.isArray(dates) ? dates : [dates];
         const results = await Promise.all(
             dateArray.map(async (dateStr) => {
+                console.log("Date", dateStr);
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) {
                     throw new Error(`Date invalide: ${dateStr}`);
@@ -29,6 +30,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
 
                 let initialShift = null;
                 let teamObject = null;
+                let selectedVariation = null;
                 let team = null;
                 
                 if (!teams || teams.length === 0) {
@@ -37,8 +39,6 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 else {
                     team = await getTeamAtGivenDate(teams, date);
                 }
-
-                // Calculer d'abord le shift initial pour vérification
                 
                 if (team) {
                     teamObject = await Team.findById(team.teamId);
@@ -49,54 +49,51 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     initialShift = await computeShiftOfTeam(date, team.teamId);
                  
                 }
+
+                
                 else {
                     teamObject = null;
                     initialShift = null;
+                    selectedVariation = null;
                 }
+
+
 
                 // Vérifier les modifications de planning approuvées pour cette date (priorité maximale)
                 const planningModifications = await PlanningModification.find({
                     userId: userId,
                     date: date,
-                    status: 'approved'
                 }).sort({ createdAt: 1 });
 
+                // Vérifier si le shift initial est optionnel et pas de modifications
+                if (initialShift && initialShift.optional && planningModifications.length === 0) {
+                
+                    return {
+                        date: dateStr,
+                        isOff : true,
+                        shift : null,
+                        initialShift : initialShift,
+                        teamObject,
+                        selectedVariation
+                    };
+                }
+
                 // Si l'utilisateur a des modifications de planning approuvées pour cette date
-                if (planningModifications.length > 0) {
-                    const modification = planningModifications[0]; // Prendre la première modification approuvée
-                    
-                    // Si c'est une absence ou un jour de congé
-                    if (modification.type === 'absence' || modification.type === 'off_day') {
+                if (planningModifications?.length > 0) {
+                    const modification = planningModifications[0];
+                    selectedVariation = modification.selectedVariation;
+                    console.log(modification)
+                    if (modification.isOff) {
                         return {
                             date: dateStr,
-                            status: modification.type === 'absence' ? "Absence" : "Jour de congé",
-                            isPlanningModification: true,
-                            planningModificationType: modification.type,
-                            planningModification: modification,
-                            initialShift,
+                            isOff : modification.isOff,
+                            shift : null,
+                            initialShift : initialShift,
+                            selectedVariation : selectedVariation,
                             teamObject
                         };
-                    }
-                    
-                    // Si c'est une modification personnalisée
-                    if (modification.type === 'custom_modification') {
-                        // Retourner le shift modifié selon les données de modification
-                        return {
-                            date: dateStr,
-                            teamObject,
-                            shift: {
-                                ...initialShift,
-                                startTime: modification.startTime || initialShift?.startTime,
-                                endTime: modification.endTime || initialShift?.endTime,
-                                // Autres modifications selon modificationData
-                            },
-                            isPlanningModification: true,
-                            planningModificationType: modification.type,
-                            planningModification: modification,
-                            initialShift
-                        };
-                    }
                 }
+            }
 
                 // Vérifier les substitutions où l'utilisateur est impliqué (priorité inférieure aux modifications de planning)
                 const substitutions = await Substitution.find({
@@ -120,6 +117,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
 
                 // Si l'utilisateur a des substitutions acceptées pour cette date
                 if (substitutions.length > 0) {
+                    console.log("substitutions");
                     let currentShift = initialShift;
                     let currentTeam = teamObject;
                     let substitutionHistory = [];
@@ -211,14 +209,17 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                     };
                 }
 
+
                 // Si pas de substitution ni de modification, on retourne le shift normal
                 return {
                     date: dateStr,
                     teamObject,
                     shift: initialShift,
                     isSubstitution: false,
-                    initialShift
+                    initialShift,
+                    selectedVariation
                 };
+            
             })
         );
        

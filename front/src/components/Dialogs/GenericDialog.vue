@@ -1,5 +1,5 @@
 <template>
-    <v-dialog v-model="dialogVisible" :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent"
+    <v-dialog :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'" v-model="dialogVisible" :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent"
         :retain-focus="false" @after-enter="handleAfterEnter" @after-leave="handleAfterLeave" @keydown.esc="handleEscapeKey">
         <v-card height="100vh" :rounded="!smAndDown ? 'xl' : false" class="pt-0 pb-6 px-0 overflow-y-hidden">
             <!-- Header avec titre et boutons -->

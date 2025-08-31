@@ -118,11 +118,12 @@ const categorizeDemands = async (demands, userId) => {
             console.error('Erreur lors de la préparation de la map des shifts:', error);
         }
     }
+
+
   
     await Promise.all(demands.map(async (demand) => {
         try {
             if (demand.status === 'open') {
-                console.log(demand);
                 const categorizedDemand = await categorize(demand, shiftsMap);
                 categorizedDemands.push(categorizedDemand);
             }
@@ -438,7 +439,7 @@ const acceptRequest = async (req, res) => {
                 updatedAt: new Date()
             },
             { new: true }
-        );
+        ).populate('posterShift.shift') ;
 
         const shift = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
 
@@ -584,7 +585,7 @@ const swapShifts = async (req, res) => {
             },
         
             { new: true }
-        );
+        ).populate('posterShift.shift') ;
 
           // Création d'une transaction différée si des points sont en jeu
           if (acceptedShiftPoints > 0) {
@@ -679,7 +680,7 @@ const unacceptRequest = async (req, res) => {
                 updatedAt: new Date()
             },
             { new: true }
-        );
+        ).populate('posterShift.shift');
 
         const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);
         const requestToReturn = await categorizeDemands([updatedRequest], userId);
@@ -790,7 +791,7 @@ const recategorizeSubstitutions = async (req, res) => {
         return res.status(400).json({ error: 'Paramètres manquants' });
     }
 
-    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } });
+    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate('posterShift.shift');
 
 
     const categorizedSubstitutions = await categorizeDemands(substitutions, userId);

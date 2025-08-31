@@ -7,6 +7,7 @@ import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSub
  * @returns {Map} Map avec clé "date" et valeur { shift, team, date, start, end }
  */
 const generateShiftsMap = async (demands, userId) => {
+    try {
     const shiftsMap = new Map();
 
     // Collecter toutes les dates uniques pour l'utilisateur
@@ -58,15 +59,19 @@ const generateShiftsMap = async (demands, userId) => {
         if (!entry.shift || entry.shift?.type !== 'work') continue;
 
         const shift = entry.shift;
-        let startTime = shift?.default?.startTime ? shift?.default?.startTime : shift?.startTime;
-        let endTime = shift?.default?.endTime ? shift?.default?.endTime : shift?.endTime;
+        let startTime = shift?.default?.startTime;
+        let endTime = shift?.default?.endTime;
         const start = parseShiftDateTime(date, startTime);
-        const end = parseShiftDateTime(date, endTime, shift.endsNextDay);
+        const end = parseShiftDateTime(date, endTime, shift?.default?.endsNextDay);
 
         finalMap.set(date, { shift, team: entry.teamObject, date, start, end });
     }
 
-    return finalMap;
+        return finalMap;
+    } catch (error) {
+        console.error('Erreur dans generateShiftsMap:', error.message);
+        throw error;
+    }
 };
 
 /**

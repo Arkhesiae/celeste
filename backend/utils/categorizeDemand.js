@@ -110,13 +110,14 @@ function parseShiftDateTime(date, time, endsNextDay = false) {
 function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
     const localShiftsSorted = shiftsSorted.slice();
   
-    let startTime = targetShift?.default?.startTime ? targetShift?.default?.startTime : targetShift?.startTime;
-    let endTime = targetShift?.default?.endTime ? targetShift?.default?.endTime : targetShift?.endTime;
+    console.log(targetShift)
+    let startTime = targetShift?.default?.startTime;
+    let endTime = targetShift?.default?.endTime ;
     if (!startTime || !endTime) {
         throw new Error("Invalid shift" + targetShift);
     }
     const start = parseShiftDateTime(targetDate, startTime);
-    const end = parseShiftDateTime(targetDate, endTime, targetShift.endsNextDay);
+    const end = parseShiftDateTime(targetDate, endTime, targetShift?.default?.endsNextDay);
 
     const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
     
@@ -168,10 +169,10 @@ function getAllShiftsSorted(shiftsMap) {
 function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return true;
 
-    let startTime = targetShift?.default?.startTime ? targetShift?.default?.startTime : targetShift?.startTime;
-    let endTime = targetShift?.default?.endTime ? targetShift?.default?.endTime : targetShift?.endTime;
+    let startTime = targetShift?.default?.startTime;
+    let endTime = targetShift?.default?.endTime ;
     const targetStart = parseShiftDateTime(targetDate, startTime);
-    const targetEnd = parseShiftDateTime(targetDate, endTime, targetShift.endsNextDay);
+    const targetEnd = parseShiftDateTime(targetDate, endTime, targetShift?.default?.endsNextDay);
 
 
     let lastShift = null;
@@ -378,8 +379,8 @@ function checkConsecutiveWorkDays(targetShift, targetDate, shiftsSorted) {
 function checkRestAfterNightControl(targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return { ok: true, restAfterNightControl: 0 };
 
-    const targetStart = parseShiftDateTime(targetDate, targetShift.startTime);
-    const targetEnd = parseShiftDateTime(targetDate, targetShift.endTime, targetShift.endsNextDay);
+    const targetStart = parseShiftDateTime(targetDate, targetShift?.default?.startTime);
+    const targetEnd = parseShiftDateTime(targetDate, targetShift?.default?.endTime, targetShift?.default?.endsNextDay);
 
     // Vérifier si c'est un contrôle de nuit (entre 00h00 et 06h00)
     const isNightControl = targetStart.getHours() >= 0 && targetStart.getHours() < 6;
@@ -424,7 +425,7 @@ function checkConsecutiveNightControls(targetShift, targetDate, shiftsSorted) {
 
     for (const shift of localShiftsSorted) {
         if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftDateTime(shift.date, shift.shift.startTime);
+            const shiftStart = parseShiftDateTime(shift.date, shift.shift?.default?.startTime);
             const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
             
             if (isNightControl) {
@@ -491,7 +492,7 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
 
     for (const shift of localShiftsSorted) {
         if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftDateTime(shift.date, shift.shift.startTime);
+            const shiftStart = parseShiftDateTime(shift.date, shift.shift?.default?.startTime);
             const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
             
             if (isNightControl) {
@@ -533,7 +534,7 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
     // Vérifier le repos après chaque séquence de deux vacations consécutives
     for (const sequence of consecutiveNightControls) {
         if (sequence.length === 2) {
-            const lastShiftEnd = parseShiftDateTime(sequence[1].date, sequence[1].shift.endTime, sequence[1].shift.endsNextDay);
+            const lastShiftEnd = parseShiftDateTime(sequence[1].date, sequence[1].shift?.default?.endTime, sequence[1].shift?.default?.endsNextDay);
             
             // Chercher le prochain shift après cette séquence
             let nextShift = null;

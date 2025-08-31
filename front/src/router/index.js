@@ -50,76 +50,74 @@ const transitionConfigs = {
     backward: 'slide-righty'
   }
 };
+
+
 router.beforeEach(async (to, from, next) => {
-  // 🔒 Bypass pour Let's Encrypt (ACME challenge)
+
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
     return next();
   }
 
-  // 🎬 Gestion des transitions
-  const applyTransitions = (to, from) => {
-    // Layout "parameter"
-    if (to.meta.layout === 'parameter') {
-      to.meta.transition = transitionConfigs.parameter.forward;
-    } else if (from.meta.layout === 'parameter') {
-      to.meta.transition = transitionConfigs.parameter.backward;
-    }
-
-    // Configs personnalisées
-    const applyTransitionConfig = (config) => {
-      const { routes, forward, backward } = config;
-      if (routes.includes(to.name) && routes.includes(from.name)) {
-        const toIndex = routes.indexOf(to.name);
-        const fromIndex = routes.indexOf(from.name);
-        to.meta.transition = toIndex > fromIndex ? forward : backward;
-      }
-    };
-
-    applyTransitionConfig(transitionConfigs.auth);
-    applyTransitionConfig(transitionConfigs.teams);
-  };
-
-  applyTransitions(to, from);
-
-
-
-  // 👤 Authentification
   const authStore = useAuthStore();
 
-  try {
-    await authStore.validateAccessToken();
-  } catch (error) {
-    console.warn("⚠️ Token invalide ou expiré", error);
-    
+
+  if (!authStore.accessToken) {
+    console.log("No access token");
+    try {
+      await authStore.loadFromLocalStorage();
+    } catch (error) {
+      console.warn("⚠️ Erreur lors du chargement des données d'authentification:", error);
+    }
+  } else {
+    console.log("Access token");
+    try {
+      await authStore.validateAccessToken();
+    } catch (error) {
+      console.warn("⚠️ Token invalide ou expiré", error);
+    }
   }
 
+
+  if (to.path === '/') {
+    if (authStore.isLoggedIn) {
+      return next({ path: '/dashboard' });
+    } else {
+      return next({ path: '/landing' });
+    }
+  }
+
+  // Navigation guard pour les routes d'administration
  
+  
+
   if (authStore.isLoggedIn) {
-    if (authStore.status === 'pending' && to.name !== '/pending-approval') {
-      return next({ name: '/pending-approval' });
+    if (authStore.status === 'pending' && to.path !== '/pending-approval') {
+      return next({ path: '/pending-approval' });
     }
 
-    if (to.name === '/') {
-      return next({ name: '/dashboard' });
+    if ((noAuth.includes(to.path) && !both.includes(to.path))) {
+      return next({ path: '/' });
     }
 
-    if (noAuth.includes(to.name) && !both.includes(to.name)) {
-      return next({ name: '/dashboard' });
+    if (to.path.startsWith('/admin') || to.path === '/admin-panel') {
+      if (!authStore.isAdmin) {
+        return next({ path: '/' });
+      }
     }
-
-    return next();
   }
+  else {  
+   if (to.path !== '/login' && !noAuth.includes(to.path) && !both.includes(to.path)) {
+      return next({ path: '/login' });
+    }
+  } 
 
-  if (to.name === '/') {
-    return next({ name: '/landing' });
-  }
+  next();
 
-  if (to.name !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
-    return next({ name: '/login' });
-  }
 
-  return next();
+
 });
+
+
 
 
 

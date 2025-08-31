@@ -6,7 +6,7 @@ import { useCenterStore } from '@/stores/centerStore';
 import { useAuthStore } from '@/stores/authStore';
 import { vacationService } from '@/services/vacationService';
 import { calculateRestDelay } from '@/utils/shiftUtils';
-import ConfirmationDialog from '@/components/common/ConfirmationDialog.vue';
+import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
 import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
 
 const props = defineProps({

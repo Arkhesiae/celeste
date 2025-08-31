@@ -1,5 +1,5 @@
 <template>
-  <v-bottom-navigation v-if="smAndDown && isLoggedIn" class="bottom-nav" bg-color="onBackground" grow height="80"
+  <v-bottom-navigation v-if="smAndDown && isLoggedIn" elevation="0" flat class="bottom-nav" bg-color="background" grow height="64"
     style="z-index: 2000 !important;" shift>
     <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' }); hapticsImpact()"
       :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
@@ -16,8 +16,8 @@
     <v-btn :ripple="false" value="demandes" icon @click="router.push({ path: '/exchange/replace' }); hapticsImpact()"
       :class="isActive('/exchange/replace') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/exchange'">
-      <v-badge size="x-small" rounded="lg" color="background" class="font-weight-bold text-subtitle-2" offset-x="-10"
-        offset-y="-5" :content="demandsCount" :model-value="demandsCount !== 0">
+      <v-badge size="x-small" rounded="lg" color="onBackground" class="font-weight-bold text-subtitle-2" offset-x="-12"
+        offset-y="6" :content="demandsCount" :model-value="demandsCount !== 0">
         <v-icon size="20">{{ isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'
         }}</v-icon>
       </v-badge>
@@ -34,8 +34,8 @@
       <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false">
         <div class="d-flex align-center justify-center"
           :class="isActive('/profile/' + authStore.userId) ? 'opacity-100' : 'opacity-50'"
-          style="width: 34px; height: 34px; border-radius: 50%; background-color: rgba(var(--v-theme-background), 1);">
-          <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-onBackground), 1);">
+          style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
+          <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
             <v-img v-if="authStore.avatar" :src="`${API_URL}${authStore.avatar}`" alt="Avatar" />
             <v-icon v-else>mdi-account</v-icon>
           </v-avatar>
@@ -89,18 +89,20 @@ const emit = defineEmits(['toggle-notifications']);
 <style scoped>
 .bottom-nav {
   position: fixed;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border-radius: 24px 24px 0 0;
+  height: calc(64px + env(safe-area-inset-bottom)) !important;
+  padding-bottom: env(safe-area-inset-bottom);
+  /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
+  /* border-radius: 24px 24px 0 0; */
 }
 
 :deep(.v-btn--active) {
-  color: rgba(var(--v-theme-background), 1) !important;
+  color: rgba(var(--v-theme-onBackground), 1) !important;
   background-color: transparent !important;
   font-size: 1rem;
 }
 
 :deep(.v-btn__overlay) {
-  color: rgba(var(--v-theme-background), 1) !important;
+  color: rgba(var(--v-theme-onBackground), 1) !important;
   background-color: transparent !important;
   font-size: 1rem;
 }
@@ -112,7 +114,7 @@ const emit = defineEmits(['toggle-notifications']);
 }
 
 .inactive-item {
-  color: rgba(var(--v-theme-background), .51) !important;
+  color: rgba(var(--v-theme-onBackground), .51) !important;
 
   background-color: transparent !important;
 }

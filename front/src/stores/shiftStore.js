@@ -72,19 +72,19 @@ export const useShiftStore = defineStore('shift', () => {
       dateKey = entry.date.split('T')[0];
     }
 
-    const { date, shift, teamObject, isSubstitution, substitutionType, initialShift, substitutionHistory } = entry;
+    const { date, shift, teamObject, isSubstitution, substitutionType, initialShift, substitutionHistory, isOff } = entry;
 
     let start = null;
     let end = null;
-    let startTime = shift?.default?.startTime ? shift?.default?.startTime : shift?.startTime;
-    let endTime = shift?.default?.endTime ? shift?.default?.endTime : shift?.endTime;
+    let startTime = shift?.default?.startTime ;
+    let endTime = shift?.default?.endTime ;
     if (shift && shift.type !== 'rest') {
       if (!date || !shift || !startTime || !endTime ) {
         return;
       }
 
-      start = parseShiftDateTime(date, startTime, shift.endsNextDay);
-      end = parseShiftDateTime(date, endTime, shift.endsNextDay);
+      start = parseShiftDateTime(date, startTime, shift.default.endsNextDay);
+      end = parseShiftDateTime(date, endTime, shift.default.endsNextDay);
     }
 
     const newValue = {
@@ -95,6 +95,7 @@ export const useShiftStore = defineStore('shift', () => {
       isSubstitution: isSubstitution || false,
       substitutionType: substitutionType || null,
       initialShift: initialShift || null,
+      isOff: isOff || false,
       substitutionHistory: substitutionHistory || []
     };
 

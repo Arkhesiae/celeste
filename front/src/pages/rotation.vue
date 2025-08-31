@@ -20,10 +20,12 @@
     <v-row class="position-relative">
       <v-col cols="12" md="8">
         <!-- Workshifts List -->
-        <SavedWorkshift v-for="rotation in rotations" :key="rotation._id" :rotation="rotation" :isActive="isRotationActive(rotation)"
+        <SavedRotation v-for="rotation in rotations" :key="rotation._id" :rotation="rotation" :isActive="isRotationActive(rotation)"
           :is-expanded="expandedRotations[rotation._id]" @set-activation-date="handleSetActivationDate"
           @delete="deleteRotation" @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
-          @edit="handleEdit" />
+          @edit="handleEdit" 
+          ></SavedRotation>
+      
 
         <v-row class="mt-8">
           <v-col cols="12" lg="4" sm="4" xs="12" md="12">
@@ -96,12 +98,12 @@
        :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmRemoveActivationDate"
       @update:isDialogVisible="showDateConfirmationDialog = $event"></ConfirmationDialog>
 
-    <AddWorkshift :modelValue="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
+    <AddRotation :modelValue="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
       @rotationEditSubmit="updateRotation" @rotationEditCancel="closeAddDialog" @update:modelValue="closeAddDialog">
-    </AddWorkshift>
+    </AddRotation>
 
-    <ActivateWorkshift :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActivationDate"
-      @update:dialogVisible="showActivateDialog = $event"></ActivateWorkshift>
+    <ActivateRotationDialog :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActivationDate"
+      @update:dialogVisible="showActivateDialog = $event"></ActivateRotationDialog>
   </v-container>
 </template>
 
@@ -115,6 +117,7 @@ import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useDisplay } from "vuetify";
 import { useRouter } from 'vue-router';
 import { toUTCNormalized } from '@/utils';
+import SavedRotation from '@/components/Rotations/Information/SavedRotation.vue';
 
 const { smAndDown } = useDisplay()
 const centerStore = useCenterStore();

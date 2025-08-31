@@ -11,8 +11,6 @@
 </template>
 
 <script setup>
-import { useAuthStore } from "@/stores/authStore.js";
-import { useTheme } from 'vuetify';
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
 import { ref, onMounted } from 'vue';
@@ -21,8 +19,6 @@ const safeAreaTop = ref([]);
 const safeAreaBottom = ref([]);
 
 
-const authStore = useAuthStore();
-const theme = useTheme();
 const { initializeApp } = useAppInitialization();
 
 onMounted(async () => {
@@ -37,7 +33,6 @@ onMounted(async () => {
 async function getSafeAreaAndApply() {
   try {
     await SafeArea.getSafeAreaInsets().then(({ insets }) => {
-      console.log(insets, 'insets');
       let top = insets.top;
       let bottom = insets.bottom;
 

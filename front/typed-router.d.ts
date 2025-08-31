@@ -25,6 +25,7 @@ declare module 'vue-router/auto-routes' {
     '/admin/account-recovery': RouteRecordInfo<'/admin/account-recovery', '/admin/account-recovery', Record<never, never>, Record<never, never>>,
     '/admin/pending-users': RouteRecordInfo<'/admin/pending-users', '/admin/pending-users', Record<never, never>, Record<never, never>>,
     '/admin/rules': RouteRecordInfo<'/admin/rules', '/admin/rules', Record<never, never>, Record<never, never>>,
+    '/admin-panel': RouteRecordInfo<'/admin-panel', '/admin-panel', Record<never, never>, Record<never, never>>,
     '/calendar': RouteRecordInfo<'/calendar', '/calendar', Record<never, never>, Record<never, never>>,
     '/center/[centerId]/teams': RouteRecordInfo<'/center/[centerId]/teams', '/center/:centerId/teams', { centerId: ParamValue<true> }, { centerId: ParamValue<false> }>,
     '/center/centers': RouteRecordInfo<'/center/centers', '/center/centers', Record<never, never>, Record<never, never>>,

@@ -223,7 +223,7 @@ import OccurrencesList from "@/components/Profile/TeamOccurence.vue";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 
-import ConfirmationDialog from '@/components/common/ConfirmationDialog.vue';
+import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
 
 
 const emit = defineEmits(['show-team-change-dialog']);

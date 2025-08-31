@@ -44,7 +44,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import DemandCard from '@/components/Remplacer/DemandCard.vue';
+import DemandCard from '@/components/Substitutions/DemandCards/DemandCard.vue';
 import { useDisplay } from 'vuetify';
 
 const { smAndDown } = useDisplay();

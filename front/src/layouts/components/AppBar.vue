@@ -84,7 +84,7 @@ import { useNotificationStore } from '../../stores/notificationStore';
 import { useTicketStore } from '../../stores/ticketStore';
 
 // Components
-import NotificationsDialog from "@/components/NotificationsDialog.vue";
+import NotificationsDialog from "@/components/Unused/NotificationsDialog.vue";
 import AppBarTitle from './AppBar/AppBarTitle.vue';
 import ThemeSwitch from './AppBar/ThemeSwitch.vue';
 import AdminSection from './AppBar/AdminSection.vue';

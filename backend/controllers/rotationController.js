@@ -70,9 +70,9 @@ const registerShift = async (shift, order, newRotation) => {
     }
 
     let points
-    let endsNextDay = false;
-    let startTime = shift.default.startTime || shift.startTime;
-    let endTime = shift.default.endTime || shift.endTime;
+    let endsNextDay = shift.default.endsNextDay;
+    let startTime = shift.default.startTime;
+    let endTime = shift.default.endTime;
 
     if (shift.type === 'rest') {
         points = 0;
@@ -81,13 +81,14 @@ const registerShift = async (shift, order, newRotation) => {
             throw new Error('Le jour de travail doit avoir un début et une fin');
         }
         const workDuration = computeWorkDuration(startTime, endTime);
-        endsNextDay = workDuration.endsNextDay;
+   
         points = workDuration.points;
     }
 
     const newShift = new Shift({
         name: shift.name,
         order: order,
+        optional: shift.optional,
         default: { 
             startTime:  startTime,
             endTime: endTime,
@@ -131,7 +132,7 @@ const registerVariation = async (variant, shift) => {
         startTime: variant.startTime,
         endTime: variant.endTime,
         points: points,
-        endsNextDay: endsNextDay
+        endsNextDay: variant.endsNextDay
     });
 
     await newVariation.save();
@@ -157,6 +158,7 @@ const saveRotation = async (req, res) => {
 
         const shifts = rotation.days;
 
+        console.log("shifts", shifts);
         for (const day of shifts) {
             const order = shifts.indexOf(day) + 1;
             const shift = await registerShift(day, order, newRotation);
@@ -586,17 +588,18 @@ const updateDayInRotation = async (req, res) => {
         console.log("updatedDay", updatedDay);
 
         if (updatedDay.type !== 'rest') {
-            if (!updatedDay.startTime || !updatedDay.endTime) {
+            if (!updatedDay.default.startTime || !updatedDay.default.endTime) {
                 throw new Error('Le jour de travail doit avoir un début et une fin');
             }
-            const { points } = computeWorkDuration(updatedDay.startTime, updatedDay.endTime);
+            const { points } = computeWorkDuration(updatedDay.default.startTime, updatedDay.default.endTime);
 
-            shift.name = updatedDay.name;
-            shift.optional = updatedDay.optional;
-            shift.default.startTime = updatedDay.startTime;
-            shift.default.endTime = updatedDay.endTime;
-            shift.default.endsNextDay = updatedDay.endsNextDay;
+            shift.default = updatedDay.default;
             shift.default.points = points;
+            shift.type = updatedDay.type;
+            shift.optional = updatedDay.optional;
+            shift.name = updatedDay.name;
+            shift.order = updatedDay.order;
+        
             shift.variations = [];
 
 
@@ -611,7 +614,7 @@ const updateDayInRotation = async (req, res) => {
                     }
                     const { points } = computeWorkDuration(updatedVariation.startTime, updatedVariation.endTime);
 
-
+                    variation.name = updatedVariation.name;
                     variation.startTime = updatedVariation.startTime;
                     variation.endTime = updatedVariation.endTime;
                     variation.endsNextDay = updatedVariation.endsNextDay;
@@ -661,24 +664,12 @@ const duplicateRotation = async (req, res) => {
     try {
 
         const rotation = await Rotation.findById(id)
- 
-        let format = 'new';
-        if (rotation.days.length > 0) {
-            const firstDay = rotation.days[0];
-            // Vérifier si les days sont déjà populés en testant si c'est un ObjectId ou un objet Shift
-            if (typeof firstDay === 'string' || firstDay.constructor.name === 'ObjectId') {
-                // Les days ne sont pas populés, on les populate
-                await rotation.populate({
-                    path: 'days',
-                    populate: {
-                        path: 'variations'
-                    }
-                });
-            } else {
-                format = 'legacy';
+        .populate({
+            path: 'days',
+            populate: {
+                path: 'variations'
             }
-            // Si c'est déjà un objet avec des propriétés de Shift, pas besoin de populate
-        }
+        });
    
 
         if (!rotation) {
@@ -697,7 +688,7 @@ const duplicateRotation = async (req, res) => {
 
 
         for (const day of rotation.days) {
-            const dayCopy = day.toObject()
+          
             // Créer une copie du shift
             if (!day.order) {
                 day.order = rotation.days.indexOf(day) + 1;
@@ -709,19 +700,19 @@ const duplicateRotation = async (req, res) => {
                 order: day.order,
                 optional: day.optional ? day.optional : false,
                 default: {
-                    startTime: day.default.startTime ? day.default.startTime : dayCopy.startTime,
-                    endTime: day.default.endTime ? day.default.endTime : dayCopy.endTime,
-                    points: day.default.points || day.defaultPoints || 0,
-                    endsNextDay: day.default.endsNextDay ? day.default.endsNextDay : day.endsNextDay
+                    startTime: day.default.startTime || null,
+                    endTime: day.default.endTime || null,
+                    points: day.default.points || 0,
+                    endsNextDay: day.default.endsNextDay || false
                 },
                 type: day.type
             }
 
             const existingShift = await Shift.findById(day._id);
        
-            if (!existingShift && format === 'legacy') {
-                shiftData._id = day._id;
-            }
+            // if (!existingShift && format === 'legacy') {
+            //     shiftData._id = day._id;
+            // }
 
 
             const newShift = new Shift(shiftData);
@@ -729,19 +720,16 @@ const duplicateRotation = async (req, res) => {
             duplicatedRotation.days.push(newShift._id);
             // Dupliquer les variations si elles existent
 
-            let variantKey = 'variants';
-            if (format === 'new') {
-                variantKey = 'variations';
-            }
+           
 
 
-            if (dayCopy[variantKey] && dayCopy[variantKey].length > 0) {
-                for (const variant of dayCopy[variantKey]) {
+            if (day.variations && day.variations.length > 0) {
+                for (const variant of day.variations) {
                     const newVariation = new Variation({
                         name: variant.name,
                         startTime: variant.startTime,
                         endTime: variant.endTime,
-                        points: variant.points || variant.defaultPoints || 0,
+                        points: variant.points,
                         endsNextDay: variant.endsNextDay
                     });
 

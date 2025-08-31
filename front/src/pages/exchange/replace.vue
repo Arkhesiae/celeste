@@ -188,9 +188,9 @@ import { useUserStore } from "@/stores/userStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 import { toUTCNormalized } from "@/utils.js";
 import { useDisplay } from "vuetify";
-import DemandCard from "@/components/Remplacer/DemandCard.vue";
+import DemandCard from "@/components/Substitutions/DemandCards/DemandCard.vue";
 import ListHeader from "@/components/common/ListHeader.vue";
-import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
+import AddSubstitutionForm from "@/components/Substitutions/AddSubstitutionForm.vue";
 import RulesDialog from "@/components/Dialogs/RulesDialog.vue";
 import { useRotationStore } from "@/stores/rotationStore.js";
 

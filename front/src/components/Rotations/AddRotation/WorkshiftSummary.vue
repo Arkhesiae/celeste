@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useDisplay } from 'vuetify';
-import DayDetail from '../DayDetail.vue';
+import DayDetail from '../Common/DayDetail.vue';
 
 const props = defineProps({
   days: {
@@ -67,13 +67,7 @@ const updateDay = (day) => {
   <div class="workshift-summary" >
     <v-expand-transition>
       <div v-if="isExpanded" :style="smAndDown ? '' : 'max-height: 400px; overflow-y: auto;  overflow-x: hidden '" class="hide-scrollbar">
-        <v-row  class="px-2 py-0">
-          <v-col
-            v-for="(day, index) in days"
-            :key="index"
-          cols="12"
-            class=" my-0 mx-0 pa-1"
-          >
+        <div v-for="(day, index) in days" :key="index">
             <v-card
               height="64px" 
               class="day-card pa-0 d-flex "
@@ -85,6 +79,7 @@ const updateDay = (day) => {
                 <div class="d-flex align-center">
                 <div class="d-flex flex-column justify-center align-start ">
                   <div class="d-flex align-center ga-3">
+                  <div class="text-caption opacity-50 font-weight-medium">{{ day.order }}</div>
                   <div class="text-subtitle-1 font-weight-medium">{{ day.name }}</div>
                   <v-chip
                     v-if="day.optional"
@@ -100,8 +95,8 @@ const updateDay = (day) => {
                   </div>
                    
                   </v-chip>
-                  </div>
-                  <v-card-subtitle v-if="day.type !== 'rest'">{{ day?.default?.startTime ? day.default.startTime : day.startTime || '--:--' }} - {{ day?.default?.endTime ? day.default.endTime : day.endTime || '--:--' }}<span v-if="day?.default?.endsNextDay || day?.endsNextDay" class="ml-1 0"
+                    </div>
+                    <v-card-subtitle v-if="day.type !== 'rest'">{{ day?.default?.startTime || '--:--' }} - {{ day?.default?.endTime || '--:--' }}<span v-if="day?.default?.endsNextDay" class="ml-1 0"
                     style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
 </v-card-subtitle>
                 </div>
@@ -135,8 +130,8 @@ const updateDay = (day) => {
         
               </v-card-item>
             </v-card>
-          </v-col>
-        </v-row>
+          
+        </div>
       </div>
     </v-expand-transition>
 
@@ -152,7 +147,6 @@ const updateDay = (day) => {
         :day="selectedDay"
         :is-mobile="smAndDown"
         :deletable="true"
-        :variants="variants"
         @close="showDetailsDialog = false"
         @onDelete="handleDelete"
         @onEdit="handleEdit"

@@ -17,10 +17,10 @@
  
         </div>
         </v-alert> 
-    <v-row class="mt-4">
+    <v-row class="mt-16">
       <!-- Section Calendrier --> 
 
-      <v-col cols="12" lg="8" class="mt-2">
+      <v-col cols="12" lg="8" class="">
         <CalendarHeader :currentMonth="selectedMonth" :currentYear="selectedYear"
           @update:currentMonth="handleMonthUpdate" @update:currentYear="handleYearUpdate"></CalendarHeader>
 
@@ -125,9 +125,9 @@ import CalendarHeader from "@/components/Calendar/CalendarHeader.vue";
 import CalendarDesktop from "@/components/Calendar/CalendarDesktop.vue";
 import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
 
-import AddSubstitutionForm from "@/components/Dialogs/AddSubstitutionForm.vue";
+import AddSubstitutionForm from "@/components/Substitutions/AddSubstitutionForm.vue";
 import UnifiedDrawer from "@/components/Calendar/Drawers/UnifiedDrawer.vue";
-import ConfirmationDialog from "@/components/common/ConfirmationDialog.vue";
+import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog.vue";
 
 /** Constantes */
 const CALENDAR_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];

@@ -189,8 +189,7 @@
                   Vous êtes sur une alpha du site.
                 </div>
                 <div>
-                  Certaines fonctionnalités ne sont pas encore disponibles car nécissitant davantage de tests. Veuillez
-                  nous excuser pour la gêne occasionnée et nous vous remercions pour votre compréhension.
+                  Certaines fonctionnalités ne sont pas encore disponibles. Nousxw w vous remercions pour votre compréhension.
                 </div>
               </v-card-text>
               <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
@@ -708,9 +707,6 @@ img.logo-xs {
 import { useAuthStore } from "@/stores/authStore.js";
 import { ref, computed, onMounted, watch } from 'vue';
 import { useDate } from 'vuetify';
-import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
-import PointsCard from "@/components/Profile/PointsCard.vue";
-
 import { useDisplay, useTheme } from "vuetify";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
@@ -718,9 +714,6 @@ import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useCalendar } from '@/composables/useCalendar';
 // import { vacationService } from "@/services/vacationService.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
-import DemandCard from '@/components/OwnDemandCard.vue';
-import OwnDemandCard from "@/components/OwnDemandCard.vue";
-import TransferDialog from '@/components/Profile/TransferDialog.vue';
 import { useRouter } from 'vue-router';
 import { useShiftStore } from "@/stores/shiftStore.js";
 import { toUTCNormalized } from "@/utils/toUTCNormalized";

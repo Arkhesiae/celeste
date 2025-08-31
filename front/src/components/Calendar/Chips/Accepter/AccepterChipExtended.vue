@@ -46,8 +46,8 @@ const userName = computed(() => {
       color="background"
       variant="flat"
       size="x-small"
-      style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-      class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+      style=" opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
+      class="text-caption font-weight-bold px-2 overflow-visible"
     >
     <div class="mr-2">
       <v-icon color="error"  v-if="findAcceptedAsAccepter.length > 1">mdi-alert-circle-outline</v-icon>

@@ -1,24 +1,8 @@
 <template>
   <!-- <GeneralDialog v-model="localDialogVisible" title="Ajouter une vacation" :description="mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'"  /> -->
-  <v-dialog v-model="localDialogVisible" :fullscreen="xs" max-width="600" style="z-index: 3100 !important;">
-    <v-card rounded="xl" color="surfaceContainer">
-      <v-card-item class="pa-6  mb-4">
-        <v-card-title class="">
-          <div class="text-h6 font-weight-medium">{{ mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'
-          }}
-          </div>
-        </v-card-title>
-        <v-card-subtitle class="text-medium-emphasis">
-          <span v-if="currentStep === 1">{{ mode === 'edit' ? 'Choisissez le type d\'horaires pour cette vacation' :
-            'Choisissez le type d\'horaires pour cette vacation' }}</span>
-          <span v-else>{{ mode === 'edit' ? 'Modifiez les horaires et les points de cette vacation' : 'Configurez les horaires et les points pour cette vacation' }}</span>
-        </v-card-subtitle>
-        <template #append>
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
-        </template>
-      </v-card-item>
 
-      <!-- Étape 1: Choix du type d'horaires -->
+  <GenericDialog v-model="localDialogVisible" title="Ajouter une vacation" :description="dialogMode === 'add' ? 'Ajouter une vacation' : 'Modifier une vacation'" @close="close" @update:modelValue="localDialogVisible = $event" >
+    <template #content>
       <v-fade-transition mode="out-in">
       <v-card-text v-if="currentStep === 1" class="pa-6 pt-0">
         <v-card-title class="text-subtitle-1 font-weight-medium pa-0 mb-4">Type d'horaires</v-card-title>
@@ -66,11 +50,11 @@
                 <v-card-title class="text-subtitle-1 text-caption ma-0  pa-0">{{ hourType === 'variable' ? 'Amplitude totale' : 'Amplitude' }}</v-card-title>
                 <div class="d-flex align-center flex-wrap ga-1">
                   <span v-if="hourType === 'variable'" class="text-body-1 font-weight-bold">{{ earliestStart }}</span>
-                  <span v-else class="text-body-1 font-weight-bold">{{ newDay.startTime }}</span>
+                  <span v-else class="text-body-1 font-weight-bold">{{ newDay.default.startTime }}</span>
 
                   <span class="mx-1">-</span>
                   <span v-if="hourType === 'variable'" class="text-body-1 font-weight-bold">{{ latestEnd }}</span>
-                  <span v-else class="text-body-1 font-weight-bold">{{ newDay.endTime }}</span>
+                  <span v-else class="text-body-1 font-weight-bold">{{ newDay.default.endTime }}</span>
                   <span v-if="endsNextDay(null)" class="ml-1 0"
                     style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
 
@@ -97,15 +81,15 @@
              
                   <v-chip size="small" class="m-2 px-4" rounded="lg" @click="openTimePicker('startTime')"
                     append-icon="mdi-menu-down">
-                    <span v-if="!newDay.startTime">Début</span>
-                    <span v-if="!xs && newDay.startTime">Début à</span>
-                    <span v-if="newDay.startTime" class="ml-1">{{ newDay.startTime }}</span>
+                    <span v-if="!newDay.default.startTime">Début</span>
+                    <span v-if="!xs && newDay.default.startTime">Début à</span>
+                    <span v-if="newDay.default.startTime" class="ml-1">{{ newDay.default.startTime }}</span>
                   </v-chip>
                   <span class="">-</span>
                   <v-chip size="small" class="m-2 px-4" rounded="lg" @click="openTimePicker('endTime')" append-icon="mdi-menu-down">
-                    <span v-if="!newDay.endTime">Fin</span>
-                    <span v-if="!xs && newDay.endTime">Fin à</span>
-                    <span v-if="newDay.endTime" class="ml-1">{{ newDay.endTime }}</span>
+                    <span v-if="!newDay.default.endTime">Fin</span>
+                    <span v-if="!xs && newDay.default.endTime">Fin à</span>
+                    <span v-if="newDay.default.endTime" class="ml-1">{{ newDay.default.endTime }}</span>
                     <span v-if="endsNextDay(null)" class="ml-1"
                       style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
                   </v-chip>
@@ -165,9 +149,11 @@
 
       </v-card-text>
     </v-fade-transition>
-
-      <!-- Boutons de navigation -->
-      <div class="pa-6 d-flex justify-space-between">
+    </template>
+    <template #actions></template>
+    <template #footer>
+        <!-- Boutons de navigation -->
+        <div class="pa-6 d-flex justify-space-between">
         <v-btn v-if="currentStep === 2" color="primary" variant="text" rounded="xl" prepend-icon="mdi-arrow-left"
           @click="currentStep = 1">
           Retour
@@ -181,11 +167,36 @@
 
         <v-btn v-if="currentStep === 2" color="primary" variant="text" rounded="xl" @click="submit"
           :disabled="!isValid">
-          {{ mode === 'edit' ? 'Modifier' : 'Ajouter' }}
+          {{ dialogMode === 'edit' ? 'Modifier' : 'Ajouter' }}
         </v-btn>
       </div>
+    </template>
+  </GenericDialog>
+
+  <!-- <v-dialog v-model="localDialogVisible" :fullscreen="xs" max-width="600" style="z-index: 3100 !important;">
+    <v-card rounded="xl" color="surfaceContainer">
+      <v-card-item class="pa-6  mb-4">
+        <v-card-title class="">
+          <div class="text-h6 font-weight-medium">{{ mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'
+          }}
+          </div>
+        </v-card-title>
+        <v-card-subtitle class="text-medium-emphasis">
+          <span v-if="currentStep === 1">{{ mode === 'edit' ? 'Choisissez le type d\'horaires pour cette vacation' :
+            'Choisissez le type d\'horaires pour cette vacation' }}</span>
+          <span v-else>{{ mode === 'edit' ? 'Modifiez les horaires et les points de cette vacation' : 'Configurez les horaires et les points pour cette vacation' }}</span>
+        </v-card-subtitle>
+        <template #append>
+          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+        </template>
+      </v-card-item>
+
+      <!-- Étape 1: Choix du type d'horaires -->
+      
+
+<!--     
     </v-card>
-  </v-dialog>
+  </v-dialog> --> 
 
   <TimePickerDialog style="z-index: 3200 !important;" v-model="timePickerDialog.open" :type="timePickerDialog.type"
     :time="timePickerDialog.time" @update:time="(value) => timePickerDialog.time = value" @save="saveTimePicker"
@@ -218,7 +229,7 @@
 import { ref, computed, watch } from 'vue';
 import { useDisplay } from 'vuetify';
 import { VCard } from 'vuetify/components';
-import TimePickerDialog from './TimePicker.vue';
+
 
 const { smAndDown, xs } = useDisplay();
 
@@ -248,6 +259,7 @@ const props = defineProps({
   }
 });
 
+const dialogMode = ref('add');
 const emit = defineEmits(['onSubmit', 'update:modelValue']);
 
 const localDialogVisible = computed({
@@ -261,9 +273,12 @@ const hourType = ref('fixed');
 
 const newDay = ref({
   name: 'J' + props.dayNumber,
-  startTime: '',
-  endTime: '',
-  defaultPoints: 0,
+  default: {
+    startTime: '',
+    endTime: '',
+    endsNextDay: false,
+    points: 0
+  },
   variations: [],
   type: 'work',
   optional: false
@@ -311,35 +326,25 @@ const latestEnd = computed(() => {
 
 // Initialiser les données si on est en mode édition
 watch(() => props.day, (newValue) => {
-  console.log("newValue", newValue?.variations);
-  if (props.mode === 'edit' && newValue) {
+  if (newValue) {
+    dialogMode.value = 'edit';
+    console.log("newValue", newValue);
     newDay.value = { ...newValue };
-    newDay.value.startTime = newValue.default?.startTime || newValue.startTime;
-    newDay.value.endTime = newValue.default?.endTime || newValue.endTime;
-    newDay.value.defaultPoints = newValue.default?.points || newValue.defaultPoints;
-    newDay.value.endsNextDay = newValue.default?.endsNextDay || newValue.endsNextDay;
-    newDay.value.optional = newValue.optional;
-    if (newValue.variations?.length > 0) {
-      newDay.value.variations = newValue.variations;
-    } else if (newValue.variants?.length > 0) {
-      newDay.value.variations = newValue.variants;
-    } else {
-      newDay.value.variations = [];
-    }
+    console.log("newDay", newDay.value);
 
-    newDay.value.type = newValue.type;
-    newDay.value.name = newValue.name;
-
-    console.log(newDay)
     // Déterminer le type d'heures basé sur les variants existants
     hourType.value =  newValue.variations?.length > 0 || newValue.variants?.length > 0 ? 'variable' : 'fixed';
     currentStep.value = 2; // Aller directement à l'étape 2 en mode édition
-  } else if (props.mode === 'add') {
+  } else {
+    dialogMode.value = 'add';
     newDay.value = {
       name: 'J' + props.dayNumber,
-      startTime: '',
-      endTime: '',
-      defaultPoints: 0,
+      default: {
+        startTime: '',
+        endTime: '',
+        endsNextDay: false,
+        points: 0
+      },
       variations: [],
       type: 'work',
       optional: false
@@ -350,16 +355,19 @@ watch(() => props.day, (newValue) => {
 }, { immediate: true });
 
 const reset = () => {
-  if (props.mode === 'edit' && props.day) {
+  if (dialogMode.value === 'edit' && props.day) {
     newDay.value = { ...props.day };
     hourType.value = props.day.variations?.length > 0 || props.day.variants?.length > 0 ? 'variable' : 'fixed';
     currentStep.value = 2;
   } else {
     newDay.value = {
       name: 'J' + props.dayNumber,
-      startTime: '',
-      endTime: '',
-      defaultPoints: 0,
+      default: {
+        startTime: '',
+        endTime: '',
+        endsNextDay: false,
+        points: 0
+      },
       variations: [],
       type: 'work',
       optional: false
@@ -400,7 +408,7 @@ const closeTimePicker = () => {
 const saveTimePicker = () => {
   const { type, time, variantIndex } = timePickerDialog.value;
   if (variantIndex === null) {
-    newDay.value[type] = time;
+    newDay.value.default[type] = time;
   } else {
     newDay.value.variations[variantIndex][type] = time;
   }
@@ -414,7 +422,8 @@ const addVariant = () => {
       name: nextVariantName,
       startTime: '',
       endTime: '',
-      defaultPoints: 0
+      endsNextDay: false,
+      points: 0
     });
   }
 };
@@ -440,7 +449,7 @@ const checkEndsNextDay = (start, end) => {
 // Computed pour vérifier si une vacation spécifique se termine le lendemain
 const endsNextDay = (variantIndex = null) => {
   if (variantIndex === null && hourType.value === 'fixed') {
-    return checkEndsNextDay(newDay.value.startTime, newDay.value.endTime);
+    return checkEndsNextDay(newDay.value.default.startTime, newDay.value.default.endTime);
   }
 
   if (variantIndex === null && hourType.value === 'variable') {
@@ -470,18 +479,15 @@ const isValid = computed(() => {
   if (currentStep.value === 1) {
     return !!hourType.value;
   }
-
   if (newDay.value.name.length === 0) {
     return false;
   }
-
   // Étape 2 : vérifier les horaires
   if (hourType.value === 'fixed') {
-    if (!newDay.value.startTime || !newDay.value.endTime) {
+    if (!newDay.value.default.startTime || !newDay.value.default.endTime) {
       return false;
     }
   }
-
   // Si heures variables, vérifier les horaires des variantes
   if (hourType.value === 'variable') {
     return (newDay.value.variations.every(variant =>
@@ -499,7 +505,6 @@ const submit = () => {
     newDay.value.default = {
       startTime: earliestStart.value,
       endTime: latestEnd.value,
-      endsNextDay: endsNextDay()
     }
     newDay.value.variations = newDay.value.variations.map(variation => ({
       ...variation,
@@ -507,14 +512,7 @@ const submit = () => {
     }));
   }
 
-  newDay.value.default = {
-      startTime: newDay.value.startTime,
-      endTime: newDay.value.endTime,
-      endsNextDay: endsNextDay()
-    }
-
-  newDay.value.endsNextDay = endsNextDay();
-
+  newDay.value.default.endsNextDay = endsNextDay();
   emit('onSubmit', { ...newDay.value });
   reset();
   localDialogVisible.value = false;

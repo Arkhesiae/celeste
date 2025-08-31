@@ -38,8 +38,8 @@
           <span class="text-body-2" :style="isWorkDay(day.date) && !inPast(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'">
             {{ day.date.getUTCDate() }}
           </span>
-          <span class="text-caption position-absolute opacity-50" v-if="isWorkDay(day.date)"
-            style="top: 0; right: 0;">{{ getShiftName(day.date) }}</span>
+          <span class="text-caption position-absolute opacity-50" v-if="isWorkDay(day.date) || isOff(day.date)"
+            style="top: 0; right: 0;" :class="isOff(day.date) ? 'offDay' : ''">{{ getShiftName(day.date) }}</span>
 
           <div style="position: absolute; width: 100%; bottom: 0" class="d-flex justify-center">
 
@@ -104,9 +104,17 @@ const isWorkDay = computed(() => (date) => {
   return shift ? shift.type !== 'rest' : false;
 });
 
+const isOff = computed(() => (date) => {
+  return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff;
+});
 
 
 const getShiftName = (date) => {
+  if (vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff) {
+    
+      return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.initialShift?.name;
+  } 
+
   const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift
   return shift ? shift.name : '';
 };
@@ -118,9 +126,17 @@ const inPast = (date) => {
 };
 
 
+
 </script>
 
 <style scoped>
+.offDay {
+  color: rgb(var(--v-theme-error)) !important;
+  opacity: 0.5 !important;
+  
+}
+
+
 .day-container {
   width: calc(100% / 7);
 }
@@ -139,6 +155,8 @@ const inPast = (date) => {
 .selected {
   background: rgba(var(--v-theme-surface), 0.5) !important;
 }
+
+
 
 .today-center-highlight {
   border: 1px solid rgba(var(--v-theme-surfaceContainerHighest), 0.92) !important;

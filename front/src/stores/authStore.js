@@ -1,5 +1,5 @@
 import {defineStore} from 'pinia';
-import {ref} from 'vue';
+import {ref, computed} from 'vue';
 import {authService} from '@/services/authService';
 import {jwtDecode} from "jwt-decode";
 import { userService } from '@/services/userService';
@@ -30,7 +30,7 @@ export const useAuthStore = defineStore('auth', () => {
   const status = ref(''); // Ajout du statut de l'utilisateur
 
   // Getters
-  const isTokenExpired = () => {
+  const isTokenExpired = computed(() => {
     if (!accessToken.value) return true;
     try {
       const decodedToken = jwtDecode(accessToken.value);
@@ -39,9 +39,9 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       return true;
     }
-  };
+  });
 
-  const isTokenExpiringSoon = () => {
+  const isTokenExpiringSoon = computed(() => {
     if (!accessToken.value) return true;
     try {
       const decodedToken = jwtDecode(accessToken.value);
@@ -50,7 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
     } catch {
       return true;
     }
-  };
+  });
 
   // Actions
   /**
@@ -58,25 +58,59 @@ export const useAuthStore = defineStore('auth', () => {
    */
   const loadFromLocalStorage = async () => {
     try {
-      console.log("loadFromLocalStorage");
       const userData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    
+      
+      console.log("User data loaded from localStorage");
+      console.log(userData?.accessToken);
+
       if (userData?.accessToken) {
         setUser(userData);
-        await validateAccessToken();
-
+        isLoggedIn.value = await validateAccessToken();
+    
+        console.log("Token validated");
+        return true;
       }
+
     } catch (err) {
-      console.error('Erreur lors du chargement des données:', err);
+      // console.error('Erreur lors du chargement des données:', err.message);
       logOut();
+      throw err;
     } 
   };
+
+  /**
+   * Valide le token d'accès.
+   * @returns {Promise<boolean>} True si le token est valide.
+   */
+  const validateAccessToken = async () => {
+    try {
+       if (!accessToken.value) {
+         logOut();
+         throw new Error('Aucun token d\'accès trouvé.');
+       }
+ 
+       if (isTokenExpired.value) {
+         logOut();
+         throw new Error('Le token d\'accès a expiré.');
+       }
+ 
+       if (isTokenExpiringSoon.value) {
+         await refreshToken();
+       }
+       
+       return true;
+     } catch (err) {
+      //  console.error({message : 'Échec de la validation du token:', err});
+       logOut();
+       throw err;
+     }
+   };
+
 
   /**
    * Sauvegarde les données dans le localStorage.
    */
   const saveToLocalStorage = (data) => {
-    console.log("saveToLocalStorage");
     try {
       const dataToSave = {
         name: data.name,
@@ -92,6 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
         avatar: data.avatar,
         status: data.status
       } 
+  
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
     } catch (err) {
       console.error('Erreur lors de la sauvegarde des données:', err);
@@ -142,33 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
   
   };
 
-  /**
-   * Valide le token d'accès.
-   * @returns {Promise<boolean>} True si le token est valide.
-   */
-  const validateAccessToken = async () => {
-   try {
-      if (!accessToken.value) {
-        logOut();
-        throw new Error('Aucun token d\'accès trouvé.');
-      }
 
-      if (isTokenExpired()) {
-        logOut();
-        throw new Error('Le token d\'accès a expiré.');
-      }
-
-      if (isTokenExpiringSoon()) {
-        await refreshToken();
-      }
-      isLoggedIn.value = true;
-      return true;
-    } catch (err) {
-      console.error('Échec de la validation du token:', err.message);
-      logOut();
-      throw err;
-    }
-  };
 
   /**
    * Connecte un utilisateur.

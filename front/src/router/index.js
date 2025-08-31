@@ -95,7 +95,7 @@ router.beforeEach(async (to, from, next) => {
       return next({ path: '/pending-approval' });
     }
 
-    if ((noAuth.includes(to.path) && !both.includes(to.path))) {
+    if ((noAuth.includes(to.name) && !both.includes(to.name))) {
       return next({ path: '/' });
     }
 
@@ -105,12 +105,16 @@ router.beforeEach(async (to, from, next) => {
       }
     }
   }
+
+
   else {  
-   if (to.path !== '/login' && !noAuth.includes(to.path) && !both.includes(to.path)) {
+    console.log(to.name)
+   if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ path: '/login' });
     }
   } 
 
+  console.log(to.path)
   next();
 
 

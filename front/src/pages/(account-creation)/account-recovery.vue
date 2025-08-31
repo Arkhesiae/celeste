@@ -178,7 +178,11 @@ async function handleRecovery() {
               </div>
             </v-scroll-y-transition>
             <v-alert  class="mt-4" color="pendingDemand" variant="tonal" rounded="xl" icon="mdi-mail">
-              En cas de forte affluence des demandes de récupération de compte, le service de mail (externe) peut saturer et ne délivre pas correctement les emails, nous sommes en train de résoudre le problème.<b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayer  </b>
+              <span class="text-body-2 pl-0">
+              Nous vous rappelons qu'il est préférable de ne pas pas utiliser l'adresse aviation-civile.gouv.fr.
+              <br/>
+              <b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayer  </b>
+              </span>
             </v-alert>
           </v-col>
           <v-col cols="12" md="6" style="transition: all 0.3s ease-in-out;">

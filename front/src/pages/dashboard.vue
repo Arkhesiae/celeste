@@ -189,7 +189,7 @@
                   Vous êtes sur une alpha du site.
                 </div>
                 <div>
-                  Certaines fonctionnalités ne sont pas encore disponibles. Nousxw w vous remercions pour votre compréhension.
+                  Certaines fonctionnalités ne sont pas encore disponibles. Nous vous remercions pour votre compréhension.
                 </div>
               </v-card-text>
               <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
@@ -329,7 +329,7 @@
 
       <!-- Section Points et Équipe -->
       <v-col cols="12" md="5" xl="4" offset-xl="0" :class="smAndDown ? 'pa-0  mt-16 ' : 'pa-2'">
-        <v-card rounded="xl" elevation="0" class="mb-4 pa-6 " :class="smAndDown ? 'mx-4 ' : 'mx-0'"
+        <v-card v-if="getCenterName?.includes('CRNA Nord')" rounded="xl" elevation="0" class="mb-4 pa-6 " :class="smAndDown ? 'mx-4 ' : 'mx-0'"
           color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium pa-0 ma-0">Recommandations locales</v-card-title>
           <span class="text-subtitle-2  text-medium-emphasis">

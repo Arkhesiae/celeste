@@ -12,7 +12,7 @@
             <div class="d-flex align-center">
               <span :style="{ fontSize: titleFontSize + 'px !important' }" class="font-weight-bold" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ title }} </span>
             </div>
-            <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="text-overline text-medium-emphasis">{{ subtitle }} </span>
+            <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50">{{ subtitle }} </span>
           </div>
          
       
@@ -69,7 +69,7 @@ const titleFontSize = computed(() => {
 })
 
 const subtitleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 10 : 10
+  const baseSize = smAndDown.value ? 10 : 12
   const minSize = smAndDown.value ? 8 : 8
   const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value )
   return scaledSize
@@ -178,7 +178,7 @@ const headerStyle = reactive({
   width: computed(() => headerWidth.value),
   zIndex: '10',
 
-  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-on-surface), 0.1)' : 'none')),
+  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-on-surface), 0.05)' : 'none')),
 
 })
 

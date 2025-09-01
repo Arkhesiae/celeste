@@ -250,8 +250,6 @@ const startAnimation = (target, current, key, duration) => {
 
 const getStats = async () => {
   const response = await statStore.fetchStats();
-  console.log(response);
- 
 }
 
 const setupStatsObserver = async () => {

@@ -23,6 +23,7 @@ const handleExistingAccount = () => {
 <template>
   <v-container class="fill-height">
     <v-row justify="center">
+      <v-col cols="12" md="6">  
     <Transition name="fade">
       <div v-if="showContent">
         <div>
@@ -33,21 +34,22 @@ const handleExistingAccount = () => {
 
               
           <Transition name="slide-up" appear>
-            <div class="option-card" @click="handleExistingAccount">
-              <h2>Compte existant</h2>
-              <p>Je possède déjà un compte et je souhaite le récupérer</p>
+            <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
+              <span class="text-h6 font-weight-bold">Compte Remplacer</span>
+              <span class="text-body-2 text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span>
             </div>
           </Transition>
           <Transition name="slide-up" appear>
-            <div class="option-card" @click="handleNewAccount">
-              <h2>Nouveau compte</h2>
-              <p>Je souhaite créer un nouveau compte</p>
+            <div class="option-card ga-4 pa-6" @click="handleNewAccount">
+              <span class="text-h6 font-weight-bold">Nouveau compte</span>
+              <span class="text-body-2 text-medium-emphasis">Je souhaite créer un nouveau compte</span>
             </div>
           </Transition>
       
         </div>
       </div>
     </Transition>
+  </v-col>
     </v-row>
   </v-container>
 </template>
@@ -77,7 +79,11 @@ h1 {
 .option-card {
   background: rgba(var(--v-theme-surfaceContainer), 1);
   border-radius: 16px;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.005);
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.4s;

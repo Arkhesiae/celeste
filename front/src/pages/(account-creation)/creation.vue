@@ -2,12 +2,13 @@
 
 <v-container  class="d-flex fill-height">
   <v-row justify="center" align-content="center">
+    <v-col cols="12" class="d-flex justify-center align-center" > 
     <v-slide-y-reverse-transition hide-on-leave appear>
       <v-card
         width="100%"
         class="mt-n16 pa-6 pt-10"
-        :color="smAndDown ? 'transparent' : ''"
-        rounded="xl"
+        :color="smAndDown ? 'transparent px-0 ' : ' '"
+        :rounded="smAndDown ? '0' : 'xl'"
         elevation="0"
         style="max-width: 900px;"
       >
@@ -405,6 +406,7 @@
         </v-card-text>
       </v-card>
     </v-navigation-drawer>
+    </v-col>
   </v-row>
   </v-container>
 </template>

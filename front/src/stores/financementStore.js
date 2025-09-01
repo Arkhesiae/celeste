@@ -55,7 +55,7 @@ export const useFundingStore = defineStore('funding', () => {
     {
       nom: 'Développement agent IA',
       description: "Utilisation d'un agent IA",
-      cout: 2,
+      cout: 10,
       periodicite: 'mois',
       icon: 'mdi-robot',
       color: 'success'
@@ -81,15 +81,47 @@ export const useFundingStore = defineStore('funding', () => {
   // Budget evolution
   const budgetEvolution = ref([
     {
-      date: '2025-06-30',
+      date: '2025-04-30',
       montant: 266,
       description: 'Campagne initiale',
       active: true
     },
   ]);
 
-  // Expenses split between two campaigns
+
   const expenses = ref([
+    {
+      date: '2025-06-04',
+      montant: 1.45,
+      description: 'Mise en service Hetzner',
+  
+    },
+    {
+      date: '2025-08-04',
+      montant: 9.10,
+      description: 'Hebergement Juillet-Août',
+    },
+    {
+      date: '2025-05-26',
+      montant: 18.70,
+      description: 'Allocation nom de domaine',
+    },
+    {
+      date: '2025-06-11',
+      montant: 17.59,
+      description: 'Utilisation Cursor AI Juin',
+    },
+    {
+      date: '2025-07-11',
+      montant: 17.12,
+      description: 'Utilisation Cursor AI Juillet',
+    },
+    {
+      date: '2025-08-11',
+      montant: 17.20,
+      description: 'Utilisation Cursor AI Aout',
+    },
+    
    
   ]);
 
@@ -126,8 +158,7 @@ export const useFundingStore = defineStore('funding', () => {
     const sorted = [...campaigns].sort((a, b) => parseDate(b.startDate) - parseDate(a.startDate));
     return sorted.map((c, idx) => {
       const start = parseDate(c.startDate);
-      const end = c.endDate ? parseDate(c.endDate) : null;
-      console.log(start, now, start > now)
+      const end = c.endDate ? parseDate(c.endDate) : null; 
       if (start > now) {
         return { ...c, status: 'a_venir' };
       }
@@ -167,11 +198,17 @@ export const useFundingStore = defineStore('funding', () => {
 
   // Budget used for the current campaign
   const usedBudget = computed(() => {
-    return campaignExpenses.value.reduce((total, expense) => total + Number(expense.montant), 0);
+    let used = campaignExpenses.value.reduce((total, expense) => total + expense.montant, 0)
+    console.log(used)
+    return Math.round(used*100)/100;
   });
 
   // Current budget (remainder of the current campaign)
-  const currentBudget = computed(() => initialBudget.value - usedBudget.value);
+  const currentBudget = computed(() => 
+  {
+    console.log(initialBudget.value, usedBudget.value)
+    return initialBudget.value - usedBudget.value
+  });
 
 
 

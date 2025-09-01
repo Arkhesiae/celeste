@@ -1,9 +1,12 @@
 <template>
   <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainerLow">
-    <h3 class="text-h6 font-weight-medium mb-4" style="font-family: 'Roboto', sans-serif; font-weight: 800 !important ; font-size: 1.2rem;">
+    <div class="d-flex align-center justify-space-between mb-8"> 
+      <span class="text-body-2 font-weight-medium " style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;">
       <v-icon icon="mdi-calendar-month" color="secondary" class="mr-2" size="16" />  
       Coûts Récurrents
-    </h3>
+    </span>
+    </div>
+  
     <v-list class="bg-transparent">
       <v-list-item v-for="(cout, index) in recurringCosts" :key="index" class="mb-2 rounded-lg">
         <div class="d-flex align-center ga-5">
@@ -49,6 +52,7 @@
 
 <script setup>
 import { useFundingStore } from '@/stores/financementStore';
+import { useStatStore } from '@/stores/statStore';
 import { computed } from 'vue';
 
 const costPercentage = computed(()=>(cout, totalAnnualCosts) => {
@@ -60,10 +64,21 @@ const costPercentage = computed(()=>(cout, totalAnnualCosts) => {
 });
 
 const fundingStore = useFundingStore();
+const statStore = useStatStore();
 
 const recurringCosts = computed(() => fundingStore.recurringCosts); 
 const totalAnnualCosts = computed(() => fundingStore.totalAnnualCosts);
-const costPerUser = computed(() => fundingStore.costPerUser);
-const userCount = computed(() => fundingStore.userCount);
+
+const costPerUser = computed(() => Math.round(totalAnnualCosts.value/statStore.totalUsers*100)/100);
+
+const userCount = computed(() => statStore.totalUsers);
+
+const getStats = async () => {
+  const response = await statStore.fetchStats();
+}
+
+onMounted(() => {
+  getStats();
+})
 
 </script> 

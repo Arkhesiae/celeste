@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import OTPVerification from '@/components/OTPVerification.vue'
 import { API_URL, handleResponse } from '@/config/api.js'
 import { useCenterStore } from '@/stores/centerStore'
+import { useDisplay } from 'vuetify'
+const { smAndDown } = useDisplay()
 
 const router = useRouter()
 const step = ref(1)
@@ -162,9 +164,11 @@ async function handleRecovery() {
 </script>
 
 <template>
-  <v-container class="fill-height d-flex justify-center align-center" >
+<v-container class="fill-height d-flex justify-center align-center"  >
    
-      <v-card flat rounded="xl" class="pa-6 smooth-height" width="900px" style="transition: all 0.3s ease-in-out;">
+  <v-row>
+    <v-col cols="12" class="d-flex justify-center align-center" >
+      <v-card flat rounded="xl" class="pa-6 smooth-height" max-width="1200px" :class="smAndDown ? 'bg-transparent px-0' : ''" style="transition: all 0.3s ease-in-out;">
         <v-card-title class="pl-0 text-overline font-weight-bold">CéLESTE</v-card-title>
         <v-row style="transition: all 0.3s ease-in-out;">
           <v-col cols="12" md="6">
@@ -179,7 +183,7 @@ async function handleRecovery() {
             </v-scroll-y-transition>
             <v-alert  class="mt-4" color="pendingDemand" variant="tonal" rounded="xl" icon="mdi-mail">
               <span class="text-body-2 pl-0">
-              Nous vous rappelons qu'il est préférable de ne pas pas utiliser l'adresse aviation-civile.gouv.fr.
+              Nous vous rappelons qu'il est préférable de ne pas utiliser l'adresse aviation-civile.gouv.fr.
               <br/>
               <b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayer  </b>
               </span>
@@ -352,6 +356,9 @@ async function handleRecovery() {
           
       </v-row>
       </v-card>
+    </v-col>
+  </v-row>
+     
     
   </v-container>
 </template>

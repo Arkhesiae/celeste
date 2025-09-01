@@ -232,7 +232,8 @@ const initialCampaignAmount = computed(() => {
 });
 
 const campaignExpenses = computed(() => {
-  return selectedCampaign.value?.expenses?.reduce((total, expense) => total + Number(expense.montant), 0);
+  let totalExpenses = selectedCampaign.value?.expenses?.reduce((total, expense) => total + expense.montant, 0);
+  return Math.round(totalExpenses*100)/100;
 });
 
 const remainingBudget = computed(() => {

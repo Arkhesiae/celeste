@@ -19,7 +19,7 @@
         <!-- Dépenses de la campagne sélectionnée -->
         <tr v-for="(depense, index) in campaignExpenses" :key="index">
           <td v-if="!smAndDown">{{ depense.categorie }}</td>
-          <td :class="smAndDown ? 'text-caption text-medium-emphasis' : ''">{{ depense.nom }}</td>
+          <td :class="smAndDown ? 'text-caption text-medium-emphasis' : ''">{{ depense.description }}</td>
           <td class="text-caption text-medium-emphasis">{{ depense.date }}</td>
           <td align="end" class="font-weight-bold text-remplacement">-{{ depense.montant }}€</td>
         </tr>

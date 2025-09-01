@@ -1,6 +1,12 @@
 <template>
     <v-card rounded="xl" elevation="0" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" class="smooth-shadow pt-16 pb-4 overflow-visible d-flex flex-column" color="transparent" height="100%">
-        <div class="d-flex align-center justify-start mb-4 mt-4">
+        <div class="d-flex align-start flex-column justify-start mb-4 mt-4">
+            <div class="ml-0 mb-2">
+                <h2 v-if="currentCampaign?.status === 'en_cours'" class="text-h5 font-weight-bold">Budget Actuel</h2>
+                <h2 v-else-if="currentCampaign?.status === 'a_venir'" class="text-h5 font-weight-bold">Montant
+                    prévisionnel</h2>
+                <h2 v-else class="text-h5 font-weight-bold">Restant non utilisé</h2>
+            </div>
             <div class="d-flex align-end text-h1 font-weight-bold">
                 <v-slide-y-transition mode="out-in">
                     <span class="text-h1 font-weight-bold mr-2 " :key="remainingBudget" :class="{ 'text-error': remainingBudget < 0 }">{{
@@ -8,12 +14,7 @@
                 </v-slide-y-transition>
                 <span class="text-h5 font-weight-bold opacity-50">€</span>
             </div>
-            <div class="ml-4">
-                <h2 v-if="currentCampaign?.status === 'en_cours'" class="text-h5 font-weight-bold">Budget Actuel</h2>
-                <h2 v-else-if="currentCampaign?.status === 'a_venir'" class="text-h5 font-weight-bold">Montant
-                    prévisionnel</h2>
-                <h2 v-else class="text-h5 font-weight-bold">Restant non utilisé</h2>
-            </div>
+           
         </div>
         <p class="text-medium-emphasis">État du financement et projections</p>
         <!-- Barre de progression -->

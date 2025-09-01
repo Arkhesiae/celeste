@@ -4,7 +4,7 @@
 
   <v-card @click="hasData ? openDialog() : null" style="cursor:pointer;" rounded="xl" elevation="0"
     class="mt-2 smooth-shadow pa-6 d-flex align-center justify-space-between" color="surfaceContainer">
-    <div class="d-flex flex-column">
+    <div class="d-flex flex-column pl-4">
 
       <div v-if="!hasData" class="d-flex ga-2 align-center">
         <span class="text-h6 font-weight-bold">Aucune donnée disponible</span>

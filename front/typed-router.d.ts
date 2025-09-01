@@ -35,6 +35,7 @@ declare module 'vue-router/auto-routes' {
     '/exchange/replace': RouteRecordInfo<'/exchange/replace', '/exchange/replace', Record<never, never>, Record<never, never>>,
     '/exchange/switch': RouteRecordInfo<'/exchange/switch', '/exchange/switch', Record<never, never>, Record<never, never>>,
     '/financement': RouteRecordInfo<'/financement', '/financement', Record<never, never>, Record<never, never>>,
+    '/haptic': RouteRecordInfo<'/haptic', '/haptic', Record<never, never>, Record<never, never>>,
     '/landing': RouteRecordInfo<'/landing', '/landing', Record<never, never>, Record<never, never>>,
     '/login': RouteRecordInfo<'/login', '/login', Record<never, never>, Record<never, never>>,
     '/messages': RouteRecordInfo<'/messages', '/messages', Record<never, never>, Record<never, never>>,

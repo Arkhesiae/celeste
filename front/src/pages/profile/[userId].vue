@@ -61,12 +61,12 @@
 
     <v-row :class="smAndDown ? 'px-4' : 'mt-16'">
       <v-col cols="12" md="4" v-for="item in items" :key="item.id">
-        <v-card v-if="!smAndDown" color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="80"
+        <v-card v-if="!smAndDown" color="surfaceContainer" rounded="xl" class="pa-6 pl-8 cursor-pointer" height="80"
           @click="router.push(item.link)" link flat>
           <div class="d-flex align-center justify-space-between h-100">
             <div class="d-flex align-center ga-2">
-              <v-icon size="16" color="onSurface">{{ item.icon }}</v-icon>
-              <span class="text-onSurface text-h7">{{ item.title }}</span>
+              <v-icon size="16" class="" color="onSurface">{{ item.icon }}</v-icon>
+              <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
             </div>
             <v-icon color="onSurface">mdi-chevron-right</v-icon>
           </div>
@@ -74,8 +74,8 @@
         <div v-else class="px-2 cursor-pointer" @click="router.push(item.link)">
           <div class="d-flex align-center ga-2 justify-space-between mb-6">
           <div class="d-flex align-center ga-2">
-            <v-icon size="16" color="onSurface">{{ item.icon }}</v-icon>
-            <span class="text-onSurface text-h7">{{ item.title }}</span>
+            <!-- <v-icon size="16" color="onSurface">{{ item.icon }}</v-icon> -->
+            <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
           </div>
           <v-icon color="onSurface">mdi-chevron-right</v-icon>
           </div>

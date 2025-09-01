@@ -10,7 +10,11 @@
           subtitle: center.oaci
         })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
           min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
-</template>
+
+        <v-btn v-else-if="isAdmin" icon color="onBackground" variant="text" size="" @click="showAddDialog = true">
+          <v-icon size="32">mdi-plus</v-icon>
+        </v-btn>
+        </template>
 
       </MainTitle>
 
@@ -80,9 +84,9 @@
 
 
 
-    <v-fab v-if="smAndDown && isAdmin" prepend-icon="mdi-file-plus-outline" class="fab" height="60px" rounded="0"
+    <!-- <v-fab v-if="smAndDown && isAdmin" prepend-icon="mdi-file-plus-outline" class="fab" height="60px" rounded="0"
       location="bottom end" text="Tour de service" extended app color="onBackground"
-      @click="showAddDialog = true"></v-fab>
+      @click="showAddDialog = true"></v-fab> -->
 
     <ErrorDialog error-title="Impossible de supprimer ce tour de service" :error-message="errorMessage"
       error-icon="mdi-delete-alert-outline" :isDialogVisible="showErrorDialog"

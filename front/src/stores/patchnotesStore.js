@@ -1,3 +1,4 @@
+
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
@@ -81,6 +82,68 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
       links: [
         { label: 'Documentation', url: 'https://docs.example.com/v2.1.0' },
         { label: 'Guide de migration', url: 'https://docs.example.com/migration' }
+      ]
+    },
+    {
+      id: '0.202509.1',
+      version: 'alpha-202509.1',
+      releaseDate: '01/09/2025',
+      description: 'Nouvelle version avec des améliorations majeures de l\'interface utilisateur et de nouvelles fonctionnalités.',
+      improvements: [
+        {
+          title: 'Ajout de la page admin panel',
+          description: 'Ajout de la page admin panel pour la gestion des utilisateurs et des paramètres.'
+        },
+        {
+          title: 'Ajout de la fonctionnalité "Absences"',
+          description: 'Ajout de la fonctionnalité "Absences" pour la gestion des absences des utilisateurs.'
+        },
+        {
+          title: 'Refactorisation des tours de service',
+          description: 'Refactorisation des tours de service pour s\'adapter au nouveau format de données.'
+        },
+        {
+          title: 'Amélioration de l\'interface du calendrier',
+          description: 'Amélioration de l\'interface du calendrier pour une meilleure lisibilité et une meilleure expérience utilisateur.'
+        },
+        {
+          title: 'Ajout des mails de notifications',
+          description: 'Ajout des mails de notifications'
+        },
+        {
+          title: 'Ajout du panel stats',
+          description: 'Ajout du panel stats sur la page d\'accueil'
+        },
+        {
+          title: 'Préparation des retours haptiques',
+          description: 'Préparation des retours haptiques déploiement Android'
+        }
+     
+
+
+      ],
+      bugFixes: [
+        {
+          title: 'Correction de problèmes de persistence de la connexion',
+          description: 'Réécriture du code pour la gestion des tokens.'
+        },
+        {
+          title: 'Correction d\'erreurs de navigation',
+          description: 'Correction des problèmes de navigation.'
+        }
+      ],
+      technicalNotes: [
+        {
+          title: 'Email validés',
+          description: 'Validation du fonctionnement des emails.'
+        },
+        {
+          title: 'Permutations corrompues',
+          description: 'Certaines permutations ont été corrompues.'
+        }
+      ],
+      links: [
+
       ]
     },
    

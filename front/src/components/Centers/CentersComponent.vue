@@ -222,7 +222,7 @@ const centers = computed(() => centerStore.centers);
 const adminsByCenter = computed(() => centerStore.adminsByCenter);
 const usersCountByCenter = computed(() => centerStore.usersCountByCenter);
 
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = computed(() => authStore.userData.isAdmin);
 const sortBy = ref('');
 const sortDirection = ref('asc');
 

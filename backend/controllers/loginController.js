@@ -28,8 +28,7 @@ const loginController = {
 
         console.log("Se connecte : ", user.name + " " + user.lastName)
 
-        // Réponse avec toutes les informations nécessaires
-        res.json({
+        const userData = {
             name: user.name,
             email: user.email,
             phone: user.personalData?.phoneNumber || '',
@@ -42,12 +41,16 @@ const loginController = {
             avatar: user.avatar,
             status: user.registrationStatus || 'pending',
             accessToken: accessToken
-        });
+        }
+        // Réponse avec toutes les informations nécessaires
+        res.json({userData, accessToken});
     } catch (error) {
         console.error('Erreur lors de la connexion:', error);
         res.status(500).json({ error: 'Une erreur est survenue lors de la connexion' });
     }
     }
 } 
+
+
 
 export default loginController; 

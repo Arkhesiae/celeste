@@ -5,7 +5,7 @@
 
       <MainTitle title="Tours de service" subtitle="Créer, modifier et activer un tour de service">
         <template #actions> 
-        <v-select v-if="authStore.adminType === 'master'" v-model="selectedCenterId" :items="centers" :item-props="center => ({
+        <v-select v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers" :item-props="center => ({
           title: center.name,
           subtitle: center.oaci
         })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
@@ -129,9 +129,9 @@ const authStore = useAuthStore()
 const rotationStore = useRotationStore();
 
 const snackbarStore = useSnackbarStore();
-const selectedCenter = computed(() => authStore.centerId);
+const selectedCenter = computed(() => authStore.userData.centerId);
 const centers = computed(() => centerStore.centers);
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = computed(() => authStore.userData.isAdmin);
 
 const rotations = computed(() => rotationStore.rotations);
 const sortedRotations = computed(() => rotationStore.sortedRotations);
@@ -307,11 +307,11 @@ onMounted(async () => {
     await centerStore.fetchCenters();
 
     // Charger les rotations en fonction du type d'admin
-    if (authStore.adminType === 'master') {
+    if (authStore.userData.adminType === 'master') {
       selectedCenterId.value = null;
     } else {
-      await rotationStore.fetchRotations(authStore.centerId);
-      selectedCenterId.value = authStore.centerId;
+      await rotationStore.fetchRotations(authStore.userData.centerId);
+      selectedCenterId.value = authStore.userData.centerId;
     }
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la récupération des tours de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');

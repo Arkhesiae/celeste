@@ -18,7 +18,7 @@
               <v-icon>mdi-chevron-right</v-icon>
             </v-btn>
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0" @click="showPhoneDialog = true"> 
-              <v-chip :color="authStore.phone ? 'remplacement' : 'error'" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+              <v-chip :color="authStore.userData.phone ? 'remplacement' : 'error'" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-phone</v-icon>
               </v-chip>
               <span class="text-h7">Numéro de téléphone</span>
@@ -26,7 +26,7 @@
             </v-btn>  
 
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"  @click="showBirthDateDialog = true">
-              <v-chip :color="authStore.birthDate ? 'remplacement' : 'error'" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
+              <v-chip :color="authStore.userData.birthDate ? 'remplacement' : 'error'" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-baby</v-icon>
               </v-chip>
               <span class="text-h7">Date de naissance</span>

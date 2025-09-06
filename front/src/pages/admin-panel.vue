@@ -12,7 +12,7 @@
                
               </div>
               <p class="text-body-2 opacity-50 mb-0">
-                Bienvenue {{ authStore.name }}, {{ adminType === 'master' ? 'Administrateur Principal' : 'Administrateur Local' }}
+                Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' : 'Administrateur Local' }}
               </p>
             </div>
             <!-- <v-chip 
@@ -166,11 +166,11 @@ const ticketStore = useTicketStore()
 const { smAndDown } = useDisplay()
 
 // Navigation guard - vérifier les droits d'admin
-if (!authStore.isAdmin) {
+if (!authStore.userData.isAdmin) {
   router.push('/dashboard')
 }
 
-const adminType = computed(() => authStore.adminType)
+const adminType = computed(() => authStore.userData.adminType)
 
 
 // Statistiques
@@ -266,7 +266,7 @@ const mainSections = computed(() => [
         subtitle: adminType.value === 'master' ? 'Gérer les équipes de chaque centre' : 'Gérer les équipes de mon centre',
         icon: 'mdi-account-group',
         iconColor: 'info',
-        path: `/center/${authStore.centerId}/teams`,
+        path: `/center/${authStore.userData.centerId}/teams`,
         requiresMaster: false
       }
     ]
@@ -365,7 +365,7 @@ const quickActions = computed(() => [
     title: 'Gérer les équipes',
     color: 'success',
     icon: 'mdi-office-building',
-    path: `/center/${authStore.centerId}/teams`,
+    path: `/center/${authStore.userData.centerId}/teams`,
     requiresMaster: false
   }
 ])
@@ -379,11 +379,11 @@ const navigateTo = (path) => {
 const loadStats = async () => {
   try {
     // Charger les utilisateurs
-    if (authStore.adminType === 'master') {
+    if (authStore.userData.adminType === 'master') {
       await userStore.fetchUsers()
       await centerStore.fetchCenters()
     } else {
-      await userStore.fetchUsersByCenter(authStore.centerId)
+      await userStore.fetchUsersByCenter(authStore.userData.centerId)
     }
     
     // Charger les tickets

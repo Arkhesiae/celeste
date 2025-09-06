@@ -2,11 +2,13 @@
   <v-card color="transparent" rounded="sm" elevation="0">
     <v-card-item class="pa-0 my-1">
       <v-card-title class="text-body-2 d-flex align-center">
-        <v-icon icon="mdi-calendar" size="small" class="mx-2"></v-icon>
-        <span class="text-medium-emphasis font-weight-bold" style="font-weight: 800;">
+        <div class="d-flex align-center opacity-50">
+        <v-icon icon="mdi-calendar" size="16" class="mx-2 " color="onSurface"></v-icon>
+        </div>
+        <span class="opacity-70 font-weight-bold" style="font-weight: 800;">
           {{ formatDate(demand?.posterShift?.date) }}
         </span>
-        <v-chip v-if="timeSinceCreation" class="ms-2" rounded="pill" size="x-small" variant="tonal">
+        <v-chip v-if="timeSinceCreation && !xs" class="ms-2" rounded="pill" size="x-small" variant="flat" color="surfaceContainerHigh">
           {{ timeSinceCreation }}
         </v-chip>
       </v-card-title>
@@ -22,27 +24,27 @@
               {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
             </span>
 
-      
+
 
           </div>
           <div>
             <div class="d-flex align-center justify-end">
-              <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="surfaceContainerHighest" variant="flat" size="small"
-          rounded="lg">
-          <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
-          <span v-if="!smAndDown && !small">Permutation</span>
-        </v-chip>
-        <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="surfaceContainerHighest" variant="flat"
-          size="small" rounded="lg">
-          <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
-          <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
-          <span v-if="!smAndDown && !small">Hybride</span>
-        </v-chip>
-        <v-chip v-if="demand?.type === 'substitution'" class="type-chip" color="surfaceContainerHighest" variant="flat"
-          size="small" rounded="lg">
-          <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
-          <span v-if="!smAndDown && !small">Remplacement</span>
-        </v-chip>
+              <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="surfaceContainerHighest" variant="flat"
+                size="small" rounded="lg">
+                <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
+                <span v-if="!smAndDown && !small">Permutation</span>
+              </v-chip>
+              <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="surfaceContainerHighest" variant="flat"
+                size="small" rounded="lg">
+                <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
+                <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
+                <span v-if="!smAndDown && !small">Hybride</span>
+              </v-chip>
+              <v-chip v-if="demand?.type === 'substitution'" class="type-chip" color="surfaceContainerHighest"
+                variant="flat" size="small" rounded="lg">
+                <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
+                <span v-if="!smAndDown && !small">Remplacement</span>
+              </v-chip>
 
 
             </div>
@@ -61,8 +63,8 @@
               <v-icon v-if="demand?.acceptedSwitches.length > 0" icon="mdi-tune-variant"></v-icon>
             </v-chip>
           </div>
-          <v-chip v-if="demand?.comment" class=" text-medium-emphasis " size="small" rounded="pill"
-            color="remplacement" variant="flat" @click="showCommentDialog = true" style="cursor: pointer">
+          <v-chip v-if="demand?.comment" class=" text-medium-emphasis " size="small" rounded="pill" color="remplacement"
+            variant="flat" @click="showCommentDialog = true" style="cursor: pointer">
             <v-icon>mdi-comment-text-outline</v-icon>
           </v-chip>
           <v-chip class=" text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
@@ -78,44 +80,56 @@
 
     <v-divider color="primary" opacity="0.01" class="my-0"></v-divider>
 
-    <v-card color="surfaceContainerHigh" variant="flat" class="mb-0 card-shadow card-radius-16" elevation="0"
-      @click="isExpanded = !isExpanded">
-      <v-card-item>
-        <div class="d-flex align-center justify-space-between py-1">
-          <div class="d-flex align-start ">
-            <v-card-title class="pb-0 mb-0">
-              <h2 class="text-h4 font-weight-medium">{{ shift?.name }}</h2>
-            </v-card-title>
-            <div class="d-flex align-start flex-column justify-space-between ml-2">
-              <v-card-subtitle class="py-0">
-                {{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime }}
-              </v-card-subtitle>
-              <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
+   
+      <div class="d-flex align-center bg-surfaceContainer rounded-xl justify-space-between pr-4" @click="isExpanded = !isExpanded">
+        <div class=" pa-4 pl-8 pr-0 flex-shrink-0 position-relative">
+          <div class="d-flex align-center flex-shrink-0   ga-3">
+            <div class="pb-0 mb-0 flex-shrink-0">
+
+              <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;">{{ getShiftName }}</span>
+            </div>
+            <div class="d-flex align-start flex-column justify-space-between">
+              <div>
+                <span class="text-caption font-weight-bold">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime
+                }}</span>
+                <span class="text-caption font-weight-bold opacity-50 ml-1"
+                  style="font-size: 10px !important; top: -2px; position: relative;"
+                  v-if="getShiftEndsNextDay">+1</span>
+              </div>
+              <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;">Dans
+                équipe {{
+                getTeamName }}</div>
 
             </div>
+
+
+
           </div>
 
 
-          <div class="d-flex align-self-start justify-end flex-column ga-2">
-
-            <div v-if="smAndDown || small" class="d-flex align-center ga-2 justify-end">
-              <v-avatar size="24" variant="tonal" class="cursor-pointer" @click.stop="showUserDialog = true">
-                <v-img v-if="getUserById(demand?.posterId)?.avatar"
-                  :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
-                <v-icon size="x-small" v-else>mdi-account</v-icon>
-              </v-avatar>
-              <span class="text-medium-emphasis font-weight-bold text-caption me-2">
-                {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
-              </span>
 
 
+        </div>
 
-            </div>
+
+        <div class="d-flex justify-end flex-shrink-0 flex-column ga-2">
+
+          <div v-if="smAndDown || small" class="d-flex align-center ga-2 justify-end">
+            <v-avatar size="24" variant="tonal" class="cursor-pointer" @click.stop="showUserDialog = true">
+              <v-img v-if="getUserById(demand?.posterId)?.avatar"
+                :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
+              <v-icon size="x-small" v-else>mdi-account</v-icon>
+            </v-avatar>
+            <span class="text-medium-emphasis font-weight-bold text-caption me-2">
+              {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+            </span>
+
+
+
           </div>
         </div>
-      </v-card-item>
-
-    </v-card>
+      </div>
+ 
 
     <v-expand-transition>
       <div v-show="isExpanded">
@@ -137,15 +151,16 @@
               <v-icon>mdi-alert-circle-outline</v-icon>
             </v-chip>
             <div v-else class="d-flex align-center ga-2">
-              <v-tooltip style="z-index: 3001 !important" class="rounded-lg" v-for="limit in demand?.limit" :text="basicRules.find(rule => rule.code === limit)?.text" location="top">
+              <v-tooltip style="z-index: 3001 !important" class="rounded-lg" v-for="limit in demand?.limit"
+                :text="basicRules.find(rule => rule.code === limit)?.text" location="top">
                 <template #activator="{ props }">
                   <v-chip rounded="lg" variant="tonal" color="error" size="small" v-bind="props">
-                    <v-icon class="mr-1" >{{ basicRules.find(rule => rule.code === limit)?.icon }}</v-icon>
-                    {{ basicRules.find(rule => rule.code === limit)?.shortName }}
+                    <v-icon class="mr-1">{{basicRules.find(rule => rule.code === limit)?.icon}}</v-icon>
+                    {{basicRules.find(rule => rule.code === limit)?.shortName}}
                   </v-chip>
                 </template>
               </v-tooltip>
-              
+
             </div>
           </div>
           <!-- <v-chip rounded="lg" variant="tonal"
@@ -169,8 +184,8 @@
               Remplacer
             </v-btn>
             <div v-if="demand?.status === 'open' && (demand?.type === 'hybrid' || demand?.type === 'switch')">
-              <v-btn v-if="demand?.canSwitch" rounded="lg" color="surfaceContainerHigh" size="small" :slim="true" variant="flat"
-                prepend-icon="mdi-swap-horizontal" @click="handleSwap" :loading="loading.accept">
+              <v-btn v-if="demand?.canSwitch" rounded="lg" color="surfaceContainerHigh" size="small" :slim="true"
+                variant="flat" prepend-icon="mdi-swap-horizontal" @click="handleSwap" :loading="loading.accept">
                 Permuter
               </v-btn>
               <v-btn v-else rounded="xl" color="error" size="small" :slim="true" variant="tonal"
@@ -252,9 +267,9 @@
           Points de {{ shift?.name }}
         </v-card-title>
         <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
-        <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
-          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh" variant="flat"
-            size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
+          <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
+          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh"
+            variant="flat" size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
             <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
             <span class="font-weight-bold mr-2">{{ getDayName(switchDay.shift) }}</span>
             <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
@@ -307,8 +322,8 @@
           <div v-for="limit in demand?.limit" :key="limit" class="d-flex align-center mb-2">
             <v-icon color="error" class="me-2">mdi-alert-circle-outline</v-icon>
             <span class="text-body-2">
-              {{ basicRules.find(rule => rule.code === limit)?.shortName }}
-    
+              {{basicRules.find(rule => rule.code === limit)?.shortName}}
+
             </span>
           </div>
         </v-card-text>
@@ -392,6 +407,23 @@ const loading = ref({
   accept: false,
   interest: false
 })
+const { xs } = useDisplay()
+
+console.log(props.demand.limit)
+
+
+const getShiftName = computed(() => {
+  return props.demand?.posterShift?.shift?.name || props.demand?.posterShift?.name || ''
+})
+
+const getShiftHours = computed(() => {
+  return { startTime: props.demand?.posterShift?.shift?.default?.startTime, endTime: props.demand?.posterShift?.shift?.default?.endTime }
+})
+
+const getShiftEndsNextDay = computed(() => {
+  return props.demand?.posterShift?.shift?.default?.endsNextDay
+})
+
 let intervalId = null
 
 const shift = computed(() => {
@@ -409,7 +441,16 @@ const teamStore = useTeamStore()
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
-  return date.format(dateString, 'fullDate')
+  
+  const currentYear = new Date().getFullYear()
+  const dateYear = new Date(dateString).getFullYear()
+  let formattedDate = date.format(dateString, 'fullDate')
+
+  if (dateYear !== currentYear) {
+    return formattedDate
+  } else {
+    return formattedDate.split(' ')[0] + ' ' + formattedDate.split(' ')[1]
+  }
 }
 
 const calculateTimeSinceCreation = () => {
@@ -453,17 +494,17 @@ const basicRules = [
   },
   {
     id: 2,
-    shortName: 'Repos <35h consécutives',
+    shortName: 'Repos <35h consécutives/7j',
     icon: 'mdi-calendar-week',
     text: 'Un agent doit bénéficier d\'une période de repos de 35 heures consécutives pour toute période de 7 jours glissants.',
     code: '35limit'
   },
   {
     id: 3,
-    shortName: 'Limite 48h max',
+    shortName: 'Travail >48h max/7j',
     icon: 'mdi-chart-timeline-variant',
     text: 'Une durée hebdomadaire du travail effectif ne pouvant excéder ni 48 heures sur 7 jours glissants',
-    code: '48hlimit'
+    code: '48hLimit'
   }
 ]
 
@@ -497,7 +538,7 @@ const additionalRules = [
 
 
 const isInterested = computed(() => {
-  return props.demand?.interested?.includes(authStore.userId)
+  return props.demand?.interested?.includes(authStore.userData.userId)
 })
 
 const handleAccept = async () => {

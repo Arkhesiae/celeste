@@ -80,6 +80,8 @@ import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
 import { useSnackbarStore } from '@/stores/snackbarStore'
 
+const STORAGE_KEY = 'authData';
+
 const props = defineProps({
   modelValue: {
     type: Boolean,

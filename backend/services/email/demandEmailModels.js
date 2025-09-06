@@ -115,7 +115,7 @@ function buildUserPoolNotificationEmail(demand) {
   const posterLastName = demand.posterId?.lastName || '';
   const fullName = `${posterName} ${posterLastName}`.trim();
   
-  const subject = `Nouvelle demande ${demand.type} - ${fullName}`;
+  const subject = `Nouvelle demande - ${demand.type === "switch" ? "Switch" : demand.type === "hybrid" ? "Flexible" : "Remplacement"}`;
 
   // Déterminer le type de demande pour l'affichage
   let demandTypeText = '';
@@ -144,8 +144,8 @@ ${fullName} a posté une nouvelle demande.
 Détails de la demande :
 - Type : ${demandTypeText}
 - Jour : ${shiftDay}
-- Heures : ${demand.posterShift.startTime} - ${demand.posterShift.endTime}
-- Vacation : ${demand.posterShift.name}
+- Heures : ${demand.posterShift.shift.default.startTime} - ${demand.posterShift.shift.default.endTime}
+- Vacation : ${demand.posterShift.shift.name}
 - Points proposés : ${demand.points}
 - Date de création : ${formattedDate}
 ${demand.comment ? `- Commentaire : ${demand.comment}` : ''}
@@ -177,8 +177,8 @@ L'équipe Celeste
             <ul style="color: #666; line-height: 1.6; font-size: 15px; margin: 0; padding-left: 20px;">
         <li><strong>Type :</strong> ${demandTypeText}</li>
         <li><strong>Jour :</strong> ${shiftDay}</li>
-        <li><strong>Heures :</strong> ${demand.posterShift.startTime} - ${demand.posterShift.endTime}</li>
-        <li><strong>Vacation :</strong> ${demand.posterShift.name}</li>
+        <li><strong>Heures :</strong> ${demand.posterShift.shift.default.startTime} - ${demand.posterShift.shift.default.endTime}</li>
+        <li><strong>Vacation :</strong> ${demand.posterShift.shift.name}</li>
         <li><strong>Points proposés :</strong> ${demand.points}</li>
         <li><strong>Date de création :</strong> ${formattedDate}</li>
         ${demand.comment ? `<li><strong>Commentaire :</strong> ${demand.comment}</li>` : ''}

@@ -177,7 +177,7 @@ export default {
     const authStore = useAuthStore();
     const remplacementStore = useRemplacementStore();
     const userShift = ref("");
-    const userId = computed(() => authStore.userId);
+    const userId = computed(() => authStore.userData.userId);
 
     // Fonction pour récupérer le shift de l'utilisateur sélectionné
     const fetchUserShift = async () => {

@@ -163,7 +163,7 @@ const handleDateChange = () => {
 // Mettre à jour la fonction getAdjacentVacations pour utiliser le service
 const getAdjacentVacations = async (date) => {
   if (!date) return { prev: null, next: null };
-  return await vacationService.getAdjacentVacations(authStore.userId, date);
+  return await vacationService.getAdjacentVacations(authStore.userData.userId, date);
 };
 
 const getDayName = (dayId) => {

@@ -17,9 +17,9 @@
         <div class="d-flex align-center justify-space-between mb-4">
           <div>
             <span>Numéro de téléphone actuel </span>
-            <v-list-item-subtitle>{{ authStore.phone || 'Non renseigné' }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ authStore.userData.phone || 'Non renseigné' }}</v-list-item-subtitle>
           </div>
-          <v-btn v-if="authStore.phone" size="small" variant="text" @click="deletePhone" color="error">Supprimer</v-btn>
+          <v-btn v-if="authStore.userData.phone" size="small" variant="text" @click="deletePhone" color="error">Supprimer</v-btn>
         </div>
 
         <v-form ref="phoneForm" v-model="phoneValid" @submit.prevent="handleSubmit">
@@ -73,6 +73,7 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useDisplay } from 'vuetify'
 import { profileService } from '@/services/profileService'
+const STORAGE_KEY = 'authData';
 
 const authStore = useAuthStore()
 const props = defineProps({
@@ -123,7 +124,12 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     await profileService.updatePhone(phone.value)
-    authStore.phone = phone.value
+    authStore.userData.phone = phone.value
+
+    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    existingData.userData = { ...existingData.userData, phone: phone.value };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+
     emit('success', 'Le numéro de téléphone a été mis à jour avec succès')
     close()
   } catch (error) {
@@ -137,7 +143,12 @@ const deletePhone = async () => {
   loading.value = true
   try {
     await profileService.deletePhone()
-    authStore.phone = ''
+    authStore.userData.phone = ''
+
+    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    existingData.userData = { ...existingData.userData, phone: '' };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+
     emit('success', 'Le numéro de téléphone a été supprimé avec succès')
     close()
   } catch (error) {

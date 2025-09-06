@@ -277,7 +277,7 @@ const teamStore = useTeamStore();
 const teams = computed(() => teamStore.centerTeams);
 const substitutionStore = useSubstitutionStore();
 const authStore = useAuthStore();
-const userId = computed(() => authStore.userId);
+const userId = computed(() => authStore.userData.userId);
 
 const dialogModeValue = computed({
   get: () => props.dialogMode,

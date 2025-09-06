@@ -24,7 +24,7 @@ export const useShiftStore = defineStore('shift', () => {
 
   const shiftsWithSubstitutions = ref([]);
   const authStore = useAuthStore();
-  const userId = computed(() => authStore.userId);
+  const userId = computed(() => authStore.userData.userId);
 
   // Cache persistant pour les vacations
   const persistentVacationsMap = ref(new Map([]));

@@ -13,21 +13,9 @@ const TOKEN_EXPIRATION_THRESHOLD = 5 * 60; // 5 minutes en secondes
  */
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const name = ref('');
-  const email = ref('');
-  const phone = ref('');
-  const birthDate = ref('');
-  const userId = ref(null);
-  const accessToken = ref('');
+  const userData = ref();
+  const accessToken = ref();
   const isLoggedIn = ref(false);
-  const isAdmin = ref(false);
-  const adminType = ref(''); // 'localAdmin' ou 'masterAdmin'
-  const centerId = ref('');
-  const preferences = ref({
-    theme: false
-  });
-  const avatar = ref('');
-  const status = ref(''); // Ajout du statut de l'utilisateur
 
   // Getters
   const isTokenExpired = computed(() => {
@@ -52,27 +40,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   });
 
+  // const isAdmin = computed(() => {
+  //   return  userData.value.isAdmin;
+  // });
+
   // Actions
   /**
    * Charge les données de l'utilisateur depuis le localStorage.
    */
   const loadFromLocalStorage = async () => {
     try {
-      const userData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      
-      console.log("User data loaded from localStorage");
-      console.log(userData?.accessToken);
-
-      if (userData?.accessToken) {
-        setUser(userData);
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY)); 
+      if (data?.accessToken) {
+        setUser(data);
         isLoggedIn.value = await validateAccessToken();
-    
-        console.log("Token validated");
         return true;
       }
 
     } catch (err) {
-      // console.error('Erreur lors du chargement des données:', err.message);
       logOut();
       throw err;
     } 
@@ -85,22 +70,20 @@ export const useAuthStore = defineStore('auth', () => {
   const validateAccessToken = async () => {
     try {
        if (!accessToken.value) {
-         logOut();
          throw new Error('Aucun token d\'accès trouvé.');
        }
- 
+
        if (isTokenExpired.value) {
-         logOut();
          throw new Error('Le token d\'accès a expiré.');
        }
- 
+
        if (isTokenExpiringSoon.value) {
-         await refreshToken();
+         throw new Error('Le token d\'accès a expiré.');
+        //  await refreshToken();
        }
        
        return true;
      } catch (err) {
-      //  console.error({message : 'Échec de la validation du token:', err});
        logOut();
        throw err;
      }
@@ -108,73 +91,23 @@ export const useAuthStore = defineStore('auth', () => {
 
 
   /**
-   * Sauvegarde les données dans le localStorage.
-   */
-  const saveToLocalStorage = (data) => {
-    try {
-      const dataToSave = {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        birthDate: data.birthDate,
-        accessToken: data.accessToken,
-        isAdmin: data.isAdmin,
-        adminType: data.adminType,
-        userId: data.userId,
-        centerId: data.centerId,
-        preferences: data.preferences,
-        avatar: data.avatar,
-        status: data.status
-      } 
-  
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    } catch (err) {
-      console.error('Erreur lors de la sauvegarde des données:', err);
-      throw new Error('Impossible de sauvegarder les données d\'authentification');
-    }
-  };
-
-  /**
    * Définit les données de l'utilisateur et les sauvegarde dans le localStorage.
    * @param {Object} data - Les données de l'utilisateur.
    */
   const setUser = (data) => {
-    name.value = data.name;
-    userId.value = data.userId;
-    email.value = data.email;
-    phone.value = data.phone || '';
-    birthDate.value = data.birthDate || '';
+    userData.value = data.userData;
     accessToken.value = data.accessToken;
-    isAdmin.value = data.isAdmin || false;
-    adminType.value = data.adminType || '';
-    centerId.value = data.centerId || '';
-    preferences.value = data.preferences || { theme: false };
-    avatar.value = data.avatar || '';
-    status.value = data.status || 'pending'; // Ajout du statut
-   
-
-    saveToLocalStorage(data);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
   /**
    * Déconnecte l'utilisateur et supprime les données du localStorage.
    */
   const logOut = () => {
-    name.value = '';
-    email.value = '';
-    phone.value = '';
-    birthDate.value = '';
-    userId.value = null;
+    userData.value = {};
     accessToken.value = '';
-    isAdmin.value = false;
-    adminType.value = '';
-    centerId.value = '';
-    preferences.value = { theme: false };
-    avatar.value = '';
-    status.value = ''; // Réinitialisation du statut
     isLoggedIn.value = false;
     localStorage.removeItem(STORAGE_KEY);
-  
   };
 
 
@@ -202,7 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const data = await authService.refreshToken(accessToken.value);
       accessToken.value = data.accessToken;
-      saveToLocalStorage(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch (err) {
       console.error('Échec du rafraîchissement du token:', err.message);
       logOut();
@@ -217,15 +150,19 @@ export const useAuthStore = defineStore('auth', () => {
   const updateUserPreferences = async (preferences) => {
     try {
       if (!isLoggedIn.value) return;
-  
+      
+      console.log(preferences);
+      const userId = userData.value.userId;
+      const currentPreferences = userData.value.preferences || {};
+      const updatedPreferences = { ...currentPreferences, ...preferences };
+      userData.value.preferences = updatedPreferences;
 
-      preferences.value = { ...preferences.value, ...preferences };
-      const data = await userService.updateUserPreferences(userId.value, preferences.value);
+      await userService.updateUserPreferences(userId, updatedPreferences);
+
       const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      existingData.preferences = preferences.value;
+      existingData.userData = { ...existingData.userData, preferences: updatedPreferences };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
-    
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
       throw error;
@@ -234,14 +171,17 @@ export const useAuthStore = defineStore('auth', () => {
 
   const updateAvatar = async (formData) => {
     try {
-      const data = await userService.updateAvatar(userId.value, formData);
-      avatar.value = data.avatar;
+      if (!isLoggedIn.value) return;
+      
+      const userId = userData.value.userId;
+      const data = await userService.updateAvatar(userId, formData);
+      
+      userData.value.avatar = data.avatar;
 
       const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      existingData.avatar = avatar.value;
+      existingData.userData = { ...existingData.userData, avatar: data.avatar };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
-      isLoggedIn.value = true;
     } catch (err) {
       console.error('Erreur lors de la mise à jour de l\'avatar:', err.message);
       throw err;
@@ -249,20 +189,13 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   return {
-    name,
-    email,
-    phone,
-    birthDate,
-    isLoggedIn,
+    userData,
     accessToken,
-    isAdmin,
-    adminType,
-    userId,
-    centerId,
+    isLoggedIn,
+    isTokenExpired,
+    isTokenExpiringSoon,
     
-    preferences,
-    avatar,
-    status, // Ajout du statut dans le retour
+    
     loadFromLocalStorage,
     setUser,
     logOut,

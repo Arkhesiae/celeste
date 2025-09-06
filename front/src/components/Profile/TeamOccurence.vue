@@ -64,7 +64,7 @@ const activeCardId = ref(null);
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
-const userId = computed(() => authStore.userId);
+const userId = computed(() => authStore.userData.userId);
 
 const relativeDays = computed(() => {
   const today = new Date();

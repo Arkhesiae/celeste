@@ -83,7 +83,7 @@ const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
 
 const { smAndDown } = useDisplay();
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = computed(() => authStore.userData.isAdmin);
 const showEditDayDialog = ref(false);
 const showDayDetail = ref(false);
 const selectedDay = ref(null);

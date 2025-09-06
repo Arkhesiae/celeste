@@ -40,8 +40,8 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
-        <v-alert v-if="!authStore.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
-          icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+        <v-alert v-if="!authStore.userData.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+          icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
               <v-card-title class="text-h6 font-weight-medium">Aucun centre assigné</v-card-title>
@@ -59,7 +59,7 @@
         </v-alert>
 
         <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
-          icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+          icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
               <v-card-title class="text-h6 font-weight-medium">Aucune équipe assignée</v-card-title>
@@ -75,7 +75,7 @@
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
         </v-alert>
-        <v-alert v-if="!authStore.phone" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+        <v-alert v-if="!authStore.userData.phone" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-phone-plus" style="cursor: pointer;" @click="router.push('/parameter')">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -117,7 +117,7 @@
           </div>
         </v-alert>
         <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
-          icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+          icon="mdi-alert-circle-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
               <v-card-title class="text-h6 font-weight-medium">Conflit de demandes</v-card-title>
@@ -141,7 +141,7 @@
 
 
         <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4  "
-          icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userId)">
+          icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
               <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
@@ -397,7 +397,7 @@
             <v-card width="100%" rounded="xl" elevation="0" class=" transition-all" :class="[
               { 'elevation-4': isHovering },
               xs ? 'pa-2 px-4' : 'pa-4'
-            ]" v-bind="props" @click="router.push('/center/' + authStore.centerId + '/teams')"
+            ]" v-bind="props" @click="router.push('/center/' + authStore.userData.centerId + '/teams')"
               :color="smAndDown ? 'onBackground' : 'onBackground'" style="margin-top: 24px !important;">
               <div class="d-flex  flex-column" style="width: 100%; height: 100%">
                 <v-card-title class="text-h6 font-weight-medium">Mon centre</v-card-title>
@@ -422,7 +422,7 @@
           <img :src="`${getCenterLogo}`" alt="logo" class="mt-4" v-if="getCenterName?.includes('CRNA Nord')"
             :class="md ? 'logo-md' : xs ? 'logo-xs' : ''"
             style="position: absolute; bottom: 15px; right: -40px; width: 300px; cursor: pointer;"
-            @click="router.push('/center/' + authStore.centerId + '/teams')" />
+            @click="router.push('/center/' + authStore.userData.centerId + '/teams')" />
         </div>
 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-32 ' : ''" color="surfaceContainer">
@@ -560,7 +560,7 @@
         </v-card>
       </v-col>
     </v-row> -->
-    <TransferDialog :dialogVisible="transferDialog" :userId="authStore.userId"
+    <TransferDialog :dialogVisible="transferDialog" :userId="authStore.userData.userId"
       @update:dialogVisible="transferDialog = $event" />
   </v-container>
 </template>
@@ -728,7 +728,7 @@ const teamStore = useTeamStore()
 const substitutionStore = useSubstitutionStore()
 const snackbarStore = useSnackbarStore()
 const rotationStore = useRotationStore()
-const userName = authStore.name
+const userName = authStore.userData.name
 const { smAndDown, xs, md } = useDisplay();
 const showAnnouncement = ref(true);
 const shiftStore = useShiftStore();
@@ -762,7 +762,7 @@ const vacationsOfUser = computed(() => {
 const rotationsMap = ref(new Map());
 
 const getCenterName = computed(() => {
-  return centerStore.centers.find(center => center._id === authStore.centerId)?.name;
+  return centerStore.centers.find(center => center._id === authStore.userData.centerId)?.name;
 });
 
 const getCenterLogo = computed(() => {

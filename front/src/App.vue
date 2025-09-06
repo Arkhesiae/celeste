@@ -1,5 +1,6 @@
 <template>
   <v-app class="app-container">
+     <div class="position-absolute" style="z-index: 100000000000000 !important;position:  absolute; top: 50px; left: 0;  background-color: red;">  {{ insets }} </div>
     <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
     <router-view v-slot="{ Component, route }">
       <transition :name="route.meta.transition || ''" mode="out-in">
@@ -23,23 +24,27 @@ const { initializeApp } = useAppInitialization();
 
 onMounted(async () => {
   await getSafeAreaAndApply();
+  
   await initializeApp();
   
 });
 
-
+const insets = ref();
 
 
 async function getSafeAreaAndApply() {
   try {
     await SafeArea.getSafeAreaInsets().then(({ insets }) => {
+      
       let top = insets.top;
       let bottom = insets.bottom;
-
+      
       safeAreaTop.value.push(top);
       safeAreaBottom.value.push(bottom);
     
       for (const [key, value] of Object.entries(insets)) {
+
+        console.log(key, value, 'key, value');
         document.documentElement.style.setProperty(
           `--safe-area-${key}`,
           `${value}px`,
@@ -68,10 +73,12 @@ async function getSafeAreaAndApply() {
       const { insets } = data;
       console.log(insets, 'insets');
       let top = insets.top;
-
+      let bottom = insets.bottom;
       safeAreaTop.value.push(top);
+      safeAreaBottom.value.push(bottom);
     
       for (const [key, value] of Object.entries(insets)) {
+        console.log(key, value, 'key, value');
         document.documentElement.style.setProperty(
           `--safe-area-${key}`,
           `${value}px`,
@@ -88,7 +95,7 @@ async function getSafeAreaAndApply() {
     });
 
   } catch (error) {
-
+    insets.value = 'error';
   }
 
 

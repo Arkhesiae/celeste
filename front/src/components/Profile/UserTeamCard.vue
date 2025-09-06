@@ -85,7 +85,7 @@
       <div>
         <v-scroll-x-transition mode="out-in">
           <v-btn color="background" variant="flat" class="elevated-shadow" rounded="lg"
-            v-if="isHistoryRevealed === false" @click="$router.push('/profile/' + authStore.userId + '/change-history')"
+            v-if="isHistoryRevealed === false" @click="$router.push('/profile/' + authStore.userData.userId + '/change-history')"
             append-icon="mdi-history">
             Historique
           </v-btn>
@@ -237,7 +237,7 @@ const promptDialog = (mode) => {
 
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
-const userId = computed(() => authStore.userId);
+const userId = computed(() => authStore.userData.userId);
 
 const permanentTeam = computed(() => teamStore.teamOccurrences?.permanentTeam);
 const temporaryTeam = computed(() => teamStore.teamOccurrences?.temporaryTeam);

@@ -5,7 +5,7 @@ export const vAdmin = {
     const authStore = useAuthStore();
     const requiredAdminType = binding.value;
 
-    if (!authStore.isAdmin || authStore.adminType !== requiredAdminType) {
+    if (!authStore.userData.isAdmin || authStore.userData.adminType !== requiredAdminType) {
       el.parentNode?.removeChild(el);
     }
   }

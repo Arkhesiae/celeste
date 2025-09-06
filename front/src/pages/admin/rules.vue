@@ -306,7 +306,7 @@ const confirmReset = async () => {
 };
 
 onMounted(() => {
-  if (!authStore.isAdmin) {
+  if (!authStore.userData.isAdmin) {
     router.push('/');
     return;
   }

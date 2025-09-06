@@ -157,7 +157,7 @@ const modification = ref({
   startTime: '',
   endTime: '',
   comment: '',
-  centerId: props.centerId || authStore.centerId
+  centerId: props.centerId || authStore.userData.centerId
 });
 
 // Types de modifications disponibles
@@ -281,7 +281,7 @@ const resetForm = () => {
     startTime: '',
     endTime: '',
     comment: '',
-    centerId: props.centerId || authStore.centerId
+    centerId: props.centerId || authStore.userData.centerId
   };
   hasConflicts.value = false;
   if (form.value) {

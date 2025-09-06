@@ -42,7 +42,7 @@
           <div class="d-flex justify-space-between align-center mb-3">
             <div class="text-h6">Dernière activité</div>
             <v-btn variant="text" density="compact" color="auto"
-              @click="$router.push('/profile/' + authStore.userId + '/transaction-history')">
+              @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')">
               Voir tout
               <v-icon end>mdi-chevron-right</v-icon>
             </v-btn>

@@ -73,6 +73,7 @@ router.beforeEach(async (to, from, next) => {
     try {
       await authStore.validateAccessToken();
     } catch (error) {
+      
       console.warn("⚠️ Token invalide ou expiré", error);
     }
   }
@@ -91,7 +92,7 @@ router.beforeEach(async (to, from, next) => {
   
 
   if (authStore.isLoggedIn) {
-    if (authStore.status === 'pending' && to.path !== '/pending-approval') {
+    if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
       return next({ path: '/pending-approval' });
     }
 
@@ -100,7 +101,7 @@ router.beforeEach(async (to, from, next) => {
     }
 
     if (to.path.startsWith('/admin') || to.path === '/admin-panel') {
-      if (!authStore.isAdmin) {
+      if (!authStore.userData.isAdmin) {
         return next({ path: '/' });
       }
     }

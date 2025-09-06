@@ -28,12 +28,12 @@
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
     </v-btn> -->
     <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon
-      @click="router.push({ path: '/profile/' + authStore.userId }); hapticsImpact()"
-      :class="isActive('/profile/' + authStore.userId) ? 'active-item' : 'inactive-item'"
-      :active="router.currentRoute.value.path === '/profile/' + authStore.userId">
+      @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()"
+      :class="isActive('/profile/' + authStore.userData.userId) ? 'active-item' : 'inactive-item'"
+      :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId">
       <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false">
         <div class="d-flex align-center justify-center"
-          :class="isActive('/profile/' + authStore.userId) ? 'opacity-100' : 'opacity-50'"
+          :class="isActive('/profile/' + authStore.userData.userId) ? 'opacity-100' : 'opacity-50'"
           style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
           <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
             <v-img v-if="authStore.avatar" :src="`${API_URL}${authStore.avatar}`" alt="Avatar" />
@@ -89,8 +89,8 @@ const emit = defineEmits(['toggle-notifications']);
 <style scoped>
 .bottom-nav {
   position: fixed;
-  height: calc(64px + env(safe-area-inset-bottom)) !important;
-  padding-bottom: env(safe-area-inset-bottom);
+  height: calc(64px + var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
+  padding-bottom:   calc(var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
   /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
   /* border-radius: 24px 24px 0 0; */
 }

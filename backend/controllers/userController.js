@@ -609,6 +609,7 @@ const generateDateArray = (startDate, endDate) => {
 const updateUserPreferences = async (req, res) => {
     const { id } = req.params;
     const { preferences } = req.body;
+    console.log(preferences);
 
     try {
         const user = await User.findByIdAndUpdate(

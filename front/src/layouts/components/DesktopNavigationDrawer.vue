@@ -62,21 +62,21 @@
                    value="financement"></v-list-item>
       <v-divider opacity=".01"></v-divider>
       <v-list-item 
-               v-if="authStore.isAdmin"
+               v-if="authStore.userData.isAdmin"
       @click="router.push({ path: '/users' })"
                    rounded="xl"
                    :class="isActive('/users') ? 'active-item' : 'inactive-item'"
                    :prepend-icon="isActive('/users') ? 'mdi-account-group' : 'mdi-account-group-outline'"
                    title="Utilisateurs"
                    value="users"></v-list-item>
-      <v-list-item v-if="authStore.isAdmin" 
+      <v-list-item v-if="authStore.userData.isAdmin" 
                    @click="router.push({ path: '/admin/pending-users' })"
                    rounded="xl"
                    :class="isActive('/admin/pending-users') ? 'active-item' : 'inactive-item'"
                    :prepend-icon="isActive('/admin/pending-users') ? 'mdi-account-clock' : 'mdi-account-clock-outline'"
                    title="Candidatures"
                    value="pending-users"></v-list-item>
-      <v-list-item v-if="authStore.adminType === 'master'"
+      <v-list-item v-if="authStore.userData.adminType === 'master'"
                    @click="router.push({ path: '/center/centers' })"
                    rounded="xl"
                    :class="isActive('/center/centers') ? 'active-item' : 'inactive-item'"
@@ -84,10 +84,10 @@
                    title="Centres"
                    value="centers"></v-list-item>
       <v-list-item v-else
-                   @click="router.push({ path: '/center/'+authStore.centerId+'/teams' })"
+                   @click="router.push({ path: '/center/'+authStore.userData.centerId+'/teams' })"
                    rounded="xl"
-                   :class="isActive('/center/'+authStore.centerId+'/teams') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/center/'+authStore.centerId+'/teams') ? 'mdi-airport' : 'mdi-airport'"
+                   :class="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'active-item' : 'inactive-item'"
+                   :prepend-icon="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'mdi-airport' : 'mdi-airport'"
                    title="Mon centre"
                    value="my-center"></v-list-item>
     </v-list>

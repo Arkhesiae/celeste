@@ -21,8 +21,8 @@
                   <v-icon v-else>mdi-account</v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-subtitle-1">{{ authStore.name }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ authStore.email }}</div>
+                  <div class="text-subtitle-1">{{ authStore.userData.name }}</div>
+                  <div class="text-caption text-medium-emphasis">{{ authStore.userData.email }}</div>
                 </div>
               </div>
             </div>
@@ -86,7 +86,7 @@
     </v-row>
     <v-row :class="smAndDown ? 'px-4' : ''">
       <v-col cols="6" md="6">
-        <v-card v-if="authStore.centerId" color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="64"
+        <v-card v-if="authStore.userData.centerId" color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="64"
           @click="router.push('/patchnotes')" link flat>
           <div class="d-flex align-center justify-space-between h-100">
             <span class="text-onSurface text-caption">Patchnotes</span>
@@ -169,14 +169,14 @@ const header = ref(null);
 const containerWidth = ref(0);
 const safeMarginTop = ref(0);
 let resizeObserver = null;
-const userId = computed(() => authStore.userId);
+const userId = computed(() => authStore.userData.userId);
 
 const items = ref([
   {
     id: 1,
     title: 'Mon centre',
     icon: 'mdi-airport',
-    link: '/center/' + authStore.centerId + '/teams'
+    link: '/center/' + authStore.userData.centerId + '/teams'
   },
   {
     id: 2,

@@ -132,11 +132,11 @@ const fetchAvailableUsers = async () => {
     let users;
     
     // Si c'est un administrateur maître, récupérer tous les utilisateurs
-    if (authStore.isAdmin && authStore.adminType === 'master') {
+    if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
       users = await userService.getUsers();
     } else {
       // Sinon, récupérer seulement les utilisateurs du centre
-      users = await userService.fetchUsersByCenter(authStore.centerId);
+      users = await userService.fetchUsersByCenter(authStore.userData.centerId);
     }
     
     // Filtrer l'utilisateur courant de la liste
@@ -209,7 +209,7 @@ const getCenterName = (centerId) => {
 };
 
 const getUserSubtitle = (user) => {
-  if (authStore.isAdmin) {
+  if (authStore.userData.isAdmin) {
     return getCenterName(user.centerId);
   }
   return ' ';

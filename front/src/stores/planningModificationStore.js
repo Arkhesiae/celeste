@@ -21,7 +21,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
   const currentModification = ref(null);
 
   const authStore = useAuthStore();
-  const userId = computed(() => authStore.userId);
+  const userId = computed(() => authStore.userData.userId);
 
   // =============== COMPUTED PROPERTIES ===============
   

@@ -449,7 +449,7 @@ const confirmDeleteAction = async () => {
 
 // Lifecycle
 onMounted(async () => {
-  if (!authStore.isAdmin) {
+  if (!authStore.userData.isAdmin) {
     router.push('/dashboard');
     return;
   }

@@ -4,7 +4,7 @@
 
       <template #actions> 
         <v-select
-          v-if="authStore.adminType === 'master'"
+          v-if="authStore.userData.adminType === 'master'"
           v-model="selectedCenterId"
           :items="centers"
     
@@ -105,8 +105,8 @@ const searchQuery = ref('');
 const selectedCenterId = ref(null);
 const userDialog = ref(false);
 
-const isMasterAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'master');
-const isLocalAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'local');
+const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
+const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 const centers = computed(() => centerStore.centers);
 const users = computed(() => userStore.users);
 const sortOptions = [
@@ -122,8 +122,8 @@ const filteredUsers = computed(() => {
   if (!users.value) return [];
 
   // Filtrer par type d'admin
-  if (authStore.adminType !== 'master') {
-    filtered = filtered.filter(user => user.centerId === authStore.centerId);
+  if (authStore.userData.adminType !== 'master') {
+    filtered = filtered.filter(user => user.centerId === authStore.userData.centerId);
   }
 
   if (selectedFilter.value === 'admin') {
@@ -248,13 +248,13 @@ const handleCenterChange = async (centerId) => {
 
 onMounted(async () => {
   try {
-    if (authStore.adminType === 'master') {
+    if (authStore.userData.adminType === 'master') {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
     } else {
-      await userStore.fetchUsersByCenter(authStore.centerId);
-      await teamStore.fetchCenterTeams(authStore.centerId);
-      selectedCenterId.value = authStore.centerId;
+      await userStore.fetchUsersByCenter(authStore.userData.centerId);
+      await teamStore.fetchCenterTeams(authStore.userData.centerId);
+      selectedCenterId.value = authStore.userData.centerId;
     }
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {

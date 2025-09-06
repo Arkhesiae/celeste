@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userId)">
+    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
             <div>
           <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
@@ -165,7 +165,7 @@ const activeRotation = computed(() => {
 
 
 const { mobile, smAndDown, mdAndDown } = useDisplay();
-const userId = computed(() => authStore.userId);
+const userId = computed(() => authStore.userData.userId);
 
 // Utilisation des composables
 const { 

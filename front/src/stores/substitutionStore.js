@@ -26,7 +26,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const shiftStore = useShiftStore();
   const authStore = useAuthStore();
-  const userId = computed(() => authStore.userId);
+  const userId = computed(() => authStore.userData.userId);
   const pointStore = usePointStore();
   // =============== UTILITY FUNCTIONS ===============
 

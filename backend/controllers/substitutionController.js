@@ -250,7 +250,7 @@ const createDemand = async (req, res) => {
             const userPool = await computeUserPool(demand);
             if (userPool.length > 0) {
                 try {
-                    const populatedDemand = await Substitution.findById(demand._id).populate('posterId', 'name lastName');
+                    const populatedDemand = await Substitution.findById(demand._id).populate('posterId', 'name lastName', ).populate('posterShift.shift');
                     sendUserPoolNotification(userPool, populatedDemand)
                         .then(results => {
                             console.log(`📧 Notifications envoyées avec succès:`, {
@@ -463,7 +463,7 @@ const acceptRequest = async (req, res) => {
 
 
         try {
-            const populatedDemand = await Substitution.findById(updatedRequest._id).populate('posterId', 'name lastName email').populate('accepterId', 'name lastName email ');
+            const populatedDemand = await Substitution.findById(updatedRequest._id).populate('posterId', 'name lastName email').populate('accepterId', 'name lastName email ').populate('posterShift.shift');
             sendUserNotification(populatedDemand, 'accepted')
                 .then(results => {
                     console.log(`📧 Notifications envoyées avec succès:`, {
@@ -805,7 +805,7 @@ const previewEmailTemplate = async (req, res) => {
         const demandId = req.params.id;
 
         // Récupération de la demande avec populate
-        const demand = await Substitution.findById(demandId).populate('posterId', 'name lastName');
+        const demand = await Substitution.findById(demandId).populate('posterId', 'name lastName').populate('posterShift.shift');
         if (!demand) {
             return res.status(404).json({ error: 'Demande non trouvée' });
         }

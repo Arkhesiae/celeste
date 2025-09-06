@@ -4,7 +4,7 @@
 
       <template #actions> 
         <v-select
-          v-if="authStore.adminType === 'master'"
+          v-if="authStore.userData.adminType === 'master'"
           v-model="selectedCenterId"
           :items="centers"
           :item-props="center => ({
@@ -177,8 +177,8 @@ const pendingUsers = computed(() => {
   let users = userStore.users.filter(user => user.registrationStatus === 'pending');
   
   // Si c'est un admin local, ne montrer que les utilisateurs de son centre
-  if (authStore.adminType !== 'master') {
-    users = users.filter(user => user.centerId === authStore.centerId);
+  if (authStore.userData.adminType !== 'master') {
+    users = users.filter(user => user.centerId === authStore.userData.centerId);
   }
   // Si un centre est sélectionné, filtrer par ce centre
   else if (selectedCenterId.value) {
@@ -257,16 +257,16 @@ onMounted(async () => {
   try {
     await Promise.all([
       centerStore.fetchCenters(),
-      teamStore.fetchCenterTeams(authStore.centerId)
+      teamStore.fetchCenterTeams(authStore.userData.centerId)
     ]);
 
     // Charger les utilisateurs en fonction du type d'admin
-    if (authStore.adminType === 'master') {
+    if (authStore.userData.adminType === 'master') {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
     } else {
-      await userStore.fetchUsersByCenter(authStore.centerId);
-      selectedCenterId.value = authStore.centerId;
+      await userStore.fetchUsersByCenter(authStore.userData.centerId);
+      selectedCenterId.value = authStore.userData.centerId;
     }
 
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');

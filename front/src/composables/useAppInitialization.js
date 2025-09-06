@@ -40,7 +40,7 @@ export function useAppInitialization() {
   const initializeTheme = async () => {
     initializationStore.currentlyLoading = 'theme';
     if (authStore.isLoggedIn) {
-      theme.global.name.value = authStore.preferences.theme ? 'darkTheme' : 'lightTheme';
+      theme.global.name.value = authStore.userData.preferences.theme ? 'darkTheme' : 'lightTheme';
     }
    
   };
@@ -48,10 +48,10 @@ export function useAppInitialization() {
   const initializeCenter = async () => {
     initializationStore.currentlyLoading = 'center';
     centerStore.fetchCenters();
-    if (!authStore.centerId) return;
+    if (!authStore.userData.centerId) return;
   
     await Promise.all([
-      userStore.fetchUsersByCenter(authStore.centerId),
+      userStore.fetchUsersByCenter(authStore.userData.centerId),
       centerStore.fetchAdminsByCenter(),
       centerStore.fetchUsersCountByCenter()
     ]);
@@ -59,21 +59,21 @@ export function useAppInitialization() {
   };
 
   const initializeTeam = async () => {
-    if (!authStore.userId) return;
-    if (authStore.isAdmin && authStore.adminType === 'master') {
+    if (!authStore.userData.userId) return;
+    if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
       await teamStore.fetchAllTeams();
     } 
     initializationStore.currentlyLoading = 'team';
     await Promise.all([
-      teamStore.fetchCurrentTeamOfUser(authStore.userId),
-      teamStore.fetchTeamOccurrencesOfUser(authStore.userId),
-      teamStore.fetchCenterTeams(authStore.centerId)
+      teamStore.fetchCurrentTeamOfUser(authStore.userData.userId),
+      teamStore.fetchTeamOccurrencesOfUser(authStore.userData.userId),
+      teamStore.fetchCenterTeams(authStore.userData.centerId)
     ]);
     initializationStore.updateInitializationState('team', true);
   };
 
   const initializeShiftsAndSubstitutions = async () => {
-    if (!authStore.userId) return;
+    if (!authStore.userData.userId) return;
 
     initializationStore.currentlyLoading = 'shifts';
     const dates = {
@@ -98,11 +98,11 @@ export function useAppInitialization() {
   };
 
   const initializeRotations = async () => {
-    if (!authStore.centerId) return;
+    if (!authStore.userData.centerId) return;
 
     initializationStore.currentlyLoading = 'rotations';
-    await rotationStore.fetchRotations(authStore.centerId);
-    await centerStore.fetchActiveRotationOfCenter(authStore.centerId);
+    await rotationStore.fetchRotations(authStore.userData.centerId);
+    await centerStore.fetchActiveRotationOfCenter(authStore.userData.centerId);
     initializationStore.updateInitializationState('rotations', true);
   };
 
@@ -111,13 +111,13 @@ export function useAppInitialization() {
     await Promise.all([
       pointStore.fetchUserPoints(),
       pointStore.fetchTransactions(),
-      notificationStore.fetchNotifications(authStore.userId)
+      notificationStore.fetchNotifications(authStore.userData.userId)
     ]);
     initializationStore.updateInitializationState('personal', true);
   };
 
   const initializeTickets = async () => {
-    if (!authStore.isAdmin) return;
+    if (!authStore.userData.isAdmin) return;
 
     initializationStore.currentlyLoading = 'tickets';
     await ticketStore.fetchTickets();

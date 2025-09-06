@@ -14,7 +14,7 @@
 
         <v-card max-width="400px" style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
           class="flex-0-0 my-16 pa-4 d-flex justify-space-between" width="100%"
-          @click="handleClick('/profile/' + authStore.userId)" v-if="isLoggedIn">
+          @click="handleClick('/profile/' + authStore.userData.userId)" v-if="isLoggedIn">
 
           <div class="d-flex justify-space-between align-center ga-2">
             <v-avatar size="large" color="primary" >
@@ -40,7 +40,7 @@
           </div>
         </v-card>
         <v-card class="my-12 d-flex justify-center align-center flex-column flex-0-0" color="transparent" rounded="lg"
-          elevation="0" tile flat v-if="isLoggedIn" @click="router.push({ path: '/profile/' + authStore.userId })">
+          elevation="0" tile flat v-if="isLoggedIn" @click="router.push({ path: '/profile/' + authStore.userData.userId })">
           <v-avatar size="x-large" color="primary" variant="tonal">{{ usernameInitial }}</v-avatar>
           <v-card-title>{{ username }}</v-card-title>
         </v-card>
@@ -57,8 +57,8 @@
               </span>
               <v-divider v-if="index < menuItemsLogged.length - 1"></v-divider>
             </div>
-            <v-divider v-if="authStore.isAdmin"></v-divider>
-            <div v-for="(item, index) in menuItemsLoggedAdmin" v-if="authStore.isAdmin" :key="item.key" class="d-flex flex-column">
+            <v-divider v-if="authStore.userData.isAdmin"></v-divider>
+            <div v-for="(item, index) in menuItemsLoggedAdmin" v-if="authStore.userData.isAdmin" :key="item.key" class="d-flex flex-column">
             
               <span class="pt-4 pb-4 cursor-pointer" @click="handleClick(item.path)" :title="item.title">
                 {{ item.label }}
@@ -126,10 +126,10 @@
         </v-list>
       </v-card>
        <!-- <span>{{ API_URL }}</span> -->
-      <!-- <span>{{ safeAreaTop }}</span>
-      <span>{{ safeAreaBottom }}</span>
-      <span>{{ safeAreaLeft }}</span>
-      <span>{{ safeAreaRight }}</span> -->
+      <span>safeAreaTop: {{ safeAreaTop }}</span>
+      <span>safeAreaBottom: {{ safeAreaBottom }}</span>
+      <span>safeAreaLeft: {{ safeAreaLeft }}</span>
+      <span>safeAreaRight: {{ safeAreaRight }}</span>
     </v-card>
   
   </div>
@@ -153,8 +153,8 @@ const authStore = useAuthStore();
 const pointStore = usePointStore();
 const userStore = useUserStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const isAdmin = computed(() => authStore.isAdmin);
-const username = computed(() => authStore.name);
+const isAdmin = computed(() => authStore.userData.isAdmin);
+const username = computed(() => authStore.userData.name);
 const usernameInitial = computed(() => username.value ? username.value.charAt(0).toUpperCase() : '');
 const theme = ref(false);
 const user = ref(null);
@@ -190,7 +190,7 @@ const menuItemsLogged = [
   { key: 'remplacements', label: 'Demandes', path: '/exchange/replace', title: 'Remplacements' },
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
-  { key: 'centres', label: authStore.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.adminType === 'master' ? '/center/centers' : '/center/' + authStore.centerId + '/teams', title: authStore.adminType === 'master' ? 'Centres' : 'Mon centre' },
+  { key: 'centres', label: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.userData.adminType === 'master' ? '/center/centers' : '/center/' + authStore.userData.centerId + '/teams', title: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre' },
   // { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
   // { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
   // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
@@ -214,7 +214,7 @@ const handleLogout = async () => {
 };
 
 const getUserInfo = computed(() => {
-  const userInfo = userStore.users.find(user => user._id === authStore.userId);
+  const userInfo = userStore.users.find(user => user._id === authStore.userData.userId);
   console.log(userInfo);
   return userInfo;
 });

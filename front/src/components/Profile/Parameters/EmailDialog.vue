@@ -18,7 +18,7 @@
           <div class="d-flex align-center justify-space-between mb-4">
             <div>
               <span>Addresse email actuelle </span>
-              <v-list-item-subtitle>{{ authStore.email }}</v-list-item-subtitle>
+              <v-list-item-subtitle>{{ authStore.userData.email }}</v-list-item-subtitle>
             </div>
             
           </div>
@@ -89,6 +89,8 @@ import { useDisplay } from 'vuetify'
 import OTPVerification from '@/components/OTPVerification.vue'
 import { profileService } from '@/services/profileService'
 
+const STORAGE_KEY = 'authData';
+
 const authStore = useAuthStore()
 const props = defineProps({
   modelValue: {
@@ -155,7 +157,12 @@ const onOtpVerified = async () => {
   loading.value = true
   try {
     await profileService.updateEmail(email.value)
-    authStore.email = email.value
+    authStore.userData.email = email.value
+
+    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    existingData.userData = { ...existingData.userData, email: email.value };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+
     emit('success', 'L\'email a été mis à jour avec succès')
     close()
   } catch (error) {

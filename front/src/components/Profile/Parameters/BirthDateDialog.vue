@@ -17,7 +17,7 @@
         <div class="d-flex align-center justify-space-between mb-4">
           <div>
             <span>Date de naissance actuelle </span>
-            <v-list-item-subtitle>{{ formatbirthDate(authStore.birthDate) || 'Non renseignée' }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ formatbirthDate(authStore.userData.birthDate) || 'Non renseignée' }}</v-list-item-subtitle>
           </div>
         </div>
 
@@ -71,6 +71,8 @@ import { ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
 import { useDisplay } from 'vuetify'
 import { profileService } from '@/services/profileService'
+
+const STORAGE_KEY = 'authData';
 
 const authStore = useAuthStore()
 const props = defineProps({
@@ -141,7 +143,12 @@ const handleSubmit = async () => {
   loading.value = true
   try {
     await profileService.updateBirthDate(birthDate.value)
-    authStore.birthDate = birthDate.value
+
+    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    existingData.userData = { ...existingData.userData, birthDate: birthDate.value };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+
+    authStore.userData.birthDate = birthDate.value
     emit('success', 'La date de naissance a été mise à jour avec succès')
     close()
   } catch (error) {

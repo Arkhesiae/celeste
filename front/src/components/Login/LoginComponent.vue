@@ -342,7 +342,7 @@ const handleLogin = async () => {
       await initializeApp();
       snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
 
-      if (authStore.status === 'pending') {
+      if (authStore.userData.status === 'pending') {
         router.push({ path: '/pending-approval', replace: true });
       } else {
         router.push({ path: '/dashboard', replace: true });

@@ -18,7 +18,7 @@
       <div class="d-flex align-center  ga-3">
         <div class="pb-0 mb-0">
           <span class="text-h6 font-weight-medium" v-if="isRestDay">Repos</span>
-          <span class="text-h5 font-weight-medium" v-else>{{ getShiftName }}</span>
+          <span class="text-h5 font-weight-medium" style="position: relative; top: 2px;" v-else>{{ getShiftName }}</span>
         </div>
         <div class="d-flex align-start flex-column justify-space-between">
           <div v-if="!isRestDay">

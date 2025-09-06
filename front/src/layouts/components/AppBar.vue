@@ -26,10 +26,10 @@
 
       <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
       <v-chip rounded="lg" size="small" v-if="isAdmin" @click="navigateToAdminPanel" class="cursor-pointer" >
-        <v-icon class="mr-2" :color="authStore.adminType === 'master' ? 'primary' : 'secondary'">
-          {{ authStore.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
+        <v-icon class="mr-2" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
+          {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
         </v-icon>
-        {{ authStore.adminType === 'master' ? 'Master' : 'Admin' }}
+        {{ authStore.userData.adminType === 'master' ? 'Master' : 'Admin' }}
       </v-chip>
       <!-- Layout mobile -->
       <template v-if="smAndDown">
@@ -41,7 +41,7 @@
       <template v-else>
         <template v-if="isLoggedIn">
 
-          <AdminSection :is-admin="isAdmin" :admin-type="authStore.adminType"
+          <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType"
             :message-count="ticketStore.tickets.length" @navigate-rules="router.push({path:'/admin/rules'})"
             @navigate-tickets="router.push({ path : '/tickets' })"
             @navigate-email="router.push({ path : '/emails' })" />
@@ -58,14 +58,14 @@
         <v-spacer />
 
         <!-- Menu utilisateur -->
-        <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.email" :avatar="authStore.avatar"
+        <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.userData.email" :avatar="authStore.avatar"
           :points="points" :current-team="currentTeam" @navigate-profile="navigateToProfile"
           @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
       </template>
     </template>
   </v-app-bar>
 
-  <NotificationsDialog v-model:isDialogOpen="isDialogOpen" v-if="isLoggedIn" :user-id="authStore.userId"
+  <NotificationsDialog v-model:isDialogOpen="isDialogOpen" v-if="isLoggedIn" :user-id="authStore.userData.userId"
     :notifications="notificationStore.notifications" @markAsRead="handleMarkAsRead"
     @clearNotifications="handleClearNotifications" />
 </template>
@@ -129,10 +129,10 @@ const notificationInterval = ref(null);
 
 // Computed properties
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = computed(() => authStore.userData.isAdmin);
 const isHomepage = computed(() => route.name === "/landing");
 const isDashboard = computed(() => route.name === "/dashboard");
-const username = computed(() => authStore.name);
+const username = computed(() => authStore.userData.name);
 const currentTeam = computed(() => teamStore.currentTeam);
 const points = computed(() => pointStore.points);
 
@@ -167,7 +167,7 @@ const toggleDrawer = () => {
 };
 
 const navigateToProfile = () => {
-  router.push({ path: `/profile/${authStore.userId}` });
+  router.push({ path: `/profile/${authStore.userData.userId}` });
 };
 
 const navigateToParameter = () => {
@@ -184,8 +184,8 @@ const handleLogout = async () => {
 };
 
 const fetchNotifications = async () => {
-  if (authStore.userId) {
-    await notificationStore.fetchNotifications(authStore.userId);
+  if (authStore.userData.userId) {
+    await notificationStore.fetchNotifications(authStore.userData.userId);
   }
 };
 
@@ -194,7 +194,7 @@ const handleMarkAsRead = async (id) => {
 };
 
 const handleClearNotifications = async () => {
-  await notificationStore.clearNotifications(authStore.userId);
+  await notificationStore.clearNotifications(authStore.userData.userId);
 };
 
 const openIcnagenda = () => {

@@ -2,7 +2,7 @@
   <v-container>
 
 
-     <MainTitle :title="centerName" subtitle="Liste des équipes et leurs membres" :backButton="authStore.adminType === 'master'">
+     <MainTitle :title="centerName" subtitle="Liste des équipes et leurs membres" :backButton="authStore.userData.adminType === 'master'">
 
       <template #actions> 
         <v-btn @click="openAddTeamDialog" color="onBackground" style="border-radius: 16px !important" height="48px"  class="px-4   add-team-btn" prepend-icon="mdi-plus">Ajouter une équipe</v-btn>
@@ -264,7 +264,7 @@ const snackbarStore = useSnackbarStore();
 const rotationStore = useRotationStore();
 const centerStore = useCenterStore();
 const authStore = useAuthStore();
-const isAdmin = computed(() => authStore.isAdmin);
+const isAdmin = computed(() => authStore.userData.isAdmin);
 const centerId = route.params.centerId;
 const teams = computed(() => teamStore.centerTeams);
 const usersGroupedByTeam = computed(() => userStore.usersGroupedByTeam);

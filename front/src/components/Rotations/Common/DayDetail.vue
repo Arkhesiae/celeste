@@ -120,7 +120,7 @@
         @click="$emit('onDelete')">
         Supprimer
       </v-btn>
-      <v-btn size="small" slim v-if="authStore.isAdmin && day?.type !== 'rest'" prepend-icon="mdi-pencil" variant="text"
+      <v-btn size="small" slim v-if="authStore.userData.isAdmin && day?.type !== 'rest'" prepend-icon="mdi-pencil" variant="text"
         class="mr-2" @click="$emit('onEdit')">Modifier</v-btn>
     </v-card-actions>
   </v-card>

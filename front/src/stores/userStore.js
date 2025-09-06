@@ -47,7 +47,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       loading.value = true;
       error.value = null;
-      users.value = await userService.fetchUsersByCenter(authStore.centerId);
+      users.value = await userService.fetchUsersByCenter(authStore.userData.centerId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des utilisateurs du centre';
       throw err;
@@ -79,7 +79,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       loading.value = true;
       error.value = null;
-      currentUser.value = await userService.getUserById(authStore.userId);
+      currentUser.value = await userService.getUserById(authStore.userData.userId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération de l\'utilisateur courant';
       throw err;

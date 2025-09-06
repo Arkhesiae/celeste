@@ -128,7 +128,7 @@ const props = defineProps({
 });
 
 const userId = computed(() => {
-  return authStore.userId;
+  return authStore.userData.userId;
 });
 
 const isSender = computed(() => {

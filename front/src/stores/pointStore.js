@@ -36,7 +36,7 @@ export const usePointStore = defineStore('points', () => {
   const fetchUserPoints = async () => {
     try {
       isLoading.value = true;
-      const data = await pointService.getUserPoints(authStore.userId);
+      const data = await pointService.getUserPoints(authStore.userData.userId);
       points.value = data.points;
     } catch (error) {
       console.error('Erreur lors de la récupération des points:', error);
@@ -51,17 +51,17 @@ export const usePointStore = defineStore('points', () => {
   const fetchTransactions = async () => {
     try {
       isLoading.value = true;
-      const data = await pointService.getTransactionHistory(authStore.userId);
+      const data = await pointService.getTransactionHistory(authStore.userData.userId);
       transactions.value = data.map(t => ({
-        flow: t.sender._id === authStore.userId ? 'sent' : 'received',
+        flow: t.sender._id === authStore.userData.userId ? 'sent' : 'received',
         amount: t.amount,
         status: t.status,
         type: t.type,
         description: t.description || (t.type === 'transfer' ? 'Transfert de points' : 'Remplacement'),
         date: formatDate(t.createdAt),
         effectiveDate: formatDate(t.effectiveDate),
-        userId: t.sender._id === authStore.userId ? t.receiver?._id : t.sender?._id,
-        userName: t.sender._id === authStore.userId ? t.receiver?.name + ' ' + t.receiver?.lastName : t.sender?.name + ' ' + t.sender?.lastName
+        userId: t.sender._id === authStore.userData.userId ? t.receiver?._id : t.sender?._id,
+        userName: t.sender._id === authStore.userData.userId ? t.receiver?.name + ' ' + t.receiver?.lastName : t.sender?.name + ' ' + t.sender?.lastName
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions:', error);
@@ -76,12 +76,12 @@ export const usePointStore = defineStore('points', () => {
   const fetchPendingTransactions = async () => {
     try {
       isLoadingPending.value = true;
-      const data = await pointService.getPendingTransactions(authStore.userId);
+      const data = await pointService.getPendingTransactions(authStore.userData.userId);
       pendingTransactions.value = data.map(t => ({
         amount: t.amount,
         description: t.description || 'Transaction en attente',
         date: formatDate(t.createdAt),
-        user: t.sender._id === authStore.userId ? t.receiver?.name : t.sender?.name
+        user: t.sender._id === authStore.userData.userId ? t.receiver?.name : t.sender?.name
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions en attente:', error);

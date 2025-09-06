@@ -152,8 +152,8 @@ const props = defineProps({
 
 const emit = defineEmits(['click', 'approve', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
 
-const isMasterAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'master');
-const isLocalAdmin = computed(() => authStore.isAdmin && authStore.adminType === 'local');
+const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
+const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 
 const getCenterById = (centerId) => {
   return centerStore.centers.find(center => center._id === centerId) || null;

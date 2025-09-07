@@ -83,7 +83,7 @@
             { label: 'Remplacements', value: 'substitution'},
         
           ]" :sort-options="sortOptions" v-model:filter="selectedFilter" v-model:search="searchQuery"
-            v-model:sort="sortBy" />
+            v-model:sort="sortBy" :initialSort="sortOptions[1]"/>
 
  
           <div class="d-flex justify-center align-center my-16" v-if="filteredSubstitutions.length === 0 && filteredSwitches.length === 0">
@@ -210,7 +210,7 @@ const showSidebar = ref(false);
 const displayPending = ref(false);
 const displayAccepted = ref(false);
 const searchQuery = ref('');
-const sortBy = ref('createdAt');
+
 const selectedFilter = ref('all');
 const showAddDialog = ref(false);
 const showRulesDialog = ref(false);
@@ -222,7 +222,7 @@ const sortOptions = [
   { text: 'Nom du shift', value: 'shift.name' },
   { text: 'Statut', value: 'status' },
 ];
-
+const sortBy = ref(sortOptions[1]);
 // Données de la demande
 const demand = ref({
   shift: "",

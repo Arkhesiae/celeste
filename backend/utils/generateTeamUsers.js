@@ -20,7 +20,7 @@ async function generateTeamUsers() {
                 // Créer l'email et le nom d'utilisateur
                 const email = `user${team.name}@${center.name.toLowerCase().replace(/\s+/g, '')}.com`;
                 const name = `User ${team.name}`;
-                console.log(email, name);
+             
                 // Vérifier si l'utilisateur existe déjà
                 const existingUser = await User.findOne({ email });
                 if (existingUser) {

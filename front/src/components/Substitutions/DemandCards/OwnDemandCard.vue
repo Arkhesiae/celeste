@@ -35,7 +35,7 @@
           <div>
             <div class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
             
-              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
+              <div v-if="isPoster && getAccepter" class="d-flex align-center " @click.stop="showUserDialog = true">
                 <v-avatar size="24" variant="tonal" class="me-2">
                 <v-img v-if="getAccepter?.avatar" :src="`${API_URL}${getAccepter?.avatar}`" alt="Avatar" />
                 <v-icon size="x-small" v-else>mdi-account</v-icon>
@@ -45,7 +45,7 @@
                   }}</span>
 
               </div>
-              <div v-if="!isPoster && getPoster" class="d-flex align-center">
+              <div v-if="!isPoster && getPoster" class="d-flex align-center" @click.stop="showUserDialog = true">
                 <v-avatar size="24" variant="tonal" class="me-2">
                   <v-img v-if="getPoster?.avatar" :src="`${API_URL}${getPoster?.avatar}`" alt="Avatar" />
                   <v-icon size="x-small" v-else>mdi-account</v-icon>
@@ -169,6 +169,35 @@
     </v-dialog>
 
 
+    <v-dialog v-model="showUserDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
+        <div class="d-flex flex-column  ga-2 pl-3">
+        <div class="d-flex align-center ga-2 ">
+   
+            <v-avatar size="32" variant="tonal" class="">
+              <v-img v-if="getUserById(demand?.posterId)?.avatar"
+                :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
+              <v-icon size="x-small" v-else>mdi-account</v-icon>
+            </v-avatar>
+     
+          <span class="text-h7 font-weight-medium pa-0">
+            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+          </span>
+          </div>
+
+          <div>
+          <v-card-subtitle class="pa-0">
+            {{ getUserById(demand?.posterId)?.email }}
+          </v-card-subtitle>
+          <span class="text-caption opacity-70 font-weight-medium">  
+            {{ getUserById(demand?.posterId)?.personalData?.phoneNumber}}
+          </span>
+          </div>
+          </div>
+
+      </v-card>
+    </v-dialog>
+
 
   <!-- Dialog pour afficher le commentaire -->
   <v-dialog v-model="showCommentDialog" max-width="500px" attach="body" style="z-index: 1000000 !important">
@@ -249,9 +278,13 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
+
+
+
 const getTeamName = computed(() => {
   return teamStore.centerTeams.find(team => team._id === props.demand.posterShift.teamId)?.name;
 });
+const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
 
 const getAccepter = computed(() => {
   if (!props.demand?.accepterId) return null;
@@ -266,6 +299,8 @@ const shift = computed(() => {
     return props.demand?.posterShift;
   }
 });
+
+
 
 const getPoster = computed(() => {
   if (!props.demand?.posterId) return null;
@@ -295,6 +330,7 @@ const showPointsDialog = ref(false);
 const showCommentDialog = ref(false);
 const showConfirmDeleteDialog = ref(false);
 const expanded = ref(false);
+const showUserDialog = ref(false);
 
 defineEmits(['accept', 'decline']);
 

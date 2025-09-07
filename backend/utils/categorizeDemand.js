@@ -110,7 +110,6 @@ function parseShiftDateTime(date, time, endsNextDay = false) {
 function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
     const localShiftsSorted = shiftsSorted.slice();
   
-    console.log(targetShift)
     let startTime = targetShift?.default?.startTime;
     let endTime = targetShift?.default?.endTime ;
     if (!startTime || !endTime) {

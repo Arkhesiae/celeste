@@ -5,7 +5,7 @@ import User from '../models/User.js';
 const getTickets = async (req, res) => {
   try {
     let query = { deleted: false };
-    console.log(req.user)
+    
     // Si l'utilisateur est master, récupérer les tickets master et local
     // Sinon, récupérer seulement les tickets local
     if (req.user.isAdmin && req.user.adminType === 'master') {

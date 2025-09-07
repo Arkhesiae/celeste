@@ -44,8 +44,7 @@ const computeUserPool = async (demand) => {
             userShiftsMap.set(userId, shiftsMap);
         });
 
-       
-        console.log(demand);
+  
         // Analyser chaque utilisateur
         for (const user of users) {
             try {

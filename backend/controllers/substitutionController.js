@@ -247,7 +247,10 @@ const createDemand = async (req, res) => {
         // Calculer et afficher le pool d'utilisateurs pouvant accepter cette demande
         try {
         
+            let perf = performance.now();
             const userPool = await computeUserPool(demand);
+            let performanceEnd = performance.now();
+            console.log(`Time taken to compute user pool: ${performanceEnd - perf} milliseconds`);
             if (userPool.length > 0) {
                 try {
                     const populatedDemand = await Substitution.findById(demand._id).populate('posterId', 'name lastName', ).populate('posterShift.shift');
@@ -285,7 +288,6 @@ const createDemand = async (req, res) => {
 
 const cancelDemand = async (req, res) => {
     const demandId = req.params.id;
-    console.log('demandId', demandId);
     try {
       
         const demand = await Substitution.findByIdAndUpdate(demandId, {status: 'canceled'}, {new: true});
@@ -515,8 +517,6 @@ const checkUserShift = async (req, res) => {
         const userShift = await computeShiftOfUserWithSubstitutions(new Date(date), userId);
         const hasShift = userShift[0] && userShift[0].shift && userShift[0].shift.type !== 'rest'
 
-        console.log(userShift);
-        console.log(hasShift);
         res.status(200).json({
             hasShift: hasShift,
             shift: userShift

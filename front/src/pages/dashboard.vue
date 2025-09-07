@@ -34,7 +34,7 @@
           <v-card-title class="text-h6 py-0 font-weight-medium ">Mise à jour du site</v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
-              Mise à jour version alpha 0.202508.1, consultez la page patch notes pour plus d'informations.
+              Mise à jour version alpha 0.202509.2, consultez la page patch notes pour plus d'informations.
             </div>
           </v-card-text>
         </v-card>

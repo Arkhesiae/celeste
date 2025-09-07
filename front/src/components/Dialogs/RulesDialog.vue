@@ -26,7 +26,7 @@
               </span>
             </div>
           </div>
-      <v-card-text class="pa-6  article">
+      <v-card-text class="pa-0  article">
      
         <div class="text-body-1">
           <p class="mb-4">
@@ -45,7 +45,7 @@
               <div class="d-flex align-center justify-space-between">
                 <div class="d-flex align-center">
                   <v-icon :icon="rule.icon" color="primary" class="mr-6" size="16" />
-                  <span class="text-body-2 text-onSurface">
+                  <span class="text-onSurface" style="font-size: 12px !important">
                     {{ rule.text }}
                   </span>
                 </div>
@@ -79,13 +79,14 @@
             :key="rule.id"
             color="surfaceContainer " 
             rounded="lg" 
+             :class="rule.computed ? 'computed-rule' : 'uncomputed-rule'"
             class="pa-4"
             flat
           >
             <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
-                <v-icon :icon="rule.icon" color="primary" class="mr-6" size="16" />
-                <span class="text-body-2 text-wrap text-onSurface">
+                <v-icon :icon="rule.icon" :color="rule.computed ? 'primary' : 'error'" class="mr-6" size="16" />
+                <span class="text-body-2 text-wrap" :class="rule.computed ? 'text-onSurface' : 'text-error'" style="font-size: 12px !important">
                   {{ rule.text }}
                 </span>
               </div>
@@ -108,7 +109,7 @@
                 rounded="lg"
                 prepend-icon="mdi-close"
               >
-                  Non calculé (à venir)
+                  à venir
                 </v-chip>
               </div>
             </div>
@@ -249,7 +250,14 @@ const additionalRules = [
 <style scoped>
 .article {
   padding : 16px;
-  border : 1px solid rgba(var(--v-theme-onSurface), 0.02);
+  border : 1px solid rgba(var(--v-theme-onSurface), 0.0000002);
   border-radius : 16px;
+}
+
+
+.uncomputed-rule {
+  opacity: 0.9;
+
+  background-color: rgba(var(--v-theme-error), 0.15) !important;
 }
 </style> 

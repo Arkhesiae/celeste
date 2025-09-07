@@ -158,7 +158,6 @@ const saveRotation = async (req, res) => {
 
         const shifts = rotation.days;
 
-        console.log("shifts", shifts);
         for (const day of shifts) {
             const order = shifts.indexOf(day) + 1;
             const shift = await registerShift(day, order, newRotation);
@@ -761,7 +760,6 @@ const updateRotation = async (req, res) => {
     const updatedData = req.body;
 
     try {
-        console.log(updatedData)
         const rotation = await Rotation.findById(id).populate('days');
         if (!rotation) {
             return res.status(404).json({ message: 'Tour de service non trouvé' });

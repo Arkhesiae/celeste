@@ -8,7 +8,7 @@
 
 import 'vuetify/styles'
 import { md3 } from 'vuetify/blueprints'
-import { VTimePicker } from 'vuetify/labs/VTimePicker'
+
 
 import '@mdi/font/css/materialdesignicons.css' 
 
@@ -164,7 +164,7 @@ export default createVuetify({
     },
   },
   components: {
-    VTimePicker,
+ 
     VDateInput,
   },
   locale: {

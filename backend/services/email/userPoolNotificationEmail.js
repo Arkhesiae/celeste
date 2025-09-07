@@ -37,6 +37,7 @@ async function sendUserPoolNotification(userPool, demand) {
       text
     };
 
+
     // Envoyer les emails en masse
     const results = await emailService.sendBulkEmail(userEmails, mailOptions);
 

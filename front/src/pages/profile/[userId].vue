@@ -17,7 +17,7 @@
               <div class="d-flex align-center">
 
                 <v-avatar size="64" class="mr-4" variant="tonal">
-                  <v-img v-if="authStore.avatar" :src="`${API_URL}${authStore.avatar}`" alt="Avatar" />
+                  <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
                   <v-icon v-else>mdi-account</v-icon>
                 </v-avatar>
                 <div>

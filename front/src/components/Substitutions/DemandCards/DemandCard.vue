@@ -13,7 +13,7 @@
         </v-chip>
       </v-card-title>
       <template #append>
-        <div class="d-flex align-center ga-2">
+        <div class="d-flex align-center ga-2 ">
           <div class="d-flex align-center ga-2" v-if="!smAndDown && !small">
             <v-avatar size="24" variant="tonal" class="cursor-pointer" @click="showUserDialog = true">
               <v-img v-if="getUserById(demand?.posterId)?.avatar"
@@ -21,7 +21,7 @@
               <v-icon size="x-small" v-else>mdi-account</v-icon>
             </v-avatar>
             <span v-if="!smAndDown && !small" class="text-medium-emphasis font-weight-bold text-caption me-2">
-              {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+              {{ getUserById(demand?.posterId)?.name }} {{ abreviatedLastname }}
             </span>
 
 
@@ -81,7 +81,7 @@
     <v-divider color="primary" opacity="0.01" class="my-0"></v-divider>
 
    
-      <div class="d-flex align-center bg-surfaceContainer rounded-xl justify-space-between pr-4" @click="isExpanded = !isExpanded">
+      <div class="d-flex align-center bg-surfaceContainer rounded-xl justify-space-between pr-4 cursor-pointer" @click="isExpanded = !isExpanded">
         <div class=" pa-4 pl-8 pr-0 flex-shrink-0 position-relative">
           <div class="d-flex align-center flex-shrink-0   ga-3">
             <div class="pb-0 mb-0 flex-shrink-0">
@@ -121,7 +121,7 @@
               <v-icon size="x-small" v-else>mdi-account</v-icon>
             </v-avatar>
             <span class="text-medium-emphasis font-weight-bold text-caption me-2">
-              {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+              {{ getUserById(demand?.posterId)?.name }} {{ !xs ? getUserById(demand?.posterId)?.lastName : abreviatedLastname }}
             </span>
 
 
@@ -148,7 +148,11 @@
           <div v-if="demand?.limit?.length > 0">
             <v-chip v-if="smAndDown" rounded="lg" variant="tonal" color="error" size="small"
               @click="showLimitsDialog = true">
-              <v-icon>mdi-alert-circle-outline</v-icon>
+              <div class="d-flex align-center ga-1">
+                <v-icon>mdi-alert-circle-outline</v-icon>
+                <span style="font-size: 11px;">{{demand?.limit?.length}}</span>
+              </div>
+
             </v-chip>
             <div v-else class="d-flex align-center ga-2">
               <v-tooltip style="z-index: 3001 !important" class="rounded-lg" v-for="limit in demand?.limit"
@@ -292,22 +296,30 @@
 
     <!-- Dialog d'informations utilisateur -->
     <v-dialog v-model="showUserDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-4" style="z-index: 1000000 !important">
-        <v-card-item class="pa-0">
-          <template #prepend>
-            <v-avatar size="48" variant="tonal" class="me-3">
+      <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
+        <div class="d-flex flex-column  ga-2 pl-3">
+        <div class="d-flex align-center ga-2 ">
+   
+            <v-avatar size="32" variant="tonal" class="">
               <v-img v-if="getUserById(demand?.posterId)?.avatar"
                 :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
               <v-icon size="x-small" v-else>mdi-account</v-icon>
             </v-avatar>
-          </template>
-          <v-card-title class="text-h6 pa-0">
+     
+          <span class="text-h7 font-weight-medium pa-0">
             {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
-          </v-card-title>
+          </span>
+          </div>
+
+          <div>
           <v-card-subtitle class="pa-0">
             {{ getUserById(demand?.posterId)?.email }}
           </v-card-subtitle>
-        </v-card-item>
+          <span class="text-caption opacity-70 font-weight-medium">  
+            {{ getUserById(demand?.posterId)?.personalData?.phoneNumber}}
+          </span>
+          </div>
+          </div>
 
       </v-card>
     </v-dialog>
@@ -319,8 +331,8 @@
           Limites de la demande
         </v-card-title>
         <v-card-text class="pa-0 mt-4">
-          <div v-for="limit in demand?.limit" :key="limit" class="d-flex align-center mb-2">
-            <v-icon color="error" class="me-2">mdi-alert-circle-outline</v-icon>
+          <div v-for="limit in demand?.limit" :key="limit" class="d-flex align-center mb-2 ga-2">
+            <v-icon size="16" color="error" >{{basicRules.find(rule => rule.code === limit)?.icon}}</v-icon>
             <span class="text-body-2">
               {{basicRules.find(rule => rule.code === limit)?.shortName}}
 
@@ -424,6 +436,16 @@ const getShiftEndsNextDay = computed(() => {
   return props.demand?.posterShift?.shift?.default?.endsNextDay
 })
 
+const abreviatedLastname = computed(() => {
+  const lastName = getUserById.value(props.demand?.posterId)?.lastName
+  if (!lastName) return ''
+  
+  return lastName
+    .split(/[\s-]+/)
+    .map(word => word[0]+'.')
+    .join('')
+})
+
 let intervalId = null
 
 const shift = computed(() => {
@@ -445,11 +467,13 @@ const formatDate = (dateString) => {
   const currentYear = new Date().getFullYear()
   const dateYear = new Date(dateString).getFullYear()
   let formattedDate = date.format(dateString, 'fullDate')
+  console.log(formattedDate)
+
 
   if (dateYear !== currentYear) {
     return formattedDate
   } else {
-    return formattedDate.split(' ')[0] + ' ' + formattedDate.split(' ')[1]
+    return date.format(dateString, 'normalDate')
   }
 }
 

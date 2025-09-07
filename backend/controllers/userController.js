@@ -22,7 +22,6 @@ const createUser = async (req, res) => {
     const { name, lastName, password, email, centerId, team, zone, points, approved } = req.body;
 
     try {
-        console.log("in createUser", req.body)
         const hashedPassword = await hash(password, 10);
         const user = new User({
 
@@ -42,8 +41,7 @@ const createUser = async (req, res) => {
             return res.status(404).json({ message: 'Equipe non trouvée' });
         }
         const today = new Date();
-        console.log("user", user)
-        console.log("Server date : ", today)
+     
         today.setUTCHours(0, 0, 0, 0);
         user.teams.push({ teamId: firstTeam._id, fromDate: today , toDate: null });
 
@@ -609,7 +607,7 @@ const generateDateArray = (startDate, endDate) => {
 const updateUserPreferences = async (req, res) => {
     const { id } = req.params;
     const { preferences } = req.body;
-    console.log(preferences);
+
 
     try {
         const user = await User.findByIdAndUpdate(
@@ -776,14 +774,12 @@ const updateAvatar = async (req, res) => {
             return res.status(400).json({ message: 'Aucune image fournie' });
         }
 
-        console.log(avatar);
 
         // Vérifier le type de fichier
         if (!avatar.mimetype.startsWith('image/')) {
             return res.status(400).json({ message: 'Le fichier doit être une image' });
         }
 
-        console.log(avatar.mimetype);
 
         // Vérifier la taille du fichier (max 10MB)
         if (avatar.size > 10 * 1024 * 1024) {

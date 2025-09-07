@@ -24,11 +24,12 @@
     "capacitor-plugin-safe-area": "^4.0.0",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
+    "latest": "^0.2.0",
     "npm-check-updates": "^17.1.13",
     "roboto-fontface": "*",
     "vue": "^3.5.13",
     "vue-draggable-plus": "^0.6.0",
-    "vuetify": "^3.8.1",
+    "vuetify": "^3.9.7",
     "vuex": "^4.1.0"
   },
   "devDependencies": {

@@ -29,13 +29,11 @@ export const fetchLegacyUser = async (req, res) => {
   
 
         const newCenter = await checkCenter(user.centre, user.equipe, center)
-        console.log(newCenter)
 
         if (!newCenter) {
             return res.status(404).json({ message: 'Le centre renseigné n\'est pas valide' });
         }
 
-        console.log(user)
 
    
         res.json({
@@ -105,14 +103,13 @@ export const initiateAccountRecovery = async (req, res, next) => {
 }
 
 const checkCenter = async (center, equipe, centerToCheck) => {
-    console.log(center, equipe, centerToCheck)
     const newCenter = await Center.findOne({ OACI: centerToCheck })
   
     if (!center) {
         return null
     }
 
-    console.log(center.toUpperCase(),centerToCheck.toUpperCase())
+ 
     if (center.toUpperCase() === centerToCheck) {
         return newCenter._id
     }
@@ -125,8 +122,7 @@ const checkCenter = async (center, equipe, centerToCheck) => {
     else {
         zoneIndicator = 2
     }
-    console.log(center.toUpperCase().slice(0, 3) + zoneIndicator)
-    console.log(centerToCheck.toUpperCase())
+ 
     if (center.toUpperCase().slice(0, 3) + zoneIndicator === centerToCheck) {
         return newCenter._id
     }

@@ -16,7 +16,7 @@ const registerModification = async (req, res) => {
             });
         }
 
-        console.log(isOff)
+ 
 
         // Vérifier que l'utilisateur existe
         const user = await User.findById(userId);
@@ -71,8 +71,6 @@ const registerModification = async (req, res) => {
         await modification.save();
        
         const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
-
-        console.log(userShift)
 
         res.status(201).json({
             message: 'Modification de planning créée avec succès',

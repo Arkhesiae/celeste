@@ -12,38 +12,35 @@
       <!-- User Avatar Section -->
       <v-scale-transition appear>
 
-        <v-card max-width="400px" style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
-          class="flex-0-0 my-16 pa-4 d-flex justify-space-between" width="100%"
+        <v-card max-width="400px"  color="surfaceContainer" flat
+          class="flex-0-0 my-16 pa-4 d-flex justify-space-between rounded-xl" width="100%"
           @click="handleClick('/profile/' + authStore.userData.userId)" v-if="isLoggedIn">
 
-          <div class="d-flex justify-space-between align-center ga-2">
-            <v-avatar size="large" color="primary" >
-              <img v-if="getUserInfo?.avatar" :src="`${API_URL}${getUserInfo?.avatar}`" alt="avatar" />
+          <div class="d-flex justify-space-between align-center ga-2 pl-2">
+          
+            <v-avatar size="36" color="primary" >
+              <img width="36" height="36" v-if="authStore.userData?.avatar" :src="`${API_URL}${authStore.userData?.avatar}`" alt="avatar" />
               <v-icon v-else>mdi-account</v-icon>
             </v-avatar>
        
-   
-          <div class="d-flex flex-column">
-            <div class="text-h7"> {{ getUserInfo?.name?.charAt(0).toUpperCase() + getUserInfo?.name?.slice(1) }} </div>
-            <div class="text-h7"> <b>{{ getUserInfo?.lastName?.toUpperCase() }}</b></div>
+    
+          <div class="d-flex flex-column ">
+            <div style="font-size: 16px !important; position: relative; top: 2px;"> {{ getUserInfo?.name?.charAt(0).toUpperCase() + getUserInfo?.name?.slice(1) }} </div>
+            <div style="font-size: 16px !important; position: relative; top: -2px;"> <b>{{ getUserInfo?.lastName?.toUpperCase() }}</b></div>
           </div>
         </div>
           <div class="d-flex justify-space-between flex-column align-center">
             <div v-if="points > 99999" class="text-center text-h6 ">
-                <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
+                <v-icon class="mb-1" size="large">mdi-infinity</v-icon>
             </div>
-            <div v-else :key="points" class="text-h3 font-weight-bold text-center"> 
+            <div v-else :key="points" class="text-h5 font-weight-bold text-center"> 
               {{ points }}
             </div>
             <div class="text-body-2 text-medium-emphasis mt-n3">Points </div>
 
           </div>
         </v-card>
-        <v-card class="my-12 d-flex justify-center align-center flex-column flex-0-0" color="transparent" rounded="lg"
-          elevation="0" tile flat v-if="isLoggedIn" @click="router.push({ path: '/profile/' + authStore.userData.userId })">
-          <v-avatar size="x-large" color="primary" variant="tonal">{{ usernameInitial }}</v-avatar>
-          <v-card-title>{{ username }}</v-card-title>
-        </v-card>
+     
       </v-scale-transition>
 
       <!-- Navigation Links Section -->
@@ -52,18 +49,18 @@
         <div v-if="isLoggedIn" class="text-h7 d-flex flex-column">
           <v-fade-transition group appear>
             <div v-for="(item, index) in menuItemsLogged" :key="item.key" class="d-flex flex-column">
-              <span class="pt-4 pb-4 cursor-pointer" @click="handleClick(item.path)" :title="item.title">
+              <span style="font-size: 14px !important" class="pt-4 pb-4 cursor-pointer font-weight-medium" @click="handleClick(item.path)" :title="item.title">
                 {{ item.label }}
               </span>
-              <v-divider v-if="index < menuItemsLogged.length - 1"></v-divider>
+              <v-divider v-if="index < menuItemsLogged.length - 1" style="opacity: 0.04;"></v-divider>
             </div>
-            <v-divider v-if="authStore.userData.isAdmin"></v-divider>
+            <v-divider v-if="authStore.userData.isAdmin" style="opacity: 0.04;"></v-divider>
             <div v-for="(item, index) in menuItemsLoggedAdmin" v-if="authStore.userData.isAdmin" :key="item.key" class="d-flex flex-column">
             
-              <span class="pt-4 pb-4 cursor-pointer" @click="handleClick(item.path)" :title="item.title">
+              <span style="font-size: 14px !important" class="pt-4 pb-4 cursor-pointer font-weight-medium" @click="handleClick(item.path)" :title="item.title">
                 {{ item.label }}
               </span>
-              <v-divider v-if="index < menuItemsLoggedAdmin.length - 1"></v-divider>
+              <v-divider v-if="index < menuItemsLoggedAdmin.length - 1" style="opacity: 0.04;"></v-divider>
             </div>
           </v-fade-transition>
 
@@ -215,7 +212,6 @@ const handleLogout = async () => {
 
 const getUserInfo = computed(() => {
   const userInfo = userStore.users.find(user => user._id === authStore.userData.userId);
-  console.log(userInfo);
   return userInfo;
 });
 

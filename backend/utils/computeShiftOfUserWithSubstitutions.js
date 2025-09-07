@@ -22,7 +22,6 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
         const dateArray = Array.isArray(dates) ? dates : [dates];
         const results = await Promise.all(
             dateArray.map(async (dateStr) => {
-                console.log("Date", dateStr);
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) {
                     throw new Error(`Date invalide: ${dateStr}`);
@@ -82,7 +81,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 if (planningModifications?.length > 0) {
                     const modification = planningModifications[0];
                     selectedVariation = modification.selectedVariation;
-                    console.log(modification)
+                    
                     if (modification.isOff) {
                         return {
                             date: dateStr,
@@ -117,7 +116,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
 
                 // Si l'utilisateur a des substitutions acceptées pour cette date
                 if (substitutions.length > 0) {
-                    console.log("substitutions");
+                   
                     let currentShift = initialShift;
                     let currentTeam = teamObject;
                     let substitutionHistory = [];

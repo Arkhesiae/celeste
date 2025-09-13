@@ -11,8 +11,6 @@ WORKDIR /app
 COPY backend ./backend
 COPY --from=builder /app/front/dist ./backend/public
 
-
-
 WORKDIR /app/backend
 RUN npm install
 

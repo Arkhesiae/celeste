@@ -81,6 +81,7 @@ app.get(/^\/(?!api).*/, (req, res) => {
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
+
   .then(async () => {
     console.log('✅ MongoDB connecté via Docker');
 
@@ -92,6 +93,7 @@ mongoose.connect(process.env.MONGO_URI)
     });
   })
   .catch((err) => {
+    console.log(process.env.MONGO_URI);
     console.error('❌ Erreur de connexion à MongoDB :', err.message);
     process.exit(1);
   });

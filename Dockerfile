@@ -11,6 +11,9 @@ WORKDIR /app
 COPY backend ./backend
 COPY --from=builder /app/front/dist ./backend/public
 
+COPY scripts ./scripts
+RUN chmod +x ./scripts/backup_mongo.sh
+
 WORKDIR /app/backend
 RUN npm install
 

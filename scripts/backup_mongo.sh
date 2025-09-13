@@ -4,7 +4,7 @@
 
 DATE=$(date +\%Y-\%m-\%d)
 BACKUP_DIR="/backups/$DATE"
-MONGO_URI="${MONGO_URI:-mongodb://root:randomString@database:27017/myDb?authSource=admin}"
+MONGO_URI="${MONGO_URI}"
 
 # === Crée le dossier de backup ===
 

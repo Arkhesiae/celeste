@@ -57,7 +57,8 @@ services:
       - ./mongo_backups:/backups
       - ./scripts/backup_mongo.sh:/backup.sh
     environment:
-      MONGO_URI: mongodb://root:randomString@database:27017/myDb?authSource=admin
+    
+      MONGO_URI: mongodb://root:${MONGO_PASSWORD}@database:27017/myDb?authSource=admin
     depends_on:
       - database
     command: ["sh", "-c", "chmod +x /backup.sh && /backup.sh"]

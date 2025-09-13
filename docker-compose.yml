@@ -12,7 +12,7 @@ services:
       - 3000:3000
     volumes:
       - avatars_data:/app/backend/public/avatars
-      - backups_data:/app/backups
+      - /root/celeste/mongo_backups:/app/backups
     depends_on:
       - database
     environment:

@@ -1,42 +1,23 @@
 <template>
   <v-container class="fill-height ">
-    <v-row justify="center" align="center">
-      <v-col cols="12"  class="text-center">
-        <v-card flat class="pa-6" color="transparent">
-          <v-progress-circular
-            indeterminate
-            color="remplacement"
-            size="64"
-            width="6"
-            class="mb-4"
-          ></v-progress-circular>
-          
-          <h2 class="text-h5 mb-2">Chargement en cours</h2>
-          <p class="text-body-1 text-medium-emphasis mb-4">
+    <v-row >
+      <v-col cols="12" >
+        <v-card flat class="pa-6" color="transparent">         
+          <span class="text-h7 mb-2 font-weight-bold">Chargement en cours</span>
+          <p class="text-body-2 opacity-50 text-medium-emphasis mb-4">
             Veuillez patienter pendant le chargement de vos données...
           </p>
 
-          <span class="text-caption text-medium-emphasis mb-4">{{ initializationStore.currentlyLoading }}</span>
+         
+          <span class="text-caption text-medium-emphasis mb-4">{{ progressPercentage }}%</span>
 
           <v-progress-linear
-            indeterminate
+            :model-value="progressPercentage"
             color="remplacement"
             height="4"
-            class="mt-4"
+            class="mt-4 rounded-xl"
           ></v-progress-linear>
-
-          <!-- <v-list bg-color="transparent" class="mb-4 d-flex flex-column gap-0 justify-start align-center">
-            <v-list-item v-for="(item, index) in loadingItems" :key="index" class="justify-start d-flex align-center">
-              <template v-slot:prepend>
-                <v-icon
-                  :color="item.loaded ? 'remplacement' : 'primary'"
-                  :icon="item.loaded ? 'mdi-check-circle' : 'mdi-loading'"
-                  class="mr-2"
-                ></v-icon>
-              </template>
-              <v-list-item-title class="text-caption">{{ item.label }}</v-list-item-title>
-            </v-list-item>
-          </v-list> -->
+          <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.currentlyLoading }}</span>
         </v-card>
       </v-col>
     </v-row>
@@ -44,18 +25,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { useInitializationStore } from '@/stores/initializationStore';
 
-const loadingItems = ref([
-  { key: 'substitutions', label: 'Chargement des substitutions', loaded: computed(() => initializationStore.initializationState.substitutions) },
-  { key: 'center', label: 'Chargement des centres', loaded: computed(() => initializationStore.initializationState.center) },
-  { key: 'team', label: 'Chargement des équipes', loaded: computed(() => initializationStore.initializationState.team) },
-  { key: 'rotations', label: 'Chargement des rotations', loaded: computed(() => initializationStore.initializationState.rotations) },
-  { key: 'personal', label: 'Chargement des données personnelles', loaded: computed(() => initializationStore.initializationState.personal) }
-]);
-
 const initializationStore = useInitializationStore();
+
+// Calculate progress percentage based on initialization state
+const progressPercentage = computed(() => {
+  const state = initializationStore.initializationState;
+  const totalSteps = Object.keys(state).length;
+  const completedSteps = Object.values(state).filter(Boolean).length;
+  return Math.round((completedSteps / totalSteps) * 100);
+});
 </script>
 
 <style scoped>

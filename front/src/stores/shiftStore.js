@@ -201,6 +201,12 @@ export const useShiftStore = defineStore('shift', () => {
     }
   };
 
+  const emptyStore = () => {
+    shiftsWithSubstitutions.value = [];
+    loading.value = false;
+    error.value = null;
+  };
+
   return {
     // State
     period,
@@ -225,5 +231,6 @@ export const useShiftStore = defineStore('shift', () => {
     // Watchers
     setEntryWithDetection,
     addEntry,
+    emptyStore
   };
 }); 

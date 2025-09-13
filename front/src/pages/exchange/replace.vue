@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <!-- En-tête -->
-    <MainTitle title="Remplacements" subtitle="Créer et consulter les demandes de rempla">
+    <MainTitle title="Demandes" subtitle="Créer et consulter les demandes de rempla">
       <template #actions>
 
         <!-- Bouton pour afficher/masquer la colonne latérale sur mobile -->

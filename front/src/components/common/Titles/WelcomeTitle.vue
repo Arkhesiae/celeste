@@ -10,13 +10,13 @@
             <span :style="{ fontSize: titleFontSize + 'px !important' }"
               class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold">{{ userName }}</span>
           </div>
-          <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="text-overline text-medium-emphasis">Tableau de bord </span>
+          <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50"> Tableau de bord </span>
         </div>
-        <v-btn v-if="!smAndDown" height="48px"
-          class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow new-demand-button" flat
-          style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="$router.push('/calendar')">
-          Nouvelle demande
-        </v-btn>
+
+        <div class="flex-shrink-0" ref="actionsRef">
+          <slot name="actions" />
+        </div>
+    
       </div>
 
     </div>
@@ -70,7 +70,7 @@ const titleFontSize = computed(() => {
 })
 
 const subtitleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 10 : 10
+  const baseSize = smAndDown.value ? 10 : 12
   const minSize = smAndDown.value ? 8 : 8
   const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value)
   return scaledSize

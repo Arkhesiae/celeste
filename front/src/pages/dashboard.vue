@@ -15,11 +15,22 @@
         Nouvelle demande
       </v-btn>
     </div> -->
-    <WelcomeTitle :userName="userName" />
+    <WelcomeTitle :userName="userName">
+      <template #actions>
+        <v-btn v-if="!smAndDown" height="48px"
+          class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow new-demand-button" flat
+          style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="$router.push('/calendar')">
+          Nouvelle demande
+        </v-btn>
+        <v-btn v-else size="large" variant="text" color="onSurface" icon @click="$router.push('/calendar')">
+          <v-icon size="32" icon="mdi-plus" />
+        </v-btn>
+      </template>
+    </WelcomeTitle>
 
     <v-row class="mt-2">
       <v-col cols="12" class="pa-2">
-        <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4"
+        <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-6"
           color="surfaceContainer">
           <v-icon icon="mdi-bell-outline" size="16" color="remplacement"
             style="position: absolute; top: 16px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
@@ -37,6 +48,7 @@
               Mise à jour version alpha 0.202509.2, consultez la page patch notes pour plus d'informations.
             </div>
           </v-card-text>
+          
         </v-card>
       </v-col>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
@@ -179,11 +191,11 @@
           </div>
         </v-alert> -->
 
-        <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-4"
-          icon="mdi-alert-circle-outline" style="cursor: pointer;">
+        <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-6"
+          icon="mdi-alert-circle-outline bg-transparent" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
-              <v-card-title class="text-h6 font-weight-medium">Version alpha</v-card-title>
+              <v-card-title class="text-h6 font-weight-medium" >Version alpha</v-card-title>
               <v-card-text>
                 <div class="text-medium-emphasis">
                   Vous êtes sur une alpha du site.
@@ -200,6 +212,9 @@
           </div> -->
 
           </div>
+          <template #prepend>
+            <v-icon icon="mdi-alert-circle-outline"  size="32" class="mr-2" />
+          </template>
         </v-alert>
       </v-col>
     </v-row>
@@ -209,7 +224,7 @@
 
       <v-col cols="12" md="7" xl="8" offset-xl="0" class="pa-2" :class="smAndDown ? 'px-4' : ''">
         <!-- Carte des vacations -->
-        <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-4" color="surfaceContainer">
+        <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-6 pl-8" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
           <v-card-text>
             <div v-if="getVacation && getVacation.shift?.type === 'rest'">
@@ -220,11 +235,11 @@
               </div>
             </div>
             <div v-if="getVacation && getVacation.shift?.type !== 'rest'">
-              <div class="d-flex align-center justify-space-between mb-2">
-                <div>
+              <div class="d-flex align-center justify-space-between">
+                <div class="d-flex align-center ga-2">
                   <div class="text-h5 font-weight-medium">{{ vacationName(getVacation) }}</div>
-                  <div class="text-medium-emphasis" v-if="getVacation.shift?.type !== 'rest'">
-                    {{ getVacation.shift?.startTime }} - {{ getVacation.shift?.endTime }}
+                  <div class="opacity-50 font-weight-medium" v-if="getVacation.shift?.type !== 'rest'">
+                    {{ getVacation.shift?.default?.startTime || getVacation.shift?.startTime }} - {{ getVacation.shift?.default?.endTime || getVacation.shift?.endTime }}
                   </div>
                 </div>
                 <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
@@ -242,7 +257,7 @@
 
 
         <!-- Carte de la vacation de demain -->
-        <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-4" color="surfaceContainer">
+        <v-card rounded="xl" elevation="0" variant="flat" class="mb-4 smooth-shadow pa-6 pl-8  " color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Demain</v-card-title>
           <v-card-text>
             <div v-if="getTomorrowVacation && getTomorrowVacation.shift?.type === 'rest'">
@@ -253,11 +268,11 @@
               </div>
             </div>
             <div v-if="getTomorrowVacation && getTomorrowVacation.shift?.type !== 'rest'">
-              <div class="d-flex align-center justify-space-between mb-2">
-                <div>
+              <div class="d-flex align-center justify-space-between ">
+                <div class="d-flex align-center ga-2">
                   <div class="text-h5 font-weight-medium">{{ vacationName(getTomorrowVacation) }}</div>
-                  <div class="text-medium-emphasis" v-if="getTomorrowVacation.shift?.type !== 'rest'">
-                    {{ getTomorrowVacation.shift?.startTime }} - {{ getTomorrowVacation.shift?.endTime }}
+                  <div class="opacity-50 font-weight-medium" v-if="getTomorrowVacation.shift?.type !== 'rest'">
+                    {{ getTomorrowVacation.shift?.default?.startTime }} - {{ getTomorrowVacation.shift?.default?.endTime  }}
                   </div>
                 </div>
                 <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"

@@ -1,145 +1,52 @@
 import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
-import {getTeamAtGivenDate} from "../utils/getTeamAtGivenDate.js";
 import {computeShiftOfUserWithSubstitutions} from "../utils/computeShiftOfUserWithSubstitutions.js";
 import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
 import Transaction from '../models/Transaction.js';
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { categorize } from '../utils/categorizeDemand.js';
-import { generateShiftsMap } from '../utils/generateShiftsMap.js';
+import { generateMapFromDemands } from '../utils/generateShiftsMap.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
-import { sendUserPoolNotification, sendUserNotification } from '../services/email/userPoolNotificationEmail.js';
+import * as substitutionService from '../services/substitution.service.js';
+import { sendUserNotification } from '../services/email/userPoolNotificationEmail.js';
 import { buildUserPoolNotificationEmail } from '../services/email/demandEmailModels.js';
-import Shift from '../models/Shift.js';
 
     
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
 const MIN_POINTS_TO_POST_REQUEST = -40;
 const MAX_POINTS_TO_ACCEPT_REQUEST = 2000;
 
+
+
 const getCenterDemands = async (req, res) => {
     try {
         const userId = req.user.userId;
-        if (!userId) {
-            return res.status(400).json({ message: 'L\'identifiant de l\'utilisateur est requis' });
-        }
-
-        const user = await User.findById(userId).select('centerId');
-        if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
-        }
-
-        let startDate, endDate;
-        if (req.query.startDate && req.query.endDate) {
-            try {
-                startDate = new Date(JSON.parse(req.query.startDate));
-                endDate = new Date(JSON.parse(req.query.endDate));
-                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                    return res.status(400).json({ message: 'Format de date invalide' });
-                }
-                if (startDate> endDate) {
-                    return res.status(400).json({ message: 'Ordre des dates invalide' });
-                }
-            } catch (error) {
-                return res.status(400).json({ message: 'Format de dates invalide' });
-            }
-        } 
-        else {
-            return res.status(404).json({ message: 'Les dates sont requises' });
-        }
-
-
-        const dateFilter = startDate && endDate ? {
-            'posterShift.date': { 
-                $gte: startDate, 
-                $lte: endDate 
-            }
-        } : {};
-
-        const baseFilter = {
-            centerId: user.centerId,
-            deleted: false,
-            status: { $nin: ['canceled', 'completed'] }
-        };
-
-        const [demands, myDemands] = await Promise.all([
-            Substitution.find({
-                deleted: false,
-                ...baseFilter,
-                posterId: { $ne: user._id },
-                ...dateFilter
-            }).populate('posterShift.shift'),
-            Substitution.find({
-                deleted: false,
-                ...baseFilter,
-                posterId: user._id,
-                ...dateFilter
-            }).populate('posterShift.shift')
-        ]);
-
-     
-
-        const unseenDemandIds = demands
-            .filter(d => !d.seenBy.includes(userId))
-            .map(d => d._id);
-
-        if (unseenDemandIds.length > 0) {
-            await Substitution.updateMany(
-                { _id: { $in: unseenDemandIds } },
-                { $push: { seenBy: userId } }
-            );
-        }
-
-
-        const categorizedDemands = await categorizeDemands(demands, userId);
-
-        const result = [...categorizedDemands, ...myDemands];
-        res.status(200).json(result);
+        const { startDate, endDate } = req.body;
+        const demands = await substitutionService.getOpenDemands(userId, startDate, endDate);
+        res.status(200).json(demands);
     } catch (error) {
         console.error('Erreur en récupérant les demandes de substitution:', error);
-        res.status(500).json({ 
-            message: error.message || 'Une erreur est survenue lors de la récupération des demandes',
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
+        res.status(error.status || 500).json({ error: error.message });
     }
 };
 
-const categorizeDemands = async (demands, userId) => {
-    const categorizedDemands = [];
-  
-    // Pré-calculer la map des shifts pour optimiser les performances
-    const openDemands = demands.filter(d => d.status === 'open');
-    let shiftsMap = null;
-    
-    if (openDemands.length > 0) {
-        try {
-            shiftsMap = await generateShiftsMap(openDemands, userId);
-        } catch (error) {
-            console.error('Erreur lors de la préparation de la map des shifts:', error);
-        }
+
+// Recatégoriser les substitutions
+const recategorizeSubstitutions = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { substitutionIds } = req.body;
+        const categorizedSubstitutions = await substitutionService.recategorizeSubstitutions(substitutionIds, userId);
+        res.status(200).json({ message: 'Substitutions recatégorisées avec succès', categorizedSubstitutions });
+    } catch (error) {
+        console.error('Erreur lors de la recatégorisation des substitutions:', error);
+        res.status(error.status || 500).json({ error: error.message, error: error });
     }
-
-
-  
-    await Promise.all(demands.map(async (demand) => {
-        try {
-            if (demand.status === 'open') {
-                const categorizedDemand = await categorize(demand, shiftsMap);
-                categorizedDemands.push(categorizedDemand);
-            }
-            else {
-                categorizedDemands.push(demand);
-            }
-        } catch (err) {
-            console.error(`Erreur lors du traitement de la demande ${demand._id}:`, err);
-            throw err;
-        }
-    }));
-
-
-    return categorizedDemands;
 };
 
+
+
+// Récupérer les demandes de l'utilisateur
 const getUserDemands = async (req, res) => {
     try {
         const posterId = req.query.posterId;
@@ -161,159 +68,90 @@ const getUserDemands = async (req, res) => {
     }
 };
 
+// Créer une demande
 const createDemand = async (req, res) => {
     try {
-        const { 
-            posterId, 
-            posterShift, 
-            comment, 
-            points, 
-            status = 'open',
-            acceptedSwitches,
-            reservedForUserId,
-            isTrueSwitch
-        } = req.body;
+      const demand = await substitutionService.createDemand(req.body);
+      res.status(201).json(demand);
+      const populatedDemand = await demand.populate('posterId', 'name lastName',)
 
-
-        // Validation de l'utilisateur
-        const user = await User.findById(posterId).populate('teams');
-        if (!user) {
-            return res.status(404).json({ error: 'Utilisateur non trouvé' });
-        }
-
-        if (user.points - points < MIN_POINTS_TO_POST_REQUEST) {
-            return res.status(400).json({ error: 'Vous ne pouvez pas poster cette demande, vous n\'avez pas assez de points' });
-        }
-
-        // Vérification du shift de l'utilisateur
-        const givenDate = new Date(posterShift.date);
-        const userShifts = await computeShiftOfUserWithSubstitutions(givenDate, posterId);
-        const userShift = userShifts[0];
-            
-        if (!userShift || !userShift.shift) {
-            return res.status(400).json({ error: "L'utilisateur n'a pas de shift défini pour cette date" });
-        }
-
-        // Validation de l'équipe
-        const team = getTeamAtGivenDate(user.teams, givenDate);
-        if (!team) {
-            return res.status(400).json({error: "L'utilisateur n'appartient à aucune équipe à la date spécifiée"});
-        }
-
-        // Vérification des demandes existantes
-        const existingDemands = await Substitution.find({ 
-            posterId: posterId, 
-            'posterShift.date': posterShift.date,
-            deleted: false,
-            status: { $in: ['open', 'pending', 'accepted'] }
-        });
-        if (existingDemands.length > 0) {
-            return res.status(400).json({ error: 'Une demande existe déjà pour ce jour' });
-        }
-
-        let type;
-        if (isTrueSwitch) {
-            type = "switch";
-        } else {
-            type = acceptedSwitches.length > 0 ? "hybrid" : "substitution";
-        }
-
-        // Création de la demande
-        const demand = new Substitution({
-            posterId,
-            posterShift: {
-                shift: userShift.shift._id,
-                selectedVariation: null,
-                teamId: userShift.teamObject._id,
-                date: userShift.date
-            },
-            comment: comment || '',
-            points,
-            status: status,
-            centerId: user.centerId,
-            createdAt: new Date(),
-            deleted: false,
-            seenBy: [],
-            interested: [],
-            acceptedSwitches: acceptedSwitches || [],
-            isTrueSwitch: isTrueSwitch || false,    
-            type : type
-        });
-
-    
-        await demand.save();
-        demand.posterShift.shift = await Shift.findById(demand.posterShift.shift)
-        res.status(201).json(demand);
-        // Calculer et afficher le pool d'utilisateurs pouvant accepter cette demande
-        try {
-        
-            let perf = performance.now();
-            const userPool = await computeUserPool(demand);
-            let performanceEnd = performance.now();
-            console.log(`Time taken to compute user pool: ${performanceEnd - perf} milliseconds`);
-            if (userPool.length > 0) {
-                try {
-                    const populatedDemand = await Substitution.findById(demand._id).populate('posterId', 'name lastName', ).populate('posterShift.shift');
-                    sendUserPoolNotification(userPool, populatedDemand)
-                        .then(results => {
-                            console.log(`📧 Notifications envoyées avec succès:`, {
-                                demandId: demand._id,
-                                totalSent: results.sent,
-                                totalFailed: results.failed
-                            });
-                        })
-                        .catch(error => {
-                            console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+      console.log(populatedDemand);
+      try {
+        const userPool = await computeUserPool(populatedDemand);
+        if (userPool.length > 0) {
+            try {
+                sendUserPoolNotification(userPool, populatedDemand)
+                    .then(results => {
+                        console.log(`📧 Notifications envoyées avec succès:`, {
+                            demandId: demand._id,
+                            totalSent: results.sent,
+                            totalFailed: results.failed
                         });
-                } catch (emailError) {
-                    console.error('❌ Erreur lors de la préparation des notifications:', emailError);
-                }
+                    })
+                    .catch(error => {
+                        console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                    });
+            } catch (emailError) {
+                console.error('❌ Erreur lors de la préparation des notifications:', emailError);
             }
-        } catch (error) {
-            console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
         }
-        
-    
     } catch (error) {
-        console.error('Erreur lors de la création de la demande:', error);
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ 
-                error: 'Données invalides', 
-                details: Object.values(error.errors).map(err => err.message) 
-            });
-        }
-        res.status(500).json({ error: 'Une erreur est survenue lors de la création de la demande.' });
+        console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
+    }
+    } catch (error) {
+      console.error('❌ Erreur createDemand:', error);
+      res.status(error.status || 500).json({ error: error.message });
     }
 };
+
 
 const cancelDemand = async (req, res) => {
     const demandId = req.params.id;
     try {
-      
-        const demand = await Substitution.findByIdAndUpdate(demandId, {status: 'canceled'}, {new: true});
-        if (!demand) {
-            return res.status(404).json({error: 'Demand not found'});
-        }
-
-        
-        // Annuler toutes les transactions associées à la demande
-        if (demand.points > 0) {
-            const transactions = await Transaction.find({ request: demandId });
-            await Promise.all(transactions.map(async (transaction) => {
-                try {
-                    await cancelDelayedTransaction(transaction._id);
-                } catch (error) {
-                    console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
-                    // On continue même si une transaction échoue à être annulée
-                }
-            }));
-        }
-
-
-        res.status(200).json({message: 'Demand deleted successfully'});
+        const demand = await substitutionService.cancelDemand(demandId);
+        res.status(200).json({message: 'Demande annulée avec succès', demand: demand.demand, shift: demand.shift});
     } catch (error) {
-        console.error('Error deleting demand:', error);
-        res.status(500).json({error: 'Internal server error'});
+        console.error('Erreur lors de l\'annulation de la demande:', error);
+        res.status(error.status || 500).json({error: error.message});
+    }
+};
+
+const unacceptRequest = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const requestId = req.params.id;
+
+        // Utiliser le service pour annuler l'acceptation
+        const {categorizedRequest, shift} = await substitutionService.unacceptDemand(requestId, userId);
+
+        res.status(200).json({
+            message: 'Désistement de la demande',
+            request: categorizedRequest,
+            newShiftData: shift
+        });
+
+        try {
+            const populatedDemand = await Substitution.findById(categorizedRequest._id).populate('posterId', 'name lastName email')
+            const originalAccepter = await User.findById(userId);
+            sendUserNotification(populatedDemand, 'cancelled', originalAccepter)
+                .then(results => {
+                    console.log(`📧 Notifications envoyées avec succès:`, {
+                        demandId: categorizedRequest._id,
+                        totalSent: results.sent,
+                        totalFailed: results.failed
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                });
+        } catch (emailError) {
+            console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+        }
+
+      
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation de l\'acceptation:', error);
+        res.status(error.status || 500).json({ error: error.message });
     }
 };
 
@@ -348,26 +186,26 @@ const updateDemandStatus = async (req, res) => {
     res.json(demand);
 };
 
-const markRequestAsSeen = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const requestId = req.params.id;
+// const markRequestAsSeen = async (req, res) => {
+//     try {
+//         const userId = req.user.id;
+//         const requestId = req.params.id;
 
-        const request = await Substitution.findByIdAndUpdate(
-            requestId,
-            {$addToSet: {seenBy: userId}},
-            {new: true}
-        );
+//         const request = await Substitution.findByIdAndUpdate(
+//             requestId,
+//             {$addToSet: {seenBy: userId}},
+//             {new: true}
+//         );
 
-        if (!request) {
-            return res.status(404).json({message: 'Request not found'});
-        }
+//         if (!request) {
+//             return res.status(404).json({message: 'Request not found'});
+//         }
 
-        res.json({message: 'Request marked as seen', request});
-    } catch (error) {
-        res.status(500).json({message: 'Server error', error});
-    }
-};
+//         res.json({message: 'Request marked as seen', request});
+//     } catch (error) {
+//         res.status(500).json({message: 'Server error', error});
+//     }
+// };
 
 const markInterest = async (req, res) => {
     try {
@@ -571,9 +409,8 @@ const swapShifts = async (req, res) => {
 
         const acceptedShiftPoints = acceptedShiftData.points;
 
-        const accepterShift = {...userShift[0].shift, teamId: userShift[0].teamObject._id};
+        const accepterShift = {shift : userShift[0].shift._id, teamId: userShift[0].teamObject._id, selectedVariation: null};
    
-        
         // Mise à jour de la demande
         const updatedDemand = await Substitution.findByIdAndUpdate(
             demandId,
@@ -636,83 +473,7 @@ const swapShifts = async (req, res) => {
     }
 };
 
-const unacceptRequest = async (req, res) => {
-    try {
-        const userId = req.user.userId;
-        const requestId = req.params.id;
 
-        // Récupération de la demande
-        const request = await Substitution.findById(requestId);
-        if (!request) {
-            return res.status(404).json({ error: 'Demande non trouvée' });
-        }
-
-        // Vérification que la demande est acceptée
-        if (request.status !== 'accepted') {
-            return res.status(400).json({ error: 'Cette demande n\'est pas acceptée' });
-        }
-
-        // Vérification que l'utilisateur est bien celui qui a accepté
-        if (request.accepterId.toString() !== userId) {
-            return res.status(403).json({ error: 'Vous n\'êtes pas autorisé à annuler cette acceptation' });
-        }
-
-        // Annuler toutes les transactions associées à la demande
-        if (request.points > 0) {
-            const transactions = await Transaction.find({ request: requestId });
-            await Promise.all(transactions.map(async (transaction) => {
-                try {
-                    await cancelDelayedTransaction(transaction._id);
-                } catch (error) {
-                    console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
-                    // On continue même si une transaction échoue à être annulée
-                }
-            }));
-        }
-
-        // Mise à jour de la demande
-        const updatedRequest = await Substitution.findByIdAndUpdate(
-            requestId,
-            {
-                accepterShift: null,
-                accepterId: null,
-                status: 'open',
-                updatedAt: new Date()
-            },
-            { new: true }
-        ).populate('posterShift.shift');
-
-        const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);
-        const requestToReturn = await categorizeDemands([updatedRequest], userId);
-
-        try {
-            const populatedDemand = await Substitution.findById(updatedRequest._id).populate('posterId', 'name lastName email')
-            const originalAccepter = await User.findById(userId);
-            sendUserNotification(populatedDemand, 'cancelled', originalAccepter)
-                .then(results => {
-                    console.log(`📧 Notifications envoyées avec succès:`, {
-                        demandId: updatedRequest._id,
-                        totalSent: results.sent,
-                        totalFailed: results.failed
-                    });
-                })
-                .catch(error => {
-                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
-                });
-        } catch (emailError) {
-            console.error('❌ Erreur lors de la préparation des notifications:', emailError);
-        }
-
-        res.status(200).json({
-            message: 'Acceptation annulée avec succès',
-            request: requestToReturn[0],
-            newShiftData: shift[0]
-        });
-    } catch (error) {
-        console.error('Erreur lors de l\'annulation de l\'acceptation:', error);
-        res.status(500).json({ error: 'Une erreur est survenue lors de l\'annulation de l\'acceptation' });
-    }
-};
 
 // Détection des conflits de substitutions lors d'un changement d'équipe
 const detectTeamChangeConflicts = async (req, res) => {
@@ -754,7 +515,7 @@ const detectTeamChangeConflicts = async (req, res) => {
 };
 
 // Obtenir le pool d'utilisateurs pouvant accepter une demande
-const getUserPool = async (req, res) => {
+const getAvailableUsers = async (req, res) => {
     try {
         const demandId = req.params.id;
 
@@ -783,57 +544,17 @@ const getUserPool = async (req, res) => {
     }
 };
 
-const recategorizeSubstitutions = async (req, res) => {
+
+const getCompatibleSwitches = async (req, res) => {
+   try {
+    const date = req.params.date;
     const userId = req.user.userId;
-    const { substitutionIds } = req.body;
-
-    if (!userId || !substitutionIds) {
-        return res.status(400).json({ error: 'Paramètres manquants' });
-    }
-
-    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate('posterShift.shift');
-
-
-    const categorizedSubstitutions = await categorizeDemands(substitutions, userId);
-
-    res.status(200).json({ message: 'Substitutions recatégorisées avec succès', categorizedSubstitutions });
-};
-
-// Endpoint pour visualiser le template d'email
-const previewEmailTemplate = async (req, res) => {
-    try {
-        const demandId = req.params.id;
-
-        // Récupération de la demande avec populate
-        const demand = await Substitution.findById(demandId).populate('posterId', 'name lastName').populate('posterShift.shift');
-        if (!demand) {
-            return res.status(404).json({ error: 'Demande non trouvée' });
-        }
-
-        // Générer le template d'email
-        const { subject, html, text } = buildUserPoolNotificationEmail(demand);
-
-        res.status(200).json({
-            subject,
-            html,
-            text,
-            demand: {
-                id: demand._id,
-                type: demand.type,
-                posterName: demand.posterId?.name,
-                posterLastName: demand.posterId?.lastName,
-                shiftDate: demand.posterShift.date,
-                shiftName: demand.posterShift.name,
-                startTime: demand.posterShift.startTime,
-                endTime: demand.posterShift.endTime,
-                points: demand.points,
-                comment: demand.comment
-            }
-        });
-    } catch (error) {
-        console.error('Erreur lors de la génération du template:', error);
-        res.status(500).json({ error: 'Une erreur est survenue lors de la génération du template' });
-    }
+    const compatibleShifts = await substitutionService.getCompatibleSwitches(date, userId);
+    res.status(200).json(compatibleShifts);
+   } catch (error) {
+    console.error('Erreur lors de la recherche des jours compatibles:', error);
+    res.status(error.status || 500).json({ error: error.message });
+   }
 };
 
 export {
@@ -843,7 +564,7 @@ export {
     cancelDemand,
     deleteDemand,
     updateDemandStatus,
-    markRequestAsSeen,
+    // markRequestAsSeen,
     acceptRequest,
     getSeenCount,
     checkUserShift,
@@ -851,7 +572,8 @@ export {
     markInterest,
     unacceptRequest,
     detectTeamChangeConflicts,
-    getUserPool,
+    getAvailableUsers,
     recategorizeSubstitutions,
-    previewEmailTemplate
+    //   previewEmailTemplate,
+    getCompatibleSwitches
 }; 

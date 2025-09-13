@@ -248,7 +248,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
   /**
    * Nettoie le store
    */
-  const clearStore = () => {
+  const emptyStore = () => {
     modifications.value = [];
     currentModification.value = null;
     loading.value = false;
@@ -279,6 +279,6 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     updateModificationStatus,
     fetchModification,
     checkSubstitutionConflicts,
-    clearStore
+    emptyStore
   };
 });

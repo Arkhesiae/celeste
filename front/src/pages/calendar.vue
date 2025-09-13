@@ -69,13 +69,13 @@
 
 
 
-    <v-dialog v-model="loadingVacations" persistent width="300">
-      <v-card rounded="xl" class="pa-2">
-        <v-card-text class="d-flex align-center">
-          <v-progress-circular indeterminate color="primary"></v-progress-circular>
-          <p class="ml-4">Chargement...</p>
-        </v-card-text>
-      </v-card>
+    <v-dialog v-model="loadingVacations" persistent max-width="250">
+      <div class="pa-6 rounded-xl bg-surfaceContainer">
+        <div class="d-flex align-center ga-4">
+          <v-progress-circular size="24" indeterminate color="remplacement"></v-progress-circular>
+          <span class="ml-4">Chargement...</span>
+        </div>
+      </div>
     </v-dialog>
 
     <!-- Drawers -->

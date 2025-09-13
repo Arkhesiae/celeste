@@ -14,23 +14,28 @@ export const substitutionService = {
    * @returns {Promise<Array>} Liste des demandes de substitution
    */
   async fetchAndMarkAsSeen(dates, status) {
-    const url = new URL(`${API_URL}/substitution/center`);
+   
     
     // Vérifier que les dates sont définies
     if (!dates || !dates.startDate || !dates.endDate) {
       throw new Error('Les dates de début et de fin sont requises');
     }
     
-    // Ajouter les paramètres de date
-    url.searchParams.append('startDate', JSON.stringify(dates.startDate));
-    url.searchParams.append('endDate', JSON.stringify(dates.endDate));
+    // Préparer le corps de la requête
+    const requestBody = {
+      startDate: dates.startDate,
+      endDate: dates.endDate
+    };
+    
     // Ajouter le statut uniquement s'il est défini
     if (status && status !== 'undefined') {
-      url.searchParams.append('status', status);
+      requestBody.status = status;
     }
     
-    const response = await fetch(url, {
+    const response = await fetch(`${API_URL}/substitution/center`, {
+      method: 'POST',
       headers: getAuthHeaders(),
+      body: JSON.stringify(requestBody)
     });
     return handleResponse(response);
   },
@@ -202,6 +207,14 @@ export const substitutionService = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ substitutionIds })
+    });
+    return handleResponse(response);
+  },
+
+
+  async fetchCompatibleSwitches(date) {
+    const response = await fetch(`${API_URL}/substitution/compatible-switches/${date}`, {
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   }

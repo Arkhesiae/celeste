@@ -1,6 +1,7 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
 import Shift  from '../models/Shift.js';
-
+import { shiftMapToArray } from './generateShiftsMap.js';
+import { parseShiftTime } from './parseShiftTime.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
@@ -34,7 +35,8 @@ const categorize = async (demand, shiftsMap = null) => {
                 let canSwitch = false;
                 for (const switchItem of demand.acceptedSwitches) {
                     const shift = await Shift.findById(switchItem.shift);
-                   
+              
+              
                     if ((shift?._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name)) {
                         canSwitch = true;
                         break;
@@ -47,7 +49,7 @@ const categorize = async (demand, shiftsMap = null) => {
         }
 
 
-        const shiftsSorted = getAllShiftsSorted(shiftsMap);
+        const shiftsSorted = shiftMapToArray(shiftsMap);
         const computeRest = checkMinimumRestTime(demand.posterShift.shift, demandDate, shiftsSorted);
         const {restOk, invalidWindow} = checkWeeklyRestPeriod(demand.posterShift.shift, demandDate, shiftsSorted);
         const isWithin48h = checkWeeklyWorkHours(demand.posterShift.shift, demandDate, shiftsSorted);
@@ -85,20 +87,6 @@ const categorize = async (demand, shiftsMap = null) => {
     }
 };
 
-/**
- * Parse un horaire de shift en Date JS complète
- * @param {string} date - Date au format YYYY-MM-DD
- * @param {string} time - Heure au format HH:mm
- * @param {boolean} endsNextDay - Si true, décale au lendemain
- * @returns {Date}
- */
-function parseShiftDateTime(date, time, endsNextDay = false) {
-    const [hour, minute] = time.split(':').map(Number);
-    const d = new Date(date);
-    d.setHours(hour, minute, 0, 0);
-    if (endsNextDay) d.setDate(d.getDate() + 1);
-    return d;
-}
 
 /**
  * Simule l'insertion d'un shift dans une liste triée chronologiquement
@@ -115,8 +103,8 @@ function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
     if (!startTime || !endTime) {
         throw new Error("Invalid shift" + targetShift);
     }
-    const start = parseShiftDateTime(targetDate, startTime);
-    const end = parseShiftDateTime(targetDate, endTime, targetShift?.default?.endsNextDay);
+    const start = parseShiftTime(targetDate, startTime);
+    const end = parseShiftTime(targetDate, endTime, targetShift?.default?.endsNextDay);
 
     const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
     
@@ -140,45 +128,30 @@ function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
     return localShiftsSorted;
 }
 
-/**
- * Récupère tous les shifts de type "work", triés chronologiquement
- * @param {Object} shiftsMap - Objet avec clés de date et valeurs { date, shift }
- * @returns {Array<{ shift, date: string, start: Date, end: Date }>}
- */
-function getAllShiftsSorted(shiftsMap) {
-    const result = [];
-    for (const [date, entry] of shiftsMap) {
-        const shift = entry.shift;
-        result.push({ shift, date, start: entry.start, end: entry.end, team: entry.team });
-        // console.log("pushing : ", { shift, date, start: entry.start, end: entry.end, team: entry.team });
-    }
 
-
-    //  console.log("result", result.length);
-    return result.sort((a, b) => new Date(a.date) - new Date(b.date));
-}
 
 /**
  * Vérifie s'il y a au moins 11h de repos avant et après le shift cible
  * @param {Object} targetShift - Le shift en question
  * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Object} shiftsMap - Objet avec les shifts autour
- * @returns {boolean}
+ * @param {Array} shiftsSorted - Liste des shifts triés chronologiquement
+ * @returns {Object} { restBefore: number, restAfter: number, ok: boolean }
  */
 function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
-    if (targetShift.type !== 'work') return true;
+    if (targetShift.type !== 'work') return { restBefore: 0, restAfter: 0, ok: true };
+
+    // Simuler l'insertion du shift pour obtenir la liste mise à jour
+    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
 
     let startTime = targetShift?.default?.startTime;
     let endTime = targetShift?.default?.endTime ;
-    const targetStart = parseShiftDateTime(targetDate, startTime);
-    const targetEnd = parseShiftDateTime(targetDate, endTime, targetShift?.default?.endsNextDay);
-
+    const targetStart = parseShiftTime(targetDate, startTime);
+    const targetEnd = parseShiftTime(targetDate, endTime, targetShift?.default?.endsNextDay);
 
     let lastShift = null;
     let nextShift = null;
 
-    for (const s of shiftsSorted) {
-      
+    for (const s of localShiftsSorted) {
         if (s.end <= targetStart) {
             lastShift = s;
         } else if (s.start >= targetEnd) {
@@ -378,8 +351,8 @@ function checkConsecutiveWorkDays(targetShift, targetDate, shiftsSorted) {
 function checkRestAfterNightControl(targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return { ok: true, restAfterNightControl: 0 };
 
-    const targetStart = parseShiftDateTime(targetDate, targetShift?.default?.startTime);
-    const targetEnd = parseShiftDateTime(targetDate, targetShift?.default?.endTime, targetShift?.default?.endsNextDay);
+    const targetStart = parseShiftTime(targetDate, targetShift?.default?.startTime);
+    const targetEnd = parseShiftTime(targetDate, targetShift?.default?.endTime, targetShift?.default?.endsNextDay);
 
     // Vérifier si c'est un contrôle de nuit (entre 00h00 et 06h00)
     const isNightControl = targetStart.getHours() >= 0 && targetStart.getHours() < 6;
@@ -424,7 +397,7 @@ function checkConsecutiveNightControls(targetShift, targetDate, shiftsSorted) {
 
     for (const shift of localShiftsSorted) {
         if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftDateTime(shift.date, shift.shift?.default?.startTime);
+            const shiftStart = parseShiftTime(shift.date, shift.shift?.default?.startTime);
             const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
             
             if (isNightControl) {
@@ -491,7 +464,7 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
 
     for (const shift of localShiftsSorted) {
         if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftDateTime(shift.date, shift.shift?.default?.startTime);
+            const shiftStart = parseShiftTime(shift.date, shift.shift?.default?.startTime);
             const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
             
             if (isNightControl) {
@@ -533,7 +506,7 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
     // Vérifier le repos après chaque séquence de deux vacations consécutives
     for (const sequence of consecutiveNightControls) {
         if (sequence.length === 2) {
-            const lastShiftEnd = parseShiftDateTime(sequence[1].date, sequence[1].shift?.default?.endTime, sequence[1].shift?.default?.endsNextDay);
+            const lastShiftEnd = parseShiftTime(sequence[1].date, sequence[1].shift?.default?.endTime, sequence[1].shift?.default?.endsNextDay);
             
             // Chercher le prochain shift après cette séquence
             let nextShift = null;

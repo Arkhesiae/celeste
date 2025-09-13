@@ -10,21 +10,31 @@
 
 
         <v-card-title class="text-subtitle-1 font-weight-medium">
-          <div class="d-flex align-start ">
-            <v-card-title class="pb-0 mb-0">
-              <h2 class="text-h4 font-weight-medium">{{ shift?.name }}</h2>
-            </v-card-title>
-            <div class="d-flex align-start flex-column justify-space-between ml-2 ">
-              <v-card-subtitle class="py-0">
-                  {{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime }}
-              </v-card-subtitle>
-              <v-card-subtitle class="py-0 text-caption">Dans équipe {{ getTeamName }}</v-card-subtitle>
+          <div class="d-flex align-center flex-shrink-0   ga-3 ml-2">
+            <div class="pb-0 mb-0 flex-shrink-0">
+
+              <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;">{{ shift?.name }}</span>
+            </div>
+            <div class="d-flex align-start flex-column justify-space-between">
+              <div>
+                <span class="text-caption font-weight-bold">{{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime
+                }}</span>
+                <span class="text-caption font-weight-bold opacity-50 ml-1"
+                  style="font-size: 10px !important; top: -2px; position: relative;"
+                  v-if="shift?.default?.endsNextDay || shift?.endsNextDay">+1</span>
+              </div>
+              <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;">Dans
+                équipe {{
+                getTeamName }}</div>
 
             </div>
+
+
+
           </div>
         </v-card-title>
 
-        <div class=" pa-0 d-flex align-center justify-space-between">
+        <div class=" pa-0 d-flex align-center justify-space-between ml-2">
 
 
 
@@ -79,7 +89,7 @@
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
         <div class="d-flex align-center mr-2">
 
-          <v-chip variant="flat" size="small" rounded="lg" 
+          <v-chip variant="flat" size="x-small" rounded="lg" 
             class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
             <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
             <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
@@ -94,28 +104,28 @@
           <!-- <v-icon color="onBackground" class="ml-1"
         icon="mdi-information-outline" size="x-small"></v-icon> -->
         </div>
-        <v-chip v-if="demand?.comment" variant="flat" size="small" rounded="lg"
+        <v-chip v-if="demand?.comment" variant="flat" size="x-small" rounded="lg"
           class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
           <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
    
-        <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="small"
+        <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="x-small"
           rounded="lg">
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Permutation</span>
         </v-chip>
         <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="remplacement" variant="flat"
-          size="small" rounded="lg">
+          size="x-small" rounded="lg">
           <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
           <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Hybride</span>
         </v-chip>
         <v-chip v-if="demand?.type === 'substitution'" class="type-chip" color="remplacement" variant="flat"
-          size="small" rounded="lg">
+          size="x-small" rounded="lg">
           <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
           <span v-if="!small">Remplacement</span>
         </v-chip>
-        <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
+        <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="x-small" rounded="pill"
             color="background" variant="flat">
             {{ demand?.seenBy?.length || 0 }}
         </v-chip>

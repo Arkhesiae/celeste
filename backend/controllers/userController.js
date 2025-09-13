@@ -13,6 +13,8 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
+import { sendAdminNotificationEmail } from '../services/email/adminNotificationEmail.js';
+import { generateDateArray } from '../utils/generateDateArray.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -46,6 +48,32 @@ const createUser = async (req, res) => {
         user.teams.push({ teamId: firstTeam._id, fromDate: today , toDate: null });
 
         await user.save();
+        
+        // Si l'utilisateur n'est pas approuvé, envoyer une notification aux administrateurs du centre
+        if (!approved) {
+            try {
+                // Récupérer le centre et les administrateurs
+                const center = await Center.findById(centerId);
+                if (center) {
+                    const admins = await User.find({ 
+                        centerId: centerId,
+                        isAdmin: true 
+                    }).select('email');
+                    
+                    const adminEmails = admins
+                        .filter(admin => admin.email && admin.email.trim())
+                        .map(admin => admin.email);
+                    
+                    if (adminEmails.length > 0) {
+                        await sendAdminNotificationEmail(adminEmails, user, center);
+                    }
+                }
+            } catch (emailError) {
+                // Ne pas faire échouer la création d'utilisateur si l'email échoue
+                console.error('❌ Erreur lors de l\'envoi de la notification aux administrateurs:', emailError);
+            }
+        }
+        
         res.json({ status: 'Utilisateur créé avec succès.', user: user });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -577,29 +605,16 @@ const getUserShiftsWithSubstitutions = async (req, res) => {
         if (!dates || !dates.startDate || !dates.endDate || !userId) {
             return res.status(400).json({ message: !dates ? 'No dates provided' : !dates.startDate ? 'No start date provided' : !dates.endDate ? 'No end date provided' : 'No user provided' });
         }
-        const timer = new Date();
-        const dateArray = generateDateArray(dates.startDate, dates.endDate);
        
-        // console.log("-------------- COMPUTING ------------------" + dateArray.length);
-        const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
-        // console.log("-------------- COMPUTING TIME ------------------" + (new Date() - timer));
         
+        const dateArray = generateDateArray(dates.startDate, dates.endDate);           
+        const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
+
         res.json(results);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: error.message });
     }
-};
-
-const generateDateArray = (startDate, endDate) => {
-    const dateArray = [];
-    const currentDate = new Date(startDate);
-    const endDates = new Date(endDate);
-    while (currentDate <= endDates) {
-        dateArray.push(new Date(currentDate).toISOString());
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return dateArray;
 };
 
 

@@ -123,10 +123,10 @@
         </v-list>
       </v-card>
        <!-- <span>{{ API_URL }}</span> -->
-      <span>safeAreaTop: {{ safeAreaTop }}</span>
+      <!-- <span>safeAreaTop: {{ safeAreaTop }}</span>
       <span>safeAreaBottom: {{ safeAreaBottom }}</span>
       <span>safeAreaLeft: {{ safeAreaLeft }}</span>
-      <span>safeAreaRight: {{ safeAreaRight }}</span>
+      <span>safeAreaRight: {{ safeAreaRight }}</span> -->
     </v-card>
   
   </div>

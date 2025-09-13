@@ -1,93 +1,93 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
+import { parseShiftTime } from './parseShiftTime.js';
+
+
 
 /**
  * Prépare une map des shifts pour tous les utilisateurs concernés par les demandes
- * @param {Array} demands - Liste des demandes à traiter
+ * @param {Date[]} dates - Liste de dates à traiter
  * @param {string} userId - ID de l'utilisateur à analyser
- * @returns {Map} Map avec clé "date" et valeur { shift, team, date, start, end }
+ * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
  */
-const generateShiftsMap = async (demands, userId) => {
-    try {
+export async function generateShiftsMap(dates, userId) {
+  try {
     const shiftsMap = new Map();
 
-    // Collecter toutes les dates uniques pour l'utilisateur
-    const userDates = new Set();
+    // Construire un ensemble de dates ±6 jours autour de chaque date
+    const userDates = new Set(
+      dates.flatMap(date => {
+        const base = date.toISOString().split('T')[0];
+        const before = Array.from({ length: 6 }, (_, i) => {
+          const d = new Date(date);
+          d.setDate(date.getDate() - (i + 1));
+          return d.toISOString().split('T')[0];
+        });
+        const after = Array.from({ length: 6 }, (_, i) => {
+          const d = new Date(date);
+          d.setDate(date.getDate() + (i + 1));
+          return d.toISOString().split('T')[0];
+        });
+        return [base, ...before, ...after];
+      })
+    );
 
-    for (const demand of demands) {
-        const demandDate = new Date(demand.posterShift.date);
+    const dateArray = Array.from(userDates).sort();
 
-        // Ajouter le jour de la demande
-        userDates.add(demandDate.toISOString().split('T')[0]);
-
-        // Ajouter 6 jours avant
-        for (let i = 1; i <= 6; i++) {
-            const beforeDate = new Date(demandDate);
-            beforeDate.setDate(demandDate.getDate() - i);
-            userDates.add(beforeDate.toISOString().split('T')[0]);
+    // Récupérer tous les shifts en parallèle
+    await Promise.all(
+      dateArray.map(async (date) => {
+        const shifts = await computeShiftOfUserWithSubstitutions(date, userId);
+        for (const shift of shifts) {
+          shiftsMap.set(shift.date, shift);
         }
+      })
+    );
 
-        // Ajouter 6 jours après
-        for (let i = 1; i <= 6; i++) {
-            const afterDate = new Date(demandDate);
-            afterDate.setDate(demandDate.getDate() + i);
-            userDates.add(afterDate.toISOString().split('T')[0]);
-        }
-    }
-
-    const dates = Array.from(userDates).sort();
-    // Calculer tous les shifts en parallèle
-    const promises = [];
-
-    for (const date of dates) {
-        promises.push(
-            computeShiftOfUserWithSubstitutions(date, userId)
-                .then(shifts => {
-                    for (const shift of shifts) {
-                        const key = `${shift.date}`;
-                        shiftsMap.set(key, shift);
-                    }
-                })
-        );
-    }
-
-    await Promise.all(promises);
-    
-    // Créer la Map finale avec les résultats traités
+    // Construire la map finale (filtrer uniquement les shifts "work")
     const finalMap = new Map();
-    
     for (const [date, entry] of shiftsMap) {
-        if (!entry.shift || entry.shift?.type !== 'work') continue;
+      if (!entry.shift || entry.shift?.type !== 'work') continue;
 
-        const shift = entry.shift;
-        let startTime = shift?.default?.startTime;
-        let endTime = shift?.default?.endTime;
-        const start = parseShiftDateTime(date, startTime);
-        const end = parseShiftDateTime(date, endTime, shift?.default?.endsNextDay);
+      const { shift, teamObject } = entry;
+      const { startTime, endTime, endsNextDay } = shift?.default || {};
 
-        finalMap.set(date, { shift, team: entry.teamObject, date, start, end });
+      const start = parseShiftTime(date, startTime);
+      const end = parseShiftTime(date, endTime, endsNextDay);
+
+      finalMap.set(date, { shift, team: teamObject, date, start, end });
     }
 
-        return finalMap;
-    } catch (error) {
-        console.error('Erreur dans generateShiftsMap:', error.message);
-        throw error;
-    }
-};
-
-/**
- * Parse un horaire de shift en Date JS complète
- * @param {string} date - Date au format YYYY-MM-DD
- * @param {string} time - Heure au format HH:mm
- * @param {boolean} endsNextDay - Si true, décale au lendemain
- * @returns {Date}
- */
-function parseShiftDateTime(date, time, endsNextDay = false) {
-    const [hour, minute] = time.split(':').map(Number);
-    const d = new Date(date);
-    d.setHours(hour, minute, 0, 0);
-    if (endsNextDay) d.setDate(d.getDate() + 1);
-    return d;
+    return finalMap;
+  } catch (error) {
+    console.error('Erreur dans generateShiftsMap:', error);
+    throw error;
+  }
 }
 
+/**
+ * Génère une map des shifts à partir d'un tableau de demandes
+ * @param {Array<{ posterShift: { date: string } }>} demands - Tableau de demandes
+ * @param {string} userId - ID de l'utilisateur à analyser
+ * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
+ */
+export function generateMapFromDemands(demands, userId) {
+  const demandDates = demands.map(d => new Date(d.posterShift.date));
+  return generateShiftsMap(demandDates, userId); // pas besoin de `await` ici
+}
 
-export { generateShiftsMap };
+/**
+ * Récupère tous les shifts de type "work", triés chronologiquement
+ * @param {Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>} shiftsMap
+ * @returns {Array<{ shift: Object, date: string, start: Date, end: Date, team: Object }>}
+ */
+export function shiftMapToArray(shiftsMap) {
+  return Array.from(shiftsMap.values())
+    .map(entry => ({
+      shift: entry.shift,
+      date: entry.date,
+      start: entry.start,
+      end: entry.end,
+      team: entry.team
+    }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+}

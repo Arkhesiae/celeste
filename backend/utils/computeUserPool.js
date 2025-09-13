@@ -1,6 +1,6 @@
 import User from '../models/User.js';
 import { categorize } from './categorizeDemand.js';
-import { generateShiftsMap } from './generateShiftsMap.js';
+import { generateMapFromDemands } from './generateShiftsMap.js';
 
 /**
  * Calcule le pool d'utilisateurs pouvant potentiellement accepter une demande
@@ -29,7 +29,7 @@ const computeUserPool = async (demand) => {
         // Pré-calculer les maps des shifts pour tous les utilisateurs en parallèle
         const shiftsMapPromises = users.map(async (user) => {
             try {
-                const shiftsMap = await generateShiftsMap([demand], user._id);
+                const shiftsMap = generateMapFromDemands([demand], user._id);
                 return { userId: user._id.toString(), shiftsMap };
             } catch (error) {
                 return { userId: user._id.toString(), shiftsMap: new Map() };

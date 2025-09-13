@@ -3,6 +3,7 @@ import {ref, computed} from 'vue';
 import {authService} from '@/services/authService';
 import {jwtDecode} from "jwt-decode";
 import { userService } from '@/services/userService';
+import { emptyAllStores } from '@/utils/emptyAllStores';
 
 const STORAGE_KEY = 'authData';
 const TOKEN_EXPIRATION_THRESHOLD = 5 * 60; // 5 minutes en secondes
@@ -13,7 +14,7 @@ const TOKEN_EXPIRATION_THRESHOLD = 5 * 60; // 5 minutes en secondes
  */
 export const useAuthStore = defineStore('auth', () => {
   // State
-  const userData = ref();
+  const userData = ref({});
   const accessToken = ref();
   const isLoggedIn = ref(false);
 
@@ -107,6 +108,7 @@ export const useAuthStore = defineStore('auth', () => {
     userData.value = {};
     accessToken.value = '';
     isLoggedIn.value = false;
+    emptyAllStores();
     localStorage.removeItem(STORAGE_KEY);
   };
 
@@ -117,6 +119,7 @@ export const useAuthStore = defineStore('auth', () => {
    * @param {Object} credentials - Les identifiants de l'utilisateur (email, password).
    */
   const logIn = async (credentials) => {
+    console.log("Logging in");
     try {
       const result = await authService.login(credentials);
       setUser(result);

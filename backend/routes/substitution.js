@@ -7,7 +7,7 @@ import {
     createDemand,
     deleteDemand,
     updateDemandStatus,
-    markRequestAsSeen,
+    // markRequestAsSeen,
     acceptRequest,
     getSeenCount,
     swapShifts,
@@ -17,15 +17,17 @@ import {
     markInterest,
     unacceptRequest,
     detectTeamChangeConflicts,
-    previewEmailTemplate
+    // previewEmailTemplate,
+    getCompatibleSwitches,
+
 } from '../controllers/substitutionController.js';
 
 // Routes protégées par token
-router.get('/center', verifyToken, getCenterDemands);
+router.post('/center', verifyToken, getCenterDemands);
 router.get('/user', verifyToken, getUserDemands);
 router.post('/', verifyToken, createDemand);
 router.put('/:id/status', verifyToken, updateDemandStatus);
-router.post('/:id/seen', verifyToken, markRequestAsSeen);
+
 
 router.post('/:id/interest', verifyToken, markInterest);
 
@@ -42,7 +44,9 @@ router.get('/:id/seen-count', verifyToken, getSeenCount);
 
 router.post('/detect-team-change-conflicts', verifyToken, detectTeamChangeConflicts);
 
-// Route pour visualiser le template d'email (dev uniquement)
-router.get('/:id/preview-email', verifyToken, previewEmailTemplate);
+
+
+router.get('/compatible-switches/:date', verifyToken, getCompatibleSwitches);
+
 
 export default router;

@@ -18,7 +18,7 @@ import { usePointStore } from '@/stores/pointStore';
 export const useSubstitutionStore = defineStore('substitution', () => {
   // =============== STATE ===============
   const substitutions = ref([]);
-  const currentSubstitution = ref(null);
+
   const loading = ref(false);
   const error = ref(null);
   const startDate = ref(null);
@@ -126,7 +126,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     if (!userId.value) return [];
     return pendingTrueSubstitutions.value.filter(substitution => 
       substitution.posterId !== userId.value &&
-      substitution.limit.length === 0
+      substitution.limit?.length === 0
     );
   });
 
@@ -136,12 +136,12 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       ...pendingHybridSubstitutions.value.filter(substitution => 
         substitution.posterId !== userId.value &&
         substitution.canSwitch && 
-        substitution.limit.length === 1
+        substitution.limit?.length === 1
       ),
       ...pendingTrueSwitches.value.filter(substitution => 
         substitution.posterId !== userId.value &&
         substitution.canSwitch && 
-        substitution.limit.length === 1
+        substitution.limit?.length === 1
       )
     ];
   });
@@ -152,11 +152,11 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       ...pendingHybridSubstitutions.value.filter(substitution => 
         substitution.posterId !== userId.value &&
         !substitution.canSwitch && 
-        substitution.limit.length === 0
+        substitution.limit?.length === 0
       ),
       ...pendingTrueSubstitutions.value.filter(substitution => 
         substitution.posterId !== userId.value &&
-        substitution.limit.length === 0
+        substitution.limit?.length === 0
       )
     ];
   });
@@ -298,18 +298,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     );
   };
 
-  const fetchSubstitutionById = async (substitutionId) => {
-    try {
-      loading.value = true;
-      error.value = null;
-      currentSubstitution.value = await substitutionService.getSubstitutionById(substitutionId);
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération de la substitution';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+
 
   const fetchDemands = async (dates, status) => {
     loading.value = true;
@@ -370,11 +359,13 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     try {
       loading.value = true;
       error.value = null;
-      await substitutionService.cancelDemand(demandId);
+      const response = await substitutionService.cancelDemand(demandId);
       const index = substitutions.value.findIndex(s => s._id === demandId);
       if (index !== -1) {
         substitutions.value.splice(index, 1);
       }
+
+      shiftStore.addEntry(response.shift);
 
       await pointStore.fetchTransactions();
     } catch (err) {
@@ -551,10 +542,17 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
+
+  const emptyStore = () => {
+    substitutions.value = [];
+    loading.value = false;
+    error.value = null;
+  };
+
   return {
     // State
     substitutions,
-    currentSubstitution,
+
     loading,
     error,
 
@@ -595,7 +593,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
     // Actions
     getAllSubstitutions,
-    fetchSubstitutionById,
+
     fetchDemands,
     fetchAllDemands,
     createSubstitutionDemand,
@@ -608,6 +606,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     swapShifts,
     markInterest,
     fetchSubstitutions,
-    recategorizeSubstitutions
+    recategorizeSubstitutions,
+    emptyStore
   };
 });

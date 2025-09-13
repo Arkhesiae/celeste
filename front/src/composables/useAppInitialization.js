@@ -40,22 +40,30 @@ export function useAppInitialization() {
   const initializeTheme = async () => {
     initializationStore.currentlyLoading = 'theme';
     if (authStore.isLoggedIn) {
-      theme.global.name.value = authStore.userData.preferences.theme ? 'darkTheme' : 'lightTheme';
+      if (authStore.userData.preferences.theme === 'darkTheme') {
+        theme.change('darkTheme');
+      } else {
+        theme.change('lightTheme');
+      }
+ 
     }
    
   };
 
-  const initializeCenter = async () => {
-    initializationStore.currentlyLoading = 'center';
+  const initializeCenters = async () => {
+    initializationStore.currentlyLoading = 'centers';
     centerStore.fetchCenters();
-    if (!authStore.userData.centerId) return;
-  
-    await Promise.all([
-      userStore.fetchUsersByCenter(authStore.userData.centerId),
-      centerStore.fetchAdminsByCenter(),
-      centerStore.fetchUsersCountByCenter()
-    ]);
-    initializationStore.updateInitializationState('center', true);
+    initializationStore.updateInitializationState('centers', true);
+  };
+
+  const initializeUserList = async () => {
+    initializationStore.currentlyLoading = 'users';
+    if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
+      await userStore.fetchUsers();
+    } else {
+      await userStore.fetchUsersByCenter(authStore.userData.centerId);
+    }
+    initializationStore.updateInitializationState('users', true);
   };
 
   const initializeTeam = async () => {
@@ -132,8 +140,9 @@ export function useAppInitialization() {
   
       await initializeAuth();
       await initializeTheme();
-      await initializeCenter();
+      await initializeCenters();
       if (authStore.isLoggedIn) {
+        await initializeUserList();
         await initializeTeam();
         await initializeShiftsAndSubstitutions();
         await initializeRotations();

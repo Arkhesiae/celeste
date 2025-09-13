@@ -116,6 +116,12 @@ export const usePointStore = defineStore('points', () => {
 
   const formattedPoints = computed(() => formatPoints(points.value));
 
+  const emptyStore = () => {
+    points.value = [];
+    transactions.value = [];
+  
+  };
+
   return {
     // State
     points,
@@ -130,5 +136,6 @@ export const usePointStore = defineStore('points', () => {
     fetchUserPoints,
     fetchTransactions,
     fetchPendingTransactions,
+    emptyStore
   };
 }); 

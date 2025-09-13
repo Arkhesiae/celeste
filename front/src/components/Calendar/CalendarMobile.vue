@@ -4,14 +4,13 @@
       left: () => handleSwipe('left'),
       right: () => handleSwipe('right')
     }">
-    <!-- En-têtes des jours de la semaine -->
+
     <v-row class="mt-1 mb-8">
       <v-col v-for="day in daysOfWeek" :key="day" class="text-center">
         <strong>{{ day }}</strong>
       </v-col>
     </v-row>
 
-    <!-- Jours du calendrier -->
     <v-row v-for="(week, index) in calendarDays" :key="index"
       class="calendar-row d-flex justify-space-between align-center my-4" dense>
       <div style="height: 48px" v-for="day in week" :key="day.date"
@@ -32,14 +31,16 @@
             style="bottom:-4px !important; " :date="day.date" />
           <ConfirmationChip v-if="substitutionStore?.hasAcceptedAsPoster(day.date.toISOString())"
             style="bottom:-4px !important; " :date="day.date" />
-          <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 16" type="switch" status="accepted"/>-->
-          <!--          <StatusChip v-if="isWorkDay(day.date) && day.date.getDate() === 17" type="rempla" status="pending"/>-->
 
-          <span class="text-body-2" :style="isWorkDay(day.date) && !inPast(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'">
+          <span class="text-body-2 day" :style="isWorkDay(day.date) && !inPast(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'"
+          :class="{'xs': xs}">
             {{ day.date.getUTCDate() }}
           </span>
+
+
           <span class="text-caption position-absolute opacity-50" v-if="isWorkDay(day.date) || isOff(day.date)"
-            style="top: 0; right: 0;" :class="isOff(day.date) ? 'offDay' : ''">{{ getShiftName(day.date) }}</span>
+            style="top: 0; right: 0;" :class="{'offDay': isOff(day.date), 'xs': xs}"
+            >{{ getShiftName(day.date) }}</span>
 
           <div style="position: absolute; width: 100%; bottom: 0" class="d-flex justify-center">
 
@@ -67,10 +68,11 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { computed } from 'vue';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+import { useDisplay } from 'vuetify';
 
 const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
-
+const { xs } = useDisplay();
 
 const props = defineProps({
   daysOfWeek: Array,
@@ -81,6 +83,8 @@ const props = defineProps({
   rotationsMap: Map,
 });
 const emit = defineEmits(['select-day', 'swipe-left', 'swipe-right']);
+
+
 
 const handleSwipe = (direction) => {
   if (direction === 'left') {
@@ -168,5 +172,15 @@ const inPast = (date) => {
 
 .calendar-sheet {
   touch-action: pan-y pinch-zoom;
+}
+
+.xs {
+  font-size: 10px !important;
+  font-weight: 500 !important;
+}
+
+.day.xs {
+  font-size: 12px !important;
+  font-weight: 300 !important;
 }
 </style>

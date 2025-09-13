@@ -4,18 +4,23 @@
 
     <AppBar :showButtons="inScreen" :isMobileDrawerOpen="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
 
-    <DesktopNavigationDrawer v-model:navExpanded="navExpanded" />
+    <DesktopNavigationDrawer2 v-model:navExpanded="navExpanded" />
 
     <MobileNavigationDrawer class="user-safe-area" v-model:modelValue="mobileDrawer" />
 
     <LoginButtons v-if="isDev" />
 
+    <v-fade-transition>
+    
+    </v-fade-transition>
+
     <v-fade-transition mode="out-in">
-      <LoadingScreen v-if="showLoadingScreen" class="loading-screen" />
 
 
-      <v-main v-else position="relative" >
-        <router-view v-slot="{ Component, route }">
+
+      <v-main  position="relative" >
+        <LoadingScreen v-if="showLoadingScreen" class="loading-screen" />
+        <router-view v-else v-slot="{ Component, route }">
           <transition name="fade" mode="out-in">
             <!-- <transition 
             @before-enter="beforeEnter"
@@ -42,19 +47,22 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useInitializationStore } from '@/stores/initializationStore';
-import DesktopNavigationDrawer from './components/DesktopNavigationDrawer.vue';
-import MobileNavigationDrawer from './components/MobileNavigationDrawer.vue';
 import AppBar from './components/AppBar.vue';
+import DesktopNavigationDrawer2 from './components/DesktopNavigationDrawer2.vue';
+import MobileNavigationDrawer from './components/MobileNavigationDrawer.vue';
 import LoginButtons from './components/LoginButtons.vue';
 import GlobalSnackbar from './components/GlobalSnackbar.vue';
 import BottomNavigation from './components/BottomNavigation.vue';
 import AdditionnalSnackbar from './components/AdditionnalSnackbar.vue';
 
+
+
+
 const isDev = ref(import.meta.env.DEV);
 const initializationStore = useInitializationStore();
 
 // Références
-const navExpanded = ref(false);
+const navExpanded = ref(true);
 const mobileDrawer = ref(false);
 const inScreen = ref(false);
 const theme = ref(false);
@@ -289,7 +297,7 @@ a {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.1s ease-out;
+  transition: all 0.05s ease-out;
 }
 
 .fade-enter-from,
@@ -300,16 +308,15 @@ a {
 
 .loading-screen {
 
+  position: relative;
 
-  display: flex;
-  justify-content: center;
-  align-items: center;
   top: 0;
   left: 0;
+  max-width: 100vw !important;
   width: 100% !important;
   height: 100% !important;
   background-color: rgb(var(--v-theme-background));
-  z-index: 1000;
+ 
 }
 
 </style>

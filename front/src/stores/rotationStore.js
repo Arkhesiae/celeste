@@ -129,6 +129,14 @@ export const useRotationStore = defineStore('rotation', () => {
     }
   };
 
+  const emptyStore = () => {
+    rotations.value = [];
+    sortedRotations.value = [];
+    activeRotation.value = null;
+
+ 
+  };
+
   return {
     rotations,
     sortedRotations,
@@ -142,5 +150,6 @@ export const useRotationStore = defineStore('rotation', () => {
     updateDayInRotation,
     duplicateRotation,
     updateRotation,
+    emptyStore
   };
 });

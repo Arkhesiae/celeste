@@ -59,6 +59,7 @@ declare module 'vue' {
     PendingChipExtended: typeof import('./src/components/Calendar/Chips/Pending/PendingChipExtended.vue')['default']
     PhoneDialog: typeof import('./src/components/Profile/Parameters/PhoneDialog.vue')['default']
     PointsCard: typeof import('./src/components/Profile/PointsCard.vue')['default']
+    PointsDialog: typeof import('./src/components/Dialogs/PointsDialog.vue')['default']
     RecurringCostsCard: typeof import('./src/components/Financement/RecurringCostsCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -112,6 +112,7 @@ async function getSafeAreaAndApply() {
   /* padding-top: var(--safe-area-top) !important; */
 
   /* padding-bottom: var(--safe-area-bottom) !important; */
+  /* background: linear-gradient(135deg, rgba(var(--v-theme-background), 1), rgba(var(--v-theme-surfaceContainer), 0.3), rgba(var(--v-theme-background), 1)) !important; */
   padding-left: var(--safe-area-left) !important;
   padding-right: var(--safe-area-right) !important;
 
@@ -219,4 +220,6 @@ body,
   left: -20%;
   opacity: 0;
 }
+
+
 </style>

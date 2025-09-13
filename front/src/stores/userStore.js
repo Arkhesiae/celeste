@@ -197,6 +197,14 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
+  const emptyStore = () => {
+    users.value = [];
+    usersGroupedByTeam.value = [];
+    currentUser.value = null;
+    loading.value = false;
+    error.value = null;
+  };
+
   return {
     // State
     users,
@@ -220,6 +228,7 @@ export const useUserStore = defineStore('user', () => {
     deletePendingUser,
     makeAdmin,
     removeAdmin,
-    fetchUsersAndGroupByTeam
+    fetchUsersAndGroupByTeam,
+    emptyStore
   };
 });

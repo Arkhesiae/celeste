@@ -5,10 +5,11 @@ export const useInitializationStore = defineStore('initialization', () => {
   const isLoading = ref(false);
   const initializationState = ref({
     substitutions: false,
-    center: false,
+    centers: false,
     team: false,
     rotations: false,
-    personal: false
+    personal: false,
+    users: false
   });
 
   const currentlyLoading = ref('');
@@ -16,6 +17,19 @@ export const useInitializationStore = defineStore('initialization', () => {
   function setLoading(value) {
     isLoading.value = value;
   }
+
+  watch(isLoading, (newVal) => {
+    if (!newVal) {
+      initializationState.value = {
+        substitutions: false,
+        centers: false,
+        team: false,
+        rotations: false,
+        personal: false,
+        users: false
+      };
+    }
+  });
 
   function updateInitializationState(key, value) {
     initializationState.value[key] = value;

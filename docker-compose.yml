@@ -47,7 +47,7 @@ services:
      - 443:443
     networks:
      - celeste
-     
+
   backup:
     image: mongo:8.0
     container_name: backup
@@ -55,7 +55,7 @@ services:
       - celeste
     volumes:
       - ./mongo_backups:/backups
-      - ./scripts/backup_mongo.sh:/backup.sh:ro
+      - ./scripts/backup_mongo.sh:/backup.sh
     environment:
       MONGO_URI: mongodb://root:randomString@database:27017/myDb?authSource=admin
     depends_on:

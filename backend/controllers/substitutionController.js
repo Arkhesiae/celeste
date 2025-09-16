@@ -1,6 +1,6 @@
 import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
-import {computeShiftOfUserWithSubstitutions} from "../utils/computeShiftOfUserWithSubstitutions.js";
+import { computeShiftOfUserWithSubstitutions } from "../utils/computeShiftOfUserWithSubstitutions.js";
 import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
 import Transaction from '../models/Transaction.js';
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
@@ -8,10 +8,10 @@ import { categorize } from '../utils/categorizeDemand.js';
 import { generateMapFromDemands } from '../utils/generateShiftsMap.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 import * as substitutionService from '../services/substitution.service.js';
-import { sendUserNotification } from '../services/email/userPoolNotificationEmail.js';
+import { sendUserNotification, sendUserPoolNotification } from '../services/email/userPoolNotificationEmail.js';
 import { buildUserPoolNotificationEmail } from '../services/email/demandEmailModels.js';
 
-    
+
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
 const MIN_POINTS_TO_POST_REQUEST = -40;
 const MAX_POINTS_TO_ACCEPT_REQUEST = 2000;
@@ -52,55 +52,59 @@ const getUserDemands = async (req, res) => {
         const posterId = req.query.posterId;
 
         if (!posterId) {
-            return res.status(400).json({error: 'posterId is required'});
+            return res.status(400).json({ error: 'posterId is required' });
         }
 
         const user = await User.findById(posterId);
         if (!user) {
-            return res.status(404).json({error: 'Poster not found'});
+            return res.status(404).json({ error: 'Poster not found' });
         }
 
-        const demands = await Substitution.find({posterId: posterId});
+        const demands = await Substitution.find({ posterId: posterId });
         res.status(200).json(demands);
     } catch (error) {
         console.error('Error fetching demands:', error);
-        res.status(500).json({error: 'An error occurred while fetching demands.'});
+        res.status(500).json({ error: 'An error occurred while fetching demands.' });
     }
 };
 
 // Créer une demande
 const createDemand = async (req, res) => {
     try {
-      const demand = await substitutionService.createDemand(req.body);
-      res.status(201).json(demand);
-      const populatedDemand = await demand.populate('posterId', 'name lastName',)
+        const demand = await substitutionService.createDemand(req.body);
+        res.status(201).json(demand);
+        const populatedDemand = await demand.populate('posterId', 'name lastName',)
 
-      console.log(populatedDemand);
-      try {
-        const userPool = await computeUserPool(populatedDemand);
-        if (userPool.length > 0) {
-            try {
-                sendUserPoolNotification(userPool, populatedDemand)
-                    .then(results => {
-                        console.log(`📧 Notifications envoyées avec succès:`, {
-                            demandId: demand._id,
-                            totalSent: results.sent,
-                            totalFailed: results.failed
+     
+        try {
+            console.log("-- Compute user pool for demand from : ", demand.posterId.name+ " " + demand.posterId.lastName)
+            let perf = performance.now();
+            const userPool = await computeUserPool(populatedDemand);
+            let perf2 = performance.now();
+            console.log("Time taken to compute user pool : ", perf2 - perf)
+            if (userPool.length > 0) {
+                try {
+                    sendUserPoolNotification(userPool, populatedDemand)
+                        .then(results => {
+                            console.log(`📧 Notifications envoyées avec succès:`, {
+                                demandId: demand._id,
+                                totalSent: results.sent,
+                                totalFailed: results.failed
+                            });
+                        })
+                        .catch(error => {
+                            console.error('❌ Erreur lors de l\'envoi des notifications:', error);
                         });
-                    })
-                    .catch(error => {
-                        console.error('❌ Erreur lors de l\'envoi des notifications:', error);
-                    });
-            } catch (emailError) {
-                console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+                } catch (emailError) {
+                    console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+                }
             }
+        } catch (error) {
+            console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
         }
     } catch (error) {
-        console.error('Erreur lors du calcul du pool d\'utilisateurs:', error);
-    }
-    } catch (error) {
-      console.error('❌ Erreur createDemand:', error);
-      res.status(error.status || 500).json({ error: error.message });
+        console.error('❌ Erreur createDemand:', error);
+        res.status(error.status || 500).json({ error: error.message });
     }
 };
 
@@ -109,10 +113,10 @@ const cancelDemand = async (req, res) => {
     const demandId = req.params.id;
     try {
         const demand = await substitutionService.cancelDemand(demandId);
-        res.status(200).json({message: 'Demande annulée avec succès', demand: demand.demand, shift: demand.shift});
+        res.status(200).json({ message: 'Demande annulée avec succès', demand: demand.demand, shift: demand.shift });
     } catch (error) {
         console.error('Erreur lors de l\'annulation de la demande:', error);
-        res.status(error.status || 500).json({error: error.message});
+        res.status(error.status || 500).json({ error: error.message });
     }
 };
 
@@ -122,7 +126,7 @@ const unacceptRequest = async (req, res) => {
         const requestId = req.params.id;
 
         // Utiliser le service pour annuler l'acceptation
-        const {categorizedRequest, shift} = await substitutionService.unacceptDemand(requestId, userId);
+        const { categorizedRequest, shift } = await substitutionService.unacceptDemand(requestId, userId);
 
         res.status(200).json({
             message: 'Désistement de la demande',
@@ -148,7 +152,7 @@ const unacceptRequest = async (req, res) => {
             console.error('❌ Erreur lors de la préparation des notifications:', emailError);
         }
 
-      
+
     } catch (error) {
         console.error('Erreur lors de l\'annulation de l\'acceptation:', error);
         res.status(error.status || 500).json({ error: error.message });
@@ -156,12 +160,12 @@ const unacceptRequest = async (req, res) => {
 };
 
 const deleteDemand = async (req, res) => {
-    const {demandId} = req.params;
+    const { demandId } = req.params;
 
     try {
-        const demand = await Substitution.findByIdAndUpdate(demandId, {deleted: true}, {new: true});
+        const demand = await Substitution.findByIdAndUpdate(demandId, { deleted: true }, { new: true });
         if (!demand) {
-            return res.status(404).json({error: 'Demand not found'});
+            return res.status(404).json({ error: 'Demand not found' });
         }
 
         // Annuler la transaction associée si elle existe
@@ -172,17 +176,17 @@ const deleteDemand = async (req, res) => {
             }
         }
 
-        res.status(200).json({message: 'Demand deleted successfully'});
+        res.status(200).json({ message: 'Demand deleted successfully' });
     } catch (error) {
         console.error('Error deleting demand:', error);
-        res.status(500).json({error: 'Internal server error'});
+        res.status(500).json({ error: 'Internal server error' });
     }
 };
 
 const updateDemandStatus = async (req, res) => {
-    const {status} = req.body;
+    const { status } = req.body;
 
-    const demand = await Substitution.findByIdAndUpdate(req.params.id, {status}, {new: true});
+    const demand = await Substitution.findByIdAndUpdate(req.params.id, { status }, { new: true });
     res.json(demand);
 };
 
@@ -213,32 +217,32 @@ const markInterest = async (req, res) => {
         const userId = req.user.userId;
 
         if (!demandId) {
-            return res.status(400).json({message: 'Demand ID is required'});
+            return res.status(400).json({ message: 'Demand ID is required' });
         }
 
         if (!userId) {
-            return res.status(400).json({message: 'User ID is required'});
+            return res.status(400).json({ message: 'User ID is required' });
         }
 
         const demand = await Substitution.findById(demandId);
         if (!demand) {
-            return res.status(404).json({message: 'Demand not found'});
+            return res.status(404).json({ message: 'Demand not found' });
         }
         if (demand.interested.includes(userId)) {
             demand.interested = demand.interested.filter(id => id.toString() !== userId);
             await demand.save();
-            res.status(200).json({message: 'Interest removed', demand});
-            
+            res.status(200).json({ message: 'Interest removed', demand });
+
         }
         else {
             demand.interested.push(userId);
             await demand.save();
-            res.status(200).json({message: 'Interest added', demand});
+            res.status(200).json({ message: 'Interest added', demand });
         }
 
-        
+
     } catch (error) {
-        res.status(500).json({message: 'Server error', error});
+        res.status(500).json({ message: 'Server error', error });
     }
 };
 
@@ -269,7 +273,7 @@ const acceptRequest = async (req, res) => {
             return res.status(404).json({ error: 'Utilisateur non trouvé' });
         }
 
-       
+
         // Mise à jour de la demande
         const updatedRequest = await Substitution.findByIdAndUpdate(
             requestId,
@@ -279,11 +283,11 @@ const acceptRequest = async (req, res) => {
                 updatedAt: new Date()
             },
             { new: true }
-        ).populate('posterShift.shift') ;
+        ).populate('posterShift.shift');
 
         const shift = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
 
-    
+
         // Création d'une transaction différée si des points sont en jeu
         if (request.points > 0) {
             // if (user.points + request.points > MAX_POINTS_TO_ACCEPT_REQUEST) {
@@ -318,7 +322,7 @@ const acceptRequest = async (req, res) => {
         } catch (emailError) {
             console.error('❌ Erreur lors de la préparation des notifications:', emailError);
         }
- 
+
         res.status(200).json({
             message: 'Demande acceptée avec succès',
             request: updatedRequest,
@@ -337,13 +341,13 @@ const getSeenCount = async (req, res) => {
         const request = await Substitution.findById(requestId).select('seenBy');
 
         if (!request) {
-            return res.status(404).json({message: 'Request not found'});
+            return res.status(404).json({ message: 'Request not found' });
         }
 
         const seenCount = request.seenBy.length;
-        res.json({seenCount});
+        res.json({ seenCount });
     } catch (error) {
-        res.status(500).json({message: 'Server error', error});
+        res.status(500).json({ message: 'Server error', error });
     }
 };
 
@@ -397,7 +401,7 @@ const swapShifts = async (req, res) => {
             return res.status(404).json({ error: 'Vacation utilisateur non trouvée' });
         }
 
-        
+
         // Vérification que le shift de l'utilisateur est dans la liste des shifts acceptés pour l'échange
         const acceptedShiftData = demand.acceptedSwitches.find(
             acceptedShift => acceptedShift.shift.toString() === userShift[0].shift._id.toString()
@@ -409,8 +413,8 @@ const swapShifts = async (req, res) => {
 
         const acceptedShiftPoints = acceptedShiftData.points;
 
-        const accepterShift = {shift : userShift[0].shift._id, teamId: userShift[0].teamObject._id, selectedVariation: null};
-   
+        const accepterShift = { shift: userShift[0].shift._id, teamId: userShift[0].teamObject._id, selectedVariation: null };
+
         // Mise à jour de la demande
         const updatedDemand = await Substitution.findByIdAndUpdate(
             demandId,
@@ -420,12 +424,12 @@ const swapShifts = async (req, res) => {
                 updatedAt: new Date(),
                 accepterShift: accepterShift
             },
-        
-            { new: true }
-        ).populate('posterShift.shift') ;
 
-          // Création d'une transaction différée si des points sont en jeu
-          if (acceptedShiftPoints > 0) {
+            { new: true }
+        ).populate('posterShift.shift');
+
+        // Création d'une transaction différée si des points sont en jeu
+        if (acceptedShiftPoints > 0) {
             if (user.points + acceptedShiftPoints > MAX_POINTS_TO_ACCEPT_REQUEST) {
                 return res.status(400).json({ error: 'Vous ne pouvez pas accepter cette demande, vous avez déjà assez de points' });
             }
@@ -503,7 +507,7 @@ const detectTeamChangeConflicts = async (req, res) => {
             const newShift = await computeShiftOfTeam(date, newTeamId);
 
             if (originalShiftId && newShift && originalShiftId !== newShift._id) {
-                conflicts.push({id : sub._id, newShift, originalShiftId, date});
+                conflicts.push({ id: sub._id, newShift, originalShiftId, date });
             }
         }
 
@@ -546,15 +550,15 @@ const getAvailableUsers = async (req, res) => {
 
 
 const getCompatibleSwitches = async (req, res) => {
-   try {
-    const date = req.params.date;
-    const userId = req.user.userId;
-    const compatibleShifts = await substitutionService.getCompatibleSwitches(date, userId);
-    res.status(200).json(compatibleShifts);
-   } catch (error) {
-    console.error('Erreur lors de la recherche des jours compatibles:', error);
-    res.status(error.status || 500).json({ error: error.message });
-   }
+    try {
+        const date = req.params.date;
+        const userId = req.user.userId;
+        const compatibleShifts = await substitutionService.getCompatibleSwitches(date, userId);
+        res.status(200).json(compatibleShifts);
+    } catch (error) {
+        console.error('Erreur lors de la recherche des jours compatibles:', error);
+        res.status(error.status || 500).json({ error: error.message });
+    }
 };
 
 export {

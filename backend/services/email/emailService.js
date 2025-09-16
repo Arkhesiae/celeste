@@ -48,14 +48,14 @@ function createSESTransporter() {
 function createConsoleTransporter() {
   return {
     sendMail: async (mailOptions) => {
-      console.log('   De:', mailOptions.from);
-      console.log('   À:', mailOptions.to);
+      // console.log('   De:', mailOptions.from);
+      // console.log('   À:', mailOptions.to);
       console.log('   Sujet:', mailOptions.subject);
       if (mailOptions.html) {
-        console.log('   Contenu HTML disponible');
+        // console.log('   Contenu HTML disponible');
       }
       if (mailOptions.text) {
-        console.log('   Contenu texte:', mailOptions.text.substring(0, 100) + '...');
+        // console.log('   Contenu texte:', mailOptions.text.substring(0, 100) + '...');
       }
       return { messageId: 'dev-message-id' };
     },

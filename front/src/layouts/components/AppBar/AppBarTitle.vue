@@ -55,8 +55,8 @@ import { useDisplay } from 'vuetify';
 
 // Constants
 const APP_TITLE = "Céleste";
-const APP_VERSION = "alpha-202509.2";
-const RELEASE_DATE = "01/09/2025";
+const APP_VERSION = "alpha-202509.3";
+const RELEASE_DATE = "15/09/2025";
 
 // Reactive data
 const currentDate = ref('');

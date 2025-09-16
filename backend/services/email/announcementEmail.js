@@ -103,30 +103,43 @@ L'équipe Celeste
     `
   },
   general: {
-    subject: 'Test - Celeste',
+    subject: 'Annonce - Celeste',
     html: (data) => `
-      <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding-top: 40px; padding-bottom: 40px;">
-        <div style="background: ; color: black; margin-bottom: 32px ; margin-top: 32px; border-radius: 10px 10px 0 0; text-align: start;">
-          <h1 style="margin: 0; font-size: 28px;">Test</h1>
+      <div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding-top: 40px">
+        <div style="background: ; color: black; padding-top: 30px; padding-bottom: 30px;  border-radius: 10px 10px 0 0; text-align: start; display: flex; align-items: center; justify-content: start; gap: 10px;">
+          <h1 style="margin: 0; font-size: 24px;">Annonce</h1>
+           <div style="background:rgb(243, 215, 221); padding: 4px; border-radius: 12px;"> 
+           <p style="font-size: 12px; line-height: 1.6; color: rgb(201, 15, 55);">
+            IMPORTANT
+          </p>
         </div>
+        </div>
+       
         <div style="background: #f8f9fa; padding: 30px; border-radius: 16px; border: 1px solid rgba(0, 0, 0, 0.012);">
           <p style="font-size: 16px; line-height: 1.6; color: #333;">
             Bonjour,
           </p>
-          <div style="background: #f0f4f6; border: 1px solid #e9ecef01; border-radius: 8px; padding: 24px; margin: 25px 0;">
-            <p style="font-size: 16px; line-height: 1.6; color: #333; margin: 0;">
+          <div style=" border: 1px solid #e9ecef01; border-radius: 8px;  margin: 25px 0;">
+            <p style="font-size: 14px; line-height: 1.6; color: #333; margin: 0;">
               ${data.message}
             </p>
           </div>
-          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+          <p style="font-size: 12px; line-height: 1.6; font-weight: 600; color: #333;">
             Cordialement,<br>
             L'équipe Celeste
           </p>
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+    <p style="color: #999; font-size: 12px;">
+      Cet email a été envoyé automatiquement, merci de ne pas y répondre.<br>
+     
+      L'équipe Celeste
+    </p>
+  </div>
         </div>
       </div>
     `,
     text: (data) => `
-Test - Celeste
+Annonce - Celeste
 
 Bonjour,
 

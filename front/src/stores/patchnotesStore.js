@@ -6,6 +6,67 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
   // État réactif
   const patchNotes = ref([
     {
+      id: '0.202509.3',
+      version: 'alpha-202509.3',
+      releaseDate: '15/09/2025',
+      description: 'Version avec des améliorations majeures du système de substitution, sécurisation de la base de données et optimisations techniques.',
+      improvements: [
+        {
+          title: 'Amélioration du système de switchs',
+          description: 'Ajout de la fonction getCompatibleSwitches pour récupérer les jours compatibles lors des demandes de substitution, améliorant ainsi l\'expérience utilisateur.'
+        },
+        {
+          title: 'Refactorisation du contrôleur de connexion',
+          description: 'Restructuration de la réponse JSON en un objet userData pour une meilleure organisation des données utilisateur.'
+        },
+        {
+          title: 'Amélioration de la gestion des préférences utilisateur',
+          description: 'Optimisation du contrôleur utilisateur'
+        },
+        {
+          title: 'Amélioration de l\'affichage des composants',
+          description: 'Optimisation de l\'affichage des dialogues et cartes de demande dans l\'interface utilisateur pour une meilleure expérience.'
+        },
+        {
+          title: 'Notifications par email pour les utilisateurs en attente',
+          description: 'Ajout de notifications par email automatiques pour informer les utilisateurs en attente de validation de leur compte.'
+        }
+      ],
+      bugFixes: [
+        {
+          title: 'Nettoyage des logs de débogage',
+          description: 'Suppression des logs de débogage dans plusieurs contrôleurs et fichiers utilitaires pour améliorer la lisibilité du code.'
+        },
+        {
+          title: 'Correction des problèmes d\'affichage',
+          description: 'Résolution des problèmes d\'affichage dans l\'interface utilisateur, notamment dans les dialogues et les cartes de demande.'
+        },
+        {
+          title: 'Amélioration de la gestion des erreurs MongoDB',
+          description: 'Ajout de logs pour afficher l\'URI de connexion MongoDB en cas d\'erreur, facilitant le débogage des problèmes de connexion.'
+        }
+      ],
+      technicalNotes: [
+        {
+          title: 'Sécurisation de la configuration MongoDB',
+          description: 'Modification de l\'URI de connexion MongoDB pour utiliser des variables d\'environnement, améliorant la sécurité des informations sensibles.'
+        },
+        {
+          title: 'Service de sauvegarde automatisé',
+          description: 'Ajout d\'un service de sauvegarde MongoDB dans docker-compose.yml avec un script de sauvegarde associé pour automatiser les sauvegardes.'
+        },
+        {
+          title: 'Optimisation des fichiers Docker',
+          description: 'Simplification du Dockerfile en supprimant des lignes inutiles et amélioration de la configuration docker-compose pour une meilleure gestion des volumes.'
+        },
+        {
+          title: 'Mise à jour des dépendances',
+          description: 'Mise à jour des dépendances dans package-lock.json et package.json pour assurer la compatibilité avec les dernières versions.'
+        }
+      ],
+     
+    },
+    {
       id: '0.202506.1',
       version: 'alpha-202506.1',
       releaseDate: '30/06/2025',

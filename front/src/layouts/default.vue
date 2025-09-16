@@ -98,133 +98,63 @@ const applyMargins = (el) => {
 };
 
 const beforeEnter = (el) => {
-  // Délai avant de commencer la préparation
-
-  // Préserver la hauteur du v-main basée sur le contenu actuel
-  const vMain = el.closest('.v-main');
-  if (vMain) {
-    const currentHeight = vMain.scrollHeight;
-    vMain.style.height = `${currentHeight}px`;
-    vMain.classList.add('transitioning');
-  }
-
-  // Appliquer les marges et figer la vue
-  applyMargins(el);
-  el.style.transform = 'translateX(100%)';
-  el.style.opacity = '1';
-  el.style.zIndex = '1000';
-  el.style.pointerEvents = 'none'; // Désactiver les interactions pendant la transition
-
+  el.style.position = 'fixed';
+  el.style.left = '100%';
+  el.style.zIndex = '2';
 };
 
-const beforeLeave = (el) => {
-  // Délai avant de commencer la préparation
 
-  // Préserver la hauteur du v-main basée sur le contenu actuel
-  const vMain = el.closest('.v-main');
-  if (vMain) {
-    const currentHeight = vMain.scrollHeight;
-    vMain.style.height = `${currentHeight}px`;
-    vMain.classList.add('transitioning');
-  }
-
-  // Appliquer les marges et figer la vue
-  //applyMargins(el);
-  el.style.zIndex = '1000';
-  el.style.pointerEvents = 'none'; // Désactiver les interactions pendant la transition
-
-};
-
-// Animation JavaScript personnalisée
 const onEnter = (el, done) => {
-  // Appliquer les marges correctement
-  applyMargins(el);
+  el.style.transition = 'left 1s ease-out, opacity .5s ease-out';
+  el.style.left = '0%';
 
-  // Forcer le reflow
-  el.offsetHeight;
-
-  // Définir la transition après le reflow
-  el.style.transition = 'transform .5s ease-out, opacity .5s ease-out';
-
-  // Délai avant de commencer l'animation
-
-  // Animation d'entrée
-  el.style.transform = 'translateX(0%)';
-  el.style.opacity = '1';
-  el.style.pointerEvents = 'auto'; // Réactiver les interactions
-
-  // Délai avant de terminer
-  setTimeout(done, 500);
-
-};
-
-const onLeave = (el, done) => {
-  // Appliquer les marges et figer la vue
-
-  el.style.transform = 'translateX(0%)';
-  el.style.opacity = '1';
-  el.style.zIndex = '1000';
-  el.style.pointerEvents = 'none'; // Désactiver les interactions
-
-  // Forcer le reflow
-  el.offsetHeight;
-
-  // Définir la transition après le reflow
-  el.style.transition = 'transform .5s ease-out, opacity .5s ease-out';
-
-  // Délai avant de commencer l'animation de sortie
-
-  // Animation de sortie
-  el.style.transform = 'translateX(-20%)';
-  el.style.opacity = '0';
-
-  // Délai avant de terminer
-  setTimeout(done, 500);
-
+  setTimeout(() => {
+    done();
+  }, 100);
 };
 
 const onAfterEnter = (el) => {
-  // Restaurer la hauteur automatique du v-main
+  el.style.position = 'relative';
+  el.style.top = '0';
   const vMain = el.closest('.v-main');
   if (vMain) {
-    vMain.style.height = '';
+    vMain.style.top = '';
     vMain.classList.remove('transitioning');
   }
 
-  // Nettoyer les styles après l'animation
-  el.style.position = '';
-  el.style.top = '';
-  el.style.left = '';
-  el.style.right = '';
-  el.style.bottom = '';
-  el.style.width = '';
-  el.style.height = '';
-  el.style.transform = '';
-  el.style.opacity = '';
-  el.style.zIndex = '';
-  el.style.transition = '';
+
 };
 
-const onAfterLeave = (el) => {
-  // Restaurer la hauteur automatique du v-main
+
+const beforeLeave = (el) => {
   const vMain = el.closest('.v-main');
   if (vMain) {
-    vMain.style.height = '';
-    vMain.classList.remove('transitioning');
+    const top = window.scrollY;
+    el.style.top = `${-top +64}px`;
+    vMain.classList.add('transitioning');
   }
+  el.style.position = 'fixed';
+  el.style.left = '0%';
+  el.style.pointerEvents = 'none'; 
 
-  // Nettoyer les styles après l'animation
-  el.style.position = '';
-  el.style.top = '';
-  el.style.left = '';
-  el.style.right = '';
-  el.style.bottom = '';
-  el.style.width = '';
-  el.style.height = '';
-  el.style.transform = '';
-  el.style.opacity = '';
-  el.style.zIndex = '';
-  el.style.transition = '';
+};
+
+
+const onLeave = (el, done) => {
+  el.style.zIndex = '1';
+  el.style.transition = 'left 2s ease-out, opacity .5s ease-out';
+  el.style.left = '-20%';
+  
+  // Appeler done() après la durée de l'animation pour indiquer que l'animation est terminée
+  setTimeout(() => {
+    done();
+  }, 500); // 500ms correspond à la durée de votre transition
+};
+
+
+
+const onAfterLeave = (el) => {
+
 };
 
 </script>
@@ -257,6 +187,7 @@ const onAfterLeave = (el) => {
 
 /* Maintenir la hauteur du v-main quand les enfants sont en position absolute */
 .v-main.transitioning {
+  position: fixed !important;
   /* La hauteur sera définie dynamiquement par JavaScript */
 }
 

@@ -144,7 +144,13 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                         if (substitution.posterShift && substitution.accepterShift) {
                             if (substitution.posterId.toString() === userId) {
                                 // L'utilisateur est le poster, il prend le shift de l'accepter
-                                currentShift = await Shift.findById(substitution.accepterShift.shift);
+                                if (substitution.posterShift.shift) {
+                                    currentShift = await Shift.findById(substitution.accepterShift.shift);
+                                }
+                                else {
+                                    currentShift = substitution.accepterShift;
+                                }
+                               
 
                                 currentTeam = await Team.findById(substitution.accepterShift.teamId);
                                 substitutionHistory.push({
@@ -154,7 +160,13 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                                 });
                             } else {
                                 // L'utilisateur est l'accepter, il prend le shift du poster
-                                currentShift = await Shift.findById(substitution.posterShift.shift);
+                                if (substitution.posterShift.shift) {
+                                    currentShift = await Shift.findById(substitution.posterShift.shift);
+                                }
+                                else {
+                                    currentShift = substitution.posterShift;
+                                }
+                                
                                 currentTeam = await Team.findById(substitution.posterShift.teamId);
                                 substitutionHistory.push({
                                     type: 'exchange',

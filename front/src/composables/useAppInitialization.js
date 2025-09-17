@@ -119,8 +119,14 @@ export function useAppInitialization() {
     await Promise.all([
       pointStore.fetchUserPoints(),
       pointStore.fetchTransactions(),
-      notificationStore.fetchNotifications(authStore.userData.userId)
     ]);
+
+    try {
+      await notificationStore.fetchNotifications(authStore.userData.userId);
+    } catch (error) {
+      console.error('Erreur lors de la récupération des notifications:', error);
+    }
+
     initializationStore.updateInitializationState('personal', true);
   };
 
@@ -138,6 +144,7 @@ export function useAppInitialization() {
     try {
       initializationStore.setLoading(true);
   
+      
       await initializeAuth();
       await initializeTheme();
       await initializeCenters();

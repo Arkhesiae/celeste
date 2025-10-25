@@ -20,9 +20,10 @@
 
       <v-main  position="relative" >
         <LoadingScreen v-if="showLoadingScreen" class="loading-screen" />
-        <router-view v-else v-slot="{ Component, route }">
-          <transition name="fade" mode="out-in">
-            <!-- <transition 
+        
+          <router-view  v-else v-slot="{ Component, route }">
+          <!-- <transition name="fade" mode="out-in"> -->
+            <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
             @enter="onEnter"
@@ -31,10 +32,14 @@
             @after-leave="onAfterLeave"
 
             
-            > -->
-            <component :is="Component" :key="route.path" />
+            >
+            <div class="wrapper" :key="route.path" >
+                <component :is="Component"  />
+            </div>
           </transition>
         </router-view>
+       
+    
 
       </v-main>
     </v-fade-transition>
@@ -97,65 +102,69 @@ const applyMargins = (el) => {
   return { paddingTop, paddingLeft, paddingRight, paddingBottom };
 };
 
-const beforeEnter = (el) => {
-  el.style.position = 'fixed';
-  el.style.left = '100%';
-  el.style.zIndex = '2';
-};
+function fixPosition(el) {
+  const rect = el.getBoundingClientRect()
 
+  // Lock dimensions & position
+  el.style.position = 'fixed'
+  el.style.top = rect.top + 'px'
+  el.style.left = rect.left + 'px'
+  el.style.width = rect.width + 'px'
+  el.style.height = rect.height + 'px'
+  el.style.margin = '0' // évite que le margin disparaisse
+}
+
+function resetPosition(el) {
+  el.removeAttribute('style') // nettoyage complet
+}
+
+const beforeEnter = (el) => {
+  // Important: utiliser setProperty pour "!important"
+ 
+  el.style.position = 'fixed'
+
+  // récupérer la variable layout-left
+  const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
+    .getPropertyValue('--v-layout-left')
+
+  el.style.width = `calc(100% - ${vLayoutLeftVar})`
+  el.style.left = '100%'
+  el.style.transition = 'left .5s ease-out, opacity .5s ease-out'
+}
 
 const onEnter = (el, done) => {
-  el.style.transition = 'left 1s ease-out, opacity .5s ease-out';
-  el.style.left = '0%';
+ 
 
-  setTimeout(() => {
-    done();
-  }, 100);
-};
+  const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
+    .getPropertyValue('--v-layout-left')
+
+  // slide depuis la droite jusqu’à la position finale
+  el.style.left = vLayoutLeftVar.trim()
+
+  setTimeout(done, 500) // même durée que la transition
+}
 
 const onAfterEnter = (el) => {
-  el.style.position = 'relative';
-  el.style.top = '0';
-  const vMain = el.closest('.v-main');
-  if (vMain) {
-    vMain.style.top = '';
-    vMain.classList.remove('transitioning');
-  }
-
-
-};
-
+  resetPosition(el) // repasse en flow normal
+}
 
 const beforeLeave = (el) => {
-  const vMain = el.closest('.v-main');
-  if (vMain) {
-    const top = window.scrollY;
-    el.style.top = `${-top +64}px`;
-    vMain.classList.add('transitioning');
-  }
-  el.style.position = 'fixed';
-  el.style.left = '0%';
-  el.style.pointerEvents = 'none'; 
-
-};
-
+ 
+  fixPosition(el)
+}
 
 const onLeave = (el, done) => {
-  el.style.zIndex = '1';
-  el.style.transition = 'left 2s ease-out, opacity .5s ease-out';
-  el.style.left = '-20%';
-  
-  // Appeler done() après la durée de l'animation pour indiquer que l'animation est terminée
-  setTimeout(() => {
-    done();
-  }, 500); // 500ms correspond à la durée de votre transition
-};
 
+  el.style.transition = 'left .5s ease-out, opacity .5s ease-out'
+  el.style.left = '-40%'
 
+  setTimeout(done, 500) // aligné avec la durée CSS
+}
 
 const onAfterLeave = (el) => {
+  resetPosition(el)
+}
 
-};
 
 </script>
 
@@ -165,6 +174,7 @@ const onAfterLeave = (el) => {
 }
 
 .v-container {
+  border: 1px solid red;
   padding-top: env(safe-area-inset-top) !important;
 }
 
@@ -248,6 +258,14 @@ a {
   height: 100% !important;
   background-color: rgb(var(--v-theme-background));
  
+}
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(var(--v-theme-background),1) !important;
+  
 }
 
 </style>

@@ -26,7 +26,7 @@
     
     
 
-    <v-row class="justify-space-between align-center mb-4">
+    <!-- <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6" >
       
       </v-col>
@@ -71,7 +71,7 @@
           </v-list>
         </v-menu>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <v-row>
       <v-col v-for="user in pendingUsers" :key="user._id" cols="12" >

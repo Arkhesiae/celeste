@@ -12,7 +12,7 @@ const getMessages = async (req, res) => {
     res.json(messages);
   } catch (error) {
     console.error('Erreur lors de la récupération des messages:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
+    res.status(500).json({ message: 'Erreur du serveur' });
   }
 };
 
@@ -50,7 +50,7 @@ const createMessage = async (req, res) => {
     res.status(201).json(populatedMessage);
   } catch (error) {
     console.error('Erreur lors de la création du message:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
+    res.status(500).json({ message: 'Erreur du serveur' });
   }
 };
 
@@ -73,7 +73,7 @@ const markAsRead = async (req, res) => {
     res.json(updatedMessage);
   } catch (error) {
     console.error('Erreur lors du marquage du message comme lu:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
+    res.status(500).json({ message: 'Erreur du serveur' });
   }
 };
 
@@ -90,7 +90,7 @@ const deleteMessage = async (req, res) => {
     res.json({ message: 'Message supprimé avec succès' });
   } catch (error) {
     console.error('Erreur lors de la suppression du message:', error);
-    res.status(500).json({ message: 'Erreur serveur' });
+    res.status(500).json({ message: 'Erreur du serveur' });
   }
 };
 

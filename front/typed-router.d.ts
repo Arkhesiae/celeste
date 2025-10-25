@@ -23,9 +23,10 @@ declare module 'vue-router/auto-routes' {
     '/(account-creation)/creation': RouteRecordInfo<'/(account-creation)/creation', '/creation', Record<never, never>, Record<never, never>>,
     '/(account-creation)/get-started': RouteRecordInfo<'/(account-creation)/get-started', '/get-started', Record<never, never>, Record<never, never>>,
     '/admin/account-recovery': RouteRecordInfo<'/admin/account-recovery', '/admin/account-recovery', Record<never, never>, Record<never, never>>,
+    '/admin/admin-panel': RouteRecordInfo<'/admin/admin-panel', '/admin/admin-panel', Record<never, never>, Record<never, never>>,
     '/admin/pending-users': RouteRecordInfo<'/admin/pending-users', '/admin/pending-users', Record<never, never>, Record<never, never>>,
     '/admin/rules': RouteRecordInfo<'/admin/rules', '/admin/rules', Record<never, never>, Record<never, never>>,
-    '/admin-panel': RouteRecordInfo<'/admin-panel', '/admin-panel', Record<never, never>, Record<never, never>>,
+    '/admin/tickets': RouteRecordInfo<'/admin/tickets', '/admin/tickets', Record<never, never>, Record<never, never>>,
     '/calendar': RouteRecordInfo<'/calendar', '/calendar', Record<never, never>, Record<never, never>>,
     '/center/[centerId]/teams': RouteRecordInfo<'/center/[centerId]/teams', '/center/:centerId/teams', { centerId: ParamValue<true> }, { centerId: ParamValue<false> }>,
     '/center/centers': RouteRecordInfo<'/center/centers', '/center/centers', Record<never, never>, Record<never, never>>,
@@ -47,7 +48,6 @@ declare module 'vue-router/auto-routes' {
     '/profile/[userId].transaction-history': RouteRecordInfo<'/profile/[userId].transaction-history', '/profile/:userId/transaction-history', { userId: ParamValue<true> }, { userId: ParamValue<false> }>,
     '/reset-password': RouteRecordInfo<'/reset-password', '/reset-password', Record<never, never>, Record<never, never>>,
     '/rotation': RouteRecordInfo<'/rotation', '/rotation', Record<never, never>, Record<never, never>>,
-    '/tickets': RouteRecordInfo<'/tickets', '/tickets', Record<never, never>, Record<never, never>>,
     '/users': RouteRecordInfo<'/users', '/users', Record<never, never>, Record<never, never>>,
   }
 }

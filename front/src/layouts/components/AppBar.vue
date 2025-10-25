@@ -25,30 +25,24 @@
 
 
       <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
-      <v-chip rounded="lg" size="small" v-if="isAdmin" @click="navigateToAdminPanel" class="cursor-pointer" >
-        <v-icon class="mr-2" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
-          {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
-        </v-icon>
-        {{ authStore.userData.adminType === 'master' ? 'Master' : 'Admin' }}
-      </v-chip>
-      <!-- Layout mobile -->
-      <template v-if="smAndDown">
 
+
+
+
+      <template v-if="isLoggedIn && isAdmin">
+        <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType"
+          :message-count="ticketCount" @navigate-rules="router.push({ path: '/admin/rules' })"
+          @navigate-tickets="router.push({ path: '/admin/tickets' })"
+          @navigate-email="router.push({ path: '/emails' })" />
+      </template>
+   
+      <template v-if="smAndDown">
         <v-app-bar-nav-icon @click="toggleMobileDrawer" :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'" />
       </template>
 
-      <!-- Layout desktop -->
       <template v-else>
-        <template v-if="isLoggedIn">
-
-          <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType"
-            :message-count="ticketStore.tickets.length" @navigate-rules="router.push({path:'/admin/rules'})"
-            @navigate-tickets="router.push({ path : '/tickets' })"
-            @navigate-email="router.push({ path : '/emails' })" />
-        </template>
-
         <!-- Navigation accueil -->
-        <template v-else>
+        <template v-if="!isLoggedIn">
           <HomeNavigation :show-buttons="showButtons" :is-dark-theme="isDarkTheme" @update-theme="isDarkTheme = $event"
             @navigate-contact="navigateToContact" @navigate-get-started="router.push({ path: '/get-started' })"
             @navigate-login="router.push({ path: '/login' })" @open-icnagenda="openIcnagenda"
@@ -107,6 +101,8 @@ const props = defineProps({
   },
 });
 
+const ticketCount = computed(() => ticketStore.tickets.filter(ticket => ticket.status !== 'done' && ticket.status !== 'closed').length);
+
 // Emits
 const emit = defineEmits(["toggle-mobile-drawer", "toggle-drawer"]);
 
@@ -151,7 +147,7 @@ const handleTitleClick = () => {
 };
 
 const navigateToAdminPanel = () => {
-  router.push({ path: '/admin-panel' });
+  router.push({ path: '/admin/admin-panel' });
 };
 
 const toggleNotifications = (event) => {
@@ -236,5 +232,6 @@ onUnmounted(() => {
 .user-safe-area {
   padding-top: var(--safe-area-top) !important;
 }
+
 /* Styles spécifiques à AppBar si nécessaire */
 </style>

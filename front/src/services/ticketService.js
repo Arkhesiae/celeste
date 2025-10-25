@@ -10,7 +10,8 @@ export const ticketService = {
   },
 
   async createTicket(ticketData) {
-    const response = await fetch(`${API_URL}/tickets`, {
+    console.log(ticketData);
+    const response = await fetch(`${API_URL}/tickets/create`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(ticketData)
@@ -30,6 +31,34 @@ export const ticketService = {
     const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
       method: 'DELETE',
       headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  async updateTicketStatus(id, ticketStatus) {
+    console.log("azeaze");
+    console.log(id, ticketStatus);
+    const response = await fetch(`${API_URL}/tickets/status/${id}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ ticketStatus })
+    });
+    return handleResponse(response);
+  },
+
+  async markReplySent(ticketId) {
+    const response = await fetch(`${API_URL}/tickets/${ticketId}/reply-sent`, {
+      method: 'PUT',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  async sendTicketReply(ticketId, content) {
+    const response = await fetch(`${API_URL}/tickets/${ticketId}/reply`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ content })
     });
     return handleResponse(response);
   }

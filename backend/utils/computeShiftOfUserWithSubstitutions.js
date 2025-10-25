@@ -8,10 +8,12 @@ import Shift from '../models/Shift.js';
 // Récupérer le shift d'un utilisateur à une date donnée en prenant en compte les substitutions et modifications de planning
 const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
     try {
+        
         const user = await User.findById(userId).populate('teams');
         if (!user) {
             throw new Error('Utilisateur non trouvé');
         }
+
 
         const { teams } = user;
         if (!teams || teams.length === 0) {

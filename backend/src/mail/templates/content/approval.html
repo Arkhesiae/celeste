@@ -1,0 +1,90 @@
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+
+  <tr>
+    <td align="left">
+      {{> hello }}
+    </td>
+  </tr>
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <h3 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #28a745;">check_circle</span>
+        Demande approuvée
+      </h3>
+    </td>
+  </tr>
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
+        Excellente nouvelle ! Votre demande de remplacement a été approuvée par {{approverName}}.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  
+  <!-- Approval Details Card -->
+  <tr>
+    <td>
+      <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 12px; padding: 16px; margin: 10px 0;">
+        <div style="display: flex; align-items: center; margin-bottom: 12px;">
+          <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #28a745;">event_available</span>
+          <h4 style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600; color: #155724;">Détails de l'approbation</h4>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fff; border-radius: 8px; padding: 12px; margin: 8px 0;">
+          <div style="display: flex; align-items: center;">
+            <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #666;">event</span>
+            <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #333;">{{demandDate}}</p>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #666;">schedule</span>
+            <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #333;">{{demandTime}}</p>
+          </div>
+        </div>
+        
+        <div style="background: #fff; border-radius: 8px; padding: 12px; margin: 8px 0;">
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #333;">
+            <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #666;">work</span>
+            {{demandPosition}} - {{demandTeam}}
+          </p>
+        </div>
+        
+        <p style="margin: 8px 0 0 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400; color: #155724; font-size: 14px;">
+          <span class="material-icons md-18" style="vertical-align: middle; margin-right: 4px; font-size: 14px;">person</span>
+          Approuvé par {{approverName}} le {{approvalDate}}
+        </p>
+      </div>
+    </td>
+  </tr>
+  
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
+        Vous pouvez maintenant vous préparer pour ce remplacement. N'hésitez pas à contacter l'équipe si vous avez des questions.
+      </p>
+    </td>
+  </tr>
+  
+  <tr>
+    <td height="30">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="{{demandUrl}}" class="btn" style="background:#28a745;color:#fff;padding:12px 20px;border-radius:20px;text-decoration:none;font-family: 'Roboto', Arial, sans-serif; font-weight: 500; font-size: 12px;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px;">visibility</span>
+        Voir les détails
+      </a>
+    </td>
+  </tr>
+</table>

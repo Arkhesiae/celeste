@@ -104,7 +104,7 @@ const getTeamShifts = async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la récupération des vacances:', error);
         res.status(500).json({ 
-            error: 'Erreur serveur',
+            error: 'Erreur du serveur',
             message: error.message 
         });
     }
@@ -132,7 +132,7 @@ const updateTeamCycleStartDate = async (req, res) => {
         res.json(team);
     } catch (error) {
         console.error('Erreur lors de la mise à jour de la date de début de cycle:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur du serveur' });
     }
 };
 
@@ -145,7 +145,7 @@ const updateTeamName = async (req, res) => {
         res.json(team);
     } catch (error) {
         console.error('Erreur lors de la mise à jour du nom de l\'équipe:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur du serveur' });
     }
 };
 
@@ -177,7 +177,7 @@ const updateTeamsOrder = async (req, res) => {
         res.json(updatedTeams);
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'ordre des équipes:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
+        res.status(500).json({ error: 'Erreur du serveur' });
     }
 };
 

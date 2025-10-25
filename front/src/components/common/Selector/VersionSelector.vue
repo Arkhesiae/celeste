@@ -16,7 +16,7 @@
 
 
       <div v-if="!hasData" class="d-flex ga-2 align-center">
-        <span class="text-caption text-medium-emphasis">Erreur serveur</span>
+        <span class="text-caption text-medium-emphasis">Erreur du serveur</span>
       </div>
       <div v-else class="d-flex ga-2 align-center">
         <span class="text-caption text-medium-emphasis">{{ subtitle || '' }}</span>

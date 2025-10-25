@@ -10,6 +10,8 @@ import User from '../models/User.js';
  */
 const verifyToken = (req, res, next) => {
     // Récupération du token depuis l'en-tête Authorization
+
+    console.log("Verify token");
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -114,7 +116,7 @@ const checkUserCenter = async (req, res, next) => {
         console.log('Erreur lors de la vérification du centre:', error.message);
         return res.status(500).json({
             success: false,
-            message: 'Erreur serveur lors de la vérification des droits.'
+            message: 'Erreur du serveur lors de la vérification des droits.'
         });
     }
 };

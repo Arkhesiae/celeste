@@ -41,6 +41,7 @@ const updateDate = (newDate) => {
 // Soumission des données
 const submit = () => {
   if (selectedDate.value) {
+    console.log('submitting date', selectedDate.value);
     emit("onSubmit", selectedDate.value);
     localDialogVisible.value = false; // Ferme le dialogue après validation
   }

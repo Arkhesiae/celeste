@@ -36,7 +36,7 @@
           <v-icon size="16" :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive" />
         </template>
         <template #append v-if="adminItem?.badgeCount">
-          <v-chip color="background" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
+          <v-chip color="pending" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
             v-if="adminItem?.badgeCount > 0">
             <span class="font-weight-bold">{{ adminItem?.badgeCount }}</span>
           </v-chip>
@@ -52,7 +52,7 @@
           <v-icon size="16" :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive" />
         </template>
         <template #append v-if="adminItem?.badgeCount">
-          <v-chip color="background" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
+          <v-chip color="pending" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
             v-if="adminItem?.badgeCount > 0">
             <span class="font-weight-bold">{{ adminItem?.badgeCount }}</span>
           </v-chip>

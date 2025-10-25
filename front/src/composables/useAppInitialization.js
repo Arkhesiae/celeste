@@ -52,7 +52,7 @@ export function useAppInitialization() {
 
   const initializeCenters = async () => {
     initializationStore.currentlyLoading = 'centers';
-    centerStore.fetchCenters();
+    await centerStore.fetchCenters();
     initializationStore.updateInitializationState('centers', true);
   };
 
@@ -146,16 +146,24 @@ export function useAppInitialization() {
   
       
       await initializeAuth();
-      await initializeTheme();
-      await initializeCenters();
+
+      const parallelTasks = [
+        initializeTheme(),
+        initializeCenters(),
+      ];
+
       if (authStore.isLoggedIn) {
-        await initializeUserList();
-        await initializeTeam();
-        await initializeShiftsAndSubstitutions();
-        await initializeRotations();
-        await initializePersonalData();
-        await initializeTickets();
+        parallelTasks.push(
+          initializeUserList(),
+          initializeTeam(),
+          initializeShiftsAndSubstitutions(),
+          initializeRotations(),
+          initializePersonalData(),
+          initializeTickets()
+        );
       }
+
+      await Promise.all(parallelTasks);
     } catch (error) {
       console.error('Erreur lors de l\'initialisation de l\'application:', error);
       authStore.logOut();

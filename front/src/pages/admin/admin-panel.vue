@@ -15,16 +15,8 @@
                 Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' : 'Administrateur Local' }}
               </p>
             </div>
-            <!-- <v-chip 
-              class="admin-type-chip"
-              :color="adminType === 'master' ? 'primary' : 'secondary'" 
-              variant="tonal" 
-              size="small"
-              rounded="lg"
-            >
-              <v-icon :icon="adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline'" class="mr-2" />
-              {{ adminType === 'master' ? 'Master Admin' : 'Admin Local' }}
-            </v-chip> -->
+         
+
           </div>
         </v-card>
       </v-col>
@@ -39,10 +31,10 @@
         sm="6" 
         md="3"
       >
-        <v-card class="pa-4 opacity-100" rounded="xl" variant="flat" color="onBackground">
+        <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest" :class="actionNeeded(stat) ? 'action-needed' : ''">
           <div class="d-flex align-center">
-            <v-avatar color="onRemplacement" variant="tonal" size="32" class="mr-4">
-              <v-icon :icon="stat.icon" size="16" />
+            <v-avatar :color="actionNeeded(stat) ? 'pending' : 'onBackground'" variant="tonal" size="24" class="mr-4">
+              <v-icon :icon="stat.icon" size="12" />
             </v-avatar>
             <div>
               <div class="text-h6 font-weight-bold">{{ stat.value }}</div>
@@ -66,42 +58,29 @@
       >
         <v-card class="pa-6" rounded="xl" variant="flat" :color="smAndDown ? 'transparent' : 'surface'" height="100%">
           <div class="d-flex align-center mb-4">
-            <!-- <v-avatar :color="section.color" variant="tonal" size="48" class="mr-4">
-              <v-icon :icon="section.icon" />
-            </v-avatar> -->
             <div>
               <span class="text-h7 font-weight-bold">{{ section.title }}</span>
               <p class="text-body-2 opacity-50 mb-0">{{ section.description }}</p>
             </div>
           </div>
           
-          <v-list class="pa-0 ga-4 d-flex flex-column bg-transparent" >
+          <v-list class="pa-0 ga-4 d-flex flex-column bg-transparent overflow-visible" >
             <v-list-item 
               v-for="item in section.items" 
               :key="item.id"
               v-show="!item.requiresMaster || adminType === 'master'"
               class="px-4" 
-              :class="smAndDown ? 'bg-transparent' : 'bg-surfaceContainer'"
+              :class="(actionNeeded(item) ? ' action-needed' : '')"
               height="60"
-              
               rounded="xl" 
               @click="navigateTo(item.path)"
             >
               <template v-slot:prepend>
-                <v-badge 
-                  v-if="item.badge"
-                  :content="item.badge.content" 
-                  :model-value="item.badge.show"
-                  :color="item.badge.color"
-                  offset-x="10"
-                  offset-y="10"
-                >
-                  <v-icon :icon="item.icon" :color="smAndDown ? 'surface' : 'onSurface'" size="16" />
-                </v-badge>
-                <v-icon v-else :icon="item.icon" color="onSurface" size="16" />
+            
+                <v-icon  :icon="item.icon" color="onSurface" size="16" />
               </template>
-              <v-list-item-title>{{ item.title }}</v-list-item-title>
-              <v-list-item-subtitle>{{ item.subtitle }}</v-list-item-subtitle>
+              <v-list-item-title class="title">{{ item.title }}</v-list-item-title>
+              <v-list-item-subtitle class="subtitle">{{ item.subtitle }}</v-list-item-subtitle>
               <template v-slot:append>
                 <v-icon icon="mdi-chevron-right" />
               </template>
@@ -111,32 +90,7 @@
       </v-col>
     </v-row>
 
-    <!-- Actions rapides -->
-    <!-- <v-row class="mt-4">
-      <v-col cols="12">
-        <v-card class="pa-6" rounded="xl" variant="flat" color="surface">
-          <h2 class="text-h6 font-weight-bold mb-4">
-            <v-icon icon="mdi-lightning-bolt" class="mr-2" color="primary" />
-            Actions Rapides
-          </h2>
-          
-          <div class="d-flex flex-wrap gap-3">
-            <v-btn
-              v-for="action in quickActions"
-              :key="action.id"
-              v-show="!action.requiresMaster || adminType === 'master'"
-              :color="action.color"
-              variant="tonal"
-              rounded="lg"
-              :prepend-icon="action.icon"
-              @click="navigateTo(action.path)"
-            >
-              {{ action.title }}
-            </v-btn>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row> -->
+   
   </v-container>
 </template>
 
@@ -172,6 +126,15 @@ if (!authStore.userData.isAdmin) {
 
 const adminType = computed(() => authStore.userData.adminType)
 
+const actionNeeded = (stat) => {
+  if (stat.key === 'pendingUsers') {
+    return stats.value.pendingUsers > 0
+  }
+  if (stat.key === 'pendingTickets') {
+    return stats.value.pendingTickets > 0
+  }
+  return false
+}
 
 // Statistiques
 const stats = ref({
@@ -228,6 +191,7 @@ const mainSections = computed(() => [
         title: 'Candidatures en attente',
         subtitle: `${stats.value.pendingUsers} utilisateurs en attente d'approbation`,
         icon: 'mdi-account-clock',
+        key: 'pendingUsers',
         iconColor: 'warning',
         path: '/admin/pending-users',
         requiresMaster: false
@@ -285,7 +249,8 @@ const mainSections = computed(() => [
         subtitle: `${stats.value.pendingTickets} tickets en attente`,
         icon: 'mdi-message-question',
         iconColor: 'info',
-        path: '/tickets',
+        key: 'pendingTickets',
+        path: '/admin/tickets',
         requiresMaster: false,
         badge: {
           content: stats.value.pendingTickets,
@@ -349,7 +314,7 @@ const quickActions = computed(() => [
     title: 'Voir les tickets',
     color: 'info',
     icon: 'mdi-message-question',
-    path: '/tickets',
+    path: '/admin/tickets',
     requiresMaster: false
   },
   {
@@ -392,13 +357,15 @@ const loadStats = async () => {
     // Calculer les statistiques
     stats.value.totalUsers = userStore.users.length
     stats.value.pendingUsers = userStore.users.filter(user => user.registrationStatus === 'pending').length
-    stats.value.pendingTickets = ticketStore.tickets.filter(ticket => ticket.status === 'pending').length
+    stats.value.pendingTickets = ticketStore.tickets.length
     stats.value.totalCenters = centerStore.centers.length
     
   } catch (error) {
     console.error('Erreur lors du chargement des statistiques:', error)
   }
 }
+
+
 
 onMounted(() => {
   loadStats()
@@ -434,5 +401,27 @@ onMounted(() => {
     padding-top: 1rem;
     padding-bottom: 1rem;
   }
+}
+
+
+.action-needed {
+  position: relative;
+  border-radius: 24px !important;
+  color : rgba(var(--v-theme-onPending), 1) !important;
+  background-color: rgba(var(--v-theme-pending), 0.01) !important;
+  overflow: hidden;
+  box-shadow: 0 0 28px 0 rgba(var(--v-theme-pending), 0.4) !important;
+}
+
+.title {
+  font-size: 0.80rem !important;
+  font-weight: 900 !important;
+  color: rgba(var(--v-theme-onBackground), 1) !important;
+}
+
+
+.subtitle {
+  font-size: 0.75rem !important;
+  color: rgba(var(--v-theme-onBackground), 0.5) !important;
 }
 </style>

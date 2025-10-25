@@ -20,6 +20,7 @@ export const getAllRequests = async (req, res) => {
   }
 };
 
+
 export const updateRequestStatus = async (req, res) => {
   try {
     const request = await AccountRecoveryRequest.findByIdAndUpdate(

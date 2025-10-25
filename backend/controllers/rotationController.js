@@ -8,6 +8,8 @@ import Substitution from '../models/Substitution.js';
 import { computeShiftOfUserWithoutSubstitutions } from '../utils/computeShiftOfUserWithSubstitutions.js';
 import { getTeamAtGivenDate } from '../utils/getTeamAtGivenDate.js';
 import User from '../models/User.js';
+import { isValidDate, isValidId } from '../utils/validation.js';
+import rotationActivationService from '../services/rotationService/rotationActivationService.js';
 
 const POINTS_PER_HOUR = 1;
 const BASE_VALUE = 2;
@@ -81,7 +83,7 @@ const registerShift = async (shift, order, newRotation) => {
             throw new Error('Le jour de travail doit avoir un début et une fin');
         }
         const workDuration = computeWorkDuration(startTime, endTime);
-   
+
         points = workDuration.points;
     }
 
@@ -89,8 +91,8 @@ const registerShift = async (shift, order, newRotation) => {
         name: shift.name,
         order: order,
         optional: shift.optional,
-        default: { 
-            startTime:  startTime,
+        default: {
+            startTime: startTime,
             endTime: endTime,
             points: points,
             endsNextDay: endsNextDay
@@ -332,205 +334,36 @@ const deleteRotation = async (req, res) => {
     }
 };
 
-const convertCenterDemands = async (startDate, endDate, centerId, rotation) => {
-    try {
-        // Récupérer toutes les demandes de substitution ouvertes ou acceptées pour ce centre
-        const demands = await Substitution.find({
-            centerId: centerId,
-            status: { $in: ['open', 'accepted'] },
-            deleted: false,
-            'posterShift.date': { $gte: startDate, $lte: endDate }
-        });
-
-        const rotations = await Rotation.find({ centerId, deleted: false }).populate({
-            path: 'days',
-            populate: {
-                path: 'variations'
-            }
-        });
-
-        console.log(`Conversion de ${demands.length} demandes de substitution pour le centre ${centerId}`);
-
-        for (const demand of demands) {
-            try {
-                // Aucun shift trouvé par nom, calculer le shift de l'utilisateur avec la nouvelle rotation
-                // console.log(`Pour la demande ${demand._id}, calcul du shift de l'utilisateur...`);
-
-                try {
-                    
-                    const user = await User.findById(demand.posterId).populate('teams');
-                    if (!user) {
-                        // console.warn(`Utilisateur ${demand.posterId} non trouvé pour la demande ${demand._id}`);
-                        continue;
-                    }
-
-                    // Calculer le shift de l'utilisateur avec la nouvelle rotation
-                    const userShifts = await computeShiftOfUserWithoutSubstitutions(demand.posterShift.date, demand.posterId);
-                    const userShift = userShifts[0];
-
-                    if (userShift && userShift.shift) {
-                        // Trouver le shift correspondant dans la nouvelle rotation
-                        const computedShift = rotation.days.find(day =>
-                            day._id.toString() === userShift.shift._id.toString()
-                        );
-
-
-                        if (computedShift) {
-                            const updatedPosterShift = {
-                                shift: computedShift._id,
-                                date: demand.posterShift.date,
-                                teamId: userShift.teamObject._id,
-                                selectedVariation: null
-                            };
-
-                            // Vérifier s'il y a une variation sélectionnée
-                            if (userShift.shift.selectedVariation) {
-                                const matchingVariation = computedShift.variations.find(variation =>
-                                    variation._id.toString() === userShift.shift.selectedVariation.toString()
-                                );
-
-                                if (matchingVariation) {
-                                    updatedPosterShift.selectedVariation = matchingVariation._id;
-                                }
-                            }
-
-
-                   
-
-                            // Traiter aussi l'accepterShift s'il existe
-                            let updatedAccepterShift = null;
-                            if (demand.accepterShift && demand.accepterShift.date) {
-                                try {
-                                    // Calculer le shift de l'accepteur avec la nouvelle rotation
-                                    const accepterShifts = await computeShiftOfUserWithoutSubstitutions(demand.accepterShift.date, demand.accepterId);
-                                    const accepterShift = accepterShifts[0];
-
-                                    if (accepterShift && accepterShift.shift) {
-                                        // Trouver le shift correspondant dans la nouvelle rotation
-                                        const computedAccepterShift = rotation.days.find(day =>
-                                            day._id.toString() === accepterShift.shift._id.toString()
-                                        );
-
-                                        if (computedAccepterShift) {
-                                            updatedAccepterShift = {
-                                                shift: computedAccepterShift._id,
-                                                date: demand.accepterShift.date,
-                                                teamId: accepterShift.teamObject._id,
-                                                selectedVariation: null
-                                            };
-
-                                            // Vérifier s'il y a une variation sélectionnée
-                                            if (accepterShift.shift.selectedVariation) {
-                                                const matchingVariation = computedAccepterShift.variations.find(variation =>
-                                                    variation._id.toString() === accepterShift.shift.selectedVariation.toString()
-                                                );
-
-                                                if (matchingVariation) {
-                                                    updatedAccepterShift.selectedVariation = matchingVariation._id;
-                                                }
-                                            }
-
-                                            console.log(`AccepterShift calculé pour la demande ${demand._id}`);
-                                        } else {
-                                            console.warn(`Shift calculé ${accepterShift.shift._id} non trouvé dans la rotation pour l'accepterShift de la demande ${demand._id}`);
-                                        }
-                                    } else {
-                                        console.warn(`Aucun shift calculé pour l'accepteur ${demand.accepterId} à la date ${demand.accepterShift.date} pour la demande ${demand._id}`);
-                                    }
-                                } catch (accepterComputeError) {
-                                    console.error(`Erreur lors du calcul du shift de l'accepteur pour la demande ${demand._id}:`, accepterComputeError);
-                                }
-                            }
-
-                            // Mettre à jour la demande
-                            const updateData = {
-                                posterShift: updatedPosterShift,
-                                rotation: rotation._id,
-                                updatedAt: new Date(),
-                               
-                            };
-
-                            if (updatedAccepterShift) {
-                                updateData.accepterShift = updatedAccepterShift;
-                            }
-
-                            await Substitution.findByIdAndUpdate(demand._id, updateData);
-
-                            console.log(`Demande ${demand._id} du ${demand.posterShift.date} convertie avec succès (shift calculé)`);
-                        } else {
-                            console.warn(`Shift calculé ${userShift.shift._id}  non trouvé dans la rotation pour la demande ${demand._id}`);
-                        }
-                    } else {
-                        console.warn(`Aucun shift calculé pour l'utilisateur ${demand.posterId} à la date ${demand.posterShift.date} pour la demande ${demand._id}`);
-                    }
-                } catch (computeError) {
-                    console.error(`Erreur lors du calcul du shift pour la demande ${demand._id}:`, computeError);
-                }
-
-            } catch (error) {
-                console.error(`Erreur lors de la conversion de la demande ${demand._id}:`, error);
-                // Continuer avec les autres demandes même si une échoue
-            }
-        }
-
-        console.log(`Conversion terminée pour le centre ${centerId}`);
-    } catch (error) {
-        console.error('Erreur lors de la conversion des demandes de substitution:', error);
-        throw error;
-    }
-};
 
 // Ajouter une date d'activation
 const addActivationDate = async (req, res) => {
     const { id } = req.params;
     const { activationDate } = req.body;
 
-    try {
-        if (!activationDate) {
-            return res.status(400).json({ message: 'Activation date is required.' });
-        }
-
-        const rotation = await Rotation.findById(id);
-        if (!rotation) {
-            return res.status(404).json({ message: 'Rotation not found.' });
-        }
-
-        const updatedRotation = await Rotation.findByIdAndUpdate(
-            id,
-            { $addToSet: { activationDates: activationDate } },
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedRotation) {
-            return res.status(404).json({ message: 'Rotation not found.' });
-        }
-
-        // Populer la rotation avec les jours pour la conversion
-        await updatedRotation.populate({
-            path: 'days',
-            populate: {
-                path: 'variations'
-            }
-        });
-
-        // Convertir les demandes de substitution existantes pour cette rotation
-        try {
-            const activationDateObj = new Date(activationDate);
-            const endDate = new Date(activationDateObj);
-            endDate.setDate(endDate.getDate() + 365); // Convertir les demandes pour l'année suivante
-
-            await convertCenterDemands(activationDateObj, endDate, updatedRotation.centerId, updatedRotation);
-        } catch (conversionError) {
-            console.error('Erreur lors de la conversion des demandes:', conversionError);
-            // Ne pas faire échouer l'ajout de la date d'activation si la conversion échoue
-        }
-
-        await createNotificationForCenter({ message: "Le tour de service : " + updatedRotation.name + " sera actif à partir du " + activationDate, title: "Changement de tour de service" }, 'general', updatedRotation.centerId);
-
-        res.json({ message: 'Activation date added successfully.', rotation: updatedRotation });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!activationDate) {
+        return res.status(400).json({ message: 'Date d\'activation requise.' });
     }
+
+    if (!isValidDate(activationDate)) {
+        return res.status(400).json({ message: 'Date invalide.' });
+    }
+
+    if (!isValidId(id)) {
+        return res.status(400).json({ message: 'ID de rotation invalide.' });
+    }
+
+    const rotation = await Rotation.findById(id);
+    if (!rotation || rotation.deleted) {
+        return res.status(404).json({ message: 'Rotation non trouvée ou supprimée.' });
+    }
+
+    try {
+        const result = await rotationActivationService.addActivationDate(id, activationDate);
+        res.json(result);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de l\'ajout de la date d\'activation : ' + error.message });
+    }
+
 };
 
 
@@ -546,17 +379,9 @@ const removeActivationDate = async (req, res) => {
             return res.status(400).json({ message: 'Activation date is required.' });
         }
 
-        const updatedRotation = await Rotation.findByIdAndUpdate(
-            id,
-            { $pull: { activationDates: activationDate } },
-            { new: true }
-        );
+        const result = await rotationActivationService.removeActivationDate(id, activationDate);
 
-        if (!updatedRotation) {
-            return res.status(404).json({ message: 'Rotation not found' });
-        }
-
-        res.json({ message: 'Activation date removed', rotation: updatedRotation });
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -573,7 +398,7 @@ const updateDayInRotation = async (req, res) => {
             return res.status(404).json({ message: 'Tour de service non trouvé' });
         }
 
-   
+
         const shift = await Shift.findById(updatedDay._id);
         if (!shift) {
             return res.status(400).json({ message: 'Jour non trouvé' });
@@ -583,7 +408,7 @@ const updateDayInRotation = async (req, res) => {
         if (!isDayInRotation) {
             return res.status(400).json({ message: 'Jour non trouvé dans la rotation' });
         }
- 
+
         console.log("updatedDay", updatedDay);
 
         if (updatedDay.type !== 'rest') {
@@ -598,41 +423,41 @@ const updateDayInRotation = async (req, res) => {
             shift.optional = updatedDay.optional;
             shift.name = updatedDay.name;
             shift.order = updatedDay.order;
-        
+
             shift.variations = [];
 
 
 
             const newVariationList = [];
             if (updatedDay.variations && updatedDay.variations.length > 0) {
-            for (const updatedVariation of updatedDay.variations) {
-                const variation = await Variation.findById(updatedVariation._id);
-                if (variation) {
-                    if (!updatedVariation.startTime || !updatedVariation.endTime) {
-                        throw new Error('Les variantes doivent avoir un début et une fin');
+                for (const updatedVariation of updatedDay.variations) {
+                    const variation = await Variation.findById(updatedVariation._id);
+                    if (variation) {
+                        if (!updatedVariation.startTime || !updatedVariation.endTime) {
+                            throw new Error('Les variantes doivent avoir un début et une fin');
+                        }
+                        const { points } = computeWorkDuration(updatedVariation.startTime, updatedVariation.endTime);
+
+                        variation.name = updatedVariation.name;
+                        variation.startTime = updatedVariation.startTime;
+                        variation.endTime = updatedVariation.endTime;
+                        variation.endsNextDay = updatedVariation.endsNextDay;
+                        variation.points = points;
+
+                        shift.variations.push(variation._id);
+                        newVariationList.push(variation);
+                        await variation.save();
+                    } else {
+                        const newVariation = await registerVariation(updatedVariation, shift);
+                        shift.variations.push(newVariation._id);
+                        await newVariation.save();
+
+
+
                     }
-                    const { points } = computeWorkDuration(updatedVariation.startTime, updatedVariation.endTime);
-
-                    variation.name = updatedVariation.name;
-                    variation.startTime = updatedVariation.startTime;
-                    variation.endTime = updatedVariation.endTime;
-                    variation.endsNextDay = updatedVariation.endsNextDay;
-                    variation.points = points;
-
-                    shift.variations.push(variation._id);
-                    newVariationList.push(variation);
-                    await variation.save();
-                } else {
-                    const newVariation = await registerVariation(updatedVariation, shift);
-                    shift.variations.push(newVariation._id);
-                    await newVariation.save();
-
-
 
                 }
 
-            }
-          
                 await Variation.deleteMany({ _id: { $nin: newVariationList.map(v => v._id), $in: shift.variations } });
 
             }
@@ -663,13 +488,13 @@ const duplicateRotation = async (req, res) => {
     try {
 
         const rotation = await Rotation.findById(id)
-        .populate({
-            path: 'days',
-            populate: {
-                path: 'variations'
-            }
-        });
-   
+            .populate({
+                path: 'days',
+                populate: {
+                    path: 'variations'
+                }
+            });
+
 
         if (!rotation) {
             return res.status(404).json({ message: 'Tour de service non trouvé' });
@@ -687,7 +512,7 @@ const duplicateRotation = async (req, res) => {
 
 
         for (const day of rotation.days) {
-          
+
             // Créer une copie du shift
             if (!day.order) {
                 day.order = rotation.days.indexOf(day) + 1;
@@ -708,18 +533,18 @@ const duplicateRotation = async (req, res) => {
             }
 
             const existingShift = await Shift.findById(day._id);
-       
+
             // if (!existingShift && format === 'legacy') {
             //     shiftData._id = day._id;
             // }
 
 
             const newShift = new Shift(shiftData);
-        
+
             duplicatedRotation.days.push(newShift._id);
             // Dupliquer les variations si elles existent
 
-           
+
 
 
             if (day.variations && day.variations.length > 0) {
@@ -735,10 +560,10 @@ const duplicateRotation = async (req, res) => {
                     await newVariation.save();
                     newShift.variations.push(newVariation._id);
                 }
-            } 
-      
+            }
+
             await newShift.save();
-           
+
         }
 
 

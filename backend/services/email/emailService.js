@@ -9,23 +9,7 @@ dotenv.config();
 const mailService = process.env.MAIL_SERVICE || 'console';
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
-/**
- * Crée un transporteur MailerSend
- */
-function createMailerSendTransporter() {
-  return nodemailer.createTransport({
-    host: 'smtp.mailersend.net',
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.MAILERSEND_USERNAME,
-      pass: process.env.MAILERSEND_PASSWORD,
-    },
-    tls: {
-      ciphers: 'SSLv3'
-    }
-  });
-}
+
 
 /**
  * Crée un transporteur Amazon SES
@@ -48,9 +32,7 @@ function createSESTransporter() {
 function createConsoleTransporter() {
   return {
     sendMail: async (mailOptions) => {
-      // console.log('   De:', mailOptions.from);
-      // console.log('   À:', mailOptions.to);
-      console.log('   Sujet:', mailOptions.subject);
+ 
       if (mailOptions.html) {
         // console.log('   Contenu HTML disponible');
       }
@@ -76,8 +58,6 @@ function createTransporter() {
 
   // Configuration selon le service choisi
   switch (mailService.toLowerCase()) {
-    case 'mailersend':
-      return createMailerSendTransporter();
     case 'ses':
     case 'amazon':
     case 'aws':

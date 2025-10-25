@@ -231,10 +231,20 @@ const handleRemoveActivationDate = (shiftId, date, centerId) => {
   showDateConfirmationDialog.value = true;
 };
 
-const confirmRemoveActivationDate = () => {
-  rotationStore.removeActivationDate(removeParams.value.shiftId, removeParams.value.date, removeParams.value.centerId);
-  showConfirmationDialog.value = false;
-  removeParams.value = {};
+const confirmRemoveActivationDate = async () => {
+
+  try {
+    const result = await rotationStore.removeActivationDate(removeParams.value.shiftId, removeParams.value.date, removeParams.value.centerId);
+    snackbarStore.showNotification(result.message, 'onSuccess', 'mdi-check');
+    for (const change of result.changes) {
+      snackbarStore.showNotification(buildChangeMessage(change));
+    }
+  } catch (error) {
+    snackbarStore.showNotification('Erreur lors de la suppression de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+  } finally {
+    showDateConfirmationDialog.value = false;
+    removeParams.value = {};
+  }
 };
 
 const deleteRotation = async (rotationId) => {
@@ -254,20 +264,39 @@ const confirmDelete = async () => {
   }
 };
 
-const setActivationDate = (startDate) => {
+const setActivationDate = async (startDate) => {
   if (startDate) {
     try {
-      const inputDate = new Date(toUTCNormalized(startDate));
-      if (isNaN(inputDate.getTime())) {
-        throw new Error('Date invalide');
-      }
-      rotationStore.setActiveRotation(rotationToActivate.value, inputDate);
-      snackbarStore.showNotification('Date d\'activation ajoutée', 'onSuccess', 'mdi-check');
+      const UTCDate = toUTCNormalized(startDate);
+      console.log('UTCDate', UTCDate);
+      const inputDate = UTCDate.split('T')[0];
+      const result = await rotationStore.setActiveRotation(rotationToActivate.value, inputDate);
+      console.log('result', result);
+
+        snackbarStore.showNotification(result.message, 'onSuccess', 'mdi-check');
+        for (const change of result.changes) {
+      snackbarStore.showNotification(buildChangeMessage(change), 'onSuccess', 'mdi-check');
+    }
     } catch (error) {
       snackbarStore.showNotification('Erreur lors de l\'ajout de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
     }
-  }
+  };
 };
+
+
+const buildChangeMessage = (change) => {
+  let dateInterval = '';
+  let ruleChange = '';
+  if (change.to) {
+    dateInterval = "du " + new Date(change.from).toLocaleDateString() + " au " + new Date(change.to).toLocaleDateString();
+  } else {
+    dateInterval = "à partir du " + new Date(change.from).toLocaleDateString();
+  }
+
+  
+
+  return "Changement " + dateInterval + " : " + (change.oldRule ? change.oldRule : 'aucun tour de service actif') + " -> " + (change.newRule ? change.newRule : 'aucun tour de service actif');
+}
 
 const closeErrorDialog = () => {
   showErrorDialog.value = false;

@@ -13,6 +13,7 @@ router.get('/active-at-date', verifyToken, rotationController.getActiveRotationA
 // Routes protégées par isAdmin
 router.post('/create', verifyToken, isAdmin, rotationController.saveRotation);
 router.delete('/:id', verifyToken, isAdmin, rotationController.deleteRotation);
+
 router.post('/:id/activate', verifyToken, isAdmin, rotationController.addActivationDate);
 router.delete('/:id/remove-date', verifyToken, isAdmin, rotationController.removeActivationDate);
 router.put('/:id/day', verifyToken, isAdmin, rotationController.updateDayInRotation);

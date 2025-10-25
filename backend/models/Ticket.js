@@ -40,6 +40,33 @@ const ticketSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  status: {
+    type: String,
+    enum: ['new', 'in_progress', 'done', 'closed'],
+    default: 'new'
+  },
+  replySent: {
+    type: Boolean,
+    default: false
+  },
+  replies: [{
+    content: {
+      type: String,
+      required: true
+    },
+    senderName: {
+      type: String,
+      default: ''
+    },
+    isFromAdmin: {
+      type: Boolean,
+      default: false
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
   deleted: {
     type: Boolean,
     default: false

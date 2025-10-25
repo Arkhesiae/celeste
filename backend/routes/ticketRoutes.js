@@ -1,20 +1,36 @@
 import express from 'express';
-import { getTickets, createTicket, markAsRead, deleteTicket } from '../controllers/ticketController.js';
+import { getTickets, createTicket, markAsRead, deleteTicket, updateTicketStatus, markReplySent, sendReply } from '../controllers/ticketController.js';
 import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
+import { handleInboundEmail } from '../services/emailIncomingService.js';
 
 const router = express.Router();
 
-// Routes pour les tickets
-// Seuls les administrateurs peuvent voir tous les tickets
-router.get('/', verifyToken, isAdmin, getTickets);
+ 
+
+
 
 // Création de ticket (accessible à tous les utilisateurs authentifiés)
-router.post('/', createTicket);
+router.post('/create', createTicket);
+
+// Mettre à jour le statut d'un ticket
+router.post('/status/:id',  updateTicketStatus);
 
 // Seuls les administrateurs peuvent marquer les tickets comme lus
 router.put('/:id/read', verifyToken, isAdmin, markAsRead);
 
 // Seuls les administrateurs principaux peuvent supprimer les tickets
 router.delete('/:id', verifyToken, isMasterAdmin, deleteTicket);
+
+// Seuls les administrateurs peuvent voir tous les tickets
+router.get('/', verifyToken, isAdmin, getTickets);
+
+// Marquer qu'une réponse a été envoyée
+router.put('/:id/reply-sent', verifyToken, isAdmin, markReplySent);
+
+// Envoyer une réponse à un ticket
+router.post('/:id/reply', verifyToken, isAdmin, sendReply);
+
+// Recevoir un email entrant
+router.post('/inbound', express.text({ type: "*/*" }), handleInboundEmail);
 
 export default router; 

@@ -36,10 +36,12 @@ export const useRotationStore = defineStore('rotation', () => {
    */
   const removeActivationDate = async (rotationId, date, centerId) => {
     try { 
-      await rotationService.removeActivationDate(rotationId, date);
-      await fetchRotations(centerId); // Rafraîchir les données
+      const result = await rotationService.removeActivationDate(rotationId, date);
+      await fetchRotations(centerId);
+      return result;
     } catch (error) {
       console.error('Erreur lors de la suppression de la date d\'activation :', error);
+      throw error;
     }
   };
 
@@ -64,8 +66,9 @@ export const useRotationStore = defineStore('rotation', () => {
    */
   const setActiveRotation = async (rotation, activationDate) => {
     try {
-      await rotationService.setActiveRotation(rotation._id, activationDate);
+      const result = await rotationService.setActiveRotation(rotation._id, activationDate);
       await fetchRotations(rotation.centerId); // Rafraîchir les données
+      return result;
     } catch (error) {
       console.error('Erreur lors de l\'activation du tour de service :', error);
       throw error;

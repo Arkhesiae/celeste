@@ -1,0 +1,122 @@
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+
+  <tr>
+    <td align="left">
+      {{> hello }}
+    </td>
+  </tr>
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <h3 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #007bff;">campaign</span>
+        {{announcementTitle}}
+      </h3>
+    </td>
+  </tr>
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  
+  <!-- Announcement Card -->
+  <tr>
+    <td>
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 24px; margin: 10px 0; color: white;">
+        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+          <span class="material-icons md-18" style="vertical-align: middle; margin-right: 12px; color: white;">announcement</span>
+          <h4 style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600; color: white;">Annonce importante</h4>
+        </div>
+        
+        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; margin: 12px 0;">
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400; line-height: 1.6; color: white;">
+            {{announcementContent}}
+          </p>
+        </div>
+        
+        <div style="display: flex; align-items: center; margin-top: 16px;">
+          <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: rgba(255,255,255,0.8);">schedule</span>
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400; font-size: 14px; color: rgba(255,255,255,0.8);">
+            Publié le {{announcementDate}}
+          </p>
+        </div>
+        
+        {{#if announcementAuthor}}
+        <div style="display: flex; align-items: center; margin-top: 8px;">
+          <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: rgba(255,255,255,0.8);">person</span>
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400; font-size: 14px; color: rgba(255,255,255,0.8);">
+            Par {{announcementAuthor}}
+          </p>
+        </div>
+        {{/if}}
+      </div>
+    </td>
+  </tr>
+  
+  {{#if announcementDetails}}
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <h4 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px;">info</span>
+        Détails supplémentaires
+      </h4>
+    </td>
+  </tr>
+  <tr>
+    <td height="10">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>
+      <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; padding: 16px; margin: 10px 0;">
+        <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400; line-height: 1.6; color: #333;">
+          {{announcementDetails}}
+        </p>
+      </div>
+    </td>
+  </tr>
+  {{/if}}
+  
+  {{#if actionRequired}}
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #dc3545;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px;">priority_high</span>
+        Action requise : {{actionRequired}}
+      </p>
+    </td>
+  </tr>
+  {{/if}}
+  
+  {{#if announcementUrl}}
+  <tr>
+    <td height="30">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="center">
+      <a href="{{announcementUrl}}" class="btn" style="background:#007bff;color:#fff;padding:12px 20px;border-radius:20px;text-decoration:none;font-family: 'Roboto', Arial, sans-serif; font-weight: 500; font-size: 12px;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px;">open_in_new</span>
+        En savoir plus
+      </a>
+    </td>
+  </tr>
+  {{/if}}
+  
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 400; font-size: 12px; color: #666;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 4px; font-size: 14px;">email</span>
+        Cette annonce a été envoyée à tous les utilisateurs de Céleste.
+      </p>
+    </td>
+  </tr>
+</table>

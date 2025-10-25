@@ -1,5 +1,5 @@
 import emailService from './emailService.js';
-
+import { renderMail } from '../../src/mail/mailRenderer.js';
 /**
  * Envoie un email d'approbation d'inscription
  * @param {string} toEmail
@@ -30,7 +30,7 @@ async function sendEmailRejection(toEmail) {
     from: process.env.EMAIL_FROM || 'Celeste <noreply@celeste-app.fr>',
     to: toEmail.toLowerCase(),
     subject: 'Votre inscription a été rejetée - Celeste',
-    text: `Bonjour,\n\nVotre inscription a été rejetée. Veuillez réessayer ou contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`
+    text: `Bonjour,\n\nVotre inscription a été rejetée. Veuillez contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`
   };
 
   try {

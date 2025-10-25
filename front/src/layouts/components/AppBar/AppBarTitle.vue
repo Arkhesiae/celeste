@@ -25,10 +25,10 @@
   </div>
     <v-hover v-slot="{ isHovering, props }">
       <v-slide-y-transition mode="out-in"> 
-       <div v-if="!isHovering">
+       <div v-if="!isHovering" class="d-flex align-center">
         <span 
         v-bind="props"
-        class="text-overline text-medium-emphasis ml-2"
+        class="text-overline version-text text-medium-emphasis ml-2"
         >
         {{ APP_VERSION }}
           
@@ -37,7 +37,7 @@
       <div v-else>
         <span 
         v-bind="props"
-        class="text-overline text-medium-emphasis ml-2"
+        class="text-overline version-text text-medium-emphasis ml-2"
         >
         {{ RELEASE_DATE }}
           
@@ -98,5 +98,9 @@ onMounted(() => {
   height: 30px;
 
   margin-right: 5px;
+}
+.version-text {
+  font-weight: 600 !important;
+  font-size: 0.5rem !important;
 }
 </style>

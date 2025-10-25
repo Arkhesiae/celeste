@@ -31,6 +31,7 @@ const getCenterDemands = async (req, res) => {
 };
 
 
+
 // Recatégoriser les substitutions
 const recategorizeSubstitutions = async (req, res) => {
     try {
@@ -514,7 +515,7 @@ const detectTeamChangeConflicts = async (req, res) => {
         res.json({ conflicts: conflicts });
     } catch (error) {
         console.error("Erreur lors de la détection des conflits de substitutions :", error);
-        res.status(500).json({ error: "Erreur serveur" });
+        res.status(500).json({ error: "Erreur du serveur" });
     }
 };
 

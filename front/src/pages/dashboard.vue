@@ -30,7 +30,7 @@
 
     <v-row class="mt-2">
       <v-col cols="12" class="pa-2">
-        <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-6"
+        <!-- <v-card v-if="showAnnouncement" rounded="xl" elevation="0" class="mb-4 smooth-shadow pa-6"
           color="surfaceContainer">
           <v-icon icon="mdi-bell-outline" size="16" color="remplacement"
             style="position: absolute; top: 16px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
@@ -39,8 +39,7 @@
               <v-icon icon="mdi-bell-outline" size="16" color="remplacement" />
               <span class="font-weight-medium text-overline">Annonce</span>
             </div>
-            <!-- <v-btn icon="mdi-close" variant="tonal" size="small" rounded="lg" color="remplacement"
-              @click="showAnnouncement = false" /> -->
+          
           </div>
           <v-card-title class="text-h6 py-0 font-weight-medium ">Mise à jour du site</v-card-title>
           <v-card-text>
@@ -49,7 +48,7 @@
             </div>
           </v-card-text>
           
-        </v-card>
+        </v-card> -->
       </v-col>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
         <v-alert v-if="!authStore.userData.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
@@ -191,7 +190,7 @@
           </div>
         </v-alert> -->
 
-        <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-6"
+        <!-- <v-alert v-if="true" color="pendingDemand" variant="tonal" rounded="xl" class="mb-4 pa-6"
           icon="mdi-alert-circle-outline bg-transparent" style="cursor: pointer;">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -204,18 +203,15 @@
                   Certaines fonctionnalités ne sont pas encore disponibles. Nous vous remercions pour votre compréhension.
                 </div>
               </v-card-text>
-              <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
+        
             </div>
-            <!-- <div class="font-weight-medium"> -->
-            <!-- Résoudre -->
-            <!-- <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-          </div> -->
+       
 
           </div>
           <template #prepend>
             <v-icon icon="mdi-alert-circle-outline"  size="32" class="mr-2" />
           </template>
-        </v-alert>
+        </v-alert> -->
       </v-col>
     </v-row>
 

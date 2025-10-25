@@ -93,9 +93,10 @@ export default createVuetify({
           "onAcceptedDemand": "#033027",
           "toDoDemand": "#4e3e64",
           "onToDoDemand": "#a000a0",
-          info: '#2196F3',
-          success: '#affF80',
-          warning: '#FB8C00',
+          "pending": "#ffbc66",
+          "new": "#28adbb",
+          "done": "#25c060",
+      
         }
       },
       lightTheme: {
@@ -159,6 +160,9 @@ export default createVuetify({
           "onAcceptedDemand": "#f3ffbc",
           "toDoDemand": "#4e3e64",
           "onToDoDemand": "#a000a0",
+          "pending": "#af6200",
+          "new": "#28adbb",
+          "done": "#25c060",
         }
       },
     },

@@ -9,7 +9,7 @@ services:
     ports:
       - '3000:3000'
     volumes:
-      - ./src:/app/src
+      - .:/app
       - /app/node_modules
     depends_on:
       - mongo

@@ -7,7 +7,6 @@ export const useTicketStore = defineStore('ticket', () => {
   // State
   const tickets = ref([]);
   const loading = ref(false);
-  const error = ref(null);
 
   // Getters
   const unreadCount = computed(() => 
@@ -23,9 +22,8 @@ export const useTicketStore = defineStore('ticket', () => {
     loading.value = true;
     try {
       tickets.value = await ticketService.fetchTickets();
-      error.value = null;
     } catch (err) {
-      error.value = err.message;
+      // Error handling removed
     } finally {
       loading.value = false;
     }
@@ -36,10 +34,9 @@ export const useTicketStore = defineStore('ticket', () => {
     try {
       const createdTicket = await ticketService.createTicket(ticketData);
       tickets.value.unshift(createdTicket);
-      error.value = null;
       return createdTicket;
     } catch (err) {
-      error.value = err.message;
+      console.error(err); 
       throw err;
     } finally {
       loading.value = false;
@@ -50,10 +47,7 @@ export const useTicketStore = defineStore('ticket', () => {
     try {
       const updatedTicket = await ticketService.markAsRead(ticketId);
       await fetchTickets();
-     
-      error.value = null;
     } catch (err) {
-      error.value = err.message;
       throw err;
     }
   }
@@ -61,11 +55,36 @@ export const useTicketStore = defineStore('ticket', () => {
   async function deleteTicket(ticketId) {
     try {
       await ticketService.deleteTicket(ticketId);
-     
       await fetchTickets();
-      error.value = null;
     } catch (err) {
-      error.value = err.message;
+      throw err;
+    }
+  }
+
+  async function updateTicketStatus(ticketId, status) {
+    try {
+      await ticketService.updateTicketStatus(ticketId, status);
+      await fetchTickets();
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function replyToTicket(ticketId, content) {
+    try {
+      const updatedTicket = await ticketService.sendTicketReply(ticketId, content);
+      tickets.value = tickets.value.map(ticket => ticket._id === ticketId ? updatedTicket : ticket);
+      return updatedTicket;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function markReplySent(ticketId) {
+    try {
+      await ticketService.markReplySent(ticketId);
+      await fetchTickets();
+    } catch (err) {
       throw err;
     }
   }
@@ -74,7 +93,6 @@ export const useTicketStore = defineStore('ticket', () => {
     // State
     tickets,
     loading,
-    error,
     // Getters
     unreadCount,
     sortedTickets,
@@ -82,6 +100,9 @@ export const useTicketStore = defineStore('ticket', () => {
     fetchTickets,
     createTicket,
     markAsRead,
-    deleteTicket
+    deleteTicket,
+    replyToTicket,
+    updateTicketStatus,
+    markReplySent
   };
 }); 

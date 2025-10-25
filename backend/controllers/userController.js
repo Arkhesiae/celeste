@@ -750,7 +750,7 @@ const transferPoints = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors du transfert:', error);
-        res.status(500).json({ error: 'Erreur serveur lors du transfert' });
+        res.status(500).json({ error: 'Erreur du serveur lors du transfert' });
     }
 };
 
@@ -776,7 +776,7 @@ const getTransactionHistory = async (req, res) => {
         res.status(200).json(transactions);
     } catch (error) {
         console.error('Erreur lors de la récupération des transactions:', error);
-        res.status(500).json({ error: 'Erreur serveur lors de la récupération des transactions' });
+        res.status(500).json({ error: 'Erreur du serveur lors de la récupération des transactions' });
     }
 };
 
@@ -977,7 +977,7 @@ const getDevListUsers = async (req, res) => {
         return res.status(400).json({ message: 'Rôle non supporté' });
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
-        res.status(500).json({ message: 'Erreur serveur' });
+        res.status(500).json({ message: 'Erreur du serveur' });
     }
 };
 

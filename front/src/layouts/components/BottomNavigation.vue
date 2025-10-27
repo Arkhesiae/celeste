@@ -35,6 +35,15 @@
         <div class="d-flex align-center justify-center"
           :class="isActive('/profile/' + authStore.userData.userId) ? 'opacity-100' : 'opacity-50'"
           style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
+          <!-- Badge rouge "!" si téléphone manquant -->
+          <v-badge
+            v-if="!authStore.userData.phone"
+            color="error"
+            content="!"
+            overlap
+            location="top start"
+            style="position: absolute; top: -4px; left: -4px; z-index: 5;"
+          ></v-badge>
           <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
             <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
             <v-icon v-else>mdi-account</v-icon>

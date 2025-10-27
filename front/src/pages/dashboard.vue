@@ -86,7 +86,7 @@
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
         </v-alert>
-        <v-alert v-if="!authStore.userData.phone" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+        <!--<v-alert v-if="!authStore.userData.phone" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-phone-plus" style="cursor: pointer;" @click="router.push('/parameter')">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -99,14 +99,14 @@
                   Pour renseigner votre numéro de téléphone, veuillez vous rendre dans les paramètres de votre profil.
                 </div>
               </v-card-text>
-              <!-- <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> -->
+              <v-btn class="position-absolute top-0 right-0 mt-4 mr-4" size="small" color="onBackground" variant="flat" @click.stop="">Ne plus afficher</v-btn> 
 
 
-            </div>
+            </div> 
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
-          </div>
+          </div> 
 
-        </v-alert>
+        </v-alert>-->
         <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal"
           rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;"
           @click="router.push('/contact-admin')">

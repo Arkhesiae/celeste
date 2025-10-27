@@ -313,7 +313,7 @@ const getStatusLabel = (status) => {
 };
 
 const openGitHub = () => {
-  window.open('https://github.com/your-repo/releases', '_blank');
+  window.open('https://github.com/Arkhesiae/celeste', '_blank');
 };
 
 const shareVersion = () => {

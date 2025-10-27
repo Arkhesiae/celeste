@@ -32,8 +32,13 @@
           </v-btn>
         </div>
       </v-card>
-    </div>
 
+          <!-- Popup Numéro de téléphone manquant UserMenu Mobile -->
+        <div class="px-4 mb-4">
+          <v-alert class="cursor-pointer;" rounded="xl" color="#f2dfe2" icon="$warning" density="compact" @click="router.push('/parameter')">Numéro de téléphone manquant</v-alert>
+        </div>
+
+    </div>
 
 
 

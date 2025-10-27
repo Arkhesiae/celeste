@@ -51,10 +51,34 @@
 
         <v-spacer />
 
-        <!-- Menu utilisateur -->
-        <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.userData.email" :avatar="authStore.avatar"
-          :points="points" :current-team="currentTeam" @navigate-profile="navigateToProfile"
-          @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
+<v-tooltip text="Numéro de téléphone manquant" location="bottom">
+  <template v-slot:activator="{ props }">
+    <v-badge 
+      v-if="!authStore.userData.phone" 
+      location="bottom left" 
+      color="error" 
+      content="!" 
+      @click="router.push('/parameter')"
+      style="cursor: pointer;"
+      v-bind="props"
+    >
+      <!-- Wrap UserMenu with the badge -->
+      <UserMenu 
+        v-if="isLoggedIn" 
+        :username="username" 
+        :email="authStore.userData.email" 
+        :avatar="authStore.avatar"
+        :points="points" 
+        :current-team="currentTeam" 
+        @navigate-profile="navigateToProfile"
+        @navigate-parameter="navigateToParameter" 
+        @logout="handleLogout" 
+        @navigate-contact="navigateToContact"
+      />
+    </v-badge>
+  </template>
+</v-tooltip>
+          
       </template>
     </template>
   </v-app-bar>

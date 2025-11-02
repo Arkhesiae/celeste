@@ -13,15 +13,15 @@
         </v-chip>
       </v-card-title>
       <template #append>
-        <div class="d-flex align-center ga-2 ">
+        <div class="d-flex align-center ga-2 cursor-pointer" @click="showUserDialog = true" >
           <div class="d-flex align-center ga-2" v-if="!smAndDown && !small">
-            <v-avatar size="24" variant="tonal" class="cursor-pointer" @click="showUserDialog = true">
+            <v-avatar size="24" variant="tonal">
               <v-img v-if="getUserById(demand?.posterId)?.avatar"
                 :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
               <v-icon size="x-small" v-else>mdi-account</v-icon>
             </v-avatar>
             <span v-if="!smAndDown && !small" class="text-medium-emphasis font-weight-bold text-caption me-2">
-              {{ getUserById(demand?.posterId)?.name }} {{ abreviatedLastname }}
+              {{ getUserById(demand?.posterId)?.name }} {{ abreviatedLastname }} ({{ getTeamName }})
             </span>
 
 

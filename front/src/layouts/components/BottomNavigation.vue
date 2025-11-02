@@ -39,7 +39,7 @@
           <v-badge
             v-if="!authStore.userData.phone"
             color="error"
-            content="!"
+            icon="mdi-exclamation-thick"
             overlap
             location="top start"
             style="position: absolute; top: -4px; left: -4px; z-index: 5;"

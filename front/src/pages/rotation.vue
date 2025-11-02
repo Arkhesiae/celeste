@@ -99,7 +99,7 @@
 
     <ConfirmationDialog :isDialogVisible="showDateConfirmationDialog" :title="'Suppression de la date d\'activation'"
       :text="'Êtes-vous sûr de vouloir supprimer cette date d\'activation ? Cette action est irréversible.'"
-       :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmRemoveActivationDate"
+       :iconColor="'error'" :confirmText="'Supprimer'" @confirm="removeActivationDate"
       @update:isDialogVisible="showDateConfirmationDialog = $event"></ConfirmationDialog>
 
     <AddRotation :modelValue="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
@@ -108,6 +108,10 @@
 
     <ActivateRotationDialog :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActivationDate"
       @update:dialogVisible="showActivateDialog = $event"></ActivateRotationDialog>
+
+
+    <ConfirmChangeDialog :dialogVisible="showConfirmChangeDialog" :pendingActivation="pendingActivation" @confirm="confirmChange" @cancel="cancelActivation"
+      @update:dialogVisible="showConfirmChangeDialog = $event"></ConfirmChangeDialog>
   </v-container>
 </template>
 
@@ -157,6 +161,8 @@ const rotationToDelete = ref(null);
 const removeParams = ref({});
 const showTimelineDrawer = ref(false);
 const showDateConfirmationDialog = ref(false);
+const showConfirmChangeDialog = ref(false);
+const pendingActivation = ref({ rotation: null, date: null, changes: [] });
 
 const router = useRouter();
 
@@ -227,25 +233,12 @@ const handleSetActivationDate = (rotation) => {
 };
 
 const handleRemoveActivationDate = (shiftId, date, centerId) => {
+  console.log('handleRemoveActivationDate', shiftId, date, centerId);
   removeParams.value = {shiftId, date, centerId};
   showDateConfirmationDialog.value = true;
 };
 
-const confirmRemoveActivationDate = async () => {
 
-  try {
-    const result = await rotationStore.removeActivationDate(removeParams.value.shiftId, removeParams.value.date, removeParams.value.centerId);
-    snackbarStore.showNotification(result.message, 'onSuccess', 'mdi-check');
-    for (const change of result.changes) {
-      snackbarStore.showNotification(buildChangeMessage(change));
-    }
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la suppression de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-  } finally {
-    showDateConfirmationDialog.value = false;
-    removeParams.value = {};
-  }
-};
 
 const deleteRotation = async (rotationId) => {
   rotationToDelete.value = rotationId;
@@ -265,23 +258,86 @@ const confirmDelete = async () => {
 };
 
 const setActivationDate = async (startDate) => {
-  if (startDate) {
+  if (!startDate) {
+    return;
+  }
     try {
       const UTCDate = toUTCNormalized(startDate);
-      console.log('UTCDate', UTCDate);
       const inputDate = UTCDate.split('T')[0];
       const result = await rotationStore.setActiveRotation(rotationToActivate.value, inputDate);
-      console.log('result', result);
 
-        snackbarStore.showNotification(result.message, 'onSuccess', 'mdi-check');
-        for (const change of result.changes) {
-      snackbarStore.showNotification(buildChangeMessage(change), 'onSuccess', 'mdi-check');
-    }
+      if (result.needsApproval) {
+        showConfirmChangeDialog.value = true;
+        pendingActivation.value = { type: 'add', rotation: rotationToActivate.value, date: inputDate, changes: result.changes };
+        return 
+      } 
+      onActivationSuccess(result);
     } catch (error) {
       snackbarStore.showNotification('Erreur lors de l\'ajout de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
     }
-  };
+    
 };
+
+
+
+
+const removeActivationDate = async () => {
+  const { date } = removeParams.value;
+  if (!date) {
+    return;
+  }
+    try {
+      const UTCDate = toUTCNormalized(date);
+      const inputDate = UTCDate.split('T')[0];
+      const rotation = await rotationStore.rotations.find(rotation => rotation._id === removeParams.value.shiftId);
+      const result = await rotationStore.removeActivationDate(rotation, inputDate, removeParams.value.centerId);
+
+      console.log(rotation);
+
+     
+      if (result.needsApproval) {
+        showConfirmChangeDialog.value = true;
+        pendingActivation.value = { type: 'remove', rotation: rotation, date: inputDate, changes: result.changes };
+        return 
+      } 
+      onActivationSuccess(result);
+    } catch (error) {
+      snackbarStore.showNotification('Erreur lors de l\'ajout de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+    }
+};
+
+
+const confirmChange = async () => {
+  try {
+    if (pendingActivation.value.type === 'add') {
+      const result = await rotationStore.confirmAddActivation(pendingActivation.value.rotation, pendingActivation.value.date);
+      onActivationSuccess(result);
+    } else {
+      const result = await rotationStore.confirmRemoveActivation(pendingActivation.value.rotation, pendingActivation.value.date);
+      onActivationSuccess(result);
+    }
+  } catch (error) {
+    snackbarStore.showNotification('Erreur lors de la confirmation du changement : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+  }
+}
+
+
+
+
+
+
+
+const cancelActivation = () => {
+  showConfirmChangeDialog.value = false;
+  pendingActivation.value = { rotation: null, date: null, changes: [] };
+}
+
+const onActivationSuccess = (result) => {
+  snackbarStore.showNotification(result.message, 'onSuccess', 'mdi-check');
+  for (const change of result.changes) {
+    snackbarStore.showNotification(buildChangeMessage(change), 'onSuccess', 'mdi-check');
+  }
+}
 
 
 const buildChangeMessage = (change) => {

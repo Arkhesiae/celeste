@@ -139,7 +139,7 @@ export async function getOpenDemands(userId, startDate, endDate) {
     const baseFilter = {
         centerId: user.centerId,
         deleted: false,
-        status: { $nin: ['canceled', 'completed'] }
+        status: { $in: ['open', 'accepted'] }
     };
 
     const [demands, myDemands] = await Promise.all([
@@ -162,8 +162,10 @@ export async function getOpenDemands(userId, startDate, endDate) {
     await Substitution.updateMany(
         { _id: { $in: demands.map(d => d._id) }, seenBy: { $ne: userId } },
         { $addToSet: { seenBy: userId } }
-      );
+    );
 
+
+    // const ownDemandsVerified = await verifyCompatibilities(myDemands, userId);
 
     const categorizedDemands = await categorizeDemands(demands, userId);
 
@@ -171,6 +173,24 @@ export async function getOpenDemands(userId, startDate, endDate) {
     return result;
 };
 
+
+const verifyCompatibilities = async (demands, userId) => {
+    const list = [];
+    for (const demand of demands) {
+        const result = demand.toObject();
+        const data = await getCompatibleSwitches(result.posterShift.date, userId);
+        const incompatibleSwitches = data.filter(s => !s.compatible);
+        result.incompatibleSwitches = [];
+        for (const acceptedSwitch of result.acceptedSwitches) {
+            if (incompatibleSwitches.some(i => i._id.toString() === acceptedSwitch.shift._id.toString())) {
+                result.incompatibleSwitches.push(acceptedSwitch);
+            }
+        }
+
+        list.push(result);
+    }
+    return list;
+};
 
 export async function getCompatibleSwitches(date, userId) {
     if (!date) {
@@ -181,6 +201,9 @@ export async function getCompatibleSwitches(date, userId) {
     if (!user) {
         throw new Error({status: 404, message: 'Utilisateur non trouvé'});
     }
+
+    console.log(user.centerId)
+    console.log(date)
 
     const activeRotation = await findLatestRotation(user.centerId, date);
     if (!activeRotation) {
@@ -227,9 +250,77 @@ export async function getCompatibleSwitches(date, userId) {
     
    
     return shifts;
-
-
 };
+
+
+
+
+
+
+
+
+export async function getCompatibleSwitchesInRotation(date, userId, rotationId) {
+    if (!date) {
+        throw new Error({status: 400, message: 'Date manquante'});
+    }
+    const demandDate = new Date(date);
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new Error({status: 404, message: 'Utilisateur non trouvé'});
+    }
+
+
+    const populateRotation = await Rotation.findById(rotationId).populate('days');
+
+    const shiftMap = await generateShiftsMap([demandDate], userId);
+ 
+   
+    const sortedShifts = shiftMapToArray(shiftMap);
+ 
+    const shifts = []
+    for (const day of populateRotation.days) {
+        if (day.type === 'rest') continue;
+        const dayLimit = []
+        let compatible = false;
+        const computeRest = checkMinimumRestTime(day, demandDate, sortedShifts);
+        const {restOk, invalidWindow} = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
+        const has35hRest = restOk;
+        const isWithin48h = checkWeeklyWorkHours(day, demandDate, sortedShifts);
+        if (!computeRest.ok) {
+            dayLimit.push('insufficientRest');
+        }
+    
+        if (!has35hRest) {
+            dayLimit.push('35limit');
+        }
+    
+        if (!isWithin48h) {
+            dayLimit.push('48hLimit');
+        }
+
+        if (dayLimit.length === 0) {
+            compatible = true;
+        }
+        shifts.push({
+            _id: day._id,
+            limit: dayLimit,
+            compatible: compatible,
+        });
+    }
+    
+   
+    return shifts;
+};
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Catégorise les demandes d'un utilisateur

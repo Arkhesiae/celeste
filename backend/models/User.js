@@ -68,15 +68,18 @@ const userSchema = new mongoose.Schema({
             type: Boolean, 
             default: false 
         },
-        notifications : { 
-            type: Boolean, 
-            default: true 
-        },
-        emailNotifications : { 
-            type: Boolean, 
-            default: true 
-        },
-    },
+        emails: {
+            all: { type: Boolean, default: true }, // false = fully unsubscribed
+            categories: {
+                type: Object,
+                default: {
+                    announcements: true,
+                    switch: true,
+                    replacement: true,
+                },
+            }
+        }
+    },        
     personalData : {
         phoneNumber : { type: String, default: '' },
         birthDate : { type: Date, default: null },

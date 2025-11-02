@@ -1,6 +1,10 @@
 
 <tr>
     <td align="left">
+      {{#if userName}}
       <h2 style="font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">Bonjour {{userName}},</h2>
+      {{else}}
+      <h2 style="font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">Bonjour,</h2>
+      {{/if}}
     </td>
 </tr>

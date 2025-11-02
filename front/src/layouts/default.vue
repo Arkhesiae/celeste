@@ -10,39 +10,33 @@
 
     <LoginButtons v-if="isDev" />
 
-    <v-fade-transition>
-    
-    </v-fade-transition>
-
-    <v-fade-transition mode="out-in">
 
 
 
       <v-main  position="relative" >
-        <LoadingScreen v-if="showLoadingScreen" class="loading-screen" />
+        <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
         
-          <router-view  v-else v-slot="{ Component, route }">
-          <!-- <transition name="fade" mode="out-in"> -->
-            <transition 
+          <router-view   v-slot="{ Component, route }">
+            <transition :name="'fade-one' " mode="out-in">
+            <!-- <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
             @enter="onEnter"
             @leave="onLeave"
             @after-enter="onAfterEnter"
             @after-leave="onAfterLeave"
-
-            
-            >
-            <div class="wrapper" :key="route.path" >
-                <component :is="Component"  />
-            </div>
+            :name="route.meta.transition || ''"
+            > -->
+          
+                <component :is="Component"   />
+      
           </transition>
         </router-view>
        
     
 
       </v-main>
-    </v-fade-transition>
+ 
     <BottomNavigation />
     <AdditionnalSnackbar /> 
     <GlobalSnackbar />
@@ -174,7 +168,7 @@ const onAfterLeave = (el) => {
 }
 
 .v-container {
-  border: 1px solid red;
+
   padding-top: env(safe-area-inset-top) !important;
 }
 
@@ -266,6 +260,19 @@ a {
   height: 100%;
   background-color: rgba(var(--v-theme-background),1) !important;
   
+  
 }
+
+
+.fade-one-enter-active,
+.fade-one-leave-active {
+  transition: opacity 0.1s ease;
+}
+
+.fade-one-enter-from,
+.fade-one-leave-to {
+  opacity: 0;
+}
+
 
 </style>

@@ -14,23 +14,26 @@ import { generateMapFromDemands } from './generateShiftsMap.js';
  * @returns {Promise<Array>} Liste des utilisateurs avec leurs capacités (canSwitch, limit)
  */
 const computeUserPool = async (demand) => {
-    console.log("computeUserPool for demand", demand._id);
-
     try {
         const users = await User.find({
             centerId: demand.centerId,
             _id: { $ne: demand.posterId },
             isActive: true,
-            registrationStatus: 'verified'
+            registrationStatus: 'verified',
+            'preferences.emails.all': { $ne: false },
+
         });
 
         console.log("Found", users.length, "users for demand");
 
-        // Single promise: generateMapFromDemands + categorize in one go per user
         const results = await Promise.allSettled(
             users.map(async (user) => {
+                let t1 = performance.now();
                 const shiftsMap = await generateMapFromDemands([demand], user._id);
+                let t2 = performance.now();
+                console.log("Time taken to generate shifts map and categorize demand :", t2 - t1);
                 const categorizedDemand = await categorize(demand, shiftsMap);
+         
 
                 let canSwitch = false;
                 let canReplace = false;
@@ -53,6 +56,28 @@ const computeUserPool = async (demand) => {
                 }
 
                 if (!canAccept) return null;
+
+                const mailPrefs = user.preferences.emails.categories || {};
+
+                let isSendable = false;
+
+                if (demand.type === 'switch') {
+                    isSendable = mailPrefs.switch;
+                 
+                } else if (demand.type === 'substitution') {
+                    isSendable = mailPrefs.replacement;
+                 
+                } else if (demand.type === 'hybrid') {
+                    if (canSwitch && mailPrefs.switch) isSendable = true;
+                    if (canReplace && mailPrefs.replacement) isSendable = true;
+                  
+                }
+
+              
+
+                if (!isSendable) return null;
+
+
 
                 return {
                     currentTeam: user.currentTeam,

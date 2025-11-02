@@ -3,11 +3,21 @@
     <v-card v-if="ticket" :rounded="smAndDown ? '' : 'xl'" class="pa-6">
       <v-card-title class="d-flex align-start pa-0 mb-4">
         <div class="d-flex  flex-column  justify-start align-start">
-          <div class="d-flex align-center ga-1 ">
+          <div class="d-flex align-center flex-wrap ga-1 ">
           <v-icon :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)" 
             size="small"></v-icon>
 
           <span class="text-truncate title">{{ ticket.title }}</span>
+          <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg"
+                color="primary">
+                Local
+              </v-chip>
+
+              <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
+
+                {{ ticket.centerId?.name }}
+
+              </v-chip>
          
     </div>
         
@@ -21,7 +31,7 @@
       
           <div class="d-flex align-center">
             <v-icon size="x-small" class="mr-1">mdi-clock-outline</v-icon>
-            <span class="text-subtitle-2">{{ formatDate(ticket.createdAt) }}</span>
+            <span class="date">{{ formatDate(ticket.createdAt) }}</span>
           </div>
         </div>
         </div>
@@ -45,6 +55,31 @@
         </div>
 
       </v-card-title>
+
+      <!-- Actions (haut) -->
+      <div class="d-flex justify-end ga-2 mb-4">
+        <v-btn
+          v-if="ticket.archived"
+          color="onSurface"
+          variant="outlined"
+          prepend-icon="mdi-archive-arrow-up"
+          @click="$emit('restore-ticket', ticket)"
+          size="small"
+        >
+          Restaurer
+        </v-btn>
+
+        <v-btn
+          v-if="!ticket.archived && ticket.status === 'closed'"
+          color="onSurface"
+          variant="outlined"
+          prepend-icon="mdi-archive"
+          @click="$emit('archive-ticket', ticket)"
+          size="small"
+        >
+          Archiver
+        </v-btn>
+      </div>
 
       <v-card-text class="pa-0">
 
@@ -117,8 +152,6 @@
 
       <v-card-actions class="pa-0 mt-8">
         <v-spacer></v-spacer>
-       
-  
         <v-btn color="onSurface" variant="text" @click="$emit('close')">
           Fermer
         </v-btn>
@@ -165,7 +198,7 @@ const ticket = computed(() => {
   return ticketStore.tickets.find(ticket => ticket._id === props.ticketId);
 });
 
-const emit = defineEmits(['update:modelValue', 'close', 'delete-ticket', 'mark-read']);
+const emit = defineEmits(['update:modelValue', 'close', 'delete-ticket', 'mark-read', 'archive-ticket', 'restore-ticket']);
 
 const isOpen = computed({
   get: () => props.modelValue,
@@ -233,6 +266,15 @@ const openReplyDialog = () => {
 .cursor-pointer {
   cursor: pointer;
 }
+.title {
+    font-size: 0.875rem !important;
+  
+  }
+
+  .date {
+    font-size: 0.75rem !important;
+    opacity: 0.5;
+  }
 
 /* Responsive adjustments */
 @media (max-width: 599px) {
@@ -241,7 +283,7 @@ const openReplyDialog = () => {
   }
   
   .title {
-    font-size: 0.875rem !important;
+    font-size: 0.805rem !important;
   
   }
   

@@ -70,6 +70,14 @@ const ticketSchema = new mongoose.Schema({
   deleted: {
     type: Boolean,
     default: false
+  },
+  archived: {
+    type: Boolean,
+    default: false
+  },
+  archivedAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true
@@ -78,6 +86,7 @@ const ticketSchema = new mongoose.Schema({
 // Index pour améliorer les performances des requêtes
 ticketSchema.index({ adminType: 1, createdAt: -1 });
 ticketSchema.index({ isRead: 1 });
+ticketSchema.index({ archived: 1 });
 
 const Ticket = mongoose.model('Ticket', ticketSchema);
 

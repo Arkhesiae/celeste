@@ -109,18 +109,28 @@ router.beforeEach(async (to, from, next) => {
 
 
   else {  
-    console.log(to.name)
+    // console.log(to.name)
    if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ path: '/login' });
     }
   } 
 
-  console.log(to.path)
+
+  // console.log(to.meta)
+  // console.log(to.path)
   next();
 
 
 
 });
+
+router.afterEach((to, from) => {
+  
+  // console.log(to.meta)
+  const toDepth = to.path.split('/').length
+  const fromDepth = from.path.split('/').length
+  // to.meta.transition = toDepth < fromDepth ? 'slide-right' : 'slide-left'
+})
 
 
 

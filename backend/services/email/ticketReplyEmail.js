@@ -6,8 +6,6 @@ import { renderMail } from '../../src/mail/mailRenderer.js';
  */
 export const sendTicketReplyEmail = async (ticketData, replyContent, adminName = 'Support') => {
   const { senderEmail, title, _id } = ticketData;
-
-  console.log(_id.toString());
   
   const subject = `Re: Ticket [CELESTE-${_id.toString().slice(-6)}]`;
   
@@ -21,7 +19,7 @@ export const sendTicketReplyEmail = async (ticketData, replyContent, adminName =
 
   const textContent = `
 Réponse à votre ticket de support
-Ticket ID: [TICKET-${_id.toString().slice(-6)}]
+Ticket ID: [CELESTE-${_id.toString().slice(-6)}]
 
 Bonjour,
 
@@ -38,13 +36,13 @@ Votre réponse sera automatiquement associée à ce ticket.
   `;
 
   const mailOptions = {
-    from: process.env.FROM_EMAIL || 'noreply@example.com',
+    from:  'Celeste <notification@celeste-app.fr>',
     to: senderEmail,
     subject: subject,
     html: html,
     text: textContent,
     headers: {
-      'Reply-To': process.env.REPLY_TO_EMAIL || process.env.FROM_EMAIL || 'noreply@example.com',
+      'Reply-To': process.env.REPLY_TO_EMAIL || process.env.EMAIL_FROM || 'Celeste <notification@celeste-app.fr>',
       'X-Ticket-ID': _id.toString()
     }
   };

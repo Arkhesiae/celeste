@@ -3,16 +3,8 @@
     <MainTitle title="E-mails" :subtitle="`Envoyer des emails d'annonce à tous les utilisateurs`">
       <template v-slot:actions>
         <div class="d-flex ga-2 align-center">
-          <v-btn
-            color="surfaceContainerHigh"
-            variant="flat"
-            prepend-icon="mdi-plus"
-            @click="openAnnouncementDialog"
-            rounded="xl"
-            flat
-            height="32"
-            size="small"
-          >
+          <v-btn color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" @click="openAnnouncementDialog"
+            rounded="xl" flat height="32" size="small">
             Nouvel email
           </v-btn>
         </div>
@@ -59,17 +51,12 @@
     <!-- Historique des envois -->
     <v-card class="mb-6 pa-6" rounded="xl" color="surfaceContainerLow" flat>
       <v-card-title class="pa-0 ma-0 mb-4">
-      
+
         Historique des envois
       </v-card-title>
       <v-card-text class="pa-0">
-        <v-data-table
-          :headers="historyHeaders"
-          :items="emailStore.emailHistory"
-          :loading="emailStore.loading"
-          class="elevation-0"
-          density="compact"
-        >
+        <v-data-table :headers="historyHeaders" :items="emailStore.emailHistory" :loading="emailStore.loading"
+          class="elevation-0" density="compact">
           <template v-slot:item.templateType="{ item }">
             <v-chip :color="emailStore.getTemplateColor(item.templateType)" size="small" rounded="lg">
               {{ emailStore.getTemplateLabel(item.templateType) }}
@@ -92,100 +79,79 @@
     </v-card>
 
     <!-- Dialog d'envoi d'annonce -->
-    <v-dialog v-model="announcementDialog" max-width="600px" persistent :fullscreen="smAndDown">
+    <v-dialog v-model="announcementDialog" max-width="900px" persistent :fullscreen="smAndDown">
       <v-card :rounded="smAndDown ? '' : 'xl'" color="surfaceContainerLow" flat class="pa-6">
         <v-card-title class="pa-0 ma-0">
           Nouveau message
         </v-card-title>
 
-        <v-card-text class="pa-0 pt-8" >
-          <v-form ref="announcementForm" v-model="formValid">
-            <!-- Type de template -->
-            <v-select
-               v-model="formData.templateType"
-               :items="templates"
-               variant="outlined"
-               rounded="xl"
-             
-               flat
-               item-title="label"
-               item-value="value"
-               label="Type d'annonce"
-               :rules="[v => !!v || 'Le type d\'annonce est requis']"
-               class="mb-4"
-             >
-            
-            </v-select>
+        <v-card-text class="pa-0 pt-8">
 
-            <!-- Message -->
-            <v-textarea
-              variant="solo"
-              rounded="xl"
-              color="surfaceContainerHigh"
-              flat
-              v-model="formData.message"
-              label="Message"
-              :rules="[v => !!v || 'Le message est requis', v => v.length >= 10 || 'Le message doit contenir au moins 10 caractères']"
-              rows="6"
-              class="mb-4"
-              placeholder="Entrez votre message ici..."
-            />
+          <!-- Type de template -->
+          <v-text-field v-model="formData.title" label="Titre" :rules="[v => !!v || 'Le titre est requis']" required
+            variant="solo-filled" flat color="onBackground" bg-color="surfaceContainer" rounded="xl"
+            class="mb-4"></v-text-field>
 
-            <!-- Durée (pour maintenance) -->
-            <v-text-field
-              v-if="formData.templateType === 'maintenance'"
-              v-model="formData.duration"
-              label="Durée estimée (optionnel)"
-              placeholder="ex: 2 heures"
-              class="mb-4"
-            />
+          <!-- Message -->
+          <v-textarea variant="solo" rounded="xl" color="surfaceContainerHigh" flat v-model="formData.message"
+            label="Message"
+            :rules="[v => !!v || 'Le message est requis', v => v.length >= 10 || 'Le message doit contenir au moins 10 caractères']"
+            rows="6" class="mb-4" placeholder="Entrez votre message ici..." />
 
-            <!-- Mode test -->
-            <v-alert
-              v-model="formData.testMode"
-              type="info"
-              rounded="xl"
-              variant="tonal"
-              class="mb-4"
-            >
-              <template v-slot:prepend>
-                <v-icon>mdi-test-tube</v-icon>
-              </template>
-              <div class="d-flex align-center justify-space-between">
-                <span>Mode test - L'email sera envoyé uniquement à votre adresse</span>
-             
-              </div>
-            </v-alert>
+          <!-- Portée d'envoi -->
+          <v-row class="mb-4" align="center" v-if="isMasterAdmin">
+            <v-col cols="12" md="5">
 
-            <!-- Aperçu -->
-             <div class="d-flex justify-end">
-              <v-btn  color="onBackground" @click="handlePreview" rounded="lg" :size="smAndDown ? 'default' : 'small'" :block="smAndDown">Aperçu</v-btn>
-             </div>
-          </v-form>
+              <v-btn color="surfaceContainerHigh" variant="flat" rounded="xl" @click="toggleScopeMode" block
+                :height="smAndDown ? '56px' : '56px'">
+                <template #prepend>
+                  <div class="icon-container d-flex align-center justify-center" style="transition: all 0.5s ease;"
+                    :style="{ 'width': isGlobal ? '24px' : '0px' }">
+                    <v-slide-x-reverse-transition mode="out-in">
+                      <div v-if="isGlobal" key="icon">
+                        <v-icon color="primary" icon="mdi-earth" size="16" />
+                      </div>
+                      <div v-else key="empty"></div>
+                    </v-slide-x-reverse-transition>
+                  </div>
+                </template>
+                {{ isGlobal ? 'Envoi global' : 'Envoi local' }}
+              </v-btn>
+            </v-col>
+            <v-col cols="12" md="7" v-if="!isGlobal">
+              <v-select v-model="formData.centerId" :items="centers" item-title="name" item-value="_id"
+                label="Sélectionner un centre" variant="solo" rounded="xl" flat hide-details
+                :rules="[v => !!v || 'Le centre est requis en mode local']"><template #content>
+                  <v-icon size="16">mdi-chevron-down</v-icon>
+                </template></v-select>
+            </v-col>
+          </v-row>
+
+
+         
+
+          <!-- Aperçu -->
+          <!-- <div class="d-flex justify-end">
+              <v-btn color="onBackground" @click="handlePreview" rounded="lg" :size="smAndDown ? 'default' : 'small'"
+                :block="smAndDown">Aperçu</v-btn>
+            </div> -->
+
         </v-card-text>
 
         <v-card-actions class="pa-0 mt-6">
-   
-                     <v-btn
-             color="onSurface"
-             variant="text"
-             @click="announcementDialog = false"
-             :disabled="emailStore.sending"
-           >
+
+          <v-btn color="onSurface" variant="text" @click="announcementDialog = false" :disabled="emailStore.sending">
             Annuler
           </v-btn>
           <v-spacer />
-          <v-btn color="surfaceContainerHigh" variant="flat" @click="sendTest" rounded="lg" :size="smAndDown ? 'small' : 'small'" >Envoi test  </v-btn>
-          <v-btn
-             color="remplacement"
-             variant="flat"
-             rounded="lg"
-             @click="sendAnnouncement"
-             :loading="emailStore.sending"
-             :disabled="!formValid"
-             prepend-icon="mdi-send"
-           >
-            {{ formData.testMode ? 'Envoyer le test' : 'Envoyer à tous' }}
+          <v-btn color="surfaceContainerHigh" class="px-4" variant="flat" @click="sendTest" rounded="lg">Envoi test
+          </v-btn>
+          <v-btn color="onBackground" variant="flat" rounded="xl" @click="sendAnnouncement"
+            :loading="emailStore.sending" :disabled="!formValid" prepend-icon="mdi-send" class="px-4">
+            <template #prepend>
+              <v-icon size="12">mdi-send</v-icon>
+            </template>
+            Envoi
           </v-btn>
 
         </v-card-actions>
@@ -194,7 +160,7 @@
 
 
     <!-- Dialog d'aperçu -->
-    <v-dialog v-model="previewDialog" max-width="1200px" >
+    <v-dialog v-model="previewDialog" max-width="1200px">
       <v-card rounded="xl" color="surfaceContainerLow" flat class="pa-6">
         <v-card-title class="pa-0 ma-0">
           Aperçu de l'email
@@ -216,7 +182,8 @@
           Confirmation d'envoi
         </v-card-title>
         <v-card-text>
-                     <p>Vous êtes sur le point d'envoyer une annonce à <strong>{{ emailStore.userCount }} utilisateurs</strong>.</p>
+          <p>Vous êtes sur le point d'envoyer une annonce à <strong>{{ emailStore.userCount }} utilisateurs</strong>.
+          </p>
           <p class="text-medium-emphasis">Cette action ne peut pas être annulée.</p>
         </v-card-text>
         <v-card-actions>
@@ -224,7 +191,7 @@
           <v-btn variant="text" @click="confirmDialog = false">
             Annuler
           </v-btn>
-                     <v-btn color="primary" @click="confirmSend" :loading="emailStore.sending">
+          <v-btn color="primary" @click="confirmSend" :loading="emailStore.sending">
             Confirmer l'envoi
           </v-btn>
         </v-card-actions>
@@ -234,51 +201,51 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { useEmailStore } from '@/stores/emailStore';
-import { useRouter } from 'vue-router';
-import { emailService } from '@/services/emailService.js';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useDisplay } from 'vuetify';
+import { useCenterStore } from '@/stores/centerStore';
 
-const authStore = useAuthStore();
 const emailStore = useEmailStore();
-const router = useRouter();
 const { smAndDown } = useDisplay();
-
-const templates = computed(() => emailStore.availableTemplates);
-console.log(templates.value);
+const authStore = useAuthStore();
+const centerStore = useCenterStore();
+const snackbarStore = useSnackbarStore();
+const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
 // États
 const announcementDialog = ref(false);
 const confirmDialog = ref(false);
-const formValid = ref(false);
+
 const previewDialog = ref(false);
-const previewData = ref({
-  templateType: '',
-  message: '',
-  duration: '',
-  testMode: false
-});
 
 const formData = ref({
-  templateType: '',
+  title: '',
   message: '',
-  duration: '',
+  isGlobal: false,
+  centerId: authStore.userData.centerId || '',
   testMode: false
 });
 
-// Headers pour l'historique
-const historyHeaders = [
-  { title: 'Type', key: 'templateType', sortable: true },
+const historyHeaders = ref([
+  { title: 'Titre', key: 'title', sortable: true },
+  { title: 'Message', key: 'message', sortable: true },
   { title: 'Envoyé le', key: 'sentAt', sortable: true },
   { title: 'Résultats', key: 'results', sortable: false },
   { title: 'Actions', key: 'actions', sortable: false }
-];
+]);
 
-// Computed
-const emailPreview = ref(null);
+// Global / Local toggle
+const isGlobal = ref(false);
 
+const toggleScopeMode = () => {
+  isGlobal.value = !isGlobal.value;
+  formData.value.isGlobal = isGlobal.value;
+};
 
+// Centers for local mode
+const centers = computed(() => centerStore.centers || []);
 
 // Méthodes
 const formatDate = (date) => {
@@ -296,63 +263,66 @@ const formatSender = (sentBy) => {
   return `${sentBy.name} ${sentBy.lastName}`;
 };
 
-const handlePreview = () => {
-  generateEmailPreview();
-  previewDialog.value = true;
-};
-
-const generateEmailPreview = async () => {
-  if (!formData.value.templateType || !formData.value.message) {
-    emailPreview.value = null;
-    return;
-  }
   
-  try {
-    const response = await emailService.getTemplatePreview(formData.value.templateType, formData.value);
-    emailPreview.value = response.html;
-  } catch (error) {
-    console.error('Erreur lors de la génération de l\'aperçu:', error);
-    emailPreview.value = null;
+
+const sendTest = () => {
+  if (formValid.value) {
+    formData.value.testMode = true;
+    confirmSend();
+  } else {
+    snackbarStore.showNotification('Veuillez remplir tous les champs', 'error', 'mdi-alert-circle');
   }
 };
 
+const formValid = computed(() => {
+  return formData.value.title && formData.value.message && (isGlobal.value || formData.value.centerId);
+});
 
 
 const openAnnouncementDialog = () => {
-  formData.value = {
-    templateType: '',
-    message: '',
-    duration: '',
-    testMode: false
-  };
-  emailPreview.value = null;
+ 
+
   announcementDialog.value = true;
 };
 
 const sendAnnouncement = () => {
-  formData.value.testMode = false;
-  confirmSend();
+  if (formValid.value) {
+    if (isGlobal.value) {
+      formData.value.centerId = null;
+    }
+   
+    confirmSend();
+  } else {
+    snackbarStore.showNotification('Veuillez remplir tous les champs', 'error', 'mdi-alert-circle');
+  }
 };
 
-const sendTest = () => {
-  formData.value.testMode = true;
-  confirmSend();
-};
+
 
 const confirmSend = async () => {
   confirmDialog.value = false;
-  
   try {
     await emailStore.sendAnnouncement(formData.value);
     announcementDialog.value = false;
   } catch (error) {
-    console.error('Erreur lors de l\'envoi:', error);
+    snackbarStore.showNotification('Erreur lors de l\'envoi de l\'annonce : ' + error.message, 'error', 'mdi-alert-circle');
+    console.error(error);
   }
 };
 
 // Lifecycle
 onMounted(async () => {
-  await emailStore.initializeStore(); 
+  await emailStore.initializeStore();
+  try {
+    if (isMasterAdmin.value) {
+      await centerStore.fetchCenters();
+    } else {
+      formData.value.centerId = authStore.userData.centerId || '';
+      console.log(formData.value.centerId);
+    }
+  } catch (e) {
+    // ignore; UI will just show empty selector
+  }
 });
 
 
@@ -383,4 +353,4 @@ onMounted(async () => {
   padding: 8px;
   text-align: left;
 }
-</style> 
+</style>

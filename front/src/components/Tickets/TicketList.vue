@@ -29,7 +29,7 @@
                 Local
               </v-chip>
 
-              <v-chip size="x-small" rounded="lg" color="onBackground">
+              <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
 
                 {{ ticket.centerId?.name }}
 
@@ -47,7 +47,7 @@
       </div>
 
 
-          <div class="d-flex align-end justify-space-between flex-0-0 h-100 " :class="'flex-column ga-1'">
+          <div class="d-flex align-end justify-space-between flex-0-0 h-100 flex-column ga-1" :class="smAndDown ? 'mr-2' : ''">
             <StatusChip :ticket-id="ticket._id" :status="ticket.status" v-if="!smAndDown"
               :prepend-icon="true" />
 
@@ -55,7 +55,7 @@
           
 
             <div class="d-flex align-center ga-0">
-              <v-chip size="x-small" variant="outlined" class="opacity-50" color="onSurface"
+              <v-chip size="x-small" variant="tonal" class="opacity-50" color="onSurface"
               :prepend-icon="xs ? undefined : 'mdi-clock-outline'" rounded="lg">
               {{ xs ? formatDateExtraShort(ticket.createdAt) : formatDateShort(ticket.createdAt) }}
             </v-chip>
@@ -121,7 +121,6 @@ const openSelector = (ticketId) => {
 const statusOptions = [
   { value: 'new', label: 'A traiter', subtitle: 'Nouveau ticket' },
   { value: 'in_progress', label: 'En cours', subtitle: 'En cours de traitement' },
-  { value: 'done', label: 'Traité', subtitle: 'Traité par l\'administrateur' },
   { value: 'closed', label: 'Fermé', subtitle: 'Fermé' }
 ];
 
@@ -234,8 +233,8 @@ const formatDateExtraShort = (date) => {
 }
 
 .unread {
-  background-color: rgba(var(--v-theme-primary), 0.05);
-  border-color: rgba(var(--v-theme-primary), 0.2);
+  background-color: rgba(var(--v-theme-surfaceContainerHighest), 0.5);
+  border-color: rgba(var(--v-theme-remplacement), 0.1);
 }
 
 .cursor-pointer {

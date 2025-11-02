@@ -4,12 +4,9 @@ import { computeShiftOfUserWithSubstitutions } from "../utils/computeShiftOfUser
 import { createDelayedTransaction, cancelDelayedTransaction } from '../services/transactionService.js';
 import Transaction from '../models/Transaction.js';
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
-import { categorize } from '../utils/categorizeDemand.js';
-import { generateMapFromDemands } from '../utils/generateShiftsMap.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 import * as substitutionService from '../services/substitution.service.js';
-import { sendUserNotification, sendUserPoolNotification } from '../services/email/userPoolNotificationEmail.js';
-import { buildUserPoolNotificationEmail } from '../services/email/demandEmailModels.js';
+import {  sendUserPoolNotification, sendAcceptedDemandEmail, sendCancelledAcceptanceEmail } from '../services/email/userPoolNotificationEmail.js';
 
 
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
@@ -74,8 +71,12 @@ const createDemand = async (req, res) => {
     try {
         const demand = await substitutionService.createDemand(req.body);
         res.status(201).json(demand);
-        const populatedDemand = await demand.populate('posterId', 'name lastName',)
-
+        const populatedDemand = await demand.populate([
+            { path: 'posterId', select: 'name lastName' },
+            { path: 'posterShift.teamId', select: 'name' },
+            { path: 'acceptedSwitches.shift', select: 'name default' },
+          ])
+    
      
         try {
             console.log("-- Compute user pool for demand from : ", demand.posterId.name+ " " + demand.posterId.lastName)
@@ -136,9 +137,12 @@ const unacceptRequest = async (req, res) => {
         });
 
         try {
-            const populatedDemand = await Substitution.findById(categorizedRequest._id).populate('posterId', 'name lastName email')
+            const populatedDemand = await Substitution.findById(categorizedRequest._id).populate([
+                { path: 'posterId', select: 'name lastName email' },
+                { path: 'posterShift.shift', select: 'name' }
+            ]);
             const originalAccepter = await User.findById(userId);
-            sendUserNotification(populatedDemand, 'cancelled', originalAccepter)
+            sendCancelledAcceptanceEmail(populatedDemand, originalAccepter)
                 .then(results => {
                     console.log(`📧 Notifications envoyées avec succès:`, {
                         demandId: categorizedRequest._id,
@@ -308,8 +312,14 @@ const acceptRequest = async (req, res) => {
 
 
         try {
-            const populatedDemand = await Substitution.findById(updatedRequest._id).populate('posterId', 'name lastName email').populate('accepterId', 'name lastName email ').populate('posterShift.shift');
-            sendUserNotification(populatedDemand, 'accepted')
+            const populatedDemand = await Substitution.findById(updatedRequest._id).populate([
+                { path: 'posterId', select: 'name lastName email' },
+                { path: 'accepterId', select: 'name lastName email' },
+                { path: 'posterShift.shift', select: 'name' },
+                { path: 'posterShift.teamId', select: 'name' },
+              
+            ]);
+            sendAcceptedDemandEmail(populatedDemand)
                 .then(results => {
                     console.log(`📧 Notifications envoyées avec succès:`, {
                         demandId: updatedRequest._id,
@@ -450,18 +460,24 @@ const swapShifts = async (req, res) => {
 
 
         try {
-            const populatedDemand = await Substitution.findById(updatedDemand._id).populate('posterId', 'name lastName email').populate('accepterId', 'name lastName email ');
-            sendUserNotification(populatedDemand, 'accepted')
-                .then(results => {
-                    console.log(`📧 Notifications envoyées avec succès:`, {
-                        demandId: updatedDemand._id,
-                        totalSent: results.sent,
-                        totalFailed: results.failed
-                    });
-                })
-                .catch(error => {
-                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
-                });
+            const populatedDemand = await Substitution.findById(updatedDemand._id).populate([
+                { path: 'posterId', select: 'name lastName email' },
+                { path: 'accepterId', select: 'name lastName email' },
+                { path: 'posterShift.shift', select: 'name' },
+                { path: 'accepterShift.shift', select: 'name' },
+                { path: 'accepterShift.teamId', select: 'name' }
+            ]);
+            sendAcceptedDemandEmail(populatedDemand)
+                        .then(results => {
+                            console.log(`📧 Notifications envoyées avec succès:`, {
+                                demandId: updatedDemand._id,
+                                totalSent: results.sent,
+                                totalFailed: results.failed
+                            });
+                        })
+                        .catch(error => {
+                            console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                        });
         } catch (emailError) {
             console.error('❌ Erreur lors de la préparation des notifications:', emailError);
         }
@@ -562,6 +578,33 @@ const getCompatibleSwitches = async (req, res) => {
     }
 };
 
+// Récupérer toutes les demandes d'un centre pour les admins
+const getAllCenterDemands = async (req, res) => {
+    try {
+        const { centerId } = req.params;
+        
+        if (!centerId) {
+            return res.status(400).json({ error: 'centerId is required' });
+        }
+
+        // Récupérer toutes les demandes du centre avec les informations du poster et de l'accepteur
+        const demands = await Substitution.find({ 
+            centerId: centerId,
+            deleted: false 
+        })
+        .populate('posterId', 'name lastName email avatar personalData')
+        .populate('accepterId', 'name lastName email avatar personalData')
+        .populate('posterShift.shift')
+        .populate('accepterShift.shift')
+        .sort({ createdAt: -1 }); // Ordonner par date de création décroissante
+
+        res.status(200).json(demands);
+    } catch (error) {
+        console.error('Erreur lors de la récupération de toutes les demandes:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 export {
     getCenterDemands,
     getUserDemands,
@@ -580,5 +623,6 @@ export {
     getAvailableUsers,
     recategorizeSubstitutions,
     //   previewEmailTemplate,
-    getCompatibleSwitches
+    getCompatibleSwitches,
+    getAllCenterDemands
 }; 

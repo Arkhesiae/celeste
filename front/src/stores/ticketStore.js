@@ -89,6 +89,30 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
+  async function archiveTicket(ticketId) {
+    loading.value = true;
+    try {
+      await ticketService.archiveTicket(ticketId);
+      await fetchTickets();
+    } catch (err) {
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function restoreTicket(ticketId) {
+    loading.value = true;
+    try {
+      await ticketService.restoreTicket(ticketId);
+      await fetchTickets();
+    } catch (err) {
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     // State
     tickets,
@@ -103,6 +127,8 @@ export const useTicketStore = defineStore('ticket', () => {
     deleteTicket,
     replyToTicket,
     updateTicketStatus,
-    markReplySent
+    markReplySent,
+    archiveTicket,
+    restoreTicket
   };
 }); 

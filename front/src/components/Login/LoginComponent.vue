@@ -174,7 +174,6 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { accountCreationService } from '@/services/accountCreationService';
 import { useAppInitialization } from '@/composables/useAppInitialization';
-import { useBiometricLogin } from '@/utils/useBiometric';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -339,14 +338,13 @@ const handleLogin = async () => {
     saveRememberedEmail();
 
     try {
+      router.push({ path: '/loading', replace: true });
       await initializeApp();
+
+      router.push({ path: '/dashboard', replace: true });
       snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
 
-      if (authStore.userData.status === 'pending') {
-        router.push({ path: '/pending-approval', replace: true });
-      } else {
-        router.push({ path: '/dashboard', replace: true });
-      }
+      
     } catch (error) {
       console.error('Erreur lors du chargement des données:', error);
       throw error;

@@ -26,13 +26,28 @@ function createSESTransporter() {
   });
 }
 
+function createBulkSESTransporter() {
+  return nodemailer.createTransport({
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 5,
+    host: process.env.EMAIL_HOST,
+    port: parseInt(process.env.EMAIL_PORT, 10),
+    secure: false, // TLS, pas SSL
+    auth: {
+      user: process.env.SMTP_USERNAME,
+      pass: process.env.SMTP_PASSWORD,
+    }
+  });
+}
+
 /**
  * Crée un transporteur console pour les tests
  */
 function createConsoleTransporter() {
   return {
     sendMail: async (mailOptions) => {
- 
+
       if (mailOptions.html) {
         // console.log('   Contenu HTML disponible');
       }
@@ -50,22 +65,18 @@ function createConsoleTransporter() {
 /**
  * Crée un transporteur selon le service configuré
  */
-function createTransporter() {
+function createTransporter(bulk = false) {
   // En développement, on utilise un transporteur de test
   if (isDevelopment) {
     return createConsoleTransporter();
   }
 
-  // Configuration selon le service choisi
-  switch (mailService.toLowerCase()) {
-    case 'ses':
-    case 'amazon':
-    case 'aws':
-      return createSESTransporter();
-    default:
-      console.warn(`⚠️ Service d'email '${mailService}' non reconnu, utilisation du mode console`);
-      return createConsoleTransporter();
+  if (bulk) {
+    return createBulkSESTransporter();
   }
+
+  return createSESTransporter();
+
 }
 
 /**
@@ -73,13 +84,13 @@ function createTransporter() {
  */
 async function sendEmail(mailOptions) {
   const transporter = createTransporter();
-  
   try {
     const result = await transporter.sendMail(mailOptions);
+    result.sent = true;
     return result;
   } catch (error) {
     console.error('❌ Erreur envoi email :', error);
-    throw error;
+    return { sent: false, error: error.message };
   } finally {
     if (transporter.close) {
       transporter.close();
@@ -88,11 +99,41 @@ async function sendEmail(mailOptions) {
 }
 
 /**
+ * Envoie un email avec le service configuré
+ */
+async function sendMassEmail(mailOptionsList) {
+  const transporter = createTransporter(true);
+  const results = {
+    total: mailOptionsList.length,
+    sent: 0,
+    failed: 0,
+    errors: []
+  };
+
+  for (const mailOptions of mailOptionsList) {
+    try {
+      await transporter.sendMail(mailOptions);
+      results.sent++;
+      console.log('📧 Email envoyé à:', mailOptions.to);
+    } catch (error) {
+      results.failed++;
+      results.errors.push({ email: mailOptions.to, error: error.message });
+    }
+  }
+  if (transporter.close) {
+    transporter.close();
+  }
+  return results;
+}
+
+
+
+/**
  * Envoie un email en masse
  */
 async function sendBulkEmail(emails, mailOptions) {
-  const transporter = createTransporter();
-  
+  const transporter = createTransporter(true);
+
   const results = {
     total: emails.length,
     sent: 0,
@@ -106,7 +147,7 @@ async function sendBulkEmail(emails, mailOptions) {
         ...mailOptions,
         to: email
       };
-      
+
       await transporter.sendMail(emailOptions);
       results.sent++;
       console.log('📧 Email envoyé à:', email);
@@ -124,7 +165,10 @@ async function sendBulkEmail(emails, mailOptions) {
   return results;
 }
 
+
+
 export default {
   sendEmail,
-  sendBulkEmail
+  sendBulkEmail,
+  sendMassEmail
 }; 

@@ -38,7 +38,6 @@ export function useAppInitialization() {
   };
 
   const initializeTheme = async () => {
-    initializationStore.currentlyLoading = 'theme';
     if (authStore.isLoggedIn) {
       if (authStore.userData.preferences.theme === 'darkTheme') {
         theme.change('darkTheme');
@@ -51,13 +50,11 @@ export function useAppInitialization() {
   };
 
   const initializeCenters = async () => {
-    initializationStore.currentlyLoading = 'centers';
     await centerStore.fetchCenters();
     initializationStore.updateInitializationState('centers', true);
   };
 
   const initializeUserList = async () => {
-    initializationStore.currentlyLoading = 'users';
     if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
       await userStore.fetchUsers();
     } else {
@@ -71,7 +68,6 @@ export function useAppInitialization() {
     if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
       await teamStore.fetchAllTeams();
     } 
-    initializationStore.currentlyLoading = 'team';
     await Promise.all([
       teamStore.fetchCurrentTeamOfUser(authStore.userData.userId),
       teamStore.fetchTeamOccurrencesOfUser(authStore.userData.userId),
@@ -83,7 +79,6 @@ export function useAppInitialization() {
   const initializeShiftsAndSubstitutions = async () => {
     if (!authStore.userData.userId) return;
 
-    initializationStore.currentlyLoading = 'shifts';
     const dates = {
       startDate: new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() - 1, 1)).toISOString(), // Premier jour du mois à 00:00 UTC
       endDate: new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() + 2, 0, 23, 59, 59, 999)).toISOString() // Dernier jour du mois à 23:59:59.999 UTC
@@ -91,7 +86,6 @@ export function useAppInitialization() {
     await shiftStore.fetchShiftsWithSubstitutions(dates);
     initializationStore.updateInitializationState('shifts', true);
 
-    initializationStore.currentlyLoading = 'substitutions';
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const oneYearFromNow = new Date();
@@ -108,14 +102,12 @@ export function useAppInitialization() {
   const initializeRotations = async () => {
     if (!authStore.userData.centerId) return;
 
-    initializationStore.currentlyLoading = 'rotations';
     await rotationStore.fetchRotations(authStore.userData.centerId);
     await centerStore.fetchActiveRotationOfCenter(authStore.userData.centerId);
     initializationStore.updateInitializationState('rotations', true);
   };
 
   const initializePersonalData = async () => {
-    initializationStore.currentlyLoading = 'personal';
     await Promise.all([
       pointStore.fetchUserPoints(),
       pointStore.fetchTransactions(),
@@ -133,7 +125,6 @@ export function useAppInitialization() {
   const initializeTickets = async () => {
     if (!authStore.userData.isAdmin) return;
 
-    initializationStore.currentlyLoading = 'tickets';
     await ticketStore.fetchTickets();
     initializationStore.updateInitializationState('tickets', true);
   };
@@ -169,7 +160,9 @@ export function useAppInitialization() {
       authStore.logOut();
       throw error;
     } finally {
-      initializationStore.setLoading(false);
+      setTimeout(() => {
+        initializationStore.setLoading(false);
+      }, 1000);
     }
   };
 

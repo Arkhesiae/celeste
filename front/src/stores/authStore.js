@@ -160,7 +160,9 @@ export const useAuthStore = defineStore('auth', () => {
       const updatedPreferences = { ...currentPreferences, ...preferences };
       userData.value.preferences = updatedPreferences;
 
-      await userService.updateUserPreferences(userId, updatedPreferences);
+      const data = await userService.updateUserPreferences(userId, updatedPreferences);
+
+      console.log('data', data);
 
       const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
       existingData.userData = { ...existingData.userData, preferences: updatedPreferences };

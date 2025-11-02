@@ -1,19 +1,45 @@
 <template>
   <v-container>
-
     <MainTitle title="Tickets" :subtitle="`${ticketStore.unreadCount} ticket(s) non lu(s)`" >
       <template v-slot:actions>
-        <div class="d-flex ga-2 align-center">
+        <div class="d-flex ga-2 align-center ">
+          <div class="d-flex align-center ga-2 btn-group">
           <v-btn
-                prepend-icon="mdi-filter-variant"
-                color="onBackground"
-                @click="showFilters = !showFilters"
-                rounded="lg"
-                flat
-                size="small"
-                height="32"
-              > Filtres
-              </v-btn>
+              value="active"
+              size="small"
+              color="surfaceContainer"
+              :class="activeView === 'active' ? 'btn-active' : ''"
+              variant="flat"
+              rounded="lg"
+              @click="activeView = 'active'"
+            >
+              Actifs
+            </v-btn>
+            <v-btn
+              value="archived"
+              size="small"
+              :class="activeView === 'archived' ? 'btn-active' : ''"
+              variant="flat"
+              color="surfaceContainer"
+              rounded="lg"
+              @click="activeView = 'archived'"
+            >
+              Archivés
+            </v-btn>
+       
+          </div>
+          
+          <v-btn
+            prepend-icon="mdi-filter-variant"
+            color="onBackground"
+            @click="showFilters = !showFilters"
+            rounded="lg"
+            flat
+            size="small"
+            height="32"
+          > 
+            Filtres
+          </v-btn>
         </div>
       </template>
     </MainTitle>
@@ -21,25 +47,7 @@
     <v-row>
       <v-col cols="12">
         <v-card class="py-6 pa-0" rounded="xl" color="transparent" flat>
-
-
-          <div class="d-flex justify-space-between align-start mb-4">
-            <div>
-          
-              <v-chip
-                v-if="ticketStore.unreadCount > 0"
-                color="remplacement"
-                class="mt-1"
-                rounded="lg"
-              >
-                {{ ticketStore.unreadCount }} ticket(s) non lu(s)
-              </v-chip>
-            </div>
-            <div class="d-flex ga-2 align-center">
-            
-            
-            </div>
-          </div>
+         
 
           <!-- Filtres -->
           <v-slide-y-transition>
@@ -90,12 +98,17 @@
             </div>
           </v-slide-y-transition>
 
-          <!-- Liste des tickets -->
-          <TicketList
-            :tickets="filteredTickets"
-            :loading="ticketStore.loading"
-            @open-ticket="openTicketDetails"
-          />
+          <!-- Router view pour les sous-pages avec transition -->
+          <router-view v-slot="{ Component, route }">
+            <transition :name="route.meta.transition || 'fade'" mode="out-in">
+   
+              <component :is="Component" :filters="filters"
+              :loading="ticketStore.loading"
+              @open-ticket="openTicketDetails"
+              :key="route.path"
+            />
+          </transition>
+        </router-view>
         </v-card>
       </v-col>
     </v-row>
@@ -106,7 +119,8 @@
       :ticketId="selectedTicket?._id"
       @close="ticketDialog = false"
       @delete-ticket="confirmDelete"
-     
+      @archive-ticket="handleArchive"
+      @restore-ticket="handleRestore"
     />
 
     <!-- Dialog de confirmation de suppression -->
@@ -138,18 +152,36 @@
   </v-container>
 </template>
 
+<route lang="yaml">
+meta:
+  test: true
+</route>
+
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+
+
+
+import { ref, computed, onMounted, watch } from 'vue';
 import { useTicketStore } from '@/stores/ticketStore';
 import { useAuthStore } from '@/stores/authStore';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import TicketList from '@/components/Tickets/TicketList.vue';
-import TicketDetails from '@/components/Tickets/TicketDetails.vue';
+
+
+
+definePage({
+  meta: {
+    requiresAuth: true,
+  }
+})
+
+
+
 
 const ticketStore = useTicketStore();
 const authStore = useAuthStore();
 const router = useRouter();
+const route = useRoute();
 const snackbarStore = useSnackbarStore();
 
 // États
@@ -159,6 +191,7 @@ const showFilters = ref(false);
 const selectedTicket = ref(null);
 const ticketToDelete = ref(null);
 const deleting = ref(false);
+const activeView = ref('active');
 
 const filters = ref({
   type: null,
@@ -172,32 +205,7 @@ const ticketTypes = [
   { title: 'Autre', value: 'other' }
 ];
 
-// Computed
-const filteredTickets = computed(() => {
-  let tickets = ticketStore.sortedTickets;
-
-  if (filters.value.type) {
-    tickets = tickets.filter(ticket => ticket.type === filters.value.type);
-  }
-
-  if (filters.value.status !== 'all') {
-    tickets = tickets.filter(ticket => ticket.status === filters.value.status);
-  }
-
-  if (filters.value.search) {
-    const search = filters.value.search.toLowerCase();
-    tickets = tickets.filter(ticket => 
-      ticket.title.toLowerCase().includes(search) ||
-      ticket.content.toLowerCase().includes(search) ||
-      ticket.senderEmail.toLowerCase().includes(search)
-    );
-  }
-
-  return tickets;
-});
-
 // Méthodes
-
 const openTicketDetails = (ticket) => {
   selectedTicket.value = ticket;
   ticketDialog.value = true;
@@ -209,7 +217,6 @@ const openTicketDetails = (ticket) => {
 const markAsRead = async (ticketId) => {
   try {
     await ticketStore.markAsRead(ticketId);
-
   } catch (error) {
     snackbarStore.showNotification('Erreur lors du marquage du ticket', 'error', 'mdi-alert-circle');
   }
@@ -237,12 +244,46 @@ const confirmDeleteAction = async () => {
   }
 };
 
+const handleArchive = async (ticket) => {
+  try {
+    await ticketStore.archiveTicket(ticket._id);
+    snackbarStore.showNotification('Ticket archivé', 'success', 'mdi-archive');
+    ticketDialog.value = false;
+  } catch (error) {
+    snackbarStore.showNotification(error.message || 'Erreur lors de l\'archivage du ticket', 'error', 'mdi-alert-circle');
+  }
+};
+
+const handleRestore = async (ticket) => {
+  try {
+    await ticketStore.restoreTicket(ticket._id);
+    snackbarStore.showNotification('Ticket restauré', 'success', 'mdi-archive-arrow-up');
+    ticketDialog.value = false;
+  } catch (error) {
+    snackbarStore.showNotification(error.message || 'Erreur lors de la restauration du ticket', 'error', 'mdi-alert-circle');
+  }
+};
+
+// Navigation selon la vue active
+watch(activeView, (newView) => {
+  const targetPath = newView === 'archived' ? '/admin/tickets/archived' : '/admin/tickets';
+  if (route.path !== targetPath) {
+    router.push(targetPath);
+  }
+});
+
 // Lifecycle
 onMounted(async () => {
   if (!authStore.userData.isAdmin) {
     router.push('/dashboard');
     return;
   }
+  
+  // Définir la vue active selon la route
+  if (route.path === '/admin/tickets/archived') {
+    activeView.value = 'archived';
+  }
+  
   try {
     await ticketStore.fetchTickets();
   } catch (error) {
@@ -252,7 +293,29 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.gap-2 {
+.btn-group {
   gap: 8px;
+  padding: 4px;
+  border-radius: 12px;
+  background-color: rgba(var(--v-theme-surfaceContainer), .5);
 }
-</style> 
+
+.btn-active {
+  background-color: rgba(var(--v-theme-surfaceContainerHighest), 1) !important;
+  box-sizing: border-box;
+  
+}
+
+
+
+/* Transition pour le router-view */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

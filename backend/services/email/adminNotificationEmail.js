@@ -50,16 +50,6 @@ Veuillez vous connecter à l'interface d'administration pour examiner et approuv
     // Envoyer les emails en masse
     const results = await emailService.sendBulkEmail(adminEmails, mailOptions);
 
-    console.log(`📧 Notifications envoyées aux administrateurs:`, {
-      centerName: center.name,
-      centerId: center._id,
-      totalAdmins: adminEmails.length,
-      emailsSent: results.sent,
-      emailsFailed: results.failed,
-      newUserId: newUser._id,
-      newUserEmail: newUser.email
-    });
-
     return results;
   } catch (error) {
     console.error('❌ Erreur lors de l\'envoi des notifications aux administrateurs:', error);

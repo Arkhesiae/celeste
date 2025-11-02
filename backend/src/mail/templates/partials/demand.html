@@ -1,27 +1,105 @@
-<div style="width: fit-content; background: #f0f4f6;  border-radius: 24px; padding: 8px 12px; margin: 10px 0; ">
-  <span class="material-icons md-18" style="vertical-align: middle; margin-right: 4px; color: #666;">event</span>
-  <p style="color:rgb(22, 18, 21); margin: 0; font-size: 12px; font-weight: 600; font-family: 'Roboto', Arial, sans-serif; display: inline;">24/10/2025</p>
-</div>
-<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #f0f4f6; border: 1px solid #e9ecef01; border-radius: 24px; padding: 16px; margin: 10px 0; padding-left: 24px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-    <h2 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">J2</h2>
-    <div style="display: flex; justify-content: space-between; align-items: start;  flex-direction: column;"> 
-    <p style="color: #090909c7; line-height: 1.2; font-size: 12px; margin: 0; margin-left: 4px; font-weight: 700; font-family: 'Roboto', Arial, sans-serif;">
-      <span class="material-icons md-18" style="vertical-align: middle; margin-right: 4px; font-size: 14px;">schedule</span>
-      8h00 - 16h00
-    </p>
-    <p style="color: #000000af; line-height: 1.2; font-size: 12px; margin: 0; margin-left: 4px; font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
-     
-      Dans équipe 1
-    </p>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+  <div style="width: fit-content; background: #f0f4f6;  border-radius: 24px; padding: 4px 8px;">
+    <span class="material-icons md-18" style="vertical-align: middle; margin-right: 4px; color: #666;">event</span>
+    <p
+      style="color:rgb(22, 18, 21); margin: 0; font-size: 11px; font-weight: 600; font-family: 'Roboto', Arial, sans-serif; display: inline;">
+      {{demandDate}}</p>
   </div>
+  <div style="width: fit-content; background: #f0f4f6;  border-radius: 24px; padding: 4px 8px;">
+    <p style="color:rgb(22, 18, 21); margin: 0; font-size: 11px; font-weight: 600; font-family: 'Roboto', Arial, sans-serif; display: inline;">
+      {{typeText}}</p>
   </div>
- 
+</div>
+
+<div
+  style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #f0f4f6; border: 1px solid #e9ecef01; border-radius: 24px; padding: 16px; margin: 10px 0; padding-left: 24px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+      <h2 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">
+        {{shift}}
+      </h2>
+      <div style="display: flex; justify-content: space-between; align-items: start;  flex-direction: column;">
+        <p
+          style="color: #090909c7; line-height: 1.2; font-size: 12px; margin: 0; margin-left: 4px; font-weight: 700; font-family: 'Roboto', Arial, sans-serif;">
+          <span class="material-icons md-18"
+            style="vertical-align: middle; margin-right: 4px; font-size: 14px;">schedule</span>
+          {{startTime}} - {{endTime}}
+        </p>
+        <p
+          style="color: #000000af; line-height: 1.2; font-size: 12px; margin: 0; margin-left: 4px; font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
+
+          Dans équipe {{teamName}}
+        </p>
+      </div>
+
+    </div>
+    {{#ifNotEquals demandType 'switch'}}
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
+      <span style="font-size: 16px; font-weight: 800; font-family: 'Roboto', Arial, sans-serif;">
+        {{points}}
+      </span>
+      <span style="font-size: 11px; font-weight: 500; font-family: 'Roboto', Arial, sans-serif;">
+        points
+      </span>
+    </div>
+    {{/ifNotEquals}}
+  </div>
+
+
+
 
 
 </div>
-<div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #f0f4f600; border: 1px solid #e9ecef64; border-radius: 24px; padding: 16px; margin: 10px 0; padding-left: 24px;">
- <p>La police Roboto est maintenant intégrée dans tous vos templates d'email et s'affichera correctement dans la plupart des clients de messagerie modernes. Les clients qui ne supportent pas les polices web utiliseront Arial comme alternative.</p>
+
+{{#if acceptedSwitches}}
+
+<p style="font-size: 12px; font-weight: 600; font-family: 'Roboto', Arial, sans-serif;">
+  Permutations acceptées par l'utilisateur
+</p>
+  <div style="display: flex; justify-content: space-between; flex-direction: column; align-items: center; gap: 4px; background: #f0f4f6; border: 1px solid #e9ecef01; border-radius: 24px; padding: 16px; margin: 10px 0; padding-left: 24px;">
+    
+
+
+{{#each acceptedSwitches}}
+<div
+  style="display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #e8f4f800; border: 1px solid #d1e7dd30; border-radius: 24px; padding: 8px;  width: 100%;">
+  <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%;">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px">
+    <span style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600; font-size: 14px;">
+      {{shift}}
+    </span>
+    <div style="display: flex; justify-content: space-between; align-items: start;  flex-direction: column;">
+      <p
+        style="color: #090909c7; line-height: 1.2; font-size: 12px; margin: 0; margin-left: 4px; font-weight: 700; font-family: 'Roboto', Arial, sans-serif;">
+        <span class="material-icons md-18"
+          style="vertical-align: middle; margin-right: 4px; font-size: 14px;">schedule</span>
+        {{startTime}} - {{endTime}}
+      </p>
+    
+    </div>
+
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
+      <span style="font-size: 16px; font-weight: 800; font-family: 'Roboto', Arial, sans-serif;">
+        {{points}}
+      </span>
+      <span style="font-size: 11px; font-weight: 500; font-family: 'Roboto', Arial, sans-serif;">
+        points
+      </span>
+    </div>
+  </div>
+</div>
+{{/each}}
+  </div>
+
+
+{{/if}}
+
+{{#if comment}}
+<div
+  style="display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #f0f4f600; border: 1px solid #e9ecef64; border-radius: 24px; padding: 16px; margin: 10px 0; padding-left: 24px;">
+  <p>{{comment}}</p>
 
 
 </div>
+{{/if}}

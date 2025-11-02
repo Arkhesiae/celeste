@@ -85,13 +85,41 @@ export const rotationService = {
   },
 
   /**
+   * Confirme et applique l'activation d'une rotation après approbation utilisateur.
+   * @param {string} id - L'ID de la rotation.
+   * @returns {Promise<Object>} La rotation activée.
+   */
+  async confirmAddActivation(id, activationDate) {
+    const response = await fetch(`${API_URL}/rotations/${id}/confirm-activate`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ activationDate })
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Confirme et applique la suppression d'une date d'activation après approbation utilisateur.
+   * @param {string} id - L'ID de la rotation.
+   * @returns {Promise<Object>} La rotation activée.
+   */
+  async confirmRemoveActivation(id, activationDate) {
+    const response = await fetch(`${API_URL}/rotations/${id}/confirm-remove-activate`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ activationDate })
+    });
+    return handleResponse(response);
+  },
+
+  /**
    * Désactive une rotation.
    * @param {string} id - L'ID de la rotation.
    * @returns {Promise<Object>} La rotation désactivée.
    */
   async removeActivationDate(id, activationDate) {
     const response = await fetch(`${API_URL}/rotations/${id}/remove-date`, {
-      method: 'DELETE',
+      method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ activationDate })
     });

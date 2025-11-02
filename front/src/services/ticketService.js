@@ -2,7 +2,7 @@ import { API_URL, handleResponse, getAuthHeaders } from '@/config/api';
 
 export const ticketService = {
   async fetchTickets() {
-    const response = await fetch(`${API_URL}/tickets`, {
+    const response = await fetch(`${API_URL}/tickets?archived=false`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
@@ -59,6 +59,30 @@ export const ticketService = {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify({ content })
+    });
+    return handleResponse(response);
+  },
+
+  async fetchTickets(archived = false) {
+    const response = await fetch(`${API_URL}/tickets?archived=${archived}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  async archiveTicket(ticketId) {
+    const response = await fetch(`${API_URL}/tickets/${ticketId}/archive`, {
+      method: 'PUT',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  async restoreTicket(ticketId) {
+    const response = await fetch(`${API_URL}/tickets/${ticketId}/restore`, {
+      method: 'PUT',
+      headers: getAuthHeaders()
     });
     return handleResponse(response);
   }

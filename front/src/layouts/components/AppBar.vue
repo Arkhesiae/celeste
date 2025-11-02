@@ -33,7 +33,7 @@
         <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType"
           :message-count="ticketCount" @navigate-rules="router.push({ path: '/admin/rules' })"
           @navigate-tickets="router.push({ path: '/admin/tickets' })"
-          @navigate-email="router.push({ path: '/emails' })" />
+          @navigate-email="router.push({ path: '/admin/emails' })" />
       </template>
    
       <template v-if="smAndDown">

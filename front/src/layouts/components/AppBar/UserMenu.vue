@@ -75,7 +75,7 @@
         <v-list-item @click="$emit('navigate-profile')" class="hover-effect" rounded="lg" prepend-icon="mdi-account-cog">
           <v-list-item-title>Profil</v-list-item-title>
         </v-list-item>
-        <v-list-item @click="$emit('navigate-parameter')" class="hover-effect" rounded="lg" prepend-icon="mdi-cog">
+        <v-list-item @click="router.push('/user-params')" class="hover-effect" rounded="lg" prepend-icon="mdi-cog">
           <v-list-item-title>Paramètres</v-list-item-title>
         </v-list-item>
         <v-list-item @click="$emit('logout')" class="hover-effect"  rounded="lg" prepend-icon="mdi-logout" color="error">
@@ -101,7 +101,9 @@
 <script setup>
 import { API_URL } from '@/config/api';
 import { usePointStore } from '@/stores/pointStore';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const pointStore = usePointStore();
   
 // Props

@@ -15,7 +15,7 @@
         </div>
         </div>
       </template>
-      <v-chip rounded="lg" size="small" v-if="isAdmin" @click="navigateToAdminPanel" class="cursor-pointer" >
+      <v-chip :color="isAdminPanel ? 'surfaceContainerHighest' : 'onBackground'" :variant="isAdminPanel ? 'flat' : 'outlined'" rounded="lg" size="small" v-if="isAdmin" @click="navigateToAdminPanel" class="cursor-pointer" >
         <v-icon class="mr-2" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
         {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
         </v-icon>
@@ -73,7 +73,9 @@ defineProps({
   }
 });
 
-
+const isAdminPanel = computed(() => {
+  return router.currentRoute.value.path === '/admin/admin-panel';
+});
 
 const pendingUsersCount = computed(() => {
   return userStore.users.filter(user => user.registrationStatus === 'pending').length;
@@ -90,5 +92,13 @@ const navigateToAdminPanel = () => {
   font-size: 0.6rem !important;
   font-weight: 600 !important;
 
+}
+
+:deep(.v-chip.v-chip--variant-outlined) {
+  border-color: rgba(var(--v-theme-onBackground), 0.1) !important;
+}
+
+:deep(.v-chip.v-chip--variant-flat) {
+  border: 1px solid rgba(var(--v-theme-onBackground), 0.01) !important;
 }
 </style>

@@ -30,13 +30,13 @@ export const useRotationStore = defineStore('rotation', () => {
 
   /**
    * Supprime une date d'activation d'un tour de service.
-   * @param {string} rotationId - L'ID du tour de service.
+   * @param {Object} rotation - Le tour de service.
    * @param {string} date - La date à supprimer.
    * @param {string} centerId - L'ID du centre pour rafraîchir les données.
    */
-  const removeActivationDate = async (rotationId, date, centerId) => {
+  const removeActivationDate = async (rotation, date, centerId) => {
     try { 
-      const result = await rotationService.removeActivationDate(rotationId, date);
+      const result = await rotationService.removeActivationDate(rotation._id, date);
       await fetchRotations(centerId);
       return result;
     } catch (error) {
@@ -74,6 +74,38 @@ export const useRotationStore = defineStore('rotation', () => {
       throw error;
     }
   };
+
+  /**
+   * Confirme et applique l'activation après approbation utilisateur.
+   * @param {Object} rotation - Le tour de service à activer.
+   * @param {string} activationDate - La date d'activation.
+   */
+  const confirmAddActivation = async (rotation, activationDate) => {
+    try {
+      const result = await rotationService.confirmAddActivation(rotation._id, activationDate);
+      await fetchRotations(rotation.centerId); // Rafraîchir les données
+      return result;
+    } catch (error) {
+      console.error('Erreur lors de la confirmation de l\'activation :', error);
+      throw error;
+    }
+  };
+
+  /**
+   * Confirme et applique la suppression d'une date d'activation après approbation utilisateur.
+   * @param {Object} rotation - Le tour de service à activer.
+   * @param {string} activationDate - La date d'activation.
+   */
+  const confirmRemoveActivation = async (rotation, activationDate) => {
+    try {
+      const result = await rotationService.confirmRemoveActivation(rotation._id, activationDate);
+      await fetchRotations(rotation.centerId); // Rafraîchir les données
+      return result;
+    } catch (error) {
+      console.error('Erreur lors de la confirmation de la suppression de l\'activation :', error);
+      throw error;
+    }
+  }
 
   /**
    * Supprime un tour de service.
@@ -153,6 +185,8 @@ export const useRotationStore = defineStore('rotation', () => {
     updateDayInRotation,
     duplicateRotation,
     updateRotation,
-    emptyStore
+    emptyStore,
+    confirmAddActivation,
+    confirmRemoveActivation
   };
 });

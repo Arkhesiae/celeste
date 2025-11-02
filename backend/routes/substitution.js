@@ -1,13 +1,12 @@
 import express from 'express';
 const router = express.Router();
-import { verifyToken, isUserOrAdmin } from '../middleware/authMiddleware.js';
+import { verifyToken, isUserOrAdmin, isAdmin } from '../middleware/authMiddleware.js';
 import {
     getCenterDemands,
     getUserDemands,
     createDemand,
     deleteDemand,
     updateDemandStatus,
-    // markRequestAsSeen,
     acceptRequest,
     getSeenCount,
     swapShifts,
@@ -17,13 +16,14 @@ import {
     markInterest,
     unacceptRequest,
     detectTeamChangeConflicts,
-    // previewEmailTemplate,
     getCompatibleSwitches,
+    getAllCenterDemands,
 
 } from '../controllers/substitutionController.js';
 
 // Routes protégées par token
 router.post('/center', verifyToken, getCenterDemands);
+router.get('/center/:centerId/all', verifyToken, isAdmin, getAllCenterDemands);
 router.get('/user', verifyToken, getUserDemands);
 router.post('/', verifyToken, createDemand);
 router.put('/:id/status', verifyToken, updateDemandStatus);
@@ -32,10 +32,15 @@ router.put('/:id/status', verifyToken, updateDemandStatus);
 router.post('/:id/interest', verifyToken, markInterest);
 
 router.post('/:id/accept', verifyToken, acceptRequest);
+
 router.post('/:id/swap', verifyToken, swapShifts);
+
 router.post('/:id/cancel', verifyToken, cancelDemand);
+
 router.post('/:id/unaccept', verifyToken, unacceptRequest);
+
 router.delete('/:id/delete', verifyToken, deleteDemand);
+
 router.post('/recategorize', verifyToken, recategorizeSubstitutions);
 
 router.get('/check-shift/:date', verifyToken, checkUserShift);

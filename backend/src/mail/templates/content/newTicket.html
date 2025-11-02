@@ -1,0 +1,118 @@
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+
+  <tr>
+    <td align="left">
+      {{> adminHello }}
+    </td>
+  </tr>
+  <tr>
+    <td height="40">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <h4 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">
+        {{#if isLocal}}
+       
+        Nouveau ticket local
+        {{else}}
+     
+        Nouveau ticket
+        {{/if}}
+      </h4>
+    </td>
+  </tr>
+ 
+  <tr>
+    <td align="left">
+      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
+        Un nouveau ticket a été créé.
+      </p>
+    </td>
+  </tr>
+
+  
+  <!-- Ticket Info Card -->
+  <tr>
+    <td>
+      <div style="background: #c2c0b94d; border: 1px solid #ffeaa70b; border-radius: 20px; padding: 12px; margin: 10px 0;">
+        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+          <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: #856404;">confirmation_number</span>
+          <h4 style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600; color: #856404;">Ticket #{{ticketId}}</h4>
+        </div>
+        
+        <div style="background: #fff; border-radius: 20px; padding: 12px; margin: 8px 0; font-size: 12px;">
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #333;">
+         
+            <strong>Sujet :</strong> {{title}}
+          </p>
+        </div>
+        
+        {{#if centerName}}
+        <div style="background: #fff; border-radius: 20px; padding: 12px; margin: 8px 0; font-size: 12px;">
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #333;">
+           
+            <strong>Centre :</strong> {{centerName}}{{#if centerOACI}} ({{centerOACI}}){{/if}}
+          </p>
+        </div>
+        {{/if}}
+        
+    
+        
+        <div style="background: #fff; border-radius: 20px; padding: 12px; margin: 8px 0;">
+          <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 500; color: #333; font-size: 12px;">
+          
+            <strong>Email :</strong> {{userEmail}}
+          </p>
+        </div>
+        
+     
+      </div>
+    </td>
+  </tr>
+  
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <h4 style="color:rgb(22, 18, 21); margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600;">
+        <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px;">message</span>
+        Message
+      </h4>
+    </td>
+  </tr>
+  <tr>
+    <td height="10">&nbsp;</td>
+  </tr>
+  <tr>
+    <td>
+      <div style="background: #fff; border: 2px solid #9368a50b; padding: 20px; margin: 10px 0; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400; line-height: 1.6; font-size: 14px; white-space: pre-wrap;">
+          {{content}}
+        </p>
+      </div>
+    </td>
+  </tr>
+  
+  <tr>
+    <td height="20">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left">
+      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
+        Veuillez vous connecter à l'interface d'administration pour répondre à ce ticket.
+      </p>
+    </td>
+  </tr>
+  
+  <tr>
+    <td height="30">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="center">
+      {{> button}}
+    </td>
+  </tr>
+  
+</table>
+

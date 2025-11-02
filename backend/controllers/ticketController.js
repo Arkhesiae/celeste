@@ -8,7 +8,8 @@ const getTickets = async (req, res) => {
       return res.status(401).json({ message: 'Utilisateur non authentifié' });
     }
 
-    const tickets = await ticketService.getAllTickets(req.user);
+    const archived = req.query.archived === 'true';
+    const tickets = await ticketService.getAllTickets(req.user.userId, archived);
     res.json(tickets);
   } catch (error) {
     console.error('Erreur lors de la récupération des tickets:', error);
@@ -22,10 +23,14 @@ const createTicket = async (req, res) => {
     const { adminType, type, subject, email, message, centerId } = req.body;
     
     // Validation des données requises
-    if (!adminType || !type || !subject || !email || !message || !centerId) {
+    if (!adminType || !type || !subject || !email || !message) {
       return res.status(400).json({ 
         message: 'Tous les champs sont requis: adminType, type, subject, email, message, centerId' 
       });
+    }
+
+    if (adminType === 'local' && !centerId) {
+      return res.status(400).json({ message: 'Le centre est requis pour un administrateur local' });
     }
 
     // Validation du format email
@@ -242,6 +247,62 @@ const addEmailReply = async (ticketId, emailContent, senderEmail, senderName = '
   }
 };
 
+// Archiver un ticket
+const archiveTicket = async (req, res) => {
+  try {
+    // Validation de l'ID du ticket
+    if (!req.params.id) {
+      return res.status(400).json({ message: 'ID du ticket requis' });
+    }
+
+    // Validation du format de l'ID MongoDB
+    const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
+    if (!mongoIdRegex.test(req.params.id)) {
+      return res.status(400).json({ message: 'Format d\'ID invalide' });
+    }
+
+    const updatedTicket = await ticketService.archiveTicket(req.params.id);
+    res.json(updatedTicket);
+  } catch (error) {
+    console.error('Erreur lors de l\'archivage du ticket:', error);
+    
+    if (error.message === 'Ticket non trouvé') {
+      return res.status(404).json({ message: error.message });
+    }
+    
+    if (error.message === 'Seuls les tickets fermés peuvent être archivés') {
+      return res.status(400).json({ message: error.message });
+    }
+    
+    res.status(500).json({ message: 'Erreur du serveur' });
+  }
+};
+
+// Restaurer un ticket archivé
+const restoreTicket = async (req, res) => {
+  try {
+    // Validation de l'ID du ticket
+    if (!req.params.id) {
+      return res.status(400).json({ message: 'ID du ticket requis' });
+    }
+
+    // Validation du format de l'ID MongoDB
+    const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
+    if (!mongoIdRegex.test(req.params.id)) {
+      return res.status(400).json({ message: 'Format d\'ID invalide' });
+    }
+
+    const updatedTicket = await ticketService.restoreTicket(req.params.id);
+    res.json(updatedTicket);
+  } catch (error) {
+    console.error('Erreur lors de la restauration du ticket:', error);
+    if (error.message === 'Ticket non trouvé') {
+      return res.status(404).json({ message: error.message });
+    }
+    res.status(500).json({ message: 'Erreur du serveur' });
+  }
+};
+
 export {
   getTickets,
   createTicket,
@@ -250,5 +311,7 @@ export {
   updateTicketStatus,
   markReplySent,
   sendReply,
-  addEmailReply
+  addEmailReply,
+  archiveTicket,
+  restoreTicket
 }; 

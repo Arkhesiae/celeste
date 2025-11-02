@@ -108,6 +108,10 @@
           class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
           <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
+        <!-- <v-chip v-if="demand?.incompatibleSwitches?.length > 0" variant="flat" size="x-small" rounded="lg"
+          class="mr-2 font-weight-bold incompatible-chip" color="error" style="cursor: pointer">
+          <v-icon icon="mdi-alert-circle-outline"></v-icon>
+        </v-chip> -->
    
         <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="x-small"
           rounded="lg">

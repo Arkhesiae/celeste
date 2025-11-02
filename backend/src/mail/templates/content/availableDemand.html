@@ -7,7 +7,7 @@
     </td>
   </tr>
   <tr>
-    <td height="20">&nbsp;</td>
+    <td height="40">&nbsp;</td>
   </tr>
   <!-- <tr>
    
@@ -16,18 +16,22 @@
     </td>
    
   </tr> -->
-  <tr>
-    <td align="left">
-      <p style="font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
-        Une nouvelle demande est disponible sur Céleste
-      </p>
-    </td>
-  </tr>
+
   <tr>
     <td align="left">
       <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 400;">
-        Poster{{poster}} à posté une nouvelle demande :
+        {{posterName}} à posté une nouvelle demande :
       </p>
+      {{#if canSwitch}}
+        <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600; font-size: 12px;">
+          Vous pouvez accepter cette demande en permutant avec l'utilisateur.
+        </p>
+      {{/if}}
+      {{#if canReplace}}
+        <p style="margin: 0; font-family: 'Roboto', Arial, sans-serif; font-weight: 600; font-size: 12px; ">
+          Vous pouvez accepter cette demande en remplaçant l'utilisateur.
+        </p>
+      {{/if}}
     </td>
   </tr>
 

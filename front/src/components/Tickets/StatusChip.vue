@@ -62,7 +62,6 @@ const emit = defineEmits(['status-updated']);
 const statusOptions = [
   { value: 'new', label: 'A traiter' },
   { value: 'in_progress', label: 'En cours' },
-  { value: 'done', label: 'Traité' },
   { value: 'closed', label: 'Fermé' }
 ];
 
@@ -72,8 +71,6 @@ const getStatusColor = (status) => {
       return 'rgba(var(--v-theme-new),1)';
     case 'in_progress':
       return 'rgba(var(--v-theme-pending),1)';
-    case 'done':
-      return 'rgba(var(--v-theme-done),1)';
     case 'closed':
       return 'rgba(100,100,100,1)';
     default:
@@ -87,8 +84,6 @@ const getStatusLabel = (status) => {
       return 'A traiter';
     case 'in_progress':
       return 'En cours';
-    case 'done':
-      return 'Traité';
     case 'closed':
       return 'Fermé';
   

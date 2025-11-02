@@ -1,4 +1,4 @@
-<template>
+  <template>
   <v-container class="fill-height ">
     <v-row >
       <v-col cols="12" >
@@ -17,7 +17,7 @@
             height="4"
             class="mt-4 rounded-xl"
           ></v-progress-linear>
-          <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.currentlyLoading }}</span>
+          <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded }}</span>
         </v-card>
       </v-col>
     </v-row>
@@ -32,6 +32,7 @@ const initializationStore = useInitializationStore();
 
 // Calculate progress percentage based on initialization state
 const progressPercentage = computed(() => {
+
   const state = initializationStore.initializationState;
   const totalSteps = Object.keys(state).length;
   const completedSteps = Object.values(state).filter(Boolean).length;

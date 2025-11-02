@@ -22,7 +22,7 @@ const processPastDemands = async () => {
             { 
                 $set: { 
                     deleted: true,
-                    status: 'cancelled',
+                    status: 'expired',
                     updatedAt: now
                 }
             }

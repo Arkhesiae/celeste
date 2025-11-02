@@ -10,8 +10,6 @@ import User from '../models/User.js';
  */
 const verifyToken = (req, res, next) => {
     // Récupération du token depuis l'en-tête Authorization
-
-    console.log("Verify token");
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {

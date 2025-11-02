@@ -1,28 +1,67 @@
 <table width="100%" cellpadding="0" cellspacing="0" role="presentation">    
     <tr>
-        <td align="left">
-            {{> hello }}
-        </td>
+      <td align="left">
+        {{> hello }}
+      </td>
+    </tr>
+    <tr>
+      <td height="40">&nbsp;</td>
+    </tr>
+  
+    <tr>
+      <td align="left">
+        <h4 style="color:#333;">Demande acceptée</h4>
+      </td>
     </tr>
     <tr>
         <td height="20">&nbsp;</td>
-    </tr>
-
+      </tr>
     <tr>
-        <td align="left">
-            <h4 style="color:#333;">Demande acceptée</h4>
-        </td>
-    </tr>
-    <tr>
-        <td align="left">
-            <div style="font-family: Arial,sans-serif; max-width:600px; margin:0 auto; ">
-            
-                <p>Bonjour {{userName}},</p>
-                <p><strong>{{accepterName}} {{accepterLastName}}</strong> a accepté votre demande de remplacement pour le {{posterShiftDate}}</p>
-                <p>N'oubliez pas de déclarer ce remplacement sur OLAFATCO.</p>
-            
-            </div>
-        </td>
-    </tr>
-</table>
+      <td align="left">
+        <div style="font-family: Arial, sans-serif; max-width:600px; margin:0 auto;">
+          <p style="margin:0 0 8px 0; line-height:1.5;">
+            Bonne nouvelle ! 
+            <strong>{{accepterName}}</strong> 
+            a accepté votre demande 
+            {{#if typeText}}
+           <span style="font-weight: 800; font-family: 'Roboto', Arial, sans-serif; text-transform: uppercase; font-size: 12px;"> {{typeText}}</span>  du 
+            {{/if}}
+            <strong>{{posterShiftDate}}</strong> en 
+            <span style="
+              background-color:#f0f4f6;
+              padding:4px 10px;
+              border-radius:24px;
+              font-size:16px;
+              font-weight:800;
+              font-family:'Roboto', Arial, sans-serif;
+              color:#000000af;
+              display:inline-block;
+            ">
+              {{posterShift}}
+            </span>
+          </p>
 
+          {{#if accepterShift}}
+          <p style="margin-top:16px;">
+            Vous travaillerez donc en   <span style="
+            background-color:#f0f4f6;
+            padding:4px 10px;
+            border-radius:24px;
+            font-size:16px;
+            font-weight:800;
+            font-family:'Roboto', Arial, sans-serif;
+            color:#000000af;
+            display:inline-block;
+          ">
+            {{accepterShift}}
+          </span> ce jour dans l'équipe {{accepterTeam}}
+          </p>
+          {{/if}}
+  
+          <p style="margin-top:16px;">
+            N'oubliez pas de déclarer ce remplacement sur OLAFATCO.
+          </p>
+        </div>
+      </td>
+    </tr>
+  </table>

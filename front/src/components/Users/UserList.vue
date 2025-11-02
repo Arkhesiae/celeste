@@ -41,20 +41,18 @@
     />
     </div>
 
-    <v-row>
-      <v-col v-for="user in sortedAndFilteredUsers" :key="user._id" cols="12" md="6" lg="4" :class="smAndDown ? 'pa-0' : ''">
-        <UserCard 
-          :user="user" 
-          @click="openUserDialog(user._id)"
-          @approve="approveUser"
-          @makeAdmin="makeAdmin"
-          @removeAdmin="removeAdmin"
-          @assignCenter="openCenterDialog"
-          @delete="deleteUser"
-        />
-      </v-col>
+    <v-row >
+     
+          <div v-if="isLoading || !showUserList">
+            <Loading />
+          </div>
+          <v-col v-else v-for="user in sortedAndFilteredUsers" :key="user._id" cols="12" md="6" lg="4" :class="smAndDown ? 'pa-0' : ''">
+            <UserCard :user="user" @click="openUserDialog(user._id)" @approve="approveUser" @makeAdmin="makeAdmin" @removeAdmin="removeAdmin" @assignCenter="openCenterDialog" @delete="deleteUser" />
+          </v-col>
+ 
     </v-row>
 
+   
     <!-- User Details Dialog -->
     <UserCardDetails
       :userId="selectedUser"
@@ -104,6 +102,17 @@ const sortDirection = ref('asc');
 const searchQuery = ref('');
 const selectedCenterId = ref(null);
 const userDialog = ref(false);
+const showUserList = ref(false);
+const isLoading = ref(false);
+
+// import { defineAsyncComponent } from 'vue'
+
+// const AsyncUserCard = defineAsyncComponent({
+//   loader: () => import('@/components/Users/UserCard.vue'),
+//   loadingComponent: () => import('@/components/common/Loaders/Loading.vue'),
+//   delay: 0,
+
+// })
 
 const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
 const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
@@ -249,6 +258,7 @@ const handleCenterChange = async (centerId) => {
 
 
 onMounted(async () => {
+  isLoading.value = true;
   try {
     if (authStore.userData.adminType === 'master') {
       await userStore.fetchUsers();
@@ -259,6 +269,10 @@ onMounted(async () => {
       selectedCenterId.value = authStore.userData.centerId;
     }
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
+    isLoading.value = false;
+    setTimeout(() => {
+      showUserList.value = true;
+    }, 500);
   } catch (error) {
     console.error('Error fetching initial data:', error);
     snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');

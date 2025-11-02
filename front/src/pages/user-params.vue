@@ -73,6 +73,50 @@
             </v-btn>
           </v-card-text>
         </v-card>
+        <v-card rounded="xl" elevation="0" class="pa-0" color="background">
+          <div class="d-flex align-center justify-start ga-2">
+            <v-card-title class="text-h5">Emails</v-card-title>
+            <v-chip v-if="noCategoryEnabled" color="error" variant="flat" class="rounded-pill py-0 " size="small">
+                <v-icon class="mr-2">mdi-email-alert-outline</v-icon>
+                <span class="text-caption">Aucune catégorie sélectionnée</span>
+              </v-chip></div>
+          <v-card-text>
+            <v-btn
+              block
+              height="64"
+              class="rounded-lg py-4 mb-4 d-flex"
+              variant="flat"
+              color="surface"
+              elevation="0"
+              @click="toggleGlobal"
+            >
+            <template #prepend>
+              <v-switch inset class="ml-2" v-model="emailGlobalEnabled" hide-details false-icon="mdi-close"
+                true-icon="mdi-email-multiple"></v-switch>
+              </template>
+              <span class="text-h7">Recevoir les emails</span>
+             
+            </v-btn>
+
+      
+
+            <div class="d-flex flex-column ">
+
+              <div v-for="(option, index) in emailOptions" :key="option.value" >
+                <div class="d-flex align-center justify-space-between">
+                  <div class="d-flex align-center justify-space-between ga-2" :style="{ opacity: !emailGlobalEnabled ? 0.5 : 1 }">
+                    <v-icon :icon="option.icon" size="small"></v-icon>
+                    <span style="font-size: 12px; font-weight: 500;">{{ option.label }}</span>
+                  </div>
+                  <v-switch :disabled="!emailGlobalEnabled" density="compact" inset class="ml-2" v-model="emailCategories[option.value]" hide-details false-icon="mdi-close"
+                  true-icon="mdi-email-multiple"></v-switch>
+                  
+                </div>
+                <v-divider v-if="index !== emailOptions.length - 1"></v-divider>
+              </div>  
+          </div>
+          </v-card-text>
+        </v-card>
         <!-- <v-card rounded="xl" elevation="0" class="pa-0" color="background">
           <v-card-title class="text-h5">Notifications</v-card-title>
           <v-card-text>
@@ -123,25 +167,23 @@
       v-model="showTransferRequestDialog"
   
     />
-    <GlobalSnackbar />
+
   
   </v-container>
 </template>
 
 <script setup>
+
+
 import { useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
-import { ref } from 'vue'
-import EmailDialog from '@/components/Profile/Parameters/EmailDialog.vue'
-import PasswordDialog from '@/components/Profile/Parameters/PasswordDialog.vue'
-import AvatarDialog from '@/components/Profile/Parameters/AvatarDialog.vue'
-import PhoneDialog from '@/components/Profile/Parameters/PhoneDialog.vue'
-import BirthDateDialog from '@/components/Profile/Parameters/BirthDateDialog.vue'
-import TransferRequestDialog from '@/components/Profile/Parameters/TransferRequestDialog.vue'
+import { ref, computed, watch, onMounted } from 'vue'
+
 
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import GlobalSnackbar from '@/layouts/components/GlobalSnackbar.vue'
+
+
 
 
 const snackbarStore = useSnackbarStore();
@@ -155,6 +197,24 @@ const isDarkTheme = computed({
   }
 })
 
+const emailOptions = ref([
+  {
+    label: 'Demandes - Remplacement',
+    value: 'emailDemandReplacement',
+    icon: 'mdi-account-arrow-left-outline',
+  },
+  {
+    label: 'Demandes - Switch',
+    value: 'emailDemandSwitch',
+    icon: 'mdi-swap-horizontal-hidden',
+  },
+  {
+    label: 'Annonces',
+    value: 'emailAnnouncements',
+    icon: 'mdi-bullhorn-outline',
+  },
+])
+
 const router = useRouter()
 const theme = useTheme()
 const authStore = useAuthStore()
@@ -162,15 +222,84 @@ const authStore = useAuthStore()
 // États des dialogues
 const showEmailDialog = ref(false)
 const showPasswordDialog = ref(false)
+
 const showAvatarDialog = ref(false)
 const showPhoneDialog = ref(false)
 const showBirthDateDialog = ref(false)
 const showTransferRequestDialog = ref(false)
 
-// États des notifications
-const notificationsByEmail = ref(true)
-const notificationsByApp = ref(true)
 
+
+const emailCategories = ref({
+  emailDemandReplacement: authStore.userData.preferences.emails.categories.replacement !== undefined ? authStore.userData.preferences.emails.categories.replacement : true,
+  emailDemandSwitch: authStore.userData.preferences.emails.categories.switch !== undefined ? authStore.userData.preferences.emails.categories.switch : true,
+  emailAnnouncements: authStore.userData.preferences.emails.categories.announcements !== undefined ? authStore.userData.preferences.emails.categories.announcements : true,
+})
+const emailGlobalEnabled = ref(authStore.userData.preferences.emails.all !== undefined ? authStore.userData.preferences.emails.all : true)
+
+
+const noCategoryEnabled = computed( () => {
+  
+  return emailGlobalEnabled.value && !emailCategories.value.emailDemandReplacement && !emailCategories.value.emailDemandSwitch && !emailCategories.value.emailAnnouncements
+})
+
+// Fonction pour mettre à jour les préférences dans le backend
+const updateEmailPreferences = async () => {
+  try {
+    const currentPreferences = authStore.userData.preferences || {}
+    const emailPrefs = {
+      all: emailGlobalEnabled.value,
+      categories: {
+        replacement: emailCategories.value.emailDemandReplacement,
+        switch: emailCategories.value.emailDemandSwitch,
+        announcements: emailCategories.value.emailAnnouncements,
+      }
+    }
+    
+    await authStore.updateUserPreferences({
+      ...currentPreferences,
+      emails: emailPrefs
+    })
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des préférences email:', error)
+    snackbarStore.showNotification(
+      'Erreur lors de la mise à jour des préférences email',
+      'onError',
+      'mdi-close-circle'
+    )
+  }
+}
+
+
+
+
+// Sync global with individual switches et mise à jour backend
+watch(emailGlobalEnabled, async (enabled) => {
+  if (!enabled) {
+    emailCategories.value.emailDemandReplacement = false
+    emailCategories.value.emailDemandSwitch = false
+    emailCategories.value.emailAnnouncements = false
+  }
+  // Mettre à jour le backend
+  await updateEmailPreferences()
+})
+
+// Watcher pour mettre à jour le backend quand les catégories changent
+watch(
+  emailCategories,
+  async () => {
+    const anyEnabled =
+      emailCategories.value.emailDemandReplacement ||
+      emailCategories.value.emailDemandSwitch ||
+      emailCategories.value.emailAnnouncements
+    if (anyEnabled && !emailGlobalEnabled.value) {
+      emailGlobalEnabled.value = true
+    }
+    // Mettre à jour le backend
+    await updateEmailPreferences()
+  },
+  { deep: true }
+)
 
 const handleEmailSuccess = (message) => {
   snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle')
@@ -211,6 +340,21 @@ const handleBirthDateSuccess = (message) => {
 const handleBirthDateError = (message) => {
   snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
 }
+
+
+
+// Actions de bascule
+const toggleGlobal = async () => {
+  emailGlobalEnabled.value = !emailGlobalEnabled.value
+  if (!emailGlobalEnabled.value) {
+    emailCategories.value.emailDemandReplacement = false
+    emailCategories.value.emailDemandSwitch = false
+    emailCategories.value.emailAnnouncements = false
+  }
+  // La mise à jour backend est gérée par le watcher sur emailGlobalEnabled
+}
+
+
 </script>
 
 <style scoped>

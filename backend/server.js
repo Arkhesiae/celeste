@@ -66,19 +66,12 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // ─── Fichiers statiques ───────────────────────────────────────────────────────
 app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
 app.get("/preview/:template", (req, res) => {
-  const html = renderMail(req.params.template, {
-    userName: "John Doe",
-    url: "https://celeste-app.fr",
-    label: "Verify Account",
-  });
+    const html = renderMail(req.params.template, {});
   res.send(html);
 });
 
 
 app.use('/', express.static(path.join(__dirname, 'public')));
-
-
-
 
 // ─── Routes API ───────────────────────────────────────────────────────────────
 app.use('/api', mainRouter);

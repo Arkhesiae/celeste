@@ -9,7 +9,8 @@ async function sendEmailApproval(toEmail) {
     from: process.env.EMAIL_FROM || 'Celeste <noreply@celeste-app.fr>',
     to: toEmail.toLowerCase(),
     subject: 'Votre inscription a été approuvée - Celeste',
-    text: `Bonjour,\n\nVotre inscription a été approuvée. Vous pouvez désormais accéder à l'application.\n\nCordialement,\nL'équipe Celeste`
+    text: `Bonjour,\n\nVotre inscription a été approuvée. Vous pouvez désormais accéder à l'application.\n\nCordialement,\nL'équipe Celeste`,
+    html: renderMail('userApproval', {})
   };
 
   try {
@@ -30,7 +31,8 @@ async function sendEmailRejection(toEmail) {
     from: process.env.EMAIL_FROM || 'Celeste <noreply@celeste-app.fr>',
     to: toEmail.toLowerCase(),
     subject: 'Votre inscription a été rejetée - Celeste',
-    text: `Bonjour,\n\nVotre inscription a été rejetée. Veuillez contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`
+    text: `Bonjour,\n\nVotre inscription a été rejetée. Veuillez contacter l'administrateur du site.\n\nCordialement,\nL'équipe Celeste`,
+    html: renderMail('userRejection', {}),
   };
 
   try {

@@ -19,11 +19,7 @@ async function createAdmin() {
     email: process.env.ADMIN_EMAIL,
     points: Number.MAX_SAFE_INTEGER,
     password: hashedPassword,
-    preferences: {
-      theme: false,
-      notifications: true,
-      emailNotifications: true,
-    },
+
   };
 
   if (existingAdmin) {
@@ -59,11 +55,6 @@ async function createLocalAdmin() {
       email: ADMIN_EMAIL,
       points: Number.MAX_SAFE_INTEGER,
       password: hashedPassword,
-      preferences: {
-        theme: false,
-        notifications: true,
-        emailNotifications: true,
-      },
     };
 
     if (existingAdmin) {

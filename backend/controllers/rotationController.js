@@ -358,32 +358,125 @@ const addActivationDate = async (req, res) => {
     }
 
     try {
-        const result = await rotationActivationService.addActivationDate(id, activationDate);
-        res.json(result);
+        const result = await rotationActivationService.updateActivationDate('add', id, activationDate);
+
+        const status = result.needsApproval ? 409 : 200; // 409 Conflict → demande d'approbation
+
+
+
+
+        return res.status(status).json({
+            message: result.message,
+            changes: result.changes ?? [],
+            needsApproval: !!result.needsApproval
+        });
+
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de l\'ajout de la date d\'activation : ' + error.message });
     }
 
 };
 
+// Confirmer et appliquer une date d'activation après approbation utilisateur
+const confirmAddActivationDate = async (req, res) => {
+    const { id } = req.params;
+    const { activationDate } = req.body;
 
+    if (!activationDate) {
+        return res.status(400).json({ message: 'Date d\'activation requise.' });
+    }
 
+    if (!isValidDate(activationDate)) {
+        return res.status(400).json({ message: 'Date invalide.' });
+    }
+
+    if (!isValidId(id)) {
+        return res.status(400).json({ message: 'ID de rotation invalide.' });
+    }
+
+    const rotation = await Rotation.findById(id);
+    if (!rotation || rotation.deleted) {
+        return res.status(404).json({ message: 'Rotation non trouvée ou supprimée.' });
+    }
+
+    try {
+        const result = await rotationActivationService.confirmAddActivationDate(id, activationDate);
+        return res.status(200).json({ message: result.message, changes: result.changes });
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la confirmation de la date d\'activation : ' + error.message });
+    }
+};
 
 // Supprimer une date d'activation
 const removeActivationDate = async (req, res) => {
     const { id } = req.params;
     const { activationDate } = req.body;
 
+
+    if (!activationDate) {
+        return res.status(400).json({ message: 'Date d\'activation requise.' });
+    }
+
+    if (!isValidDate(activationDate)) {
+        return res.status(400).json({ message: 'Date invalide.' });
+    }
+
+    if (!isValidId(id)) {
+        return res.status(400).json({ message: 'ID de rotation invalide.' });
+    }
+
+    const rotation = await Rotation.findById(id);
+    if (!rotation || rotation.deleted) {
+        return res.status(404).json({ message: 'Rotation non trouvée ou supprimée.' });
+    }
+
     try {
-        if (!activationDate) {
-            return res.status(400).json({ message: 'Activation date is required.' });
-        }
+        const result = await rotationActivationService.updateActivationDate('remove', id, activationDate);
 
-        const result = await rotationActivationService.removeActivationDate(id, activationDate);
+        const status = result.needsApproval ? 409 : 200; // 409 Conflict → demande d'approbation
 
-        res.json(result);
+
+        return res.status(status).json({
+            message: result.message,
+            changes: result.changes ?? [],
+            needsApproval: !!result.needsApproval
+        });
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Erreur lors de l\'ajout de la date d\'activation : ' + error.message });
+    }
+
+};
+
+// Confirmer et appliquer une date d'activation après approbation utilisateur
+const confirmRemoveActivationDate = async (req, res) => {
+    const { id } = req.params;
+    const { activationDate } = req.body;
+
+    console.log('confirmRemoveActivationDate', id, activationDate);
+
+    if (!activationDate) {
+        return res.status(400).json({ message: 'Date d\'activation requise.' });
+    }
+
+    if (!isValidDate(activationDate)) {
+        return res.status(400).json({ message: 'Date invalide.' });
+    }
+
+    if (!isValidId(id)) {
+        return res.status(400).json({ message: 'ID de rotation invalide.' });
+    }
+
+    const rotation = await Rotation.findById(id);
+    if (!rotation || rotation.deleted) {
+        return res.status(404).json({ message: 'Rotation non trouvée ou supprimée.' });
+    }
+
+    try {
+        const result = await rotationActivationService.confirmRemoveActivationDate(id, activationDate);
+        return res.status(200).json({ message: result.message, changes: result.changes });
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la confirmation de la suppression de la date d\'activation : ' + error.message });
     }
 };
 
@@ -663,6 +756,8 @@ export default {
     getRotationsByCenter,
     getAllRotationsWithStatus,
     getActiveRotationAtDate,
+    confirmRemoveActivationDate,
+    confirmAddActivationDate,
     deleteRotation,
     addActivationDate,
     removeActivationDate,

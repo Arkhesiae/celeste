@@ -1,0 +1,33 @@
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">    
+    <tr>
+        <td align="left">
+            {{> hello }}
+        </td>
+    </tr>
+    <tr>
+        <td height="20">&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td align="left">
+            <h4 style="color:#333;">Demande annulée</h4>
+        </td>
+    </tr>
+    <tr>
+        <td align="left">
+            <div style="font-family: Arial,sans-serif; max-width:600px; margin:0 auto; ">
+            
+                <p>Bonjour {{userName}},</p>
+                <p><strong>{{posterName}} {{posterLastName}}</strong> a annulé sa demande de remplacement pour le <strong>{{posterShiftDate}}</strong> (créée le {{creationDate}}).</p>
+                {{#if accepters}}
+                <p style="color:#666; font-size:14px; margin-top:15px;">
+                    <strong>Note :</strong> Cette demande avait été acceptée par : {{accepters}}
+                </p>
+                {{/if}}
+            
+            </div>
+        </td>
+    </tr>
+</table>
+
+

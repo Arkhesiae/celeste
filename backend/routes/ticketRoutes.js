@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTickets, createTicket, markAsRead, deleteTicket, updateTicketStatus, markReplySent, sendReply } from '../controllers/ticketController.js';
+import { getTickets, createTicket, markAsRead, deleteTicket, updateTicketStatus, markReplySent, sendReply, archiveTicket, restoreTicket } from '../controllers/ticketController.js';
 import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
 import { handleInboundEmail } from '../services/emailIncomingService.js';
 
@@ -29,6 +29,12 @@ router.put('/:id/reply-sent', verifyToken, isAdmin, markReplySent);
 
 // Envoyer une réponse à un ticket
 router.post('/:id/reply', verifyToken, isAdmin, sendReply);
+
+// Archiver un ticket
+router.put('/:id/archive', verifyToken, isAdmin, archiveTicket);
+
+// Restaurer un ticket archivé
+router.put('/:id/restore', verifyToken, isAdmin, restoreTicket);
 
 // Recevoir un email entrant
 router.post('/inbound', express.text({ type: "*/*" }), handleInboundEmail);

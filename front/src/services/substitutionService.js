@@ -217,5 +217,17 @@ export const substitutionService = {
       headers: getAuthHeaders()
     });
     return handleResponse(response);
+  },
+
+  /**
+   * Récupère toutes les demandes d'un centre pour les admins.
+   * @param {string} centerId - L'ID du centre.
+   * @returns {Promise<Array>} Liste de toutes les demandes du centre.
+   */
+  async fetchAllCenterDemands(centerId) {
+    const response = await fetch(`${API_URL}/substitution/center/${centerId}/all`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };

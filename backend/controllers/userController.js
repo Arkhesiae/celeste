@@ -631,6 +631,8 @@ const updateUserPreferences = async (req, res) => {
             { new: true }
         );
 
+        console.log("User preferences :", user.preferences);
+
         if (!user) {
             return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }

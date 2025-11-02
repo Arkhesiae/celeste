@@ -28,10 +28,10 @@
         v-for="stat in quickStats" 
         :key="stat.key"
         cols="12" 
-        sm="6" 
-        md="3"
+        :sm="stat.key === 'totalUsers' ? 12 : 6" 
+        md="4"
       >
-        <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest" :class="actionNeeded(stat) ? 'action-needed' : ''">
+        <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest" @click="navigateTo(stat.path)" :class="actionNeeded(stat) ? 'action-needed' : ''">
           <div class="d-flex align-center">
             <v-avatar :color="actionNeeded(stat) ? 'pending' : 'onBackground'" variant="tonal" size="24" class="mr-4">
               <v-icon :icon="stat.icon" size="12" />
@@ -158,6 +158,7 @@ const quickStats = computed(() => [
     value: stats.value.pendingUsers,
     label: 'En attente',
     icon: 'mdi-account-clock',
+    path: '/admin/pending-users',
     color: 'warning'
   },
   {
@@ -165,15 +166,16 @@ const quickStats = computed(() => [
     value: stats.value.pendingTickets,
     label: 'Tickets',
     icon: 'mdi-account-question',
+    path: '/admin/tickets',
     color: 'info'
   },
-  {
-    key: 'totalCenters',
-    value: stats.value.totalCenters,
-    label: 'Centres',
-    icon: 'mdi-airport',
-    color: 'success'
-  }
+  // {
+  //   key: 'totalCenters',
+  //   value: stats.value.totalCenters,
+  //   label: 'Centres',
+  //   icon: 'mdi-airport',
+  //   color: 'success'
+  // }
 ])
 
 // Sections principales pour v-for
@@ -232,6 +234,16 @@ const mainSections = computed(() => [
         iconColor: 'info',
         path: `/center/${authStore.userData.centerId}/teams`,
         requiresMaster: false
+      },
+      
+      {
+        id: 'center-demands',
+        title: 'Demandes du centre',
+        subtitle: 'Voir toutes les demandes de remplacement et permutation',
+        icon: 'mdi-swap-horizontal',
+        iconColor: 'remplacement',
+        path: '/admin/demands',
+        requiresMaster: false
       }
     ]
   },
@@ -264,7 +276,7 @@ const mainSections = computed(() => [
         subtitle: 'Envoyer et gérer les emails',
         icon: 'mdi-email',
         iconColor: 'primary',
-        path: '/emails',
+        path: '/admin/emails',
         requiresMaster: false
       }
     ]

@@ -27,7 +27,7 @@
               </div>
             </div>
           </div>
-          <v-btn icon variant="text" size="large" to="/parameter" color="onBackground">
+          <v-btn icon variant="text" size="large" @click="router.push('/user-params')" color="onBackground">
             <v-icon>mdi-cog-outline</v-icon>
           </v-btn>
         </div>

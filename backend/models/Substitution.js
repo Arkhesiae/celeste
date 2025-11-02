@@ -89,7 +89,7 @@ const SubstitutionSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['open', 'accepted', 'completed', 'cancelled'],
+        enum: ['open', 'accepted', 'completed', 'cancelled', 'expired', 'system-cancelled'],
         default: 'open'
     },
     deleted: {

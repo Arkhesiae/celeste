@@ -15,19 +15,58 @@
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
 import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const safeAreaTop = ref([]);
 const safeAreaBottom = ref([]);
-
+const router = useRouter();
 
 const { initializeApp } = useAppInitialization();
 
+
 onMounted(async () => {
   await getSafeAreaAndApply();
+
+  // Attendre que le router soit prêt pour obtenir la route réelle
+  await router.isReady();
   
-  await initializeApp();
+
+  const savedPath = window.location.pathname || router.currentRoute.value.path;
   
-});
+
+  if (savedPath && savedPath !== '/loading') {
+    sessionStorage.setItem('pendingRoute', savedPath);
+  }
+ 
+  if (savedPath !== '/loading') {
+    await router.push({ path: '/loading', replace: true });
+  }
+
+  try {
+    await initializeApp();
+
+    // Make sure router is ready before pushing back
+    await router.isReady();
+
+    // Récupérer la route sauvegardée depuis sessionStorage ou utiliser currentPath
+    const routeToRestore = sessionStorage.getItem('pendingRoute') || savedPath;
+    
+    // Nettoyer le sessionStorage
+    if (sessionStorage.getItem('pendingRoute')) {
+      sessionStorage.removeItem('pendingRoute');
+    }
+
+    // Return to previous route if it's not /loading
+    if (routeToRestore && routeToRestore !== '/loading') {
+      await router.push({ path: routeToRestore, replace: true });
+    }
+  } catch (error) {
+    console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
+    // Optionally route to an error page or show a dialog
+  }
+})
+
+
 
 const insets = ref();
 

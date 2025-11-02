@@ -3,9 +3,23 @@ import mongoose from 'mongoose';
 const announcementSchema = new mongoose.Schema({
   templateType: {
     type: String,
-    required: true,
+  
     enum: ['maintenance', 'update', 'general']
   },
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  isGlobal: {
+    type: Boolean,
+    default: false
+  },
+  centerId: {
+    type: String,
+    
+  },
+
   message: {
     type: String,
     required: true,

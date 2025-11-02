@@ -1,240 +1,400 @@
 import Rotation from '../../models/Rotation.js';
-
+import Shift from '../../models/Shift.js';
 import Substitution from '../../models/Substitution.js';
 import User from '../../models/User.js';
+import Team from '../../models/Team.js';
 import { computeShiftOfUserWithoutSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
+import { getTeamAtGivenDate } from '../../utils/getTeamAtGivenDate.js';
+import { getCompatibleSwitchesInRotation } from '../substitution.service.js';
+/**
+ * Calcule l'index dans la rotation basé sur la date et le cycleStartDate
+ * @param {Date} date - Date du shift
+ * @param {Object} team - Objet team avec cycleStartDate
+ * @param {number} totalDays - Nombre total de jours dans la rotation
+ * @returns {number} Index dans la rotation
+ */
+const calculateRotationIndex = (date, team, totalDays) => {
+    if (!team.cycleStartDate) {
+        throw new Error('cycleStartDate non défini pour l\'équipe');
+    }
+
+    const diffInMilliseconds = date - new Date(team.cycleStartDate);
+    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
+
+    let dayIndex;
+    if (diffInDays >= 0) {
+        dayIndex = diffInDays % totalDays;
+    } else {
+        dayIndex = (totalDays - (Math.abs(diffInDays) % totalDays)) % totalDays;
+    }
+
+    return dayIndex;
+};
 
 /**
- * Convertit les demandes de substitution existantes pour une rotation donnée
- * @param {Date} startDate - Date de début de la période
- * @param {Date} endDate - Date de fin de la période
- * @param {string} centerId - ID du centre
- * @param {Object} rotation - Rotation populée avec les jours et variations
+ * Convertit les demandes de substitution pour une nouvelle rotation
+ * @param {Array} demandsToConvert - Les demandes à convertir
+ * @param {string} oldRotationId - ID de l'ancienne rotation
+ * @param {string} newRotationId - ID de la nouvelle rotation
+ * @returns {Promise<{ converted: number, cancelled: number }>}
  */
-const convertCenterDemands = async (startDate, endDate, centerId, rotation) => {
+const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotationId) => {
     try {
-        // Récupérer toutes les demandes de substitution ouvertes ou acceptées pour ce centre
-        const demands = await Substitution.find({
-            centerId: centerId,
-            status: { $in: ['open', 'accepted'] },
-            deleted: false,
-            'posterShift.date': { $gte: startDate, $lte: endDate }
-        });
+        // Charger les rotations avec leurs jours populés
+        const oldRotation = await Rotation.findById(oldRotationId).populate('days');
+        const newRotation = await Rotation.findById(newRotationId).populate('days');
 
-        console.log(`Conversion de ${demands.length} demandes de substitution pour le centre ${centerId}`);
+        if (!oldRotation || !newRotation) {
+            throw new Error('Rotation introuvable');
+        }
 
-        for (const demand of demands) {
-            try {
-                // Calculer le shift de l'utilisateur avec la nouvelle rotation
-                try {
-                    const user = await User.findById(demand.posterId).populate('teams');
-                    if (!user) {
+        let cancelledDemands = 0;
+        let convertedDemands = 0;
+
+        for (const demand of demandsToConvert) {
+            const populatedDemand = await Substitution.findById(demand._id)
+                .populate('posterId')
+                .populate('accepterId')
+                .populate('acceptedSwitches.shift');
+
+            if (!populatedDemand) continue;
+
+            let demandModified = false; // Suivi de modification utile pour conversion réussie
+            let demandReopened = false;
+            /** === POSTER SHIFT === */
+            if (populatedDemand.posterShift?.shift) {
+                const index = oldRotation.days.findIndex(
+                    (day) => day._id.toString() === populatedDemand.posterShift.shift.toString()
+                );
+
+                if (index !== -1) {
+                    const newShift = newRotation.days[index];
+
+                    if (newShift.type === 'rest') {
+                        await cancelSingleDemand(populatedDemand._id);
+                        cancelledDemands++;
                         continue;
-                    }
-
-                    // Calculer le shift de l'utilisateur avec la nouvelle rotation
-                    const userShifts = await computeShiftOfUserWithoutSubstitutions(demand.posterShift.date, demand.posterId);
-                    const userShift = userShifts[0];
-
-                    if (userShift && userShift.shift) {
-                        // Trouver le shift correspondant dans la nouvelle rotation
-                        const computedShift = rotation.days.find(day =>
-                            day._id.toString() === userShift.shift._id.toString()
-                        );
-
-                        if (computedShift) {
-                            const updatedPosterShift = {
-                                shift: computedShift._id,
-                                date: demand.posterShift.date,
-                                teamId: userShift.teamObject._id,
-                                selectedVariation: null
-                            };
-
-                            // Vérifier s'il y a une variation sélectionnée
-                            if (userShift.shift.selectedVariation) {
-                                const matchingVariation = computedShift.variations.find(variation =>
-                                    variation._id.toString() === userShift.shift.selectedVariation.toString()
-                                );
-
-                                if (matchingVariation) {
-                                    updatedPosterShift.selectedVariation = matchingVariation._id;
-                                }
-                            }
-
-                            // Traiter aussi l'accepterShift s'il existe
-                            let updatedAccepterShift = null;
-                            if (demand.accepterShift && demand.accepterShift.date) {
-                                try {
-                                    // Calculer le shift de l'accepteur avec la nouvelle rotation
-                                    const accepterShifts = await computeShiftOfUserWithoutSubstitutions(demand.accepterShift.date, demand.accepterId);
-                                    const accepterShift = accepterShifts[0];
-
-                                    if (accepterShift && accepterShift.shift) {
-                                        // Trouver le shift correspondant dans la nouvelle rotation
-                                        const computedAccepterShift = rotation.days.find(day =>
-                                            day._id.toString() === accepterShift.shift._id.toString()
-                                        );
-
-                                        if (computedAccepterShift) {
-                                            updatedAccepterShift = {
-                                                shift: computedAccepterShift._id,
-                                                date: demand.accepterShift.date,
-                                                teamId: accepterShift.teamObject._id,
-                                                selectedVariation: null
-                                            };
-
-                                            // Vérifier s'il y a une variation sélectionnée
-                                            if (accepterShift.shift.selectedVariation) {
-                                                const matchingVariation = computedAccepterShift.variations.find(variation =>
-                                                    variation._id.toString() === accepterShift.shift.selectedVariation.toString()
-                                                );
-
-                                                if (matchingVariation) {
-                                                    updatedAccepterShift.selectedVariation = matchingVariation._id;
-                                                }
-                                            }
-
-                                            console.log(`AccepterShift calculé pour la demande ${demand._id}`);
-                                        } else {
-                                            console.warn(`Shift calculé ${accepterShift.shift._id} non trouvé dans la rotation pour l'accepterShift de la demande ${demand._id}`);
-                                        }
-                                    } else {
-                                        console.warn(`Aucun shift calculé pour l'accepteur ${demand.accepterId} à la date ${demand.accepterShift.date} pour la demande ${demand._id}`);
-                                    }
-                                } catch (accepterComputeError) {
-                                    console.error(`Erreur lors du calcul du shift de l'accepteur pour la demande ${demand._id}:`, accepterComputeError);
-                                }
-                            }
-
-                            // Mettre à jour la demande
-                            const updateData = {
-                                posterShift: updatedPosterShift,
-                                rotation: rotation._id,
-                                updatedAt: new Date(),
-                            };
-
-                            if (updatedAccepterShift) {
-                                updateData.accepterShift = updatedAccepterShift;
-                            }
-
-                            await Substitution.findByIdAndUpdate(demand._id, updateData);
-
-                            console.log(`Demande ${demand._id} du ${demand.posterShift.date} convertie avec succès (shift calculé)`);
-                        } else {
-                            console.warn(`Shift calculé ${userShift.shift._id}  non trouvé dans la rotation pour la demande ${demand._id}`);
-                        }
                     } else {
-                        console.warn(`Aucun shift calculé pour l'utilisateur ${demand.posterId} à la date ${demand.posterShift.date} pour la demande ${demand._id}`);
+                        populatedDemand.posterShift.shift = newShift._id;
+                        demandModified = true;
                     }
-                } catch (computeError) {
-                    console.error(`Erreur lors du calcul du shift pour la demande ${demand._id}:`, computeError);
+                }
+            }
+
+            /** === ACCEPTER SHIFT === */
+            if (['switch', 'hybrid'].includes(populatedDemand.type) && populatedDemand.accepterShift?.shift) {
+                const index = oldRotation.days.findIndex(
+                    (day) => day._id.toString() === populatedDemand.accepterShift.shift.toString()
+                );
+
+                if (index !== -1) {
+                    const newShift = newRotation.days[index];
+
+                    if (newShift.type === 'rest') {
+                        populatedDemand.accepterShift = null;
+                        populatedDemand.accepterId = null;
+                        populatedDemand.status = 'open';
+                        demandReopened = true;
+                        await populatedDemand.save();
+                    } else {
+                        populatedDemand.accepterShift.shift = newShift._id;
+                        demandModified = true;
+                    }
+
+                }
+            }
+
+
+            /** === ACCEPTED SWITCHES === */
+            if (populatedDemand.acceptedSwitches?.length > 0) {
+                const validSwitches = [];
+
+                for (const switchItem of populatedDemand.acceptedSwitches) {
+                    const index = oldRotation.days.findIndex(
+                        (day) => day._id.toString() === switchItem.shift._id.toString()
+                    );
+
+                    if (index !== -1) {
+                        const newShift = newRotation.days[index];
+                        if (newShift.type !== 'rest') {
+                            validSwitches.push({
+                                shift: newShift._id,
+                                points: switchItem.points,
+                            });
+                        }
+                    }
                 }
 
-            } catch (error) {
-                console.error(`Erreur lors de la conversion de la demande ${demand._id}:`, error);
-                // Continuer avec les autres demandes même si une échoue
+                // Aucun switch valide → comportement selon le type
+                if (validSwitches.length === 0) {
+                    if (populatedDemand.type === 'switch') {
+                        cancelledDemands++;
+                        await cancelSingleDemand(populatedDemand._id);
+                        continue;
+                    } else if (populatedDemand.type === 'hybrid') {
+                        populatedDemand.type = 'substitution'; 
+                        demandModified = true;
+                    }
+                } else {
+                    populatedDemand.acceptedSwitches = validSwitches;
+                    console.log(validSwitches)
+                    demandModified = true;
+                }
+            }
+
+            // Si on arrive ici sans annulation → demande convertie avec succès
+            if (demandModified) {
+                await populatedDemand.save();
+                convertedDemands++;
+                console.log(`✅ [${demand._id}] Demande convertie avec succès`);
             }
         }
 
-        console.log(`Conversion terminée pour le centre ${centerId}`);
+
+        return { converted: convertedDemands, cancelled: cancelledDemands };
+
     } catch (error) {
-        console.error('Erreur lors de la conversion des demandes de substitution:', error);
+        console.error('Erreur lors de la conversion des demandes:', error);
         throw error;
     }
 };
 
+
+
 /**
- * Ajoute une date d'activation à une rotation
- * @param {string} rotationId - ID de la rotation
- * @param {string} activationDate - Date d'activation à ajouter
- * @returns {Object} Rotation mise à jour
+ * Récupère une rotation valide (non supprimée)
+ * @param {string} rotationId
+ * @returns {Object} Rotation trouvée
  */
-const addActivationDate = async (rotationId, activationDate) => {
+const getValidRotation = async (rotationId) => {
+    const rotation = await Rotation.findOne({ _id: rotationId, deleted: false });
+    if (!rotation) throw new Error('Rotation not found.');
+    return rotation;
+};
+
+/**
+ * Retourne les activations triées d’un centre
+ * @param {string} centerId
+ * @returns {Array<Object>}
+ */
+const getSortedActivations = async (centerId) => {
+    return await getOrderedActivationDates(centerId);
+};
+
+/**
+ * Nettoie les répétitions et applique les suppressions en base
+ * @param {Array<Object>} repetitionToRemove
+ * @returns {number} Nombre de répétitions supprimées
+ */
+const removeRepetitionsInDb = async (repetitionToRemove) => {
+    let removedCount = 0;
+    for (const repetition of repetitionToRemove) {
+        await Rotation.findByIdAndUpdate(
+            repetition.rotationId,
+            { $pull: { activationDates: repetition.activationDate } },
+            { new: true }
+        );
+        removedCount++;
+    }
+    return removedCount;
+};
+
+
+/**
+ * Met à jour les dates d'activation d'une rotation (ajout ou suppression)
+ * @param {'add' | 'remove'} action - Type d'action à effectuer ('add' ou 'remove')
+ * @param {string} rotationId - ID de la rotation concernée
+ * @param {string} activationDate - Date d'activation à ajouter ou supprimer
+ * @returns {Object} Résultat de l'opération (besoin d'approbation ou confirmation directe)
+ */
+const updateActivationDate = async (action, rotationId, activationDate) => {
     try {
-        // Récupérer la rotation existante
+        if (!['add', 'remove'].includes(action)) {
+            throw new Error(`Action invalide : ${action}. Utiliser 'add' ou 'remove'.`);
+        }
+
+        const rotationToUpdate = await getValidRotation(rotationId);
+        const centerId = rotationToUpdate.centerId;
+
+        // Récupération des activations actuelles du centre
+        const existingActivations = await getOrderedActivationDates(centerId);
+        let updatedList = [...existingActivations];
+        const targetDate = new Date(activationDate);
+
+        // === AJOUT ===
+        if (action === 'add') {
+            const newActivation = { rotationId, activationDate: targetDate };
+
+            // Trouver l'index d'insertion trié par date
+            let insertIndex = updatedList.length;
+            for (let i = 0; i < updatedList.length; i++) {
+                if (new Date(updatedList[i].activationDate) > targetDate) {
+                    insertIndex = i;
+                    break;
+                }
+            }
+            updatedList.splice(insertIndex, 0, newActivation);
+        }
+
+        // === SUPPRESSION ===
+        if (action === 'remove') {
+            const indexToRemove = updatedList.findIndex(
+                (a) => new Date(a.activationDate).getTime() === targetDate.getTime()
+            );
+
+            if (indexToRemove === -1) {
+                throw new Error(`Aucune activation trouvée à la date ${activationDate}`);
+            }
+
+            updatedList.splice(indexToRemove, 1);
+        }
+
+        // Nettoyage de la liste et détection des changements
+        const { cleanedList } = removeSuccessiveRepetitions(updatedList);
+        const changes = findChangedPeriods(existingActivations, cleanedList);
+
+        if (changes.length > 0) {
+            await Promise.all(
+                changes.map(async (change) => {
+                    const demandsToConvert = await getDemandsToConvert(change, centerId);
+                    console.log(
+                        `[${change.from || 'no from'} → ${change.to || 'no to'}] demands affected:`,
+                        demandsToConvert.length
+                    );
+                    change.demandsToConvert = demandsToConvert.map((demand) => demand._id);
+                })
+            );
+
+            return {
+                needsApproval: true,
+                changes,
+                message: `Cette ${action === 'add' ? 'activation' : 'suppression'} entraînera des changements qui nécessitent votre approbation`
+            };
+        }
+
+        // Exécution finale selon l'action
+        if (action === 'add') {
+            return await confirmAddActivationDate(rotationId, activationDate);
+        } else {
+            return await confirmRemoveActivationDate(rotationId, activationDate);
+        }
+
+    } catch (error) {
+        console.error(`Erreur lors de la ${action === 'add' ? 'création' : 'suppression'} de la date d'activation:`, error);
+        throw error;
+    }
+};
+
+
+
+
+
+const getDemandsToConvert = async (change, centerId) => {
+    const dateFilter = {};
+    if (change.from) dateFilter.$gte = new Date(change.from);
+    if (change.to) dateFilter.$lte = new Date(change.to);
+
+    const demands = await Substitution.find({
+        centerId: centerId,
+        status: { $in: ['open', 'accepted'] },
+        deleted: false,
+        'posterShift.date': dateFilter
+    });
+
+    return demands;
+}
+
+const systemCancelDemands = async (demands) => {
+    try {
+        const result = await Substitution.updateMany(
+            { _id: { $in: demands.map(demand => demand._id) } },
+            {
+                $set: {
+                    status: 'system-cancelled',
+                    updatedAt: new Date()
+                }
+            }
+        );
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation des demandes:', error);
+        throw error;
+    }
+};
+
+
+const cancelSingleDemand = async (demand) => {
+    try {
+        const result = await Substitution.findByIdAndUpdate(demand._id, {
+            $set: {
+                status: 'system-cancelled',
+                updatedAt: new Date()
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation de la demande:', error);
+        throw error;
+    }
+};
+
+
+const confirmAddActivationDate = async (rotationId, activationDate) => {
+    try {
+        console.log('confirmAddActivationDate', rotationId, activationDate);
         const rotationToUpdate = await Rotation.findOne({ _id: rotationId, deleted: false });
-
-
         if (!rotationToUpdate) {
             throw new Error('Rotation not found.');
         }
 
         const centerId = rotationToUpdate.centerId;
         // Vérifier les dates d'activation successives
-        const existingActivations = await getOrderedActivationDates(centerId);
 
-        const listForInsertion = [...existingActivations];
+        const beforeList = await getOrderedActivationDates(centerId);
 
-        const newActivation = {
-            rotationId: rotationId,
-            activationDate: new Date(activationDate)
-        };
-
-        // Insérer la nouvelle activation à la bonne position
-        let insertIndex = listForInsertion.length;
-        for (let i = 0; i < listForInsertion.length; i++) {
-            if (new Date(listForInsertion[i].activationDate) > new Date(activationDate)) {
-                insertIndex = i;
-                break;
-            }
-        }
-        listForInsertion.splice(insertIndex, 0, newActivation);
-
-        // Ajouter la nouvelle date d'activation
         const updatedRotation = await Rotation.findByIdAndUpdate(
             rotationId,
             { $push: { activationDates: activationDate } },
             { new: true }
         );
 
-        let message = '';
-        const result = await removeSuccessiveRepetitions(listForInsertion);
-        const afterList = result.cleanedList;
-        const repetitionsAfterInsertion = result.repetitionToRemove;
-        let repetitionsRemoved = 0;
-
-        if (repetitionsAfterInsertion.length > 0) {
-            for (const repetition of repetitionsAfterInsertion) {
-                await Rotation.findByIdAndUpdate(repetition.rotationId, { $pull: { activationDates: repetition.activationDate } }, { new: true });
-                repetitionsRemoved++;
-            }
-            console.log('Removing repetitions after insertion', repetitionsAfterInsertion);
-        }
-
-        const changes = await findChangedPeriods(existingActivations, afterList);
+        const afterList = await getOrderedActivationDates(centerId);
+        const { cleanedList, repetitionToRemove } = removeSuccessiveRepetitions(afterList);
+        const changes = findChangedPeriods(beforeList, cleanedList);
 
 
-        if (changes.length === 0) {
-            message = 'Cette activation n\'entraîne aucun changement';
-        } else {
-            message = 'Date d\'activation ajoutée'
-        }
+        const repetitionsRemoved = await removeRepetitionsInDb(repetitionToRemove);
+
+        let message = changes.length === 0
+            ? 'Cette activation n\'entraîne aucun changement'
+            : 'Date d\'activation ajoutée';
 
         if (repetitionsRemoved > 0) {
-            message += ' (' + repetitionsRemoved + ' répétitions successives supprimées)';
+            message += ` (${repetitionsRemoved} répétitions successives supprimées)`;
         }
 
+        if (changes.length > 0) {
+            message = await handleChanges(changes, centerId, message);
+        }
 
-        // return updatedRotation;
-        return { rotation: rotationToUpdate, message: message, changes: changes };
+        return { rotation: updatedRotation, message: message, changes: changes };
     } catch (error) {
-        console.error('Erreur lors de l\'ajout de la date d\'activation:', error);
+        console.error('Erreur lors de la confirmation de la date d\'activation:', error);
         throw error;
     }
 };
 
-const removeActivationDate = async (rotationId, activationDate) => {
+const confirmRemoveActivationDate = async (rotationId, activationDate) => {
     try {
-        // Récupérer la rotation existante
+        console.log('confirmRemoveActivationDate', rotationId, activationDate);
         const rotationToUpdate = await Rotation.findOne({ _id: rotationId, deleted: false });
-
         if (!rotationToUpdate) {
             throw new Error('Rotation not found.');
         }
 
         const centerId = rotationToUpdate.centerId;
+        // Vérifier les dates d'activation successives
 
-        const existingActivations = await getOrderedActivationDates(centerId);
+        const beforeList = await getOrderedActivationDates(centerId);
 
         const updatedRotation = await Rotation.findByIdAndUpdate(
             rotationId,
@@ -242,63 +402,95 @@ const removeActivationDate = async (rotationId, activationDate) => {
             { new: true }
         );
 
-        const listAfterRemoval = await getOrderedActivationDates(centerId);
-
-        let message = '';
-        const result = await removeSuccessiveRepetitions(listAfterRemoval);
-        const afterList = result.cleanedList;
-        const repetitionsAfterRemoval = result.repetitionToRemove;
-        let repetitionsRemoved = 0;
-
-        if (repetitionsAfterRemoval.length > 0) {
-            for (const repetition of repetitionsAfterRemoval) {
-                await Rotation.findByIdAndUpdate(repetition.rotationId, { $pull: { activationDates: repetition.activationDate } }, { new: true });
-                repetitionsRemoved++;
-            }
-        }
-        const changes = await findChangedPeriods(existingActivations, afterList);
+        const afterList = await getOrderedActivationDates(centerId);
+        const { cleanedList, repetitionToRemove } = removeSuccessiveRepetitions(afterList);
+        const changes = findChangedPeriods(beforeList, cleanedList);
 
 
-      
-        message = 'Date d\'activation supprimée'
-        
+        const repetitionsRemoved = await removeRepetitionsInDb(repetitionToRemove);
+
+        let message = changes.length === 0
+            ? 'Cette activation n\'entraîne aucun changement'
+            : 'Date d\'activation supprimée';
 
         if (repetitionsRemoved > 0) {
-            message += ' (' + repetitionsRemoved + ' répétitions successives supprimées)';
+            message += ` (${repetitionsRemoved} répétitions successives supprimées)`;
+        }
+
+        if (changes.length > 0) {
+            message = await handleChanges(changes, centerId, message);
         }
 
         return { rotation: updatedRotation, message: message, changes: changes };
     } catch (error) {
-        console.error('Erreur lors de la suppression de la date d\'activation:', error);
+        console.error('Erreur lors de la confirmation de la date d\'activation:', error);
         throw error;
     }
 };
+
+
+const handleChanges = async (changes, centerId, message) => {
+    try {
+        await Promise.all(
+            changes.map(async (change) => {
+                if (!change.oldRule && !change.newRule) {
+                    throw new Error('Aucune rotation trouvée pour le changement.');
+                    return;
+                }
+
+               
+
+                const oldRotation = await Rotation.findById(change.oldRule).populate('days');
+                const newRotation = await Rotation.findById(change.newRule).populate('days');
+
+                const demandsToConvert = await getDemandsToConvert(change, centerId);
+       
+                const oldRotationDaysCount = oldRotation?.days?.length || 0;
+                const newRotationDaysCount = newRotation?.days?.length || 0;
+
+                if (oldRotationDaysCount !== newRotationDaysCount || !newRotation) {
+                    await systemCancelDemands(demandsToConvert );
+                    message += ' (' + demandsToConvert.length + ' demande(s) annulée(s))';
+                } else {
+                    const result = await convertCenterDemands(demandsToConvert, oldRotation._id, newRotation._id);
+                    if (result.converted > 0) {
+                        message += ' (' + result.converted + ' demande(s) convertie(s))';
+                    }
+                    if (result.cancelled > 0) {
+                        message += ' (' + result.cancelled + ' demande(s) annulée(s) car le shift n\'est plus disponible)';
+                    }
+                }
+
+            })
+        );
+        return message;
+    } catch (error) {
+        console.error('Erreur lors de la gestion du changement:', error);
+        throw error;
+    }
+};
+
+
 
 /**
  * Obtient une liste ordonnée des dates d'activation successives avec les rotations correspondantes
  * @param {string} centerId - ID du centre (optionnel, si non fourni, retourne toutes les rotations)
  * @returns {Array} Liste ordonnée des activations avec rotation et date
  */
-const getOrderedActivationDates = async (centerId = null) => {
+const getOrderedActivationDates = async (centerId) => {
     try {
-        // Récupérer toutes les rotations avec leurs dates d'activation
-        const rotations = await Rotation.find({ centerId, deleted: false })
-            .select('_id activationDates');
+        const activations = await Rotation.aggregate([
+            { $match: { centerId, deleted: false } },
+            { $unwind: '$activationDates' },
+            {
+                $project: {
+                    rotationId: '$_id',
+                    activationDate: '$activationDates'
+                }
+            },
+            { $sort: { activationDate: 1 } }
+        ]);
 
-        // Créer une liste plate de toutes les activations
-        const activations = [];
-
-        for (const rotation of rotations) {
-            for (const activationDate of rotation.activationDates) {
-                activations.push({
-                    rotationId: rotation._id,
-                    activationDate: activationDate,
-                });
-            }
-        }
-
-        // Trier par date d'activation (du plus ancien au plus récent)
-        activations.sort((a, b) => new Date(a.activationDate) - new Date(b.activationDate));
         return activations;
     } catch (error) {
         console.error('Erreur lors de la récupération des dates d\'activation:', error);
@@ -311,20 +503,20 @@ const getOrderedActivationDates = async (centerId = null) => {
 
 const removeSuccessiveRepetitions = (orderedList) => {
     if (orderedList.length < 2) return { cleanedList: [...orderedList], repetitionToRemove: [] };
-  
+
     const repetitionToRemove = [];
     const cleanedList = orderedList.reduce((acc, curr, i) => {
-      const prev = acc[acc.length - 1];
-      if (prev && prev.rotationId.toString() === curr.rotationId.toString()) {
-        repetitionToRemove.push(curr);
-        return acc;
-      }
-      return [...acc, curr];
+        const prev = acc[acc.length - 1];
+        if (prev && prev.rotationId.toString() === curr.rotationId.toString()) {
+            repetitionToRemove.push(curr);
+            return acc;
+        }
+        return [...acc, curr];
     }, []);
-  
+
     return { cleanedList, repetitionToRemove };
-  };
-  
+};
+
 
 function findChangedPeriods(before, after) {
     // Convert to sorted timelines
@@ -359,9 +551,12 @@ function findChangedPeriods(before, after) {
     return changes;
 }
 export default {
-    addActivationDate,
-    removeActivationDate,
+    findChangedPeriods,
+    removeRepetitionsInDb,
+    updateActivationDate,
+    confirmAddActivationDate,
+    confirmRemoveActivationDate,
+    getSortedActivations,
     convertCenterDemands,
-    getOrderedActivationDates,
-    removeSuccessiveRepetitions,
+    calculateRotationIndex,
 };

@@ -44,7 +44,8 @@
           {{message}}
         </p>
 
-
+ 
+        {{#if announcementDate}}
         <div style="display: flex; align-items: center; margin-top: 16px;">
           <!-- <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: rgba(255,255,255,0.8);">schedule</span> -->
           <p
@@ -52,7 +53,8 @@
             Publié le {{announcementDate}}
           </p>
         </div>
-
+        {{/if}}
+        
         {{#if announcementAuthor}}
         <div style="display: flex; align-items: center; margin-top: 8px;">
           <!-- <span class="material-icons md-18" style="vertical-align: middle; margin-right: 8px; color: rgba(255,255,255,0.8);">person</span> -->

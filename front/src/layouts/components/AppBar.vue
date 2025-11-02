@@ -53,18 +53,16 @@
 
         <!-- Menu utilisateur -->
          <div>
-          
+          <v-badge
+            :model-value="!authStore.userData?.phone"
+            location="bottom left"
+            color="red"
+            icon="mdi-exclamation-thick"
+          >
         <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.userData.email" :avatar="authStore.avatar"
           :points="points" :current-team="currentTeam" @navigate-profile="navigateToProfile"
           @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
-          <v-badge
-            v-if="isLoggedIn && !authStore.userData.phone"
-            color="error"
-            content="!"
-            overlap
-            location="top start"
-            style="position:relative; right: 4rem; top: 1rem"
-          ></v-badge>
+          </v-badge>
          </div>
       </template>
     </template>

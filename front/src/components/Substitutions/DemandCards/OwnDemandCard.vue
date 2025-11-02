@@ -51,7 +51,7 @@
                 <v-icon size="x-small" v-else>mdi-account</v-icon>
               </v-avatar>
                 <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
-                  getAccepter?.lastName }} ({{ getTeamName }})</span>
+                  getAccepter?.lastName }} ({{ getTeamAccepterName }})</span>
 
               </div>
               <div v-if="!isPoster && getPoster" class="d-flex align-center">
@@ -194,7 +194,7 @@
             </v-avatar>
      
           <span class="text-h7 font-weight-medium pa-0">
-            {{ getUserById(demand?.accepterId)?.name }} {{ getUserById(demand?.accepterId)?.lastName }} ({{ getTeamName }})
+            {{ getUserById(demand?.accepterId)?.name }} {{ getUserById(demand?.accepterId)?.lastName }} ({{ getTeamAccepterName }})
           </span>
           </div>
 
@@ -318,9 +318,16 @@ const formatDate = (date) => {
 const getTeamName = computed(() => {
   // Prefer the team of the accepter when available, otherwise fall back to the posterShift team
   const accepter = props.demand?.accepterId ? userStore.users.find(user => user._id === props.demand.accepterId) : null;
-  const teamId = accepter?.currentTeam?.teamId || props.demand?.posterShift?.teamId;
+  const teamId = props.demand?.posterShift?.teamId ;
   return teamStore.centerTeams.find(team => team._id === teamId)?.name;
 });
+
+const getTeamAccepterName = computed(() => {
+  const accepter = props.demand?.accepterId ? userStore.users.find(user => user._id === props.demand.accepterId) : null;
+  const teamId =  accepter?.currentTeam?.teamId;
+  return teamStore.centerTeams.find(team => team._id === teamId)?.name;
+});
+
 
 const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
 

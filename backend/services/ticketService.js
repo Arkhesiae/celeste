@@ -258,6 +258,7 @@ export const sendTicketReply = async (ticketId, content, adminUser) => {
     : 'Support';
 
   // Envoyer l'email de réponse
+  ticket.shortId = ticket._id.toString().slice(-6);
   await sendTicketReplyEmail(ticket, content, adminName);
 
   // Ajouter la réponse au ticket
@@ -272,6 +273,7 @@ export const sendTicketReply = async (ticketId, content, adminUser) => {
 
   ticket.replies.push(reply);
   ticket.replySent = true;
+
   await ticket.save();
 
   return await Ticket.findById(ticket._id)

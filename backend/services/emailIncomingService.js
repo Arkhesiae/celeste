@@ -15,8 +15,7 @@ import User from "../models/User.js";
 const findTicketByPartialId = async (partialId) => {
   try {
     // Recherche par regex pour trouver les ObjectIDs qui se terminent par les 6 caractères donnés
-    const regex = new RegExp(`${partialId}$`);
-    const ticket = await Ticket.findOne({ _id: { $regex: regex } });
+    const ticket = await Ticket.findOne({ shortId: partialId });
     return ticket;
   } catch (error) {
     console.error('Erreur lors de la recherche du ticket par ID partiel:', error);

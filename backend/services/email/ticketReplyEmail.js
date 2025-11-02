@@ -5,13 +5,13 @@ import { renderMail } from '../../src/mail/mailRenderer.js';
  * Envoie une réponse de ticket par email
  */
 export const sendTicketReplyEmail = async (ticketData, replyContent, adminName = 'Support') => {
-  const { senderEmail, title, _id } = ticketData;
+  const { senderEmail, title } = ticketData;
   
-  const subject = `Re: Ticket [CELESTE-${_id.toString().slice(-6)}]`;
+  const subject = `Re: Ticket [CELESTE-${ticketData.shortId}]`;
   
   const templateData = {
     replyContent: replyContent,
-    ticketId: _id.toString().slice(-6),
+    ticketId: ticketData.shortId,
     title: title,
   }
 
@@ -19,7 +19,7 @@ export const sendTicketReplyEmail = async (ticketData, replyContent, adminName =
 
   const textContent = `
 Réponse à votre ticket de support
-Ticket ID: [CELESTE-${_id.toString().slice(-6)}]
+Ticket ID: [CELESTE-${ticketData.shortId}]
 
 Bonjour,
 
@@ -43,13 +43,13 @@ Votre réponse sera automatiquement associée à ce ticket.
     text: textContent,
     headers: {
       'Reply-To': 'Celeste <ticket@celeste-app.fr>',
-      'X-Ticket-ID': _id.toString()
+      'X-Ticket-ID': ticketData.shortId
     }
   };
 
   try {
     const result = await emailService.sendEmail(mailOptions);
-    console.log(`📧 Réponse de ticket envoyée à ${senderEmail} pour le ticket ${_id}`);
+    console.log(`📧 Réponse de ticket envoyée à ${senderEmail} pour le ticket ${ticketData.shortId}`);
     return result;
   } catch (error) {
     console.error('❌ Erreur envoi réponse ticket:', error);

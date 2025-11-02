@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const ticketSchema = new mongoose.Schema({
+  shortId: {
+    type: String,
+    default: null
+  },
   title: {
     type: String,
     required: true,

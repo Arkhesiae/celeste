@@ -48,8 +48,13 @@ const handleInboundEmail = async (req, res) => {
     try {
       const message = JSON.parse(req.body);
 
+      console.log("🔍 Message received:", message);
+      console.log("🔍 Message Type:", message.Type);
+
       // STEP 1 — Confirm SNS subscription
       if (message.Type === "SubscriptionConfirmation") {
+        console.log("🔍 Confirming SNS subscription...");
+        console.log("🔍 Subscribe URL:", message.SubscribeURL);
         await confirmSubscription(message.SubscribeURL);
         console.log("✅ SNS subscription confirmed");
         return res.status(200).send("OK");
@@ -57,6 +62,8 @@ const handleInboundEmail = async (req, res) => {
 
       // STEP 2 — Handle inbound email
       if (message.Type === "Notification") {
+        console.log("🔍 Processing notification...");
+        console.log("🔍 Message:", message);
         await processNotification(message);
         return res.status(200).send("Processed");
       }
@@ -73,9 +80,15 @@ const handleInboundEmail = async (req, res) => {
    * @param {string} subscribeURL
    */
   const confirmSubscription = async (subscribeURL) => {
-    const response = await fetch(subscribeURL);
-    if (!response.ok) {
-      throw new Error(`Subscription confirmation failed: ${response.status}`);
+    try {
+      const response = await fetch(subscribeURL);
+      console.log("🔍 Response:", response);
+      if (!response.ok) {
+        throw new Error(`Subscription confirmation failed: ${response.status}`);
+      }
+    } catch (err) {
+      console.error("❌ Error confirming SNS subscription:", err);
+      throw err;
     }
   }
 

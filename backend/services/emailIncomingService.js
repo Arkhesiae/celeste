@@ -1,5 +1,5 @@
 // services/inboundEmailService.js
-// import { simpleParser } from "mailparser";
+import { simpleParser } from "mailparser";
 import Ticket from "../models/Ticket.js";
 import User from "../models/User.js";
 
@@ -48,7 +48,6 @@ const handleInboundEmail = async (req, res) => {
     try {
       const message = JSON.parse(req.body);
 
-      console.log("🔍 Message received:", message);
       console.log("🔍 Message Type:", message.Type);
 
       // STEP 1 — Confirm SNS subscription
@@ -63,7 +62,6 @@ const handleInboundEmail = async (req, res) => {
       // STEP 2 — Handle inbound email
       if (message.Type === "Notification") {
         console.log("🔍 Processing notification...");
-        console.log("🔍 Message:", message);
         await processNotification(message);
         return res.status(200).send("Processed");
       }

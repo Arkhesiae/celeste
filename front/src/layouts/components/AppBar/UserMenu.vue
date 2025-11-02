@@ -88,12 +88,8 @@
     <!-- Floating badge -->
     <template v-slot:append>
       <v-badge
-            v-if="!authStore.userData.phone"
             color="error"
             icon="mdi-exclamation-thick"
-            overlap
-            location="top start"
-            style="position: absolute; top: -4px; left: -4px; z-index: 5;"
           ></v-badge>
     </template>
   </v-list-item>

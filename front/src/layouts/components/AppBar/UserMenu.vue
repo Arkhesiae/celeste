@@ -20,13 +20,13 @@
     </template>
 
       <v-card min-width="300" class="pa-4" color="onBackground" rounded="xl" >
-            <!-- Alerte numéro de tél manquant -->
+            <!-- Alerte numéro de tél manquant 
         <v-card bg-color="#f2dfe2" rounded="xl" @click="$emit('navigate-parameter')" class="hover-effect" color="#ba1a1a" >
                 <v-icon>mdi-alert-octagon</v-icon>
             Numéro de téléphone manquant
         </v-card>
 
-        <v-divider />
+        <v-divider />-->
       <!-- Informations utilisateur -->
       <v-list class="bg-onBackground">
         <v-list-item>
@@ -67,7 +67,7 @@
                 Équipe
               </v-list-item-title>
               <v-list-item-subtitle class="ml-2">
-                {{ currentTeam?.name || 'Non assigné' }} 
+                {{ currentTeam?.name || 'Non assigné' }}
                 {{ currentTeam?.type === 'Renfort' ? '(Renfort)' : '' }}
               </v-list-item-subtitle>
             </div>
@@ -84,7 +84,19 @@
         </v-list-item>
         <v-list-item @click="router.push('/user-params')" class="hover-effect" rounded="lg" prepend-icon="mdi-cog">
           <v-list-item-title>Paramètres</v-list-item-title>
-        </v-list-item>
+
+    <!-- Floating badge -->
+    <template v-slot:append>
+      <v-badge
+            v-if="!authStore.userData.phone"
+            color="error"
+            icon="mdi-exclamation-thick"
+            overlap
+            location="top start"
+            style="position: absolute; top: -4px; left: -4px; z-index: 5;"
+          ></v-badge>
+    </template>
+  </v-list-item>
         <v-list-item @click="$emit('logout')" class="hover-effect"  rounded="lg" prepend-icon="mdi-logout" color="error">
           <v-list-item-title>Se déconnecter</v-list-item-title>
         </v-list-item>

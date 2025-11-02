@@ -22,7 +22,7 @@ function createSESTransporter() {
   console.log("🔍 SES_PASSWORD:", process.env.SES_PASSWORD);
   return nodemailer.createTransport({
     host: process.env.SES_HOST,
-    port: parseInt(process.env.SES_PORT || '587', 10),
+    port: parseInt(process.env.EMAIL_PORT || '587', 10),
     secure: false,
     auth: {
       user: process.env.SES_USERNAME,
@@ -33,20 +33,20 @@ function createSESTransporter() {
 
 function createBulkSESTransporter() {
   console.log("🔍 Creating bulk SES transporter...");
-  console.log("🔍 EMAIL_HOST:", process.env.EMAIL_HOST);
-  console.log("🔍 EMAIL_PORT:", process.env.EMAIL_PORT);
-  console.log("🔍 SMTP_USERNAME:", process.env.SMTP_USERNAME);
-  console.log("🔍 SMTP_PASSWORD:", process.env.SMTP_PASSWORD);
+  console.log("🔍 EMAIL_HOST:", process.env.SES_HOST);
+  console.log("🔍 EMAIL_PORT:", process.env.SES_PORT);
+  console.log("🔍 SMTP_USERNAME:", process.env.SES_USERNAME);
+  console.log("🔍 SMTP_PASSWORD:", process.env.SES_PASSWORD);
   return nodemailer.createTransport({
     pool: true,
     maxConnections: 1,
     maxMessages: 5,
-    host: process.env.EMAIL_HOST,
+    host: process.env.SES_HOST,
     port: parseInt(process.env.EMAIL_PORT, 10),
     secure: false, // TLS, pas SSL
     auth: {
-      user: process.env.SMTP_USERNAME,
-      pass: process.env.SMTP_PASSWORD,
+      user: process.env.SES_USERNAME,
+      pass: process.env.SES_PASSWORD,
     }
   });
 }

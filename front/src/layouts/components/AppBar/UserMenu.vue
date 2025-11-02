@@ -19,19 +19,14 @@
       </v-tooltip>
     </template>
 
-    <v-card min-width="300" class="pa-4" color="onBackground" rounded="xl">
-          <!-- Alerte numéro de tél manquant -->
-      <v-list bg-color="#f2dfe2" rounded="xl">
-        <v-list-item @click="$emit('navigate-parameter')" class="hover-effect">
-          <template v-slot:prepend>
-              <v-icon>mdi-alert-octagon</v-icon>
-          </template>
-          <v-list-item-subtitle>Numéro de téléphone manquant</v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
+      <v-card min-width="300" class="pa-4" color="onBackground" rounded="xl" >
+            <!-- Alerte numéro de tél manquant -->
+        <v-card bg-color="#f2dfe2" rounded="xl" @click="$emit('navigate-parameter')" class="hover-effect" color="#ba1a1a" >
+                <v-icon>mdi-alert-octagon</v-icon>
+            Numéro de téléphone manquant
+        </v-card>
 
-      <v-divider />
-      
+        <v-divider />
       <!-- Informations utilisateur -->
       <v-list class="bg-onBackground">
         <v-list-item>

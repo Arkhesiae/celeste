@@ -50,14 +50,14 @@ const handleInboundEmail = async (req, res) => {
 
       // STEP 1 — Confirm SNS subscription
       if (message.Type === "SubscriptionConfirmation") {
-        await inboundEmailService.confirmSubscription(message.SubscribeURL);
+        await confirmSubscription(message.SubscribeURL);
         console.log("✅ SNS subscription confirmed");
         return res.status(200).send("OK");
       }
 
       // STEP 2 — Handle inbound email
       if (message.Type === "Notification") {
-        await inboundEmailService.processNotification(message);
+        await processNotification(message);
         return res.status(200).send("Processed");
       }
 

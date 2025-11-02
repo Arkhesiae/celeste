@@ -36,13 +36,13 @@ Votre réponse sera automatiquement associée à ce ticket.
   `;
 
   const mailOptions = {
-    from:  'Celeste <notification@celeste-app.fr>',
+    from:  'Celeste <ticket@celeste-app.fr>',
     to: senderEmail,
     subject: subject,
     html: html,
     text: textContent,
     headers: {
-      'Reply-To': process.env.REPLY_TO_EMAIL || process.env.EMAIL_FROM || 'Celeste <notification@celeste-app.fr>',
+      'Reply-To': 'Celeste <ticket@celeste-app.fr>',
       'X-Ticket-ID': _id.toString()
     }
   };

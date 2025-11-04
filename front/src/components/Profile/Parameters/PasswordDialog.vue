@@ -22,7 +22,7 @@
               :rules="[v => !!v || 'Le mot de passe actuel est requis']"
               label="Mot de passe actuel"
               type="password"
-            
+              autocomplete="current-password"
               variant="outlined"
               color="primary"
               rounded="xl"
@@ -38,6 +38,7 @@
               :rules="passwordRules"
               label="Nouveau mot de passe"
               type="password"
+              autocomplete="new-password"
               variant="solo-filled"
               flat
               color="primary"
@@ -52,6 +53,7 @@
               label="Confirmer le nouveau mot de passe"
               type="password"
               variant="solo-filled"
+              autocomplete="new-password"
               flat
               color="primary"
               rounded="xl"

@@ -16,7 +16,7 @@
                     :rules="passwordRules"
                     label="Nouveau mot de passe"
                     type="password"
-                  
+                    autocomplete="new-password"
                     variant="solo-filled"
                     flat
                     color="primary"
@@ -31,7 +31,7 @@
                     :rules="confirmPasswordRules"
                     label="Confirmer le mot de passe"
                     type="password"
-                  
+                    autocomplete="new-password"
                     variant="solo-filled"
                     flat
                     color="primary"

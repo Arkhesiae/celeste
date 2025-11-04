@@ -1,6 +1,8 @@
 <template>
   <v-app class="app-container">
-     <div class="position-absolute" style="z-index: 100000000000000 !important;position:  absolute; top: 50px; left: 0;  background-color: red;">  {{ insets }} </div>
+    <div class="position-absolute"
+      style="z-index: 100000000000000 !important;position:  absolute; top: 50px; left: 0;  background-color: red;"> {{
+        insets }} </div>
     <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
     <router-view v-slot="{ Component, route }">
       <transition :name="route.meta.transition || ''" mode="out-in">
@@ -27,44 +29,51 @@ const { initializeApp } = useAppInitialization();
 onMounted(async () => {
   await getSafeAreaAndApply();
 
-  // Attendre que le router soit prêt pour obtenir la route réelle
   await router.isReady();
-  
-
-  const savedPath = window.location.pathname || router.currentRoute.value.path;
-  
-
-  if (savedPath && savedPath !== '/loading') {
-    sessionStorage.setItem('pendingRoute', savedPath);
-  }
- 
-  if (savedPath !== '/loading') {
-    await router.push({ path: '/loading', replace: true });
-  }
+  const savedPath = router.currentRoute.value || { path: '/' };
 
   try {
-    await initializeApp();
+    // Initialisation de l'application avec callback pour savoir si c'est une init connectée
+    await initializeApp(({ loggedIn }) => {
+      if (loggedIn && savedPath.path !== '/loading') {
+        // Sauvegarder la route en cours
+        sessionStorage.setItem('pendingRoute', JSON.stringify(savedPath));
+        sessionStorage.setItem('loadingRedirected', 'true');
 
-    // Make sure router is ready before pushing back
-    await router.isReady();
+        // Redirection uniquement si utilisateur connecté
+        router.push({ path: '/loading', replace: true });
+      }
+    });
 
-    // Récupérer la route sauvegardée depuis sessionStorage ou utiliser currentPath
-    const routeToRestore = sessionStorage.getItem('pendingRoute') || savedPath;
-    
-    // Nettoyer le sessionStorage
-    if (sessionStorage.getItem('pendingRoute')) {
-      sessionStorage.removeItem('pendingRoute');
-    }
-
-    // Return to previous route if it's not /loading
-    if (routeToRestore && routeToRestore !== '/loading') {
-      await router.push({ path: routeToRestore, replace: true });
-    }
   } catch (error) {
     console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
-    // Optionally route to an error page or show a dialog
+  } finally {
+    let routeToRestore = savedPath;
+
+    try {
+      const stored = sessionStorage.getItem('pendingRoute');
+      if (stored) routeToRestore = JSON.parse(stored);
+    } catch (e) {
+      console.warn('⚠️ Route sauvegardée invalide, fallback sur route actuelle');
+    }
+
+    sessionStorage.removeItem('pendingRoute');
+    sessionStorage.removeItem('loadingRedirected');
+
+    if (routeToRestore.path !== '/loading') {
+      await router.push({
+        path: routeToRestore.path,
+        replace: true,
+        query: routeToRestore.query || {},
+        params: routeToRestore.params || {},
+      });
+    } else {
+      await router.push({ path: '/', replace: true });
+    }
   }
-})
+});
+
+
 
 
 
@@ -74,13 +83,13 @@ const insets = ref();
 async function getSafeAreaAndApply() {
   try {
     await SafeArea.getSafeAreaInsets().then(({ insets }) => {
-      
+
       let top = insets.top;
       let bottom = insets.bottom;
-      
+
       safeAreaTop.value.push(top);
       safeAreaBottom.value.push(bottom);
-    
+
       for (const [key, value] of Object.entries(insets)) {
 
         console.log(key, value, 'key, value');
@@ -115,7 +124,7 @@ async function getSafeAreaAndApply() {
       let bottom = insets.bottom;
       safeAreaTop.value.push(top);
       safeAreaBottom.value.push(bottom);
-    
+
       for (const [key, value] of Object.entries(insets)) {
         console.log(key, value, 'key, value');
         document.documentElement.style.setProperty(
@@ -259,6 +268,4 @@ body,
   left: -20%;
   opacity: 0;
 }
-
-
 </style>

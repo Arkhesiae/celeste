@@ -48,7 +48,7 @@ export const pointService = {
  * @param {number} limit - Nombre maximum de transactions à récupérer
  * @returns {Promise<Array>} Liste des transactions
  */
-  getTransactionHistory: async (userId, limit = 10) => {
+  getTransactionHistory: async (userId, limit = 1000) => {
     const response = await fetch(`${API_URL}/users/${userId}/transactions?limit=${limit}`, {
       method: 'GET',
       headers: getAuthHeaders(),

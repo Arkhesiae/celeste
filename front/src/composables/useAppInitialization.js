@@ -131,19 +131,27 @@ export function useAppInitialization() {
 
 
 
-  const initializeApp = async () => {
+  const initializeApp = async (onStatusChange) => {
     try {
       initializationStore.setLoading(true);
   
-      
+  
       await initializeAuth();
+  
 
+      const loggedIn = authStore.isLoggedIn;
+  
+      if (typeof onStatusChange === 'function') {
+        onStatusChange({ loggedIn });
+      }
+  
       const parallelTasks = [
         initializeTheme(),
         initializeCenters(),
       ];
+  
 
-      if (authStore.isLoggedIn) {
+      if (loggedIn) {
         parallelTasks.push(
           initializeUserList(),
           initializeTeam(),
@@ -153,10 +161,11 @@ export function useAppInitialization() {
           initializeTickets()
         );
       }
-
+  
       await Promise.all(parallelTasks);
+  
     } catch (error) {
-      console.error('Erreur lors de l\'initialisation de l\'application:', error);
+      console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
       authStore.logOut();
       throw error;
     } finally {

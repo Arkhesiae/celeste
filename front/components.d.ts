@@ -74,7 +74,7 @@ declare module 'vue' {
     ScalableDialog: typeof import('./src/components/Dialogs/ScalableDialog.vue')['default']
     Selector: typeof import('./src/components/Unused/Selector.vue')['default']
     SidebarDrawer: typeof import('./src/components/Remplacer/SidebarDrawer.vue')['default']
-    StatusChip: typeof import('./src/components/Calendar/Chips/StatusChip.vue')['default']
+    StatusChip: typeof import('./src/components/Tickets/StatusChip.vue')['default']
     SwitchForm: typeof import('./src/components/Unused/SwitchForm.vue')['default']
     TeamCard: typeof import('./src/components/Teams/TeamCard.vue')['default']
     TeamChangeDialog: typeof import('./src/components/Profile/TeamChangeDialog.vue')['default']

@@ -2,70 +2,69 @@
   <v-list v-if="!loading" bg-color="transparent" class="ticket-list pa-0 ma-0">
     <v-list-item color="surfaceContainer" v-for="ticket in tickets" :key="ticket._id" rounded="lg"
       :class="{ 'unread': !ticket.isRead }" class="mb-2 py-3 ticket-item" @click="$emit('open-ticket', ticket)">
-   
-      <div class="d-flex align-center justify-space-between ga-1">
-      <div class="d-flex align-start  ga-1 flex-column">
-      <div class="title-container d-flex align-center flex ga-1">
-        <div class=" d-flex align-center flex-wrap ga-1">
-          <div class="d-flex align-center ga-1">
-            <v-icon size="16" :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)"></v-icon>
-            <span class="text-truncate title text-h7">{{ ticket.title }}</span>
-            <div class="" v-if="ticket.replySent">
-      
-      <v-chip size="x-small" color="done" prepend-icon="mdi-check" variant="tonal" rounded="lg">
-        Réponse
-      </v-chip>
-      </div>
+
+      <div class="d-flex align-center justify-space-between    ga-1">
+        <div class="d-flex align-start  ga-1 flex-column min-width-0  ">
+          <div class="d-flex align-center  w-100  ga-1">
+            <div class=" d-flex align-center w-100 flex-wrap ga-1">
+              <div class="d-flex align-center w-100 ga-1">
+                <v-icon size="16" :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)"></v-icon>
+                <span class=" title text-h7 ">{{ ticket.title }}</span>
+                <div class="" v-if="ticket.replySent">
+
+                  <v-chip size="x-small" color="done" prepend-icon="mdi-check" variant="tonal" rounded="lg">
+                    Réponse
+                  </v-chip>
+                </div>
+              </div>
+
+
+              <!-- Chips avec responsive design -->
+              <div class="d-flex align-center ga-1 ">
+
+                <div class="pr-16 align-center d-flex  ga-1">
+
+                  <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg" color="primary">
+                    Local
+                  </v-chip>
+
+                  <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
+
+                    {{ ticket.centerId?.name }}
+
+                  </v-chip>
+                </div>
+              </div>
+            </div>
           </div>
-
-
-          <!-- Chips avec responsive design -->
-          <div class="d-flex align-center ga-1">
-       
-            <div class="pr-16 align-center d-flex  ga-1">
-
-              <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg"
-                color="primary">
-                Local
-              </v-chip>
-
-              <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
-
-                {{ ticket.centerId?.name }}
-
-              </v-chip>
+          <div class="subtitle-container mt-1">
+            <div class="d-flex align-center opacity-50 text-email">
+              <v-icon size="small" class="mr-1">mdi-email-outline</v-icon>
+              {{ ticket.senderEmail }}
             </div>
           </div>
         </div>
-      </div>
-        <div class="subtitle-container mt-1">
-          <div class="d-flex align-center opacity-50 text-email">
-            <v-icon size="small" class="mr-1">mdi-email-outline</v-icon>
-            {{ticket.senderEmail}}
-          </div>
-        </div>
-      </div>
 
 
-          <div class="d-flex align-end justify-space-between flex-0-0 h-100 flex-column ga-1" :class="smAndDown ? 'mr-2' : ''">
-            <StatusChip :ticket-id="ticket._id" :status="ticket.status" v-if="!smAndDown"
-              :prepend-icon="true" />
+        <div class="d-flex align-end justify-space-between flex-0-0 h-100 flex-column ga-1"
+          :class="smAndDown ? 'mr-2' : ''">
+          <StatusChip :ticket-id="ticket._id" :status="ticket.status" v-if="!smAndDown" :prepend-icon="true" />
 
-            <MobileStatusChip @click.stop="openSelector(ticket._id)" :status="ticket.status" :ticket-id="ticket._id" v-else/>
-          
+          <MobileStatusChip @click.stop="openSelector(ticket._id)" :status="ticket.status" :ticket-id="ticket._id"
+            v-else />
 
-            <div class="d-flex align-center ga-0">
-              <v-chip size="x-small" variant="tonal" class="opacity-50" color="onSurface"
+
+          <div class="d-flex align-center ga-0">
+            <v-chip size="x-small" variant="tonal" class="opacity-50" color="onSurface"
               :prepend-icon="xs ? undefined : 'mdi-clock-outline'" rounded="lg">
               {{ xs ? formatDateExtraShort(ticket.createdAt) : formatDateShort(ticket.createdAt) }}
             </v-chip>
-              <!-- <v-icon size="small" class="mx-1">mdi-identifier</v-icon>
+            <!-- <v-icon size="small" class="mx-1">mdi-identifier</v-icon>
               <span class="text-subtitle-2 id">{{ ticket._id.slice(-6) }}</span> -->
-            </div>
-
           </div>
-  
-    </div>
+        </div>
+
+      </div>
     </v-list-item>
     <v-list-item v-if="tickets.length === 0" class="text-center py-4">
       <v-list-item-title class="text-grey">
@@ -75,9 +74,10 @@
   </v-list>
   <v-progress-circular v-else indeterminate color="primary" class="ma-4"></v-progress-circular>
   <!-- Selector -->
-   <v-dialog v-model="showSelector" width="300" >
-    <EntitySelector title="Mettre à jour le statut" v-model="selectedTicketStatus" :items="statusOptions" itemSubtitle="subtitle" itemKey="value" itemTitle="label" @update:modelValue="updateStatus" />
-   </v-dialog>
+  <v-dialog v-model="showSelector" width="300">
+    <EntitySelector title="Mettre à jour le statut" v-model="selectedTicketStatus" :items="statusOptions"
+      itemSubtitle="subtitle" itemKey="value" itemTitle="label" @update:modelValue="updateStatus" />
+  </v-dialog>
 
   <!-- Progress Circular -->
 
@@ -127,7 +127,7 @@ const statusOptions = [
 const updateStatus = async (newStatus) => {
   try {
     await ticketStore.updateTicketStatus(selectedTicket.value, newStatus.value);
- 
+
     showSelector.value = false;
   } catch (error) {
     console.error('Erreur lors de la mise à jour du statut : ' + error);
@@ -237,6 +237,13 @@ const formatDateExtraShort = (date) => {
   border-color: rgba(var(--v-theme-remplacement), 0.1);
 }
 
+.title{
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }
@@ -256,7 +263,7 @@ const formatDateExtraShort = (date) => {
     line-height: 1.2 !important;
   }
 
-  
+
 
   .id {
     font-size: 0.75rem !important;
@@ -264,13 +271,19 @@ const formatDateExtraShort = (date) => {
 
 }
 
+.min-width-0 {
+  min-width: 0 !important;
+}
+
 .text-email {
-    font-size: 0.75rem !important;
-  }
+  font-size: 0.75rem !important;
+}
+
 .id {
   opacity: 0.5;
   font-size: 0.75rem !important;
 }
+
 /* Ensure chips wrap properly on small screens */
 .v-list-item-title .d-flex.flex-wrap {
   flex-wrap: wrap;

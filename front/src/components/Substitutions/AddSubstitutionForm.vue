@@ -197,7 +197,6 @@
                     <div v-if="demand.points !== defaultPoints">
                       <span class="text-caption opacity-50 ">Points par défaut : {{ defaultPoints }} </span>
                     </div>
-                  <span class="text-caption opacity-50 ">Points par défaut : {{ defaultPoints }} </span>
                   </v-slide-y-transition>
                 </div>
               </div>

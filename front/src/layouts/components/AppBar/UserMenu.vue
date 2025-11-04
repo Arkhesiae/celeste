@@ -86,7 +86,7 @@
           <v-list-item-title>Paramètres</v-list-item-title>
 
     <!-- Floating badge -->
-    <template v-slot:append>
+    <template v-slot:append v-if="!hasPhone">
       <v-badge
             color="error"
             icon="mdi-exclamation-thick"
@@ -150,6 +150,10 @@ defineEmits([
 ]);
 
 const points = computed(() => pointStore.points);
+
+import { useAuthStore } from "@/stores/authStore.js";
+const authStore = useAuthStore();
+const hasPhone = computed(() => authStore.userData.phone);
 
 
 </script>

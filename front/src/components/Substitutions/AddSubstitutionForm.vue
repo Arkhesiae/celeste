@@ -195,9 +195,9 @@
                 <div class=" " style="height: 20px;">
                   <v-slide-y-transition>
                     <div v-if="demand.points !== defaultPoints">
-                      <span class="text-caption opacity-50 ">Points par défaut : {{defaultPoints }} </span>
+                      <span class="text-caption opacity-50 ">Points par défaut : {{ defaultPoints }} </span>
                     </div>
-
+                  <span class="text-caption opacity-50 ">Points par défaut : {{ defaultPoints }} </span>
                   </v-slide-y-transition>
                 </div>
               </div>
@@ -287,7 +287,20 @@ const acceptedSwitchesWithPoints = computed(() => {
   }));
 });
 
-const defaultPoints = ref(10);
+
+const getCenterById = (centerId) => {
+  return centerStore.centers.find(center => center._id === centerId) || null;
+};
+
+const defaultPoints = computed(() => {
+    if (getCenterById(authStore.userData.centerId).name === 'LFBB') {
+      return 15
+    }
+    else {
+      return 30
+    }
+});
+
 
 // États du composant
 const demand = ref({

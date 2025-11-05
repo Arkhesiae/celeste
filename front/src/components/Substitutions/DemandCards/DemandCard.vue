@@ -13,8 +13,8 @@
         </v-chip>
       </v-card-title>
       <template #append>
-        <div class="d-flex align-center ga-2 cursor-pointer" @click="showUserDialog = true" >
-          <div class="d-flex align-center ga-2" v-if="!smAndDown && !small">
+        <div class="d-flex align-center ga-2">
+          <div class="d-flex align-center ga-2 cursor-pointer" v-if="!smAndDown && !small" @click="showUserDialog = true">
             <v-avatar size="24" variant="tonal">
               <v-img v-if="getUserById(demand?.posterId)?.avatar"
                 :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
@@ -82,10 +82,9 @@
 
    
       <div class="d-flex align-center bg-surfaceContainer rounded-xl justify-space-between pr-4 cursor-pointer" @click="isExpanded = !isExpanded">
-        <div class=" pa-4 pl-8 pr-0 flex-shrink-0 position-relative">
+        <div class=" pa-4 pl-8 pr-0 flex-shrink-0 position-relative" >
           <div class="d-flex align-center flex-shrink-0   ga-3">
             <div class="pb-0 mb-0 flex-shrink-0">
-
               <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;">{{ getShiftName }}</span>
             </div>
             <div class="d-flex align-start flex-column justify-space-between">
@@ -113,15 +112,14 @@
 
 
         <div class="d-flex justify-end flex-shrink-0 flex-column ga-2">
-
-          <div v-if="smAndDown || small" class="d-flex align-center ga-2 justify-end">
-            <v-avatar size="24" variant="tonal" class="cursor-pointer" @click.stop="showUserDialog = true">
+          <div v-if="smAndDown || small" class="d-flex align-center ga-2 justify-end cursor-pointer" @click.stop="showUserDialog = true">
+            <v-avatar size="24" variant="tonal">
               <v-img v-if="getUserById(demand?.posterId)?.avatar"
                 :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
               <v-icon size="x-small" v-else>mdi-account</v-icon>
             </v-avatar>
             <span class="text-medium-emphasis font-weight-bold text-caption me-2">
-              {{ getUserById(demand?.posterId)?.name }} {{ !xs ? getUserById(demand?.posterId)?.lastName : abreviatedLastname }}
+              {{ getUserById(demand?.posterId)?.name }} {{ !xs ? getUserById(demand?.posterId)?.lastName : abreviatedLastname }} ({{ getTeamName }})
             </span>
 
 
@@ -307,7 +305,7 @@
             </v-avatar>
      
           <span class="text-h7 font-weight-medium pa-0">
-            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }} ({{ getTeamName }})
           </span>
           </div>
 

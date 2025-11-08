@@ -32,11 +32,11 @@ export async function createDemand(data) {
     // Validation de l'utilisateur
     const user = await User.findById(posterId).populate('teams');
     if (!user) {
-        throw new Error({status: 404, message: 'Utilisateur non trouvé'});
+        throw new Error({ status: 404, message: 'Utilisateur non trouvé' });
     }
 
     if (user.points - points < MIN_POINTS_TO_POST_REQUEST) {
-        throw new Error({status: 400, message: 'Vous ne pouvez pas poster cette demande, vous n\'avez pas assez de points'});
+        throw new Error({ status: 400, message: 'Vous ne pouvez pas poster cette demande, vous n\'avez pas assez de points' });
     }
 
     // Vérification du shift de l'utilisateur
@@ -45,13 +45,13 @@ export async function createDemand(data) {
     const userShift = userShifts[0];
 
     if (!userShift || !userShift.shift) {
-        throw new Error({status: 400, message: "L'utilisateur n'a pas de shift défini pour cette date"});
+        throw new Error({ status: 400, message: "L'utilisateur n'a pas de shift défini pour cette date" });
     }
 
     // Validation de l'équipe
     const team = getTeamAtGivenDate(user.teams, givenDate);
     if (!team) {
-        throw new Error({status: 400, message: "L'utilisateur n'appartient à aucune équipe à la date spécifiée"});
+        throw new Error({ status: 400, message: "L'utilisateur n'appartient à aucune équipe à la date spécifiée" });
     }
 
     // Vérification des demandes existantes
@@ -62,7 +62,7 @@ export async function createDemand(data) {
         status: { $in: ['open', 'pending', 'accepted'] }
     });
     if (existingDemands.length > 0) {
-        throw new Error({status: 400, message: 'Une demande existe déjà pour ce jour'});
+        throw new Error({ status: 400, message: 'Une demande existe déjà pour ce jour' });
     }
 
     let type;
@@ -103,36 +103,36 @@ export async function createDemand(data) {
 
 export async function getOpenDemands(userId, startDate, endDate) {
     if (!userId) {
-        throw new Error({status: 400, message: 'L\'identifiant de l\'utilisateur est requis'});
+        throw new Error({ status: 400, message: 'L\'identifiant de l\'utilisateur est requis' });
     }
 
     const user = await User.findById(userId).select('centerId');
     if (!user) {
-        throw new Error({status: 404, message: 'Utilisateur non trouvé'});
+        throw new Error({ status: 404, message: 'Utilisateur non trouvé' });
     }
 
     if (!startDate || !endDate) {
-        throw new Error({status: 400, message: 'Les dates sont requises'});
+        throw new Error({ status: 400, message: 'Les dates sont requises' });
     }
 
     let parsedStartDate, parsedEndDate;
 
-     
-            parsedStartDate = new Date(startDate);
-            parsedEndDate = new Date(endDate);
-            if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
-                throw new Error({status: 400, message: 'Format de date invalide'});
-            }
-            if (parsedStartDate> parsedEndDate) {
-                throw new Error({status: 400, message: 'Ordre des dates invalide'});
-            }
+
+    parsedStartDate = new Date(startDate);
+    parsedEndDate = new Date(endDate);
+    if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
+        throw new Error({ status: 400, message: 'Format de date invalide' });
+    }
+    if (parsedStartDate > parsedEndDate) {
+        throw new Error({ status: 400, message: 'Ordre des dates invalide' });
+    }
 
 
 
     const dateFilter = parsedStartDate && parsedEndDate ? {
-        'posterShift.date': { 
-            $gte: parsedStartDate, 
-            $lte: parsedEndDate 
+        'posterShift.date': {
+            $gte: parsedStartDate,
+            $lte: parsedEndDate
         }
     } : {};
 
@@ -157,7 +157,7 @@ export async function getOpenDemands(userId, startDate, endDate) {
         }).populate('posterShift.shift')
     ]);
 
- 
+
 
     await Substitution.updateMany(
         { _id: { $in: demands.map(d => d._id) }, seenBy: { $ne: userId } },
@@ -194,12 +194,12 @@ const verifyCompatibilities = async (demands, userId) => {
 
 export async function getCompatibleSwitches(date, userId) {
     if (!date) {
-        throw new Error({status: 400, message: 'Date manquante'});
+        throw new Error({ status: 400, message: 'Date manquante' });
     }
     const demandDate = new Date(date);
     const user = await User.findById(userId);
     if (!user) {
-        throw new Error({status: 404, message: 'Utilisateur non trouvé'});
+        throw new Error({ status: 404, message: 'Utilisateur non trouvé' });
     }
 
     console.log(user.centerId)
@@ -207,33 +207,33 @@ export async function getCompatibleSwitches(date, userId) {
 
     const activeRotation = await findLatestRotation(user.centerId, date);
     if (!activeRotation) {
-        throw new Error({status: 404, message: 'Tour de service actif non trouvé'});
+        throw new Error({ status: 404, message: 'Tour de service actif non trouvé' });
     }
 
     const populateRotation = await Rotation.findById(activeRotation._id).populate('days');
 
     const shiftMap = await generateShiftsMap([demandDate], userId);
- 
-   
+
+
     const sortedShifts = shiftMapToArray(shiftMap);
- 
+
     const shifts = []
     for (const day of populateRotation.days) {
         if (day.type === 'rest') continue;
         const dayLimit = []
         let compatible = false;
         const computeRest = checkMinimumRestTime(day, demandDate, sortedShifts);
-        const {restOk, invalidWindow} = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
+        const { restOk, invalidWindow } = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
         const has35hRest = restOk;
         const isWithin48h = checkWeeklyWorkHours(day, demandDate, sortedShifts);
         if (!computeRest.ok) {
             dayLimit.push('insufficientRest');
         }
-    
+
         if (!has35hRest) {
             dayLimit.push('35limit');
         }
-    
+
         if (!isWithin48h) {
             dayLimit.push('48hLimit');
         }
@@ -247,8 +247,8 @@ export async function getCompatibleSwitches(date, userId) {
             compatible: compatible,
         });
     }
-    
-   
+
+
     return shifts;
 };
 
@@ -261,39 +261,39 @@ export async function getCompatibleSwitches(date, userId) {
 
 export async function getCompatibleSwitchesInRotation(date, userId, rotationId) {
     if (!date) {
-        throw new Error({status: 400, message: 'Date manquante'});
+        throw new Error({ status: 400, message: 'Date manquante' });
     }
     const demandDate = new Date(date);
     const user = await User.findById(userId);
     if (!user) {
-        throw new Error({status: 404, message: 'Utilisateur non trouvé'});
+        throw new Error({ status: 404, message: 'Utilisateur non trouvé' });
     }
 
 
     const populateRotation = await Rotation.findById(rotationId).populate('days');
 
     const shiftMap = await generateShiftsMap([demandDate], userId);
- 
-   
+
+
     const sortedShifts = shiftMapToArray(shiftMap);
- 
+
     const shifts = []
     for (const day of populateRotation.days) {
         if (day.type === 'rest') continue;
         const dayLimit = []
         let compatible = false;
         const computeRest = checkMinimumRestTime(day, demandDate, sortedShifts);
-        const {restOk, invalidWindow} = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
+        const { restOk, invalidWindow } = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
         const has35hRest = restOk;
         const isWithin48h = checkWeeklyWorkHours(day, demandDate, sortedShifts);
         if (!computeRest.ok) {
             dayLimit.push('insufficientRest');
         }
-    
+
         if (!has35hRest) {
             dayLimit.push('35limit');
         }
-    
+
         if (!isWithin48h) {
             dayLimit.push('48hLimit');
         }
@@ -307,8 +307,8 @@ export async function getCompatibleSwitchesInRotation(date, userId, rotationId) 
             compatible: compatible,
         });
     }
-    
-   
+
+
     return shifts;
 };
 
@@ -330,30 +330,30 @@ export async function getCompatibleSwitchesInRotation(date, userId, rotationId) 
  */
 export async function categorizeDemands(demands, userId) {
     try {
-      // Filtrer uniquement les demandes ouvertes
-      const openDemands = demands.filter(d => d.status === 'open');
-  
-      // Pré-calculer la map des shifts uniquement si nécessaire
-      const shiftsMap = openDemands.length > 0
-        ? await generateMapFromDemands(openDemands, userId)
-        : null;
-  
-      // Catégoriser toutes les demandes en parallèle
-      const categorized = await Promise.all(
-        demands.map(async (demand) => {
-          if (demand.status === 'open') {
-            return categorize(demand, shiftsMap);
-          }
-          return demand;
-        })
-      );
-  
-      return categorized;
+        // Filtrer uniquement les demandes ouvertes
+        const openDemands = demands.filter(d => d.status === 'open');
+
+        // Pré-calculer la map des shifts uniquement si nécessaire
+        const shiftsMap = openDemands.length > 0
+            ? await generateMapFromDemands(openDemands, userId)
+            : null;
+
+        // Catégoriser toutes les demandes en parallèle
+        const categorized = await Promise.all(
+            demands.map(async (demand) => {
+                if (demand.status === 'open') {
+                    return categorize(demand, shiftsMap);
+                }
+                return demand;
+            })
+        );
+
+        return categorized;
     } catch (error) {
-      console.error('Erreur dans categorizeDemands:', error);
-      throw error;
+        console.error('Erreur dans categorizeDemands:', error);
+        throw error;
     }
-  }
+}
 
 /**
  * Recatégorise les substitutions pour un utilisateur
@@ -363,14 +363,14 @@ export async function categorizeDemands(demands, userId) {
  */
 export async function recategorizeSubstitutions(substitutionIds, userId) {
     if (!userId || !substitutionIds) {
-        throw new Error({status: 400, message: 'Paramètres manquants'});
+        throw new Error({ status: 400, message: 'Paramètres manquants' });
     }
 
     // Récupérer les substitutions avec leurs shifts populés
     const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate('posterShift.shift');
 
     if (substitutions.length === 0) {
-        throw new Error({status: 404, message: 'Aucune substitution trouvée'});
+        throw new Error({ status: 404, message: 'Aucune substitution trouvée' });
     }
 
     // Recatégoriser les substitutions
@@ -386,24 +386,24 @@ export async function recategorizeSubstitutions(substitutionIds, userId) {
  */
 export async function cancelDemand(demandId) {
     if (!demandId) {
-        throw new Error({status: 400, message: 'ID de la demande requis'});
+        throw new Error({ status: 400, message: 'ID de la demande requis' });
     }
 
     // Mise à jour du statut de la demande
     const demand = await Substitution.findByIdAndUpdate(
-        demandId, 
-        { status: 'canceled' }, 
+        demandId,
+        { status: 'canceled' },
         { new: true }
     );
 
     if (!demand) {
-        throw new Error({status: 404, message: 'Demande non trouvée'});
+        throw new Error({ status: 404, message: 'Demande non trouvée' });
     }
 
     // Annuler toutes les transactions associées à la demande
-   
-        const transactions = await Transaction.find({ request: demandId, status: 'pending' });
-        if (transactions.length > 0) {
+
+    const transactions = await Transaction.find({ request: demandId, status: 'pending' });
+    if (transactions.length > 0) {
         await Promise.all(transactions.map(async (transaction) => {
             try {
                 await cancelDelayedTransaction(transaction._id);
@@ -416,7 +416,7 @@ export async function cancelDemand(demandId) {
 
     const shift = await computeShiftOfUserWithSubstitutions(new Date(demand.posterShift.date), demand.posterId);
 
-    return {demand: demand, shift: shift[0]};
+    return { demand: demand, shift: shift[0] };
 }
 
 /**
@@ -427,37 +427,37 @@ export async function cancelDemand(demandId) {
  */
 export async function unacceptDemand(requestId, userId) {
     if (!requestId || !userId) {
-        throw new Error({status: 400, message: 'ID de la demande et ID utilisateur requis'});
+        throw new Error({ status: 400, message: 'ID de la demande et ID utilisateur requis' });
     }
 
     // Récupération de la demande
     const request = await Substitution.findById(requestId);
     if (!request) {
-        throw new Error({status: 404, message: 'Demande non trouvée'});
+        throw new Error({ status: 404, message: 'Demande non trouvée' });
     }
 
     // Vérification que la demande est acceptée
     if (request.status !== 'accepted') {
-        throw new Error({status: 400, message: 'Cette demande n\'est pas acceptée'});
+        throw new Error({ status: 400, message: 'Cette demande n\'est pas acceptée' });
     }
 
     // Vérification que l'utilisateur est bien celui qui a accepté
     if (request.accepterId.toString() !== userId) {
-        throw new Error({status: 403, message: 'Vous n\'êtes pas autorisé à annuler cette acceptation'});
+        throw new Error({ status: 403, message: 'Vous n\'êtes pas autorisé à annuler cette acceptation' });
     }
 
     // Annuler toutes les transactions associées à la demande
-   
+
     const transactions = await Transaction.find({ request: requestId, status: 'pending' });
     if (transactions.length > 0) {
-    await Promise.all(transactions.map(async (transaction) => {
+        await Promise.all(transactions.map(async (transaction) => {
             try {
                 await cancelDelayedTransaction(transaction._id);
             } catch (error) {
                 console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
                 // On continue même si une transaction échoue à être annulée
-                }
-            }));
+            }
+        }));
     }
 
 
@@ -477,5 +477,5 @@ export async function unacceptDemand(requestId, userId) {
     const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);
     const categorizedRequest = await categorizeDemands([updatedRequest], userId);
 
-    return {categorizedRequest: categorizedRequest[0], shift: shift[0]};
+    return { categorizedRequest: categorizedRequest[0], shift: shift[0] };
 }

@@ -1,35 +1,10 @@
 import Rotation from '../../models/Rotation.js';
-import Shift from '../../models/Shift.js';
 import Substitution from '../../models/Substitution.js';
-import User from '../../models/User.js';
-import Team from '../../models/Team.js';
-import { computeShiftOfUserWithoutSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
-import { getTeamAtGivenDate } from '../../utils/getTeamAtGivenDate.js';
-import { getCompatibleSwitchesInRotation } from '../substitution.service.js';
-/**
- * Calcule l'index dans la rotation basé sur la date et le cycleStartDate
- * @param {Date} date - Date du shift
- * @param {Object} team - Objet team avec cycleStartDate
- * @param {number} totalDays - Nombre total de jours dans la rotation
- * @returns {number} Index dans la rotation
- */
-const calculateRotationIndex = (date, team, totalDays) => {
-    if (!team.cycleStartDate) {
-        throw new Error('cycleStartDate non défini pour l\'équipe');
-    }
+import Transaction from '../../models/Transaction.js';
+import { cancelDelayedTransaction } from '../../services/transactionService.js';
 
-    const diffInMilliseconds = date - new Date(team.cycleStartDate);
-    const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
 
-    let dayIndex;
-    if (diffInDays >= 0) {
-        dayIndex = diffInDays % totalDays;
-    } else {
-        dayIndex = (totalDays - (Math.abs(diffInDays) % totalDays)) % totalDays;
-    }
 
-    return dayIndex;
-};
 
 /**
  * Convertit les demandes de substitution pour une nouvelle rotation
@@ -38,11 +13,8 @@ const calculateRotationIndex = (date, team, totalDays) => {
  * @param {string} newRotationId - ID de la nouvelle rotation
  * @returns {Promise<{ converted: number, cancelled: number }>}
  */
-const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotationId) => {
+const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation) => {
     try {
-        // Charger les rotations avec leurs jours populés
-        const oldRotation = await Rotation.findById(oldRotationId).populate('days');
-        const newRotation = await Rotation.findById(newRotationId).populate('days');
 
         if (!oldRotation || !newRotation) {
             throw new Error('Rotation introuvable');
@@ -73,6 +45,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                     const newShift = newRotation.days[index];
 
                     if (newShift.type === 'rest') {
+                        console.log(`✅ [${populatedDemand._id}] Demande annulée`);
                         await cancelSingleDemand(populatedDemand._id);
                         cancelledDemands++;
                         continue;
@@ -82,6 +55,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                     }
                 }
                 else {
+                    console.log(`✅ [${populatedDemand._id}] Demande annulée`);
                     await cancelSingleDemand(populatedDemand._id);
                     cancelledDemands++;
                     continue;
@@ -98,9 +72,27 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                     const newShift = newRotation.days[index];
 
                     if (newShift.type === 'rest') {
+                        console.log(`✅ [${populatedDemand._id}] Demande réouverte`);
                         populatedDemand.accepterShift = null;
                         populatedDemand.accepterId = null;
                         populatedDemand.status = 'open';
+
+                        const transactions = await Transaction.find({
+                            request: populatedDemand._id,
+                            status: 'pending',
+                        });
+                
+                        if (transactions.length > 0) {
+                            await Promise.all(
+                                transactions.map(async (transaction) => {
+                                    try {
+                                        await cancelDelayedTransaction(transaction._id);
+                                    } catch (error) {
+                                       console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
+                                    }
+                                })
+                            );
+                        }
                         demandReopened = true;
                  
                     } else {
@@ -110,6 +102,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
 
                 }
                 else {
+                    console.log(`✅ [${populatedDemand._id}] Demande annulée`);
                     await cancelSingleDemand(populatedDemand._id);
                     cancelledDemands++;
                     continue;
@@ -141,6 +134,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                 if (validSwitches.length === 0) {
                     if (populatedDemand.type === 'switch') {
                         await cancelSingleDemand(populatedDemand._id);
+                        console.log(`✅ [${populatedDemand._id}] Demande annulée`);
                         cancelledDemands++;
                         continue;
                     }
@@ -155,7 +149,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                 }
             }
 
-            // Si on arrive ici sans annulation → demande convertie avec succès
+
             if (demandModified || demandReopened) {
                 await populatedDemand.save();
                 convertedDemands++;
@@ -185,14 +179,6 @@ const getValidRotation = async (rotationId) => {
     return rotation;
 };
 
-/**
- * Retourne les activations triées d’un centre
- * @param {string} centerId
- * @returns {Array<Object>}
- */
-const getSortedActivations = async (centerId) => {
-    return await getOrderedActivationDates(centerId);
-};
 
 /**
  * Nettoie les répétitions et applique les suppressions en base
@@ -305,7 +291,7 @@ const updateActivationDate = async (action, rotationId, activationDate) => {
 const getDemandsToConvert = async (change, centerId) => {
     const dateFilter = {};
     if (change.from) dateFilter.$gte = new Date(change.from);
-    if (change.to) dateFilter.$lte = new Date(change.to);
+    if (change.to) dateFilter.$lt = new Date(change.to);
 
     const demands = await Substitution.find({
         centerId: centerId,
@@ -336,19 +322,53 @@ const systemCancelDemands = async (demands) => {
 };
 
 
+/**
+ * Annule une demande de substitution et toutes ses transactions en attente.
+ * @param {Object|string} demand - Objet Substitution ou son ID.
+ * @returns {Promise<void>}
+ */
 const cancelSingleDemand = async (demand) => {
     try {
-        const result = await Substitution.findByIdAndUpdate(demand._id, {
+        const demandId = demand._id;
+
+        // Annule la demande
+        const result = await Substitution.findByIdAndUpdate(demandId, {
             $set: {
                 status: 'system-cancelled',
-                updatedAt: new Date()
-            }
+                updatedAt: new Date(),
+            },
         });
+
+        if (!result) {
+            console.warn(`⚠️ Demande ${demandId} introuvable, aucune mise à jour effectuée`);
+            return;
+        }
+
+        // Récupère les transactions en attente
+        const transactions = await Transaction.find({
+            request: demandId,
+            status: 'pending',
+        });
+
+        if (transactions.length > 0) {
+            await Promise.all(
+                transactions.map(async (transaction) => {
+                    try {
+                        await cancelDelayedTransaction(transaction._id);
+                    } catch (error) {
+                        console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
+                    }
+                })
+            );
+        }
+
+        console.log(`✅ Demande ${demandId} annulée`);
     } catch (error) {
-        console.error('Erreur lors de l\'annulation de la demande:', error);
+        console.error("❌ Erreur lors de l'annulation de la demande:", error);
         throw error;
     }
 };
+
 
 
 const confirmAddActivationDate = async (rotationId, activationDate) => {
@@ -463,14 +483,14 @@ const handleChanges = async (changes, centerId, message) => {
 
                 if (oldRotationDaysCount !== newRotationDaysCount || !newRotation) {
                     await systemCancelDemands(demandsToConvert );
-                    message += ' (' + demandsToConvert.length + ' demande(s) annulée(s))';
+                    message += ' - ' + demandsToConvert.length + ' demandes annulées';
                 } else {
-                    const result = await convertCenterDemands(demandsToConvert, oldRotation._id, newRotation._id);
+                    const result = await convertCenterDemands(demandsToConvert, oldRotation, newRotation);
                     if (result.converted > 0) {
-                        message += ' (' + result.converted + ' demande(s) convertie(s))';
+                        message += ' - ' + result.converted + ' demandes converties';
                     }
                     if (result.cancelled > 0) {
-                        message += ' (' + result.cancelled + ' demande(s) annulée(s) car le shift n\'est plus disponible)';
+                        message += ' - ' + result.cancelled + ' demandes annulées';
                     }
                 }
 
@@ -569,7 +589,5 @@ export default {
     updateActivationDate,
     confirmAddActivationDate,
     confirmRemoveActivationDate,
-    getSortedActivations,
     convertCenterDemands,
-    calculateRotationIndex,
 };

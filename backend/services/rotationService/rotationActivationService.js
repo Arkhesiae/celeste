@@ -53,18 +53,20 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
 
         for (const demand of demandsToConvert) {
             const populatedDemand = await Substitution.findById(demand._id)
-                .populate('posterId')
-                .populate('accepterId')
-                .populate('acceptedSwitches.shift');
+                .populate('acceptedSwitches.shift')
+                .populate('posterShift.shift')
+                .populate('accepterShift.shift')
 
             if (!populatedDemand) continue;
 
-            let demandModified = false; // Suivi de modification utile pour conversion réussie
+            let demandModified = false; 
             let demandReopened = false;
+
+
             /** === POSTER SHIFT === */
             if (populatedDemand.posterShift?.shift) {
                 const index = oldRotation.days.findIndex(
-                    (day) => day._id.toString() === populatedDemand.posterShift.shift.toString()
+                    (day) => day._id.toString() === populatedDemand.posterShift.shift._id.toString()
                 );
 
                 if (index !== -1) {
@@ -79,12 +81,17 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                         demandModified = true;
                     }
                 }
+                else {
+                    await cancelSingleDemand(populatedDemand._id);
+                    cancelledDemands++;
+                    continue;
+                }
             }
 
             /** === ACCEPTER SHIFT === */
             if (['switch', 'hybrid'].includes(populatedDemand.type) && populatedDemand.accepterShift?.shift) {
                 const index = oldRotation.days.findIndex(
-                    (day) => day._id.toString() === populatedDemand.accepterShift.shift.toString()
+                    (day) => day._id.toString() === populatedDemand.accepterShift.shift._id.toString()
                 );
 
                 if (index !== -1) {
@@ -95,12 +102,17 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                         populatedDemand.accepterId = null;
                         populatedDemand.status = 'open';
                         demandReopened = true;
-                        await populatedDemand.save();
+                 
                     } else {
                         populatedDemand.accepterShift.shift = newShift._id;
                         demandModified = true;
                     }
 
+                }
+                else {
+                    await cancelSingleDemand(populatedDemand._id);
+                    cancelledDemands++;
+                    continue;
                 }
             }
 
@@ -114,6 +126,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                         (day) => day._id.toString() === switchItem.shift._id.toString()
                     );
 
+
                     if (index !== -1) {
                         const newShift = newRotation.days[index];
                         if (newShift.type !== 'rest') {
@@ -125,25 +138,25 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                     }
                 }
 
-                // Aucun switch valide → comportement selon le type
                 if (validSwitches.length === 0) {
                     if (populatedDemand.type === 'switch') {
-                        cancelledDemands++;
                         await cancelSingleDemand(populatedDemand._id);
+                        cancelledDemands++;
                         continue;
-                    } else if (populatedDemand.type === 'hybrid') {
-                        populatedDemand.type = 'substitution'; 
+                    }
+                    if (populatedDemand.type === 'hybrid') {
+                        populatedDemand.type = 'substitution';
+                        populatedDemand.acceptedSwitches = [];
                         demandModified = true;
                     }
                 } else {
                     populatedDemand.acceptedSwitches = validSwitches;
-                    console.log(validSwitches)
                     demandModified = true;
                 }
             }
 
             // Si on arrive ici sans annulation → demande convertie avec succès
-            if (demandModified) {
+            if (demandModified || demandReopened) {
                 await populatedDemand.save();
                 convertedDemands++;
                 console.log(`✅ [${demand._id}] Demande convertie avec succès`);

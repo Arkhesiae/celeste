@@ -155,6 +155,8 @@ const convertCenterDemands = async (demandsToConvert, oldRotationId, newRotation
                 }
             }
 
+            console.log('demandModified', demandModified);
+            console.log('demandReopened', demandReopened);
             // Si on arrive ici sans annulation → demande convertie avec succès
             if (demandModified || demandReopened) {
                 await populatedDemand.save();

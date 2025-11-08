@@ -33,7 +33,7 @@ const ShiftSchema = new mongoose.Schema({
 
 const NewShiftSchema = new mongoose.Schema({
     shift: {type: mongoose.Schema.Types.ObjectId, ref: 'Shift'},
-    date: {type: Date, required: true},
+    date: {type: Date, required: false},
     teamId: {type: mongoose.Schema.Types.ObjectId, ref: 'Team'},
     selectedVariation : {type : mongoose.Schema.Types.ObjectId, ref: 'Variation', default: null},
 });

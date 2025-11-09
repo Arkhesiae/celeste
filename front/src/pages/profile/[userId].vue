@@ -31,18 +31,23 @@
             <v-icon>mdi-cog-outline</v-icon>
           </v-btn>
         </div>
+
+        
+          <!-- Popup Numéro de téléphone manquant UserMenu Mobile -->
+          
       </v-card>
 
-          <!-- Popup Numéro de téléphone manquant UserMenu Mobile -->
-        <div class="px-4 mb-4">
-            <template v-if="!authStore.userData.phone">
-          <v-alert class="cursor-pointer;" rounded="xl" color="#f2dfe2" icon="$warning" density="compact" @click="router.push('/parameter')">Numéro de téléphone manquant</v-alert>
-          </template>
-        </div>
 
     </div>
 
 
+    <v-row :class="smAndDown ? 'px-4' : ''" v-if="!authStore.userData.phone">
+      <v-col cols="12">
+       
+          <v-alert class="cursor-pointer text-medium-emphasis" rounded="xl" color="error" icon="mdi-alert-circle-outline" density="compact" @click="router.push('/user-params')">Numéro de téléphone manquant</v-alert>
+      
+      </v-col>
+    </v-row>
 
 
 

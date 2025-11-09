@@ -56,7 +56,7 @@
           <v-badge
             :model-value="!authStore.userData?.phone"
             location="bottom left"
-            color="red"
+            color="error"
             icon="mdi-exclamation-thick"
           >
         <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.userData.email" :avatar="authStore.avatar"

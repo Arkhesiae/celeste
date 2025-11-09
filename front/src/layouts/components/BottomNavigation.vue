@@ -1,6 +1,6 @@
 <template>
-  <v-bottom-navigation v-if="smAndDown && isLoggedIn" elevation="0" flat class="bottom-nav" bg-color="background" grow height="64"
-    style="z-index: 2000 !important;" shift>
+  <v-bottom-navigation v-if="smAndDown && isLoggedIn" elevation="0" flat class="bottom-nav" bg-color="background" grow
+    height="64" style="z-index: 2000 !important;" shift>
     <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' }); hapticsImpact()"
       :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/dashboard'">
@@ -27,29 +27,27 @@
     <!-- <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
     </v-btn> -->
+
+
     <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon
       @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()"
       :class="isActive('/profile/' + authStore.userData.userId) ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId">
-      <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false">
-        <div class="d-flex align-center justify-center"
+      <!-- <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false"> -->
+
+      <v-badge v-if="!authStore.userData.phone" color="error" icon="mdi-exclamation-thick" overlap location="top start" >
+         <div class="d-flex align-center justify-center"
           :class="isActive('/profile/' + authStore.userData.userId) ? 'opacity-100' : 'opacity-50'"
           style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
           <!-- Badge rouge "!" si téléphone manquant -->
-          <v-badge
-            v-if="!authStore.userData.phone"
-            color="error"
-            icon="mdi-exclamation-thick"
-            overlap
-            location="top start"
-            style="position: absolute; top: -4px; left: -4px; z-index: 5;"
-          ></v-badge>
+
           <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
             <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
             <v-icon v-else>mdi-account</v-icon>
           </v-avatar>
-        </div>
+          </div>
       </v-badge>
+      <!-- </v-badge> -->
 
     </v-btn>
   </v-bottom-navigation>
@@ -65,7 +63,7 @@ import { API_URL } from '@/config/api';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
-const hapticsImpact= async () => {
+const hapticsImpact = async () => {
   await Haptics.impact({ style: ImpactStyle.Light });
 };
 
@@ -99,7 +97,7 @@ const emit = defineEmits(['toggle-notifications']);
 .bottom-nav {
   position: fixed;
   height: calc(64px + var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
-  padding-bottom:   calc(var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
   /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
   /* border-radius: 24px 24px 0 0; */
 }

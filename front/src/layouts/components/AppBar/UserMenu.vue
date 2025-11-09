@@ -19,19 +19,14 @@
       </v-tooltip>
     </template>
 
-    <v-card min-width="300" class="pa-4" color="onBackground" rounded="xl">
-          <!-- Alerte numéro de tél manquant -->
-      <v-list bg-color="#f2dfe2" rounded="xl">
-        <v-list-item @click="$emit('navigate-parameter')" class="hover-effect">
-          <template v-slot:prepend>
-              <v-icon>mdi-alert-octagon</v-icon>
-          </template>
-          <v-list-item-subtitle>Numéro de téléphone manquant</v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
+      <v-card min-width="300" class="pa-4" color="onBackground" rounded="xl" >
+            <!-- Alerte numéro de tél manquant 
+        <v-card bg-color="#f2dfe2" rounded="xl" @click="$emit('navigate-parameter')" class="hover-effect" color="#ba1a1a" >
+                <v-icon>mdi-alert-octagon</v-icon>
+            Numéro de téléphone manquant
+        </v-card>
 
-      <v-divider />
-      
+        <v-divider />-->
       <!-- Informations utilisateur -->
       <v-list class="bg-onBackground">
         <v-list-item>
@@ -72,7 +67,7 @@
                 Équipe
               </v-list-item-title>
               <v-list-item-subtitle class="ml-2">
-                {{ currentTeam?.name || 'Non assigné' }} 
+                {{ currentTeam?.name || 'Non assigné' }}
                 {{ currentTeam?.type === 'Renfort' ? '(Renfort)' : '' }}
               </v-list-item-subtitle>
             </div>
@@ -89,7 +84,15 @@
         </v-list-item>
         <v-list-item @click="router.push('/user-params')" class="hover-effect" rounded="lg" prepend-icon="mdi-cog">
           <v-list-item-title>Paramètres</v-list-item-title>
-        </v-list-item>
+
+    <!-- Floating badge -->
+    <template v-slot:append v-if="!hasPhone">
+      <v-badge
+            color="error"
+            icon="mdi-exclamation-thick"
+          ></v-badge>
+    </template>
+  </v-list-item>
         <v-list-item @click="$emit('logout')" class="hover-effect"  rounded="lg" prepend-icon="mdi-logout" color="error">
           <v-list-item-title>Se déconnecter</v-list-item-title>
         </v-list-item>
@@ -147,6 +150,10 @@ defineEmits([
 ]);
 
 const points = computed(() => pointStore.points);
+
+import { useAuthStore } from "@/stores/authStore.js";
+const authStore = useAuthStore();
+const hasPhone = computed(() => authStore.userData.phone);
 
 
 </script>

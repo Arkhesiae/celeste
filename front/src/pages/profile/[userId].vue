@@ -35,7 +35,9 @@
 
           <!-- Popup Numéro de téléphone manquant UserMenu Mobile -->
         <div class="px-4 mb-4">
+            <template v-if="!authStore.userData.phone">
           <v-alert class="cursor-pointer;" rounded="xl" color="#f2dfe2" icon="$warning" density="compact" @click="router.push('/parameter')">Numéro de téléphone manquant</v-alert>
+          </template>
         </div>
 
     </div>

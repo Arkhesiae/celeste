@@ -51,7 +51,8 @@
                 <v-icon size="x-small" v-else>mdi-account</v-icon>
               </v-avatar>
                 <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
-                  getAccepter?.lastName }} ({{ getTeamName }})</span>
+                  getAccepter?.lastName
+                  }}</span>
 
               </div>
               <div v-if="!isPoster && getPoster" class="d-flex align-center">
@@ -184,31 +185,7 @@
 
     <v-dialog v-model="showUserDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
       <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
-        <div v-if="isPoster && getAccepter" class="d-flex flex-column  ga-2 pl-3">
-        <div class="d-flex align-center ga-2 ">
-   
-            <v-avatar size="32" variant="tonal" class="">
-              <v-img v-if="getUserById(demand?.accepterId)?.avatar"
-                :src="`${API_URL}${getUserById(demand?.accepterId)?.avatar}`" alt="Avatar" />
-              <v-icon size="x-small" v-else>mdi-account</v-icon>
-            </v-avatar>
-     
-          <span class="text-h7 font-weight-medium pa-0">
-            {{ getUserById(demand?.accepterId)?.name }} {{ getUserById(demand?.accepterId)?.lastName }} ({{ getTeamName }})
-          </span>
-          </div>
-
-          <div>
-          <v-card-subtitle class="pa-0">
-            {{ getUserById(demand?.accepterId)?.email }}
-          </v-card-subtitle>
-          <span class="text-caption opacity-70 font-weight-medium">  
-            {{ getUserById(demand?.accepterId)?.personalData?.phoneNumber}}
-          </span>
-          </div>
-          </div>
-
-      <div v-if="!isPoster && getPoster" class="d-flex flex-column  ga-2 pl-3">
+        <div class="d-flex flex-column  ga-2 pl-3">
         <div class="d-flex align-center ga-2 ">
    
             <v-avatar size="32" variant="tonal" class="">
@@ -316,12 +293,8 @@ const formatDate = (date) => {
 };
 
 const getTeamName = computed(() => {
-  // Prefer the team of the accepter when available, otherwise fall back to the posterShift team
-  const accepter = props.demand?.accepterId ? userStore.users.find(user => user._id === props.demand.accepterId) : null;
-  const teamId = accepter?.currentTeam?.teamId || props.demand?.posterShift?.teamId;
-  return teamStore.centerTeams.find(team => team._id === teamId)?.name;
+  return teamStore.centerTeams.find(team => team._id === props.demand.posterShift.teamId)?.name;
 });
-
 const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
 
 const getAccepter = computed(() => {

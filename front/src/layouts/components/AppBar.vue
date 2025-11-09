@@ -52,9 +52,18 @@
         <v-spacer />
 
         <!-- Menu utilisateur -->
+         <div>
+          <v-badge
+            :model-value="!authStore.userData?.phone"
+            location="bottom left"
+            color="error"
+            icon="mdi-exclamation-thick"
+          >
         <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.userData.email" :avatar="authStore.avatar"
           :points="points" :current-team="currentTeam" @navigate-profile="navigateToProfile"
           @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
+          </v-badge>
+         </div>
       </template>
     </template>
   </v-app-bar>

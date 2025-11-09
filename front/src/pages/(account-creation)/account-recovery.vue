@@ -299,6 +299,7 @@ async function handleRecovery() {
                 rounded="xl"
                 variant="solo-filled"
                 flat
+                autocomplete="new-password"
                 label="Nouveau mot de passe"
                 type="password"
                 :rules="passwordRules"
@@ -309,6 +310,7 @@ async function handleRecovery() {
                 rounded="xl"
                 variant="solo-filled"
                 flat
+                autocomplete="new-password"
                 label="Confirmer le mot de passe"
                 type="password"
                 :rules="confirmPasswordRules"

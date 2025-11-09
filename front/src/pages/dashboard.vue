@@ -403,7 +403,7 @@
           </div>
         </v-card>
 
-        <div class="d-flex mb-8 " style=" position: relative; overflow-x: hidden;" :class="smAndDown ? 'mx-4' : ''">
+<!--         <div class="d-flex mb-8 " style=" position: relative; overflow-x: hidden;" :class="smAndDown ? 'mx-4' : ''">
           <v-hover v-slot="{ isHovering, props }">
             <v-card width="100%" rounded="xl" elevation="0" class=" transition-all" :class="[
               { 'elevation-4': isHovering },
@@ -434,7 +434,7 @@
             :class="md ? 'logo-md' : xs ? 'logo-xs' : ''"
             style="position: absolute; bottom: 15px; right: -40px; width: 300px; cursor: pointer;"
             @click="router.push('/center/' + authStore.userData.centerId + '/teams')" />
-        </div>
+        </div> -->
 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-32 ' : ''" color="surfaceContainer">
 

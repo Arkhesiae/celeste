@@ -369,7 +369,7 @@ const loadStats = async () => {
     // Calculer les statistiques
     stats.value.totalUsers = userStore.users.length
     stats.value.pendingUsers = userStore.users.filter(user => user.registrationStatus === 'pending').length
-    stats.value.pendingTickets = ticketStore.tickets.length
+    stats.value.pendingTickets = ticketStore.tickets.filter(ticket => ticket.status != 'closed').length
     stats.value.totalCenters = centerStore.centers.length
     
   } catch (error) {

@@ -39,13 +39,13 @@
 
 
 
-          <v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
+<v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
             {{ formatDate(demand?.posterShift?.date) }}
           </v-card-subtitle>
           <div>
-            <div class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
+            <div @click.stop="showUserDialog = true" class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
             
-              <div v-if="isPoster && getAccepter" class="d-flex align-center " @click.stop="showUserDialog = true">
+              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
                 <v-avatar size="24" variant="tonal" class="me-2">
                 <v-img v-if="getAccepter?.avatar" :src="`${API_URL}${getAccepter?.avatar}`" alt="Avatar" />
                 <v-icon size="x-small" v-else>mdi-account</v-icon>
@@ -55,12 +55,12 @@
                   }}</span>
 
               </div>
-              <div v-if="!isPoster && getPoster" class="d-flex align-center" @click.stop="showUserDialog = true">
+              <div v-if="!isPoster && getPoster" class="d-flex align-center">
                 <v-avatar size="24" variant="tonal" class="me-2">
                   <v-img v-if="getPoster?.avatar" :src="`${API_URL}${getPoster?.avatar}`" alt="Avatar" />
                   <v-icon size="x-small" v-else>mdi-account</v-icon>
                 </v-avatar>
-                <span class="text-caption font-weight-medium"> {{ getPoster?.name }} {{ getPoster?.lastName }}</span>
+                <span class="text-caption font-weight-medium"> {{ getPoster?.name }} {{ getPoster?.lastName }} ({{ getTeamName }})</span>
               </div>
 
             </div>
@@ -89,7 +89,7 @@
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
         <div class="d-flex align-center mr-2">
 
-          <v-chip variant="flat" size="x-small" rounded="lg" 
+          <v-chip variant="flat" size="small" rounded="lg" 
             class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
             <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
             <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
@@ -104,7 +104,7 @@
           <!-- <v-icon color="onBackground" class="ml-1"
         icon="mdi-information-outline" size="x-small"></v-icon> -->
         </div>
-        <v-chip v-if="demand?.comment" variant="flat" size="x-small" rounded="lg"
+        <v-chip v-if="demand?.comment" variant="flat" size="small" rounded="lg"
           class="mr-2 font-weight-bold comment-chip" @click.stop="showCommentDialog = true" style="cursor: pointer">
           <v-icon icon="mdi-comment-text-outline"></v-icon>
         </v-chip>
@@ -113,23 +113,23 @@
           <v-icon icon="mdi-alert-circle-outline"></v-icon>
         </v-chip> -->
    
-        <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="x-small"
+        <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="small"
           rounded="lg">
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Permutation</span>
         </v-chip>
         <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="remplacement" variant="flat"
-          size="x-small" rounded="lg">
+          size="small" rounded="lg">
           <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
           <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Hybride</span>
         </v-chip>
         <v-chip v-if="demand?.type === 'substitution'" class="type-chip" color="remplacement" variant="flat"
-          size="x-small" rounded="lg">
+          size="small" rounded="lg">
           <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
           <span v-if="!small">Remplacement</span>
         </v-chip>
-        <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="x-small" rounded="pill"
+        <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
             color="background" variant="flat">
             {{ demand?.seenBy?.length || 0 }}
         </v-chip>
@@ -195,7 +195,7 @@
             </v-avatar>
      
           <span class="text-h7 font-weight-medium pa-0">
-            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }}
+            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }} ({{ getTeamName }})
           </span>
           </div>
 
@@ -291,9 +291,6 @@ const props = defineProps({
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
-
-
-
 
 const getTeamName = computed(() => {
   return teamStore.centerTeams.find(team => team._id === props.demand.posterShift.teamId)?.name;

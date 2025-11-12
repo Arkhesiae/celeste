@@ -259,7 +259,6 @@ const openReplyDialog = () => {
   showReplyDialog.value = true;
 };
 
-
 </script>
 
 <style scoped>
@@ -276,12 +275,6 @@ const openReplyDialog = () => {
     opacity: 0.5;
   }
 
-.ticket pre {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  font-family: inherit;
-}
-
 /* Responsive adjustments */
 @media (max-width: 599px) {
   .ticket-item {
@@ -294,5 +287,11 @@ const openReplyDialog = () => {
   }
   
  
+}
+
+pre {
+  white-space: pre-line;
+  word-wrap: break-word;
+  font-family: inherit;
 }
 </style>

@@ -107,7 +107,7 @@
         <!-- Contenu du ticket -->
         <div class="text-subtitle-2 mb-2">Ticket</div>
         <div class="bg-surfaceContainer pa-4 rounded-xl" style="font-size: 0.75rem !important; line-height: 1.2 !important;">
-          {{ ticket.content }}
+          <pre>{{ ticket.content }}</pre>
         </div>
 
         <!-- Réponses -->
@@ -135,7 +135,7 @@
                   {{ formatDate(reply.createdAt) }}
                 </span>
               </div>
-              <div class="text-body-2" style="font-size: 0.75rem !important; line-height: 1.2 !important;">{{ reply.content }}</div>
+              <div class="text-body-2" style="font-size: 0.75rem !important; line-height: 1.2 !important;"><pre>{{ reply.content }}</pre></div>
             </div>
           </div>
         </div>
@@ -275,6 +275,12 @@ const openReplyDialog = () => {
     font-size: 0.75rem !important;
     opacity: 0.5;
   }
+
+.ticket pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: inherit;
+}
 
 /* Responsive adjustments */
 @media (max-width: 599px) {

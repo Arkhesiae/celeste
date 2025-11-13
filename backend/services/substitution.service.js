@@ -148,13 +148,23 @@ export async function getOpenDemands(userId, startDate, endDate) {
             ...baseFilter,
             posterId: { $ne: user._id },
             ...dateFilter
-        }).populate('posterShift.shift'),
+        }).populate([
+            { path: 'posterShift.shift' },
+            { path: 'posterShift.teamId' },
+            { path: 'accepterShift.shift' },
+            { path: 'accepterShift.teamId' },
+        ]),
         Substitution.find({
             deleted: false,
             ...baseFilter,
             posterId: user._id,
             ...dateFilter
-        }).populate('posterShift.shift')
+        }).populate([
+            { path: 'posterShift.shift' },
+            { path: 'posterShift.teamId' },
+            { path: 'accepterShift.shift' },
+            { path: 'accepterShift.teamId' },
+        ])
     ]);
 
 
@@ -347,6 +357,7 @@ export async function categorizeDemands(demands, userId) {
                 return demand;
             })
         );
+        console.log('Test')
 
         return categorized;
     } catch (error) {

@@ -660,8 +660,7 @@ const userStore = useUserStore()
 const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
 
 const getTeamName = computed(() => {
-  const team = teamStore.centerTeams.find(team => team._id === props.demand?.posterShift?.teamId)
-  return team?.name || props.demand?.posterShift?.teamId
+  return props.demand?.posterShift?.teamId.name
 })
 
 const isExpanded = ref(false)

@@ -9,30 +9,12 @@
       <v-card-item>
 
 
-        <v-card-title class="text-subtitle-1 font-weight-medium">
-          <div class="d-flex align-center flex-shrink-0   ga-3 ml-2">
-            <div class="pb-0 mb-0 flex-shrink-0">
-
-              <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;">{{ posterShift?.name
-              }}<v-icon v-if="!isPoster || isPoster && getAccepter">mdi-arrow-right</v-icon>{{
-                  accepterShift?.shift?.name
-                }}</span>
-            </div>
-            <div class="d-flex align-start flex-column justify-space-between">
-              <div>
-                <span class="text-caption font-weight-bold">{{ shift?.default?.startTime || shift?.startTime }} - {{
-                  shift?.default?.endTime || shift?.endTime
-                }}</span>
-                <span class="text-caption font-weight-bold opacity-50 ml-1"
-                  style="font-size: 10px !important; top: -2px; position: relative;"
-                  v-if="shift?.default?.endsNextDay || shift?.endsNextDay">+1</span>
-              </div>
-              <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;">Dans
-                équipe {{ getTeamName }}</div>
-
-            </div>
-          </div>
-        </v-card-title>
+        <Vacation v-if="isPoster" :user="posterShift" :user2="accepterShift" :isPoster="isPoster"
+          :getAccepter="getAccepter">
+        </Vacation>
+        <Vacation v-else-if="!isPoster" :user="accepterShift" :user2="posterShift" :isPoster="isPoster"
+          :getAccepter="getAccepter">
+        </Vacation>
 
         <div class=" pa-0 d-flex align-center justify-space-between ml-2">
 
@@ -53,7 +35,7 @@
                 </v-avatar>
                 <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
                   getAccepter?.lastName
-                  }} ({{ getAccepterTeamName }})</span>
+                }} ({{ getAccepterTeamName }})</span>
 
               </div>
               <div v-if="!isPoster && getPoster" class="d-flex align-center">
@@ -281,7 +263,7 @@ const getTeamName = computed(() => {
   return props.demand?.posterShift?.teamId?.name;
 });
 const getAccepterTeamName = computed(() => {
-  return accepterShift?.teamId?.name;
+  return props.demand?.accepterShift?.teamId?.name;
 });
 
 const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
@@ -290,14 +272,13 @@ const getAccepter = computed(() => {
   if (!props.demand?.accepterId) return null;
   return userStore.users.find(user => user._id === props.demand.accepterId);
 });
+const getPoster = computed(() => {
+  if (!props.demand?.posterId) return null;
+  return userStore.users.find(user => user._id === props.demand.posterId);
+});
 
 const posterShift = computed(() => {
-  if (props.demand?.posterShift?.shift) {
-    return props.demand?.posterShift?.shift;
-  }
-  else {
-    return props.demand?.posterShift;
-  }
+  return props.demand?.posterShift;
 });
 
 const accepterShift = computed(() => {
@@ -306,10 +287,7 @@ const accepterShift = computed(() => {
 
 
 
-const getPoster = computed(() => {
-  if (!props.demand?.posterId) return null;
-  return userStore.users.find(user => user._id === props.demand.posterId);
-});
+
 
 const cancelDemand = async () => {
   showConfirmDeleteDialog.value = true;

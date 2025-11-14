@@ -27,7 +27,7 @@
             <span class="text-caption font-weight-bold opacity-50 ml-1" style="font-size: 10px !important; top: -2px; position: relative;"  v-if="getShiftEndsNextDay">+1</span>
           </div>
           <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;"
-            v-if="!isRestDay && getShiftTeam">Dans équipe {{ getShiftTeam }}</div>
+            v-if="!isRestDay && getShiftTeam">Dans l'équipe {{ getShiftTeam }}</div>
 
         </div>
         <div v-if="getVacation?.shift?.variations?.length > 0 && !isRestDay"  class="variation-badge align-self-start" >

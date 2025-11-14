@@ -11,13 +11,22 @@
       </div>
       <div class="d-flex align-start flex-column justify-space-between">
         <div>
-          <span class="text-caption font-weight-bold">{{ user?.shift?.default?.startTime || user?.shift?.startTime }} -
+          <span v-if="isPoster && !getAccepter" class="text-caption font-weight-bold">{{ user?.shift?.default?.startTime
+            || user?.shift?.startTime }}
+            -
             {{
               user?.shift?.default?.endTime || user?.shift?.endTime
             }}</span>
+          <span v-else class="text-caption font-weight-bold">{{ user2?.shift?.default?.startTime
+            || user2?.shift?.startTime }}
+            -
+            {{
+              user2?.shift?.default?.endTime || user2?.shift?.endTime
+            }}</span>
+
           <span class="text-caption font-weight-bold opacity-50 ml-1"
             style="font-size: 10px !important; top: -2px; position: relative;"
-            v-if="user?.shift?.default?.endsNextDay || user?.shift?.endsNextDay">+1</span>
+            v-if="user2?.shift?.default?.endsNextDay || user2?.shift?.endsNextDay">+1</span>
         </div>
         <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;">Dans
           équipe {{ getTeamName }}</div>

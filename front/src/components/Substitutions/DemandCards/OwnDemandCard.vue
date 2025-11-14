@@ -31,8 +31,8 @@
               v-if="!(isPoster && !getAccepter)">
 
               <Replaced :user="isPoster && getAccepter ? getAccepter : getPoster"
-                :teamName="isPoster ? getAccepterTeamName : getTeamName">
-              </Replaced>
+                :teamName="isPoster && demand?.type === 'switch' ? getAccepterTeamName : (isPoster && demand?.type === 'hybrid') ? getTeamById(getAccepter.currentTeam.teamId).name : getTeamName">
+              </Replaced>{{ }}
 
             </div>
           </div>
@@ -163,7 +163,7 @@
 
   <UserDialog :model-value="showUserDialog" @update:model-value="showUserDialog = false"
     :user="isPoster ? getAccepter : getPoster"
-    :teamName="!isPoster ? getTeamName : (isPoster && demand?.type != 'switch') ? getTeamName : getAccepterTeamName">
+    :teamName="isPoster && demand?.type === 'switch' ? getAccepterTeamName : (isPoster && demand?.type === 'hybrid') ? getTeamById(getAccepter.currentTeam.teamId).name : getTeamName">
   </UserDialog>
 
 
@@ -255,7 +255,7 @@ const getAccepterTeamName = computed(() => {
 });
 
 const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
-
+const getTeamById = computed(() => (teamId) => teamStore.teams.find((team) => team._id === teamId))
 const getAccepter = computed(() => {
   if (!props.demand?.accepterId) return null;
   return userStore.users.find(user => user._id === props.demand.accepterId);

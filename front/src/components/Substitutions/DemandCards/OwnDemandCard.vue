@@ -10,10 +10,10 @@
 
 
         <Vacation v-if="isPoster" :user="posterShift" :user2="accepterShift" :isPoster="isPoster"
-          :getAccepter="getAccepter">
+          :getAccepter="getAccepter" :permutation="isPermutation" :open="!isOpen">
         </Vacation>
-        <Vacation v-else-if="!isPoster" :user="accepterShift" :user2="posterShift" :isPoster="isPoster"
-          :getAccepter="getAccepter">
+        <Vacation v-else :user="accepterShift" :user2="posterShift" :isPoster="isPoster" :getAccepter="getAccepter"
+          :permutation="isPermutation" :open="!isOpen">
         </Vacation>
 
         <div class=" pa-0 d-flex align-center justify-space-between ml-2">
@@ -24,28 +24,15 @@
           <v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
             {{ formatDate(demand?.posterShift?.date) }}
           </v-card-subtitle>
+
+          <!-- Informations PC -->
           <div>
             <div @click.stop="showUserDialog = true" class="d-flex align-center justify-start "
-              v-if="isPoster && getAccepter || !isPoster && getPoster">
+              v-if="!(isPoster && !getAccepter)">
 
-              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
-                <v-avatar size="24" variant="tonal" class="me-2">
-                  <v-img v-if="getAccepter?.avatar" :src="`${API_URL}${getAccepter?.avatar}`" alt="Avatar" />
-                  <v-icon size="x-small" v-else>mdi-account</v-icon>
-                </v-avatar>
-                <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
-                  getAccepter?.lastName
-                }} ({{ getAccepterTeamName }})</span>
-
-              </div>
-              <div v-if="!isPoster && getPoster" class="d-flex align-center">
-                <v-avatar size="24" variant="tonal" class="me-2">
-                  <v-img v-if="getPoster?.avatar" :src="`${API_URL}${getPoster?.avatar}`" alt="Avatar" />
-                  <v-icon size="x-small" v-else>mdi-account</v-icon>
-                </v-avatar>
-                <span class="text-caption font-weight-medium"> {{ getPoster?.name }} {{ getPoster?.lastName }} ({{
-                  getTeamName }})</span>
-              </div>
+              <Replaced :user="isPoster && getAccepter ? getAccepter : getPoster"
+                :teamName="isPoster ? getAccepterTeamName : getTeamName">
+              </Replaced>
 
             </div>
           </div>
@@ -175,7 +162,8 @@
 
 
   <UserDialog :model-value="showUserDialog" @update:model-value="showUserDialog = false"
-    :user="isPoster ? getAccepter : getPoster" :teamName="!isPoster ? getTeamName : getAccepterTeamName">
+    :user="isPoster ? getAccepter : getPoster"
+    :teamName="!isPoster ? getTeamName : (isPoster && demand?.type != 'switch') ? getTeamName : getAccepterTeamName">
   </UserDialog>
 
 
@@ -260,7 +248,7 @@ const formatDate = (date) => {
 };
 
 const getTeamName = computed(() => {
-  return props.demand?.posterShift?.teamId?.name;
+  return props.demand?.posterShift.teamId?.name;
 });
 const getAccepterTeamName = computed(() => {
   return props.demand?.accepterShift?.teamId?.name;
@@ -286,8 +274,13 @@ const accepterShift = computed(() => {
 });
 
 
+const isPermutation = computed(() => {
+  return props.demand?.type === "switch";
+});
 
-
+const isOpen = computed(() => {
+  return props.demand?.status === "open";
+});
 
 const cancelDemand = async () => {
   showConfirmDeleteDialog.value = true;

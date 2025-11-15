@@ -3,10 +3,9 @@
     <div class="d-flex align-center flex-shrink-0   ga-3 ml-2">
       <div class="pb-0 mb-0 flex-shrink-0">
 
-        <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;"><span
-            :class="{ 'text-line-decoration-through': open }"><v-text class="font-weight-thin">{{ user?.shift?.name
-              }}</v-text></span><v-text v-if="(!isPoster || isPoster && getAccepter) && permutation"
-            class="font-weight-thin">
+        <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;"><v-text
+            class="font-weight-thin">{{ user?.shift?.name
+            }}</v-text><v-text v-if="(!isPoster || isPoster && getAccepter) && permutation" class="font-weight-thin">
             >
           </v-text>{{
             user2?.shift?.name

@@ -228,7 +228,7 @@
                   Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
                 </v-list-item-title>
                 <v-list-item-subtitle>
-                  Demande initiale : <strong>{{ conf.sub?.posterShift?.name }}</strong> → après changement : <strong>{{ conf.newShift?.name }}</strong>
+                  Demande initiale : <strong>{{ conf.sub?.posterShift?.shift?.name }}</strong> → après changement : <strong>{{ conf.newShift?.name }}</strong>
                 </v-list-item-subtitle>
               </v-card>
         

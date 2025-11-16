@@ -38,7 +38,7 @@
                       v-if="shiftEndsNextDay">+1</span>
                   </div>
                   <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;"
-                    v-if="selectedShift?.teamObject?.name">Dans équipe {{ selectedShift?.teamObject?.name
+                    v-if="selectedShift?.teamObject?.name">Dans l'équipe {{ selectedShift?.teamObject?.name
                     }}</div>
 
                 </div>

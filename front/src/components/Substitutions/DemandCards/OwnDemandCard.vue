@@ -9,59 +9,30 @@
       <v-card-item>
 
 
-        <v-card-title class="text-subtitle-1 font-weight-medium">
-          <div class="d-flex align-center flex-shrink-0   ga-3 ml-2">
-            <div class="pb-0 mb-0 flex-shrink-0">
-
-              <span class="text-h5 font-weight-medium" style="position: relative; top: 1px;">{{ shift?.name }}</span>
-            </div>
-            <div class="d-flex align-start flex-column justify-space-between">
-              <div>
-                <span class="text-caption font-weight-bold">{{ shift?.default?.startTime || shift?.startTime }} - {{ shift?.default?.endTime || shift?.endTime
-                }}</span>
-                <span class="text-caption font-weight-bold opacity-50 ml-1"
-                  style="font-size: 10px !important; top: -2px; position: relative;"
-                  v-if="shift?.default?.endsNextDay || shift?.endsNextDay">+1</span>
-              </div>
-              <div class="py-0 text-caption opacity-70" style="margin-top: -8px; font-size: 11px !important;">Dans
-                équipe {{
-                getTeamName }}</div>
-
-            </div>
-
-
-
-          </div>
-        </v-card-title>
+        <Vacation v-if="isPoster" :user="posterShift" :user2="accepterShift" :isPoster="isPoster"
+          :getAccepter="getAccepter" :permutation="isPermutation" :open="!isOpen">
+        </Vacation>
+        <Vacation v-else :user="accepterShift" :user2="posterShift" :isPoster="isPoster" :getAccepter="getAccepter"
+          :permutation="isPermutation" :open="!isOpen">
+        </Vacation>
 
         <div class=" pa-0 d-flex align-center justify-space-between ml-2">
 
 
 
 
-<v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
+          <v-card-subtitle class="text-caption d-flex align-center mt-1" style="font-weight: 800;">
             {{ formatDate(demand?.posterShift?.date) }}
           </v-card-subtitle>
-          <div>
-            <div @click.stop="showUserDialog = true" class="d-flex align-center justify-start " v-if="isPoster && getAccepter || !isPoster && getPoster">
-            
-              <div v-if="isPoster && getAccepter" class="d-flex align-center ">
-                <v-avatar size="24" variant="tonal" class="me-2">
-                <v-img v-if="getAccepter?.avatar" :src="`${API_URL}${getAccepter?.avatar}`" alt="Avatar" />
-                <v-icon size="x-small" v-else>mdi-account</v-icon>
-              </v-avatar>
-                <span class="text-caption font-weight-medium"> {{ getAccepter?.name }} {{
-                  getAccepter?.lastName
-                  }}</span>
 
-              </div>
-              <div v-if="!isPoster && getPoster" class="d-flex align-center">
-                <v-avatar size="24" variant="tonal" class="me-2">
-                  <v-img v-if="getPoster?.avatar" :src="`${API_URL}${getPoster?.avatar}`" alt="Avatar" />
-                  <v-icon size="x-small" v-else>mdi-account</v-icon>
-                </v-avatar>
-                <span class="text-caption font-weight-medium"> {{ getPoster?.name }} {{ getPoster?.lastName }} ({{ getTeamName }})</span>
-              </div>
+          <!-- Informations PC -->
+          <div>
+            <div @click.stop="showUserDialog = true" class="d-flex align-center justify-start "
+              v-if="!(isPoster && !getAccepter)">
+
+              <Replaced :user="isPoster && getAccepter ? getAccepter : getPoster"
+                :teamName="isPoster && demand?.type === 'switch' ? getAccepterTeamName : (isPoster && demand?.type === 'hybrid') ? getTeamById(getAccepter.currentTeam.teamId).name : getTeamName">
+              </Replaced>{{ }}
 
             </div>
           </div>
@@ -82,15 +53,15 @@
       </v-card-item>
 
 
-    
+
 
 
 
       <div style="position :absolute ; top : 16px ; right : 16px" class="d-flex align-center">
         <div class="d-flex align-center mr-2">
 
-          <v-chip variant="flat" size="small" rounded="lg" 
-            class="font-weight-bold point-chip" @click.stop="showPointsDialog = true">
+          <v-chip variant="flat" size="small" rounded="lg" class="font-weight-bold point-chip"
+            @click.stop="showPointsDialog = true">
             <LogoCopy color="onBackground" style="top:-2px; position: relative;" />
             <span v-if="demand?.type === 'switch' && demand?.acceptedSwitches.length > 0">
 
@@ -112,14 +83,14 @@
           class="mr-2 font-weight-bold incompatible-chip" color="error" style="cursor: pointer">
           <v-icon icon="mdi-alert-circle-outline"></v-icon>
         </v-chip> -->
-   
+
         <v-chip v-if="demand?.type === 'switch'" class="type-chip " color="permutation" variant="flat" size="small"
           rounded="lg">
           <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Permutation</span>
         </v-chip>
-        <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="remplacement" variant="flat"
-          size="small" rounded="lg">
+        <v-chip v-if="demand?.type === 'hybrid'" class="type-chip " color="remplacement" variant="flat" size="small"
+          rounded="lg">
           <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
           <v-icon class="ml-n2" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
           <span v-if="!small">Hybride</span>
@@ -130,8 +101,8 @@
           <span v-if="!small">Remplacement</span>
         </v-chip>
         <v-chip class="ml-2 text-medium-emphasis px-3" prepend-icon="mdi-eye-outline" size="small" rounded="pill"
-            color="background" variant="flat">
-            {{ demand?.seenBy?.length || 0 }}
+          color="background" variant="flat">
+          {{ demand?.seenBy?.length || 0 }}
         </v-chip>
       </div>
 
@@ -142,75 +113,58 @@
     </v-card>
 
     <v-expand-transition>
-      <div v-if="expanded" class="d-flex justify-end mt-2">
-        <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand" color="onBackground"
-          style="color: rgba(var(--v-theme-onError), 0.99) !important;">
-          Annuler
-        </v-btn>
+      <div v-if="expanded">
+        <div v-if="expanded && !isPoster" class="d-flex justify-end mt-2">
+          <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand" color="onBackground"
+            style="color: rgba(var(--v-theme-onError), 0.99) !important;">
+            Me désister
+          </v-btn>
+        </div>
+        <div v-if="expanded && isPoster" class="d-flex justify-end mt-2">
+          <v-btn class="cancel-button" variant="flat" size="small" @click.stop="cancelDemand" color="onBackground"
+            style="color: rgba(var(--v-theme-onError), 0.99) !important;">
+            Annuler
+          </v-btn>
+        </div>
       </div>
     </v-expand-transition>
   </div>
 
 
   <!-- Dialog pour afficher les points -->
-    <!-- Dialog pour afficher les points -->
-    <v-dialog v-model="showPointsDialog" max-width="300px" attach="body" style="z-index: 1000000 !important">
-      <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
-        <v-card-title class="text-h6 pa-0 mb-2">
-          Points de {{ demand?.posterShift?.name }}
-        </v-card-title>
-        <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
+  <v-dialog v-model="showPointsDialog" max-width="300px" attach="body" style="z-index: 1000000 !important">
+    <v-card class="pa-6" rounded="xl" style="z-index: 1000000 !important">
+      <v-card-title class="text-h6 pa-0 mb-2">
+        Points de {{ demand?.posterShift?.name }}
+      </v-card-title>
+      <v-card-text class="pa-0 d-flex flex-column ga-2 align-center">
         <span class="text-overline" v-if="demand?.acceptedSwitches.length > 0"> Permutation(s) </span>
-          <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh" variant="flat"
-            size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
-            <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
-            <span class="font-weight-bold mr-2">{{ getDayName(switchDay.shift) }}</span>
-            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
-            <span class="font-weight-bold">{{ switchDay.points }}</span>
-          </v-chip>
-          <span class="text-overline" v-if="demand?.points > 0 && demand?.type !== 'switch'"> Remplacement </span>
-          <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="surfaceContainerHigh" variant="flat"
-            size="small" rounded="lg" class="font-weight-bold point-chip flex-grow-1">
-            <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
-            <span>{{ }}</span>
-            <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
-            <span class="font-weight-bold">{{ demand?.points }}</span>
-          </v-chip>
+        <v-chip v-for="switchDay in demand?.acceptedSwitches" :key="switchDay" color="surfaceContainerHigh"
+          variant="flat" size="small" rounded="lg" class="font-weight-bold point-chip flex-shrink-1">
+          <v-icon class="mr-1" icon="mdi-swap-horizontal"></v-icon>
+          <span class="font-weight-bold mr-2">{{ getDayName(switchDay.shift) }}</span>
+          <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
+          <span class="font-weight-bold">{{ switchDay.points }}</span>
+        </v-chip>
+        <span class="text-overline" v-if="demand?.points > 0 && demand?.type !== 'switch'"> Remplacement </span>
+        <v-chip v-if="demand?.points > 0 && demand?.type !== 'switch'" color="surfaceContainerHigh" variant="flat"
+          size="small" rounded="lg" class="font-weight-bold point-chip flex-grow-1">
+          <v-icon class="mr-1" icon="mdi-account-arrow-left-outline"></v-icon>
+          <span>{{ }}</span>
+          <LogoCopy color="remplacement" style="top:-2px; position: relative; " />
+          <span class="font-weight-bold">{{ demand?.points }}</span>
+        </v-chip>
 
 
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 
 
-    <v-dialog v-model="showUserDialog" max-width="300" attach="body" style="z-index: 1000000 !important">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
-        <div class="d-flex flex-column  ga-2 pl-3">
-        <div class="d-flex align-center ga-2 ">
-   
-            <v-avatar size="32" variant="tonal" class="">
-              <v-img v-if="getUserById(demand?.posterId)?.avatar"
-                :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
-              <v-icon size="x-small" v-else>mdi-account</v-icon>
-            </v-avatar>
-     
-          <span class="text-h7 font-weight-medium pa-0">
-            {{ getUserById(demand?.posterId)?.name }} {{ getUserById(demand?.posterId)?.lastName }} ({{ getTeamName }})
-          </span>
-          </div>
-
-          <div>
-          <v-card-subtitle class="pa-0">
-            {{ getUserById(demand?.posterId)?.email }}
-          </v-card-subtitle>
-          <span class="text-caption opacity-70 font-weight-medium">  
-            {{ getUserById(demand?.posterId)?.personalData?.phoneNumber}}
-          </span>
-          </div>
-          </div>
-
-      </v-card>
-    </v-dialog>
+  <UserDialog :model-value="showUserDialog" @update:model-value="showUserDialog = false"
+    :user="isPoster ? getAccepter : getPoster"
+    :teamName="isPoster && demand?.type === 'switch' ? getAccepterTeamName : (isPoster && demand?.type === 'hybrid') ? getTeamById(getAccepter.currentTeam.teamId).name : getTeamName">
+  </UserDialog>
 
 
   <!-- Dialog pour afficher le commentaire -->
@@ -242,7 +196,7 @@
         Cette action est irréversible.
       </v-card-text>
       <v-card-actions class="pa-0">
-     
+
         <v-btn color="onBackground" variant="text" @click="showConfirmDeleteDialog = false">
           Retour
         </v-btn>
@@ -263,6 +217,7 @@ import { useUserStore } from '@/stores/userStore';
 import { API_URL } from '@/config/api';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
+
 const teamStore = useTeamStore();
 const rotationStore = useRotationStore();
 const userStore = useUserStore();
@@ -293,29 +248,38 @@ const formatDate = (date) => {
 };
 
 const getTeamName = computed(() => {
-  return teamStore.centerTeams.find(team => team._id === props.demand.posterShift.teamId)?.name;
+  return props.demand?.posterShift.teamId?.name;
 });
-const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
+const getAccepterTeamName = computed(() => {
+  return props.demand?.accepterShift?.teamId?.name;
+});
 
+const getUserById = computed(() => (userId) => userStore.users.find((user) => user._id === userId))
+const getTeamById = computed(() => (teamId) => teamStore.teams.find((team) => team._id === teamId))
 const getAccepter = computed(() => {
   if (!props.demand?.accepterId) return null;
   return userStore.users.find(user => user._id === props.demand.accepterId);
 });
-
-const shift = computed(() => {
-  if (props.demand?.posterShift?.shift) {
-    return props.demand?.posterShift?.shift;
-  }
-  else {
-    return props.demand?.posterShift;
-  }
-});
-
-
-
 const getPoster = computed(() => {
   if (!props.demand?.posterId) return null;
   return userStore.users.find(user => user._id === props.demand.posterId);
+});
+
+const posterShift = computed(() => {
+  return props.demand?.posterShift;
+});
+
+const accepterShift = computed(() => {
+  return props.demand?.accepterShift
+});
+
+
+const isPermutation = computed(() => {
+  return props.demand?.type === "switch";
+});
+
+const isOpen = computed(() => {
+  return props.demand?.status === "open";
 });
 
 const cancelDemand = async () => {
@@ -326,10 +290,10 @@ const confirmDelete = async () => {
   try {
     if (props.isPoster) {
       await substitutionStore.cancelDemand(props.demand._id);
-      snackbarStore.showNotification("Demande annulée", "success", "mdi-close") 
+      snackbarStore.showNotification("Demande annulée", "success", "mdi-close")
     } else {
       await substitutionStore.unacceptDemand(props.demand._id);
-      snackbarStore.showNotification("Votre proposition de remplacement a été annulée", "onError", "mdi-close") 
+      snackbarStore.showNotification("Votre proposition de remplacement a été annulée", "onError", "mdi-close")
     }
     showConfirmDeleteDialog.value = false;
   } catch (error) {
@@ -442,9 +406,8 @@ const getDayName = (dayId) => {
 .unicorn-logo .path1 {
   fill: rgb(var(--v-theme-onBackground)) !important;
 }
+
 .unicorn-logo .path2 {
   fill: rgb(var(--v-theme-onBackground)) !important;
 }
-
-
 </style>

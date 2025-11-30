@@ -296,7 +296,7 @@ const defaultPoints = computed(() => {
       return 15
     }
     else {
-      return 30
+      return 10
     }
 });
 

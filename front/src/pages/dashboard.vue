@@ -457,7 +457,7 @@
               <CalendarMobile :daysOfWeek="daysOfWeek" :calendarDays="calendarDays" :isSelected="isSelected"
                 :isToday="isToday" :rotationsMap="rotationsMap" @select-day="selectedDate = $event"
                 @swipe-left="currentMonth = (currentMonth + 1) % 12"
-                @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12" />
+                @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12" @click="$router.push('/calendar')" style="cursor: pointer;" />
             </v-card-text>
           </v-card>
 

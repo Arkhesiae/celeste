@@ -15,27 +15,24 @@
         </div>
 
         <!-- Section des points -->
-        <div class="points-section justify-center align-center flex-column mb-6">
+        <div class="points-section justify-content align-center mb-6" style="display: flex; justify-content: space-evenly; align-items: center;">
           
           <transition v-if="points || points === 0" name="slide-points" mode="out-in">
             <div v-if="points > 99999" class="text-center text-h6 ">
                 <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
             </div>
             <div v-else :key="points" class="text-h3 font-weight-bold text-center"> 
-              {{ points }}
+              {{ points }} pts
             </div>
           </transition>
-          <div class="text-subtitle-1 text-center mb-1 mt-n1" style="opacity: 0.5;"> points</div>
-        </div>
-
-        <!-- Boutons d'action -->
-        <div class="d-flex justify-center align-center">
           <v-btn prepend-icon="mdi-transfer" color="background" variant="flat" rounded="lg" height="40"
             class="transaction-button" @click="$emit('transfer')">
             Transférer
           </v-btn>
-
         </div>
+
+        <!-- Boutons d'action -->
+
 
         <!-- Historique des transactions -->
         <div class="mt-6 pa-0">

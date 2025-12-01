@@ -357,7 +357,6 @@ export async function categorizeDemands(demands, userId) {
                 return demand;
             })
         );
-        console.log('Test')
 
         return categorized;
     } catch (error) {

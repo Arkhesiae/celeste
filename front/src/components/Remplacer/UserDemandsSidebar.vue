@@ -98,7 +98,7 @@
       <v-expand-transition>
         <v-card-text class="pa-0">
           <div v-if="acceptedAsAccepter.length > 0" class="d-flex flex-column ga-2">
-            <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster.filter(d => d.type === 'hybrid')"" :key="
+            <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster.filter(d => d.type != 'switch')"" :key="
               demand.id" :demand="demand" :small="true" />
           </div>
         </v-card-text>
@@ -128,7 +128,7 @@ const props = defineProps({
 
 const acceptedDemands = computed(() => {
   // 1. Filtrer les demandes où l'utilisateur est le Poster
-  const asPoster = props.acceptedAsPoster.filter(d => d.type !== 'hybrid');
+  const asPoster = props.acceptedAsPoster.filter(d => d.type === 'switch');
   // 2. Fusionner les demandes filtrées du Poster avec toutes les demandes du Demander
   return [
     ...asPoster,

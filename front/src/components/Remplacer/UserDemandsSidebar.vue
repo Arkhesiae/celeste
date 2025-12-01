@@ -62,7 +62,7 @@
       <v-expand-transition>
         <v-card-text class="pa-0" v-if="acceptedAsPoster?.length > 0">
           <div v-if="acceptedAsPoster.length > 0" class="d-flex flex-column ga-2">
-            <OwnDemandCard :isPoster="true" v-for="demand in acceptedAsPoster.filter(d => d.type != 'hybrid')"" :key="
+            <OwnDemandCard :isPoster="true" v-for="demand in acceptedDemands" :key="
               demand.id" :demand="demand" :small="true" />
           </div>
           <div v-else class="text-center py-4">
@@ -72,7 +72,7 @@
         </v-card-text>
       </v-expand-transition>
     </v-card>
-    <v-card rounded="0" elevation="0" color="transparent" class="pa-0 mt-4"
+<!--     <v-card rounded="0" elevation="0" color="transparent" class="pa-0 mt-4"
       style="position: sticky !important; top: 400px !important;">
       <v-expand-transition>
         <v-card-text class="pa-0">
@@ -82,7 +82,7 @@
           </div>
         </v-card-text>
       </v-expand-transition>
-    </v-card>
+    </v-card> -->
 
     <!-- Section "Je me fais remplacer" -->
     <div class="d-flex align-start flex-column justify-space-between my-4 mt-16">
@@ -125,6 +125,17 @@ const props = defineProps({
     default: () => []
   }
 });
+
+const acceptedDemands = computed(() => {
+  // 1. Filtrer les demandes où l'utilisateur est le Poster
+  const asPoster = props.acceptedAsPoster.filter(d => d.type !== 'hybrid');
+  // 2. Fusionner les demandes filtrées du Poster avec toutes les demandes du Demander
+  return [
+    ...asPoster,
+    ...props.acceptedAsAccepter
+  ].sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));;
+});
+
 </script>
 
 <style scoped>

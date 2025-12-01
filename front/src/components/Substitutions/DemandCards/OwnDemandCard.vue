@@ -30,9 +30,12 @@
             <div @click.stop="showUserDialog = true" class="d-flex align-center justify-start "
               v-if="!(isPoster && !getAccepter)">
 
-              <Replaced :user="isPoster && getAccepter ? getAccepter : getPoster"
-                :teamName="isPoster && demand?.type === 'switch' ? getAccepterTeamName : (isPoster && demand?.type === 'hybrid') ? getTeamById(getAccepter.currentTeam.teamId).name : getTeamName">
-              </Replaced>{{ }}
+              <Replaced v-if="isPoster && demand.type === 'substitution'" :user="isPoster && getAccepter ? getAccepter : getPoster"
+                :teamName="getAccepter.currentTeam.teamId ? getTeamById(getAccepter.currentTeam.teamId).name  : getTeamName" >
+              </Replaced>
+              <Replaced v-else :user="isPoster && getAccepter ? getAccepter : getPoster"
+                :teamName="isPoster && demand?.type === 'switch' ? getTeamById(getAccepter.currentTeam.teamId).name  : (isPoster && demand?.type === 'hybrid') ? getTeamById(getAccepter.currentTeam.teamId).name : getTeamName">
+              </Replaced>
 
             </div>
           </div>

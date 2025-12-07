@@ -1,21 +1,10 @@
 <template>
     <div class="d-flex  justify-space-between" :class="smAndDown ? 'flex-column ga-2 align-end' : ' align-center'">
-        <div class="d-flex align-center  rounded-lg" :class="smAndDown ? 'bg-surface pa-2 flex-grow-1 w-100' : ''">
-
-
-            <v-chip-group content-class="content-custom" v-model="selectedFilter" variant="flat" color="onBackground"
-                class="pa-0 ma-0 w-100" :class="smAndDown ? 'd-flex flex-grow-1' : 'justify-center d-flex'">
-                <v-chip class="ma-0 justify-center" :size="smAndDown ? 'small' : 'default'" v-for="filter in filters"
-                    :key="filter.value" variant="text" rounded="lg" :value="filter.value" :color="filter.color"
-                    :class="smAndDown ? 'flex-grow-1' : ''">
-                    {{ filter.label }}
-                </v-chip>
-            </v-chip-group>
-        </div>
+      
         <v-menu color="onBackground" rounded="lg">
             <template v-slot:activator="{ props }">
                 <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-                    <span class="text-overline">{{ selectedSort ? selectedSort.text : sortLabel }}</span>
+                    <span >{{ selectedSort ? selectedSort.text : sortLabel }}</span>
                     <v-icon>mdi-chevron-down</v-icon>
                 </v-btn>
             </template>

@@ -5,8 +5,8 @@
         insets }} </div>
     <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
     <router-view v-slot="{ Component, route }">
-      <transition :name="route.meta.transition || ''" mode="out-in">
-        <component :is="Component" class="page" />
+      <transition :name="route.meta.transition || 'fade-one'" mode="out-in" >
+        <component :is="Component" class="page" :key="route"/>
       </transition>
     </router-view>
 

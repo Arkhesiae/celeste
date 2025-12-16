@@ -28,7 +28,7 @@
             :name="route.meta.transition || ''"
             > -->
           
-                <component :is="Component"   />
+                <component :is="Component"  :key="route.fullPath" />
       
           </transition>
         </router-view>

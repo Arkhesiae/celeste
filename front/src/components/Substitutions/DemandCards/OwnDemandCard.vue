@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card :class="demandCardClasses" variant="flat" rounded="lg" class="demand-card pl-4 pa-3"
-      @click="showDemandDetailsModal = true">
+      @click="openDetails">
 
       <div class="d-flex align-center justify-space-between">
         <div class="d-flex align-center mr-3 ga-2">
@@ -174,7 +174,7 @@ const showCommentDialog = ref(false);
 const showConfirmDeleteDialog = ref(false);
 const showDemandDetailsModal = ref(false);
 
-defineEmits(['accept', 'decline']);
+const emit = defineEmits(['accept', 'decline', 'openDetails']);
 
 // --- Utility Functions/Comptuted Properties (Unchanged) ---
 
@@ -375,6 +375,12 @@ const labelOption = computed(() => {
 
   return "Statut inconnu";
 });
+
+
+const openDetails = () => {
+  emit('openDetails', props.demand);
+};
+
 
 const confirmCancelOrWithdraw = () => {
   showConfirmDeleteDialog.value = true;

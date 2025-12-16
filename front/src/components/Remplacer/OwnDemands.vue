@@ -24,7 +24,7 @@
         <v-card-text class="pa-0" v-if="pendingDemands.length > 0">
           <div v-if="pendingDemands.length > 0" class="d-flex flex-column ga-2">
             <OwnDemandCard :isPoster="true" v-for="demand in pendingDemands" :key="demand.id" :demand="demand"
-              :small="true" />
+              :small="true" @openDetails="openDemandDetails" />
           </div>
           <div v-else class="text-center py-4">
             <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
@@ -44,7 +44,7 @@
           <v-card-text class="pa-0" v-if="upcomingDemands.length > 0">
             <div v-if="upcomingDemands.length > 0" class="d-flex flex-column ga-2">
               <OwnDemandCard :isPoster="true" v-for="demand in upcomingDemands" :key="
-                demand.id" :demand="demand" :small="true" />
+                demand.id" :demand="demand" :small="true" @openDetails="openDemandDetails" />
             </div>
             <div v-else class="text-center py-4">
               <v-icon icon="mdi-check-circle-outline" color="success" size="large" class="mb-2" />
@@ -62,7 +62,7 @@
           <v-card-text class="pa-0">
             <div v-if="replacementDemands.length > 0" class="d-flex flex-column ga-2">
               <OwnDemandCard :isPoster="true" v-for="demand in replacementDemands" :key="
-                demand.id" :demand="demand" :small="true" />
+                demand.id" :demand="demand" :small="true" @openDetails="openDemandDetails" />
             </div>
           </v-card-text>
         </v-expand-transition>
@@ -83,6 +83,9 @@ const props = defineProps({
     default: 'tous'
   }
 });
+
+// Emits
+const emit = defineEmits(['openDetails']);
 
 
 const pendingDemands = computed(() => [
@@ -153,6 +156,11 @@ const currentSubtitle = computed(() => {
       return 'Toutes les demandes me concernant sont affichées ici.';
   }
 });
+
+const openDemandDetails = (demand) => {
+  console.log('openDemandDetails', demand);
+  emit('openDetails', demand);
+};
 
 </script>
 

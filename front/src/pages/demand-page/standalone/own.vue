@@ -11,14 +11,19 @@
 
     <v-row>
       <v-col cols="12">
-        <OwnDemands :selected-filter="selectedFilter" />
+        <OwnDemands :selected-filter="selectedFilter" @openDetails="openDemandDetails" />
       </v-col>
     </v-row>
+
+    <DemandModal v-model="showDemandDetailsModal" :demand="selectedDemand" />
   </v-container>
 </template>
 
 <script setup>
 import { ref } from "vue";
+
+
+
 
 // Options de filtre
 const filters = [
@@ -29,6 +34,16 @@ const filters = [
 ];
 
 const selectedFilter = ref('tous');
+
+const showDemandDetailsModal = ref(false);
+const selectedDemand = ref(null);
+
+const openDemandDetails = (demand) => {
+  console.log('openDemandDetails', demand);
+  selectedDemand.value = demand;
+  showDemandDetailsModal.value = true;
+};
+
 </script>
 
 <style scoped>

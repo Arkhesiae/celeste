@@ -4,7 +4,7 @@
 
     <v-row class="mb-16">
       <!-- Colonne principale -->
-      <v-col cols="12" sm="12" md="12" lg="7" xl="8">
+      <v-col cols="12" sm="12" md="6" lg="7" xl="8">
         <v-row >
           <v-col cols="12">
             <FilterChipGroup v-model="availableFilter" :filters="availableFilterOptions" />
@@ -20,7 +20,7 @@
       </v-col>
 
       <!-- Colonne latérale -->
-      <v-col cols="12" sm="12" md="12" lg="5" xl="4" v-if="!mdAndDown">
+      <v-col cols="12" sm="12" md="6" lg="5" xl="4" v-if="!smAndDown">
         <v-row >
           <v-col cols="12">
             <FilterChipGroup v-model="ownFilter" :filters="ownFilterOptions" />
@@ -30,26 +30,13 @@
 
         <v-row>
           <v-col cols="12">
-            <OwnDemands :selected-filter="ownFilter" />
+            <OwnDemands :selected-filter="ownFilter" @openDetails="openDemandDetails" />
           </v-col>
         </v-row>
       </v-col>
     </v-row>
 
-    <SidebarDrawer v-if="smAndDown" v-model="showSidebar">
-      <v-row >
-        <v-col cols="12">
-          <FilterChipGroup v-model="ownFilter" :filters="ownFilterOptions" />
-        </v-col>
-      </v-row>
-
-
-      <v-row>
-        <v-col cols="12">
-          <OwnDemands :selected-filter="ownFilter" />
-        </v-col>
-      </v-row>
-    </SidebarDrawer>
+ 
 
     <v-dialog v-model="loadingDemands" persistent width="300">
       <v-card rounded="xl" class="pa-2">
@@ -61,6 +48,8 @@
     </v-dialog>
 
     <RulesDialog v-model="showRulesDialog" />
+
+    <DemandModal v-model="showDemandDetailsModal" :demand="selectedDemand" />
 
   </v-container>
 </template>
@@ -90,6 +79,14 @@ const sortOptions = [
 const sortBy = ref(sortOptions[1]);
 
 
+const showDemandDetailsModal = ref(false);
+const selectedDemand = ref(null);
+
+const openDemandDetails = (demand) => {
+  console.log('openDemandDetails', demand);
+  selectedDemand.value = demand;
+  showDemandDetailsModal.value = true;
+};
 
 // Options de filtre
 const ownFilterOptions = [

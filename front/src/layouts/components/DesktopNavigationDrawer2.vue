@@ -99,7 +99,7 @@ const pendingUsersCount = computed(() => {
 // Navigation items configuration
 const navigationItems = computed(() => [
   {
-    path: '/exchange/replace',
+    path: '/demand-page/demands',
     title: 'Demandes',
     value: 'replace',
     iconActive: 'mdi-account-arrow-left',

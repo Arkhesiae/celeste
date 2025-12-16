@@ -179,7 +179,7 @@ const safeAreaRight = computed(() => {
 const emit = defineEmits(['update:modelValue', 'update:theme']);
 
 const menuItemsLogged = [
-  { key: 'remplacements', label: 'Demandes', path: '/exchange/replace', title: 'Remplacements' },
+  { key: 'remplacements', label: 'Demandes', path: '/demand-page/demands', title: 'Remplacements' },
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.userData.adminType === 'master' ? '/center/centers' : '/center/' + authStore.userData.centerId + '/teams', title: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre' },

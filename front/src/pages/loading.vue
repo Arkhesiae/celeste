@@ -21,10 +21,12 @@ const { initializeApp } = useAppInitialization();
 const router = useRouter();
 onMounted(async () => {
     if (!initializationStore.isAppReady) {
-        await initializeApp().then(() => {
-            router.push({ path: initializationStore.getPendingRoute() });
-        });
+        await initializeApp();
     }
+    
+    // Rediriger vers la route en attente ou dashboard par défaut
+    const pendingRoute = initializationStore.getPendingRoute() || '/dashboard';
+    router.push({ path: pendingRoute });
 });
 
 </script>

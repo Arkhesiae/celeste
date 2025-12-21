@@ -17,60 +17,58 @@
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
 import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const safeAreaTop = ref([]);
 const safeAreaBottom = ref([]);
-const router = useRouter();
 
-const { initializeApp } = useAppInitialization();
+const { initializeCenters } = useAppInitialization();
 
 
 onMounted(async () => {
   await getSafeAreaAndApply();
+  await initializeCenters();
+  // await router.isReady();
+  // const savedPath = router.currentRoute.value || { path: '/' };
 
-  await router.isReady();
-  const savedPath = router.currentRoute.value || { path: '/' };
+  // try {
+  //   // Initialisation de l'application avec callback pour savoir si c'est une init connectée
+  //   await initializeApp(({ loggedIn }) => {
+  //     if (loggedIn && savedPath.path !== '/loading') {
+  //       // Sauvegarder la route en cours
+  //       sessionStorage.setItem('pendingRoute', JSON.stringify(savedPath));
+  //       sessionStorage.setItem('loadingRedirected', 'true');
 
-  try {
-    // Initialisation de l'application avec callback pour savoir si c'est une init connectée
-    await initializeApp(({ loggedIn }) => {
-      if (loggedIn && savedPath.path !== '/loading') {
-        // Sauvegarder la route en cours
-        sessionStorage.setItem('pendingRoute', JSON.stringify(savedPath));
-        sessionStorage.setItem('loadingRedirected', 'true');
+  //       // Redirection uniquement si utilisateur connecté
+  //       router.push({ path: '/loading', replace: true });
+  //     }
+  //   });
 
-        // Redirection uniquement si utilisateur connecté
-        router.push({ path: '/loading', replace: true });
-      }
-    });
+  // } catch (error) {
+  //   console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
+  // } finally {
+  //   let routeToRestore = savedPath;
 
-  } catch (error) {
-    console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
-  } finally {
-    let routeToRestore = savedPath;
+  //   try {
+  //     const stored = sessionStorage.getItem('pendingRoute');
+  //     if (stored) routeToRestore = JSON.parse(stored);
+  //   } catch (e) {
+  //     console.warn('⚠️ Route sauvegardée invalide, fallback sur route actuelle');
+  //   }
 
-    try {
-      const stored = sessionStorage.getItem('pendingRoute');
-      if (stored) routeToRestore = JSON.parse(stored);
-    } catch (e) {
-      console.warn('⚠️ Route sauvegardée invalide, fallback sur route actuelle');
-    }
+  //   sessionStorage.removeItem('pendingRoute');
+  //   sessionStorage.removeItem('loadingRedirected');
 
-    sessionStorage.removeItem('pendingRoute');
-    sessionStorage.removeItem('loadingRedirected');
-
-    if (routeToRestore.path !== '/loading') {
-      await router.push({
-        path: routeToRestore.path,
-        replace: true,
-        query: routeToRestore.query || {},
-        params: routeToRestore.params || {},
-      });
-    } else {
-      await router.push({ path: '/', replace: true });
-    }
-  }
+  //   if (routeToRestore.path !== '/loading') {
+  //     await router.push({
+  //       path: routeToRestore.path,
+  //       replace: true,
+  //       query: routeToRestore.query || {},
+  //       params: routeToRestore.params || {},
+  //     });
+  //   } else {
+  //     await router.push({ path: '/', replace: true });
+  //   }
+  // }
 });
 
 
@@ -92,7 +90,7 @@ async function getSafeAreaAndApply() {
 
       for (const [key, value] of Object.entries(insets)) {
 
-        console.log(key, value, 'key, value');
+        // console.log(key, value, 'key, value');
         document.documentElement.style.setProperty(
           `--safe-area-${key}`,
           `${value}px`,
@@ -111,7 +109,7 @@ async function getSafeAreaAndApply() {
 
 
     await SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
-      console.log(statusBarHeight, 'statusbarHeight');
+      // console.log(statusBarHeight, 'statusbarHeight');
     });
 
     await SafeArea.removeAllListeners();
@@ -119,14 +117,14 @@ async function getSafeAreaAndApply() {
     // when safe-area changed
     await SafeArea.addListener('safeAreaChanged', data => {
       const { insets } = data;
-      console.log(insets, 'insets');
+      // console.log(insets, 'insets');
       let top = insets.top;
       let bottom = insets.bottom;
       safeAreaTop.value.push(top);
       safeAreaBottom.value.push(bottom);
 
       for (const [key, value] of Object.entries(insets)) {
-        console.log(key, value, 'key, value');
+        // console.log(key, value, 'key, value');
         document.documentElement.style.setProperty(
           `--safe-area-${key}`,
           `${value}px`,

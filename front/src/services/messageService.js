@@ -1,36 +1,32 @@
-import { API_URL, handleResponse, getAuthHeaders } from '@/config/api';
+import { apiFetch } from '../config/api';
 
 export const messageService = {
   async fetchMessages() {
-    const response = await fetch(`${API_URL}/messages`, {
+    const response = await apiFetch(`/messages`, {
       method: 'GET',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async createMessage(messageData) {
-    const response = await fetch(`${API_URL}/messages`, {
+    const response = await apiFetch(`/messages`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(messageData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   async markAsRead(messageId) {
-    const response = await fetch(`${API_URL}/messages/${messageId}/read`, {
+    const response = await apiFetch(`/messages/${messageId}/read`, {
       method: 'PUT',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async deleteMessage(messageId) {
-    const response = await fetch(`${API_URL}/messages/${messageId}`, {
+    const response = await apiFetch(`/messages/${messageId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   }
 }; 

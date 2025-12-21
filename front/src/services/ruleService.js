@@ -1,37 +1,32 @@
-import { API_URL } from '@/config/api';
-import { handleResponse, getAuthHeaders } from '@/config/api';
+import { apiFetch } from '../config/api';
 
 export const ruleService = {
   async getAllRules() {
-    const response = await fetch(`${API_URL}/rules`, {
+    const response = await apiFetch(`/rules`, {
       method: 'GET',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async updateRule(name, data) {
-    const response = await fetch(`${API_URL}/rules/${name}`, {
+    const response = await apiFetch(`/rules/${name}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
-    return handleResponse(response);
+    return response;
   },
 
   async initializeRules() {
-    const response = await fetch(`${API_URL}/rules/initialize`, {
+    const response = await apiFetch(`/rules/initialize`, {
       method: 'POST',
-      headers: getAuthHeaders(),
     });
-    return handleResponse(response);
+    return response;
   },
 
   async resetRules() {
-    const response = await fetch(`${API_URL}/rules/reset`, {
+    const response = await apiFetch(`/rules/reset`, {
       method: 'POST',
-      headers: getAuthHeaders(),
     });
-    return handleResponse(response);
+    return response;
   }
 }; 

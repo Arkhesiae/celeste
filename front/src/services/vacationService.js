@@ -2,8 +2,7 @@
  * Service pour gérer les appels API liés aux créneaux horaires (vacation).
  * @module vacationService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
-import { calculateRestDelay } from '../utils/shiftUtils';
+import { apiFetch } from '../config/api';
 
 
 export const vacationService = {
@@ -14,12 +13,11 @@ export const vacationService = {
    * @returns {Promise<Array>} Liste des créneaux horaires
    */
   async fetchWorkdaysOfUser(userId, dates) {
-    const response = await fetch(`${API_URL}/users/${userId}/get-shifts`, {
+    const response = await apiFetch(`/users/${userId}/get-shifts`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ dates }),
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -29,12 +27,11 @@ export const vacationService = {
    * @returns {Promise<Array>} Liste des créneaux horaires
    */
   async fetchVacationsOfUser(userId, dates) {
-    const response = await fetch(`${API_URL}/users/${userId}/get-shifts-with-substitutions`, {
+    const response = await apiFetch(`/users/${userId}/get-shifts-with-substitutions`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ dates }),
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -53,9 +50,8 @@ export const vacationService = {
     nextDate.setDate(nextDate.getDate() + 1);
 
     try {
-      const response = await fetch(`${API_URL}/users/${userId}/get-shifts`, {
+      const response = await apiFetch(`/users/${userId}/get-shifts`, {
         method: "POST",
-        headers: getAuthHeaders(),
         body: JSON.stringify({
           dates: [
             prevDate.toISOString(),
@@ -68,7 +64,7 @@ export const vacationService = {
         throw new Error("Échec lors de la récupération des vacations adjacentes");
       }
 
-      const data = await handleResponse(response);
+      const data = await response;
       return {
         prev: data.find(v => new Date(v.date).getTime() === prevDate.getTime()),
         next: data.find(v => new Date(v.date).getTime() === nextDate.getTime())

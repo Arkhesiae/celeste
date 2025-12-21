@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux modifications de planning.
  * @module planningModificationService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const planningModificationService = {
   /**
@@ -19,12 +19,11 @@ export const planningModificationService = {
    * @returns {Promise<Object>} La modification créée
    */
   async registerModification(modificationData) {
-    const response = await fetch(`${API_URL}/planning-modifications/register`, {
+    const response = await apiFetch(`/planning-modifications/register`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(modificationData)
     });
-    return handleResponse(response);
+    return response;
   },
 
 }

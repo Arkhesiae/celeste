@@ -75,17 +75,30 @@ const logout = async (req, res) => {
         const refreshToken = req.cookies?.refreshToken;
 
         if (refreshToken) {
-            await User.updateOne({ refreshToken }, { $unset: { refreshToken: 1 } });
+            try {
+                const payload = authService.verifyRefreshToken(refreshToken);
+
+                await User.updateOne(
+                    { _id: payload.userId },
+                    { $pull: { refreshTokens: { token: refreshToken } } }
+                );
+            } catch (error) {
+                console.error('Erreur lors de la vérification du token:', error);
+            }
         }
 
-        res.clearCookie("refreshToken");
-
-        return res.json({ message: "Déconnexion réussie" });
     } catch (error) {
         console.error('Erreur lors de la déconnexion:', error);
-        res.status(500).json({ error: 'Une erreur est survenue lors de la déconnexion' });
+       
+    } finally {
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        });
+        return res.status(200).json({ message: 'Déconnexion réussie' });
     }
-}
+};
 
 const requestPasswordReset = async (req, res) => {
     try {

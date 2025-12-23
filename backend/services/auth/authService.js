@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
 const ACCESS_TOKEN_EXPIRY = '10s';
-const REFRESH_TOKEN_EXPIRY = '30s';
+const REFRESH_TOKEN_EXPIRY = '365d';
 
 /**
  * Génère un access token JWT
@@ -27,11 +27,20 @@ export function generateAccessToken(payload) {
  * @returns {string} Refresh token
  */
 export const generateRefreshToken = (userId) => {
-    return jwt.sign(
+    const token = jwt.sign(
       { userId },
       JWT_REFRESH_SECRET,
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
+
+    const decoded = jwt.verify(token, JWT_REFRESH_SECRET);
+    const expiresAt = new Date(decoded.exp * 1000);
+    console.log("expiresAt", expiresAt);
+
+    return {
+        token,
+        expiresAt: new Date(decoded.exp * 1000)
+    };
   };
 
 /**
@@ -44,10 +53,7 @@ export function verifyRefreshToken(refreshToken) {
     try {
       return jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     } catch {
-      const error = new Error('Session invalide ou expirée');
-      error.code = 'INVALID_REFRESH_TOKEN';
-      error.status = 401;
-      throw error;
+      throwAuthError('INVALID_REFRESH_TOKEN', 'Session invalide ou expirée');
     }
   }
   
@@ -62,19 +68,13 @@ export async function loginUser(email, password) {
     // Vérification si l'utilisateur existe
     const user = await User.findOne({ email });
     if (!user) {
-        const error = new Error('E-mail invalide, aucun utilisateur trouvé');
-        error.code = 'USER_NOT_FOUND';
-        error.status = 401;
-        throw error;
+        throwAuthError('USER_NOT_FOUND', 'E-mail invalide, aucun utilisateur trouvé');
     }
 
     // Vérification du mot de passe
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
-        const error = new Error('Mot de passe invalide');
-        error.code = 'INVALID_PASSWORD';
-        error.status = 401;
-        throw error;
+        throwAuthError('INVALID_PASSWORD', 'Mot de passe invalide');
     }
 
     // Génération des tokens
@@ -84,10 +84,14 @@ export async function loginUser(email, password) {
         adminType: user.adminType
     });
 
-    const refreshToken = generateRefreshToken(user._id);
+    const { token: refreshToken, expiresAt } = generateRefreshToken(user._id);
 
-    // Sauvegarder le refresh token dans la base de données
-    user.refreshToken = refreshToken;
+    const now = new Date();
+    user.refreshTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
+
+    user.refreshTokens.push({ token: refreshToken, createdAt: new Date(), expiresAt });
+    
+
     user.lastLogin = new Date();
     await user.save();
 
@@ -120,28 +124,34 @@ export async function loginUser(email, password) {
  * @returns {Promise<Object>} Nouveau access token et refresh token
  */
 export async function refreshAccessToken(refreshToken) {
-    try {
-        verifyRefreshToken(refreshToken);
-    } catch (error) {
-        throw error;
-    }
+    const payload = verifyRefreshToken(refreshToken);
 
-    const user = await User.findOne({
-        refreshToken: refreshToken,
-    });
 
+    const user = await User.findById(payload.userId);
     if (!user) {
-        const error = new Error('Token invalide');
-        error.code = 'TOKEN_INVALID';
-        error.status = 401;
-        throw error;
+        throwAuthError('USER_NOT_FOUND', 'Utilisateur non trouvé');
     }
+
+  
+    const now = new Date();
+    const validTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
+
+
+    const tokenIndex = validTokens.findIndex(rt => rt.token === refreshToken);
+    if (tokenIndex === -1) {
+        throwAuthError('TOKEN_INVALID', 'Token invalide');
+    }   
+
+  
 
     const newAccessToken = generateAccessToken({
         userId: user._id,
         isAdmin: user.isAdmin,
         adminType: user.adminType
     });
+
+    user.refreshTokens = validTokens;
+    await user.save();
 
     const userData = {
         name: user.name,
@@ -164,3 +174,10 @@ export async function refreshAccessToken(refreshToken) {
     };
 }
 
+
+function throwAuthError(code, message) {
+    const error = new Error(message);
+    error.code = code;
+    error.status = 401;
+    throw error;
+}

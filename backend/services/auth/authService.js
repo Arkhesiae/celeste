@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-const ACCESS_TOKEN_EXPIRY = '10s';
-const REFRESH_TOKEN_EXPIRY = '365d';
+const ACCESS_TOKEN_EXPIRY = '15m';
+const REFRESH_TOKEN_EXPIRY = '180d';
 
 /**
  * Génère un access token JWT

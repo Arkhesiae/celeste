@@ -219,6 +219,25 @@
     <v-row :class="smAndDown ? 'mx-n4' : ''">
 
       <v-col cols="12" md="7" xl="8" offset-xl="0" class="pa-2" :class="smAndDown ? 'px-4' : ''">
+
+        <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-6 pl-8" color="surfaceContainer">
+          <v-card-title class="text-h6 font-weight-medium">Mutations à venir</v-card-title>
+          <v-card-text>
+            <div v-if="centerHasMutations">
+              <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
+                  style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
+
+              </div>
+            </div>
+            <div v-else>
+              <div class="text-medium-emphasis position-absolute">
+                <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2" />Pas de mutation prévue.
+              </div>
+            </div>
+          </v-card-text>
+        </v-card>
+
         <!-- Carte des vacations -->
         <v-card rounded="xl" elevation="0" class="mb-4 smooth-shadow sss pa-6 pl-8" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">Aujourd'hui</v-card-title>
@@ -244,7 +263,7 @@
                 </v-chip>
               </div>
             </div>
-            <div v-else class="text-medium-emphasis">
+            <div v-else class="text-medium-emphasis position-absolute">
               <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2" />
               Pas de vacation aujourd'hui
             </div>
@@ -277,7 +296,7 @@
                 </v-chip>
               </div>
             </div>
-            <div v-else class="text-medium-emphasis">
+            <div v-else class="text-medium-emphasis position-absolute">
               <v-icon icon="mdi-alert-circle-outline" color="remplacement" size="16" class="mr-2" />
               Pas de vacation demain
             </div>

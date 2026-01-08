@@ -26,6 +26,12 @@
             :rules="[v => !!v || 'Le centre de destination est requis']"
           ></v-select>
 
+          <v-text-field v-model="start" type="date" label="Date de mutation" variant="outlined"
+            color="primary"
+            rounded="xl"
+            bg-color="surface"
+            prepend-inner-icon="mdi-calendar" hide-details="auto" :rules="[v => !!v || 'La date de mutation est requise']" class="mt-4"></v-text-field>
+
           <v-textarea
             v-model="reason"
             label="Motif de la demande"
@@ -72,6 +78,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useDisplay } from 'vuetify'
+import { useCenterStore } from "@/stores/centerStore";
 
 const props = defineProps({
   modelValue: {
@@ -88,13 +95,12 @@ const valid = ref(false)
 const loading = ref(false)
 const selectedCenter = ref('')
 const reason = ref('')
+const start = ref('')
 
 // TODO: Remplacer par la liste réelle des centres
-const centers = [
-  'Centre A',
-  'Centre B',
-  'Centre C'
-]
+
+const centerStore = useCenterStore();
+const centers = computed(() => centerStore.centers.map(center => center.name));
 
 const localDialogVisible = computed({
   get: () => props.modelValue,
@@ -109,6 +115,7 @@ const localDialogVisible = computed({
 const resetForm = () => {
   selectedCenter.value = ''
   reason.value = ''
+  start.value = ''
   form.value?.reset()
 }
 

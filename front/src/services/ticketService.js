@@ -1,89 +1,77 @@
-import { API_URL, handleResponse, getAuthHeaders } from '@/config/api';
+import { apiFetch } from '@/config/api';
 
 export const ticketService = {
   async fetchTickets() {
-    const response = await fetch(`${API_URL}/tickets?archived=false`, {
-      method: 'GET',
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/tickets?archived=false`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   async createTicket(ticketData) {
     console.log(ticketData);
-    const response = await fetch(`${API_URL}/tickets/create`, {
+    const response = await apiFetch(`/tickets/create`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(ticketData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   async markAsRead(ticketId) {
-    const response = await fetch(`${API_URL}/tickets/${ticketId}/read`, {
+    const response = await apiFetch(`/tickets/${ticketId}/read`, {
       method: 'PUT',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async deleteTicket(ticketId) {
-    const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+    const response = await apiFetch(`/tickets/${ticketId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async updateTicketStatus(id, ticketStatus) {
-    console.log("azeaze");
-    console.log(id, ticketStatus);
-    const response = await fetch(`${API_URL}/tickets/status/${id}`, {
+    const response = await apiFetch(`/tickets/status/${id}`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ ticketStatus })
     });
-    return handleResponse(response);
+    return response;
   },
 
   async markReplySent(ticketId) {
-    const response = await fetch(`${API_URL}/tickets/${ticketId}/reply-sent`, {
+    const response = await apiFetch(`/tickets/${ticketId}/reply-sent`, {
       method: 'PUT',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async sendTicketReply(ticketId, content) {
-    const response = await fetch(`${API_URL}/tickets/${ticketId}/reply`, {
+    const response = await apiFetch(`/tickets/${ticketId}/reply`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ content })
     });
-    return handleResponse(response);
+    return response;
   },
 
   async fetchTickets(archived = false) {
-    const response = await fetch(`${API_URL}/tickets?archived=${archived}`, {
+    const response = await apiFetch(`/tickets?archived=${archived}`, {
       method: 'GET',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async archiveTicket(ticketId) {
-    const response = await fetch(`${API_URL}/tickets/${ticketId}/archive`, {
+    const response = await apiFetch(`/tickets/${ticketId}/archive`, {
       method: 'PUT',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async restoreTicket(ticketId) {
-    const response = await fetch(`${API_URL}/tickets/${ticketId}/restore`, {
+    const response = await apiFetch(`/tickets/${ticketId}/restore`, {
       method: 'PUT',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   }
 }; 

@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux notifications.
  * @module notificationService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const notificationService = {
   /**
@@ -10,10 +10,10 @@ export const notificationService = {
    * @returns {Promise<Array>} Liste des notifications.
    */
   async getNotifications(userId) {
-    const response = await fetch(`${API_URL}/notifications/${userId}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/notifications/${userId}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -22,11 +22,10 @@ export const notificationService = {
    * @returns {Promise<Object>} La notification mise à jour.
    */
   async markAsRead(id) {
-    const response = await fetch(`${API_URL}/notifications/${id}/read`, {
+    const response = await apiFetch(`/notifications/${id}/read`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -34,25 +33,16 @@ export const notificationService = {
    * @returns {Promise<void>}
    */
   async markAllAsRead() {
-    const response = await fetch(`${API_URL}/notifications/read-all`, {
+    const response = await apiFetch(`/notifications/read-all`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   async clearNotifications(userId) {
-    try {
-      const response = await fetch(`${API_URL}/notifications/${userId}/clear`, {
+        const response = await apiFetch(`/notifications/${userId}/clear`, {
         method: 'DELETE'
       });
-      if (!response.ok) {
-        throw new Error('Erreur lors de la suppression des notifications');
-      }
-      return await response.json();
-    } catch (error) {
-      console.error('Erreur service notifications:', error);
-      throw error;
-    }
-  }
+    return response;
+  },
 }; 

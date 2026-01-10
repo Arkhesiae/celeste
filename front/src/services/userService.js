@@ -2,8 +2,7 @@
  * Service pour gérer les appels API liés aux utilisateurs.
  * @module userService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
-import { useAuthStore } from '../stores/authStore';
+import { apiFetch } from '../config/api';
 
 export const userService = {
   /**
@@ -11,10 +10,10 @@ export const userService = {
    * @returns {Promise<Array>} Liste des utilisateurs.
    */
   async getUsers() {
-    const response = await fetch(`${API_URL}/users`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -23,10 +22,10 @@ export const userService = {
    * @returns {Promise<Array>} Liste des utilisateurs du centre.
    */
   async fetchUsersByCenter(centerId) {
-    const response = await fetch(`${API_URL}/users/center/${centerId}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users/center/${centerId}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -35,10 +34,10 @@ export const userService = {
    * @returns {Promise<Object>} Les données de l'utilisateur.
    */
   async getUserById(id) {
-    const response = await fetch(`${API_URL}/users/${id}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users/${id}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -48,12 +47,11 @@ export const userService = {
    * @returns {Promise<Object>} L'utilisateur mis à jour.
    */
   async updateUser(id, userData) {
-    const response = await fetch(`${API_URL}/users/${id}`, {
+    const response = await apiFetch(`/users/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(userData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -62,11 +60,10 @@ export const userService = {
    * @returns {Promise<void>}
    */
   async deleteUser(id) {
-    const response = await fetch(`${API_URL}/users/${id}`, {
+    const response = await apiFetch(`/users/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -76,12 +73,11 @@ export const userService = {
    * @returns {Promise<Object>} Les préférences mises à jour.
    */
   async updateUserPreferences(userId, preferences) {
-    const response = await fetch(`${API_URL}/users/${userId}/preferences`, {
+    const response = await apiFetch(`/users/${userId}/preferences`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ preferences })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -91,13 +87,11 @@ export const userService = {
    * @returns {Promise<Object>} Les données mises à jour de l'utilisateur.
    */
   async updateAvatar(userId, formData) {
-    const authStore = useAuthStore();
-    const response = await fetch(`${API_URL}/users/${userId}/avatar`, {
+    const response = await apiFetch(`/users/${userId}/avatar`, {
       method: 'POST',
-      headers: {"Authorization": `Bearer ${authStore.accessToken}`},
       body: formData
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -106,10 +100,10 @@ export const userService = {
    * @returns {Promise<Object>} Les utilisateurs groupés par équipe.
    */
   async fetchUsersAndGroupByTeam(centerId) {
-    const response = await fetch(`${API_URL}/users/teams/${centerId}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users/teams/${centerId}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -118,10 +112,10 @@ export const userService = {
    * @returns {Promise<Array>} Liste des occurrences d'équipe.
    */
   async fetchTeamOccurrencesOfUser(userId) {
-    const response = await fetch(`${API_URL}/users/${userId}/team-occurrences`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users/${userId}/team-occurrences`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -130,10 +124,10 @@ export const userService = {
    * @returns {Promise<Object>} Les données de l'équipe.
    */
   async fetchCurrentTeamOfUser(userId) {
-    const response = await fetch(`${API_URL}/users/${userId}/current-team`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users/${userId}/current-team`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -142,11 +136,10 @@ export const userService = {
    * @returns {Promise<Object>} L'utilisateur approuvé.
    */
   async approvePendingUser(userId) {
-    const response = await fetch(`${API_URL}/users/pending/${userId}/approve`, {
+    const response = await apiFetch(`/users/pending/${userId}/approve`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -155,11 +148,10 @@ export const userService = {
    * @returns {Promise<void>}
    */
   async deletePendingUser(userId) {
-    const response = await fetch(`${API_URL}/users/pending/${userId}`, {
+    const response = await apiFetch(`/users/pending/${userId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -168,11 +160,10 @@ export const userService = {
    * @returns {Promise<Object>} L'utilisateur mis à jour.
    */
   async makeAdmin(userId) {
-    const response = await fetch(`${API_URL}/users/${userId}/make-admin`, {
+    const response = await apiFetch(`/users/${userId}/make-admin`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -181,11 +172,10 @@ export const userService = {
    * @returns {Promise<Object>} L'utilisateur mis à jour.
    */
   async removeAdmin(userId) {
-    const response = await fetch(`${API_URL}/users/${userId}/remove-admin`, {
+    const response = await apiFetch(`/users/${userId}/remove-admin`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -195,12 +185,11 @@ export const userService = {
    * @returns {Promise<Object>} La réponse de l'assignation.
    */
   async assignCenter(userId, centerId) {
-    const response = await fetch(`${API_URL}/users/${userId}/assign-center`, {
+    const response = await apiFetch(`/users/${userId}/assign-center`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ centerId })
     });
-    return handleResponse(response);
+    return response;
   },
 
 };

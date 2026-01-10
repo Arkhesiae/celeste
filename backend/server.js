@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { renderMail } from './src/mail/mailRenderer.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -41,14 +42,14 @@ import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
   origin: [
-    'http://192.168.1.36:30035',
+    'http://192.168.1.37:30035',
     'http://localhost:30035',
     'http://167.235.244.249',
     'http://celeste-app.fr',
     'https://celeste-app.fr',
     'https://localhost',
     'capacitor://localhost',
-    'capacitor://192.168.1.36:30035',
+    'capacitor://192.168.1.37:30035',
     'capacitor://localhost:30035',
     'capacitor://167.235.244.249',
     'capacitor://celeste-app.fr',
@@ -62,6 +63,7 @@ app.use(cors({
 // ─── Middlewares Express ──────────────────────────────────────────────────────
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(cookieParser());
 
 // ─── Fichiers statiques ───────────────────────────────────────────────────────
 app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
@@ -70,12 +72,10 @@ app.get("/preview/:template", (req, res) => {
   res.send(html);
 });
 
-
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 // ─── Routes API ───────────────────────────────────────────────────────────────
 app.use('/api', mainRouter);
-
 
 // ─── Route API par défaut ─────────────────────────────────────────────────────
 app.get('/api', (req, res) => {

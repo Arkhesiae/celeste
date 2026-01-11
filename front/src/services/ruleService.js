@@ -1,32 +1,34 @@
 import { apiFetch } from '../config/api';
 
 export const ruleService = {
-  async getAllRules() {
-    const response = await apiFetch(`/rules`, {
+  async getAllRules (centerId) {
+    const response = await apiFetch(`/rules?centerId=${centerId}`, {
       method: 'GET',
     });
     return response;
   },
 
-  async updateRule(name, data) {
+  async updateRule (name, centerId, data) {
     const response = await apiFetch(`/rules/${name}`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify({ ...data, centerId })
     });
     return response;
   },
 
-  async initializeRules() {
-    const response = await apiFetch(`/rules/initialize`, {
-      method: 'POST',
+  async toggleLock (name, locked) {
+    const response = await apiFetch(`/rules/${name}/lock`, {
+      method: 'PUT',
+      body: JSON.stringify({ locked })
     });
     return response;
   },
 
-  async resetRules() {
-    const response = await apiFetch(`/rules/reset`, {
-      method: 'POST',
+  async resetRule (name, centerId) {
+    const response = await apiFetch(`/rules/${name}?centerId=${centerId}`, {
+      method: 'DELETE',
     });
     return response;
-  }
+  },
+
 }; 

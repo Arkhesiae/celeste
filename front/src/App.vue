@@ -153,6 +153,7 @@ async function getSafeAreaAndApply() {
 </script>
 
 <style>
+
 .app-container {
   /* Marges de sécurité pour éviter le notch et les barres de statut */
   /* padding-top: var(--safe-area-top) !important; */

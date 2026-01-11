@@ -27,7 +27,7 @@
     </MainTitle>
 
 
-    <div class="list-header-container"> 
+    <!-- <div class="list-header-container"> 
     <ListHeader
       :filters="[
         { label: 'Tous', value: 'all' },
@@ -38,8 +38,8 @@
       v-model:filter="selectedFilter"
       v-model:search="searchQuery"
       v-model:sort="sortBy"
-    />
-    </div>
+    /> -->
+    <!-- </div> -->
 
     <v-row >
      
@@ -264,8 +264,8 @@ onMounted(async () => {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
     } else {
+      console.log(authStore.userData.centerId);
       await userStore.fetchUsersByCenter(authStore.userData.centerId);
-      await teamStore.fetchCenterTeams(authStore.userData.centerId);
       selectedCenterId.value = authStore.userData.centerId;
     }
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');

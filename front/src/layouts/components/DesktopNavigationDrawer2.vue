@@ -141,11 +141,7 @@ const navigationItems = computed(() => [
     iconActive: 'mdi-airport',
     iconInactive: 'mdi-airport',
     condition: !isMaster.value
-  }
-]);
-
-const adminNavigationItems = computed(() => [
-  {
+  }, {
     path: '/users',
     title: 'Utilisateurs',
     value: 'users',
@@ -153,6 +149,10 @@ const adminNavigationItems = computed(() => [
     iconInactive: 'mdi-account-group-outline',
 
   },
+]);
+
+const adminNavigationItems = computed(() => [
+
   {
     path: '/admin/pending-users',
     title: 'Candidatures',

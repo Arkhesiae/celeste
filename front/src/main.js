@@ -13,6 +13,8 @@ import App from './App.vue'
 // Composables
 import { createApp } from 'vue'
 
+import './styles/fonts.css';
+
 const app = createApp(App)
 
 /**

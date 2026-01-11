@@ -176,6 +176,11 @@ export default createVuetify({
     messages: { fr }, // Provide French translations
   },
   defaults: {
+    // global: {
+    //   style: {
+    //     fontFamily: 'Montserrat',
+    //   },
+    // },
     VDialog : {
       scrim: '#0F1416',
       class: 'pa-6',

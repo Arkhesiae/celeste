@@ -23,8 +23,9 @@
     </v-chip>
     </v-badge>
     <div v-if="!smAndDown">
-    <!-- Bouton règles pour admin master -->
-    <v-btn v-if="isAdmin && adminType === 'master'" icon variant="text" color="onBackground" class="text-body-2"
+    <!-- Bouton règles -->
+     
+    <v-btn v-if="isAdmin" icon variant="text" color="onBackground" class="text-body-2"
       @click="$emit('navigate-rules')">
       <v-icon size="small">mdi-server-security</v-icon>
     </v-btn>

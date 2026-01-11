@@ -10,24 +10,25 @@ import User from '../models/User.js';
  */
 const verifyToken = (req, res, next) => {
     // Récupération du token depuis l'en-tête Authorization
+
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({
-            code : 'AUTH_TOKEN_MISSING',
+            code: 'AUTH_TOKEN_MISSING',
             success: false,
             message: 'Non autorisé, token manquant.'
         });
     }
 
     const token = authHeader.split(' ')[1];
-   
+
     try {
         const decoded = jwt.verify(token, 'secret');
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(401).json({ code : 'INVALID_ACCESS_TOKEN', message: "Non autorisé, token expiré ou invalide" });
+        return res.status(401).json({ code: 'INVALID_ACCESS_TOKEN', message: "Non autorisé, token expiré ou invalide" });
     }
 };
 
@@ -124,7 +125,7 @@ const isUserOrAdmin = (req, res, next) => {
     const targetUserId = req.params.id;
 
     const currentUserId = req.user.userId;
-    const isAdmin = req.user.isAdmin ;
+    const isAdmin = req.user.isAdmin;
 
     if (currentUserId === targetUserId || isAdmin) {
         next();

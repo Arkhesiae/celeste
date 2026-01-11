@@ -39,17 +39,20 @@ import './cron/processDemands.js';
 // ─── Initialisation de l'admin ────────────────────────────────────────────────
 import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
 
+// ─── Initialisation des règles ────────────────────────────────────────────────
+import { initializeRules } from './services/rules/initializeRules.js';
+
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
   origin: [
-    'http://192.168.1.37:30035',
+    'http://192.168.1.36:30035',
     'http://localhost:30035',
     'http://167.235.244.249',
     'http://celeste-app.fr',
     'https://celeste-app.fr',
     'https://localhost',
     'capacitor://localhost',
-    'capacitor://192.168.1.37:30035',
+    'capacitor://192.168.1.36:30035',
     'capacitor://localhost:30035',
     'capacitor://167.235.244.249',
     'capacitor://celeste-app.fr',
@@ -92,7 +95,7 @@ mongoose.connect(process.env.MONGO_URI)
 
   .then(async () => {
     console.log('✅ MongoDB connecté via Docker');
-
+    await initializeRules();  
     await createAdmin(); // Créer l'admin si nécessaire
     await createLocalAdmin(); // Créer les admins locaux si nécessaire
     

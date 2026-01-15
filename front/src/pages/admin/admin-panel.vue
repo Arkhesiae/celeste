@@ -87,6 +87,7 @@
 </template>
 
 <script setup>
+
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
@@ -95,14 +96,6 @@ import { useCenterStore } from '@/stores/centerStore'
 import { useTicketStore } from '@/stores/ticketStore'
 import { useDisplay } from 'vuetify'
 
-defineOptions({
-  name: 'admin-panel',
-  meta: {
-    requiresAuth: true,
-    requiresAdmin: true,
-    layout: 'default'
-  }
-})
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -111,6 +104,8 @@ const centerStore = useCenterStore()
 const ticketStore = useTicketStore()
 const { smAndDown } = useDisplay()
 
+
+console.log(router.currentRoute.value.meta)
 // Navigation guard - vérifier les droits d'admin
 if (!authStore.userData.isAdmin) {
   router.push('/dashboard')

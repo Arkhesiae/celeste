@@ -8,15 +8,9 @@
   </div>
 </template>
 
-<route lang="json">
-{
-  "meta": { 
-    "test": "yeet"
-  }
-}
-</route>
 
 <script setup>
+
 import { ref, computed } from 'vue';
 import { useTicketStore } from '@/stores/ticketStore';
 import TicketList from '@/components/Tickets/TicketList.vue';
@@ -42,15 +36,15 @@ const openTickets = computed(() => ticketStore.sortedTickets.filter(ticket => !t
 const filteredTickets = computed(() => {
   let tickets = openTickets.value;
 
-  if (props.filters.type) {
-    tickets = tickets.filter(ticket => ticket.type === props.filters.type);
+  if (props.filters?.type) {
+    tickets = tickets.filter(ticket => ticket.type === props.filters?.type);
   }
 
-  if (props.filters.status !== 'all') {
-    tickets = tickets.filter(ticket => ticket.status === props.filters.status);
+  if (props.filters?.status !== 'all') {
+    tickets = tickets.filter(ticket => ticket.status === props.filters?.status);
   }
 
-  if (props.filters.search) {
+  if (props.filters?.search) {
     const search = props.filters.search.toLowerCase();
     tickets = tickets.filter(ticket => 
       ticket.title.toLowerCase().includes(search) ||

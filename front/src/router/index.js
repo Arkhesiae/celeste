@@ -136,14 +136,12 @@ router.afterEach((to, from) => {
 
 
 if (import.meta.hot) {
-  import.meta.hot.accept('./auto-routes.js', (mod) => {
-    if (mod?.default) {
-      console.log('♻️ Hot update des routes détecté');
-      handleHotUpdate(mod.default);
-    } else {
-      console.warn('⚠️ Hot update: module auto-routes vide ou invalide');
+  import.meta.hot.accept((newModule) => {
+    if (nouveauModule) {
+      // newModule est indéfini au moment de l'apparition de la SyntaxError
+      console.log('updated : count is now ', newModule.count)
     }
-  });
+  })
 }
 
 // Gestion des erreurs de chargement dynamique

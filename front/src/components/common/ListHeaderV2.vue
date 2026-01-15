@@ -1,22 +1,41 @@
 <template>
-    <div class="d-flex  justify-space-between" :class="smAndDown ? 'flex-column ga-2 align-end' : ' align-center'">
-      
-        <v-menu color="onBackground" rounded="lg">
-            <template v-slot:activator="{ props }">
-                <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-                    <span >{{ selectedSort ? selectedSort.text : sortLabel }}</span>
-                    <v-icon>mdi-chevron-down</v-icon>
-                </v-btn>
-            </template>
-            <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4 ">
-                <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg"
-                    @click="onSortChange(option)">
-                    <v-list-item-title>{{ option.text }}</v-list-item-title>
-                </v-list-item>
-            </v-list>
-        </v-menu>
-    </div>
-    <!-- <div ref="header" :class="['header-placeholder']" class="mb-16 position-relative"  :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }">
+  <div
+    class="d-flex  justify-space-between"
+    :class="smAndDown ? 'flex-column ga-2 align-end' : ' align-center'"
+  >
+    <v-menu
+      color="onBackground"
+      rounded="lg"
+    >
+      <template #activator="{ props }">
+        <v-btn
+          color="primary"
+          variant="text"
+          rounded="lg"
+          v-bind="props"
+        >
+          <span>{{ selectedSort ? selectedSort.text : sortLabel }}</span>
+          <v-icon>mdi-chevron-down</v-icon>
+        </v-btn>
+      </template>
+      <v-list
+        color="onBackground"
+        bg-color="onBackground"
+        rounded="xl"
+        class="pa-4 "
+      >
+        <v-list-item
+          v-for="option in sortOptions"
+          :key="option.value"
+          rounded="lg"
+          @click="onSortChange(option)"
+        >
+          <v-list-item-title>{{ option.text }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </div>
+  <!-- <div ref="header" :class="['header-placeholder']" class="mb-16 position-relative"  :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }">
         <div :class="[
             'list-header justify-space-between  flex-wrap align-center',
             { 'is-sticky': isSticky }
@@ -44,7 +63,6 @@
             </div>
         </div>
     </div> -->
-
 </template>
 
 <script setup>

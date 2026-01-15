@@ -1,7 +1,9 @@
 <template>
   <v-container>
-    <MainTitle title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
-
+    <MainTitle
+      title="Liste des utilisateurs"
+      subtitle="Gérer et organiser les membres"
+    >
       <template #actions> 
         <v-select
           v-if="authStore.userData.adminType === 'master'"
@@ -23,53 +25,66 @@
           @update:model-value="handleCenterChange"
         />
       </template>
-
     </MainTitle>
 
 
     <div class="list-header-container"> 
-    <ListHeader
-      :filters="[
-        { label: 'Tous', value: 'all' },
-        { label: 'Administrateurs', value: 'admin', color: 'tertiary' },
-        { label: 'Utilisateurs', value: 'user' }
-      ]"
-      :sort-options="sortOptions"
-      v-model:filter="selectedFilter"
-      v-model:search="searchQuery"
-      v-model:sort="sortBy"
-    />
+      <ListHeader
+        v-model:filter="selectedFilter"
+        v-model:search="searchQuery"
+        v-model:sort="sortBy"
+        :filters="[
+          { label: 'Tous', value: 'all' },
+          { label: 'Administrateurs', value: 'admin', color: 'tertiary' },
+          { label: 'Utilisateurs', value: 'user' }
+        ]"
+        :sort-options="sortOptions"
+      />
     </div>
 
-    <v-row >
-     
-          <div v-if="isLoading || !showUserList">
-            <Loading />
-          </div>
-          <v-col v-else v-for="user in sortedAndFilteredUsers" :key="user._id" cols="12" md="6" lg="4" :class="smAndDown ? 'pa-0' : ''">
-            <UserCard :user="user" @click="openUserDialog(user._id)" @approve="approveUser" @makeAdmin="makeAdmin" @removeAdmin="removeAdmin" @assignCenter="openCenterDialog" @delete="deleteUser" />
-          </v-col>
- 
+    <v-row>
+      <div v-if="isLoading || !showUserList">
+        <Loading />
+      </div>
+      <v-col
+        v-for="user in sortedAndFilteredUsers"
+        v-else
+        :key="user._id"
+        cols="12"
+        md="6"
+        lg="4"
+        :class="smAndDown ? 'pa-0' : ''"
+      >
+        <UserCard
+          :user="user"
+          @click="openUserDialog(user._id)"
+          @approve="approveUser"
+          @make-admin="makeAdmin"
+          @remove-admin="removeAdmin"
+          @assign-center="openCenterDialog"
+          @delete="deleteUser"
+        />
+      </v-col>
     </v-row>
 
    
     <!-- User Details Dialog -->
     <UserCardDetails
-      :userId="selectedUser"
-      :dialogVisible="userDialog"
-      @update:dialogVisible="userDialog = $event"
-      @makeAdmin="makeAdmin"
-      @removeAdmin="removeAdmin"
-      @assignCenter="openCenterDialog"
+      :user-id="selectedUser"
+      :dialog-visible="userDialog"
+      @update:dialog-visible="userDialog = $event"
+      @make-admin="makeAdmin"
+      @remove-admin="removeAdmin"
+      @assign-center="openCenterDialog"
       @delete="deleteUser"
     />
-  <!-- 
+    <!-- 
     Center Assignment Dialog -->
     <AssignCenterDialog
-      :dialogVisible="centerDialog"
-      :userId="selectedUser"
-      @update:dialogVisible="centerDialog = $event"
-      @centerAssigned="assignCenter"
+      :dialog-visible="centerDialog"
+      :user-id="selectedUser"
+      @update:dialog-visible="centerDialog = $event"
+      @center-assigned="assignCenter"
     />
   </v-container>
 </template>

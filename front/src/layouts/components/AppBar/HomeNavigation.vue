@@ -20,7 +20,9 @@
       @click="$emit('open-icnagenda')"
     >
       Icnagenda
-      <v-icon class="ml-3 text-medium-emphasis">mdi-open-in-new</v-icon>
+      <v-icon class="ml-3 text-medium-emphasis">
+        mdi-open-in-new
+      </v-icon>
     </v-btn>
     
     <v-btn 
@@ -29,12 +31,17 @@
       @click="$emit('open-olafatco')"
     >
       Olafatco
-      <v-icon class="ml-3 text-medium-emphasis">mdi-open-in-new</v-icon>
+      <v-icon class="ml-3 text-medium-emphasis">
+        mdi-open-in-new
+      </v-icon>
     </v-btn>
   </div>
   
   <v-scroll-y-reverse-transition>
-    <div v-if="!showButtons" class="d-flex">
+    <div
+      v-if="!showButtons"
+      class="d-flex"
+    >
       <!-- <div class="block d-flex">
         <v-btn 
           prepend-icon="mdi-lightning-bolt" 

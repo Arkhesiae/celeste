@@ -288,6 +288,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/test-graph': RouteRecordInfo<
+      '/test-graph',
+      '/test-graph',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/user-params': RouteRecordInfo<
       '/user-params',
       '/user-params',
@@ -544,6 +551,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/rotation.vue': {
       routes:
         | '/rotation'
+      views:
+        | never
+    }
+    'src/pages/test-graph.vue': {
+      routes:
+        | '/test-graph'
       views:
         | never
     }

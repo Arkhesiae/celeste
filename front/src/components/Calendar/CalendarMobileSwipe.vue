@@ -1,45 +1,61 @@
 <template>
   <div class="calendar-swipe-container">
     <!-- Container principal avec 3 fenêtres -->
-    <div class="calendar-windows-container" ref="containerRef" v-touch="{
-      left: () => handleGesture('left'),
-      right: () => handleGesture('right'),
-      start: handleGestureStart,
-      move: handleGestureMove,
-      end: handleGestureEnd
-    }">
+    <div
+      ref="containerRef"
+      v-touch="{
+        left: () => handleGesture('left'),
+        right: () => handleGesture('right'),
+        start: handleGestureStart,
+        move: handleGestureMove,
+        end: handleGestureEnd
+      }"
+      class="calendar-windows-container"
+    >
       <!-- Fenêtre précédente -->
-      <div class="calendar-window" style="border: 1px solid green;" :class="{ 'active': currentWindow === 0 }">
+      <div
+        class="calendar-window"
+        style="border: 1px solid green;"
+        :class="{ 'active': currentWindow === 0 }"
+      >
         <CalendarMonth 
-          :calendarDays="previousMonthDays" 
-          :daysOfWeek="daysOfWeek"
-          :isSelected="isSelected"
-          :isToday="isToday"
-          :vacationsOfUser="vacationsOfUser"
+          :calendar-days="previousMonthDays" 
+          :days-of-week="daysOfWeek"
+          :is-selected="isSelected"
+          :is-today="isToday"
+          :vacations-of-user="vacationsOfUser"
           @select-day="$emit('select-day', $event)"
         />
       </div>
 
       <!-- Fenêtre actuelle -->
-      <div class="calendar-window" style="border: 1px solid blue;" :class="{ 'active': currentWindow === 1 }">
+      <div
+        class="calendar-window"
+        style="border: 1px solid blue;"
+        :class="{ 'active': currentWindow === 1 }"
+      >
         <CalendarMonth 
-          :calendarDays="currentMonthDays" 
-          :daysOfWeek="daysOfWeek"
-          :isSelected="isSelected"
-          :isToday="isToday"
-          :vacationsOfUser="vacationsOfUser"
+          :calendar-days="currentMonthDays" 
+          :days-of-week="daysOfWeek"
+          :is-selected="isSelected"
+          :is-today="isToday"
+          :vacations-of-user="vacationsOfUser"
           @select-day="$emit('select-day', $event)"
         />
       </div>
 
       <!-- Fenêtre suivante -->
-      <div class="calendar-window" style="border: 1px solid red;" :class="{ 'active': currentWindow === 2 }">
+      <div
+        class="calendar-window"
+        style="border: 1px solid red;"
+        :class="{ 'active': currentWindow === 2 }"
+      >
         <CalendarMonth 
-          :calendarDays="nextMonthDays" 
-          :daysOfWeek="daysOfWeek"
-          :isSelected="isSelected"
-          :isToday="isToday"
-          :vacationsOfUser="vacationsOfUser"
+          :calendar-days="nextMonthDays" 
+          :days-of-week="daysOfWeek"
+          :is-selected="isSelected"
+          :is-today="isToday"
+          :vacations-of-user="vacationsOfUser"
           @select-day="$emit('select-day', $event)"
         />
       </div>
@@ -51,8 +67,8 @@
         icon="mdi-chevron-left" 
         variant="text" 
         size="small"
-        @click="navigateMonth(-1)"
         :disabled="isAnimating"
+        @click="navigateMonth(-1)"
       />
       <div class="month-indicator">
         {{ currentMonthName }}
@@ -61,8 +77,8 @@
         icon="mdi-chevron-right" 
         variant="text" 
         size="small"
-        @click="navigateMonth(1)"
         :disabled="isAnimating"
+        @click="navigateMonth(1)"
       />
     </div>
   </div>

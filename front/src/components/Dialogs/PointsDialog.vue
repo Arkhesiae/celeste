@@ -83,8 +83,14 @@ const cancel = () => {
     <template #content>
       <div>
         <div class="mb-4 d-flex align-center ga-2">
-          <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70"></v-icon>
-          <p class="text-body-2 font-weight-medium">Permutation avec {{ props.switch.name }}</p>
+          <v-icon
+            icon="mdi-swap-horizontal"
+            size="16"
+            class="opacity-70"
+          />
+          <p class="text-body-2 font-weight-medium">
+            Permutation avec {{ props.switch.name }}
+          </p>
         </div>
         
         <v-form>
@@ -97,12 +103,8 @@ const cancel = () => {
             bg-color="transparent"
             class="big-number-input"
           >
-          <template #default>
-         
-          </template>
-        
-        </v-text-field>
-       
+            <template #default />
+          </v-text-field>
         </v-form>
       </div>
     </template>

@@ -1,26 +1,66 @@
 <template>
   <v-container>
-
-
-     <MainTitle :title="centerName" subtitle="Liste des équipes et leurs membres" :backButton="authStore.userData.adminType === 'master'">
-
+    <MainTitle
+      :title="centerName"
+      subtitle="Liste des équipes et leurs membres"
+      :back-button="authStore.userData.adminType === 'master'"
+    >
       <template #actions> 
-        <v-btn @click="openAddTeamDialog" color="onBackground" style="border-radius: 16px !important" height="48px"  class="px-4   add-team-btn" prepend-icon="mdi-plus">Ajouter une équipe</v-btn>
+        <v-btn
+          color="onBackground"
+          style="border-radius: 16px !important"
+          height="48px"
+          class="px-4   add-team-btn"
+          prepend-icon="mdi-plus"
+          @click="openAddTeamDialog"
+        >
+          Ajouter une équipe
+        </v-btn>
       </template>
-
-      </MainTitle>
+    </MainTitle>
 
 
     <v-row class="justify-space-between align-center mb-4">
-      <v-col cols="12" md="6">
-        <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
-          <v-chip variant="text" rounded="lg" value="all">Toutes</v-chip>
-          <v-chip variant="text" color="tertiary" rounded="lg" value="active">Actives</v-chip>
-          <v-chip variant="text" rounded="lg" value="inactive">Inactives</v-chip>
+      <v-col
+        cols="12"
+        md="6"
+      >
+        <v-chip-group
+          v-model="selectedFilter"
+          column
+          variant="flat"
+          color="onBackground"
+        >
+          <v-chip
+            variant="text"
+            rounded="lg"
+            value="all"
+          >
+            Toutes
+          </v-chip>
+          <v-chip
+            variant="text"
+            color="tertiary"
+            rounded="lg"
+            value="active"
+          >
+            Actives
+          </v-chip>
+          <v-chip
+            variant="text"
+            rounded="lg"
+            value="inactive"
+          >
+            Inactives
+          </v-chip>
         </v-chip-group>
       </v-col>
       
-      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
+      <v-col
+        cols="12"
+        md="6"
+        class="d-flex justify-end gap-2"
+      >
         <v-text-field
           v-model="searchQuery"
           label="Rechercher"
@@ -39,8 +79,8 @@
           color="primary"
           variant="text"
           rounded="lg"
-          @click="openReorderDialog"
           prepend-icon="mdi-sort"
+          @click="openReorderDialog"
         >
           <span class="text-overline">Réorganiser</span>
         </v-btn>
@@ -49,7 +89,13 @@
 
     <v-row>
       <span v-if="filteredAndSortedTeams.length === 0">Aucune équipe trouvée</span>
-      <v-col v-for="team in filteredAndSortedTeams" :key="team._id" cols="12" md="6" lg="4">
+      <v-col
+        v-for="team in filteredAndSortedTeams"
+        :key="team._id"
+        cols="12"
+        md="6"
+        lg="4"
+      >
         <TeamCard
           :team="team"
           :is-admin="isAdmin"
@@ -66,9 +112,17 @@
     </v-row>
 
     <!-- Dialog pour ajouter une équipe -->
-    <v-dialog v-model="addTeamDialog" max-width="500">
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">Ajouter une équipe</v-card-title>
+    <v-dialog
+      v-model="addTeamDialog"
+      max-width="500"
+    >
+      <v-card
+        rounded="xl"
+        class="pa-6"
+      >
+        <v-card-title class="pa-0">
+          Ajouter une équipe
+        </v-card-title>
         <v-card-text class="pa-0 mt-4">
           <v-text-field
             v-model="newTeamName"
@@ -80,35 +134,69 @@
           />
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn text color="primary" @click="addTeamDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="addNewTeam">Enregistrer</v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="addTeamDialog = false"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="addNewTeam"
+          >
+            Enregistrer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog pour le sélecteur de date -->
-    <v-dialog v-model="datePickerDialog" max-width="380"  persistent :fullscreen="xs">
-      <v-card rounded="xl" :class="xs ? 'pa-4' : 'pa-6'">
+    <v-dialog
+      v-model="datePickerDialog"
+      max-width="380"
+      persistent
+      :fullscreen="xs"
+    >
+      <v-card
+        rounded="xl"
+        :class="xs ? 'pa-4' : 'pa-6'"
+      >
         <v-card-title>Définir le  début de cycle</v-card-title>
         <v-card-text class="pa-0  d-flex flex-column justify-space-between align-center">
           <v-date-picker
+            v-model="selectedDate"
             width="100%"
             elevation="0"
             flat
             rounded="xl"
-            v-model="selectedDate"
             locale="fr"
           />
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="closeDatePickerDialog">Annuler</v-btn>
-          <v-btn text color="primary" @click="setCycleStartDate">Définir</v-btn>
+          <v-btn
+            text
+            @click="closeDatePickerDialog"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="setCycleStartDate"
+          >
+            Définir
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog pour ajouter un membre -->
-    <v-dialog v-model="addMemberDialog" max-width="500">
+    <v-dialog
+      v-model="addMemberDialog"
+      max-width="500"
+    >
       <v-card>
         <v-card-title>Ajouter un membre</v-card-title>
         <v-card-text>
@@ -123,39 +211,80 @@
           />
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="addMemberDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="addUserToTeam">Ajouter</v-btn>
+          <v-btn
+            text
+            @click="addMemberDialog = false"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="addUserToTeam"
+          >
+            Ajouter
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog pour modifier le nom de l'équipe -->
-    <v-dialog v-model="editTeamNameDialog" max-width="360">
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">Modifier le nom de l'équipe</v-card-title>
+    <v-dialog
+      v-model="editTeamNameDialog"
+      max-width="360"
+    >
+      <v-card
+        rounded="xl"
+        class="pa-6"
+      >
+        <v-card-title class="pa-0">
+          Modifier le nom de l'équipe
+        </v-card-title>
         <v-card-text class="pa-0 my-6">
           <v-text-field
+            v-model="editedTeamName"
             variant="underlined"
             flat
             rounded="xl"
-            v-model="editedTeamName"
             label="Nom de l'équipe"
             required
           />
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn text @click="editTeamNameDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="renameTeam">Enregistrer</v-btn>
+          <v-btn
+            text
+            @click="editTeamNameDialog = false"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            text
+            color="primary"
+            @click="renameTeam"
+          >
+            Enregistrer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog pour réorganiser les équipes -->
-    <v-dialog v-model="reorderDialog" max-width="800" persistent>
-      <v-card rounded="xl" class="pa-6">
+    <v-dialog
+      v-model="reorderDialog"
+      max-width="800"
+      persistent
+    >
+      <v-card
+        rounded="xl"
+        class="pa-6"
+      >
         <v-card-title class="d-flex justify-space-between align-center pa-0">
           <span>Réorganiser les équipes</span>
-          <v-btn icon @click="closeReorderDialog" variant="text">
+          <v-btn
+            icon
+            variant="text"
+            @click="closeReorderDialog"
+          >
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
@@ -166,7 +295,7 @@
           <VueDraggable
             v-model="orderedTeams"
             :animation="150"
-            ghostClass="ghost"
+            ghost-class="ghost"
             target=".sort-target"
             class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded"
           >
@@ -176,7 +305,12 @@
               name="fade"
               class="sort-target"
             >
-              <div v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg pa-2" style="background-color: rgba(var(--v-theme-background), 1)">
+              <div
+                v-for="item in orderedTeams"
+                :key="item._id"
+                class="cursor-move my-4 rounded-lg pa-2"
+                style="background-color: rgba(var(--v-theme-background), 1)"
+              >
                 <v-icon>mdi-drag</v-icon>
                 {{ item.name }}
               </div>
@@ -197,6 +331,7 @@
 
     <!-- Panneau latéral pour les membres -->
     <v-navigation-drawer
+      v-if="!smAndDown"
       v-model="membersPanel"
       location="right"
       order="-6"
@@ -204,11 +339,14 @@
       width="400"
       floating
       temporary
-      v-if="!smAndDown"
     >
       <v-card-title class="d-flex justify-space-between align-center pa-4">
         <span class="text-h6">Equipe {{ selectedTeamForMembers?.name }}</span>
-        <v-btn variant="text" icon @click="membersPanel = false">
+        <v-btn
+          variant="text"
+          icon
+          @click="membersPanel = false"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
@@ -222,13 +360,17 @@
 
     <!-- Feuille du bas pour les membres -->
     <v-bottom-sheet
-      v-model="membersPanel"
       v-if="smAndDown"
+      v-model="membersPanel"
     >
       <v-card rounded="0">
         <v-card-title class="d-flex justify-space-between align-center pa-4">
           <span class="text-h6">Membres de l'équipe {{ selectedTeamForMembers?.name }}</span>
-          <v-btn variant="text" icon @click="membersPanel = false">
+          <v-btn
+            variant="text"
+            icon
+            @click="membersPanel = false"
+          >
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>

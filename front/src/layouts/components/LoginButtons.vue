@@ -1,11 +1,47 @@
 <template>
   <div>
-    <div class="position-fixed ma-2" style="bottom: 0; right: 0 ; z-index: 99">
-      <v-btn variant="tonal" class="mr-2" icon="mdi-star-four-points" @click="autoLogin('master')">Master</v-btn>
-      <v-btn variant="tonal" class="mr-2" icon="mdi-shield-crown-outline" @click="autoLogin('admin')">Local</v-btn>
-      <v-btn variant="tonal" class="mr-2" icon="mdi-account-outline" @click="autoLogin('user')">User</v-btn>
-      <v-btn variant="tonal" class="mr-2" icon="mdi-account-multiple" @click="showTeamUsers = !showTeamUsers">Team Users</v-btn>
-      <v-btn variant="tonal" icon="mdi-logout" color="error" @click="handleLogout"></v-btn>
+    <div
+      class="position-fixed ma-2"
+      style="bottom: 0; right: 0 ; z-index: 99"
+    >
+      <v-btn
+        variant="tonal"
+        class="mr-2"
+        icon="mdi-star-four-points"
+        @click="autoLogin('master')"
+      >
+        Master
+      </v-btn>
+      <v-btn
+        variant="tonal"
+        class="mr-2"
+        icon="mdi-shield-crown-outline"
+        @click="autoLogin('admin')"
+      >
+        Local
+      </v-btn>
+      <v-btn
+        variant="tonal"
+        class="mr-2"
+        icon="mdi-account-outline"
+        @click="autoLogin('user')"
+      >
+        User
+      </v-btn>
+      <v-btn
+        variant="tonal"
+        class="mr-2"
+        icon="mdi-account-multiple"
+        @click="showTeamUsers = !showTeamUsers"
+      >
+        Team Users
+      </v-btn>
+      <v-btn
+        variant="tonal"
+        icon="mdi-logout"
+        color="error"
+        @click="handleLogout"
+      />
 
       <!-- Menu des utilisateurs d'équipe -->
       <v-menu
@@ -13,8 +49,8 @@
         :close-on-content-click="false"
         location="top"
       >
-        <template v-slot:activator="{ props }">
-          <div v-bind="props"></div>
+        <template #activator="{ props }">
+          <div v-bind="props" />
         </template>
         <v-card min-width="300">
           <v-card-title class="text-h6">
@@ -24,9 +60,9 @@
               variant="text"
               size="small"
               class="ml-2"
-              @click="generateTeamUsers"
               :loading="generatingUsers"
-            ></v-btn>
+              @click="generateTeamUsers"
+            />
           </v-card-title>
           <v-card-text>
             <v-list>
@@ -37,8 +73,11 @@
                 :subtitle="user.email"
                 @click="autoLoginTeamUser(user)"
               >
-                <template v-slot:prepend>
-                  <v-avatar color="primary" size="32">
+                <template #prepend>
+                  <v-avatar
+                    color="primary"
+                    size="32"
+                  >
                     {{ user.name.charAt(0) }}
                   </v-avatar>
                 </template>
@@ -67,6 +106,9 @@ const generatingUsers = ref(false);
 const showLoadingScreen = ref(false);
 const adminEmail = import.meta.env.VITE_ADMIN_MAIL;
 const adminPassword = import.meta.env.VITE_ADMIN_PASS;
+
+const localAdminEmail = import.meta.env.VITE_LOCAL_ADMIN_MAIL;
+const localAdminPassword = import.meta.env.VITE_LOCAL_ADMIN_PASS;
 console.log(import.meta.env)
 
 const handleLogout = async () => {
@@ -81,8 +123,8 @@ const autoLogin = async (role) => {
     
     if (role === 'admin') {
       await authStore.logIn({
-        email: 'localadmin@celeste.com',
-        password: 'adminpassword',
+        email: localAdminEmail,
+        password: localAdminPassword,
       });
     } else if (role === 'user') {
       await authStore.logIn({

@@ -1,9 +1,20 @@
 <template>
   <v-container>
-    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userData.userId)">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+    <v-alert
+      v-if="!activeRotation"
+      color="error"
+      variant="tonal"
+      rounded="xl"
+      class="mb-4 pa-4"
+      icon="mdi-alert-outline"
+      style="cursor: pointer;"
+      @click="router.push('/profile/'+authStore.userData.userId)"
+    >
+      <div class="d-flex align-center justify-space-between">
+        <div>
+          <v-card-title class="text-h6 font-weight-medium">
+            Aucun tour de service actif
+          </v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
               Aucun tour de service n'est actuellement actif.
@@ -13,66 +24,107 @@
             </div>
           </v-card-text>
         </div>
-        
- 
-        </div>
-        </v-alert> 
+      </div>
+    </v-alert> 
     <v-row class="mt-16">
       <!-- Section Calendrier --> 
 
-      <v-col cols="12" lg="8" class="">
-        <CalendarHeader :currentMonth="selectedMonth" :currentYear="selectedYear"
-          @update:currentMonth="handleMonthUpdate" @update:currentYear="handleYearUpdate"></CalendarHeader>
+      <v-col
+        cols="12"
+        lg="8"
+        class=""
+      >
+        <CalendarHeader
+          :current-month="selectedMonth"
+          :current-year="selectedYear"
+          @update:current-month="handleMonthUpdate"
+          @update:current-year="handleYearUpdate"
+        />
 
 
-        <CalendarDesktop v-if="!smAndDown" :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays"
-            :isSelected="isSelected" :isToday="isToday"
-           :rotationsMap="rotationsMap" @select-day="selectDay" />
+        <CalendarDesktop
+          v-if="!smAndDown"
+          :days-of-week="CALENDAR_DAYS"
+          :calendar-days="calendarDays"
+          :is-selected="isSelected"
+          :is-today="isToday"
+          :rotations-map="rotationsMap"
+          @select-day="selectDay"
+        />
 
-<!-- 
+        <!-- 
            <CalendarMobileSwipe v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
           :isWorkDay="isWorkDay" 
           :isToday="isToday" :rotationsMap="rotationsMap"
           :vacationsOfUser="vacationsOfUser" @select-day="selectDay"  /> -->
-        <CalendarMobile v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
+        <CalendarMobile
+          v-else
+          :days-of-week="CALENDAR_DAYS"
+          :calendar-days="calendarDays"
+          :is-selected="isSelected"
           
-          :isToday="isToday" :rotationsMap="rotationsMap"
-          @select-day="selectDay" @swipe-left="handleSwipeLeft"
-          @swipe-right="handleSwipeRight" />
-
+          :is-today="isToday"
+          :rotations-map="rotationsMap"
+          @select-day="selectDay"
+          @swipe-left="handleSwipeLeft"
+          @swipe-right="handleSwipeRight"
+        />
       </v-col>
 
       <!-- Side Panel (Desktop) -->
     
-      <CalendarSidePanel v-if="selectedDate && !mdAndDown":cols="4" :formattedDate="formattedDate"
-        :selectedDate="selectedDate"
-        @openRemplaDialog="openRemplaDialog"
-        @openDrawer="handleOpenDrawer"
-        @cancelDemand="handleCancelDemand"
-        @unacceptDemand="handleUnacceptDemand" />
+      <CalendarSidePanel
+        v-if="selectedDate && !mdAndDown"
+        :cols="4"
+        :formatted-date="formattedDate"
+        :selected-date="selectedDate"
+        @open-rempla-dialog="openRemplaDialog"
+        @open-drawer="handleOpenDrawer"
+        @cancel-demand="handleCancelDemand"
+        @unaccept-demand="handleUnacceptDemand"
+      />
  
 
       <!-- Bottom Sheet (Mobile) -->
-      <CalendarBottomSheet v-if="mdAndDown" v-model="showBottomSheet" :formattedDate="formattedDate"
-        :selectedDate="selectedDate"
-        @update:modelValue="onBottomSheetClose"
-        @openRemplaDialog="openRemplaDialog" 
-        @openDrawer="handleOpenDrawer"
-        @cancelDemand="handleCancelDemand" 
-        @unacceptDemand="handleUnacceptDemand" />
+      <CalendarBottomSheet
+        v-if="mdAndDown"
+        v-model="showBottomSheet"
+        :formatted-date="formattedDate"
+        :selected-date="selectedDate"
+        @update:model-value="onBottomSheetClose"
+        @open-rempla-dialog="openRemplaDialog" 
+        @open-drawer="handleOpenDrawer"
+        @cancel-demand="handleCancelDemand" 
+        @unaccept-demand="handleUnacceptDemand"
+      />
     </v-row>
 
-    <AddSubstitutionForm :submitting="subInProgress" :dialogMode="dialogMode" :dialogVisible="remplaDialog"
-      :date="selectedDate" :selectedShift="selectedVacation" @onClose="closeRemplaDialog" @onSubmit="handleSubmit"
-      @update:dialogModeValue="dialogMode = $event" @update:dialogVisible="remplaDialog = $event">
-    </AddSubstitutionForm>
+    <AddSubstitutionForm
+      :submitting="subInProgress"
+      :dialog-mode="dialogMode"
+      :dialog-visible="remplaDialog"
+      :date="selectedDate"
+      :selected-shift="selectedVacation"
+      @on-close="closeRemplaDialog"
+      @on-submit="handleSubmit"
+      @update:dialog-mode-value="dialogMode = $event"
+      @update:dialog-visible="remplaDialog = $event"
+    />
 
 
 
-    <v-dialog v-model="loadingVacations" persistent max-width="250">
+    <v-dialog
+      v-model="loadingVacations"
+      persistent
+      max-width="250"
+    >
       <div class="pa-6 rounded-xl bg-surfaceContainer">
         <div class="d-flex align-center ga-4">
-          <v-progress-circular size="24" indeterminate color="remplacement"></v-progress-circular>
+          <v-progress-circular
+            size="24"
+            indeterminate
+            color="remplacement"
+          />
           <span class="ml-4">Chargement...</span>
         </div>
       </div>
@@ -87,25 +139,25 @@
     />
 
     <ConfirmationDialog
-      :isDialogVisible="showCancelConfirmationDialog"
+      :is-dialog-visible="showCancelConfirmationDialog"
       :title="'Confirmer l\'annulation'"
       :text="`Cette demande a été acceptée par ${accepterName}. Êtes-vous sûr de vouloir l'annuler ?`"
       :icon="'mdi-alert-outline'"
-      :iconColor="'error'"
-      :confirmText="'Confirmer l\'annulation'"
+      :icon-color="'error'"
+      :confirm-text="'Confirmer l\'annulation'"
       @confirm="confirmCancelDemand"
-      @update:isDialogVisible="showCancelConfirmationDialog = $event"
+      @update:is-dialog-visible="showCancelConfirmationDialog = $event"
     />
 
     <ConfirmationDialog
-      :isDialogVisible="showUnacceptConfirmationDialog"
+      :is-dialog-visible="showUnacceptConfirmationDialog"
       :title="'Confirmer l\'annulation'"
       :text="'Êtes-vous sûr de vouloir annuler votre acceptation de ce remplacement ?'"
       :icon="'mdi-alert-outline'"
-      :iconColor="'error'"
-      :confirmText="'Confirmer l\'annulation'"
+      :icon-color="'error'"
+      :confirm-text="'Confirmer l\'annulation'"
       @confirm="confirmUnacceptDemand"
-      @update:isDialogVisible="showUnacceptConfirmationDialog = $event"
+      @update:is-dialog-visible="showUnacceptConfirmationDialog = $event"
     />
   </v-container>
 </template>

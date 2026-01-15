@@ -2,39 +2,84 @@
   <v-container :class="smAndDown ? 'mb-16' : ''">
     <!-- En-tête -->
 
-        <MainTitle title="Patch Notes" subtitle="Historique des versions">
-          <template #actions>
-            <v-btn v-if="!smAndDown" height="48px"
-              class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow" flat
-              style="border-radius: 16px !important" prepend-icon="mdi-github" @click="openGitHub">
-              Voir sur GitHub
-            </v-btn>
-            <v-btn v-else size="small" height="32px"
-              class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow" flat
-              style="border-radius: 16px !important" prepend-icon="mdi-github" @click="openGitHub">
-              Voir sur GitHub
-            </v-btn>
-          </template>
-        </MainTitle>
+    <MainTitle
+      title="Patch Notes"
+      subtitle="Historique des versions"
+    >
+      <template #actions>
+        <v-btn
+          v-if="!smAndDown"
+          height="48px"
+          class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow"
+          flat
+          style="border-radius: 16px !important"
+          prepend-icon="mdi-github"
+          @click="openGitHub"
+        >
+          Voir sur GitHub
+        </v-btn>
+        <v-btn
+          v-else
+          size="small"
+          height="32px"
+          class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow"
+          flat
+          style="border-radius: 16px !important"
+          prepend-icon="mdi-github"
+          @click="openGitHub"
+        >
+          Voir sur GitHub
+        </v-btn>
+      </template>
+    </MainTitle>
 
     <!-- Contenu principal -->
     <v-row>
       <!-- Navigation latérale ou sélecteur mobile -->
-      <v-col cols="12" md="4" lg="3" >
+      <v-col
+        cols="12"
+        md="4"
+        lg="3"
+      >
         <!-- Desktop : navigation latérale -->
         <template v-if="!smAndDown">
-          <EntitySelector :items="filteredVersions" itemKey="id" itemTitle="version" :itemSubtitle="'releaseDate'"
-            :itemStatus="'status'" :modelValue="selectedVersion" title="Versions" maxHeight="70vh"
-            @update:modelValue="selectVersion">
+          <EntitySelector
+            :items="filteredVersions"
+            item-key="id"
+            item-title="version"
+            :item-subtitle="'releaseDate'"
+            :item-status="'status'"
+            :model-value="selectedVersion"
+            title="Versions"
+            max-height="70vh"
+            @update:model-value="selectVersion"
+          >
             <template #statusChip="{ item }">
-              <v-chip v-if="item.status === 'future'" size="x-small" color="warning" variant="tonal" rounded="lg">
+              <v-chip
+                v-if="item.status === 'future'"
+                size="x-small"
+                color="warning"
+                variant="tonal"
+                rounded="lg"
+              >
                 Future
               </v-chip>
-              <v-chip v-else-if="item.status === 'current'" size="x-small" color="onBackground" variant="flat"
-                rounded="lg">
+              <v-chip
+                v-else-if="item.status === 'current'"
+                size="x-small"
+                color="onBackground"
+                variant="flat"
+                rounded="lg"
+              >
                 Actuelle
               </v-chip>
-              <v-chip v-else size="x-small" color="grey" variant="tonal" rounded="lg">
+              <v-chip
+                v-else
+                size="x-small"
+                color="grey"
+                variant="tonal"
+                rounded="lg"
+              >
                 Passée
               </v-chip>
             </template>
@@ -42,11 +87,21 @@
               <v-expand-transition>
                 <div v-if="item.id === selectedVersion?.id">
                   <div class="d-flex align-center mb-1">
-                    <v-icon icon="mdi-plus" size="16" color="success" class="mr-2" />
+                    <v-icon
+                      icon="mdi-plus"
+                      size="16"
+                      color="success"
+                      class="mr-2"
+                    />
                     <span class="text-caption">{{ item.improvements?.length || 0 }} améliorations</span>
                   </div>
                   <div class="d-flex align-center">
-                    <v-icon icon="mdi-bug" size="16" color="error" class="mr-2" />
+                    <v-icon
+                      icon="mdi-bug"
+                      size="16"
+                      color="error"
+                      class="mr-2"
+                    />
                     <span class="text-caption">{{ item.bugFixes?.length || 0 }} corrections</span>
                   </div>
                 </div>
@@ -56,33 +111,71 @@
         </template>
         <!-- Mobile : carte compacte + dialog -->
         <template v-else>
-          <VersionSelector :modelValue="selectedVersion" :width="400"
+          <VersionSelector
+            :model-value="selectedVersion"
+            :width="400"
             :title="selectedVersion?.version || 'Sélectionner une version'"
             :subtitle="selectedVersion?.releaseDate || ''"
-            :defaultText="selectedVersion?.version || 'Sélectionner une version'">
+            :default-text="selectedVersion?.version || 'Sélectionner une version'"
+          >
             <template #statusChip>
-              <v-chip v-if="selectedVersion?.status === 'future'" size="x-small" color="warning" variant="tonal"
-                rounded="lg">
+              <v-chip
+                v-if="selectedVersion?.status === 'future'"
+                size="x-small"
+                color="warning"
+                variant="tonal"
+                rounded="lg"
+              >
                 Future
               </v-chip>
-              <v-chip v-else-if="selectedVersion?.status === 'current'" size="x-small" color="onBackground"
-                variant="flat" rounded="lg">
+              <v-chip
+                v-else-if="selectedVersion?.status === 'current'"
+                size="x-small"
+                color="onBackground"
+                variant="flat"
+                rounded="lg"
+              >
                 Actuelle
               </v-chip>
             </template>
             <template #dialog>
-              <EntitySelector :items="filteredVersions" itemKey="id" itemTitle="version" :itemSubtitle="'releaseDate'"
-                :itemStatus="'status'" :modelValue="selectedVersion" title="Sélectionner une version" maxHeight="40vh"
-                @update:modelValue="selectVersionFromDialog">
+              <EntitySelector
+                :items="filteredVersions"
+                item-key="id"
+                item-title="version"
+                :item-subtitle="'releaseDate'"
+                :item-status="'status'"
+                :model-value="selectedVersion"
+                title="Sélectionner une version"
+                max-height="40vh"
+                @update:model-value="selectVersionFromDialog"
+              >
                 <template #statusChip="{ item }">
-                  <v-chip v-if="item.status === 'future'" size="x-small" color="warning" variant="tonal" rounded="lg">
+                  <v-chip
+                    v-if="item.status === 'future'"
+                    size="x-small"
+                    color="warning"
+                    variant="tonal"
+                    rounded="lg"
+                  >
                     Future
                   </v-chip>
-                  <v-chip v-else-if="item.status === 'current'" size="x-small" color="onBackground" variant="flat"
-                    rounded="lg">
+                  <v-chip
+                    v-else-if="item.status === 'current'"
+                    size="x-small"
+                    color="onBackground"
+                    variant="flat"
+                    rounded="lg"
+                  >
                     Actuelle
                   </v-chip>
-                  <v-chip v-else size="x-small" color="grey" variant="tonal" rounded="lg">
+                  <v-chip
+                    v-else
+                    size="x-small"
+                    color="grey"
+                    variant="tonal"
+                    rounded="lg"
+                  >
                     Passée
                   </v-chip>
                 </template>
@@ -90,11 +183,21 @@
                   <v-expand-transition>
                     <div v-if="item.id === selectedVersion?.id">
                       <div class="d-flex align-center mb-1">
-                        <v-icon icon="mdi-plus" size="16" color="success" class="mr-2" />
+                        <v-icon
+                          icon="mdi-plus"
+                          size="16"
+                          color="success"
+                          class="mr-2"
+                        />
                         <span class="text-caption">{{ item.improvements?.length || 0 }} améliorations</span>
                       </div>
                       <div class="d-flex align-center">
-                        <v-icon icon="mdi-bug" size="16" color="error" class="mr-2" />
+                        <v-icon
+                          icon="mdi-bug"
+                          size="16"
+                          color="error"
+                          class="mr-2"
+                        />
                         <span class="text-caption">{{ item.bugFixes?.length || 0 }} corrections</span>
                       </div>
                     </div>
@@ -107,42 +210,84 @@
       </v-col>
 
       <!-- Détails de la version -->
-      <v-col cols="12" md="8" lg="9" >
-        <v-card v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" elevation="0" class="smooth-shadow pa-2 pt-16" color="transparent">
+      <v-col
+        cols="12"
+        md="8"
+        lg="9"
+      >
+        <v-card
+          v-if="selectedVersion"
+          :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
+          rounded="xl"
+          elevation="0"
+          class="smooth-shadow pa-2 pt-16"
+          color="transparent"
+        >
           <!-- En-tête de la version -->
           <div class="d-flex align-center justify-space-between mb-6">
             <div>
               <div class="d-flex align-center mb-2">
                 <span class="text-h4 font-weight-bold">{{ selectedVersion.version }}</span>
-
               </div>
               <div class="text-medium-emphasis">
                 Sortie le {{ selectedVersion.releaseDate }}
               </div>
             </div>
-            <v-btn icon="mdi-share-variant" variant="tonal" rounded="lg" color="remplacement" @click="shareVersion" />
+            <v-btn
+              icon="mdi-share-variant"
+              variant="tonal"
+              rounded="lg"
+              color="remplacement"
+              @click="shareVersion"
+            />
           </div>
 
           <!-- Description -->
-          <div v-if="selectedVersion.description" class="mb-6">
-
-            <p class="text-body-1 opacity-70">{{ selectedVersion.description }}</p>
+          <div
+            v-if="selectedVersion.description"
+            class="mb-6"
+          >
+            <p class="text-body-1 opacity-70">
+              {{ selectedVersion.description }}
+            </p>
           </div>
 
           <!-- Améliorations -->
-          <div v-if="selectedVersion.improvements?.length > 0" class="mb-6">
+          <div
+            v-if="selectedVersion.improvements?.length > 0"
+            class="mb-6"
+          >
             <div class="d-flex align-center mb-4">
-              <v-icon icon="mdi-plus-circle" color="success" size="16" class="mr-3" />
-              <h3 class="text-h6 font-weight-medium">Améliorations</h3>
+              <v-icon
+                icon="mdi-plus-circle"
+                color="success"
+                size="16"
+                class="mr-3"
+              />
+              <h3 class="text-h6 font-weight-medium">
+                Améliorations
+              </h3>
             </div>
             <v-list class="bg-transparent">
-              <v-list-item v-for="(improvement, index) in selectedVersion.improvements" :key="index"
-                class="mb-2 rounded-lg improvement-item">
-                <template v-slot:prepend>
-                  <v-icon icon="mdi-plus" color="success" size="20" />
+              <v-list-item
+                v-for="(improvement, index) in selectedVersion.improvements"
+                :key="index"
+                class="mb-2 rounded-lg improvement-item"
+              >
+                <template #prepend>
+                  <v-icon
+                    icon="mdi-plus"
+                    color="success"
+                    size="20"
+                  />
                 </template>
-                <v-list-item-title class="font-weight-medium">{{ improvement.title }}</v-list-item-title>
-                <v-list-item-subtitle v-if="improvement.description" class="mt-1">
+                <v-list-item-title class="font-weight-medium">
+                  {{ improvement.title }}
+                </v-list-item-title>
+                <v-list-item-subtitle
+                  v-if="improvement.description"
+                  class="mt-1"
+                >
                   {{ improvement.description }}
                 </v-list-item-subtitle>
               </v-list-item>
@@ -150,19 +295,41 @@
           </div>
 
           <!-- Corrections de bugs -->
-          <div v-if="selectedVersion.bugFixes?.length > 0" class="mb-6">
+          <div
+            v-if="selectedVersion.bugFixes?.length > 0"
+            class="mb-6"
+          >
             <div class="d-flex align-center mb-4">
-              <v-icon icon="mdi-bug-check" color="pendingDemand" size="16" class="mr-3" />
-              <h3 class="text-h6 font-weight-medium">Corrections de bugs</h3>
+              <v-icon
+                icon="mdi-bug-check"
+                color="pendingDemand"
+                size="16"
+                class="mr-3"
+              />
+              <h3 class="text-h6 font-weight-medium">
+                Corrections de bugs
+              </h3>
             </div>
             <v-list class="bg-transparent">
-              <v-list-item v-for="(bugFix, index) in selectedVersion.bugFixes" :key="index"
-                class="mb-2 rounded-lg bugfix-item">
-                <template v-slot:prepend>
-                  <v-icon icon="mdi-bug" color="pendingDemand" size="20" />
+              <v-list-item
+                v-for="(bugFix, index) in selectedVersion.bugFixes"
+                :key="index"
+                class="mb-2 rounded-lg bugfix-item"
+              >
+                <template #prepend>
+                  <v-icon
+                    icon="mdi-bug"
+                    color="pendingDemand"
+                    size="20"
+                  />
                 </template>
-                <v-list-item-title class="font-weight-medium">{{ bugFix.title }}</v-list-item-title>
-                <v-list-item-subtitle v-if="bugFix.description" class="mt-1">
+                <v-list-item-title class="font-weight-medium">
+                  {{ bugFix.title }}
+                </v-list-item-title>
+                <v-list-item-subtitle
+                  v-if="bugFix.description"
+                  class="mt-1"
+                >
                   {{ bugFix.description }}
                 </v-list-item-subtitle>
               </v-list-item>
@@ -170,19 +337,41 @@
           </div>
 
           <!-- Notes techniques -->
-          <div v-if="selectedVersion.technicalNotes?.length > 0" class="mb-6">
+          <div
+            v-if="selectedVersion.technicalNotes?.length > 0"
+            class="mb-6"
+          >
             <div class="d-flex align-center mb-4">
-              <v-icon icon="mdi-cog" color="info" size="16" class="mr-3" />
-              <h3 class="text-h6 font-weight-medium">Notes techniques</h3>
+              <v-icon
+                icon="mdi-cog"
+                color="info"
+                size="16"
+                class="mr-3"
+              />
+              <h3 class="text-h6 font-weight-medium">
+                Notes techniques
+              </h3>
             </div>
             <v-list class="bg-transparent">
-              <v-list-item v-for="(note, index) in selectedVersion.technicalNotes" :key="index"
-                class="mb-2 rounded-lg technical-note-item">
-                <template v-slot:prepend>
-                  <v-icon icon="mdi-information" color="info" size="20" />
+              <v-list-item
+                v-for="(note, index) in selectedVersion.technicalNotes"
+                :key="index"
+                class="mb-2 rounded-lg technical-note-item"
+              >
+                <template #prepend>
+                  <v-icon
+                    icon="mdi-information"
+                    color="info"
+                    size="20"
+                  />
                 </template>
-                <v-list-item-title class="font-weight-medium">{{ note.title }}</v-list-item-title>
-                <v-list-item-subtitle v-if="note.description" class="mt-1">
+                <v-list-item-title class="font-weight-medium">
+                  {{ note.title }}
+                </v-list-item-title>
+                <v-list-item-subtitle
+                  v-if="note.description"
+                  class="mt-1"
+                >
                   {{ note.description }}
                 </v-list-item-subtitle>
               </v-list-item>
@@ -190,11 +379,23 @@
           </div>
 
           <!-- Liens -->
-          <div v-if="selectedVersion.links?.length > 0" class="mb-6">
-            <h3 class="text-h6 font-weight-medium mb-3">Liens utiles</h3>
+          <div
+            v-if="selectedVersion.links?.length > 0"
+            class="mb-6"
+          >
+            <h3 class="text-h6 font-weight-medium mb-3">
+              Liens utiles
+            </h3>
             <div class="d-flex flex-wrap gap-2">
-              <v-btn v-for="link in selectedVersion.links" :key="link.url" :href="link.url" target="_blank"
-                variant="tonal" color="remplacement" prepend-icon="mdi-open-in-new">
+              <v-btn
+                v-for="link in selectedVersion.links"
+                :key="link.url"
+                :href="link.url"
+                target="_blank"
+                variant="tonal"
+                color="remplacement"
+                prepend-icon="mdi-open-in-new"
+              >
                 {{ link.label }}
               </v-btn>
             </div>
@@ -202,10 +403,23 @@
         </v-card>
 
         <!-- État vide -->
-        <v-card v-else rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card
+          v-else
+          rounded="xl"
+          elevation="0"
+          class="smooth-shadow pa-6"
+          color="surfaceContainer"
+        >
           <div class="text-center">
-            <v-icon icon="mdi-file-document-outline" size="64" color="medium-emphasis" class="mb-4" />
-            <h3 class="text-h6 font-weight-medium mb-2">Sélectionnez une version</h3>
+            <v-icon
+              icon="mdi-file-document-outline"
+              size="64"
+              color="medium-emphasis"
+              class="mb-4"
+            />
+            <h3 class="text-h6 font-weight-medium mb-2">
+              Sélectionnez une version
+            </h3>
             <p class="text-medium-emphasis">
               Choisissez une version dans la liste pour voir ses détails
             </p>

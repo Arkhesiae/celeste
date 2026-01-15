@@ -1,72 +1,122 @@
 <template>
-    <v-card rounded="xl" elevation="0" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" class="smooth-shadow pt-16 pb-4 overflow-visible d-flex flex-column" color="transparent" height="100%">
-        <div class="d-flex align-start flex-column justify-start mb-4 mt-4">
-            <div class="ml-0 mb-2">
-                <h2 v-if="currentCampaign?.status === 'en_cours'" class="text-h5 font-weight-bold">Budget Actuel</h2>
-                <h2 v-else-if="currentCampaign?.status === 'a_venir'" class="text-h5 font-weight-bold">Montant
-                    prévisionnel</h2>
-                <h2 v-else class="text-h5 font-weight-bold">Restant non utilisé</h2>
-            </div>
-            <div class="d-flex align-end text-h1 font-weight-bold">
-                <v-slide-y-transition mode="out-in">
-                    <span class="text-h1 font-weight-bold mr-2 " :key="remainingBudget" :class="{ 'text-error': remainingBudget < 0 }">{{
-                        remainingBudget }}</span>
-                </v-slide-y-transition>
-                <span class="text-h5 font-weight-bold opacity-50">€</span>
-            </div>
-           
+  <v-card
+    rounded="xl"
+    elevation="0"
+    :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
+    class="smooth-shadow pt-16 pb-4 overflow-visible d-flex flex-column"
+    color="transparent"
+    height="100%"
+  >
+    <div class="d-flex align-start flex-column justify-start mb-4 mt-4">
+      <div class="ml-0 mb-2">
+        <h2
+          v-if="currentCampaign?.status === 'en_cours'"
+          class="text-h5 font-weight-bold"
+        >
+          Budget Actuel
+        </h2>
+        <h2
+          v-else-if="currentCampaign?.status === 'a_venir'"
+          class="text-h5 font-weight-bold"
+        >
+          Montant
+          prévisionnel
+        </h2>
+        <h2
+          v-else
+          class="text-h5 font-weight-bold"
+        >
+          Restant non utilisé
+        </h2>
+      </div>
+      <div class="d-flex align-end text-h1 font-weight-bold">
+        <v-slide-y-transition mode="out-in">
+          <span
+            :key="remainingBudget"
+            class="text-h1 font-weight-bold mr-2 "
+            :class="{ 'text-error': remainingBudget < 0 }"
+          >{{
+            remainingBudget }}</span>
+        </v-slide-y-transition>
+        <span class="text-h5 font-weight-bold opacity-50">€</span>
+      </div>
+    </div>
+    <p class="text-medium-emphasis">
+      État du financement et projections
+    </p>
+    <!-- Barre de progression -->
+    <div class="d-flex flex-column justify-space-between flex-grow-1">
+      <div class="my-16">
+        <div class="d-flex justify-space-between align-center mb-2">
+          <span class="text-body-2 font-weight-medium">Enveloppe restante</span>
+          <span class="text-body-2 text-medium-emphasis">{{ progressPercentage }}%</span>
         </div>
-        <p class="text-medium-emphasis">État du financement et projections</p>
-        <!-- Barre de progression -->
-        <div class="d-flex flex-column justify-space-between flex-grow-1">
-            <div class="my-16">
-                <div class="d-flex justify-space-between align-center mb-2">
-                    <span class="text-body-2 font-weight-medium">Enveloppe restante</span>
-                    <span class="text-body-2 text-medium-emphasis">{{ progressPercentage }}%</span>
-                </div>
-                <!-- Barre de progression avec indicateur de budget utilisé -->
-                <div class="position-relative mb-2">
-                    <v-progress-linear :model-value="progressPercentage"
-                        :bg-color="remainingBudget < 0 ? 'error' : 'remplacement'" color="remplacement" height="12"
-                        rounded class="mb-2 animated-progress" />
-                    <!-- Indicateur de budget utilisé -->
-                    <div class="budget-used-indicator" v-if="previousCampaignsRemainder > 0"
-                        :style="{ left: `${(previousCampaignsRemainder / (campaignAmount + previousCampaignsRemainder)) * 100}%` }">
-                        <div class="indicator-dot"></div>
-                        <div class="indicator-label">
-                            <div class="text-body-2 font-weight-bold text-onSurface opacity-50 ">{{
-                                previousCampaignsRemainder }}€</div>
-                            <div class="label-subtitle">reste campagne précédente</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex justify-space-between text-caption text-medium-emphasis">
-                    <span>0€</span>
-                    <span>{{ campaignAmount + previousCampaignsRemainder }}€</span>
-                </div>
-
+        <!-- Barre de progression avec indicateur de budget utilisé -->
+        <div class="position-relative mb-2">
+          <v-progress-linear
+            :model-value="progressPercentage"
+            :bg-color="remainingBudget < 0 ? 'error' : 'remplacement'"
+            color="remplacement"
+            height="12"
+            rounded
+            class="mb-2 animated-progress"
+          />
+          <!-- Indicateur de budget utilisé -->
+          <div
+            v-if="previousCampaignsRemainder > 0"
+            class="budget-used-indicator"
+            :style="{ left: `${(previousCampaignsRemainder / (campaignAmount + previousCampaignsRemainder)) * 100}%` }"
+          >
+            <div class="indicator-dot" />
+            <div class="indicator-label">
+              <div class="text-body-2 font-weight-bold text-onSurface opacity-50 ">
+                {{
+                  previousCampaignsRemainder }}€
+              </div>
+              <div class="label-subtitle">
+                reste campagne précédente
+              </div>
             </div>
-            <!-- Informations détaillées du budget -->
-            <div class="mt-12 pa-4 rounded-xl" style="background-color: rgba(var(--v-theme-surfaceContainer), 0.55);">
-                <div class="d-flex justify-space-between align-center mb-2" v-if="previousCampaignsRemainder !== 0">
-                    <span v-if="previousCampaignsRemainder > 0" class="text-onSurface text-body-2 font-weight-medium">Enveloppe
-                        restante de la campagne précédente</span>
-                    <span v-else class="text-body-2 font-weight-medium">Déficit de la campagne précédente</span>
-                    <span class="text-body-2 font-weight-bold text-onSurface opacity-50 ">{{ previousCampaignsRemainder
-                    }}€</span>
-                </div>
-                <div class="d-flex justify-space-between align-center mb-2">
-                    <span class="text-onSurface text-body-2 font-weight-medium">Budget de la campagne {{ currentCampaignIndex }}</span>
-                    <span class="text-body-2 font-weight-bold">{{ campaignAmount }}€</span>
-                </div>
-                <div class="d-flex justify-space-between align-center">
-                    <span class="text-onSurface text-body-2 font-weight-medium">Dépenses de la campagne {{ currentCampaignIndex
-                    }}</span>
-                    <span class="text-body-2 font-weight-bold text-remplacement">-{{ campaignExpenses }}€</span>
-                </div>
-            </div>
+          </div>
         </div>
-    </v-card>
+        <div class="d-flex justify-space-between text-caption text-medium-emphasis">
+          <span>0€</span>
+          <span>{{ campaignAmount + previousCampaignsRemainder }}€</span>
+        </div>
+      </div>
+      <!-- Informations détaillées du budget -->
+      <div
+        class="mt-12 pa-4 rounded-xl"
+        style="background-color: rgba(var(--v-theme-surfaceContainer), 0.55);"
+      >
+        <div
+          v-if="previousCampaignsRemainder !== 0"
+          class="d-flex justify-space-between align-center mb-2"
+        >
+          <span
+            v-if="previousCampaignsRemainder > 0"
+            class="text-onSurface text-body-2 font-weight-medium"
+          >Enveloppe
+            restante de la campagne précédente</span>
+          <span
+            v-else
+            class="text-body-2 font-weight-medium"
+          >Déficit de la campagne précédente</span>
+          <span class="text-body-2 font-weight-bold text-onSurface opacity-50 ">{{ previousCampaignsRemainder
+          }}€</span>
+        </div>
+        <div class="d-flex justify-space-between align-center mb-2">
+          <span class="text-onSurface text-body-2 font-weight-medium">Budget de la campagne {{ currentCampaignIndex }}</span>
+          <span class="text-body-2 font-weight-bold">{{ campaignAmount }}€</span>
+        </div>
+        <div class="d-flex justify-space-between align-center">
+          <span class="text-onSurface text-body-2 font-weight-medium">Dépenses de la campagne {{ currentCampaignIndex
+          }}</span>
+          <span class="text-body-2 font-weight-bold text-remplacement">-{{ campaignExpenses }}€</span>
+        </div>
+      </div>
+    </div>
+  </v-card>
 </template>
 
 <script setup>

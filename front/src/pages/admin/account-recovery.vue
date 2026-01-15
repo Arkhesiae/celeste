@@ -50,7 +50,10 @@ onMounted(fetchRequests)
       <v-col cols="12">
         <v-card class="elevation-2">
           <v-card-title class="text-h4 d-flex align-center">
-            <v-icon icon="mdi-account-sync" class="mr-2" />
+            <v-icon
+              icon="mdi-account-sync"
+              class="mr-2"
+            />
             Demandes de récupération de compte
           </v-card-title>
 
@@ -85,11 +88,11 @@ onMounted(fetchRequests)
               :items="requests"
               class="elevation-1"
             >
-              <template v-slot:item.createdAt="{ item }">
+              <template #item.createdAt="{ item }">
                 {{ new Date(item.createdAt).toLocaleDateString() }}
               </template>
 
-              <template v-slot:item.status="{ item }">
+              <template #item.status="{ item }">
                 <v-chip
                   :color="item.status === 'PENDING' ? 'warning' : item.status === 'APPROVED' ? 'success' : 'error'"
                   variant="tonal"
@@ -98,14 +101,14 @@ onMounted(fetchRequests)
                 </v-chip>
               </template>
 
-              <template v-slot:item.actions="{ item }">
+              <template #item.actions="{ item }">
                 <v-btn
                   v-if="item.status === 'PENDING'"
                   color="success"
                   size="small"
                   class="mr-2"
-                  @click="updateRequestStatus(item._id, 'APPROVED')"
                   prepend-icon="mdi-check"
+                  @click="updateRequestStatus(item._id, 'APPROVED')"
                 >
                   Approuver
                 </v-btn>
@@ -113,8 +116,8 @@ onMounted(fetchRequests)
                   v-if="item.status === 'PENDING'"
                   color="error"
                   size="small"
-                  @click="updateRequestStatus(item._id, 'REJECTED')"
                   prepend-icon="mdi-close"
+                  @click="updateRequestStatus(item._id, 'REJECTED')"
                 >
                   Rejeter
                 </v-btn>

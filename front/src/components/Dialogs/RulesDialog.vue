@@ -1,33 +1,54 @@
 <template>
-  <v-dialog v-model="dialogVisible" max-width="1200px" persistent :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '0' : 'xl'" class="pa-6">
+  <v-dialog
+    v-model="dialogVisible"
+    max-width="1200px"
+    persistent
+    :fullscreen="smAndDown"
+  >
+    <v-card
+      :rounded="smAndDown ? '0' : 'xl'"
+      class="pa-6"
+    >
       <v-card-title class="d-flex align-center justify-space-between pa-0 ma-0 mb-6">
         <div class="d-flex align-center">
-          <v-icon icon="mdi-book-open-variant" color="remplacement" class="mr-6" size="16" />
+          <v-icon
+            icon="mdi-book-open-variant"
+            color="remplacement"
+            class="mr-6"
+            size="16"
+          />
           <span class="text-h5 font-weight-medium">Règles de travail</span>
         </div>
-        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
+        <v-btn
+          icon="mdi-close"
+          variant="text"
+          @click="closeDialog"
+        />
       </v-card-title>
 
 
       <div class="my-6 pa-4 bg-surfaceContainerHighest  rounded-lg">
-            <div class="d-flex align-center">
-              <v-icon icon="mdi-file-document-outline" color="primary" class="mr-3" size="20" />
-              <span class="text-body-2 text-medium-emphasis">
-                Source : 
-                <a 
-                  href="https://www.legifrance.gouv.fr/jorf/article_jo/JORFARTI000049926084" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  class="text-primary text-decoration-none"
-                >
-                  Arreté 2024 relatif à l'organisation du travail
-                </a>
-              </span>
-            </div>
-          </div>
+        <div class="d-flex align-center">
+          <v-icon
+            icon="mdi-file-document-outline"
+            color="primary"
+            class="mr-3"
+            size="20"
+          />
+          <span class="text-body-2 text-medium-emphasis">
+            Source : 
+            <a 
+              href="https://www.legifrance.gouv.fr/jorf/article_jo/JORFARTI000049926084" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="text-primary text-decoration-none"
+            >
+              Arreté 2024 relatif à l'organisation du travail
+            </a>
+          </span>
+        </div>
+      </div>
       <v-card-text class="pa-0  article">
-     
         <div class="text-body-1">
           <p class="mb-4">
             Pour chaque agent, en complément des obligations qui s'appliquent aux cycles de travail en équipe, sont garanties :
@@ -44,76 +65,93 @@
             >
               <div class="d-flex align-center justify-space-between">
                 <div class="d-flex align-center">
-                  <v-icon :icon="rule.icon" color="primary" class="mr-6" size="16" />
-                  <span class="text-onSurface" style="font-size: 12px !important">
+                  <v-icon
+                    :icon="rule.icon"
+                    color="primary"
+                    class="mr-6"
+                    size="16"
+                  />
+                  <span
+                    class="text-onSurface"
+                    style="font-size: 12px !important"
+                  >
                     {{ rule.text }}
                   </span>
                 </div>
                 <div class="flex-shrink-0">
-                <v-chip 
-                  v-if="rule.computed"
-                  color="onBackground" 
-                  variant="flat" 
-                  size="small"
-                  rounded="lg"
-                  prepend-icon="mdi-calculator"
-                >
-                  Calculé
-                </v-chip>
-                <v-chip 
-                  v-else
-                  color="error" 
-                  variant="flat" 
-                  size="small"
-                  rounded="lg"
-                  prepend-icon="mdi-close"
-                >
-                  Non calculé
-                </v-chip>
+                  <v-chip 
+                    v-if="rule.computed"
+                    color="onBackground" 
+                    variant="flat" 
+                    size="small"
+                    rounded="lg"
+                    prepend-icon="mdi-calculator"
+                  >
+                    Calculé
+                  </v-chip>
+                  <v-chip 
+                    v-else
+                    color="error" 
+                    variant="flat" 
+                    size="small"
+                    rounded="lg"
+                    prepend-icon="mdi-close"
+                  >
+                    Non calculé
+                  </v-chip>
                 </div>
               </div>
             </v-card>
             
-          <v-card 
-            v-for="rule in additionalRules" 
-            :key="rule.id"
-            color="surfaceContainer " 
-            rounded="lg" 
-             :class="rule.computed ? 'computed-rule' : 'uncomputed-rule'"
-            class="pa-4"
-            flat
-          >
-            <div class="d-flex align-center justify-space-between">
-              <div class="d-flex align-center">
-                <v-icon :icon="rule.icon" :color="rule.computed ? 'primary' : 'error'" class="mr-6" size="16" />
-                <span class="text-body-2 text-wrap" :class="rule.computed ? 'text-onSurface' : 'text-error'" style="font-size: 12px !important">
-                  {{ rule.text }}
-                </span>
+            <v-card 
+              v-for="rule in additionalRules" 
+              :key="rule.id"
+              color="surfaceContainer " 
+              rounded="lg" 
+              :class="rule.computed ? 'computed-rule' : 'uncomputed-rule'"
+              class="pa-4"
+              flat
+            >
+              <div class="d-flex align-center justify-space-between">
+                <div class="d-flex align-center">
+                  <v-icon
+                    :icon="rule.icon"
+                    :color="rule.computed ? 'primary' : 'error'"
+                    class="mr-6"
+                    size="16"
+                  />
+                  <span
+                    class="text-body-2 text-wrap"
+                    :class="rule.computed ? 'text-onSurface' : 'text-error'"
+                    style="font-size: 12px !important"
+                  >
+                    {{ rule.text }}
+                  </span>
+                </div>
+                <div class="flex-shrink-0">
+                  <v-chip 
+                    v-if="rule.computed"
+                    color="onBackground" 
+                    variant="flat" 
+                    size="small"
+                    rounded="lg"
+                    prepend-icon="mdi-calculator"
+                  >
+                    Calculé
+                  </v-chip>
+                  <v-chip 
+                    v-else
+                    color="error" 
+                    variant="flat" 
+                    size="small"
+                    rounded="lg"
+                    prepend-icon="mdi-close"
+                  >
+                    à venir
+                  </v-chip>
+                </div>
               </div>
-              <div class="flex-shrink-0">
-              <v-chip 
-                v-if="rule.computed"
-                color="onBackground" 
-                variant="flat" 
-                size="small"
-                rounded="lg"
-                prepend-icon="mdi-calculator"
-              >
-                Calculé
-              </v-chip>
-              <v-chip 
-                v-else
-                color="error" 
-                variant="flat" 
-                size="small"
-                rounded="lg"
-                prepend-icon="mdi-close"
-              >
-                  à venir
-                </v-chip>
-              </div>
-            </div>
-          </v-card>
+            </v-card>
           </div>
           
           <p class="mb-4 text-body-2 text-medium-emphasis">
@@ -152,8 +190,6 @@
           <p class="mb-0 font-weight-bold">
             Des dispenses sont octroyées par le service à un agent lorsque cela est strictement nécessaire au respect des dispositions du présent article.
           </p>
-          
-          
         </div>
       </v-card-text>
 
@@ -162,8 +198,8 @@
         <v-btn 
           color="primary" 
           variant="tonal" 
-          @click="closeDialog"
           prepend-icon="mdi-check"
+          @click="closeDialog"
         >
           Compris
         </v-btn>

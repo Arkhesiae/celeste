@@ -1,50 +1,61 @@
 <template>
-  <v-app-bar-title style="margin-left: 10px;" @click="$emit('title-click')" class="d-flex align-center" >
+  <v-app-bar-title
+    style="margin-left: 10px;"
+    class="d-flex align-center"
+    @click="$emit('title-click')"
+  >
     <div class="d-flex align-center ">
-    <v-btn v-if="smAndDown"
-      flat 
-      size="small"
-      icon
-      color="remplacement" 
-      :active="isHomepage || isDashboard"
-    >
-    <Logo style="left: 1px; top: -2px; position: relative;" />
-    </v-btn>
-    <div class="d-flex align-center" v-else>
-    <Logo />
+      <v-btn
+        v-if="smAndDown"
+        flat 
+        size="small"
+        icon
+        color="remplacement" 
+        :active="isHomepage || isDashboard"
+      >
+        <Logo style="left: 1px; top: -2px; position: relative;" />
+      </v-btn>
+      <div
+        v-else
+        class="d-flex align-center"
+      >
+        <Logo />
 
-    <v-btn 
-      flat 
-      color="remplacement" 
-      class="text-overline" 
-      style="font-weight: 900 !important;" 
-      :active="isHomepage || isDashboard"
-    >
-      {{ APP_TITLE }} 
-    </v-btn>
-  </div>
-    <v-hover v-slot="{ isHovering, props }">
-      <v-slide-y-transition mode="out-in"> 
-       <div v-if="!isHovering" class="d-flex align-center">
-        <span 
-        v-bind="props"
-        class="text-overline version-text text-medium-emphasis ml-2"
+        <v-btn 
+          flat 
+          color="remplacement" 
+          class="text-overline" 
+          style="font-weight: 900 !important;" 
+          :active="isHomepage || isDashboard"
         >
-        {{ APP_VERSION }}
-          
-        </span>
+          {{ APP_TITLE }} 
+        </v-btn>
       </div>
-      <div v-else>
-        <span 
-        v-bind="props"
-        class="text-overline version-text text-medium-emphasis ml-2"
-        >
-        {{ RELEASE_DATE }}
+      <v-hover v-slot="{ isHovering, props }">
+        <v-slide-y-transition mode="out-in"> 
+          <div
+            v-if="!isHovering"
+            class="d-flex align-center"
+          >
+            <span 
+              v-bind="props"
+              class="text-overline version-text text-medium-emphasis ml-2"
+            >
+              {{ APP_VERSION }}
           
-        </span>
-      </div>
-      </v-slide-y-transition>
-    </v-hover>
+            </span>
+          </div>
+          <div v-else>
+            <span 
+              v-bind="props"
+              class="text-overline version-text text-medium-emphasis ml-2"
+            >
+              {{ RELEASE_DATE }}
+          
+            </span>
+          </div>
+        </v-slide-y-transition>
+      </v-hover>
     </div>
   </v-app-bar-title>
 </template>

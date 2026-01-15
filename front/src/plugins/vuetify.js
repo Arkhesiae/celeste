@@ -11,7 +11,10 @@ import { md3 } from 'vuetify/blueprints'
 
 
 import '@mdi/font/css/materialdesignicons.css' 
+// import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
+
+import { aliases, md } from 'vuetify/iconsets/md'
 // Composables
 import { createVuetify } from 'vuetify'
 import {fr} from "vuetify/locale";
@@ -20,7 +23,13 @@ import {VDateInput} from "vuetify/labs/components";
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
   blueprint: md3,
-
+  // icons: {
+  //   defaultSet: 'md',
+  //   aliases,
+  //   sets: {
+  //     md,
+  //   },
+  // },
   date: {
     locale: {
       fr: 'fr-FR',

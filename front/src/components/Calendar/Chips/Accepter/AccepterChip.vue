@@ -1,27 +1,31 @@
 
 <template>
-
-    <v-chip
+  <v-chip
  
-      rounded="lg"
-      color="remplacement"
-      variant="flat"
-      size="x-small"
-      style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-      class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+    rounded="lg"
+    color="remplacement"
+    variant="flat"
+    size="x-small"
+    style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+  >
+    <v-icon
+      v-if="findAcceptedAsAccepter.length > 1"
+      color="error"
     >
-      <v-icon color="error"  v-if="findAcceptedAsAccepter.length > 1">mdi-alert-circle-outline</v-icon>
-      <v-icon color="permutation"  >mdi-crowd</v-icon>
+      mdi-alert-circle-outline
+    </v-icon>
+    <v-icon color="permutation">
+      mdi-crowd
+    </v-icon>
 
-      <div v-if="findAcceptedAsAccepter" >
-        <span>{{teamName}}</span>
-      </div>
-      <div  v-else>
-       
-        <span >?</span>
-      </div>
-    </v-chip>
-
+    <div v-if="findAcceptedAsAccepter">
+      <span>{{ teamName }}</span>
+    </div>
+    <div v-else>
+      <span>?</span>
+    </div>
+  </v-chip>
 </template>
 
 

@@ -1,5 +1,9 @@
 <template>
-  <v-col :cols="cols" class="mt-2" style="min-width: 200px">
+  <v-col
+    :cols="cols"
+    class="mt-2"
+    style="min-width: 200px"
+  >
     <CalendarPanel
       :formatted-date="formattedDate"
       :selected-date="selectedDate"
@@ -8,7 +12,6 @@
       @open-drawer="handleOpenDrawer"
       @cancel-demand="handleCancelDemand"
       @unaccept-demand="handleUnacceptDemand"
-      
     />
   </v-col>
 </template>

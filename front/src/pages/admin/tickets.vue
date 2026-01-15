@@ -1,10 +1,13 @@
 <template>
   <v-container>
-    <MainTitle title="Tickets" :subtitle="`${ticketStore.unreadCount} ticket(s) non lu(s)`" >
-      <template v-slot:actions>
+    <MainTitle
+      title="Tickets"
+      :subtitle="`${ticketStore.unreadCount} ticket(s) non lu(s)`"
+    >
+      <template #actions>
         <div class="d-flex ga-2 align-center ">
           <div class="d-flex align-center ga-2 btn-group">
-          <v-btn
+            <v-btn
               value="active"
               size="small"
               color="surfaceContainer"
@@ -26,17 +29,16 @@
             >
               Archivés
             </v-btn>
-       
           </div>
           
           <v-btn
             prepend-icon="mdi-filter-variant"
             color="onBackground"
-            @click="showFilters = !showFilters"
             rounded="lg"
             flat
             size="small"
             height="32"
+            @click="showFilters = !showFilters"
           > 
             Filtres
           </v-btn>
@@ -46,14 +48,24 @@
 
     <v-row>
       <v-col cols="12">
-        <v-card class="py-6 pa-0" rounded="xl" color="transparent" flat>
-         
-
+        <v-card
+          class="py-6 pa-0"
+          rounded="xl"
+          color="transparent"
+          flat
+        >
           <!-- Filtres -->
           <v-slide-y-transition>
-            <div v-if="showFilters" class="mb-4">
+            <div
+              v-if="showFilters"
+              class="mb-4"
+            >
               <v-row>
-                <v-col cols="12" sm="4" class="py-0">
+                <v-col
+                  cols="12"
+                  sm="4"
+                  class="py-0"
+                >
                   <v-select
                     v-model="filters.type"
                     :items="ticketTypes"
@@ -64,9 +76,13 @@
                     height="32"
                     rounded="xl"
                     density="comfortable"
-                  ></v-select>
+                  />
                 </v-col>
-                <v-col cols="12" sm="4" class="py-0">
+                <v-col
+                  cols="12"
+                  sm="4"
+                  class="py-0"
+                >
                   <v-select
                     v-model="filters.status"
                     :items="[
@@ -80,9 +96,13 @@
                     flat
                     rounded="xl"
                     density="comfortable"
-                  ></v-select>
+                  />
                 </v-col>
-                <v-col cols="12" sm="4" class="py-0">
+                <v-col
+                  cols="12"
+                  sm="4"
+                  class="py-0"
+                >
                   <v-text-field
                     v-model="filters.search"
                     label="Rechercher"
@@ -92,7 +112,7 @@
                     rounded="xl"
                     density="comfortable"
                     clearable
-                  ></v-text-field>
+                  />
                 </v-col>
               </v-row>
             </div>
@@ -100,15 +120,19 @@
 
           <!-- Router view pour les sous-pages avec transition -->
           <router-view v-slot="{ Component, route }">
-            <transition :name="route.meta.transition || 'fade'" mode="out-in">
-   
-              <component :is="Component" :filters="filters"
-              :loading="ticketStore.loading"
-              @open-ticket="openTicketDetails"
-              :key="route.path"
-            />
-          </transition>
-        </router-view>
+            <transition
+              :name="route.meta.transition || 'fade'"
+              mode="out-in"
+            >
+              <component
+                :is="Component"
+                :key="route.path"
+                :filters="filters"
+                :loading="ticketStore.loading"
+                @open-ticket="openTicketDetails"
+              />
+            </transition>
+          </router-view>
         </v-card>
       </v-col>
     </v-row>
@@ -116,7 +140,7 @@
     <!-- Dialog de détails du ticket -->
     <TicketDetails
       v-model="ticketDialog"
-      :ticketId="selectedTicket?._id"
+      :ticket-id="selectedTicket?._id"
       @close="ticketDialog = false"
       @delete-ticket="confirmDelete"
       @archive-ticket="handleArchive"
@@ -124,14 +148,22 @@
     />
 
     <!-- Dialog de confirmation de suppression -->
-    <v-dialog v-model="deleteDialog" max-width="400px">
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">Confirmer la suppression</v-card-title>
+    <v-dialog
+      v-model="deleteDialog"
+      max-width="400px"
+    >
+      <v-card
+        rounded="xl"
+        class="pa-6"
+      >
+        <v-card-title class="pa-0">
+          Confirmer la suppression
+        </v-card-title>
         <v-card-text class="pa-0">
           Êtes-vous sûr de vouloir supprimer ce ticket ?
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn
             color="grey"
             variant="text"
@@ -141,8 +173,8 @@
           </v-btn>
           <v-btn
             color="error"
-            @click="confirmDeleteAction"
             :loading="deleting"
+            @click="confirmDeleteAction"
           >
             Supprimer
           </v-btn>

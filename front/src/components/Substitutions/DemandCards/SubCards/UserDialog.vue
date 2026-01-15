@@ -1,12 +1,34 @@
 <template>
-  <v-dialog v-model="dialogVisible" max-width="300" attach="body" style="z-index: 1000000 !important">
-    <v-card rounded="xl" color="surfaceContainer" class="pa-6" style="z-index: 1000000 !important">
+  <v-dialog
+    v-model="dialogVisible"
+    max-width="300"
+    attach="body"
+    style="z-index: 1000000 !important"
+  >
+    <v-card
+      rounded="xl"
+      color="surfaceContainer"
+      class="pa-6"
+      style="z-index: 1000000 !important"
+    >
       <div class="d-flex flex-column  ga-2 pl-3">
         <div class="d-flex align-center ga-2 ">
-
-          <v-avatar size="32" variant="tonal" class="">
-            <v-img v-if="user?.avatar" :src="`${API_URL}${user?.avatar}`" alt="Avatar" />
-            <v-icon size="x-small" v-else>mdi-account</v-icon>
+          <v-avatar
+            size="32"
+            variant="tonal"
+            class=""
+          >
+            <v-img
+              v-if="user?.avatar"
+              :src="`${API_URL}${user?.avatar}`"
+              alt="Avatar"
+            />
+            <v-icon
+              v-else
+              size="x-small"
+            >
+              mdi-account
+            </v-icon>
           </v-avatar>
 
           <span class="text-h7 font-weight-medium pa-0">
@@ -23,7 +45,6 @@
           </span>
         </div>
       </div>
-
     </v-card>
   </v-dialog>
 </template>

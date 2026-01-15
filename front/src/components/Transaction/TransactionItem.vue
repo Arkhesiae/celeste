@@ -5,37 +5,57 @@
    
     class="transaction-item pa-2 px-3  d-flex align-center justify-space-between"
   >
-    <div v-if="!isMobile" class="d-flex align-center flex-shrink-1">
+    <div
+      v-if="!isMobile"
+      class="d-flex align-center flex-shrink-1"
+    >
       <div class="d-flex align-center justify-center avatar-container mr-2">
-      <v-avatar size="36" class="">
-        <template v-if="avatar">
-          <v-img :src="`${API_URL}${avatar}`" alt="avatar" />
-        </template>
-        <template v-else>
-          <span class="avatar-fallback text-body-2">{{ getInitials(transaction.userName) }}</span>
-        </template>
-      </v-avatar>
+        <v-avatar
+          size="36"
+          class=""
+        >
+          <template v-if="avatar">
+            <v-img
+              :src="`${API_URL}${avatar}`"
+              alt="avatar"
+            />
+          </template>
+          <template v-else>
+            <span class="avatar-fallback text-body-2">{{ getInitials(transaction.userName) }}</span>
+          </template>
+        </v-avatar>
       </div>
       <div class="d-flex flex-column">
         <div class="d-flex align-center">
           <span class="font-weight-bold text-body-2 text-truncate">{{ transaction.userName }}</span>
-         
         </div>
         <div class="text-caption text-medium-emphasis text-truncate">
           {{ transaction.description }}
         </div>
       </div>
     </div>
-    <div v-else class="d-flex flex-column align-start flex-shrink-1 ">
+    <div
+      v-else
+      class="d-flex flex-column align-start flex-shrink-1 "
+    >
       <div class="d-flex align-center ga-2 justify-start">
-        <v-avatar size="16" class="">
-        <template v-if="avatar">
-          <v-img :src="`${API_URL}${avatar}`" alt="avatar" />
-        </template>
-        <template v-else>
-          <span class="avatar-fallback text-subtitle-2" style="font-size: 8px !important;">{{ getInitials(transaction.userName) }}</span>
-        </template>
-      </v-avatar>
+        <v-avatar
+          size="16"
+          class=""
+        >
+          <template v-if="avatar">
+            <v-img
+              :src="`${API_URL}${avatar}`"
+              alt="avatar"
+            />
+          </template>
+          <template v-else>
+            <span
+              class="avatar-fallback text-subtitle-2"
+              style="font-size: 8px !important;"
+            >{{ getInitials(transaction.userName) }}</span>
+          </template>
+        </v-avatar>
         <span class="font-weight-bold text-subtitle-2 ">{{ transaction.userName }}</span>
       </div>
      
@@ -75,7 +95,10 @@
         >
           Annulée
         </v-chip>
-        <span class="text-body-1" style="font-weight: 900;">
+        <span
+          class="text-body-1"
+          style="font-weight: 900;"
+        >
           {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
         </span>
       </div>

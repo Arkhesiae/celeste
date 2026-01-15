@@ -1,23 +1,27 @@
 <template>
   <div class="rules-page">
     <v-container>
-      <h1 class="text-h5 font-weight-bold mb-4">Règles de l'application</h1>
+      <h1 class="text-h5 font-weight-bold mb-4">
+        Règles de l'application
+      </h1>
       <v-row>
         <v-col cols="12">
-          <v-card class="pa-6" rounded="xl" flat>
+          <v-card
+            class="pa-6"
+            rounded="xl"
+            flat
+          >
             <div class="d-flex justify-end align-center mb-6">
-             
               <div class="d-flex justify-end ga-3">
-
                 <v-btn
                   color="remplacement"
                   variant="text"
                   class="text-uppercase"
                   rounded="lg"
                   
-                  @click="initializeRules"
                   :loading="isInitializing"
                   :disabled="isInitializing"
+                  @click="initializeRules"
                 >
                   Initialiser les règles
                 </v-btn>
@@ -26,9 +30,9 @@
                   variant="flat"
                  
                   prepend-icon="mdi-restore"
-                  @click="showResetConfirmation = true"
                   :loading="isResetting"
                   :disabled="isResetting"
+                  @click="showResetConfirmation = true"
                 >
                   Réinitialiser 
                 </v-btn>
@@ -53,11 +57,15 @@
               class="mb-4"
               closable
             >
-            <v-icon icon="mdi-check" size="small" color="success" ></v-icon>
+              <v-icon
+                icon="mdi-check"
+                size="small"
+                color="success"
+              />
               {{ success }}
             </v-alert>
 
-            <v-table >
+            <v-table>
               <thead>
                 <tr>
                   <th>Règle</th>
@@ -68,9 +76,16 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="rule in rules" :key="rule.name">
-                  <td class="text-overline">{{ formatRuleName(rule.name) }}</td>
-                  <td class="text-body-2">{{ rule.description }}</td>
+                <tr
+                  v-for="rule in rules"
+                  :key="rule.name"
+                >
+                  <td class="text-overline">
+                    {{ formatRuleName(rule.name) }}
+                  </td>
+                  <td class="text-body-2">
+                    {{ rule.description }}
+                  </td>
                   <td>
                     <template v-if="getRuleType(rule) === 'Boolean'">
                       <template v-if="isEditing[rule.name]">
@@ -82,7 +97,7 @@
                           density="compact"
                           :true-value="true"
                           :false-value="false"
-                        ></v-switch>
+                        />
                       </template>
                       <template v-else>
                         <v-chip
@@ -104,7 +119,7 @@
                         class="rule-input"
                         :disabled="!isEditing[rule.name]"
                         :min="getRuleType(rule) === 'Number' ? 0 : undefined"
-                      ></v-text-field>
+                      />
                     </template>
                   </td>
                   <td>{{ formatDate(rule.updatedAt) }}</td>
@@ -116,23 +131,23 @@
                         variant="text"
                         size="small"
                         @click="startEditing(rule)"
-                      ></v-btn>
+                      />
                       <template v-else>
                         <v-btn
                           icon="mdi-check"
                           variant="text"
                           color="success"
                           size="small"
-                          @click="saveRule(rule)"
                           :loading="isSaving[rule.name]"
-                        ></v-btn>
+                          @click="saveRule(rule)"
+                        />
                         <v-btn
                           icon="mdi-close"
                           variant="text"
                           color="error"
                           size="small"
                           @click="cancelEditing(rule)"
-                        ></v-btn>
+                        />
                       </template>
                     </div>
                   </td>
@@ -145,8 +160,16 @@
     </v-container>
 
     <!-- Boîte de dialogue de confirmation pour la réinitialisation -->
-    <v-dialog v-model="showResetConfirmation" max-width="400">
-      <v-card rounded="xl" color="onBackground" variant="flat" class="pa-6 " >
+    <v-dialog
+      v-model="showResetConfirmation"
+      max-width="400"
+    >
+      <v-card
+        rounded="xl"
+        color="onBackground"
+        variant="flat"
+        class="pa-6 "
+      >
         <v-card-title class="text-h6 font-weight-bold mb-4 pa-0 ma-0">
           Confirmer la réinitialisation
         </v-card-title>
@@ -155,7 +178,7 @@
           Cette action supprimera toutes les modifications personnalisées.
         </v-card-text>
         <v-card-actions>
-          <v-spacer></v-spacer>
+          <v-spacer />
           <v-btn
             color="grey"
             variant="text"
@@ -166,8 +189,8 @@
           <v-btn
             color="onBackground"
             variant="flat"
-            @click="confirmReset"
             :loading="isResetting"
+            @click="confirmReset"
           >
             Réinitialiser
           </v-btn>
@@ -185,7 +208,7 @@ import { useRouter } from 'vue-router';
 import { ruleService } from '@/services/ruleService';
 
 defineOptions({
-  name: 'admin-rules',
+  name: 'AdminRules',
   meta: {
     requiresAuth: true,
     requiresMasterAdmin: true,

@@ -1,76 +1,127 @@
 <template>
-  <v-app-bar class="user-safe-area" scroll-behavior="elevate" color="background">
+  <v-app-bar
+    class="user-safe-area"
+    scroll-behavior="elevate"
+    color="background"
+  >
     <!-- Bouton navigation pour écran large -->
-    <template v-slot:prepend>
+    <template #prepend>
       <template v-if="!smAndDown && isLoggedIn">
         <v-app-bar-nav-icon @click="toggleDrawer" />
       </template>
     </template>
 
     <!-- Titre de l'application -->
-    <AppBarTitle :is-homepage="isHomepage" :is-dashboard="isDashboard" @title-click="handleTitleClick" />
+    <AppBarTitle
+      :is-homepage="isHomepage"
+      :is-dashboard="isDashboard"
+      @title-click="handleTitleClick"
+    />
 
-    <template v-slot:append>
+    <template #append>
       <!-- Boutons de notifications -->
-      <v-tooltip location="bottom" text="Notifications" v-if="false">
-        <template v-slot:activator="{ props }">
-          <v-btn v-bind="props" v-if="isLoggedIn" icon @click="toggleNotifications" class="mr-2">
-            <v-badge color="tertiary" :content="'COMMING SOON'" :model-value="'COMMING SOON'">
-              <v-icon icon="mdi-bell-outline"></v-icon>
+      <v-tooltip
+        v-if="false"
+        location="bottom"
+        text="Notifications"
+      >
+        <template #activator="{ props }">
+          <v-btn
+            v-if="isLoggedIn"
+            v-bind="props"
+            icon
+            class="mr-2"
+            @click="toggleNotifications"
+          >
+            <v-badge
+              color="tertiary"
+              :content="'COMMING SOON'"
+              :model-value="'COMMING SOON'"
+            >
+              <v-icon icon="mdi-bell-outline" />
             </v-badge>
-
           </v-btn>
         </template>
       </v-tooltip>
 
 
-      <ThemeSwitch v-model="isDarkTheme" class="mr-2" />
+      <ThemeSwitch
+        v-model="isDarkTheme"
+        class="mr-2"
+      />
 
 
 
 
       <template v-if="isLoggedIn && isAdmin">
-        <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType"
-          :message-count="ticketCount" @navigate-rules="router.push({ path: '/admin/rules' })"
+        <AdminSection
+          :is-admin="isAdmin"
+          :admin-type="authStore.userData.adminType"
+          :message-count="ticketCount"
+          @navigate-rules="router.push({ path: '/admin/rules' })"
           @navigate-tickets="router.push({ path: '/admin/tickets' })"
-          @navigate-email="router.push({ path: '/admin/emails' })" />
+          @navigate-email="router.push({ path: '/admin/emails' })"
+        />
       </template>
    
       <template v-if="smAndDown">
-        <v-app-bar-nav-icon @click="toggleMobileDrawer" :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'" />
+        <v-app-bar-nav-icon
+          :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'"
+          @click="toggleMobileDrawer"
+        />
       </template>
 
       <template v-else>
         <!-- Navigation accueil -->
         <template v-if="!isLoggedIn">
-          <HomeNavigation :show-buttons="showButtons" :is-dark-theme="isDarkTheme" @update-theme="isDarkTheme = $event"
-            @navigate-contact="navigateToContact" @navigate-get-started="router.push({ path: '/get-started' })"
-            @navigate-login="router.push({ path: '/login' })" @open-icnagenda="openIcnagenda"
-            @open-olafatco="openOlafatco" />
+          <HomeNavigation
+            :show-buttons="showButtons"
+            :is-dark-theme="isDarkTheme"
+            @update-theme="isDarkTheme = $event"
+            @navigate-contact="navigateToContact"
+            @navigate-get-started="router.push({ path: '/get-started' })"
+            @navigate-login="router.push({ path: '/login' })"
+            @open-icnagenda="openIcnagenda"
+            @open-olafatco="openOlafatco"
+          />
         </template>
 
         <v-spacer />
 
         <!-- Menu utilisateur -->
-         <div>
+        <div>
           <v-badge
             :model-value="!authStore.userData?.phone"
             location="bottom left"
             color="error"
             icon="mdi-exclamation-thick"
           >
-        <UserMenu v-if="isLoggedIn" :username="username" :email="authStore.userData.email" :avatar="authStore.avatar"
-          :points="points" :current-team="currentTeam" @navigate-profile="navigateToProfile"
-          @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
+            <UserMenu
+              v-if="isLoggedIn"
+              :username="username"
+              :email="authStore.userData.email"
+              :avatar="authStore.avatar"
+              :points="points"
+              :current-team="currentTeam"
+              @navigate-profile="navigateToProfile"
+              @navigate-parameter="navigateToParameter"
+              @logout="handleLogout"
+              @navigate-contact="navigateToContact"
+            />
           </v-badge>
-         </div>
+        </div>
       </template>
     </template>
   </v-app-bar>
 
-  <NotificationsDialog v-model:isDialogOpen="isDialogOpen" v-if="isLoggedIn" :user-id="authStore.userData.userId"
-    :notifications="notificationStore.notifications" @markAsRead="handleMarkAsRead"
-    @clearNotifications="handleClearNotifications" />
+  <NotificationsDialog
+    v-if="isLoggedIn"
+    v-model:is-dialog-open="isDialogOpen"
+    :user-id="authStore.userData.userId"
+    :notifications="notificationStore.notifications"
+    @mark-as-read="handleMarkAsRead"
+    @clear-notifications="handleClearNotifications"
+  />
 </template>
 
 <script setup>

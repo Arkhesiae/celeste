@@ -11,63 +11,133 @@
       </span>
     </div> -->
 
-    <MainTitle title="Historique des transactions" :backButton="true" subtitle="Voir toutes les transactions" />
+    <MainTitle
+      title="Historique des transactions"
+      :back-button="true"
+      subtitle="Voir toutes les transactions"
+    />
 
     <v-row class="ma-0 pt-0 mt-16 position-sticky top-0">
       <div class="d-flex justify-center chip-container pa-2">
-        <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 ga-2 d-flex justify-center">
-          <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="all" size="large" rounded="lg"
-            color="primary" variant="text">Toutes</v-chip>
-          <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="received" size="large" rounded="lg"
-            color="primary" variant="text">Reçues</v-chip>
-          <v-chip class="pa-0 ma-0 px-4 text-body-2 " value="sent" size="large" rounded="lg"
-            color="primary" variant="text">Envoyées</v-chip>
+        <v-chip-group
+          v-model="selectedTransactionType"
+          class="pa-0 ma-0 ga-2 d-flex justify-center"
+        >
+          <v-chip
+            class="pa-0 ma-0 mr-2 px-4 text-body-2 "
+            value="all"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
+            Toutes
+          </v-chip>
+          <v-chip
+            class="pa-0 ma-0 mr-2 px-4 text-body-2 "
+            value="received"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
+            Reçues
+          </v-chip>
+          <v-chip
+            class="pa-0 ma-0 px-4 text-body-2 "
+            value="sent"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
+            Envoyées
+          </v-chip>
         </v-chip-group>
       </div>
     </v-row>
 
     <v-row class="">
       <!-- Colonne de gauche : Historique des transactions -->
-      <v-col cols="12" md="8">
-        <transition name="fade" mode="out-in">
-          <v-card :key="selectedTransactionType"  elevation="0" class="mb-4 pa-0" color="background">
+      <v-col
+        cols="12"
+        md="8"
+      >
+        <transition
+          name="fade"
+          mode="out-in"
+        >
+          <v-card
+            :key="selectedTransactionType"
+            elevation="0"
+            class="mb-4 pa-0"
+            color="background"
+          >
             <v-card-text class="pa-0">
-             
-              <v-progress-circular v-if="isLoading" indeterminate color="primary"
-                class="mx-auto my-4"></v-progress-circular>
+              <v-progress-circular
+                v-if="isLoading"
+                indeterminate
+                color="primary"
+                class="mx-auto my-4"
+              />
 
-              <div v-else-if="filteredTransactions.length > 0" class="ga-2 d-flex flex-column">
+              <div
+                v-else-if="filteredTransactions.length > 0"
+                class="ga-2 d-flex flex-column"
+              >
                 <TransactionItem 
                   v-for="(transaction, index) in filteredTransactions" 
                   :key="index"
                   :transaction="transaction"
                 />
               </div>
-              <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
+              <div
+                v-else
+                class="text-center text-medium-emphasis text-body-2 mt-4"
+              >
                 Aucune transaction trouvée
               </div>
             </v-card-text>
           </v-card>
-        </transition  >
+        </transition>
       </v-col>
 
       <!-- Colonne de droite : Transactions en attente -->
-      <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="0" color="background">
+      <v-col
+        cols="12"
+        md="4"
+      >
+        <v-card
+          rounded="xl"
+          elevation="0"
+          color="background"
+        >
           <v-card-text class="pa-1">
-            <h2 class="text-h5 mb-6">Transactions en attente</h2>
+            <h2 class="text-h5 mb-6">
+              Transactions en attente
+            </h2>
 
-            <v-progress-circular v-if="isLoadingPending" indeterminate color="primary"
-              class="mx-auto my-4"></v-progress-circular>
+            <v-progress-circular
+              v-if="isLoadingPending"
+              indeterminate
+              color="primary"
+              class="mx-auto my-4"
+            />
 
-            <div v-else-if="pendingTransactions.length > 0" class="ga-2 d-flex flex-column">
+            <div
+              v-else-if="pendingTransactions.length > 0"
+              class="ga-2 d-flex flex-column"
+            >
               <TransactionItem 
                 v-for="(transaction, index) in pendingTransactions.slice(0, 2)" 
                 :key="'pending-'+index"
                 :transaction="transaction"
               />
             </div>
-            <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
+            <div
+              v-else
+              class="text-center text-medium-emphasis text-body-2 mt-4"
+            >
               Aucune transaction en attente
             </div>
           </v-card-text>

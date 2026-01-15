@@ -1,53 +1,96 @@
 <template>
+  <div
+    ref="header"
+    :class="['header-placeholder']"
+    class="mb-16 position-relative"
+    :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }"
+  >
+    <div
+      :class="[
+        'list-header justify-space-between  flex-wrap align-center',
+        { 'is-sticky': isSticky }
+      ]"
+      class=""
+      :style="isSticky ? { width: `${headerWidth}px` } : {}"
+    >
+      <div class="background1" />
+      <div class="background2" />
+      <div v-if="!isSticky">
+        <v-chip-group
+          v-model="selectedFilter"
+          column
+          variant="flat"
+          color="onBackground"
+        >
+          <v-chip
+            v-for="filter in filters"
+            :key="filter.value"
+            variant="text"
+            rounded="lg"
+            :value="filter.value"
+            :color="filter.color"
+          >
+            {{ filter.label }}
+          </v-chip>
+        </v-chip-group>
+      </div>
+
+      <div
+        ref="actions"
+        class="d-flex align-center flex-grow-1" 
+        :class="smAndDown ? 'justify-space-between' : 'justify-end'"
+      >
+        <v-text-field
+          v-model="searchQuery"
+          :label="searchLabel"
+          variant="solo"
+          flat
+          rounded="xl"
+          min-width="150"
+          single-line
+          hide-details
+          density="compact"
+          class="search-field flex-grow-1"
+          clearable
+          @update:model-value="onSearch"
+        />
 
 
-    <div ref="header" :class="['header-placeholder']" class="mb-16 position-relative"  :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }">
-        <div :class="[
-            'list-header justify-space-between  flex-wrap align-center',
-            { 'is-sticky': isSticky }
-        ]" class="" :style="isSticky ? { width: `${headerWidth}px` } : {}">
-            <div class="background1"></div>
-            <div class="background2"></div>
-            <div v-if="!isSticky">
 
-                <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
-                    <v-chip v-for="filter in filters" :key="filter.value" variant="text" rounded="lg"
-                        :value="filter.value" :color="filter.color">
-                        {{ filter.label }}
-                    </v-chip>
-                </v-chip-group>
-
-            </div>
-
-            <div class="d-flex align-center flex-grow-1" ref="actions" 
-            :class="smAndDown ? 'justify-space-between' : 'justify-end'">
-
-                <v-text-field v-model="searchQuery" :label="searchLabel" variant="solo" flat rounded="xl" min-width="150" single-line
-                    hide-details density="compact" class="search-field flex-grow-1" clearable
-                    @update:model-value="onSearch" />
-
-
-
-                <v-menu color="onBackground" rounded="lg">
-                    <template v-slot:activator="{ props }">
-                        <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-                            <span class="text-overline">{{ selectedSort ? selectedSort.text : sortLabel }}</span>
-                            <v-icon>mdi-chevron-down</v-icon>
-                        </v-btn>
-                    </template>
-                    <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4 ">
-                        <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg"
-                            @click="onSortChange(option)">
-                            <v-list-item-title>{{ option.text }}</v-list-item-title>
-                        </v-list-item>
-                    </v-list>
-                </v-menu>
-
-
-            </div>
-        </div>
+        <v-menu
+          color="onBackground"
+          rounded="lg"
+        >
+          <template #activator="{ props }">
+            <v-btn
+              color="primary"
+              variant="text"
+              rounded="lg"
+              v-bind="props"
+            >
+              <span class="text-overline">{{ selectedSort ? selectedSort.text : sortLabel }}</span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
+          </template>
+          <v-list
+            color="onBackground"
+            bg-color="onBackground"
+            rounded="xl"
+            class="pa-4 "
+          >
+            <v-list-item
+              v-for="option in sortOptions"
+              :key="option.value"
+              rounded="lg"
+              @click="onSortChange(option)"
+            >
+              <v-list-item-title>{{ option.text }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
     </div>
-
+  </div>
 </template>
 
 <script setup>

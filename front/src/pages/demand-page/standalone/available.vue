@@ -1,19 +1,42 @@
 <template>
-    <v-container>
-        <SimpleTitle title="Disponibles" backButton subtitle="Consulter les demandes disponibles" />
-        <v-row class="mt-16">
-            <v-col cols="12">
-                <FilterChipGroup v-model="selectedFilter" :filters="filters" />
-                <ListHeaderV2 :sort-options="sortOptions" v-model:filter="selectedFilter" v-model:search="searchQuery"
-                    v-model:sort="sortBy" :initialSort="sortOptions[1]" />
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-col cols="12">
-                <AvailableDemands :filter="selectedFilter" :sortBy="sortBy.value" />
-            </v-col>
-        </v-row>
-    </v-container>
+  <v-container>
+    <SimpleTitle
+      title="Disponibles"
+      back-button
+      subtitle="Consulter les demandes disponibles"
+    />
+    <v-row class="mt-16">
+      <v-col cols="12">
+        <div class="d-flex align-center justify-space-between"> 
+          <FilterChipGroup
+            v-model="selectedFilter"
+            :filters="filters"
+          />
+          <ListHeaderV2
+            v-model:filter="selectedFilter"
+            v-model:search="searchQuery"
+            v-model:sort="sortBy"
+            :sort-options="sortOptions"
+            :initial-sort="sortOptions[1]"
+          />
+        </div>    
+      </v-col>
+    </v-row>
+    <v-row v-if="visible">
+      <v-col cols="12">
+        <AvailableDemands
+          :filter="selectedFilter"
+          :sort-by="sortBy.value"
+          @open-details="openDemand"
+        />
+      </v-col>
+    </v-row>
+
+    <DemandModal
+      v-model="showDemandDetailsModal"
+      :demand="selectedDemand"
+    />
+  </v-container>
 </template>
 
 
@@ -23,9 +46,10 @@ import { ref } from "vue";
 
 
 const searchQuery = ref('');
-
-const selectedFilter = ref('permutables');
-
+const showDemandDetailsModal = ref(false);
+const selectedDemand = ref(null);
+const selectedFilter = ref('remplacables');
+const visible = ref(false);
 
 // Options de tri
 const sortOptions = [
@@ -41,12 +65,22 @@ const sortBy = ref({ value: "date", label: "Date" });
 
 // Options de filtre
 const filters = [
+    { label: 'Remplaçables', value: 'remplacables' },
     { label: 'Permutables', value: 'permutables' },
-    { label: 'Remplaçables', value: 'remplaçables' },
     { label: 'Incompatibles', value: 'incompatibles', color: 'error' }
 ];
 
 
+const openDemand = (demand) => {
+    selectedDemand.value = demand;
+    showDemandDetailsModal.value = true;
+}
+
+onMounted(() => {
+    setTimeout(() => {
+        visible.value = true
+    }, 200)
+})
 </script>
 
 <style scoped>

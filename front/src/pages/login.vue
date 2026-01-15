@@ -5,7 +5,7 @@
 
 
 <template>
-      <LoginComponent ></LoginComponent>
+  <LoginComponent />
 </template>
 
 <style scoped>

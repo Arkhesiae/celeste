@@ -1,16 +1,21 @@
 <template>
-
-    <v-slide-x-transition mode="out-in" appear>
-        <div v-if="demands.length === 0">
-            <span class="text-medium-emphasis text-subtitle-2">
-                Aucune demande disponible
-            </span>
-        </div>
-        <div v-else class="d-flex flex-column ga-2 mt-8">
-            <DemandCard v-for="demand in demands" :key="demand._id" :demand="demand" class="pa-0 ma-0 my-2" />
-        </div>
-    </v-slide-x-transition>
-
+  <div v-if="demands.length === 0">
+    <span class="text-medium-emphasis text-subtitle-2">
+      Aucune demande disponible
+    </span>
+  </div>
+  <div
+    v-else
+    class="d-flex flex-column ga-2 mt-0"
+  >
+    <DemandCard
+      v-for="demand in demands"
+      :key="demand._id"
+      :demand="demand"
+      class="pa-0 ma-0 my-2"
+      @open-details="openDemandDetails"
+    />
+  </div>
 </template>
 
 <script setup>
@@ -29,6 +34,12 @@ const props = defineProps({
    
     }
 });
+
+const emits = defineEmits(['open-details']);
+
+const openDemandDetails = (demand) => {
+  emits('open-details', demand)
+}
 
 // Fonction utilitaire pour le filtrage et le tri
 const filterAndSortDemands = (demands) => {

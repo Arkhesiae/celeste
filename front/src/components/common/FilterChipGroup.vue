@@ -1,26 +1,28 @@
 <template>
-    <v-chip-group 
-        :model-value="modelValue" 
-        @update:model-value="$emit('update:modelValue', $event)"
-        variant="flat"
-        color="onBackground" 
-        mandatory 
-        class=""
-        :class="smAndDown ? ' flex-grow-1' : 'justify-center '">
-        
-        <v-chip 
-            class="justify-center font-weight-medium chip-custom" 
-            :size="'default'" 
-            :class="filter.color ? 'chip-error' : ''"
-            v-for="filter in filters" 
-            active-class="active-filter"   
-            :key="filter.value" 
-            variant="tonal" 
-            rounded="pill"
-            :value="filter.value">
-            {{ filter.label }}
-        </v-chip>
-    </v-chip-group>
+  <v-chip-group 
+    wrap
+    :model-value="modelValue" 
+    variant="flat"
+    color="onBackground"
+    mandatory 
+    class="" 
+    :class="smAndDown ? ' ' : ' '"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
+    <v-chip 
+      v-for="filter in filters" 
+      :key="filter.value" 
+      class="justify-center font-weight-medium chip-custom"
+      :size="'default'" 
+      :class="filter.color ? 'chip-error' : ''"   
+      active-class="active-filter" 
+      variant="tonal" 
+      rounded="pill"
+      :value="filter.value"
+    >
+      {{ filter.label }}
+    </v-chip>
+  </v-chip-group>
 </template>
 
 <script setup>

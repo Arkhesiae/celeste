@@ -1,35 +1,89 @@
 <template>
   <v-container :class="smAndDown ? 'mb-16' : ''">
     <!-- En-tête -->
-    <MainTitle title="Financement" subtitle="Détails des coûts"
-      @scrolled="(scrolled) => { /* handle sticky behaviour here if needed */ }" />
+    <MainTitle
+      title="Financement"
+      subtitle="Détails des coûts"
+      @scrolled="(scrolled) => { /* handle sticky behaviour here if needed */ }"
+    />
     <v-row class="d-flex ">
       <!-- Colonne latérale : Sélecteur de campagne -->
-      <v-col cols="12" md="4" lg="3" class="d-flex flex-column overflow-hidden" style="max-height: 640px ">
+      <v-col
+        cols="12"
+        md="4"
+        lg="3"
+        class="d-flex flex-column overflow-hidden"
+        style="max-height: 640px "
+      >
         <template v-if="!smAndDown">
-          <v-card rounded="xl" elevation="0" class="py-4" height="100%" color="transparent">
-            <div class="d-flex flex-column flex-grow-0" style="max-height: 100%;">
+          <v-card
+            rounded="xl"
+            elevation="0"
+            class="py-4"
+            height="100%"
+            color="transparent"
+          >
+            <div
+              class="d-flex flex-column flex-grow-0"
+              style="max-height: 100%;"
+            >
               <v-card-title class="px-0 py-4">
                 Campagnes de financement
               </v-card-title>
 
-              <EntitySelector :items="campaigns" :prefix="'Campagne'" itemKey="index" itemTitle="index"
-                :itemSubtitle="''" title=""  :itemStatus="'status'"
-                :modelValue="campaigns.find(c => c.index === selectedCampaign?.index)"
-                @update:modelValue="c => selectCampaign(c.index)">
+              <EntitySelector
+                :items="campaigns"
+                :prefix="'Campagne'"
+                item-key="index"
+                item-title="index"
+                :item-subtitle="''"
+                title=""
+                :item-status="'status'"
+                :model-value="campaigns.find(c => c.index === selectedCampaign?.index)"
+                @update:model-value="c => selectCampaign(c.index)"
+              >
                 <template #statusChip="{ item }">
-                  <v-chip v-if="item.status === 'a_venir'" color="remplacement" size="x-small" class="ml-2" rounded="lg" label>À
-                    venir</v-chip>
-                  <v-chip v-else-if="item.status === 'en_cours'" color="onBackground" variant="flat" size="x-small"
-                    rounded="lg" class="ml-2" label>En cours</v-chip>
-                  <v-chip v-else-if="item.status === 'termine'" color="grey" rounded="lg" size="x-small" class="ml-2"
-                    label>Terminé</v-chip>
+                  <v-chip
+                    v-if="item.status === 'a_venir'"
+                    color="remplacement"
+                    size="x-small"
+                    class="ml-2"
+                    rounded="lg"
+                    label
+                  >
+                    À
+                    venir
+                  </v-chip>
+                  <v-chip
+                    v-else-if="item.status === 'en_cours'"
+                    color="onBackground"
+                    variant="flat"
+                    size="x-small"
+                    rounded="lg"
+                    class="ml-2"
+                    label
+                  >
+                    En cours
+                  </v-chip>
+                  <v-chip
+                    v-else-if="item.status === 'termine'"
+                    color="grey"
+                    rounded="lg"
+                    size="x-small"
+                    class="ml-2"
+                    label
+                  >
+                    Terminé
+                  </v-chip>
                 </template>
                 <template #itemDetails="{ item }">
                   <div class="d-flex flex-column">
                     <span class="text-caption text-medium-emphasis">Début : {{ new
                       Date(item.startDate).toLocaleDateString() }}</span>
-                    <span v-if="item.endDate" class="text-caption text-medium-emphasis">Fin : {{ new
+                    <span
+                      v-if="item.endDate"
+                      class="text-caption text-medium-emphasis"
+                    >Fin : {{ new
                       Date(item.endDate).toLocaleDateString() }}</span>
                   </div>
                 </template>
@@ -38,36 +92,101 @@
           </v-card>
         </template>
         <template v-else>
-          <VersionSelector v-model="dialogOpen" :width="400"
+          <VersionSelector
+            v-model="dialogOpen"
+            :width="400"
             :title="'Campagne ' + ((campaigns.find(c => c.index === selectedCampaign?.index)?.index))"
             :subtitle="campaigns.find(c => c.index === selectedCampaign?.index)?.startDate ? 'Début : ' + new Date(campaigns.find(c => c.index === selectedCampaign?.index).startDate).toLocaleDateString() : ''"
-            :defaultText="'Sélectionner une campagne'">
+            :default-text="'Sélectionner une campagne'"
+          >
             <template #statusChip>
-              <v-chip v-if="selectedCampaign?.status === 'a_venir'" color="info" size="x-small" class="ml-2"
-                rounded="lg" label>À venir</v-chip>
-              <v-chip v-else-if="selectedCampaign?.status === 'en_cours'" color="onBackground" variant="flat"
-                size="x-small" rounded="lg" class="ml-2" label>En cours</v-chip>
-              <v-chip v-else-if="selectedCampaign?.status === 'termine'" color="grey" rounded="lg" size="x-small"
-                class="ml-2" label>Terminé</v-chip>
+              <v-chip
+                v-if="selectedCampaign?.status === 'a_venir'"
+                color="info"
+                size="x-small"
+                class="ml-2"
+                rounded="lg"
+                label
+              >
+                À venir
+              </v-chip>
+              <v-chip
+                v-else-if="selectedCampaign?.status === 'en_cours'"
+                color="onBackground"
+                variant="flat"
+                size="x-small"
+                rounded="lg"
+                class="ml-2"
+                label
+              >
+                En cours
+              </v-chip>
+              <v-chip
+                v-else-if="selectedCampaign?.status === 'termine'"
+                color="grey"
+                rounded="lg"
+                size="x-small"
+                class="ml-2"
+                label
+              >
+                Terminé
+              </v-chip>
             </template>
             <template #dialog>
-              <EntitySelector :items="campaigns" class="flex-grow-1 " :prefix="'Campagne'" itemKey="index"
-                itemTitle="index" :itemSubtitle="''" :itemStatus="'status'"
-                :modelValue="campaigns.find(c => c.index === selectedCampaign?.index)" title="Sélectionner une campagne"
-                @update:modelValue="c => { selectCampaign(c.index); dialogOpen = false; }">
+              <EntitySelector
+                :items="campaigns"
+                class="flex-grow-1 "
+                :prefix="'Campagne'"
+                item-key="index"
+                item-title="index"
+                :item-subtitle="''"
+                :item-status="'status'"
+                :model-value="campaigns.find(c => c.index === selectedCampaign?.index)"
+                title="Sélectionner une campagne"
+                @update:model-value="c => { selectCampaign(c.index); dialogOpen = false; }"
+              >
                 <template #statusChip="{ item }">
-                  <v-chip v-if="item.status === 'a_venir'" color="info" size="x-small" class="ml-2" rounded="lg" label>À
-                    venir</v-chip>
-                  <v-chip v-else-if="item.status === 'en_cours'" color="onBackground" variant="flat" size="x-small"
-                    rounded="lg" class="ml-2" label>En cours</v-chip>
-                  <v-chip v-else-if="item.status === 'termine'" color="grey" rounded="lg" size="x-small" class="ml-2"
-                    label>Terminé</v-chip>
+                  <v-chip
+                    v-if="item.status === 'a_venir'"
+                    color="info"
+                    size="x-small"
+                    class="ml-2"
+                    rounded="lg"
+                    label
+                  >
+                    À
+                    venir
+                  </v-chip>
+                  <v-chip
+                    v-else-if="item.status === 'en_cours'"
+                    color="onBackground"
+                    variant="flat"
+                    size="x-small"
+                    rounded="lg"
+                    class="ml-2"
+                    label
+                  >
+                    En cours
+                  </v-chip>
+                  <v-chip
+                    v-else-if="item.status === 'termine'"
+                    color="grey"
+                    rounded="lg"
+                    size="x-small"
+                    class="ml-2"
+                    label
+                  >
+                    Terminé
+                  </v-chip>
                 </template>
                 <template #itemDetails="{ item }">
                   <div class="d-flex flex-column">
                     <span class="text-caption text-medium-emphasis">Début : {{ new
                       Date(item.startDate).toLocaleDateString() }}</span>
-                    <span v-if="item.endDate" class="text-caption text-medium-emphasis">Fin : {{ new
+                    <span
+                      v-if="item.endDate"
+                      class="text-caption text-medium-emphasis"
+                    >Fin : {{ new
                       Date(item.endDate).toLocaleDateString() }}</span>
                   </div>
                 </template>
@@ -77,10 +196,18 @@
         </template>
       </v-col>
       <!-- Colonne principale : contenu financier -->
-      <v-col cols="12" md="8" lg="9">
-        <CurrentBudgetCard :remainingBudget="remainingBudget" :previousCampaignsRemainder="previousCampaignsRemainder"
-          :campaignExpenses="campaignExpenses" :campaignAmount="initialCampaignAmount"
-          :currentCampaignIndex="selectedCampaign?.index" />
+      <v-col
+        cols="12"
+        md="8"
+        lg="9"
+      >
+        <CurrentBudgetCard
+          :remaining-budget="remainingBudget"
+          :previous-campaigns-remainder="previousCampaignsRemainder"
+          :campaign-expenses="campaignExpenses"
+          :campaign-amount="initialCampaignAmount"
+          :current-campaign-index="selectedCampaign?.index"
+        />
         <!-- <Forecast12Months
         :nextMonths="nextMonths"
         :exhaustionDate="exhaustionDate"
@@ -90,10 +217,13 @@
     </v-row>
 
     <v-row class="mt-16"> 
-      <v-col cols="12" class="pa-3">
+      <v-col
+        cols="12"
+        class="pa-3"
+      >
         <ExpensesHistoryTable 
-          :previousCampaignsRemainder="previousCampaignsRemainder"
-          :campaignExpenses="campaigns.find(c => c.index === selectedCampaign?.index)?.expenses || []"
+          :previous-campaigns-remainder="previousCampaignsRemainder"
+          :campaign-expenses="campaigns.find(c => c.index === selectedCampaign?.index)?.expenses || []"
         />
       </v-col>
     </v-row>
@@ -105,31 +235,39 @@
 
     <!-- Détail des coûts -->
     <v-row>
-      <v-col cols="12" md="6" class="pa-3">
-        <FixedCostsCard
-        />
+      <v-col
+        cols="12"
+        md="6"
+        class="pa-3"
+      >
+        <FixedCostsCard />
       </v-col>
 
-      <v-col cols="12" md="6" class="pa-3">
-        <RecurringCostsCard
-     
-        />
+      <v-col
+        cols="12"
+        md="6"
+        class="pa-3"
+      >
+        <RecurringCostsCard />
       </v-col>
-
     </v-row>
 
     <!-- Coûts de développement -->
     <v-row>
-      <v-col cols="12" class="pa-2">
+      <v-col
+        cols="12"
+        class="pa-2"
+      >
         <!-- <DevelopmentCostsCard /> -->
       </v-col>
     </v-row>
 
     <!-- Utilisation éthique de l'IA -->
     <v-row>
-      <v-col cols="12" class="pa-2">
-
-      </v-col>
+      <v-col
+        cols="12"
+        class="pa-2"
+      />
     </v-row>
 
     <!-- Graphique d'évolution -->
@@ -185,7 +323,6 @@
         </v-card>
       </v-col>
     </v-row> -->
-
   </v-container>
 </template>
 

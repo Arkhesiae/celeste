@@ -3,20 +3,25 @@
     <!-- En-tête avec titre et informations admin -->
     <v-row class="my-16">
       <v-col cols="12">
-        <v-card class="pa-6" rounded="xl" variant="flat" color="surface">
+        <v-card
+          class="pa-6"
+          rounded="xl"
+          variant="flat"
+          color="surface"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <div class="align-center ga-2 font-weight-bold d-flex ">
-                <v-icon icon="mdi-shield-crown" size="20"   />
+                <v-icon
+                  icon="mdi-shield-crown"
+                  size="20"
+                />
                 <span class="text-h6 font-weight-bold ">  Panneau d'Administration   </span>
-               
               </div>
               <p class="text-body-2 opacity-50 mb-0">
                 Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' : 'Administrateur Local' }}
               </p>
             </div>
-         
-
           </div>
         </v-card>
       </v-col>
@@ -31,14 +36,33 @@
         :sm="stat.key === 'totalUsers' ? 12 : 6" 
         md="4"
       >
-        <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest" @click="navigateTo(stat.path)" :class="actionNeeded(stat) ? 'action-needed' : ''">
+        <v-card
+          class="pa-4 opacity-100 px-6"
+          rounded="xl"
+          variant="flat"
+          color="surfaceContainerHighest"
+          :class="actionNeeded(stat) ? 'action-needed' : ''"
+          @click="navigateTo(stat.path)"
+        >
           <div class="d-flex align-center">
-            <v-avatar :color="actionNeeded(stat) ? 'pending' : 'onBackground'" variant="tonal" size="24" class="mr-4">
-              <v-icon :icon="stat.icon" size="12" />
+            <v-avatar
+              :color="actionNeeded(stat) ? 'pending' : 'onBackground'"
+              variant="tonal"
+              size="24"
+              class="mr-4"
+            >
+              <v-icon
+                :icon="stat.icon"
+                size="12"
+              />
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">{{ stat.value }}</div>
-              <div class="text-caption opacity-50">{{ stat.label }}</div>
+              <div class="text-h6 font-weight-bold">
+                {{ stat.value }}
+              </div>
+              <div class="text-caption opacity-50">
+                {{ stat.label }}
+              </div>
             </div>
           </div>
         </v-card>
@@ -48,40 +72,55 @@
     <!-- Sections principales -->
     <v-row>
       <v-col 
-        :class="smAndDown ? 'mx-0 pa-0 ' : ''"
-        v-for="section in mainSections" 
+        v-for="section in mainSections"
+        v-show="!section.requiresMaster || adminType === 'master'" 
         :key="section.id"
-        v-show="!section.requiresMaster || adminType === 'master'"
+        :class="smAndDown ? 'mx-0 pa-0 ' : ''"
         cols="12" 
         md="6" 
         class="mb-4"
       >
-        <v-card class="pa-6" rounded="xl" variant="flat" :color="smAndDown ? 'transparent' : 'surface'" height="100%">
+        <v-card
+          class="pa-6"
+          rounded="xl"
+          variant="flat"
+          :color="smAndDown ? 'transparent' : 'surface'"
+          height="100%"
+        >
           <div class="d-flex align-center mb-4">
             <div>
               <span class="text-h7 font-weight-bold">{{ section.title }}</span>
-              <p class="text-body-2 opacity-50 mb-0">{{ section.description }}</p>
+              <p class="text-body-2 opacity-50 mb-0">
+                {{ section.description }}
+              </p>
             </div>
           </div>
           
-          <v-list class="pa-0 ga-4 d-flex flex-column bg-transparent overflow-visible" >
+          <v-list class="pa-0 ga-4 d-flex flex-column bg-transparent overflow-visible">
             <v-list-item 
               v-for="item in section.items" 
-              :key="item.id"
               v-show="!item.requiresMaster || adminType === 'master'"
+              :key="item.id"
               class="px-4" 
               :class="(actionNeeded(item) ? ' action-needed' : '')"
               height="60"
               rounded="xl" 
               @click="navigateTo(item.path)"
             >
-              <template v-slot:prepend>
-            
-                <v-icon  :icon="item.icon" color="onSurface" size="16" />
+              <template #prepend>
+                <v-icon
+                  :icon="item.icon"
+                  color="onSurface"
+                  size="16"
+                />
               </template>
-              <v-list-item-title class="title">{{ item.title }}</v-list-item-title>
-              <v-list-item-subtitle class="subtitle">{{ item.subtitle }}</v-list-item-subtitle>
-              <template v-slot:append>
+              <v-list-item-title class="title">
+                {{ item.title }}
+              </v-list-item-title>
+              <v-list-item-subtitle class="subtitle">
+                {{ item.subtitle }}
+              </v-list-item-subtitle>
+              <template #append>
                 <v-icon icon="mdi-chevron-right" />
               </template>
             </v-list-item>
@@ -89,8 +128,6 @@
         </v-card>
       </v-col>
     </v-row>
-
-   
   </v-container>
 </template>
 
@@ -104,7 +141,7 @@ import { useTicketStore } from '@/stores/ticketStore'
 import { useDisplay } from 'vuetify'
 
 defineOptions({
-  name: 'admin-panel',
+  name: 'AdminPanel',
   meta: {
     requiresAuth: true,
     requiresAdmin: true,

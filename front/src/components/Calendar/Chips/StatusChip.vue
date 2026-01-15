@@ -60,31 +60,54 @@ const hasMultiplePending = computed(() => {
 </script>
 
 <template>
-
-    <v-chip
+  <v-chip
     v-if="status !== ''"
-      rounded="lg"
-      :color="status === 'pending' ? 'surfaceContainer' : 'remplacement'"
-      :variant="status !== 'pending' ? 'flat' : 'flat'"
-      size="x-small"
-      style="bottom: -10px; opacity: 1; transform: scale(0.9) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-      class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+    rounded="lg"
+    :color="status === 'pending' ? 'surfaceContainer' : 'remplacement'"
+    :variant="status !== 'pending' ? 'flat' : 'flat'"
+    size="x-small"
+    style="bottom: -10px; opacity: 1; transform: scale(0.9) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+  >
+    <v-icon
+      v-if="hasMultiplePending"
+      :color="status === 'pending' ? 'remplacement' : 'background'"
     >
-      <v-icon :color="status === 'pending' ? 'remplacement' : 'background'" v-if="hasMultiplePending">mdi-alert-circle-outline</v-icon>
-      <v-icon :color="status === 'pending' ? 'remplacement' : 'background'" v-else-if="isPureSwitch">mdi-swap-horizontal-hidden</v-icon>
-      <v-icon :color="status === 'pending' ? 'remplacement' : 'background'" v-else-if="isPureSubstitution || isHybridSubstitution">mdi-account-arrow-left</v-icon>
-      <div  v-if="status === 'pending' && isHybridSubstitution" class="d-flex justify-center align-center" style="position: absolute; top: 1px; right: -14px; height: 16px; width: 16px; background-color: rgba(var(--v-theme-permutation), 0.4); border-radius: 50%;">
-        <v-icon size="small" class="" color="permutation">mdi-plus</v-icon>
-      </div>
-      <div v-if="text" >
-        <span>{{text}}</span>
-      </div>
-      <div  v-else>
-        <span v-if="status==='accepted'">{{ 'OK' }}</span>
-        <span v-if="status==='accepted-poster'">{{ 'OK' }}</span>
-        <span v-if="status==='accepted-accepter'">{{ substitutionTeam }}</span>
-        <span v-if="status==='pending'">{{ '?' }}</span>
-      </div>
-    </v-chip>
-
+      mdi-alert-circle-outline
+    </v-icon>
+    <v-icon
+      v-else-if="isPureSwitch"
+      :color="status === 'pending' ? 'remplacement' : 'background'"
+    >
+      mdi-swap-horizontal-hidden
+    </v-icon>
+    <v-icon
+      v-else-if="isPureSubstitution || isHybridSubstitution"
+      :color="status === 'pending' ? 'remplacement' : 'background'"
+    >
+      mdi-account-arrow-left
+    </v-icon>
+    <div
+      v-if="status === 'pending' && isHybridSubstitution"
+      class="d-flex justify-center align-center"
+      style="position: absolute; top: 1px; right: -14px; height: 16px; width: 16px; background-color: rgba(var(--v-theme-permutation), 0.4); border-radius: 50%;"
+    >
+      <v-icon
+        size="small"
+        class=""
+        color="permutation"
+      >
+        mdi-plus
+      </v-icon>
+    </div>
+    <div v-if="text">
+      <span>{{ text }}</span>
+    </div>
+    <div v-else>
+      <span v-if="status==='accepted'">{{ 'OK' }}</span>
+      <span v-if="status==='accepted-poster'">{{ 'OK' }}</span>
+      <span v-if="status==='accepted-accepter'">{{ substitutionTeam }}</span>
+      <span v-if="status==='pending'">{{ '?' }}</span>
+    </div>
+  </v-chip>
 </template>

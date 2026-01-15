@@ -3,21 +3,36 @@
     class="px-2 ma-0" 
     :rounded="smAndDown ? 'lg' : 'xl'" 
     variant="flat" 
-    @click="$emit('click', user)" 
-    :color="smAndDown ? 'transparent ' : 'surface'"
+    :color="smAndDown ? 'transparent ' : 'surface'" 
+    @click="$emit('click', user)"
   >
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
-          <v-avatar color="primary" variant="tonal" size="40" class="mr-2">
+          <v-avatar
+            color="primary"
+            variant="tonal"
+            size="40"
+            class="mr-2"
+          >
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-subtitle-1">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
-            <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+            <div class="text-subtitle-1">
+              {{ user.name }} {{ user.lastName.toUpperCase() }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ user.email }}
+            </div>
           </div>
         </div>
-        <v-icon class="position-absolute top-0 right-0 ma-4 opacity-50" color="onBackground" size="x-small" >mdi-arrow-expand</v-icon>
+        <v-icon
+          class="position-absolute top-0 right-0 ma-4 opacity-50"
+          color="onBackground"
+          size="x-small"
+        >
+          mdi-arrow-expand
+        </v-icon>
         <!-- <v-menu color="onBackground" rounded="lg">
           <template v-slot:activator="{ props }">
             <v-btn icon variant="text" v-bind="props" @click.stop>
@@ -77,15 +92,15 @@
           size="small"
         > 
           <v-icon 
-            class="mr-2" 
             v-if="user.isAdmin && user.adminType === 'master'" 
+            class="mr-2" 
             color="primary"
           >
             mdi-star-four-points
           </v-icon>
           <v-icon 
-            class="mr-2" 
             v-else 
+            class="mr-2" 
             color="secondary"
           >
             mdi-shield-crown-outline
@@ -103,20 +118,31 @@
         {{ getCenterById(user.centerId)?.name || "No center" }}
       </v-chip>
       <div class="d-flex justify-space-between align-center flex-column position-absolute bottom-0 right-0 mr-6 mb-4">
-              <div v-if="user.points > 99999">
-                <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
-              </div>
-              <div v-else class="text-h6 font-weight-bold"> {{ user.points }}</div>
-              <div class="text-body-2 text-medium-emphasis mt-n2">Points </div>
-             
-            </div>
+        <div v-if="user.points > 99999">
+          <v-icon
+            class="mb-1"
+            size="x-large"
+          >
+            mdi-infinity
+          </v-icon>
+        </div>
+        <div
+          v-else
+          class="text-h6 font-weight-bold"
+        >
+          {{ user.points }}
+        </div>
+        <div class="text-body-2 text-medium-emphasis mt-n2">
+          Points
+        </div>
+      </div>
       <v-chip
         color="onBackground"
         rounded="lg"
         size="small"
         class="mr-2"
       >
-       {{ getTeamName(user.currentTeam?.teamId) }}
+        {{ getTeamName(user.currentTeam?.teamId) }}
       </v-chip>
 
       <v-chip
@@ -128,7 +154,11 @@
       </v-chip>
     </v-card-text>
   </v-card>
-  <v-divider v-if="smAndDown" opacity="0.05" class="ma-0 pa-0"></v-divider>
+  <v-divider
+    v-if="smAndDown"
+    opacity="0.05"
+    class="ma-0 pa-0"
+  />
 </template>
 
 <script setup>

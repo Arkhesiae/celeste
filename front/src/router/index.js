@@ -53,9 +53,6 @@ const transitionConfigs = {
 
 
 router.beforeEach(async (to, from, next) => {
-
-  console.log(to.path)
-  console.log(from.path)
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
     return next();
   }
@@ -80,7 +77,6 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  console.log("1")
 
 
   if (to.path === '/') {
@@ -91,12 +87,7 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  // Navigation guard pour les routes d'administration
- 
-  console.log("2")
-
   if (authStore.isLoggedIn) {
-    console.log("3")
     if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
       return next({ path: '/pending-approval' });
     }
@@ -114,16 +105,13 @@ router.beforeEach(async (to, from, next) => {
 
 
   else {  
-    console.log("4")
-    // console.log(to.name)
+ 
    if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ path: '/login' });
     }
   } 
 
 
-  // console.log(to.meta)
-  // console.log(to.path)
   next();
 
 

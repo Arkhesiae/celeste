@@ -1,10 +1,20 @@
 <template>
-  <v-snackbar-queue content-class="adjustedMarginSnackbar "  v-model="snackbarStore.messageQueue" color="onBackground" :timeout="30000" location="top"
-    height="48px" rounded="xl"  >
-    <template #text="{item}" >
+  <v-snackbar-queue
+    v-model="snackbarStore.messageQueue"
+    content-class="adjustedMarginSnackbar "
+    color="onBackground"
+    :timeout="30000"
+    location="top"
+    height="48px"
+    rounded="xl"
+  >
+    <template #text="{item}">
       <div class="d-flex align-center ga-1">
         <!-- <v-icon :icon="item.icon" :color="item.iconColor" class="" /> -->
-        <span class="text-subtitle-2 small-text " style="font-size: 0.70rem !important;">{{ item.message }}</span>
+        <span
+          class="text-subtitle-2 small-text "
+          style="font-size: 0.70rem !important;"
+        >{{ item.message }}</span>
       </div>
     </template>
   </v-snackbar-queue>
@@ -22,7 +32,7 @@ const safeAreaTop = computed(() => {
 
 </script> 
 
-<style >
+<style>
 .adjustedMarginSnackbar{
   margin-top: calc(var(--safe-area-top,0px) + 0px) !important;
   /* padding-top: 100px !important; */

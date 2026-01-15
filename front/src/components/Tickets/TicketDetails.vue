@@ -1,43 +1,75 @@
 <template>
-  <v-dialog v-model="isOpen" :fullscreen="smAndDown" max-width="800px">
-    <v-card v-if="ticket" :rounded="smAndDown ? '' : 'xl'" class="pa-6">
+  <v-dialog
+    v-model="isOpen"
+    :fullscreen="smAndDown"
+    max-width="800px"
+  >
+    <v-card
+      v-if="ticket"
+      :rounded="smAndDown ? '' : 'xl'"
+      class="pa-6"
+    >
       <v-card-title class="d-flex align-start pa-0 mb-4">
         <div class="d-flex  flex-column  justify-start align-start">
           <div class="d-flex align-center flex-wrap ga-1 ">
-          <v-icon :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)" 
-            size="small"></v-icon>
+            <v-icon
+              :icon="getTicketIcon(ticket.type)"
+              :color="getTicketColor(ticket.type)" 
+              size="small"
+            />
 
-          <span class="text-truncate title">{{ ticket.title }}</span>
-          <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg"
-                color="primary">
-                Local
-              </v-chip>
+            <span class="text-truncate title">{{ ticket.title }}</span>
+            <v-chip
+              v-if="ticket.adminType === 'local' && !xs"
+              size="x-small"
+              rounded="lg"
+              color="primary"
+            >
+              Local
+            </v-chip>
 
-              <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
-
-                {{ ticket.centerId?.name }}
-
-              </v-chip>
-         
-    </div>
+            <v-chip
+              v-if="ticket.centerId?.name"
+              size="x-small"
+              rounded="lg"
+              color="onBackground"
+            >
+              {{ ticket.centerId?.name }}
+            </v-chip>
+          </div>
         
 
           <div class="d-flex align-center">
-            <v-icon size="small" class="mr  -1">mdi-identifier</v-icon>
+            <v-icon
+              size="small"
+              class="mr  -1"
+            >
+              mdi-identifier
+            </v-icon>
             <span class="text-body-2">{{ ticket._id.slice(-6) }}</span>
           </div>
-              <!-- Date -->
-        <div class="">
-      
-          <div class="d-flex align-center">
-            <v-icon size="x-small" class="mr-1">mdi-clock-outline</v-icon>
-            <span class="date">{{ formatDate(ticket.createdAt) }}</span>
+          <!-- Date -->
+          <div class="">
+            <div class="d-flex align-center">
+              <v-icon
+                size="x-small"
+                class="mr-1"
+              >
+                mdi-clock-outline
+              </v-icon>
+              <span class="date">{{ formatDate(ticket.createdAt) }}</span>
+            </div>
           </div>
         </div>
-        </div>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <div class="d-flex flex-column ga-1 justify-end align-end flex-0-0">
-          <v-chip size="small" rounded="lg" v-if="ticket.type" :color="getTicketColor(ticket.type)" class="ml-2">
+          <v-chip
+            v-if="ticket.type"
+            size="small"
+            rounded="lg"
+            :color="getTicketColor(ticket.type)"
+            class="ml-2"
+          >
             {{ getTicketTypeLabel(ticket.type) }}
           </v-chip>
 
@@ -51,9 +83,7 @@
               :prepend-icon="true"
             />
           </div>
-        
         </div>
-
       </v-card-title>
 
       <!-- Actions (haut) -->
@@ -63,8 +93,8 @@
           color="onSurface"
           variant="outlined"
           prepend-icon="mdi-archive-arrow-up"
-          @click="$emit('restore-ticket', ticket)"
           size="small"
+          @click="$emit('restore-ticket', ticket)"
         >
           Restaurer
         </v-btn>
@@ -74,16 +104,14 @@
           color="onSurface"
           variant="outlined"
           prepend-icon="mdi-archive"
-          @click="$emit('archive-ticket', ticket)"
           size="small"
+          @click="$emit('archive-ticket', ticket)"
         >
           Archiver
         </v-btn>
       </div>
 
       <v-card-text class="pa-0">
-
-
         <!-- Email avec possibilité de copier -->
         <div class="mb-4">
           <EmailButton 
@@ -102,17 +130,24 @@
 
     
 
-        <v-divider class="my-4"></v-divider>
+        <v-divider class="my-4" />
 
         <!-- Contenu du ticket -->
-        <div class="text-subtitle-2 mb-2">Ticket</div>
-        <div class="bg-surfaceContainer pa-4 rounded-xl" style="font-size: 0.75rem !important; line-height: 1.2 !important;">
+        <div class="text-subtitle-2 mb-2">
+          Ticket
+        </div>
+        <div
+          class="bg-surfaceContainer pa-4 rounded-xl"
+          style="font-size: 0.75rem !important; line-height: 1.2 !important;"
+        >
           {{ ticket.content }}
         </div>
 
         <!-- Réponses -->
-        <div v-if="ticket.replies && ticket.replies.length > 0" class="mt-6">
-       
+        <div
+          v-if="ticket.replies && ticket.replies.length > 0"
+          class="mt-6"
+        >
           <div class="d-flex flex-column ga-3">
             <div 
               v-for="(reply, index) in ticket.replies" 
@@ -125,34 +160,53 @@
                   :icon="reply.isFromAdmin ? 'mdi-star-four-points' : 'mdi-account-outline'" 
                   size="x-small" 
                   class="mr-2"
-      
-                ></v-icon>
+                />
                 <span class="text-caption font-weight-medium">
                   {{ reply.isFromAdmin ? 'Administrateur' : 'Utilisateur' }}
                 </span>
-                <v-spacer></v-spacer>
+                <v-spacer />
                 <span class="text-caption text-medium-emphasis">
                   {{ formatDate(reply.createdAt) }}
                 </span>
               </div>
-              <div class="text-body-2" style="font-size: 0.75rem !important; line-height: 1.2 !important;">{{ reply.content }}</div>
+              <div
+                class="text-body-2"
+                style="font-size: 0.75rem !important; line-height: 1.2 !important;"
+              >
+                {{ reply.content }}
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Bouton pour envoyer une réponse -->
         <div class="mt-4 d-flex justify-end">
-          <v-spacer></v-spacer>
-          <v-btn  size="small" color="surfaceContainerHighest" variant="flat" @click="openReplyDialog" style="border-radius: 16px !important;">
-            <v-icon size="small">mdi-reply-outline</v-icon>
-            <span class="ml-2 font-weight-medium" style="font-size: 0.710rem !important;">Répondre</span>
+          <v-spacer />
+          <v-btn
+            size="small"
+            color="surfaceContainerHighest"
+            variant="flat"
+            style="border-radius: 16px !important;"
+            @click="openReplyDialog"
+          >
+            <v-icon size="small">
+              mdi-reply-outline
+            </v-icon>
+            <span
+              class="ml-2 font-weight-medium"
+              style="font-size: 0.710rem !important;"
+            >Répondre</span>
           </v-btn>
         </div>
       </v-card-text>
 
       <v-card-actions class="pa-0 mt-8">
-        <v-spacer></v-spacer>
-        <v-btn color="onSurface" variant="text" @click="$emit('close')">
+        <v-spacer />
+        <v-btn
+          color="onSurface"
+          variant="text"
+          @click="$emit('close')"
+        >
           Fermer
         </v-btn>
       </v-card-actions>

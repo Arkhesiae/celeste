@@ -1,27 +1,55 @@
 <template>
-  <div>
-    <v-card :class="demandCardClasses" variant="flat" rounded="lg" class="demand-card pl-4 pa-3"
-      @click="openDetails">
-
+  <div class="d-flex align-start ga-2">
+    <div class="dot-big mt-5 bg-primary" />
+    <v-card
+      :class="smAndDown ? 'demand-card__mobile' : ''"
+      variant="flat"
+      rounded="lg"
+      class="demand-card pa-3 pl-4 flex-1-1"
+      @click="openDetails"
+    >
       <div class="d-flex align-center justify-space-between">
         <div class="d-flex align-center mr-3 ga-2">
-          <v-icon v-if="isOwner" size="12" color="primary">mdi-account-star-outline</v-icon>
-          <span style="font-weight: 800; font-size: .75rem;" :class="{ 'text-primary': isOwner }">{{ posterName
-          }}</span>
-          <span v-if="!isOwner" class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
+          <v-icon
+            v-if="isOwner"
+            size="12"
+            color="primary"
+          >
+            mdi-account-star-outline
+          </v-icon>
+          <span
+            style="font-weight: 800; font-size: .75rem;"
+            :class="{ 'text-primary': isOwner }"
+          >{{ posterName }}</span>
+          <span
+            v-if="!isOwner"
+            class="text-truncate"
+            style="max-width: 80px; font-size: .70rem; font-weight: 600;"
+          >({{
             posterTeamName }})</span>
-          <div class="small-dot"></div>
+          <div class="small-dot" />
           <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
           }}</span>
 
-          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;"
-            @click.stop="showCommentDialog = true">
+          <v-icon
+            v-if="demand?.comment"
+            size="x-small"
+            color="onBackground"
+            style="opacity: 0.8;"
+          >
             mdi-comment-text-outline
           </v-icon>
 
-          <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2"
-            @click.stop="showPointsDialog = true">
-            <LogoCopy color="onBackground" style="top:-2px; position: relative; transform: scale(0.7);" />
+          <v-chip
+            variant="outlined"
+            size="x-small"
+            rounded="lg"
+            class="font-weight-bold point-chip mr-2"
+          >
+            <LogoCopy
+              color="onBackground"
+              style="top:-2px; position: relative; transform: scale(0.7);"
+            />
             <span style="font-size: .75rem; font-weight: 600;">{{ totalPoints }}</span>
           </v-chip>
         </div>
@@ -29,110 +57,161 @@
 
 
         <div class="d-flex align-center">
-          <v-icon v-if="demand?.isNew" size="x-small" color="error" class="mr-1">
-            mdi-circle
-          </v-icon>
-          <div class="d-flex align-center ga-2">
-            <span class=" text-medium-emphasis" style="font-size: .75rem; font-weight: 500;">{{ labelOption }}</span>
-            <div>
-              <div class="d-flex align-center justify-end">
-                <v-chip class="type-chip " color="surfaceContainer" variant="flat" size="x-small" rounded="lg">
-
-                  <div class="d-flex align-center ga-2" v-if="demand?.type === 'switch'">
-                    <v-icon class="" style="top: 1px; font-size: 16px;" icon="mdi-swap-horizontal"></v-icon>
-
-
-                  </div>
-                  <div class="d-flex align-center ga-2" v-if="demand?.type === 'substitution'">
-                    <v-icon class="" icon="mdi-account-arrow-left-outline "></v-icon>
-
-
-                  </div>
-                  <div class="d-flex align-center ga-2" v-if="demand?.type === 'hybrid'">
-                    <v-icon class="ml-n1" icon="mdi-account-arrow-left-outline "></v-icon>
-                    <v-icon class="ml-n2" style="top: 1px; font-size: 12px; " icon="mdi-swap-horizontal"></v-icon>
-
-
-                  </div>
-                  <v-icon :color="statusIconColor" :icon="statusIcon" size="x-small"></v-icon>
-                </v-chip>
-
-
-
-
-              </div>
-
-
+          <v-chip
+            class="type-chip "
+            color="surfaceContainer"
+            variant="flat"
+            size="x-small"
+            rounded="lg"
+          >
+            <div
+              v-if="demand?.type === 'switch'"
+              class="d-flex align-center ga-2"
+            >
+              <v-icon
+                class=""
+                style="top: 1px; font-size: 16px;"
+                icon="mdi-swap-horizontal"
+              />
             </div>
-
-          </div>
+            <div
+              v-if="demand?.type === 'substitution'"
+              class="d-flex align-center ga-2"
+            >
+              <v-icon
+                class=""
+                icon="mdi-account-arrow-left-outline "
+              />
+            </div>
+            <div
+              v-if="demand?.type === 'hybrid'"
+              class="d-flex align-center ga-2"
+            >
+              <v-icon
+                class="ml-n1"
+                icon="mdi-account-arrow-left-outline "
+              />
+              <v-icon
+                class="ml-n2"
+                style="top: 1px; font-size: 12px; "
+                icon="mdi-swap-horizontal"
+              />
+            </div>
+            <v-icon
+              :color="statusIconColor"
+              :icon="statusIcon"
+              size="x-small"
+            />
+          </v-chip>
         </div>
       </div>
 
 
 
-      <div class="d-flex align-center flex-shrink-0 ga-2">
-
-
+      <div class="d-flex align-center  ga-2 my-1">
         <div class="d-flex align-center ga-1">
-          <span v-if="firstShift" :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
-            style="font-size: .75rem; opacity: 0.7;">{{ firstShift }}</span>
-          <v-icon v-if="isAccepted" size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary"
-            style="opacity: 0.8;"></v-icon>
-          <span v-if="secondShift" :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
-            style="font-size: .75rem; opacity: 0.7">{{ secondShift }}</span>
+          <span
+            v-if="firstShift"
+            :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
+            style="font-size: .875rem; opacity: 0.7;"
+          >{{ firstShift }}</span>
+          <v-icon
+            v-if="isAccepted"
+            size="x-small"
+            icon="mdi-arrow-right-drop-circle-outline"
+            color="primary"
+            style="opacity: 0.8;"
+          />
+          <span
+            v-if="secondShift"
+            :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
+            style="font-size: .875rem; opacity: 0.7"
+          >{{ secondShift }}</span>
         </div>
-
-
-
-
+        <div class="mt-">
+          <v-chip
+            size="x-small"
+            variant="tonal"
+            color="primary"
+            rounded="lg"
+          >
+            <span
+              class="text-medium-emphasis"
+              style="font-size: .75rem; font-weight: 500;"
+            >{{ labelOption
+            }}</span>
+          </v-chip>
+        </div>
       </div>
 
       <div class="d-flex align-center flex-shrink-0 justify-space-between">
-
-
-
-
         <div class="d-flex align-center ga-1">
-          <v-icon size="x-small" icon="mdi-eye-outline" color="onBackground" style="opacity: 0.8;"></v-icon>
-          <span class="text-medium-emphasis" style="font-size: .70rem; font-weight: 600;">{{ demand?.seenBy?.length || 0
+          <v-icon
+            size="x-small"
+            icon="mdi-eye-outline"
+            color="onBackground"
+            style="opacity: 0.8;"
+          />
+          <span
+            class="text-medium-emphasis"
+            style="font-size: .70rem; font-weight: 600;"
+          >{{ demand?.seenBy?.length || 0
           }}</span>
         </div>
 
 
         <div class="d-flex align-center ml-4">
           <template v-if="accepter">
-            <v-avatar size="20" color="surfaceContainer" class="mr-1">
-              <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
-              <v-icon size="16" v-else>mdi-account-check-outline</v-icon>
+            <v-avatar
+              size="20"
+              color="surfaceContainer"
+              class="mr-1"
+            >
+              <v-img
+                v-if="accepter?.avatar"
+                :src="`${API_URL}${accepter?.avatar}`"
+                alt="Avatar"
+              />
+              <v-icon
+                v-else
+                size="16"
+              >
+                mdi-account-check-outline
+              </v-icon>
             </v-avatar>
             <div class="d-flex align-center text-left ga-1">
-              <span class="font-weight-bold text-truncate" :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: .75rem;">
+              <span
+                class="font-weight-bold text-truncate"
+                :class="isAccepter ? 'text-primary' : ''"
+                style="max-width: 100px; font-size: .75rem;"
+              >
                 {{ accepterName }}
               </span>
-              <span class="text-truncate" v-if="isOwner"
-                style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
-                  accepterTeamName }})</span>
+              <span
+                v-if="isOwner"
+                class="text-truncate"
+                style="max-width: 80px; font-size: .70rem; font-weight: 600;"
+              >({{
+                accepterTeamName }})</span>
             </div>
           </template>
           <template v-else>
             <div class="empty-accepter-avatar mr-1">
-              <v-icon size="12" color="text-medium-emphasis">mdi-account-plus-outline</v-icon>
+              <v-icon
+                size="12"
+                color="text-medium-emphasis"
+              >
+                mdi-account-question-outline
+              </v-icon>
             </div>
-            <v-chip size="x-small" rounded="pill" color="transparent" variant="flat">
+            <!-- <v-chip size="x-small" rounded="pill" color="transparent" variant="flat">
               <span style="font-size: .75rem; opacity: 0.3; letter-spacing: 0.1px;">__________ </span>
-            </v-chip>
+            </v-chip> -->
           </template>
         </div>
       </div>
-
     </v-card>
   </div>
-
-  <!-- <DemandModal v-model="showDemandDetailsModal" :demand="demand" :isPoster="isPoster"
-    @cancel-demand="confirmCancelOrWithdraw" @accept="$emit('accept')" @decline="$emit('decline')" /> -->
-
 </template>
 
 <script setup>
@@ -142,6 +221,7 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useDisplay } from 'vuetify';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { API_URL } from '@/config/api'
 
@@ -149,6 +229,7 @@ import { API_URL } from '@/config/api'
 const teamStore = useTeamStore();
 const rotationStore = useRotationStore();
 const userStore = useUserStore();
+const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
 const substitutionStore = useSubstitutionStore();
@@ -358,11 +439,11 @@ const demandCardClasses = computed(() => {
 
 const labelOption = computed(() => {
   if (props.demand?.accepterShift && isAccepted.value) {
-    return "Je permute";
+    return "Je permute dans";
   }
 
   if (isAccepter.value && isAccepted.value && !props.demand?.accepterShift) {
-    return "Je remplace";
+    return "Je remplace dans ";
   }
 
   if (isOwner.value && isAccepted.value && !props.demand?.accepterShift) {
@@ -370,7 +451,7 @@ const labelOption = computed(() => {
   }
 
   if (isOwner.value && (props.demand?.status === 'open' || !props.demand?.accepterId)) {
-    return "En attente";
+    return "En attente...";
   }
 
   return "Statut inconnu";
@@ -410,7 +491,7 @@ const confirmDelete = async () => {
   box-sizing: border-box;
   border-radius: 16px !important;
   transition: transform 0.2s ease-in-out;
-  background-color: rgba(var(--v-theme-surfaceContainer), 0.29) !important;
+  background-color: rgba(var(--v-theme-surfaceContainer), 0.00) !important;
   cursor: pointer;
 }
 
@@ -429,12 +510,18 @@ const confirmDelete = async () => {
 }
 
 /* Original chip styles (adapted to new chip structure) */
-.accepted-demand-card .point-chip,
-.pending-demand-card .point-chip,
-.to-do-demand-card .point-chip {
+.demand-card .point-chip {
   border: 1px solid rgba(var(--v-theme-onBackground), 0.1) !important;
   background: transparent !important;
   color: rgba(var(--v-theme-primary), 0.99) !important;
+}
+
+.demand-card {
+  background-color: rgba(var(--v-theme-surfaceContainer), 1) !important;
+}
+
+.demand-card.demand-card__mobile {
+  background-color: rgba(var(--v-theme-surfaceContainer), 0.00) !important;
 }
 
 .empty-accepter-avatar {
@@ -449,6 +536,13 @@ const confirmDelete = async () => {
   border: 1px dashed rgba(var(--v-theme-onBackground), 0.5);
   background: rgba(var(--v-theme-surface-variant), 0.01);
   /* Light background */
+}
+
+.dot-big {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgba(var(--v-theme-onBackground), 0.5);
 }
 
 

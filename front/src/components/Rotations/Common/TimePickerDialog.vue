@@ -38,8 +38,16 @@ const saveTimePicker = () => {
 </script>
 
 <template>
-  <v-dialog v-model="localDialogVisible" persistent max-width="500px">
-    <v-card rounded="xl" elevation="0" color="surfaceContainerHigh">
+  <v-dialog
+    v-model="localDialogVisible"
+    persistent
+    max-width="500px"
+  >
+    <v-card
+      rounded="xl"
+      elevation="0"
+      color="surfaceContainerHigh"
+    >
       <v-card-item class="pa-6">
         <div class="d-flex align-center justify-space-between ">
           <div>
@@ -50,7 +58,11 @@ const saveTimePicker = () => {
               Sélectionnez l'heure pour cette vacation
             </div>
           </div>
-          <v-btn icon="mdi-close" variant="text" @click="closeTimePicker"></v-btn>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="closeTimePicker"
+          />
         </div>
       </v-card-item>
 
@@ -68,20 +80,19 @@ const saveTimePicker = () => {
           :allowed-minutes="[0, 30, 15, 45]"
           elevation="0"
           width="100%"
-        ></v-time-picker>
+        />
       </v-card-text>
 
       <v-card-actions class="pa-6">
-       
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="primary"
           variant="text"
           rounded="xl"
           class="ml-4"
-          @click="saveTimePicker"
           :slim="true"
           size="large"
+          @click="saveTimePicker"
         >
           Enregistrer
         </v-btn>

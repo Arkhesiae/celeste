@@ -1,25 +1,70 @@
 <template>
   <v-container>
-
-    <MainTitle title="Liste des centres" subtitle="Gérer et organiser les centres">
-
+    <MainTitle
+      title="Liste des centres"
+      subtitle="Gérer et organiser les centres"
+    >
       <template #actions> 
-        <v-btn @click="openAddCenterDialog" color="onBackground" height="48px" style="border-radius: 16px !important" class='px-4 add-center-btn' prepend-icon="mdi-plus">Ajouter un centre</v-btn>
+        <v-btn
+          color="onBackground"
+          height="48px"
+          style="border-radius: 16px !important"
+          class="px-4 add-center-btn"
+          prepend-icon="mdi-plus"
+          @click="openAddCenterDialog"
+        >
+          Ajouter un centre
+        </v-btn>
       </template>
-
-      </MainTitle>
+    </MainTitle>
 
     <v-row class="justify-space-between align-center mb-4">
-      <v-col cols="12" md="6" >
-        <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground"  >
-          <v-chip variant="text" rounded="lg" value="all">Tous</v-chip>
-          <v-chip variant="text"  rounded="lg" value="Approche">Approches</v-chip>
-          <v-chip variant="text" rounded="lg" value="CRNA">CRNAs </v-chip>
-          <v-chip variant="text" rounded="lg" value="Autre">Autres</v-chip>
+      <v-col
+        cols="12"
+        md="6"
+      >
+        <v-chip-group
+          v-model="selectedFilter"
+          column
+          variant="flat"
+          color="onBackground"
+        >
+          <v-chip
+            variant="text"
+            rounded="lg"
+            value="all"
+          >
+            Tous
+          </v-chip>
+          <v-chip
+            variant="text"
+            rounded="lg"
+            value="Approche"
+          >
+            Approches
+          </v-chip>
+          <v-chip
+            variant="text"
+            rounded="lg"
+            value="CRNA"
+          >
+            CRNAs
+          </v-chip>
+          <v-chip
+            variant="text"
+            rounded="lg"
+            value="Autre"
+          >
+            Autres
+          </v-chip>
         </v-chip-group>
       </v-col>
       
-      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
+      <v-col
+        cols="12"
+        md="6"
+        class="d-flex justify-end gap-2"
+      >
         <v-text-field
           v-model="searchQuery"
           label="Rechercher"
@@ -33,33 +78,55 @@
           style="max-width: 300px"
           clearable
         />
-        <v-menu color="onBackground" rounded="lg">
-          <template v-slot:activator="{ props }">
-            <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par'}}</span>
+        <v-menu
+          color="onBackground"
+          rounded="lg"
+        >
+          <template #activator="{ props }">
+            <v-btn
+              color="primary"
+              variant="text"
+              rounded="lg"
+              v-bind="props"
+            >
+              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par' }}</span>
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
-          <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-            <v-list-item rounded="lg" @click="sortBy = 'name'">
+          <v-list
+            color="onBackground"
+            bg-color="onBackground"
+            rounded="xl"
+            class="pa-4"
+          >
+            <v-list-item
+              rounded="lg"
+              @click="sortBy = 'name'"
+            >
               <v-list-item-title>Nom</v-list-item-title>
             </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'OACI'">
+            <v-list-item
+              rounded="lg"
+              @click="sortBy = 'OACI'"
+            >
               <v-list-item-title>Indicateur OACI</v-list-item-title>
             </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'usersCount'">
+            <v-list-item
+              rounded="lg"
+              @click="sortBy = 'usersCount'"
+            >
               <v-list-item-title>Nombre de membres</v-list-item-title>
             </v-list-item>
-        
           </v-list>
         </v-menu>
       </v-col>
     </v-row>
 
     <v-row>
-      <v-col cols="12" class="d-flex justify-space-between align-center">
-        
-     
+      <v-col
+        cols="12"
+        class="d-flex justify-space-between align-center"
+      >
         <v-progress-circular
           v-if="centerStore.loading"
           indeterminate
@@ -67,40 +134,81 @@
           class="d-flex justify-center"
         />
       </v-col>
-      <v-col v-for="center in filteredAndSortedCenters" :key="center._id" cols="12" md="6" lg="4" height="100%">
-        <v-card class="px-2 ma-0" rounded="xl" variant="flat" @click="navigateToTeams(center._id)" height="100%">
-          <v-card-item >
-          <v-card-title>
-            <span class="text-h6">{{ center.name }}</span>
-          </v-card-title>
-          <v-card-subtitle>
-            <span class="text-h7">{{ center.OACI }}</span>
-          </v-card-subtitle>
-          <template #append> 
-            <v-menu  color="onBackground" rounded="lg">
-                <template v-slot:activator="{ props }">
-                  <v-btn icon variant="text" v-bind="props" @click.stop>
+      <v-col
+        v-for="center in filteredAndSortedCenters"
+        :key="center._id"
+        cols="12"
+        md="6"
+        lg="4"
+        height="100%"
+      >
+        <v-card
+          class="px-2 ma-0"
+          rounded="xl"
+          variant="flat"
+          height="100%"
+          @click="navigateToTeams(center._id)"
+        >
+          <v-card-item>
+            <v-card-title>
+              <span class="text-h6">{{ center.name }}</span>
+            </v-card-title>
+            <v-card-subtitle>
+              <span class="text-h7">{{ center.OACI }}</span>
+            </v-card-subtitle>
+            <template #append> 
+              <v-menu
+                color="onBackground"
+                rounded="lg"
+              >
+                <template #activator="{ props }">
+                  <v-btn
+                    icon
+                    variant="text"
+                    v-bind="props"
+                    @click.stop
+                  >
                     <v-icon>mdi-dots-vertical</v-icon>
                   </v-btn>
                 </template>
-                <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-                  <v-list-item rounded="lg" @click.stop="removeCenter(center._id)">
-                    <v-list-item-title class="text-onError">Supprimer le centre</v-list-item-title>
+                <v-list
+                  color="onBackground"
+                  bg-color="onBackground"
+                  rounded="xl"
+                  class="pa-4"
+                >
+                  <v-list-item
+                    rounded="lg"
+                    @click.stop="removeCenter(center._id)"
+                  >
+                    <v-list-item-title class="text-onError">
+                      Supprimer le centre
+                    </v-list-item-title>
                   </v-list-item>
-                  <v-list-item rounded="lg" @click.stop="">
-                    <v-list-item-title >Modifier le tour de service</v-list-item-title>
+                  <v-list-item
+                    rounded="lg"
+                    @click.stop=""
+                  >
+                    <v-list-item-title>Modifier le tour de service</v-list-item-title>
                   </v-list-item>
                 </v-list>
               </v-menu>
-          </template>
-          
+            </template>
           </v-card-item>
           <v-card-subtitle>
             <v-row>
               <v-col>
                 <strong>Admins:</strong>
-                <v-chip class="ml-1" v-for="admin in adminsByCenter[center._id]" :key="admin._id" color="onBackground" size="small" rounded="lg">{{ admin.name }}  {{ admin.lastName }}</v-chip>
-              
+                <v-chip
+                  v-for="admin in adminsByCenter[center._id]"
+                  :key="admin._id"
+                  class="ml-1"
+                  color="onBackground"
+                  size="small"
+                  rounded="lg"
+                >
+                  {{ admin.name }}  {{ admin.lastName }}
+                </v-chip>
               </v-col>
               <v-col>
                 <strong>Membres:</strong> {{ usersCountByCenter[center._id] }}
@@ -109,19 +217,41 @@
           </v-card-subtitle>
           <v-card-text>
             <strong>Tour de service actif:</strong>
-            <v-chip v-if="activeRotationOfCenter(center._id)" color="onBackground" size="small" rounded="lg" class="ml-1">
-              {{ activeRotationOfCenter(center._id).name}}
+            <v-chip
+              v-if="activeRotationOfCenter(center._id)"
+              color="onBackground"
+              size="small"
+              rounded="lg"
+              class="ml-1"
+            >
+              {{ activeRotationOfCenter(center._id).name }}
             </v-chip>
-            <span v-else class="text-medium-emphasis">Aucun tour de service actif</span>
+            <span
+              v-else
+              class="text-medium-emphasis"
+            >Aucun tour de service actif</span>
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-dialog v-model="addDialog" max-width="500">
-      <v-card rounded="xl" variant="flat" class="pa-6">
-        <v-card-title class="pa-0">Ajouter un centre</v-card-title>
-        <v-form ref="form" v-model="isFormValid" @submit.prevent="saveCenter">
+    <v-dialog
+      v-model="addDialog"
+      max-width="500"
+    >
+      <v-card
+        rounded="xl"
+        variant="flat"
+        class="pa-6"
+      >
+        <v-card-title class="pa-0">
+          Ajouter un centre
+        </v-card-title>
+        <v-form
+          ref="form"
+          v-model="isFormValid"
+          @submit.prevent="saveCenter"
+        >
           <v-card-text class="pa-0 my-6">
             <v-text-field 
               v-model="newCenter.name" 
@@ -135,8 +265,8 @@
                 () => !centerNameError.value || centerNameError.value
               ]"
               :error-messages="centerNameError"
-              @blur="checkCenterNameExists(newCenter.name)"
-              required 
+              required
+              @blur="checkCenterNameExists(newCenter.name)" 
             />
             <v-text-field 
               v-model="newCenter.OACI" 
@@ -150,8 +280,8 @@
               maxlength="4"
               label="Indicateur OACI" 
               required 
-              @blur="checkICAONameExists(newCenter.OACI)"
               :error-messages="ICAONameError"
+              @blur="checkICAONameExists(newCenter.OACI)"
               @input="newCenter.OACI = $event.target.value.toUpperCase()"
             />
             <v-select
@@ -165,8 +295,8 @@
               required
             />
             <v-select
-              rounded="xl"
               v-model="newCenter.adminId"
+              rounded="xl"
               :items="users"
               item-text="name"
               item-value="_id"
@@ -190,15 +320,22 @@
             />
           </v-card-text>
           <v-card-actions class="pa-0 ">
-      
-            <v-btn text color="primary" @click="addDialog = false">Annuler</v-btn>
-            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="addDialog = false"
+            >
+              Annuler
+            </v-btn>
+            <v-spacer />
             <v-btn 
               text 
               color="primary" 
               type="submit"
               :disabled="!isFormValid"
-            >Enregistrer</v-btn>
+            >
+              Enregistrer
+            </v-btn>
           </v-card-actions>
         </v-form>
       </v-card>

@@ -1,6 +1,9 @@
 <template>
   <v-container class="mb-16">
-    <MainTitle title="Demandes du centre" subtitle="Consulter et gérer toutes les demandes du centre">
+    <MainTitle
+      title="Demandes du centre"
+      subtitle="Consulter et gérer toutes les demandes du centre"
+    >
       <template #actions>
         <v-select
           v-if="authStore.userData.adminType === 'master'"
@@ -24,17 +27,41 @@
     </MainTitle>
 
     <v-row>
-      <v-col cols="12" v-if="isLoading">
+      <v-col
+        v-if="isLoading"
+        cols="12"
+      >
         <Loading />
       </v-col>
-      <v-col v-else v-for="demand in sortedDemands" :key="demand._id" cols="12" >
+      <v-col
+        v-for="demand in sortedDemands"
+        v-else
+        :key="demand._id"
+        cols="12"
+      >
         <AdminDemandCard :demand="demand" />
       </v-col>
-      <v-col v-if="!isLoading && demands.length === 0" cols="12">
-        <v-card class="pa-8 text-center" rounded="xl" elevation="0">
-          <v-icon icon="mdi-information-outline" size="48" color="onSurface" opacity="0.3"></v-icon>
-          <p class="text-h6 mt-4 mb-0">Aucune demande trouvée</p>
-          <p class="text-body-2 opacity-70">Il n'y a actuellement aucune demande dans ce centre</p>
+      <v-col
+        v-if="!isLoading && demands.length === 0"
+        cols="12"
+      >
+        <v-card
+          class="pa-8 text-center"
+          rounded="xl"
+          elevation="0"
+        >
+          <v-icon
+            icon="mdi-information-outline"
+            size="48"
+            color="onSurface"
+            opacity="0.3"
+          />
+          <p class="text-h6 mt-4 mb-0">
+            Aucune demande trouvée
+          </p>
+          <p class="text-body-2 opacity-70">
+            Il n'y a actuellement aucune demande dans ce centre
+          </p>
         </v-card>
       </v-col>
     </v-row>
@@ -50,7 +77,7 @@ import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import { substitutionService } from '@/services/substitutionService.js';
 
 defineOptions({
-  name: 'admin-demands',
+  name: 'AdminDemands',
   meta: {
     requiresAuth: true,
     requiresAdmin: true,

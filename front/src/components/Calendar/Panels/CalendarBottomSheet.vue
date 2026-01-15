@@ -1,5 +1,9 @@
 <template>
-  <v-bottom-sheet v-model="localModelValue" inset class="safe-area-bottom">
+  <v-bottom-sheet
+    v-model="localModelValue"
+    inset
+    class="safe-area-bottom"
+  >
     <CalendarPanel
       :formatted-date="formattedDate"
       :selected-date="selectedDate"
@@ -10,7 +14,6 @@
       @unaccept-demand="handleUnacceptDemand"
     />
   </v-bottom-sheet>
-
 </template>
 
 <script setup>

@@ -54,11 +54,14 @@ const handleCancel = () => {
 <template>
   <v-dialog
     :model-value="isDialogVisible"
-    @update:model-value="$emit('update:modelValue', $event)"
     max-width="400"
+    @update:model-value="$emit('update:modelValue', $event)"
   >
-    <v-card rounded="xl" class="pa-6">
-      <v-card-item  class="text-center ma-0 pa-0">
+    <v-card
+      rounded="xl"
+      class="pa-6"
+    >
+      <v-card-item class="text-center ma-0 pa-0">
         <v-icon
           v-if="icon"
           :icon="icon"
@@ -66,20 +69,26 @@ const handleCancel = () => {
           :color="iconColor"
           class="mb-4"
         />
-        <v-card-title v-if="title" class="text-h6 mb-4">{{ title }}</v-card-title> 
-       
+        <v-card-title
+          v-if="title"
+          class="text-h6 mb-4"
+        >
+          {{ title }}
+        </v-card-title>
       </v-card-item>
-      <v-card-text v-if="text" class="text-body-2 pb-6 pa-0">
-          {{ text }}
-        </v-card-text>
+      <v-card-text
+        v-if="text"
+        class="text-body-2 pb-6 pa-0"
+      >
+        {{ text }}
+      </v-card-text>
       <v-card-actions class="pa-0 ">
-        
         <v-btn
           color="secondary"
           variant="outlined"         
           :slim="true"  
-          @click="handleCancel"
           class="border-white"
+          @click="handleCancel"
         >
           {{ cancelText }}
         </v-btn>
@@ -89,7 +98,6 @@ const handleCancel = () => {
           :slim="true"
           :disabled="isConfirmDisabled"
           @click="handleConfirm"
-          
         >
           {{ confirmText }}
         </v-btn>

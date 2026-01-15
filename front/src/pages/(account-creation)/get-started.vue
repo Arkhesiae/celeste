@@ -23,33 +23,49 @@ const handleExistingAccount = () => {
 <template>
   <v-container class="fill-height">
     <v-row justify="center">
-      <v-col cols="12" md="6">  
-    <Transition name="fade">
-      <div v-if="showContent">
-        <div>
-          <h1 class="animate-title">Bienvenue !</h1>
-          <p class="subtitle animate-subtitle">Comment souhaitez-vous commencer ?</p>
-        </div>
-        <div class="options-container">
-
-              
-          <Transition name="slide-up" appear>
-            <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
-              <span class="text-h6 font-weight-bold">Compte Remplacer</span>
-              <span class="text-body-2 text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span>
+      <v-col
+        cols="12"
+        md="6"
+      >  
+        <Transition name="fade">
+          <div v-if="showContent">
+            <div>
+              <h1 class="animate-title">
+                Bienvenue !
+              </h1>
+              <p class="subtitle animate-subtitle">
+                Comment souhaitez-vous commencer ?
+              </p>
             </div>
-          </Transition>
-          <Transition name="slide-up" appear>
-            <div class="option-card ga-4 pa-6" @click="handleNewAccount">
-              <span class="text-h6 font-weight-bold">Nouveau compte</span>
-              <span class="text-body-2 text-medium-emphasis">Je souhaite créer un nouveau compte</span>
+            <div class="options-container">
+              <Transition
+                name="slide-up"
+                appear
+              >
+                <div
+                  class="option-card ga-4 pa-6"
+                  @click="handleExistingAccount"
+                >
+                  <span class="text-h6 font-weight-bold">Compte Remplacer</span>
+                  <span class="text-body-2 text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span>
+                </div>
+              </Transition>
+              <Transition
+                name="slide-up"
+                appear
+              >
+                <div
+                  class="option-card ga-4 pa-6"
+                  @click="handleNewAccount"
+                >
+                  <span class="text-h6 font-weight-bold">Nouveau compte</span>
+                  <span class="text-body-2 text-medium-emphasis">Je souhaite créer un nouveau compte</span>
+                </div>
+              </Transition>
             </div>
-          </Transition>
-      
-        </div>
-      </div>
-    </Transition>
-  </v-col>
+          </div>
+        </Transition>
+      </v-col>
     </v-row>
   </v-container>
 </template>

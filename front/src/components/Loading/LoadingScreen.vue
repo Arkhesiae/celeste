@@ -1,8 +1,12 @@
-  <template>
+<template>
   <v-container class="fill-height ">
-    <v-row >
-      <v-col cols="12" >
-        <v-card flat class="pa-6" color="transparent">         
+    <v-row>
+      <v-col cols="12">
+        <v-card
+          flat
+          class="pa-6"
+          color="transparent"
+        >         
           <span class="text-h7 mb-2 font-weight-bold">Chargement en cours</span>
           <p class="text-body-2 opacity-50 text-medium-emphasis mb-4">
             Veuillez patienter pendant le chargement de vos données...
@@ -16,7 +20,7 @@
             color="remplacement"
             height="4"
             class="mt-4 rounded-xl"
-          ></v-progress-linear>
+          />
           <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded }}</span>
         </v-card>
       </v-col>

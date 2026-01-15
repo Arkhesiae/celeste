@@ -1,28 +1,54 @@
 <template>
-  <v-dialog :model-value="dialogVisible" @update:model-value="$emit('update:dialogVisible', $event)" max-width="600">
-    <v-card v-if="user" rounded="xl" variant="flat" class="pa-6">
+  <v-dialog
+    :model-value="dialogVisible"
+    max-width="600"
+    @update:model-value="$emit('update:dialogVisible', $event)"
+  >
+    <v-card
+      v-if="user"
+      rounded="xl"
+      variant="flat"
+      class="pa-6"
+    >
       <v-card-title class="d-flex justify-space-between align-center pa-0">
         <div class="d-flex align-center">
-          <v-avatar color="primary" size="60" class="mr-3">
+          <v-avatar
+            color="primary"
+            size="60"
+            class="mr-3"
+          >
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-h5">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
-            <div class="text-subtitle-1 text-medium-emphasis">{{ user.email }}</div>
+            <div class="text-h5">
+              {{ user.name }} {{ user.lastName.toUpperCase() }}
+            </div>
+            <div class="text-subtitle-1 text-medium-emphasis">
+              {{ user.email }}
+            </div>
           </div>
         </div>
-        <v-btn variant="text" icon @click="$emit('update:dialogVisible', false)">
+        <v-btn
+          variant="text"
+          icon
+          @click="$emit('update:dialogVisible', false)"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text class="pa-0 mt-6">
         <v-row>
-          <v-col cols="12" md="6">
-            <div class="text-subtitle-1 mb-2">Informations</div>
+          <v-col
+            cols="12"
+            md="6"
+          >
+            <div class="text-subtitle-1 mb-2">
+              Informations
+            </div>
             <v-list>
               <v-list-item>
-                <template v-slot:prepend>
+                <template #prepend>
                   <v-icon>mdi-account-check-outline</v-icon>
                 </template>
              
@@ -38,7 +64,7 @@
                 </v-list-item-subtitle>
               </v-list-item>
               <v-list-item>
-                <template v-slot:prepend>
+                <template #prepend>
                   <v-icon>mdi-airport</v-icon>
                 </template>
        
@@ -54,7 +80,7 @@
                 </v-list-item-subtitle>
               </v-list-item>
               <v-list-item>
-                <template v-slot:prepend>
+                <template #prepend>
                   <v-icon>mdi-calendar</v-icon>
                 </template>
                 <v-list-item-title>Date d'inscription</v-list-item-title>
@@ -64,14 +90,17 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col cols="12" md="6">
+          <v-col
+            cols="12"
+            md="6"
+          >
             <v-card 
+              v-if="!user.isAdmin && isMasterAdmin" 
               flat 
               class="pa-4" 
               color="surfaceContainerHighest" 
               rounded="xl" 
-              @click="$emit('makeAdmin', user)" 
-              v-if="!user.isAdmin && isMasterAdmin"
+              @click="$emit('makeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
                 <v-icon>mdi-shield-account</v-icon>
@@ -79,12 +108,12 @@
               </div>
             </v-card>
             <v-card 
+              v-if="user.isAdmin && isMasterAdmin" 
               flat 
               class="pa-4" 
               color="surfaceContainerHighest" 
               rounded="xl" 
-              @click="$emit('removeAdmin', user)" 
-              v-if="user.isAdmin && isMasterAdmin"
+              @click="$emit('removeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
                 <v-icon>mdi-shield-crown-outline</v-icon>
@@ -92,14 +121,17 @@
               </div>
             </v-card>
           </v-col>
-          <v-col cols="12" md="6">
+          <v-col
+            cols="12"
+            md="6"
+          >
             <v-card 
+              v-if="isMasterAdmin" 
               flat 
               class="pa-4" 
               color="surfaceContainerHighest" 
               rounded="xl" 
-              @click="$emit('assignCenter', userId)" 
-              v-if="isMasterAdmin"
+              @click="$emit('assignCenter', userId)"
             > 
               <div class="d-flex align-center ga-3">
                 <v-icon>mdi-airport</v-icon>
@@ -107,14 +139,17 @@
               </div>
             </v-card>
           </v-col>
-          <v-col cols="12" md="12">
+          <v-col
+            cols="12"
+            md="12"
+          >
             <v-card 
+              v-if="isLocalAdmin || isMasterAdmin" 
               flat 
               class="pa-4" 
               color="error" 
               rounded="xl" 
-              @click="$emit('delete', user)" 
-              v-if="isLocalAdmin || isMasterAdmin"
+              @click="$emit('delete', user)"
             >
               <div class="d-flex align-center ga-3">
                 <v-icon>mdi-delete</v-icon>

@@ -1,155 +1,176 @@
 <template>
-  <v-form ref="form" v-model="isValid" @submit.prevent="handleSubmit">
-    <v-card color="transparent" rounded="xl" elevation="0" class="pa-0">
+  <v-form
+    ref="form"
+    v-model="isValid"
+    @submit.prevent="handleSubmit"
+  >
+    <v-card
+      color="transparent"
+      rounded="xl"
+      elevation="0"
+      class="pa-0"
+    >
       <v-card-text>
         <v-row>
-          <v-col cols="12" md="6">
-            <div class="mb-4">
-          
-          <!-- <div class="text-subtitle-2 mb-2">Administrateur à contacter</div> -->
-          <v-chip-group
-            v-model="formData.adminType"
-            mandatory
-            color="surface"
-            base-color="surface"
-        
-            class="mb-2"
+          <v-col
+            cols="12"
+            md="6"
           >
-            <v-chip
-              v-for="admin in adminsChip"
-              :key="admin.type"
-              :value="admin.type"
-              variant="flat"
-              rounded="lg"
-              class="ma-1"
-            >
-              <v-icon start  :color="admin.type === 'master' ? 'primary' : 'secondary'">
-                {{ admin.type === 'master' ? 'mdi-star-four-points' : 'mdi-shield-account' }}
-              </v-icon>
-              {{ admin.name }}
-              <v-tooltip
-                :text="admin.type === 'master' ? 'Votre ticket sera envoyé à l\'administrateur principal' : 'Votre ticket sera envoyé à votre administrateur local mais sera également visible par l\'administrateur principal'"
-                location="top"
+            <div class="mb-4">
+              <!-- <div class="text-subtitle-2 mb-2">Administrateur à contacter</div> -->
+              <v-chip-group
+                v-model="formData.adminType"
+                mandatory
+                color="surface"
+                base-color="surface"
+        
+                class="mb-2"
               >
-                <template v-slot:activator="{ props }">
+                <v-chip
+                  v-for="admin in adminsChip"
+                  :key="admin.type"
+                  :value="admin.type"
+                  variant="flat"
+                  rounded="lg"
+                  class="ma-1"
+                >
                   <v-icon
-                    v-bind="props"
-                    end
-                    size="small"
-                    class="ml-1"
+                    start
+                    :color="admin.type === 'master' ? 'primary' : 'secondary'"
                   >
-                    mdi-information-outline
+                    {{ admin.type === 'master' ? 'mdi-star-four-points' : 'mdi-shield-account' }}
                   </v-icon>
+                  {{ admin.name }}
+                  <v-tooltip
+                    :text="admin.type === 'master' ? 'Votre ticket sera envoyé à l\'administrateur principal' : 'Votre ticket sera envoyé à votre administrateur local mais sera également visible par l\'administrateur principal'"
+                    location="top"
+                  >
+                    <template #activator="{ props }">
+                      <v-icon
+                        v-bind="props"
+                        end
+                        size="small"
+                        class="ml-1"
+                      >
+                        mdi-information-outline
+                      </v-icon>
+                    </template>
+                  </v-tooltip>
+                </v-chip>
+              </v-chip-group>
+              <div
+                v-if="!formData.adminType"
+                class="text-caption text-error"
+              >
+                Veuillez sélectionner un administrateur
+              </div>
+            </div>
+          
+            <div class="my-6">
+              <VersionSelector
+                :has-data="!!centers && centers.length > 0"
+                :model-value="formData.center"
+                :title="formData.center ? formData.center.name : 'Selectionnez un centre' "
+                :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'"
+              >
+                <template #dialog>  
+                  <EntitySelector
+                    title=""
+                    :model-value="formData.center"
+                    :items="centers"
+                    item-title="name"
+                    item-subtitle="OACI"
+                    item-key="_id"
+                    item-status="status"
+                    item-prefix="Centre"
+                    @update:model-value="formData.center = $event"
+                  />
                 </template>
-              </v-tooltip>
-            </v-chip>
-          </v-chip-group>
-          <div v-if="!formData.adminType" class="text-caption text-error">
-            Veuillez sélectionner un administrateur
-          </div>
-        </div>
-          
-        <div  class="my-6" >
-        <VersionSelector :hasData="!!centers && centers.length > 0" :modelValue="formData.center" :title="formData.center ? formData.center.name : 'Selectionnez un centre' "  :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'">
-          <template #dialog>  
-            <EntitySelector
-              title=""
-              @update:modelValue="formData.center = $event"
-              :modelValue="formData.center"
-              :items="centers"
-              item-title="name"
-              item-subtitle="OACI"
-              item-key="_id"
-              item-status="status"
-              item-prefix="Centre"
-            />
-          </template>
-        </VersionSelector>
-        <div v-if="formData.adminType && formData.adminType !== 'master' && !formData.center" class="text-caption text-error mt-4">
-          Le centre est obligatoire pour un administrateur local
-        </div>
-      </div>
-      <v-select
-          v-model="formData.type"
-          :items="ticketTypes"
-          placeholder="Type de ticket"
-          :rules="[v => !!v || 'Le type de ticket est requis']"
-          required
-          flat
-          variant="solo"
-          rounded="xl"
-          class="my-4 "
-          density="default"
-        >
-
-        <template #item="{ props, item }">
-
-          <v-list-item  v-bind="props" :title="item.title" />
-        </template>
+              </VersionSelector>
+              <div
+                v-if="formData.adminType && formData.adminType !== 'master' && !formData.center"
+                class="text-caption text-error mt-4"
+              >
+                Le centre est obligatoire pour un administrateur local
+              </div>
+            </div>
+            <v-select
+              v-model="formData.type"
+              :items="ticketTypes"
+              placeholder="Type de ticket"
+              :rules="[v => !!v || 'Le type de ticket est requis']"
+              required
+              flat
+              variant="solo"
+              rounded="xl"
+              class="my-4 "
+              density="default"
+            >
+              <template #item="{ props, item }">
+                <v-list-item
+                  v-bind="props"
+                  :title="item.title"
+                />
+              </template>
 
 
-        <template #selection="{ props, item }">
-          <v-list-item style="font-weight: 700;" base-color="onSurface" v-bind="props" :title="item.title" >
-            <template #prepend>
-              <v-icon :icon="item.value === 'assistance' ? 'mdi-help-circle' : item.value === 'review' ? 'mdi-bug' : 'mdi-email'" />
-            </template> 
-
-          </v-list-item>
-        </template>
-      </v-select>
+              <template #selection="{ props, item }">
+                <v-list-item
+                  style="font-weight: 700;"
+                  base-color="onSurface"
+                  v-bind="props"
+                  :title="item.title"
+                >
+                  <template #prepend>
+                    <v-icon :icon="item.value === 'assistance' ? 'mdi-help-circle' : item.value === 'review' ? 'mdi-bug' : 'mdi-email'" />
+                  </template>
+                </v-list-item>
+              </template>
+            </v-select>
           </v-col>
-          <v-col cols="12" md="12">  
+          <v-col
+            cols="12"
+            md="12"
+          >
+            <v-text-field
+              v-model="formData.email"
+              label="Email"
+              :rules="[v => !!v || 'L\'email est requis']"
+              required
+              variant="outlined"
+              rounded="xl"
+              class="mb-4"
+            />
 
-          
-
-        <v-text-field
-          v-model="formData.email"
-          label="Email"
-          :rules="[v => !!v || 'L\'email est requis']"
-          required
-          variant="outlined"
-          rounded="xl"
-          class="mb-4"
-        ></v-text-field>
-
-        <v-text-field
-          v-model="formData.subject"
-          label="Sujet"
-          :rules="[v => !!v || 'Le sujet est requis']"
-          required
-          variant="solo-filled"
-          flat
-          rounded="xl"
-          class="mb-4"
-        ></v-text-field>
+            <v-text-field
+              v-model="formData.subject"
+              label="Sujet"
+              :rules="[v => !!v || 'Le sujet est requis']"
+              required
+              variant="solo-filled"
+              flat
+              rounded="xl"
+              class="mb-4"
+            />
 
   
 
-        <v-textarea
-          v-model="formData.message"
-          label="Ticket"
-          :rules="[v => !!v || 'Le ticket est requis']"
-          required
-          variant="solo-filled"
-          flat
-          rounded="xl"
-          rows="5"
-          class="mb-4"
-        ></v-textarea>
+            <v-textarea
+              v-model="formData.message"
+              label="Ticket"
+              :rules="[v => !!v || 'Le ticket est requis']"
+              required
+              variant="solo-filled"
+              flat
+              rounded="xl"
+              rows="5"
+              class="mb-4"
+            />
           </v-col>
         </v-row>
-
-     
-
-
-
-
-
-
       </v-card-text>
 
       <v-card-actions class="px-6 py-0 mb-16 justify-end">
-    
         <v-btn
           color="onBackground"
           type="submit"

@@ -1,59 +1,98 @@
 <template>
-    <v-dialog :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'" v-model="dialogVisible" :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent"
-        :retain-focus="false" @after-enter="handleAfterEnter" @after-leave="handleAfterLeave" @keydown.esc="handleEscapeKey">
-        <v-card height="100vh" :rounded="!smAndDown ? 'xl' : false" class="pt-0 pb-6 px-0 overflow-y-hidden">
-            <!-- Header avec titre et boutons -->
-            <div ref="headerRef" style="padding-top: calc(var(--safe-area-top,0px) + 24px) !important" :class="[
-                'px-6 pb-4 d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
-                isScrolled ? 'bg-surfaceContainerHigh' : ''
-            ]">
-                <div class="d-flex align-center justify-space-between flex-grow-1">
-                    <div class="d-flex align-center ga-2">
-                        <v-btn v-if="smAndDown" icon="mdi-arrow-left" variant="text" @click="handleClose"></v-btn>
+  <v-dialog
+    v-model="dialogVisible"
+    :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
+    :fullscreen="smAndDown"
+    :max-width="maxWidth"
+    :persistent="persistent"
+    :retain-focus="false"
+    @after-enter="handleAfterEnter"
+    @after-leave="handleAfterLeave"
+    @keydown.esc="handleEscapeKey"
+  >
+    <v-card
+      height="100vh"
+      :rounded="!smAndDown ? 'xl' : false"
+      class="pt-0 pb-6 px-0 overflow-y-hidden"
+    >
+      <!-- Header avec titre et boutons -->
+      <div
+        ref="headerRef"
+        style="padding-top: calc(var(--safe-area-top,0px) + 24px) !important"
+        :class="[
+          'px-6 pb-4 d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
+          isScrolled ? 'bg-surfaceContainerHigh' : ''
+        ]"
+      >
+        <div class="d-flex align-center justify-space-between flex-grow-1">
+          <div class="d-flex align-center ga-2">
+            <v-btn
+              v-if="smAndDown"
+              icon="mdi-arrow-left"
+              variant="text"
+              @click="handleClose"
+            />
 
-                        <span :class="{
-                            'text-h6': !smAndDown,
-                            'text-h7': smAndDown
-                        }" class=" font-weight-medium">
-                            {{ title }}
-                        </span>
-                    </div>
+            <span
+              :class="{
+                'text-h6': !smAndDown,
+                'text-h7': smAndDown
+              }"
+              class=" font-weight-medium"
+            >
+              {{ title }}
+            </span>
+          </div>
 
 
 
-                    <v-btn v-if="!smAndDown" icon="mdi-close" variant="text" @click="handleClose"></v-btn>
-                </div>
+          <v-btn
+            v-if="!smAndDown"
+            icon="mdi-close"
+            variant="text"
+            @click="handleClose"
+          />
+        </div>
 
-                <div class="d-flex align-center gap-2" v-if="smAndDown">
-                    <!-- Bouton de fermeture/retour adaptatif -->
+        <div
+          v-if="smAndDown"
+          class="d-flex align-center gap-2"
+        >
+          <!-- Bouton de fermeture/retour adaptatif -->
 
 
 
-                    <!-- Boutons d'action supplémentaires -->
-                    <slot name="actions" />
-                </div>
-            </div>
+          <!-- Boutons d'action supplémentaires -->
+          <slot name="actions" />
+        </div>
+      </div>
 
 
 
-            <!-- Contenu principal -->
-            <v-card-text ref="contentRef"
-                class="px-6 pb-0 ma-0 overflow-y-auto flex-column d-flex justify-space-between">
-                <div ref="sentinel" class="flex-grow-0 flex-shrink-0"></div>
-                <div ref="content" class="flex-grow-1 flex-shrink-0">
+      <!-- Contenu principal -->
+      <v-card-text
+        ref="contentRef"
+        class="px-6 pb-0 ma-0 overflow-y-auto flex-column d-flex justify-space-between"
+      >
+        <div
+          ref="sentinel"
+          class="flex-grow-0 flex-shrink-0"
+        />
+        <div
+          ref="content"
+          class="flex-grow-1 flex-shrink-0"
+        >
+          <slot name="content" />
+        </div>
 
-                    <slot name="content" />
-                </div>
+        <div class="pa-0 ma-0 mt-6 flex-shrink-0">
+          <slot name="footer" />
+        </div>
+      </v-card-text>
 
-                <div class="pa-0 ma-0 mt-6 flex-shrink-0">
-                    <slot name="footer" />
-                </div>
-            </v-card-text>
-
-            <!-- Footer optionnel -->
-
-        </v-card>
-    </v-dialog>
+      <!-- Footer optionnel -->
+    </v-card>
+  </v-dialog>
 </template>
 
 <script setup>

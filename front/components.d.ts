@@ -33,7 +33,6 @@ declare module 'vue' {
     ConfirmationDialog: typeof import('./src/components/Dialogs/ConfirmationDialog.vue')['default']
     ConfirmChangeDialog: typeof import('./src/components/Rotations/Common/ConfirmChangeDialog.vue')['default']
     ContactAdminForm: typeof import('./src/components/Forms/ContactAdminForm.vue')['default']
-    copy: typeof import('./src/components/common/Titles/SimpleTitle.vue')['default']
     CurrentBudgetCard: typeof import('./src/components/Financement/CurrentBudgetCard.vue')['default']
     DayDetail: typeof import('./src/components/Rotations/Common/DayDetail.vue')['default']
     DayList: typeof import('./src/components/Rotations/Information/DayList.vue')['default']
@@ -97,13 +96,13 @@ declare module 'vue' {
     UnifiedDrawer: typeof import('./src/components/Calendar/Drawers/UnifiedDrawer.vue')['default']
     UserCard: typeof import('./src/components/Users/UserCard.vue')['default']
     UserCardDetails: typeof import('./src/components/Users/UserCardDetails.vue')['default']
-    UserDemandsSidebar: typeof import('./src/components/Remplacer/OwnDemands.vue')['default']
     UserDialog: typeof import('./src/components/Substitutions/DemandCards/SubCards/UserDialog.vue')['default']
     UserList: typeof import('./src/components/Users/UserList.vue')['default']
     UserTeamCard: typeof import('./src/components/Profile/UserTeamCard.vue')['default']
     Vacation: typeof import('./src/components/Substitutions/DemandCards/SubCards/Vacation.vue')['default']
     VersionSelector: typeof import('./src/components/common/Selector/VersionSelector.vue')['default']
     WelcomeTitle: typeof import('./src/components/common/Titles/WelcomeTitle.vue')['default']
+    WorkdayAmplitudeGraph: typeof import('./src/components/common/WorkdayAmplitudeGraph.vue')['default']
     WorkshiftSummary: typeof import('./src/components/Rotations/AddRotation/WorkshiftSummary.vue')['default']
   }
 }

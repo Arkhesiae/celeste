@@ -6,6 +6,6 @@
     "git-filter-repo": "^0.0.30"
   },
   "devDependencies": {
-    "prettier": "^3.7.4"
+    "prettier": "^3.8.0"
   }
 }

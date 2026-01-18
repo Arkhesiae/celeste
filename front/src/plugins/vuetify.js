@@ -124,7 +124,7 @@ export default createVuetify({
           "onTertiary": "#FFFFFF",
           "tertiaryContainer": "#E0E0FF",
           "onTertiaryContainer": "#161937",
-          "error": "#BA1A1A",
+          "error": "#682b36ff",
           "onError": "#FFB4AB",
           "errorContainer": "#FFDAD6",
           "onErrorContainer": "#410002",

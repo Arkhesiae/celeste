@@ -1,60 +1,22 @@
 <template>
   <v-container>
-    <SimpleTitle
-      title="Mes demandes"
-      back-button
-      subtitle="Consulter mes demandes"
-    />
+    <SimpleTitle title="Mes demandes" back-button subtitle="Consulter mes demandes" />
 
-    <v-row class="mt-16">
-      <v-col cols="12">
-        <FilterChipGroup
-          v-model="selectedFilter"
-          :filters="filters"
-        />
-      </v-col>
-    </v-row>
+    <div class="mt-16">
+      <OwnDemands @open-details="openDemandDetails" />
+    </div>
 
-
-    <v-row>
-      <v-col cols="12">
-        <OwnDemands
-          :selected-filter="selectedFilter"
-          @open-details="openDemandDetails"
-        />
-      </v-col>
-    </v-row>
-
-    <DemandModal
-      v-model="showDemandDetailsModal"
-      :demand="selectedDemand"
-    />
+    <DemandDependencies ref="demandDeps" />
   </v-container>
 </template>
 
 <script setup>
 import { ref } from "vue";
 
-
-
-
-// Options de filtre
-const filters = [
-  { label: 'Tous', value: 'tous' },
-  { label: 'En attente', value: 'en attente' },
-  { label: 'A venir', value: 'a venir' },
-  { label: 'Je me fais remplacer', value: 'je me fais remplacer' }
-];
-
-const selectedFilter = ref('tous');
-
-const showDemandDetailsModal = ref(false);
-const selectedDemand = ref(null);
+const demandDeps = ref(null);
 
 const openDemandDetails = (demand) => {
-  console.log('openDemandDetails', demand);
-  selectedDemand.value = demand;
-  showDemandDetailsModal.value = true;
+  demandDeps.value.openDemandDetails(demand);
 };
 
 </script>

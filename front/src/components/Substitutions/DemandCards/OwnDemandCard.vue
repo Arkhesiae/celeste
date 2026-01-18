@@ -1,108 +1,51 @@
 <template>
   <div class="d-flex align-start ga-2">
-    <div class="dot-big mt-5 bg-primary" />
-    <v-card
-      :class="smAndDown ? 'demand-card__mobile' : ''"
-      variant="flat"
-      rounded="lg"
-      class="demand-card pa-3 pl-4 flex-1-1"
-      @click="openDetails"
-    >
+    <div class="dot-big" :class="dotClass" />
+    <v-card :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'" variant="flat" rounded="lg"
+      class="demand-card pa-3 flex-1-1" @click="openDetails">
       <div class="d-flex align-center justify-space-between">
         <div class="d-flex align-center mr-3 ga-2">
-          <v-icon
-            v-if="isOwner"
-            size="12"
-            color="primary"
-          >
+          <v-icon v-if="isOwner" size="12" color="primary">
             mdi-account-star-outline
           </v-icon>
-          <span
-            style="font-weight: 800; font-size: .75rem;"
-            :class="{ 'text-primary': isOwner }"
-          >{{ posterName }}</span>
-          <span
-            v-if="!isOwner"
-            class="text-truncate"
-            style="max-width: 80px; font-size: .70rem; font-weight: 600;"
-          >({{
+          <span style="font-weight: 800; font-size: .75rem;" :class="{ 'text-primary': isOwner }">{{ posterName
+            }}</span>
+          <span v-if="!isOwner" class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
             posterTeamName }})</span>
           <div class="small-dot" />
           <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
           }}</span>
 
-          <v-icon
-            v-if="demand?.comment"
-            size="x-small"
-            color="onBackground"
-            style="opacity: 0.8;"
-          >
+          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
             mdi-comment-text-outline
           </v-icon>
 
-          <v-chip
-            variant="outlined"
-            size="x-small"
-            rounded="lg"
-            class="font-weight-bold point-chip mr-2"
-          >
-            <LogoCopy
-              color="onBackground"
-              style="top:-2px; position: relative; transform: scale(0.7);"
-            />
-            <span style="font-size: .75rem; font-weight: 600;">{{ totalPoints }}</span>
+          <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2">
+            <LogoCopy color="onBackground" style="top:-2px; position: relative; transform: scale(0.87);" />
+            <span :class="pointClass" style="font-size: .875rem; font-weight: 600;">{{ totalPoints }}</span>
+            <v-icon v-if="hasVariablePoints && !demand.accepterId" color="primary" style="position: relative; top: 0px;"
+              icon="mdi-tune" />
           </v-chip>
         </div>
 
 
 
         <div class="d-flex align-center">
-          <v-chip
-            class="type-chip "
-            color="surfaceContainer"
-            variant="flat"
-            size="x-small"
-            rounded="lg"
-          >
-            <div
-              v-if="demand?.type === 'switch'"
-              class="d-flex align-center ga-2"
-            >
-              <v-icon
-                class=""
-                style="top: 1px; font-size: 16px;"
-                icon="mdi-swap-horizontal"
-              />
+
+          <div class="d-flex align-center " style="position: relative; width: 20px;">
+            <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
+              <v-icon class="" style="top: 1px; font-size: 14px;" icon="mdi-swap-horizontal" />
             </div>
-            <div
-              v-if="demand?.type === 'substitution'"
-              class="d-flex align-center ga-2"
-            >
-              <v-icon
-                class=""
-                icon="mdi-account-arrow-left-outline "
-              />
+            <div v-if="demand?.type === 'substitution'" class="d-flex align-center ga-2">
+              <v-icon class="" style="top: 1px; font-size: 14px;" icon="mdi-account-arrow-left-outline " />
             </div>
-            <div
-              v-if="demand?.type === 'hybrid'"
-              class="d-flex align-center ga-2"
-            >
-              <v-icon
-                class="ml-n1"
-                icon="mdi-account-arrow-left-outline "
-              />
-              <v-icon
-                class="ml-n2"
-                style="top: 1px; font-size: 12px; "
-                icon="mdi-swap-horizontal"
-              />
+            <div v-if="demand?.type === 'hybrid'" class="d-flex align-center ga-2 position-relative">
+              <v-icon class="ml-n1" style="top: 1px; font-size: 14px;" icon="mdi-account-arrow-left-outline " />
+              <v-icon class="ml-n2" style="top: 2px; font-size: 14px; position: absolute; left: 10px;"
+                icon="mdi-swap-horizontal" />
             </div>
-            <v-icon
-              :color="statusIconColor"
-              :icon="statusIcon"
-              size="x-small"
-            />
-          </v-chip>
+          </div>
+
         </div>
       </div>
 
@@ -110,103 +53,53 @@
 
       <div class="d-flex align-center  ga-2 my-1">
         <div class="d-flex align-center ga-1">
-          <span
-            v-if="firstShift"
-            :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
-            style="font-size: .875rem; opacity: 0.7;"
-          >{{ firstShift }}</span>
-          <v-icon
-            v-if="isAccepted"
-            size="x-small"
-            icon="mdi-arrow-right-drop-circle-outline"
-            color="primary"
-            style="opacity: 0.8;"
-          />
-          <span
-            v-if="secondShift"
-            :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
-            style="font-size: .875rem; opacity: 0.7"
-          >{{ secondShift }}</span>
+          <span v-if="firstShift" :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
+            style="font-size: .875rem; opacity: 0.7;">{{ firstShift }}</span>
+          <v-icon v-if="isAccepted" size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary"
+            style="opacity: 0.8;" />
+          <span v-if="secondShift" :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
+            style="font-size: .875rem; opacity: 0.7">{{ secondShift }}</span>
         </div>
-        <div class="mt-">
-          <v-chip
-            size="x-small"
-            variant="tonal"
-            color="primary"
-            rounded="lg"
-          >
-            <span
-              class="text-medium-emphasis"
-              style="font-size: .75rem; font-weight: 500;"
-            >{{ labelOption
+        <div class="mt-0">
+          <div class="custom-small-chip">
+            <span class="text-medium-emphasis" style="font-size: .690rem; font-weight: 500;">{{ labelOption
             }}</span>
-          </v-chip>
+          </div>
         </div>
       </div>
 
       <div class="d-flex align-center flex-shrink-0 justify-space-between">
         <div class="d-flex align-center ga-1">
-          <v-icon
-            size="x-small"
-            icon="mdi-eye-outline"
-            color="onBackground"
-            style="opacity: 0.8;"
-          />
-          <span
-            class="text-medium-emphasis"
-            style="font-size: .70rem; font-weight: 600;"
-          >{{ demand?.seenBy?.length || 0
+          <v-icon size="x-small" icon="mdi-eye-outline" color="onBackground" style="opacity: 0.8;" />
+          <span class="text-medium-emphasis" style="font-size: .70rem; font-weight: 600;">{{ demand?.seenBy?.length || 0
           }}</span>
         </div>
 
 
         <div class="d-flex align-center ml-4">
           <template v-if="accepter">
-            <v-avatar
-              size="20"
-              color="surfaceContainer"
-              class="mr-1"
-            >
-              <v-img
-                v-if="accepter?.avatar"
-                :src="`${API_URL}${accepter?.avatar}`"
-                alt="Avatar"
-              />
-              <v-icon
-                v-else
-                size="16"
-              >
+            <v-avatar size="20" color="surfaceContainer" class="mr-1">
+              <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
+              <v-icon v-else size="16">
                 mdi-account-check-outline
               </v-icon>
             </v-avatar>
             <div class="d-flex align-center text-left ga-1">
-              <span
-                class="font-weight-bold text-truncate"
-                :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: .75rem;"
-              >
+              <span class="font-weight-bold text-truncate" :class="isAccepter ? 'text-primary' : ''"
+                style="max-width: 100px; font-size: .75rem;">
                 {{ accepterName }}
               </span>
-              <span
-                v-if="isOwner"
-                class="text-truncate"
-                style="max-width: 80px; font-size: .70rem; font-weight: 600;"
-              >({{
-                accepterTeamName }})</span>
+              <span v-if="isOwner" class="text-truncate"
+                style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
+                  accepterTeamName }})</span>
             </div>
           </template>
           <template v-else>
             <div class="empty-accepter-avatar mr-1">
-              <v-icon
-                size="12"
-                color="text-medium-emphasis"
-              >
+              <v-icon size="12" color="text-medium-emphasis">
                 mdi-account-question-outline
               </v-icon>
             </div>
-            <!-- <v-chip size="x-small" rounded="pill" color="transparent" variant="flat">
-              <span style="font-size: .75rem; opacity: 0.3; letter-spacing: 0.1px;">__________ </span>
-            </v-chip> -->
           </template>
         </div>
       </div>
@@ -215,15 +108,14 @@
 </template>
 
 <script setup>
-import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { computed, ref } from 'vue';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
-import { useSnackbarStore } from '@/stores/snackbarStore';
 import { API_URL } from '@/config/api'
+import { resolveTripleslashReference } from 'typescript';
 
 
 const teamStore = useTeamStore();
@@ -231,8 +123,6 @@ const rotationStore = useRotationStore();
 const userStore = useUserStore();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
-const snackbarStore = useSnackbarStore();
-const substitutionStore = useSubstitutionStore();
 const props = defineProps({
   demand: {
     type: Object,
@@ -250,14 +140,7 @@ const props = defineProps({
   }
 });
 
-const showPointsDialog = ref(false);
-const showCommentDialog = ref(false);
-const showConfirmDeleteDialog = ref(false);
-const showDemandDetailsModal = ref(false);
-
 const emit = defineEmits(['accept', 'decline', 'openDetails']);
-
-// --- Utility Functions/Comptuted Properties (Unchanged) ---
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
@@ -308,14 +191,31 @@ const isAccepter = computed(() => {
   return props.demand?.accepterId === authStore.userData.userId;
 });
 
-// New computed properties for names and teams for clear identification
 const posterTeamName = computed(() => {
   const teamId = poster.value?.currentTeam?.teamId;
   return teamId ? getTeamById(teamId)?.name : 'N/A';
 });
+
 const accepterTeamName = computed(() => {
   const teamId = accepter.value?.currentTeam?.teamId;
   return teamId ? getTeamById(teamId)?.name : 'N/A';
+});
+
+const destinationTeamName = computed(() => {
+  const teamId =
+    props.demand?.accepterShift
+      ? isAccepter.value
+        ? props.demand.posterShift.teamId
+        : props.demand.accepterShift.teamId
+      : isAccepter.value
+        ? props.demand?.posterShift?.teamId
+        : null;
+
+  if (!teamId) return 'N/A';
+
+  return typeof teamId === 'object'
+    ? teamId.name
+    : getTeamById(teamId)?.name || 'N/A';
 });
 
 
@@ -329,51 +229,6 @@ const getDayName = (dayId) => {
   }
   return 'Aucune vacations';
 };
-
-// --- Modern Design / Explicit Fields (Unchanged, except involvedUser removed as it's no longer needed) ---
-
-const demandTypeLabel = computed(() => {
-  switch (props.demand?.type) {
-    case 'switch':
-      return 'Permutation';
-    case 'hybrid':
-      return 'Hybride';
-    case 'substitution':
-      return 'Remplacement';
-    default:
-      return 'Demande';
-  }
-});
-
-const typeIcon = computed(() => {
-  switch (props.demand?.type) {
-    case 'switch':
-      return 'mdi-swap-horizontal';
-    case 'hybrid':
-      return 'mdi-file-swap-outline';
-    case 'substitution':
-      return 'mdi-account-arrow-left-outline';
-    default:
-      return 'mdi-help-circle-outline';
-  }
-});
-
-const typeChipColor = computed(() => {
-  if (props.demand?.type === 'switch') return 'permutation';
-  if (props.demand?.type === 'hybrid' || props.demand?.type === 'substitution') return 'remplacement';
-  return 'default';
-});
-
-const statusIcon = computed(() => {
-  switch (props.demand?.status) {
-    case 'open':
-      return 'mdi-help';
-    case 'accepted':
-      return 'mdi-check';
-    default:
-      return 'mdi-help-circle-outline';
-  }
-});
 
 const firstShift = computed(() => {
   if (isOwner.value) {
@@ -411,39 +266,70 @@ const statusIconColor = computed(() => {
 });
 
 
+const isSwitch = (demand) => demand?.type === 'switch'
+const isHybrid = (demand) => demand?.type === 'hybrid'
+
+const hasVariablePoints = computed(() => {
+  const demand = props.demand
+  if (!demand) return false
+
+  if (isSwitch(demand)) {
+    const points = demand.acceptedSwitches.map(s => s.points)
+    return !points.every(p => p === points[0]) // true if values differ
+  }
+
+  if (isHybrid(demand)) return true
+
+  return false
+})
 
 const totalPoints = computed(() => {
-  if (props.demand?.type === 'switch' && props.demand?.acceptedSwitches.length > 0) {
-    return `${props.demand.acceptedSwitches.length} Perm.`;
+  const demand = props.demand
+  if (!demand) return 0
+
+  if (!demand.accepterId) {
+    if (isSwitch(demand)) {
+      return hasVariablePoints.value ? '' : '0'
+    }
+
+    if (isHybrid(demand)) return demand.points
+
+    return demand.points || 0
+  } else {
+    if (isSwitch(demand) || isHybrid(demand)) {
+      if (demand.accepterShift) {
+        const points = demand.acceptedSwitches.find(s => s.id === demand.accepterShift.shift)
+        return points ? points.points : 0
+      }
+      else {
+        return demand.points
+      }
+    }
+    return demand.points || 0
   }
-  return props.demand?.points || 0;
-});
+})
 
-const hasReplacementPoints = computed(() => props.demand?.points > 0 && props.demand?.type !== 'switch');
-const hasSwitchPoints = computed(() => props.demand?.acceptedSwitches?.length > 0);
-
-// --- Styling Classes & Actions (Unchanged) ---
-
-const demandCardClasses = computed(() => {
-  const classes = { 'demand-card': true };
-  if (props.demand?.status === 'open' && props.isPoster) {
-    classes['pending-demand-card'] = true;
-  } else if (props.demand?.status === 'accepted' && props.isPoster) {
-    classes['accepted-demand-card'] = true;
-  } else if (props.demand?.status === 'accepted' && !props.isPoster) {
-    classes['to-do-demand-card'] = true;
+const pointClass = computed(() => {
+  if (hasVariablePoints.value && !props.demand.accepterId) {
+    return 'variable'
   }
-  return classes;
-});
+  return ''
+})
 
+const dotClass = computed(() => {
+  return {
+    'dot-big--pending': props.demand?.status === 'open',
+    'dot-big--owner': isOwner.value,
+  }
+})
 
 const labelOption = computed(() => {
   if (props.demand?.accepterShift && isAccepted.value) {
-    return "Je permute dans";
+    return "Je permute dans équipe " + destinationTeamName.value;
   }
 
   if (isAccepter.value && isAccepted.value && !props.demand?.accepterShift) {
-    return "Je remplace dans ";
+    return "Je remplace dans équipe " + destinationTeamName.value;
   }
 
   if (isOwner.value && isAccepted.value && !props.demand?.accepterShift) {
@@ -463,26 +349,6 @@ const openDetails = () => {
 };
 
 
-const confirmCancelOrWithdraw = () => {
-  showConfirmDeleteDialog.value = true;
-  showDemandDetailsModal.value = false;
-};
-
-const confirmDelete = async () => {
-  try {
-    if (props.isPoster) {
-      await substitutionStore.cancelDemand(props.demand._id);
-      snackbarStore.showNotification("Demande annulée", "success", "mdi-close");
-    } else {
-      await substitutionStore.unacceptDemand(props.demand._id);
-      snackbarStore.showNotification("Votre proposition de remplacement a été annulée", "error", "mdi-close");
-    }
-    showConfirmDeleteDialog.value = false;
-  } catch (error) {
-    console.error('Erreur lors de la suppression de la demande:', error);
-    snackbarStore.showNotification("Erreur lors de l'action", "error", "mdi-alert");
-  }
-};
 </script>
 
 <style scoped>
@@ -511,7 +377,7 @@ const confirmDelete = async () => {
 
 /* Original chip styles (adapted to new chip structure) */
 .demand-card .point-chip {
-  border: 1px solid rgba(var(--v-theme-onBackground), 0.1) !important;
+  border: 1px solid rgba(var(--v-theme-onBackground), 0.001) !important;
   background: transparent !important;
   color: rgba(var(--v-theme-primary), 0.99) !important;
 }
@@ -540,17 +406,39 @@ const confirmDelete = async () => {
 
 .dot-big {
   width: 7px;
+  top: 18px;
+  position: relative;
   height: 7px;
   border-radius: 50%;
-  background-color: rgba(var(--v-theme-onBackground), 0.5);
+  background-color: rgba(var(--v-theme-onBackground), 1);
 }
 
+.dot-big.dot-big--pending {
+  opacity: 0.5;
+}
+
+.dot-big.dot-big--owner {
+  background-color: rgba(var(--v-theme-primary), 1) !important;
+}
 
 .small-dot {
   width: 4px;
   height: 4px;
   border-radius: 50%;
   background-color: rgba(var(--v-theme-onBackground), 0.5);
+}
 
+.variable {
+  color: rgba(var(--v-theme-primary), 0.8) !important;
+  font-weight: 600 !important;
+}
+
+.custom-small-chip {
+  border: 1px solid rgba(var(--v-theme-onBackground), 0.05) !important;
+  border-radius: 16px !important;
+  opacity: 0.8 !important;
+  padding: 1px 6px !important;
+  background: rgba(var(--v-theme-surfaceContainer), 0.0005) !important;
+  font-size: .690rem !important;
 }
 </style>

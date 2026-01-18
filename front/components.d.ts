@@ -37,6 +37,7 @@ declare module 'vue' {
     DayDetail: typeof import('./src/components/Rotations/Common/DayDetail.vue')['default']
     DayList: typeof import('./src/components/Rotations/Information/DayList.vue')['default']
     DemandCard: typeof import('./src/components/Substitutions/DemandCards/DemandCard.vue')['default']
+    DemandDependencies: typeof import('./src/components/Substitutions/DemandDependencies.vue')['default']
     DemandModal: typeof import('./src/components/Substitutions/DemandCards/DemandModal.vue')['default']
     DevelopmentCostsCard: typeof import('./src/components/Financement/DevelopmentCostsCard.vue')['default']
     EditRotationNameDialog: typeof import('./src/components/Rotations/Common/EditRotationNameDialog.vue')['default']

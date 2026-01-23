@@ -17,7 +17,7 @@ const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
 const MIN_POINTS_TO_POST_REQUEST = -40;
 const MAX_POINTS_TO_ACCEPT_REQUEST = 2000;
 
-export async function createDemand(data) {
+export async function createDemand (data) {
     const {
         posterId,
         posterShift,
@@ -88,6 +88,7 @@ export async function createDemand(data) {
         createdAt: new Date(),
         deleted: false,
         seenBy: [],
+        consultedBy: [],
         interested: [],
         acceptedSwitches: acceptedSwitches || [],
         isTrueSwitch: isTrueSwitch || false,
@@ -101,7 +102,7 @@ export async function createDemand(data) {
 };
 
 
-export async function getOpenDemands(userId, startDate, endDate) {
+export async function getOpenDemands (userId, startDate, endDate) {
     if (!userId) {
         throw new Error({ status: 400, message: 'L\'identifiant de l\'utilisateur est requis' });
     }
@@ -179,7 +180,18 @@ export async function getOpenDemands(userId, startDate, endDate) {
 
     const categorizedDemands = await categorizeDemands(demands, userId);
 
-    const result = [...categorizedDemands, ...myDemands];
+    const mapIsNew = (demand) => {
+        const demandObj = demand.toObject ? demand.toObject() : demand;
+        return {
+            ...demandObj,
+            isNew: !demandObj.consultedBy || !demandObj.consultedBy.some(id => id.toString() === userId.toString())
+        };
+    };
+
+    const finalDemands = categorizedDemands.map(mapIsNew);
+    const finalMyDemands = myDemands.map(mapIsNew);
+
+    const result = [...finalDemands, ...finalMyDemands];
     return result;
 };
 
@@ -202,7 +214,7 @@ const verifyCompatibilities = async (demands, userId) => {
     return list;
 };
 
-export async function getCompatibleSwitches(date, userId) {
+export async function getCompatibleSwitches (date, userId) {
     if (!date) {
         throw new Error({ status: 400, message: 'Date manquante' });
     }
@@ -211,9 +223,6 @@ export async function getCompatibleSwitches(date, userId) {
     if (!user) {
         throw new Error({ status: 404, message: 'Utilisateur non trouvé' });
     }
-
-    console.log(user.centerId)
-    console.log(date)
 
     const activeRotation = await findLatestRotation(user.centerId, date);
     if (!activeRotation) {
@@ -262,14 +271,7 @@ export async function getCompatibleSwitches(date, userId) {
     return shifts;
 };
 
-
-
-
-
-
-
-
-export async function getCompatibleSwitchesInRotation(date, userId, rotationId) {
+export async function getCompatibleSwitchesInRotation (date, userId, rotationId) {
     if (!date) {
         throw new Error({ status: 400, message: 'Date manquante' });
     }
@@ -322,23 +324,13 @@ export async function getCompatibleSwitchesInRotation(date, userId, rotationId) 
     return shifts;
 };
 
-
-
-
-
-
-
-
-
-
-
 /**
  * Catégorise les demandes d'un utilisateur
  * @param {Array<Object>} demands - Liste des demandes
  * @param {string} userId - ID de l'utilisateur à analyser
  * @returns {Promise<Array<Object>>} Liste des demandes catégorisées
  */
-export async function categorizeDemands(demands, userId) {
+export async function categorizeDemands (demands, userId) {
     try {
         // Filtrer uniquement les demandes ouvertes
         const openDemands = demands.filter(d => d.status === 'open');
@@ -371,7 +363,7 @@ export async function categorizeDemands(demands, userId) {
  * @param {string} userId - ID de l'utilisateur
  * @returns {Promise<Array<Object>>} Liste des substitutions recatégorisées
  */
-export async function recategorizeSubstitutions(substitutionIds, userId) {
+export async function recategorizeSubstitutions (substitutionIds, userId) {
     if (!userId || !substitutionIds) {
         throw new Error({ status: 400, message: 'Paramètres manquants' });
     }
@@ -394,7 +386,7 @@ export async function recategorizeSubstitutions(substitutionIds, userId) {
  * @param {string} demandId - ID de la demande à annuler
  * @returns {Promise<Object>} Demande annulée
  */
-export async function cancelDemand(demandId) {
+export async function cancelDemand (demandId) {
     if (!demandId) {
         throw new Error({ status: 400, message: 'ID de la demande requis' });
     }
@@ -435,7 +427,7 @@ export async function cancelDemand(demandId) {
  * @param {string} userId - ID de l'utilisateur qui annule l'acceptation
  * @returns {Promise<Object>} Demande avec acceptation annulée
  */
-export async function unacceptDemand(requestId, userId) {
+export async function unacceptDemand (requestId, userId) {
     if (!requestId || !userId) {
         throw new Error({ status: 400, message: 'ID de la demande et ID utilisateur requis' });
     }
@@ -488,4 +480,28 @@ export async function unacceptDemand(requestId, userId) {
     const categorizedRequest = await categorizeDemands([updatedRequest], userId);
 
     return { categorizedRequest: categorizedRequest[0], shift: shift[0] };
+}
+
+/**
+ * Marque une demande comme consultée par un utilisateur
+ * @param {string} demandId - ID de la demande
+ * @param {string} userId - ID de l'utilisateur
+ * @returns {Promise<Object>} Demande mise à jour
+ */
+export async function consultDemand (demandId, userId) {
+    if (!demandId || !userId) {
+        throw new Error({ status: 400, message: 'ID de la demande et ID utilisateur requis' });
+    }
+
+    const demand = await Substitution.findByIdAndUpdate(
+        demandId,
+        { $addToSet: { consultedBy: userId } },
+        { new: true }
+    );
+
+    if (!demand) {
+        throw new Error({ status: 404, message: 'Demande non trouvée' });
+    }
+
+    return demand;
 }

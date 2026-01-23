@@ -71,7 +71,7 @@ const close = () => {
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card
-      :rounded="smAndDown ? '' : 'xl'"
+      :class="smAndDown ? '' : 'rounded-xxl'"
       elevation="0"
       class="pa-0 pt-0 "
     >
@@ -139,6 +139,10 @@ const close = () => {
 .v-btn {
   text-transform: none;
   letter-spacing: 0;
+}
+
+.rounded-xxl {
+  border-radius: 28px !important;
 }
 
 .bar {

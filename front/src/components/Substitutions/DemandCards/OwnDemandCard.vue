@@ -9,7 +9,7 @@
             mdi-account-star-outline
           </v-icon>
           <span style="font-weight: 800; font-size: .75rem;" :class="{ 'text-primary': isOwner }">{{ posterName
-            }}</span>
+          }}</span>
           <span v-if="!isOwner" class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
             posterTeamName }})</span>
           <div class="small-dot" />

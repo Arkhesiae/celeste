@@ -1,20 +1,20 @@
 import { v4 as uuidv4 } from 'uuid';
 import User from '../models/User.js';
-import {LegacyUser} from '../models/User.js';
+import { LegacyUser } from '../models/User.js';
 import Center from '../models/Center.js';
 import { hash } from "bcrypt";
 import Team from '../models/Team.js';
 import { getTeamAtGivenDate } from "../utils/getTeamAtGivenDate.js";
 import { computeShiftOfUser } from "../utils/computeShiftOfUser.js";
-import { computeShiftOfUserWithSubstitutions } from "../utils/computeShiftOfUserWithSubstitutions.js";
 import Transaction from '../models/Transaction.js';
 import { createDelayedTransaction, processPendingTransactions } from '../services/transactionService.js';
 import path from 'path';
 import fs from 'fs';
+import { isValidDateRange, isValidDate, isValidId } from '../utils/validation.js';
 import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
 import { sendAdminNotificationEmail } from '../services/email/adminNotificationEmail.js';
-import { generateDateArray } from '../utils/generateDateArray.js';
+import * as userShiftsService from '../services/userService/userShiftsService.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,37 +33,37 @@ const createUser = async (req, res) => {
             id: uuidv4(),
             password: hashedPassword,
             centerId,
-            points : points || 0,
+            points: points || 0,
             registrationStatus: approved ? 'verified' : 'pending',
         });
 
 
-        const firstTeam = await Team.findOne({_id: team, center: centerId});
+        const firstTeam = await Team.findOne({ _id: team, center: centerId });
         if (!firstTeam) {
             return res.status(404).json({ message: 'Equipe non trouvée' });
         }
         const today = new Date();
-     
+
         today.setUTCHours(0, 0, 0, 0);
-        user.teams.push({ teamId: firstTeam._id, fromDate: today , toDate: null });
+        user.teams.push({ teamId: firstTeam._id, fromDate: today, toDate: null });
 
         await user.save();
-        
+
         // Si l'utilisateur n'est pas approuvé, envoyer une notification aux administrateurs du centre
         if (!approved) {
             try {
                 // Récupérer le centre et les administrateurs
                 const center = await Center.findById(centerId);
                 if (center) {
-                    const admins = await User.find({ 
+                    const admins = await User.find({
                         centerId: centerId,
-                        isAdmin: true 
+                        isAdmin: true
                     }).select('email');
-                    
+
                     const adminEmails = admins
                         .filter(admin => admin.email && admin.email.trim())
                         .map(admin => admin.email);
-                    
+
                     if (adminEmails.length > 0) {
                         await sendAdminNotificationEmail(adminEmails, user, center);
                     }
@@ -73,7 +73,7 @@ const createUser = async (req, res) => {
                 console.error('❌ Erreur lors de l\'envoi de la notification aux administrateurs:', emailError);
             }
         }
-        
+
         res.json({ status: 'Utilisateur créé avec succès.', user: user });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -98,7 +98,7 @@ const checkEmailAvailability = async (req, res) => {
 const getAllUsers = async (req, res) => {
     try {
         const users = await User.find({}).populate('teams');
-        
+
         const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
             const currentTeam = await getTeamAtGivenDate(user.teams, new Date());
             return {
@@ -106,7 +106,7 @@ const getAllUsers = async (req, res) => {
                 currentTeam
             };
         }));
-        
+
         res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
@@ -189,7 +189,7 @@ const deletePendingUser = async (req, res) => {
             // En production, envoyer l'email
             await sendEmailRejection(user.email);
         }
-        res.status(200).json({message: 'Candidature rejetée', user});
+        res.status(200).json({ message: 'Candidature rejetée', user });
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur:', error);
         res.status(500).json({ message: 'Erreur interne du serveur' });
@@ -240,8 +240,8 @@ const removeUserAdmin = async (req, res) => {
             });
 
             if (centerAdmins <= 1) {
-                return res.status(400).json({ 
-                    message: 'Impossible de retirer le statut admin : c\'est le dernier administrateur du centre' 
+                return res.status(400).json({
+                    message: 'Impossible de retirer le statut admin : c\'est le dernier administrateur du centre'
                 });
             }
         }
@@ -567,7 +567,7 @@ const assignTeamToUser = async (req, res) => {
             return res.status(404).json({ error: "Team not found" });
         }
 
-      
+
 
         user.teams.push({ teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate });
         await user.save();
@@ -596,21 +596,26 @@ const getUserShifts = async (req, res) => {
 };
 
 
-// Obtenir les vacances d'un utilisateur
+// Obtenir les vacations d'un utilisateur
 const getUserShiftsWithSubstitutions = async (req, res) => {
     try {
         const { dates } = req.body;
         const { id: userId } = req.params;
 
-        if (!dates || !dates.startDate || !dates.endDate || !userId) {
-            return res.status(400).json({ message: !dates ? 'No dates provided' : !dates.startDate ? 'No start date provided' : !dates.endDate ? 'No end date provided' : 'No user provided' });
+        if (!dates.startDate || !dates.endDate) {
+            return res.status(400).json({ message: 'startDate et endDate sont requis' })
         }
-       
-        
-        const dateArray = generateDateArray(dates.startDate, dates.endDate);           
-        const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
 
-        res.json(results);
+        if (!isValidDateRange({ startDate: dates.startDate.slice(0, 10), endDate: dates.endDate.slice(0, 10) })) {
+            return res.status(400).json({ message: 'Intervalle de dates invalide (format ou cohérence)' })
+        }
+
+        if (!userId || !isValidId(userId)) {
+            return res.status(400).json({ message: 'User ID invalide ou manquant' })
+        }
+
+        const shifts = await userShiftsService.getUserShifts(dates, userId)
+        res.json(shifts);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: error.message });
@@ -929,7 +934,7 @@ const deletePhone = async (req, res) => {
     }
 };
 
-        // Récupérer les informations d'un utilisateur par email
+// Récupérer les informations d'un utilisateur par email
 const getUserInfoByEmail = async (req, res) => {
     const { email } = req.params;
 
@@ -963,7 +968,7 @@ const getUserInfoByEmail = async (req, res) => {
 const getDevListUsers = async (req, res) => {
     try {
         const { role } = req.query;
-        
+
         if (role === 'team') {
             // Récupérer uniquement les utilisateurs d'équipe (non admin)
             const users = await User.find({
@@ -971,10 +976,10 @@ const getDevListUsers = async (req, res) => {
                 adminType: null,
                 isActive: true
             }).select('name email teams centerId');
-            
+
             return res.json(users);
         }
-        
+
         // Pour l'instant, nous ne gérons que le cas 'team'
         return res.status(400).json({ message: 'Rôle non supporté' });
     } catch (error) {

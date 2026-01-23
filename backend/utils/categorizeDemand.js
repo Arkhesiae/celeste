@@ -1,7 +1,7 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
-import Shift  from '../models/Shift.js';
+import Shift from '../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
-import { parseShiftTime } from './parseShiftTime.js';
+import { parseShiftUTC } from './parseShiftTime.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
@@ -13,30 +13,31 @@ const categorize = async (demand, shiftsMap = null) => {
         let demandWithLimit = demand.toObject();
         demandWithLimit.limit = [];
 
-        // Utiliser la map pré-calculée si disponible, sinon calculer normalement
-        let vacationOfFetcher;
-        if (shiftsMap) {
-            vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
-        } 
-        else {
+        if (!shiftsMap) {
             throw new Error("Shifts map not found");
         }
 
-        // if (!vacationOfFetcher?.shift) {
-        //     demandWithLimit.limit.push('noShift');
-        // }
+        const vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
+        const localMap = new Map(shiftsMap);
 
-        // Vérifier si l'utilisateur travaille déjà ce jour-là
+        const demandData = {
+            shift: demand.posterShift.shift,
+            team: demand.posterShift.shift.teamObject,
+            date: demandDate.toISOString().split('T')[0],
+            start: parseShiftUTC(demandDate.toISOString().split('T')[0], demand.posterShift.shift.default.startTime),
+            end: parseShiftUTC(demandDate.toISOString().split('T')[0], demand.posterShift.shift.default.endTime, demand.posterShift.shift.default.endsNextDay),
+        };
+
+        localMap.set(demandDate.toISOString().split('T')[0], demandData);
+        const shiftsSorted = shiftMapToArray(localMap);
+        const index = shiftsSorted.findIndex(s => s.date === demandDate.toISOString().split('T')[0]);
+
         if (vacationOfFetcher?.shift && vacationOfFetcher.shift.type !== "rest") {
-            // Vérifier si une permutation est possible
             demandWithLimit.limit.push('alreadyWorking');
-            // Vérifier si une permutation est possible
             if (demand.acceptedSwitches?.length > 0) {
                 let canSwitch = false;
                 for (const switchItem of demand.acceptedSwitches) {
                     const shift = await Shift.findById(switchItem.shift);
-              
-              
                     if ((shift?._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name)) {
                         canSwitch = true;
                         break;
@@ -48,37 +49,29 @@ const categorize = async (demand, shiftsMap = null) => {
             }
         }
 
+        const computeRest = checkMinimumRestTime(shiftsSorted, index);
+        const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
+        const { isWithin48h, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
 
-        const shiftsSorted = shiftMapToArray(shiftsMap);
-        const computeRest = checkMinimumRestTime(demand.posterShift.shift, demandDate, shiftsSorted);
-        const {restOk, invalidWindow} = checkWeeklyRestPeriod(demand.posterShift.shift, demandDate, shiftsSorted);
-        const isWithin48h = checkWeeklyWorkHours(demand.posterShift.shift, demandDate, shiftsSorted);
-       
-        const has35hRest = restOk;
-
-        // if (!computeRest.ok) console.warn('Repos minimum de 11h non respecté');
-        // if (!has35hRest) console.warn('Pas de repos de 35h trouvé dans les 7 jours glissants');
-        // if (invalidWindow) console.log("invalidWindow", invalidWindow);
-        // if (!isWithin48h) console.warn('Plus de 48h de travail sur 7 jours glissants');
+        // Additional Legal Checks
+        // const consecutiveDays = checkConsecutiveWorkDays(demand.posterShift.shift, demandDate, shiftsSorted);
+        // const nightControlRest = checkRestAfterNightControl(demand.posterShift.shift, demandDate, shiftsSorted);
+        // const consecutiveNight = checkConsecutiveNightControls(demand.posterShift.shift, demandDate, shiftsSorted);
 
         demandWithLimit.rest = {
             before: computeRest.restBefore,
             after: computeRest.restAfter
         };
 
-        // console.log("demandWithLimit", demandWithLimit.rest.before/60, demandWithLimit.rest.after/60);
-        if (!computeRest.ok) {
-            demandWithLimit.limit.push('insufficientRest');
-        }
+        demandWithLimit.invalidRest35 = invalidWindows35;
+        demandWithLimit.invalidWork48 = invalidWindows48;
 
-        if (!has35hRest) {
-            demandWithLimit.limit.push('35limit');
-        }
-
-        if (!isWithin48h) {
-            demandWithLimit.limit.push('48hLimit');
-        }
-
+        if (!computeRest.ok) demandWithLimit.limit.push('insufficientRest');
+        if (!restOk) demandWithLimit.limit.push('35limit');
+        if (!isWithin48h) demandWithLimit.limit.push('48hLimit');
+        // if (!consecutiveDays.ok) demandWithLimit.limit.push('consecutiveDaysLimit');
+        // if (!nightControlRest.ok) demandWithLimit.limit.push('nightControlRestLimit');
+        // if (!consecutiveNight.ok) demandWithLimit.limit.push('consecutiveNightLimit');
 
         return demandWithLimit;
     } catch (err) {
@@ -88,6 +81,20 @@ const categorize = async (demand, shiftsMap = null) => {
 };
 
 
+
+// const insertDemandShift = (demand, shiftsMap) => {
+//     const demandDate = new Date(demand.posterShift.date);
+//     shiftsMap.set(demandDate.toISOString().split('T')[0], {
+//         shift: demand.posterShift.shift,
+//         team: demand.posterShift.shift.teamObject,
+//         date: demandDate.toISOString().split('T')[0],
+//         start: demand.posterShift.shift.default.startTime,
+//         end: demand.posterShift.shift.default.endTime,
+//     });
+
+// }
+
+
 /**
  * Simule l'insertion d'un shift dans une liste triée chronologiquement
  * @param {Object} targetShift - Le shift à insérer
@@ -95,21 +102,21 @@ const categorize = async (demand, shiftsMap = null) => {
  * @param {Array} shiftsSorted - Liste des shifts triés chronologiquement
  * @returns {Array} Nouvelle liste avec le shift inséré
  */
-function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
+function simulateInsertShift (targetShift, targetDate, shiftsSorted) {
     const localShiftsSorted = shiftsSorted.slice();
-  
+
     let startTime = targetShift?.default?.startTime;
-    let endTime = targetShift?.default?.endTime ;
+    let endTime = targetShift?.default?.endTime;
     if (!startTime || !endTime) {
         throw new Error("Invalid shift" + targetShift);
     }
-    const start = parseShiftTime(targetDate, startTime);
-    const end = parseShiftTime(targetDate, endTime, targetShift?.default?.endsNextDay);
+    const start = parseShiftUTC(targetDate, startTime);
+    const end = parseShiftUTC(targetDate, endTime, targetShift?.default?.endsNextDay);
 
     const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
-    
+
     const targetShiftIndex = localShiftsSorted.findIndex(s => s.date === targetDate.toISOString().split('T')[0]);
-    
+
     if (targetShiftIndex !== -1) {
         // Si le shift existe déjà à cette date, on le remplace
         localShiftsSorted[targetShiftIndex] = newShift;
@@ -124,7 +131,7 @@ function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
             localShiftsSorted.splice(insertIndex, 0, newShift);
         }
     }
-    
+
     return localShiftsSorted;
 }
 
@@ -137,28 +144,14 @@ function simulateInsertShift(targetShift, targetDate, shiftsSorted) {
  * @param {Array} shiftsSorted - Liste des shifts triés chronologiquement
  * @returns {Object} { restBefore: number, restAfter: number, ok: boolean }
  */
-function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
-    if (targetShift.type !== 'work') return { restBefore: 0, restAfter: 0, ok: true };
+function checkMinimumRestTime (shiftsSorted, index) {
+    if (shiftsSorted[index].shift.type !== 'work') return { restBefore: 0, restAfter: 0, ok: true };
 
-    // Simuler l'insertion du shift pour obtenir la liste mise à jour
-    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+    let previousShift = shiftsSorted[index - 1];
+    let nextShift = shiftsSorted[index + 1];
 
-    let startTime = targetShift?.default?.startTime;
-    let endTime = targetShift?.default?.endTime ;
-    const targetStart = parseShiftTime(targetDate, startTime);
-    const targetEnd = parseShiftTime(targetDate, endTime, targetShift?.default?.endsNextDay);
-
-    let lastShift = null;
-    let nextShift = null;
-
-    for (const s of localShiftsSorted) {
-        if (s.end <= targetStart) {
-            lastShift = s;
-        } else if (s.start >= targetEnd) {
-            nextShift = s;
-            break;
-        }
-    }
+    const targetStart = shiftsSorted[index].start;
+    const targetEnd = shiftsSorted[index].end;
 
     let result = {
         restBefore: 0,
@@ -166,8 +159,8 @@ function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
         ok: true,
     }
 
-    if (lastShift) {
-        result.restBefore = (targetStart - lastShift.end) / (60 * 1000);
+    if (previousShift) {
+        result.restBefore = (targetStart - previousShift.end) / (60 * 1000);
         if (result.restBefore < MIN_REST_MINUTES) result.ok = false;
     }
 
@@ -182,36 +175,48 @@ function checkMinimumRestTime(targetShift, targetDate, shiftsSorted) {
 
 
 
-function checkWeeklyRestPeriod(targetShift, targetDate, shiftsSorted) {
-    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
-
+function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
     let restOk
-    let invalidWindow 
+    const invalidWindows35 = [];
 
     for (let i = 0; i < 7; i++) {
         restOk = false;
+        let longestRest = 0;
+        let longestRestStart = null;
+        let longestRestEnd = null;
+
         const windowStart = new Date(targetDate);
-        windowStart.setDate(windowStart.getDate() + i - 6);
+        windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
         const windowEnd = new Date(targetDate);
-        windowEnd.setDate(windowEnd.getDate() + i + 1);
-        const windowShifts = localShiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
+        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
 
         let lastEnd = new Date(windowStart);
 
         for (let j = 0; j < windowShifts.length; j++) {
             const s = windowShifts[j];
             const restMinutes = (s.start - lastEnd) / (60 * 1000);
-            if (restMinutes >= 35 * 60) {
 
+            if (restMinutes > longestRest) {
+                longestRest = restMinutes;
+                longestRestStart = lastEnd;
+                longestRestEnd = s.start;
+            }
+
+            if (restMinutes >= 35 * 60) {
                 restOk = true;
-                break;
+                break
             }
             if (s.end > lastEnd) lastEnd = s.end;
 
-            // Action spécifique pour le dernier index de windowShifts
+            // Vérifier s'il y a une période de repos de 35h entre le dernier shift et la fin de la fenêtre
             if (j === windowShifts.length - 1) {
-                // Vérifier s'il y a une période de repos de 35h entre le dernier shift et la fin de la fenêtre
                 const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
+                if (restMinutesToEnd > longestRest) {
+                    longestRest = restMinutesToEnd;
+                    longestRestStart = lastEnd;
+                    longestRestEnd = windowEnd;
+                }
                 if (restMinutesToEnd >= 35 * 60) {
                     restOk = true;
                 }
@@ -219,69 +224,69 @@ function checkWeeklyRestPeriod(targetShift, targetDate, shiftsSorted) {
         }
 
         if (!restOk) {
-            invalidWindow = {windowStart, windowEnd};
-            break;
+            invalidWindows35.push({
+                windowStart,
+                windowEnd,
+                longestRest,
+                longestRestStart,
+                longestRestEnd
+            });
+            if (!fullScan) break;
         }
-
-
-
     }
-    return {restOk, invalidWindow};
-
+    return { restOk, invalidWindows35 };
 }
 
-function checkWeeklyWorkHours(targetShift, targetDate, shiftsSorted) {
-    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
-  
-    let workOk
+function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
+    let workOk = true;
+    const invalidWindows48 = [];
 
     for (let i = 0; i < 7; i++) {
-        workOk = true;
         let totalWorkMinutes = 0;
+        if (fullScan) {
+           workOk = true   
+        }
         const windowStart = new Date(targetDate);
-        windowStart.setDate(windowStart.getDate() + i - 6);
+        windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
         const windowEnd = new Date(targetDate);
-        windowEnd.setDate(windowEnd.getDate() + i + 1);
-        const windowShifts = localShiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
+        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
 
         for (let j = 0; j < windowShifts.length; j++) {
-
             const s = windowShifts[j];
-
             if (j === 0 && s.start < windowStart) {
-
                 const workMinutesToStart = (s.end - windowStart) / (60 * 1000);
-
                 totalWorkMinutes += workMinutesToStart;
             }
 
             else if (j === windowShifts.length - 1 && s.end > windowEnd) {
                 const workMinutesToEnd = (windowEnd - s.start) / (60 * 1000);
-
                 totalWorkMinutes += workMinutesToEnd;
             }
 
             else {
                 const workMinutes = (s.end - s.start) / (60 * 1000);
-
                 totalWorkMinutes += workMinutes;
             }
 
-
-
-
             if (totalWorkMinutes > 48 * 60) {
                 workOk = false;
-                break;
+                if (!fullScan) break;
             }
 
+            
         }
 
-
-
-        if (!workOk) break;
+        if (!workOk) {
+            invalidWindows48.push({
+                windowStart,
+                windowEnd,
+                totalWorkMinutes,
+            });
+            if (!fullScan) break;
+        }
     }
-    return workOk;
+    return { workOk, invalidWindows48 };
 }
 
 
@@ -292,25 +297,25 @@ function checkWeeklyWorkHours(targetShift, targetDate, shiftsSorted) {
  * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
  * @returns {Object} { ok: boolean, consecutiveDays: number }
  */
-function checkConsecutiveWorkDays(targetShift, targetDate, shiftsSorted) {
+function checkConsecutiveWorkDays (targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return { ok: true, consecutiveDays: 0 };
 
-    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+    // const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
 
     let maxConsecutiveDays = 0;
     let currentConsecutiveDays = 0;
     let currentDate = null;
 
-    for (const shift of localShiftsSorted) {
+    for (const shift of shiftsSorted) {
         if (shift.shift.type === 'work') {
             const shiftDate = new Date(shift.date);
-            
+
             if (currentDate === null) {
                 currentConsecutiveDays = 1;
                 currentDate = shiftDate;
             } else {
                 const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
-                
+
                 if (daysDiff === 1) {
                     // Jour consécutif
                     currentConsecutiveDays++;
@@ -348,11 +353,11 @@ function checkConsecutiveWorkDays(targetShift, targetDate, shiftsSorted) {
  * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
  * @returns {Object} { ok: boolean, restAfterNightControl: number }
  */
-function checkRestAfterNightControl(targetShift, targetDate, shiftsSorted) {
+function checkRestAfterNightControl (targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return { ok: true, restAfterNightControl: 0 };
 
-    const targetStart = parseShiftTime(targetDate, targetShift?.default?.startTime);
-    const targetEnd = parseShiftTime(targetDate, targetShift?.default?.endTime, targetShift?.default?.endsNextDay);
+    const targetStart = parseShiftUTC(targetDate, targetShift?.default?.startTime);
+    const targetEnd = parseShiftUTC(targetDate, targetShift?.default?.endTime, targetShift?.default?.endsNextDay);
 
     // Vérifier si c'est un contrôle de nuit (entre 00h00 et 06h00)
     const isNightControl = targetStart.getHours() >= 0 && targetStart.getHours() < 6;
@@ -386,10 +391,10 @@ function checkRestAfterNightControl(targetShift, targetDate, shiftsSorted) {
  * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
  * @returns {Object} { ok: boolean, consecutiveNightControls: number }
  */
-function checkConsecutiveNightControls(targetShift, targetDate, shiftsSorted) {
+function checkConsecutiveNightControls (targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return { ok: true, consecutiveNightControls: 0 };
 
-    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+    // const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
 
     let maxConsecutiveNightControls = 0;
     let currentConsecutiveNightControls = 0;
@@ -397,18 +402,18 @@ function checkConsecutiveNightControls(targetShift, targetDate, shiftsSorted) {
 
     for (const shift of localShiftsSorted) {
         if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftTime(shift.date, shift.shift?.default?.startTime);
+            const shiftStart = parseShiftUTC(shift.date, shift.shift?.default?.startTime);
             const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
-            
+
             if (isNightControl) {
                 const shiftDate = new Date(shift.date);
-                
+
                 if (currentDate === null) {
                     currentConsecutiveNightControls = 1;
                     currentDate = shiftDate;
                 } else {
                     const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
-                    
+
                     if (daysDiff === 1) {
                         // Jour consécutif
                         currentConsecutiveNightControls++;
@@ -452,7 +457,7 @@ function checkConsecutiveNightControls(targetShift, targetDate, shiftsSorted) {
  * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
  * @returns {Object} { ok: boolean, restAfterTwoNightControls: number }
  */
-function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
+function checkRestAfterTwoNightControls (targetShift, targetDate, shiftsSorted) {
     if (targetShift.type !== 'work') return { ok: true, restAfterTwoNightControls: 0 };
 
     const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
@@ -464,18 +469,18 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
 
     for (const shift of localShiftsSorted) {
         if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftTime(shift.date, shift.shift?.default?.startTime);
+            const shiftStart = parseShiftUTC(shift.date, shift.shift?.default?.startTime);
             const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
-            
+
             if (isNightControl) {
                 const shiftDate = new Date(shift.date);
-                
+
                 if (currentDate === null) {
                     currentSequence = [shift];
                     currentDate = shiftDate;
                 } else {
                     const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
-                    
+
                     if (daysDiff === 1) {
                         // Jour consécutif
                         currentSequence.push(shift);
@@ -506,8 +511,8 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
     // Vérifier le repos après chaque séquence de deux vacations consécutives
     for (const sequence of consecutiveNightControls) {
         if (sequence.length === 2) {
-            const lastShiftEnd = parseShiftTime(sequence[1].date, sequence[1].shift?.default?.endTime, sequence[1].shift?.default?.endsNextDay);
-            
+            const lastShiftEnd = parseShiftUTC(sequence[1].date, sequence[1].shift?.default?.endTime, sequence[1].shift?.default?.endsNextDay);
+
             // Chercher le prochain shift après cette séquence
             let nextShift = null;
             for (const shift of localShiftsSorted) {
@@ -540,7 +545,7 @@ function checkRestAfterTwoNightControls(targetShift, targetDate, shiftsSorted) {
 
 
 export {
-    categorize,     
+    categorize,
     checkMinimumRestTime,
     checkWeeklyRestPeriod,
     checkWeeklyWorkHours,

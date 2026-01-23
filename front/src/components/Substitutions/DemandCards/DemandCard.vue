@@ -11,7 +11,8 @@
         </v-avatar>
         <span style="font-weight: 800; font-size: .75rem;">{{ posterName
         }}</span>
-        <span class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
+      
+        <span class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">( {{
           posterTeamName }})</span>
         <div class="small-dot" />
         <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
@@ -27,13 +28,11 @@
       </div>
 
       <div class="d-flex align-center ga-2">
-        <v-chip class=" text-medium-emphasis px-1 font-weight-medium" prepend-icon="mdi-eye-outline" size="small"
-          rounded="pill" variant="text">
-          {{ demand?.seenBy?.length || 0 }}
-        </v-chip>
+        
         <v-chip class=" text-medium-emphasis px-0" size="small" rounded="pill" variant="text">
           {{ timeSinceCreation }}
         </v-chip>
+        <div v-if="demand.isNew" class="new-dot" />
       </div>
     </div>
 
@@ -91,8 +90,9 @@
             <v-tooltip location="top" text="Cet utilisateur n'accepte pas cette permutation" :disabled="canSwitch">
               <template v-slot:activator="{ props }">
                 <v-btn v-bind="props" @click.stop="handleSwitch" icon
-                  v-if="demand.type === 'hybrid' || demand.type === 'switch'" :class="{ 'disabled': !canSwitch, 'main-btn': canSwitch }"
-                  flat variant="text" size="small" rounded="xl">
+                  v-if="demand.type === 'hybrid' || demand.type === 'switch'"
+                  :class="{ 'disabled': !canSwitch, 'main-btn': canSwitch }" flat variant="text" size="small"
+                  rounded="xl">
                   <v-icon>
                     mdi-swap-horizontal
                   </v-icon>
@@ -101,7 +101,8 @@
             </v-tooltip>
           </div>
           <div v-if="!isSwitch(demand)" :class="canSwitch ? 'order-1' : 'order-2'">
-            <v-btn @click.stop="handleReplace" icon :class="replaceClasses(demand)" flat variant="text" size="small" rounded="xl">
+            <v-btn @click.stop="handleReplace" icon :class="replaceClasses(demand)" flat variant="text" size="small"
+              rounded="xl">
               <v-icon>
                 mdi-account-arrow-left-outline
               </v-icon>
@@ -109,6 +110,12 @@
           </div>
         </div>
       </div>
+    </div>
+    <div class="d-flex align-center justify-end ga-1 text-disabled">
+      <v-icon size="12" color="onBackground" class="text-disabled" style="opacity: 0.5;">
+        mdi-eye-outline
+      </v-icon>
+      <span class="text-caption font-weight-medium text-disabled">{{ demand?.seenBy?.length || 0 }}</span>
     </div>
   </div>
 </template>
@@ -352,6 +359,31 @@ const handleReplace = () => {
   background-color: rgba(var(--v-theme-onBackground), 0.5);
 }
 
+.new-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(var(--v-theme-primary), 0.5);
+  box-shadow: 0 0 5px rgba(33, 150, 243, 0.5);
+  animation: pulse-blue 2s infinite;
+}
+
+@keyframes pulse-blue {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(33, 150, 243, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
+}
 
 .small-dot {
   width: 4px;

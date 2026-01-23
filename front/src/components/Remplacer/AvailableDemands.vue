@@ -16,7 +16,7 @@
         </span>
       </div>
       <div v-else class="d-flex flex-column ga-2 mt-0">
-        <DemandCard v-for="demand in demands" :key="demand._id" :demand="demand" class="pa-0 ma-0 my-2"
+        <DemandCard v-for="demand in demands" :key="demand._id" :demand="demand" class="pa-0 ma-0 "
           @handle-replacement="handleReplacement" @handle-switch="handleSwitch" @open-details="openDemandDetails" />
       </div>
     </v-col>

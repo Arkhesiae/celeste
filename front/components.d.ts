@@ -51,6 +51,7 @@ declare module 'vue' {
     Forecast12Months: typeof import('./src/components/Financement/Forecast12Months.vue')['default']
     ForgotPasswordDialog: typeof import('./src/components/Login/ForgotPasswordDialog.vue')['default']
     GenericDialog: typeof import('./src/components/Dialogs/GenericDialog.vue')['default']
+    GraphWrapper: typeof import('./src/components/common/Titles/GraphWrapper.vue')['default']
     ListHeader: typeof import('./src/components/common/ListHeader.vue')['default']
     ListHeaderV2: typeof import('./src/components/common/ListHeaderV2.vue')['default']
     Loading: typeof import('./src/components/common/Loaders/Loading.vue')['default']

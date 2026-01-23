@@ -1,7 +1,7 @@
 <template>
-  <ScalableDialog title="Demande " :is-dialog-visible="modelValue" max-width="600" :show-actions="false"
+  <GenericDialog title="Demande " :model-value="modelValue" max-width="600" :show-actions="false"
     @update:model-value="$emit('update:modelValue', $event)">
-    <div>
+    <template #content>
       <div class="text-center mb-6">
         <h1 class="text-h3 font-weight-bold">
           {{ demand.posterShift?.shift?.name }}
@@ -30,7 +30,7 @@
       <v-card :hover="false" v-ripple="false" rounded="xl" color="background" elevation="0" class="mb-4 pa-4"
         @click="showUserDetails = !showUserDetails">
         <div class="d-flex justify-space-between align-center">
-          <h3 class="text-subtitle-1 font-weight-medium mb-0">
+          <h3 class="text-subtitle-1 font-weight-medium mb-0" :class="isOwner ? 'text-primary' : ''">
             {{ poster?.name }} {{ poster?.lastName }}
           </h3>
           <div class="d-flex ga-2 align-center">
@@ -175,6 +175,9 @@
         </div>
       </v-card>
 
+      <v-card class="pa-0 rounded-xl" color="background" elevation="0">
+        <GraphWrapper :demand="demand" />
+      </v-card>
 
       <div v-if="!isAccepted && !isOwner" class="mx-n6 d-flex flex-column my-4 text-body-2 font-weight-medium">
         <div @click="handleReplacement" v-if="demand.type !== 'switch'" v-ripple
@@ -217,18 +220,19 @@
 
         </span>
       </div>
-    </div>
-  </ScalableDialog>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/userStore';
 import { useDate } from 'vuetify'
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { API_URL } from '@/config/api';
 import { useAuthStore } from '@/stores/authStore';
 import { useRotationStore } from '@/stores/rotationStore';
+import { useSubstitutionStore } from '@/stores/substitutionStore';
 
 
 const userStore = useUserStore();
@@ -236,6 +240,7 @@ const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
 const date = useDate()
 const rotationStore = useRotationStore();
+const substitutionStore = useSubstitutionStore();
 
 const emit = defineEmits(['update:modelValue', 'handle-replacement', 'handle-switch', 'withdraw-demand', 'cancel-demand']);
 const showUserDetails = ref(false)
@@ -370,6 +375,17 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (intervalId) clearInterval(intervalId)
+})
+
+
+watch(() => props.modelValue, async (newVal) => {
+  if (newVal && props.demand && props.demand.isNew) {
+    try {
+      await substitutionStore.consultDemand(props.demand._id);
+    } catch (error) {
+      console.error('Erreur lors du marquage comme consulté:', error);
+    }
+  }
 })
 
 

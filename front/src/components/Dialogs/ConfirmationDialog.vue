@@ -58,8 +58,7 @@ const handleCancel = () => {
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card
-      rounded="xl"
-      class="pa-6"
+      class="pa-6 rounded-xxl"
     >
       <v-card-item class="text-start ma-0 pa-0">
         <v-icon
@@ -104,7 +103,9 @@ const handleCancel = () => {
 </template>
 
 <style>
-
+.rounded-xxl {
+  border-radius: 28px !important;
+}
 
 .custom-btn {
   border: 1px solid rgba(185, 185, 185, 0.3) !important;

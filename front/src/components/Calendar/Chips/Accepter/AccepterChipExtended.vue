@@ -24,7 +24,7 @@ const findAcceptedAsAccepter = computed(() => {
 });
 
 const teamName = computed(() => {
-  return teamStore.centerTeams.find(team => team._id === findAcceptedAsAccepter.value.posterShift.teamId)?.name;
+  return findAcceptedAsAccepter.value?.posterShift?.teamId?.name;
 });
 
 const shiftType = computed(() => {

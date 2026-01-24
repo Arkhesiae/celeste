@@ -6,6 +6,7 @@ import { computeShiftOfUserWithSubstitutions } from '../utils/computeShiftOfUser
 import { findLatestRotation } from '../utils/findLatestRotation.js';
 import { generateShiftsMap } from '../utils/generateShiftsMap.js';
 import { generateMapFromDemands } from '../utils/generateShiftsMap.js';
+import { parseShiftUTC } from '../utils/parseShiftTime.js';
 import { shiftMapToArray } from '../utils/generateShiftsMap.js';
 import { simulateInsertShift, checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../utils/categorizeDemand.js';
 import { categorize } from '../utils/categorizeDemand.js';
@@ -233,29 +234,50 @@ export async function getCompatibleSwitches (date, userId) {
 
     const shiftMap = await generateShiftsMap([demandDate], userId);
 
-
-    const sortedShifts = shiftMapToArray(shiftMap);
-
     const shifts = []
     for (const day of populateRotation.days) {
         if (day.type === 'rest') continue;
+        const localMap = new Map(shiftMap);
+
+
+        console.log(day)
+        const dayData = {
+            shift: day,
+            date: demandDate.toISOString().split('T')[0],
+            start: parseShiftUTC(demandDate.toISOString().split('T')[0], day.default.startTime),
+            end: parseShiftUTC(demandDate.toISOString().split('T')[0], day.default.endTime, day.default.endsNextDay),
+        };
+
+        localMap.set(demandDate.toISOString().split('T')[0], dayData);
+        const shiftsSorted = shiftMapToArray(localMap);
+        const index = shiftsSorted.findIndex(s => s.date === demandDate.toISOString().split('T')[0]);
+
         const dayLimit = []
+
         let compatible = false;
-        const computeRest = checkMinimumRestTime(day, demandDate, sortedShifts);
-        const { restOk, invalidWindow } = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
-        const has35hRest = restOk;
-        const isWithin48h = checkWeeklyWorkHours(day, demandDate, sortedShifts);
-        if (!computeRest.ok) {
-            dayLimit.push('insufficientRest');
-        }
 
-        if (!has35hRest) {
-            dayLimit.push('35limit');
-        }
 
-        if (!isWithin48h) {
-            dayLimit.push('48hLimit');
-        }
+        const computeRest = checkMinimumRestTime(shiftsSorted, index);
+        const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
+        const { workOk, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
+
+        // Additional Legal Checks
+        // const consecutiveDays = checkConsecutiveWorkDays(demand.posterShift.shift, demandDate, shiftsSorted);
+        // const nightControlRest = checkRestAfterNightControl(demand.posterShift.shift, demandDate, shiftsSorted);
+        // const consecutiveNight = checkConsecutiveNightControls(demand.posterShift.shift, demandDate, shiftsSorted);
+
+        const dayRest = {
+            before: computeRest.restBefore,
+            after: computeRest.restAfter
+            
+        };
+
+        dayLimit.invalidRest35 = invalidWindows35;
+        dayLimit.invalidWork48 = invalidWindows48;
+
+        if (!computeRest.ok) dayLimit.push('insufficientRest');
+        if (!restOk) dayLimit.push('35limit');
+        if (!workOk) dayLimit.push('48hLimit');
 
         if (dayLimit.length === 0) {
             compatible = true;

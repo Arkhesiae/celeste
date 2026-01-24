@@ -51,7 +51,7 @@ const categorize = async (demand, shiftsMap = null) => {
 
         const computeRest = checkMinimumRestTime(shiftsSorted, index);
         const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
-        const { isWithin48h, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
+        const { workOk, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
 
         // Additional Legal Checks
         // const consecutiveDays = checkConsecutiveWorkDays(demand.posterShift.shift, demandDate, shiftsSorted);
@@ -61,6 +61,7 @@ const categorize = async (demand, shiftsMap = null) => {
         demandWithLimit.rest = {
             before: computeRest.restBefore,
             after: computeRest.restAfter
+            
         };
 
         demandWithLimit.invalidRest35 = invalidWindows35;
@@ -68,7 +69,7 @@ const categorize = async (demand, shiftsMap = null) => {
 
         if (!computeRest.ok) demandWithLimit.limit.push('insufficientRest');
         if (!restOk) demandWithLimit.limit.push('35limit');
-        if (!isWithin48h) demandWithLimit.limit.push('48hLimit');
+        if (!workOk) demandWithLimit.limit.push('48hLimit');
         // if (!consecutiveDays.ok) demandWithLimit.limit.push('consecutiveDaysLimit');
         // if (!nightControlRest.ok) demandWithLimit.limit.push('nightControlRestLimit');
         // if (!consecutiveNight.ok) demandWithLimit.limit.push('consecutiveNightLimit');
@@ -244,7 +245,7 @@ function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
     for (let i = 0; i < 7; i++) {
         let totalWorkMinutes = 0;
         if (fullScan) {
-           workOk = true   
+            workOk = true
         }
         const windowStart = new Date(targetDate);
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
@@ -274,7 +275,7 @@ function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
                 if (!fullScan) break;
             }
 
-            
+
         }
 
         if (!workOk) {

@@ -80,8 +80,8 @@
         :selected-date="selectedDate"
         @open-rempla-dialog="openRemplaDialog"
         @open-drawer="handleOpenDrawer"
-        @cancel-demand="handleCancelDemand"
-        @unaccept-demand="handleUnacceptDemand"
+        @cancel="handleCancel"
+        @withdraw="handleWithdraw"
       />
  
 
@@ -94,8 +94,8 @@
         @update:model-value="onBottomSheetClose"
         @open-rempla-dialog="openRemplaDialog" 
         @open-drawer="handleOpenDrawer"
-        @cancel-demand="handleCancelDemand" 
-        @unaccept-demand="handleUnacceptDemand"
+        @cancel="handleCancel" 
+        @withdraw="handleWithdraw"
       />
     </v-row>
 
@@ -110,7 +110,6 @@
       @update:dialog-mode-value="dialogMode = $event"
       @update:dialog-visible="remplaDialog = $event"
     />
-
 
 
     <v-dialog
@@ -136,29 +135,12 @@
       :selected-date="selectedDate"
       :drawer-type="activeDrawer.type"
       @update:model-value="activeDrawer.show = false"
+      @handle-replacement="handleReplacement"
+      @handle-switch="handleSwitch"
+      @open-details="openDemand"
     />
 
-    <ConfirmationDialog
-      :is-dialog-visible="showCancelConfirmationDialog"
-      :title="'Confirmer l\'annulation'"
-      :text="`Cette demande a été acceptée par ${accepterName}. Êtes-vous sûr de vouloir l'annuler ?`"
-      :icon="'mdi-alert-outline'"
-      :icon-color="'error'"
-      :confirm-text="'Confirmer l\'annulation'"
-      @confirm="confirmCancelDemand"
-      @update:is-dialog-visible="showCancelConfirmationDialog = $event"
-    />
-
-    <ConfirmationDialog
-      :is-dialog-visible="showUnacceptConfirmationDialog"
-      :title="'Confirmer l\'annulation'"
-      :text="'Êtes-vous sûr de vouloir annuler votre acceptation de ce remplacement ?'"
-      :icon="'mdi-alert-outline'"
-      :icon-color="'error'"
-      :confirm-text="'Confirmer l\'annulation'"
-      @confirm="confirmUnacceptDemand"
-      @update:is-dialog-visible="showUnacceptConfirmationDialog = $event"
-    />
+    <DemandDependencies ref="demandDeps" />
   </v-container>
 </template>
 
@@ -173,13 +155,6 @@ import { useCalendar } from '@/composables/useCalendar';
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
-import CalendarHeader from "@/components/Calendar/CalendarHeader.vue";
-import CalendarDesktop from "@/components/Calendar/CalendarDesktop.vue";
-import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
-
-import AddSubstitutionForm from "@/components/Substitutions/AddSubstitutionForm.vue";
-import UnifiedDrawer from "@/components/Calendar/Drawers/UnifiedDrawer.vue";
-import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog.vue";
 
 /** Constantes */
 const CALENDAR_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -195,6 +170,7 @@ const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
 const userStore = useUserStore();
 const shiftStore = useShiftStore();
+const demandDeps = ref(null);
 const rotationStore = useRotationStore();
 
 /**  États */
@@ -204,10 +180,6 @@ const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const loadingVacations = ref(false);
 const activeDrawer = ref({ show: false, type: 'substitutions' });
-const showCancelConfirmationDialog = ref(false);
-const showUnacceptConfirmationDialog = ref(false);
-const substitutionToCancel = ref(null);
-const substitutionToUnaccept = ref(null);
 const subInProgress = ref(false);
 
 const activeRotation = computed(() => {
@@ -357,49 +329,25 @@ const handleSubmit = async (demand) => {
     }
   };
 
-const handleCancelDemand = async (substitutionId) => {
 
-  try {
-    const substitution = substitutionStore.substitutions.find(s => s._id === substitutionId);
-    if (substitution?.accepterId) {
-      substitutionToCancel.value = substitution;
-      showCancelConfirmationDialog.value = true;
-      return;
-    }
-    
-    await substitutionStore.cancelDemand(substitutionId);
-    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check');
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'annulation de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-  }
+const handleCancel = (substitutionId) => {
+  demandDeps.value.handleCancel(substitutionId);
 };
 
-const confirmCancelDemand = async () => {
-  try {
-    await substitutionStore.cancelDemand(substitutionToCancel.value._id);
-    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check');
-    showCancelConfirmationDialog.value = false;
-    substitutionToCancel.value = null;
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'annulation de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-  }
+const handleWithdraw = (substitutionId) => {
+  demandDeps.value.handleWithdraw(substitutionId);
 };
 
-const handleUnacceptDemand = (substitutionId) => {
-  substitutionToUnaccept.value = substitutionId;
-  showUnacceptConfirmationDialog.value = true;
+const handleReplacement = (demand) => {
+  demandDeps.value.handleReplacement(demand);
 };
 
-const confirmUnacceptDemand = async () => {
-  try {
-    await substitutionStore.unacceptDemand(substitutionToUnaccept.value);
-    snackbarStore.showNotification('Acceptation annulée', 'onPrimary', 'mdi-check');
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'annulation de l\'acceptation', 'onError', 'mdi-alert-circle-outline');
-  } finally {
-    showUnacceptConfirmationDialog.value = false;
-    substitutionToUnaccept.value = null;
-  }
+const handleSwitch = (demand) => {
+  demandDeps.value.handleSwitch(demand);
+};
+
+const openDemand = (demand) => {
+  demandDeps.value.openDemandDetails(demand);
 };
 
 // Watchers

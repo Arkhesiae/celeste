@@ -57,17 +57,17 @@
 
           
           <PendingChip
-            v-if="substitutionStore.hasOwnPendingDemand(day.date.toISOString())"
+            v-if="pendingDemand(day.date)"
             style="bottom:8px !important; right: 8px !important"
             :date="day.date"
           />
           <AccepterChip
-            v-if="substitutionStore.hasAcceptedAsAccepter(day.date.toISOString())"
+            v-if="acceptedAsAccepter(day.date)"
             style="bottom:8px !important; right: 8px !important"
             :date="day.date"
           />
           <ConfirmationChip
-            v-if="substitutionStore.hasAcceptedAsPoster(day.date.toISOString())"
+            v-if="acceptedAsPoster(day.date)"
             style="bottom:8px !important; right: 8px !important"
             :date="day.date"
           />
@@ -86,23 +86,24 @@
             <!-- Indicateurs de substitution -->
             <div
               class="position-absolute pr-4 pb-4"
-              style="bottom: 0; right: 0;"
+              style="bottom: 0; right: 0;" 
+              v-if="!pendingDemand(day.date) && !acceptedAsAccepter(day.date) && !acceptedAsPoster(day.date)"
             >
               <div class="d-flex justify-center">
                 <div 
                   v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
                   class="indicator-dot remplacement "
-                  style="background: rgb(var(--v-theme-remplacement)) !important" 
+                  style="background: rgb(var(--v-theme-primary)) !important" 
                 />
                 <div 
                   v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
                   class="indicator-dot permutation ml-1"
-                  style="background: rgb(var(--v-theme-permutation)) !important"
+                  style="background: rgb(var(--v-theme-primary)) !important"
                 />
                 <div 
                   v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
                   class="indicator-dot other-demand ml-1"
-                  style="background: rgba(var(--v-theme-background), 1) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.25) !important"
+                  style="background: rgba(var(--v-theme-error), .3) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.05) !important"
                 />
               </div>
             </div>      
@@ -132,6 +133,21 @@ const props = defineProps({
 });
 
 
+const pendingDemand = computed(() => (date) => [
+  ...substitutionStore.ownPendingHybridSubstitutions,
+  ...substitutionStore.ownPendingTrueSubstitutions,
+  ...substitutionStore.ownPendingTrueSwitches
+].find(d => d.posterShift.date === date.toISOString()));
+
+const acceptedAsAccepter = computed(() => (date) => {
+  if (!date) return null;
+  return substitutionStore.acceptedAsAccepter.find(d => d.posterShift.date === date.toISOString());
+});
+
+const acceptedAsPoster = computed(() => (date) => {
+  if (!date) return null;
+  return substitutionStore.acceptedAsPoster.find(d => d.posterShift.date === date.toISOString());
+});
 
 
 

@@ -1,14 +1,11 @@
 <script setup>
 import { computed, onMounted } from 'vue';
-import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { API_URL } from '@/config/api';
 
-const teamStore = useTeamStore();
+
 const substitutionStore = useSubstitutionStore();
-const authStore = useAuthStore();
 const userStore = useUserStore();
 const props = defineProps({
   date : { type: Date, required: true },
@@ -25,13 +22,6 @@ const accepterUser = computed(() => {
   return userStore.users.find(user => user._id === acceptedAsPoster.value.accepterId);
 });
 
-onMounted(async () => {
-  try {
-    await userStore.fetchUsers();
-  } catch (error) {
-    console.error('Erreur lors du chargement des utilisateurs:', error);
-  }
-});
 
 </script>
 
@@ -39,40 +29,45 @@ onMounted(async () => {
   <v-chip
  
     rounded="lg"
-    color="acceptedDemand"
+    color="primary"
     variant="flat"
     size="x-small"
-    style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-    class="text-caption font-weight-bold position-absolute px-2 overflow-visible d-flex align-center justify-center"
+    style="bottom: -10px; opacity: 1; transform: scale(1) ;"
+    class="position-absolute "
   >
     <v-icon
       v-if="acceptedAsPoster.length > 1"
+      size="small"
       color="error"
     >
       mdi-alert-circle-outline
     </v-icon>
     <v-icon
+      size="small"
       v-if="acceptedAsPoster.type === 'switch'"
-      color="onAcceptedDemand"
+      color="background"
     >
       mdi-swap-horizontal-hidden
     </v-icon>
     <v-icon
+      size="small"
       v-if="acceptedAsPoster.type === 'substitution'"
-      color="onAcceptedDemand"
+      color="background"
     >
       mdi-account-arrow-left
     </v-icon>
     <div v-if="acceptedAsPoster.type === 'hybrid'">
       <v-icon
+        size="small"
         v-if="!acceptedAsPoster.accepterShift"
-        color="onAcceptedDemand"
+        color="background"
       >
         mdi-account-arrow-left
       </v-icon>
       <v-icon
+        size="small"
         v-if="acceptedAsPoster.accepterShift"
-        color="onAcceptedDemand"
+        color="background"
       >
         mdi-swap-horizontal
       </v-icon>
@@ -82,7 +77,7 @@ onMounted(async () => {
       class="d-flex align-center justify-center"
     >
       <v-avatar
-        size="x-small"
+        size="small"
         class=""
         variant="tonal"
       >

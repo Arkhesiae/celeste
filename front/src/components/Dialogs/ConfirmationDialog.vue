@@ -55,6 +55,8 @@ const handleCancel = () => {
   <v-dialog
     :model-value="modelValue"
     max-width="400"
+    :z-index="2600"
+    :style="{zIndex: 2600 }"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card

@@ -1,8 +1,6 @@
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useTeamStore } from '@/stores/teamStore';
+import { computed } from 'vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useAuthStore } from '@/stores/authStore';
 
 const substitutionStore = useSubstitutionStore();
 const props = defineProps({
@@ -10,8 +8,6 @@ const props = defineProps({
   text: { type: String },
 
 });
-
-const type = ref('');
 
 
 
@@ -48,17 +44,18 @@ const hasMultiplePending = computed(() => {
 
 
 
+
 </script>
 
 <template>
   <v-chip
  
     rounded="lg"
-    color="pendingDemand"
+    color="surface"
     variant="flat"
     size="x-small"
-    style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-    class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+    style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-primary), 0.4);"
+    class="position-absolute"
   >
     <v-icon
       v-if="hasMultiplePending"
@@ -68,25 +65,22 @@ const hasMultiplePending = computed(() => {
     </v-icon>
     <v-icon
       v-if="isTrueSwitch"
-      color="onPendingDemand"
+      size="small"
+      color="onBackground"
     >
       mdi-swap-horizontal-hidden
     </v-icon>
     <v-icon
-      v-if="isTrueSubstitution"
-      color="onPendingDemand"
+      v-if="isTrueSubstitution || isHybridSubstitution"
+      size="small"
+      color="onBackground"
     >
       mdi-account-arrow-left
     </v-icon>
     <v-icon
       v-if="isHybridSubstitution"
-      color="onPendingDemand"
-    >
-      mdi-account-arrow-left
-    </v-icon>
-    <v-icon
-      v-if="isHybridSubstitution"
-      color="onPendingDemand"
+      size="small"
+      color="onBackground"
       class="ml-n2"
       style="top: 1px; font-size: 16px;"
     >

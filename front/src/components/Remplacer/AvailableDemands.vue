@@ -27,24 +27,28 @@
 <script setup>
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 const substitutionStore = useSubstitutionStore();
-
+const props = defineProps({
+  selectedDate: {
+    type: [Date, String, null],
+  }
+})
 
 
 // Options de filtre
 const filters = [
-  { label: 'Remplaçables', value: 'remplacables' },
-  { label: 'Permutables', value: 'permutables' },
-  { label: 'Incompatibles', value: 'incompatibles', color: 'error' }
+  { label: 'Toutes', value: 'all', count: computed(() => filteredSubstitutions.value.length + filteredSwitches.value.length + filteredOthers.value.length) },
+  { label: 'Remplaçables', value: 'remplacables', count: computed(() => filteredSubstitutions.value.length) },
+  { label: 'Permutables', value: 'permutables', count: computed(() => filteredSwitches.value.length) },
+  { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: computed(() => filteredOthers.value.length) }
 ];
 
-const selectedFilter = ref('remplacables');
+const selectedFilter = ref('all');
 
 // Options de tri
 const sortOptions = [
   { text: 'Type', value: 'type' },
   { text: 'Date', value: 'date' },
-  { text: 'Nom du shift', value: 'shift.name' },
-  { text: 'Statut', value: 'status' },
+  { text: 'Vacation', value: 'shift.name' },
 ];
 const sortBy = ref(sortOptions[1]);
 
@@ -67,6 +71,10 @@ const handleSwitch = (demand) => {
 // Fonction utilitaire pour le filtrage et le tri
 const filterAndSortDemands = (demands) => {
   let filteredDemands = [...demands] || [];
+
+  if (props.selectedDate) {
+    filteredDemands = filteredDemands.filter(demand => demand.posterShift.date === props.selectedDate);
+  }
 
   // Tri
   if (sortBy.value.value) {
@@ -100,6 +108,7 @@ const filteredOthers = computed(() =>
 );
 
 const demands = computed(() => {
+  if (selectedFilter.value === 'all') return [...filteredSubstitutions.value, ...filteredSwitches.value, ...filteredOthers.value];
   if (selectedFilter.value === 'remplacables') return filteredSubstitutions.value;
   if (selectedFilter.value === 'permutables') return filteredSwitches.value;
   if (selectedFilter.value === 'incompatibles') return filteredOthers.value;

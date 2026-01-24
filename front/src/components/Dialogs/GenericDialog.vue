@@ -1,5 +1,7 @@
 <template>
-  <v-dialog :model-value="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
+  <v-dialog :z-index="2500"
+    :style="{zIndex: 2500 }"
+    :model-value="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
     :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent" :retain-focus="false"
     @update:model-value="$emit('update:modelValue', $event)" @after-enter="handleAfterEnter"
     @after-leave="handleAfterLeave">

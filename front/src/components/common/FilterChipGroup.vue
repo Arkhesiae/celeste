@@ -12,7 +12,7 @@
     <v-chip 
       v-for="filter in filters" 
       :key="filter.value" 
-      class="justify-center font-weight-medium chip-custom"
+      class="justify-center ga-2 font-weight-medium align-center chip-custom"
       :size="'default'" 
       :class="filter.color ? 'chip-error' : ''"   
       active-class="active-filter" 
@@ -21,6 +21,10 @@
       :value="filter.value"
     >
       {{ filter.label }}
+
+      <template #append v-if="filter.count">
+       <span class="font-weight-bold " style="font-size: .685rem !important;">{{  filter.count }}</span>
+      </template>
     </v-chip>
   </v-chip-group>
 </template>

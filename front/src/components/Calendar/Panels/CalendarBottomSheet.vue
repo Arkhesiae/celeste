@@ -1,7 +1,8 @@
 <template>
   <v-bottom-sheet
-    v-model="localModelValue"
+    :model-value="modelValue"
     inset
+    @update:model-value="emit('update:modelValue', $event)"
     class="safe-area-bottom"
   >
     <CalendarPanel
@@ -10,17 +11,14 @@
       :show-chips="true"
       @open-rempla-dialog="handleOpenRemplaDialog"
       @open-drawer="handleOpenDrawer"
-      @cancel-demand="handleCancelDemand"
-      @unaccept-demand="handleUnacceptDemand"
+      @cancel="emit('cancel', $event)"
+      @withdraw="emit('withdraw', $event)"
     />
   </v-bottom-sheet>
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
-import CalendarPanel from './common/CalendarPanel.vue';
-
-const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openDrawer', 'cancelDemand', 'unacceptDemand']);
+const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openDrawer', 'cancel', 'withdraw']);
 
 const props = defineProps({
   modelValue: {
@@ -38,17 +36,6 @@ const props = defineProps({
   }
 });
 
-// États pour les tiroirs
-const showSubstitutionsDrawer = ref(false);
-const showSwitchesDrawer = ref(false);
-
-// Création d'une valeur locale pour suivre l'état du modèle
-const localModelValue = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-});
-
-
 const handleOpenRemplaDialog = (type) => {
   emit('openRemplaDialog', type);
 };
@@ -57,13 +44,6 @@ const handleOpenDrawer = (type) => {
   emit('openDrawer', type);
 };
 
-const handleCancelDemand = (substitutionId) => {
-  emit('cancelDemand', substitutionId);
-};
-
-const handleUnacceptDemand = (substitutionId) => {
-  emit('unacceptDemand', substitutionId);
-};
 </script>
 
 <style scoped>

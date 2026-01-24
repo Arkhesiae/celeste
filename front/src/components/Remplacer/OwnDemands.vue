@@ -51,10 +51,10 @@ const props = defineProps({
 const ownFilter = ref('tous');
 
 const ownFilterOptions = [
-  { label: 'Tous', value: 'tous' },
-  { label: 'En attente', value: 'en attente' },
-  { label: 'A venir', value: 'a venir' },
-  { label: 'Je me fais remplacer', value: 'je me fais remplacer' }
+  { label: 'Toutes', value: 'tous', count: computed(() => pendingDemands.value.length + upcomingDemands.value.length + replacementDemands.value.length) },
+  { label: 'En attente', value: 'en attente', count: computed(() => pendingDemands.value.length) },
+  { label: 'A venir', value: 'a venir', count: computed(() => upcomingDemands.value.length) },
+  { label: 'Je me fais remplacer', value: 'je me fais remplacer', count: computed(() => replacementDemands.value.length) }
 ];
 
 // Emits

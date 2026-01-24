@@ -10,17 +10,17 @@
       :show-chips="true"
       @open-rempla-dialog="handleOpenRemplaDialog"
       @open-drawer="handleOpenDrawer"
-      @cancel-demand="handleCancelDemand"
-      @unaccept-demand="handleUnacceptDemand"
+      @cancel="emit('cancel', $event)"
+      @withdraw="emit('withdraw', $event)"
     />
   </v-col>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+
 import CalendarPanel from './common/CalendarPanel.vue';
 
-const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancelDemand', 'unacceptDemand']);
+const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancel', 'withdraw']);
 
 const props = defineProps({
   cols: {
@@ -40,13 +40,6 @@ const props = defineProps({
 
 
 
-
-
-
-
-
-
-
 const handleOpenRemplaDialog = (type) => {
   emit('openRemplaDialog', type);
 };
@@ -55,13 +48,7 @@ const handleOpenDrawer = (type) => {
   emit('openDrawer', type);
 };
 
-const handleCancelDemand = (substitutionId) => {
-  emit('cancelDemand', substitutionId);
-};
 
-const handleUnacceptDemand = (substitutionId) => {
-  emit('unacceptDemand', substitutionId);
-};
 
 </script>
 

@@ -402,7 +402,7 @@
   />
 
   <ConfirmationDialog
-    :is-dialog-visible="showConfirmationDialog"
+    v-model="showConfirmationDialog"
     :title="'Nombre de points'"
     :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'"
     :confirm-color="'remplacement'"

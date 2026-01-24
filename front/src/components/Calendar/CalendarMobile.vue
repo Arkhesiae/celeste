@@ -17,7 +17,7 @@
         :key="day"
         class="text-center"
       >
-        <strong>{{ day }}</strong>
+        <span class="week-day">{{ day }}</span>
       </v-col>
     </v-row>
 
@@ -36,7 +36,7 @@
         <v-sheet
           color="transparent"
           class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
-          style="width: 48px; height: 48px; border-radius: 50%; position: relative; font-weight: 400 "
+          style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(var(--v-theme-surface), 1) !important; position: relative; font-weight: 400 "
           :class="{
             'isWorkDay': isWorkDay(day.date),
             'selected': isSelected(day.date),
@@ -46,17 +46,17 @@
           @click="hapticsImpact(); $emit('select-day', day.date) "
         >
           <PendingChip
-            v-if="substitutionStore?.hasOwnPendingDemand(day.date.toISOString())"
+            v-if="pendingDemand(day.date)"
             style="bottom:-4px !important; "
             :date="day.date"
           />
           <AccepterChip
-            v-if="substitutionStore?.hasAcceptedAsAccepter(day.date.toISOString())"
+            v-if="acceptedAsAccepter(day.date)"
             style="bottom:-4px !important; "
             :date="day.date"
           />
           <ConfirmationChip
-            v-if="substitutionStore?.hasAcceptedAsPoster(day.date.toISOString())"
+            v-if="acceptedAsPoster(day.date)"
             style="bottom:-4px !important; "
             :date="day.date"
           />
@@ -72,30 +72,31 @@
 
           <span
             v-if="isWorkDay(day.date) || isOff(day.date)"
-            class="text-caption position-absolute opacity-50"
-            style="top: 0; right: 0;"
+            class="text-caption position-absolute opacity-50 shift-name"
+            
             :class="{'offDay': isOff(day.date), 'xs': xs}"
           >{{ getShiftName(day.date) }}</span>
 
           <div
-            style="position: absolute; width: 100%; bottom: 0"
-            class="d-flex justify-center"
+            v-if="!acceptedAsAccepter(day.date) && !acceptedAsPoster(day.date) && !pendingDemand(day.date)"
+            style="position: absolute; width: 100%; bottom: 4px"
+            class="d-flex justify-center "
           >
-            <div class="d-flex justify-center">
+            <div class="d-flex justify-center ga-1">
               <div
                 v-if="substitutionStore?.hasAvailableSubstitutions(day.date.toISOString())"
                 class="indicator-dot remplacement "
-                style="background: rgb(var(--v-theme-remplacement)) !important"
+                style="background: rgb(var(--v-theme-primary)) !important"
               />
               <div
                 v-if="substitutionStore?.hasAvailableSwitches(day.date.toISOString())"
-                class="indicator-dot permutation ml-1"
-                style="background: rgb(var(--v-theme-permutation)) !important"
+                class="indicator-dot permutation "
+                style="background: rgb(var(--v-theme-primary)) !important"
               />
               <div
                 v-if="substitutionStore?.hasOtherDemands(day.date.toISOString())"
-                class="indicator-dot other-demand ml-1"
-                style="background: rgba(var(--v-theme-surfaceContainerHighest), 1) !important"
+                class="indicator-dot other-demand"
+                style="background: rgba(var(--v-theme-error), .3) !important"
               />
             </div>
           </div>
@@ -154,6 +155,21 @@ const isOff = computed(() => (date) => {
   return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff;
 });
 
+const pendingDemand = computed(() => (date) => [
+  ...substitutionStore.ownPendingHybridSubstitutions,
+  ...substitutionStore.ownPendingTrueSubstitutions,
+  ...substitutionStore.ownPendingTrueSwitches
+].find(d => d.posterShift.date === date.toISOString()));
+
+const acceptedAsAccepter = computed(() => (date) => {
+  if (!date) return null;
+  return substitutionStore.acceptedAsAccepter.find(d => d.posterShift.date === date.toISOString());
+});
+
+const acceptedAsPoster = computed(() => (date) => {
+  if (!date) return null;
+  return substitutionStore.acceptedAsPoster.find(d => d.posterShift.date === date.toISOString());
+});
 
 const getShiftName = (date) => {
   if (vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff) {
@@ -182,6 +198,11 @@ const inPast = (date) => {
   
 }
 
+.week-day {
+  font-size: .600rem !important;
+  font-weight: 500 !important;
+  opacity: .5;
+}
 
 .day-container {
   width: calc(100% / 7);
@@ -222,7 +243,16 @@ const inPast = (date) => {
 }
 
 .day.xs {
-  font-size: 12px !important;
+  position: relative;
+ 
+  font-size: .6750rem !important;
   font-weight: 300 !important;
+}
+
+.shift-name {
+  position: relative;
+  top: 2px;
+  font-size: .600rem !important;
+
 }
 </style>

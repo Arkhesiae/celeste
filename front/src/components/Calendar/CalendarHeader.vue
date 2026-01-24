@@ -55,7 +55,6 @@
       icon="mdi-chevron-left"
       variant="text"
       size="small"
-      :disabled="isAnimating"
       @click="navigateMonth(-1)"
     />
     <div class="month-indicator">
@@ -65,7 +64,6 @@
       icon="mdi-chevron-right"
       variant="text"
       size="small"
-      :disabled="isAnimating"
       @click="navigateMonth(1)"
     />
   </div>

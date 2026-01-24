@@ -21,7 +21,7 @@
             <v-btn icon density="comfortable" variant="text" color="medium-emphasis">
                 <v-icon icon="mdi-information-outline"></v-icon>
                 <v-tooltip activator="parent" location="bottom">
-                    Graph Information
+                    Compatibilité avec les vacs adjacentes
                 </v-tooltip>
             </v-btn>
         </div>
@@ -155,7 +155,7 @@
                 </div>
 
                 <!-- Window Controls -->
-                <div class="controls-section mt-4 pt-2 border-t">
+                <div class="controls-section mt-4 pt-2">
                     <div class="d-flex align-center justify-end">
 
                         <div class="d-flex align-center" style="gap: 8px;">
@@ -176,7 +176,7 @@
                 </div>
             </v-window-item>
 
-            <!-- Placeholder Windows -->
+            <!-- Placeholder Windows
             <v-window-item :value="1">
                 <div class="d-flex align-center justify-center fill-height" style="height: 300px;">
                     <div class="text-h6 text-medium-emphasis">Window 2 Placeholder</div>
@@ -187,14 +187,14 @@
                 <div class="d-flex align-center justify-center fill-height" style="height: 300px;">
                     <div class="text-h6 text-medium-emphasis">Window 3 Placeholder</div>
                 </div>
-            </v-window-item>
+            </v-window-item> -->
         </v-window>
 
         <!-- Footer Indicators -->
-        <div class="d-flex justify-center mt-4" style="gap: 8px;">
+        <!-- <div class="d-flex justify-center mt-4" style="gap: 8px;">
             <div v-for="i in 3" :key="i" class="window-dot" :class="{ 'is-active': step === i - 1 }"
                 @click="step = i - 1"></div>
-        </div>
+        </div> -->
 
 
     </div>
@@ -922,10 +922,7 @@ const getWindowDateLabel = (idx) => {
     text-align: center;
 }
 
-/* Controls */
-.controls-section {
-    border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
-}
+
 
 .window-dot {
     width: 8px;

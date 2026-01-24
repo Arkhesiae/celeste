@@ -81,7 +81,6 @@ router.beforeEach(async (to, from, next) => {
 
   // Navigation guard pour les routes d'administration
 
-
   if (authStore.isLoggedIn) {
     if (!initializationStore.isAppReady && to.path !== '/loading') {
       initializationStore.setPendingRoute(to.path);
@@ -106,13 +105,10 @@ router.beforeEach(async (to, from, next) => {
 
 
   else {  
-
-    // console.log(to.name)
-   if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
+    if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ path: '/login' });
     }
   } 
-
 
   next();
 
@@ -122,7 +118,6 @@ router.beforeEach(async (to, from, next) => {
 
 router.afterEach((to, from) => {
   
-  // console.log(to.meta)
   const toDepth = to.path.split('/').length
   const fromDepth = from.path.split('/').length
   // to.meta.transition = toDepth < fromDepth ? 'slide-right' : 'slide-left'
@@ -135,8 +130,7 @@ router.afterEach((to, from) => {
 
 if (import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    if (nouveauModule) {
-      // newModule est indéfini au moment de l'apparition de la SyntaxError
+    if (newModule) {
       console.log('updated : count is now ', newModule.count)
     }
   })
@@ -148,9 +142,9 @@ router.onError((err, to) => {
     const hasReloaded = localStorage.getItem('vuetify:dynamic-reload');
 
     if (!hasReloaded) {
-      console.warn('⚡ Dynamic import error, forcing reload');
+      console.warn('⚡ Dynamic import error, please force reload');
       localStorage.setItem('vuetify:dynamic-reload', 'true');
-      window.location.reload(); // Hard reload
+      // window.location.reload(); // Hard reload
     } else {
       console.error('❌ Reload did not fix dynamic import error:', err);
     }

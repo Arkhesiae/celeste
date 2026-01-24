@@ -9,7 +9,7 @@ import { registerPlugins } from '@/plugins'
 import longPress from '@/directives/v-long-press.js'
 // Components
 import App from './App.vue'
-import 'material-symbols';
+
 // Composables
 import { createApp } from 'vue'
 

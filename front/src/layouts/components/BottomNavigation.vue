@@ -88,7 +88,7 @@
       <!-- <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false"> -->
 
       <v-badge
-        v-if="!authStore.userData.phone"
+        v-model="missingPhone"
         color="error"
         icon="mdi-exclamation-thick"
         overlap
@@ -137,6 +137,8 @@ const hapticsImpact = async () => {
   await Haptics.impact({ style: ImpactStyle.Light });
 };
 
+
+const missingPhone = computed(() => !authStore.userData.phone);
 
 const { smAndDown } = useDisplay();
 const router = useRouter();

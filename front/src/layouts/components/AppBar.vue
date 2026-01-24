@@ -89,15 +89,15 @@
         <v-spacer />
 
         <!-- Menu utilisateur -->
-        <div>
+        <div v-if="isLoggedIn">
           <v-badge
-            :model-value="!authStore.userData?.phone"
+            :model-value="missingPhone"
             location="bottom left"
             color="error"
             icon="mdi-exclamation-thick"
           >
             <UserMenu
-              v-if="isLoggedIn"
+              
               :username="username"
               :email="authStore.userData.email"
               :avatar="authStore.avatar"
@@ -162,6 +162,8 @@ const props = defineProps({
 });
 
 const ticketCount = computed(() => ticketStore.tickets.filter(ticket => ticket.status !== 'done' && ticket.status !== 'closed').length);
+
+const missingPhone = computed(() => !authStore.userData?.phone);
 
 // Emits
 const emit = defineEmits(["toggle-mobile-drawer", "toggle-drawer"]);

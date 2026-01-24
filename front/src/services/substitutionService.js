@@ -214,10 +214,8 @@ export const substitutionService = {
    * @returns {Promise<Array>} Liste de toutes les demandes du centre.
    */
   async fetchAllCenterDemands (centerId) {
-    const response = await fetch(`${API_URL}/substitution/center/${centerId}/all`, {
-      headers: getAuthHeaders()
-    });
-    return handleResponse(response);
+    const response = await apiFetch(`/substitution/center/${centerId}/all`);
+    return response;
   },
 
   /**
@@ -226,10 +224,8 @@ export const substitutionService = {
    * @returns {Promise<Object>} Les compatibilités de la demande.
    */
   async fetchCompatibility (demandId) {
-    const response = await fetch(`${API_URL}/substitution/compatibility/${demandId}`, {
-      headers: getAuthHeaders()
-    });
-    return handleResponse(response);
+    const response = await apiFetch(`/substitution/compatibility/${demandId}`);
+    return response;
   },
 
   /**
@@ -238,10 +234,9 @@ export const substitutionService = {
    * @returns {Promise<Object>} La substitution mise à jour.
    */
   async consultDemand (id) {
-    const response = await fetch(`${API_URL}/substitution/${id}/consult`, {
+    const response = await apiFetch(`/substitution/${id}/consult`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   }
 };

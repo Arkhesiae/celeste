@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+;
 import { useSnackbarStore } from './snackbarStore';
 import { emailService } from '@/services/emailService.js';
 
@@ -9,7 +9,7 @@ export const useEmailStore = defineStore('email', () => {
   // États
   const userCount = ref(0);
   const emailHistory = ref([]);
-  const loading = ref(false);     
+  const loading = ref(false);
   const sending = ref(false);
 
   // Statistiques
@@ -45,7 +45,7 @@ export const useEmailStore = defineStore('email', () => {
   const sendAnnouncement = async (announcementData) => {
     try {
       sending.value = true;
-      
+
       const data = await emailService.sendAnnouncement(announcementData);
 
       // Mettre à jour les statistiques
@@ -64,10 +64,10 @@ export const useEmailStore = defineStore('email', () => {
       });
 
       // Notification de succès
-      const message = announcementData.testMode 
+      const message = announcementData.testMode
         ? 'Email de test envoyé avec succès'
         : `Annonce envoyée à ${data.results.sent} utilisateurs`;
-      
+
       snackbarStore.showNotification(message, 'success', 'mdi-email-check');
 
       return data;
@@ -127,7 +127,7 @@ export const useEmailStore = defineStore('email', () => {
     // Méthodes utilitaires
 
     // Actions
-    fetchUserCount, 
+    fetchUserCount,
     sendAnnouncement,
     fetchEmailHistory,
     initializeStore,

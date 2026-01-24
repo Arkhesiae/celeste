@@ -1,42 +1,84 @@
 <template>
-  <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4 position-relative safe-area-bottom"
-    color="surfaceContainer">
+  <v-sheet
+    :rounded="rounded"
+    :elevation="elevation"
+    class="py-4 px-4 position-relative safe-area-bottom"
+    color="surfaceContainer"
+  >
     <div class="d-flex align-center justify-end mb-4 mx-2">
       <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
     </div>
-    <div v-if="!isRestDay" class="d-flex align-end flex-column mx-2 ga-1">
-      <v-btn :disabled="!hasNoDemand" color="error" rounded="lg" size="small"
-        :variant="getVacation?.isOff ? 'flat' : 'outlined'" class="text-none " @click="registerAbsence">
+    <div
+      v-if="!isRestDay"
+      class="d-flex align-end flex-column mx-2 ga-1"
+    >
+      <v-btn
+        :disabled="!hasNoDemand"
+        color="error"
+        rounded="lg"
+        size="small"
+        :variant="getVacation?.isOff ? 'flat' : 'outlined'"
+        class="text-none "
+        @click="registerAbsence"
+      >
         <v-icon start>
           mdi-bag-carry-on-off
         </v-icon>
         <span v-if="!getVacation?.isOff">Absence ?</span>
         <span v-else>Absent</span>
       </v-btn>
-      <span v-if="hasNoDemand" style="font-size: 10px !important; opacity: 0.6;">Une absence, un congé ?</span>
-      <span v-else style="font-size: 10px !important; opacity: 0.6;">Impossible si demandes en cours</span>
+      <span
+        v-if="hasNoDemand"
+        style="font-size: 10px !important; opacity: 0.6;"
+      >Une absence, un congé ?</span>
+      <span
+        v-else
+        style="font-size: 10px !important; opacity: 0.6;"
+      >Impossible si demandes en cours</span>
     </div>
-    <div class="my-10 rounded-xl bg-background pa-4 px-8 position-relative" :class="getVacation?.isOff ? 'offDay' : ''">
+    <div
+      class="my-10 rounded-xl bg-background pa-4 px-8 position-relative"
+      :class="getVacation?.isOff ? 'offDay' : ''"
+    >
       <div class="d-flex align-center  ga-3">
         <div class="pb-0 mb-0">
-          <span v-if="isRestDay" class="text-h6 font-weight-medium">Repos</span>
-          <span v-else class="text-h5 font-weight-medium" style="position: relative; top: 2px;">{{ getShiftName
+          <span
+            v-if="isRestDay"
+            class="text-h6 font-weight-medium"
+          >Repos</span>
+          <span
+            v-else
+            class="text-h5 font-weight-medium"
+            style="position: relative; top: 2px;"
+          >{{ getShiftName
           }}</span>
         </div>
         <div class="d-flex align-start flex-column justify-space-between">
           <div v-if="!isRestDay">
             <span class="text-caption font-weight-bold">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime
             }}</span>
-            <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-              style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+            <span
+              v-if="getShiftEndsNextDay"
+              class="text-caption font-weight-bold opacity-50 ml-1"
+              style="font-size: 10px !important; top: -2px; position: relative;"
+            >+1</span>
           </div>
-          <div v-if="!isRestDay && getShiftTeam" class="py-0 text-caption opacity-70"
-            style="margin-top: -8px; font-size: 11px !important;">
+          <div
+            v-if="!isRestDay && getShiftTeam"
+            class="py-0 text-caption opacity-70"
+            style="margin-top: -8px; font-size: 11px !important;"
+          >
             Dans l'équipe {{ getShiftTeam }}
           </div>
         </div>
-        <div v-if="getVacation?.shift?.variations?.length > 0 && !isRestDay" class="variation-badge align-self-start">
-          <v-icon size="10" class="text-caption font-weight-bold text-background">
+        <div
+          v-if="getVacation?.shift?.variations?.length > 0 && !isRestDay"
+          class="variation-badge align-self-start"
+        >
+          <v-icon
+            size="10"
+            class="text-caption font-weight-bold text-background"
+          >
             mdi-clock
           </v-icon>
           <span class="text-caption font-weight-bold text-background">?</span>
@@ -45,37 +87,66 @@
 
 
 
-      <div class="mr-4"
-        style=" position: absolute; right: 0px; top: 0px; height: 100%; display: flex; align-items: center; justify-content: center;">
-        <div v-if="getVacation?.isOff" class="d-flex align-center justify-center ga-2">
+      <div
+        class="mr-4"
+        style=" position: absolute; right: 0px; top: 0px; height: 100%; display: flex; align-items: center; justify-content: center;"
+      >
+        <div
+          v-if="getVacation?.isOff"
+          class="d-flex align-center justify-center ga-2"
+        >
           <span style="font-size: 10px !important; opacity: 0.6;">
             Absence
           </span>
-          <div v-if="getVacation?.isOff" class="small-pin off-pin">
-            <v-icon size="12" color="background">
+          <div
+            v-if="getVacation?.isOff"
+            class="small-pin off-pin"
+          >
+            <v-icon
+              size="12"
+              color="background"
+            >
               mdi-bag-carry-on
             </v-icon>
           </div>
         </div>
 
-        <div v-else-if="isRestDay" class="d-flex align-center justify-center ga-2">
+        <div
+          v-else-if="isRestDay"
+          class="d-flex align-center justify-center ga-2"
+        >
           <span style="font-size: 10px !important; opacity: 0.6;">
             Repos
           </span>
-          <div v-if="isRestDay" class="small-pin rest-pin">
-            <v-icon size="12" color="background">
+          <div
+            v-if="isRestDay"
+            class="small-pin rest-pin"
+          >
+            <v-icon
+              size="12"
+              color="background"
+            >
               mdi-sleep
             </v-icon>
           </div>
         </div>
 
 
-        <div v-else class="d-flex align-center justify-center ga-2">
+        <div
+          v-else
+          class="d-flex align-center justify-center ga-2"
+        >
           <span style="font-size: 10px !important; opacity: 0.6;">
             Travail
           </span>
-          <div v-if="!isRestDay" class="small-pin work-pin">
-            <v-icon size="12" color="background">
+          <div
+            v-if="!isRestDay"
+            class="small-pin work-pin"
+          >
+            <v-icon
+              size="12"
+              color="background"
+            >
               mdi-airport
             </v-icon>
           </div>
@@ -86,38 +157,64 @@
 
 
 
-      <div class="d-flex flex-column align-end justify-end position-absolute"
-        style="top:-24px !important  ; right:0px !important ;">
-        <ConfirmationChipExtended v-if="substitutionStore.hasAcceptedAsPoster(new Date(selectedDate).toISOString())"
-          :date="new Date(selectedDate)" />
-        <PendingChipExtended v-if="substitutionStore.hasOwnPendingDemand(new Date(selectedDate).toISOString())"
-          :date="new Date(selectedDate)" />
-        <AccepterChipExtended v-if="substitutionStore.hasAcceptedAsAccepter(new Date(selectedDate).toISOString())"
-          :date="new Date(selectedDate)" />
+      <div
+        class="d-flex flex-column align-end justify-end position-absolute"
+        style="top:-24px !important  ; right:0px !important ;"
+      >
+        <ConfirmationChipExtended
+          v-if="substitutionStore.hasAcceptedAsPoster(new Date(selectedDate).toISOString())"
+          :date="new Date(selectedDate)"
+        />
+        <PendingChipExtended
+          v-if="substitutionStore.hasOwnPendingDemand(new Date(selectedDate).toISOString())"
+          :date="new Date(selectedDate)"
+        />
+        <AccepterChipExtended
+          v-if="substitutionStore.hasAcceptedAsAccepter(new Date(selectedDate).toISOString())"
+          :date="new Date(selectedDate)"
+        />
       </div>
     </div>
 
 
 
 
-    <div v-if="isRestDay || isOff" class="d-flex align-center justify-center mb-4 mx-4">
+    <div
+      v-if="isRestDay || isOff"
+      class="d-flex align-center justify-center mb-4 mx-4"
+    >
       <span style="font-size: 10px !important; opacity: 0.6;">Impossible si absent ou repos</span>
     </div>
     <div
       v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)"
-      class="d-flex align-center ga-2 mb-8 px-4">
-      <v-btn height="36px" color="surfaceContainerHighest" text-color="permutation"
-        class="flex-grow-1 d-flex text-none text-subtitle-2" :disabled="isRestDay || inPast || isOff"
-        :class="{ 'opacity-10': isRestDay || inPast || isOff }" flat rounded="xl"
-        @click="$emit('openRemplaDialog', 'switch')">
+      class="d-flex align-center ga-2 mb-8 px-4"
+    >
+      <v-btn
+        height="36px"
+        color="surfaceContainerHighest"
+        text-color="permutation"
+        class="flex-grow-1 d-flex text-none text-subtitle-2"
+        :disabled="isRestDay || inPast || isOff"
+        :class="{ 'opacity-10': isRestDay || inPast || isOff }"
+        flat
+        rounded="xl"
+        @click="$emit('openRemplaDialog', 'switch')"
+      >
         <template #prepend>
           <v-icon>mdi-swap-horizontal-hidden</v-icon>
         </template>
         Permutation
       </v-btn>
-      <v-btn height="36px" color="surfaceContainerHighest" :disabled="isRestDay || inPast || isOff"
-        class="flex-grow-1 text-none text-subtitle-2" flat rounded="xl"
-        :class="{ 'opacity-10': isRestDay || inPast || isOff }" @click="$emit('openRemplaDialog', 'substitution')">
+      <v-btn
+        height="36px"
+        color="surfaceContainerHighest"
+        :disabled="isRestDay || inPast || isOff"
+        class="flex-grow-1 text-none text-subtitle-2"
+        flat
+        rounded="xl"
+        :class="{ 'opacity-10': isRestDay || inPast || isOff }"
+        @click="$emit('openRemplaDialog', 'substitution')"
+      >
         <template #prepend>
           <v-icon>mdi-account-arrow-left-outline</v-icon>
         </template>
@@ -125,36 +222,64 @@
       </v-btn>
     </div>
 
-    <div v-if="pendingDemand || acceptedAsPoster"
-      class="d-flex align-center justify-center mb-4 mx-4">
-      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast || isOff"
-        class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancel', substitutionId)">
+    <div
+      v-if="pendingDemand || acceptedAsPoster"
+      class="d-flex align-center justify-center mb-4 mx-4"
+    >
+      <v-btn
+        color="error"
+        height="48px"
+        variant="tonal"
+        :disabled="inPast || isOff"
+        class="flex-grow-1 d-flex flex-column rounded-xl text-none"
+        @click="$emit('cancel', substitutionId)"
+      >
         Annuler ma demande
       </v-btn>
     </div>
 
     
 
-    <div v-if="acceptedAsAccepter"
-      class="d-flex align-center justify-center mb-4 mx-4">
-      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast"
-        class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
-        @click="emit('withdraw', acceptedAsAccepter)">
+    <div
+      v-if="acceptedAsAccepter"
+      class="d-flex align-center justify-center mb-4 mx-4"
+    >
+      <v-btn
+        color="error"
+        height="48px"
+        variant="tonal"
+        :disabled="inPast"
+        class="flex-1-1 d-flex flex-column rounded-xl text-none"
+        rounded="lg"
+        @click="emit('withdraw', acceptedAsAccepter)"
+      >
         Se désister
       </v-btn>
     </div>
 
     <div class="d-flex  ga-1 mb-2">
       <div class="category-indicator">
-        <v-icon icon="mdi-account-arrow-left-outline" size="small" color="primary" />
+        <v-icon
+          icon="mdi-account-arrow-left-outline"
+          size="small"
+          color="primary"
+        />
         {{ availableSubstitutions.length }}
       </div>
       <div class="category-indicator">
-        <v-icon icon="mdi-swap-horizontal" size="small" color="primary" />
+        <v-icon
+          icon="mdi-swap-horizontal"
+          size="small"
+          color="primary"
+        />
         {{ availableSwitches.length }}
       </div>
       <div class="category-indicator">
-        <v-icon icon="mdi-close" size="small" color="error" />
+        <v-icon
+          icon="mdi-close"
+          size="small"
+          color="error"
+        />
         {{ otherDemands.length }}
       </div>
     </div>
@@ -164,8 +289,15 @@
         'opacity-10': availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0
       }"
       :disabled="availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0"
-      width="100%" flat rounded="xl" height="64px" color="background" append-icon="mdi-chevron-right"
-      class="justify-space-between d-flex align-center  text-subtitle-2" @click="$emit('openDrawer', 'substitutions')">
+      width="100%"
+      flat
+      rounded="xl"
+      height="64px"
+      color="background"
+      append-icon="mdi-chevron-right"
+      class="justify-space-between d-flex align-center  text-subtitle-2"
+      @click="$emit('openDrawer', 'substitutions')"
+    >
       <span v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0">
         Voir les demandes disponibles
       </span>
@@ -173,12 +305,10 @@
         Aucune demande disponible
       </span>
     </v-btn>
-
   </v-sheet>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';

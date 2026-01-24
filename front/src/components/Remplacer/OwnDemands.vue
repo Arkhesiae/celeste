@@ -1,16 +1,30 @@
 <template>
-  <FilterChipGroup v-model="ownFilter" :filters="ownFilterOptions" />
+  <FilterChipGroup
+    v-model="ownFilter"
+    :filters="ownFilterOptions"
+  />
 
 
   <div class="d-flex align-start flex-column justify-space-between mb-4">
     <v-fade-transition mode="out-in">
-      <v-card-title :key="currentTitle" class="text-h7 font-weight-medium  text-medium-emphasis pa-0 mb-0">
+      <v-card-title
+        :key="currentTitle"
+        class="text-h7 font-weight-medium  text-medium-emphasis pa-0 mb-0"
+      >
         {{ currentTitle }}
       </v-card-title>
     </v-fade-transition>
     <v-slide-x-transition mode="out-in">
-      <span :key="currentSubtitle" class="text-subtitle-2 text-disabled">
-        <v-icon icon="mdi-information-outline" color="primary" size="16" class="mr-2" />
+      <span
+        :key="currentSubtitle"
+        class="text-subtitle-2 text-disabled"
+      >
+        <v-icon
+          icon="mdi-information-outline"
+          color="primary"
+          size="16"
+          class="mr-2"
+        />
         {{ currentSubtitle }}
       </span>
     </v-slide-x-transition>
@@ -18,13 +32,33 @@
 
   <div class="mb-4 d-flex flex-column">
     <v-slide-x-transition mode="out-in">
-      <div v-if="demandList.length > 0 || emptyMessage" :key="ownFilter" class="pa-0">
-        <div v-if="demandList.length > 0" class="d-flex flex-column ga-2">
-          <OwnDemandCard v-for="demand in demandList" :key="demand.id" :is-poster="true" :demand="demand" :small="true"
-            @open-details="openDemandDetails" />
+      <div
+        v-if="demandList.length > 0 || emptyMessage"
+        :key="ownFilter"
+        class="pa-0"
+      >
+        <div
+          v-if="demandList.length > 0"
+          class="d-flex flex-column ga-2"
+        >
+          <OwnDemandCard
+            v-for="demand in demandList"
+            :key="demand.id"
+            :is-poster="true"
+            :demand="demand"
+            :small="true"
+            @open-details="openDemandDetails"
+          />
         </div>
-        <div v-else-if="emptyMessage" class="text-center py-4">
-          <v-icon icon="mdi-tray-remove" size="small" class="mb-2" />
+        <div
+          v-else-if="emptyMessage"
+          class="text-center py-4"
+        >
+          <v-icon
+            icon="mdi-tray-remove"
+            size="small"
+            class="mb-2"
+          />
           <div class="text-body-2 text-disabled">
             {{ emptyMessage }}
           </div>
@@ -35,7 +69,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue';
+
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 
 const substitutionStore = useSubstitutionStore();

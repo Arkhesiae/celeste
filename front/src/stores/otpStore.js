@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+
 import { useOtpService } from '@/services/otpService';
 
 export const useOtpStore = defineStore('otp', () => {
@@ -34,11 +34,11 @@ export const useOtpStore = defineStore('otp', () => {
 
       request.attempts++;
       const response = await otpService.verifyOtp(email, otp);
-      
+
       if (response.verified) {
         otpRequests.value.delete(email);
       }
-      
+
       return response.verified;
     } catch (error) {
       console.error('Erreur lors de la vérification de l\'OTP:', error);

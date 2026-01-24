@@ -27,8 +27,8 @@
 
 <script setup>
 
-import { useUserStore } from '@/stores/userStore'
-const userStore = useUserStore();
+// import { useUserStore } from '@/stores/userStore'
+// const userStore = useUserStore();
 
 const props = defineProps({
   user: {

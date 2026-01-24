@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+
 import { useOtpStore } from '@/stores/otpStore';
 
 const props = defineProps({

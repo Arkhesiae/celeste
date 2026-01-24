@@ -251,7 +251,7 @@
 import { useRouter } from 'vue-router';
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore.js";
-import { computed, onMounted, ref } from 'vue';
+
 import { useUserStore } from "@/stores/userStore.js";
 import { API_URL } from "@/config/api.js";
 import { usePointStore } from "@/stores/pointStore.js";
@@ -264,14 +264,14 @@ const authStore = useAuthStore();
 const pointStore = usePointStore();
 const userStore = useUserStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const isAdmin = computed(() => authStore.userData.isAdmin);
-const username = computed(() => authStore.userData.name);
-const usernameInitial = computed(() => username.value ? username.value.charAt(0).toUpperCase() : '');
-const theme = ref(false);
-const user = ref(null);
+// const isAdmin = computed(() => authStore.userData.isAdmin);
+// const username = computed(() => authStore.userData.name);
+// const usernameInitial = computed(() => username.value ? username.value.charAt(0).toUpperCase() : '');
+// const theme = ref(false);
+// const user = ref(null);
 const points = computed(() => pointStore.points);
 
-const props = defineProps({
+ defineProps({
   modelValue: {
     type: Boolean,
     required: true
@@ -283,21 +283,21 @@ const pendingUsersCount = computed(() => {
 });
 
 
-const safeAreaTop = computed(() => {
-  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top');
-});
+// const safeAreaTop = computed(() => {
+//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top');
+// });
 
-const safeAreaBottom = computed(() => {
-  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom');
-});
+// const safeAreaBottom = computed(() => {
+//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom');
+// });
 
-const safeAreaLeft = computed(() => {
-  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-left');
-});
+// const safeAreaLeft = computed(() => {
+//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-left');
+// });
 
-const safeAreaRight = computed(() => {
-  return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-right');
-});
+// const safeAreaRight = computed(() => {
+//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-right');
+// });
 
 const emit = defineEmits(['update:modelValue', 'update:theme']);
 
@@ -317,11 +317,11 @@ const menuItemsLoggedAdmin = [
   { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente', badgeCount: pendingUsersCount.value }
 ];
 
-const menuItems = [
-  // { key: 'about', label: 'A propos', path: '/about', title: 'A propos' },
-  // { key: 'news', label: 'Nouveautés', path: '/news', title: 'Nouveautés' },
-  { key: 'assistance', label: 'Assistance', path: '/assistance', title: 'Assistance' }
-];
+// const menuItems = [
+//   // { key: 'about', label: 'A propos', path: '/about', title: 'A propos' },
+//   // { key: 'news', label: 'Nouveautés', path: '/news', title: 'Nouveautés' },
+//   { key: 'assistance', label: 'Assistance', path: '/assistance', title: 'Assistance' }
+// ];
 
 const handleLogout = async () => {
   await authStore.logOut();

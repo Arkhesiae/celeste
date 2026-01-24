@@ -1,70 +1,32 @@
 <template>
   <v-dialog
-    v-model="localDialogVisible"
-    transition="scroll-x-reverse-transition"
-    max-width="500px"
-    :fullscreen="smAndDown"
-  >
-    <v-card
-      :rounded="smAndDown ? '' : 'xl'"
-      class="pa-0 pt-6"
-    >
+v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
+    :fullscreen="smAndDown">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           Modifier l'avatar
         </v-card-title>
-        <template
-          v-if="!smAndDown"
-          #append
-        >
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="close"
-          />
+        <template v-if="!smAndDown" #append>
+          <v-btn icon="mdi-close" variant="text" @click="close" />
         </template>
-        <template
-          v-else
-          #prepend
-        >
-          <v-btn
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="close"
-          />
+        <template v-else #prepend>
+          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
         </template>
         <span class="text-subtitle-2">Taille max : 10MB (une erreur ne permet pas la persistance pour le moment)</span>
       </v-card-item>
 
       <v-card-text class="px-6">
-        <v-form
-          ref="form"
-          v-model="valid"
-        >
+        <v-form ref="form" v-model="valid">
           <div class="d-flex flex-column py-6">
             <v-file-input
-              v-model="selectedFile"
-              accept="image/*"
-              label="Choisir une image"
-              prepend-icon="mdi-camera"
-              variant="solo-filled"
-              flat
-              color="primary"
-              rounded="xl"
-              bg-color="surface"
-              
-              @update:model-value="handleFileSelect"
-            />
+v-model="selectedFile" accept="image/*" label="Choisir une image" prepend-icon="mdi-camera"
+              variant="solo-filled" flat color="primary" rounded="xl" bg-color="surface"
+              @update:model-value="handleFileSelect" />
 
             <v-btn
-              v-if="previewUrl"
-              color="error"
-              height="48px"
-              variant="tonal"
-              rounded="xl"
-              class="mt-4"
-              @click="removeImage"
-            >
+v-if="previewUrl" color="error" height="48px" variant="tonal" rounded="xl" class="mt-4"
+              @click="removeImage">
               Supprimer l'image
             </v-btn>
           </div>
@@ -73,23 +35,12 @@
 
       <v-card-actions class="pa-6">
         <v-spacer />
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          :disabled="loading"
-          @click="close"
-        >
+        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
         <v-btn
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!valid || (!selectedFile && !previewUrl)"
-          @click="submit"
-        >
+color="primary" variant="tonal" rounded="xl" :loading="loading"
+          :disabled="!valid || (!selectedFile && !previewUrl)" @click="submit">
           Enregistrer
         </v-btn>
       </v-card-actions>
@@ -98,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
 import { useSnackbarStore } from '@/stores/snackbarStore'
@@ -163,4 +114,4 @@ const submit = async () => {
     loading.value = false
   }
 }
-</script>  
+</script>

@@ -1,11 +1,45 @@
 <template>
   <div>
-    <div class="position-fixed ma-2" style="bottom: 0; right: 0 ; z-index: 99">
-      <v-btn color="background" flat  class="mr-2 auto-login-btn" :class="{ 'selected': selectedRole === 'master' }" icon="mdi-star-four-points" @click="autoLogin('master')">Master</v-btn>
-      <v-btn color="background" flat class="mr-2 auto-login-btn" :class="{ 'selected': selectedRole === 'admin' }" icon="mdi-shield-crown-outline" @click="autoLogin('admin')">Local</v-btn>
-      <v-btn color="background" flat class="mr-2 auto-login-btn" :class="{ 'selected': selectedRole === 'user' }" icon="mdi-account-outline" @click="autoLogin('user')">User</v-btn>
+    <div
+      class="position-fixed ma-2"
+      style="bottom: 0; right: 0 ; z-index: 99"
+    >
+      <v-btn
+        color="background"
+        flat
+        class="mr-2 auto-login-btn"
+        :class="{ 'selected': selectedRole === 'master' }"
+        icon="mdi-star-four-points"
+        @click="autoLogin('master')"
+      >
+        Master
+      </v-btn>
+      <v-btn
+        color="background"
+        flat
+        class="mr-2 auto-login-btn"
+        :class="{ 'selected': selectedRole === 'admin' }"
+        icon="mdi-shield-crown-outline"
+        @click="autoLogin('admin')"
+      >
+        Local
+      </v-btn>
+      <v-btn
+        color="background"
+        flat
+        class="mr-2 auto-login-btn"
+        :class="{ 'selected': selectedRole === 'user' }"
+        icon="mdi-account-outline"
+        @click="autoLogin('user')"
+      >
+        User
+      </v-btn>
       <!-- <v-btn  class="mr-2 auto-login-btn" icon="mdi-account-multiple" @click="showTeamUsers = !showTeamUsers">Team Users</v-btn> -->
-      <v-btn  icon="mdi-logout" color="error" @click="handleLogout"></v-btn>
+      <v-btn
+        icon="mdi-logout"
+        color="error"
+        @click="handleLogout"
+      />
 
       <!-- Menu des utilisateurs d'équipe -->
       <!-- <v-menu
@@ -57,11 +91,11 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/authStore.js";
-import { useAppInitialization } from '@/composables/useAppInitialization';
+// import { useAppInitialization } from '@/composables/useAppInitialization';
 
 const authStore = useAuthStore();
 const router = useRouter();
-const { initializeApp } = useAppInitialization();
+// const { initializeApp } = useAppInitialization();
 const adminEmail = import.meta.env.VITE_ADMIN_MAIL;
 const adminPassword = import.meta.env.VITE_ADMIN_PASS;
 

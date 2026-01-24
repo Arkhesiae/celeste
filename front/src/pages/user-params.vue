@@ -310,10 +310,9 @@
 <script setup>
 
 
-import { useRouter } from 'vue-router'
 import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 
 import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -350,7 +349,6 @@ const emailOptions = ref([
   },
 ])
 
-const router = useRouter()
 const theme = useTheme()
 const authStore = useAuthStore()
 

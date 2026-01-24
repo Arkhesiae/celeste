@@ -344,13 +344,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { useAuthStore } from "@/stores/authStore.js";
+
+// import { useAuthStore } from "@/stores/authStore.js";
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useRouter } from 'vue-router';
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 
-const authStore = useAuthStore();
+// const authStore = useAuthStore();
 const router = useRouter();
 const centerStore = useCenterStore();
 const snackbarStore = useSnackbarStore();
@@ -359,9 +359,9 @@ const centers = computed(() => centerStore.centers);
 const adminsByCenter = computed(() => centerStore.adminsByCenter);
 const usersCountByCenter = computed(() => centerStore.usersCountByCenter);
 
-const isAdmin = computed(() => authStore.userData.isAdmin);
+// const isAdmin = computed(() => authStore.userData.isAdmin);
 const sortBy = ref('');
-const sortDirection = ref('asc');
+// const sortDirection = ref('asc');
 
 const selectedFilter = ref('all');
 

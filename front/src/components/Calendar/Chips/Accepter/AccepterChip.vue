@@ -1,8 +1,16 @@
 <template>
-  <v-chip rounded="lg" color="primary" variant="flat" size="x-small"
+  <v-chip
+    rounded="lg"
+    color="primary"
+    variant="flat"
+    size="x-small"
     style="bottom: -10px; opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-primary), 0.4);"
-    class="text-caption font-weight-bold position-absolute px-2 overflow-visible">
-    <v-icon v-if="findAcceptedAsAccepter.length > 1" color="error">
+    class="text-caption font-weight-bold position-absolute px-2 overflow-visible"
+  >
+    <v-icon
+      v-if="findAcceptedAsAccepter.length > 1"
+      color="error"
+    >
       mdi-alert-circle-outline
     </v-icon>
     <v-icon color="background">
@@ -20,7 +28,6 @@
 
 
 <script setup>
-import { computed } from 'vue';
 import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 
@@ -29,7 +36,7 @@ const substitutionStore = useSubstitutionStore();
 
 const props = defineProps({
   date: { type: Date, required: true },
-  text: { type: String },
+  text: { type: String, default: '' },
 
 });
 

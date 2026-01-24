@@ -101,14 +101,14 @@
 
 <script setup>
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useShiftStore } from '@/stores/shiftStore';
-import { computed } from 'vue';
+// import { useShiftStore } from '@/stores/shiftStore';
+
 
 // Les composants de chips sont disponibles globalement
 // PendingChip, AccepterChip, ConfirmationChip
 
 const substitutionStore = useSubstitutionStore();
-const shiftStore = useShiftStore();
+// const shiftStore = useShiftStore();
 
 const props = defineProps({
   daysOfWeek: Array,

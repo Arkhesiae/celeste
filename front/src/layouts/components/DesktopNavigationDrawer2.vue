@@ -135,9 +135,7 @@
 import { useRouter } from 'vue-router';
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore.js";
-import { computed, ref } from 'vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useNotificationStore } from '@/stores/notificationStore';
 import { useUserStore } from '@/stores/userStore';
 
 const userStore = useUserStore();

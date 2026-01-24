@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+
 import { teamService } from '@/services/teamService';
 import { userService } from '@/services/userService';
 
@@ -84,7 +84,7 @@ export const useTeamStore = defineStore('team', () => {
       currentTeam.value = await userService.fetchCurrentTeamOfUser(userId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération de l\'équipe actuelle';
-      
+
     } finally {
       loading.value = false;
     }
@@ -213,7 +213,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       await teamService.updateTeamCycleStartDate(teamId, cycleStartDate);
       await fetchCenterTeams(currentCenter.value);
-    } catch (err) { 
+    } catch (err) {
       console.error('Erreur lors de la mise à jour de la date de début de cycle:', err);
       error.value = err.message || 'Erreur lors de la mise à jour de la date de début de cycle';
       throw err;
@@ -249,7 +249,7 @@ export const useTeamStore = defineStore('team', () => {
     teamOccurrences,
     loading,
     error,
-   
+
     // Actions
     fetchCenterTeams,
     fetchAllTeams,

@@ -1,9 +1,9 @@
 <script setup>
-import { ref, computed } from 'vue';
+;
 import { useDisplay } from 'vuetify';
 import DayDetail from '../Common/DayDetail.vue';
 
-const props = defineProps({
+defineProps({
   days: {
     type: Array,
     required: true
@@ -20,7 +20,7 @@ const props = defineProps({
 
 const emit = defineEmits(['onDeleteDay', 'onUpdateDay', 'onEditDay']);
 
-const { smAndDown, mdAndDown } = useDisplay();
+const { smAndDown } = useDisplay();
 const showDetailsDialog = ref(false);
 const selectedDay = ref(null);
 const selectedDayIndex = ref(null);
@@ -57,31 +57,20 @@ const handleUpdate = (updatedDay) => {
   showDetailsDialog.value = false;
 };
 
-const updateDay = (day) => {
-  updatedDay.value = day;
-  emit('update:day', day);
-};
+// const updateDay = (day) => {
+//   updatedDay.value = day;
+//   emit('update:day', day);
+// };
 </script>
 
 <template>
   <div class="workshift-summary">
     <v-expand-transition>
       <div
-        v-if="isExpanded"
-        :style="smAndDown ? '' : 'max-height: 400px; overflow-y: auto;  overflow-x: hidden '"
-        class="hide-scrollbar"
-      >
-        <div
-          v-for="(day, index) in days"
-          :key="index"
-        >
-          <v-card
-            height="64px" 
-            class="day-card pa-0 d-flex "
-            color="background"
-            flat
-            @click="openDetails(day, index)"
-          >
+v-if="isExpanded" :style="smAndDown ? '' : 'max-height: 400px; overflow-y: auto;  overflow-x: hidden '"
+        class="hide-scrollbar">
+        <div v-for="(day, index) in days" :key="index">
+          <v-card height="64px" class="day-card pa-0 d-flex " color="background" flat @click="openDetails(day, index)">
             <v-card-item class="my-0 flex-grow-1 py-0 align-center d-flex justify-space-between">
               <div class="d-flex align-center">
                 <div class="d-flex flex-column justify-center align-start ">
@@ -93,59 +82,34 @@ const updateDay = (day) => {
                       {{ day.name }}
                     </div>
                     <v-chip
-                      v-if="day.optional"
-                      color="surfaceContainer"
-                      size="x-small"
-                      variant="flat"
-                      rounded="lg"
-                      flat
-                    >
+v-if="day.optional" color="surfaceContainer" size="x-small" variant="flat" rounded="lg"
+                      flat>
                       <div class="d-flex align-center ga-2">
                         <span class="text-caption text-onSurface">Option</span>
-                        <v-icon
-                          size="small"
-                          icon="mdi-plus-box-outline"
-                          class="text-onSurface"
-                        />
+                        <v-icon size="small" icon="mdi-plus-box-outline" class="text-onSurface" />
                       </div>
                     </v-chip>
                   </div>
                   <v-card-subtitle v-if="day.type !== 'rest'">
                     {{ day?.default?.startTime || '--:--' }} - {{ day?.default?.endTime || '--:--' }}<span
-                      v-if="day?.default?.endsNextDay"
-                      class="ml-1 0"
-                      style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;"
-                    >+1</span>
+                      v-if="day?.default?.endsNextDay" class="ml-1 0"
+                      style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
                   </v-card-subtitle>
                 </div>
               </div>
 
               <template #append>
                 <div class="ml-2 ga-1 d-flex align-start">
-                  <v-chip 
-                    v-for="(variant) in day[variantKey(day)]"
-                    v-if="day[variantKey(day)]?.length > 0"
-                    color="secondary"
-                    variant="flat"
-                    rounded="xl"
-                    class=""
-                    size="x-small"
-                  >
+                  <v-chip
+v-for="(variant) in day[variantKey(day)]" v-if="day[variantKey(day)]?.length > 0"
+                    color="secondary" variant="flat" rounded="xl" class="" size="x-small">
                     <span class="text-caption">{{ day.name + ' ' + variant.name }}</span>
                   </v-chip>
                 </div>
                 <v-chip
-                  v-if="day.type === 'rest'"
-                  :color="day.type === 'rest' ? 'secondary' : 'primary'"
-                  size="x-small"
-                  rounded="lg"
-                  variant="elevated"
-                >
-                  <v-icon
-                    v-if="day.type === 'rest'"
-                    size="small"
-                    icon="mdi-sleep"
-                  />
+v-if="day.type === 'rest'" :color="day.type === 'rest' ? 'secondary' : 'primary'" size="x-small"
+                  rounded="lg" variant="elevated">
+                  <v-icon v-if="day.type === 'rest'" size="small" icon="mdi-sleep" />
                 </v-chip>
               </template>
             </v-card-item>
@@ -155,40 +119,17 @@ const updateDay = (day) => {
     </v-expand-transition>
 
     <!-- Desktop Dialog -->
-    <v-dialog
-      v-if="!smAndDown"
-      v-model="showDetailsDialog"
-      max-width="400"
-      style="z-index: 3150 !important;"
-    >
+    <v-dialog v-if="!smAndDown" v-model="showDetailsDialog" max-width="400" style="z-index: 3150 !important;">
       <DayDetail
-        rounded="xl"
-        :day="selectedDay"
-        :is-mobile="smAndDown"
-        :deletable="true"
-        @close="showDetailsDialog = false"
-        @on-delete="handleDelete"
-        @on-edit="handleEdit"
-        @on-update="handleUpdate"
-      />
+rounded="xl" :day="selectedDay" :is-mobile="smAndDown" :deletable="true"
+        @close="showDetailsDialog = false" @on-delete="handleDelete" @on-edit="handleEdit" @on-update="handleUpdate" />
     </v-dialog>
 
     <!-- Mobile Bottom Sheet -->
-    <v-bottom-sheet
-      v-if="smAndDown"
-      v-model="showDetailsDialog"
-      style="z-index: 3150 !important;"
-    >
+    <v-bottom-sheet v-if="smAndDown" v-model="showDetailsDialog" style="z-index: 3150 !important;">
       <DayDetail
-        :is-mobile="smAndDown"
-        :day="selectedDay"
-        :deletable="true"
-        :variants="variants"
-        @close="showDetailsDialog = false"
-        @on-delete="handleDelete"
-        @on-edit="handleEdit"
-        @on-update="handleUpdate"
-      />
+:is-mobile="smAndDown" :day="selectedDay" :deletable="true" :variants="variants"
+        @close="showDetailsDialog = false" @on-delete="handleDelete" @on-edit="handleEdit" @on-update="handleUpdate" />
     </v-bottom-sheet>
   </div>
 </template>
@@ -202,4 +143,4 @@ const updateDay = (day) => {
 .day-card:hover {
   transform: translateY(-2px);
 }
-</style> 
+</style>

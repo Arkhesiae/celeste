@@ -1,9 +1,10 @@
 <template>
   <v-dialog
-    v-model="dialogVisible"
+    :model-value="modelValue"
     max-width="1200px"
     persistent
     :fullscreen="smAndDown"
+    @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card
       :rounded="smAndDown ? '0' : 'xl'"
@@ -209,7 +210,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+
 import { useDisplay } from 'vuetify'
 
 const { smAndDown } = useDisplay()
@@ -223,13 +224,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue'])
 
-const dialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
-})
-
 const closeDialog = () => {
-  dialogVisible.value = false
+  emit('update:modelValue', false)
 }
 
 // Règles de base avec propriété computed

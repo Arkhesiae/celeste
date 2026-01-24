@@ -1,21 +1,14 @@
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 
 const userStore = useUserStore();
-const teamStore = useTeamStore();
 const substitutionStore = useSubstitutionStore();
-const authStore = useAuthStore();
 const props = defineProps({
   date : { type: Date, required: true },
   text: { type: String },
 
 });
-
-const type = ref('');
 
 
 
@@ -27,9 +20,9 @@ const teamName = computed(() => {
   return findAcceptedAsAccepter.value?.posterShift?.teamId?.name;
 });
 
-const shiftType = computed(() => {
-  return findAcceptedAsAccepter.value?.type;
-});
+// const shiftType = computed(() => {
+//   return findAcceptedAsAccepter.value?.type;
+// });
 
 const userName = computed(() => {
   return userStore.users.find(user => user._id === findAcceptedAsAccepter.value?.posterId)?.name + ' ' + userStore.users.find(user => user._id === findAcceptedAsAccepter.value?.posterId)?.lastName;

@@ -1,12 +1,8 @@
 <template>
-
   <v-container>
-    <main-title title="Règles de l'application">
-
-    </main-title>
+    <main-title title="Règles de l'application" />
     <v-row>
       <v-col cols="12">
-
         <!-- <v-alert
               v-if="error"
               type="error"
@@ -32,25 +28,23 @@
               />
               {{ success }}
             </v-alert> -->
-        <v-card :rounded="smAndDown ? '0' : 'xl'" flat
+        <v-card
+:rounded="smAndDown ? '0' : 'xl'" flat
           :color="smAndDown ? 'transparent' : 'surfaceContainer px-6 py-4'">
-
-
           <div class="d-flex flex-column align-start ga-0">
-
-
             <div v-for="(rule, index) in rules" :key="index" class="w-100  " @click.stop="startEditing(rule)">
               <div class="d-flex align-center justify-space-between py-3">
                 <div class="d-flex align-start   ga-3">
-
-
                   <div class="d-flex  flex-column align-start">
                     <div class="d-flex align-center ga-1">
                       <span style="font-size: 12px; font-weight: bold;" :class="rule.locked ? 'opacity-50' : ''">{{
                         rule.name }}</span>
-                      <v-icon icon="mdi-lock-outline" size="x-small" color="error" v-if="rule.locked"></v-icon>
-                      <v-chip v-if="rule.isOverridden" color="primary" size="small" density="compact" rounded="xl"
-                        variant="tonal" inset>Modifiée</v-chip>
+                      <v-icon v-if="rule.locked" icon="mdi-lock-outline" size="x-small" color="error" />
+                      <v-chip
+v-if="rule.isOverridden" color="primary" size="small" density="compact" rounded="xl"
+                        variant="tonal" inset>
+                        Modifiée
+                      </v-chip>
                     </div>
 
 
@@ -58,33 +52,28 @@
                   </div>
                   <div class="d-flex ga-2 mt-1">
                     <!-- <v-chip v-if="rule.locked" color="error" size="small" density="compact" rounded="xl" variant="tonal" inset>Verrouillée</v-chip> -->
-
                   </div>
                 </div>
 
                 <div class="d-flex align-center ga-3">
-
-
                   <div>
-                    <v-switch :class="smAndDown ? '' : 'custom-switch'" v-if="typeof (rule.value) === 'boolean'"
-                      hide-details :disabled="rule.locked && !isMasterAdmin"
-                      :color="rule.locked ? 'primary' : 'primary'" density="compact" inset
-                      v-model="rule.value"></v-switch>
+                    <v-switch
+v-if="typeof (rule.value) === 'boolean'" v-model="rule.value"
+                      :class="smAndDown ? '' : 'custom-switch'" hide-details :disabled="rule.locked && !isMasterAdmin"
+                      :color="rule.locked ? 'primary' : 'primary'" density="compact" inset />
                     <span v-else style="font-size: 14px; font-weight: bold;">{{ rule.value }}</span>
-
-
                   </div>
-                  <v-btn v-if="rule.isOverridden && !isMasterAdmin" @click.stop="resetRule(rule)" icon="mdi-refresh"
-                    size="small" variant="text" inset></v-btn>
-                  <v-btn v-if="isMasterAdmin" @click.stop="lockRule(rule)" :color="rule.locked ? 'primary' : 'primary'"
+                  <v-btn
+v-if="rule.isOverridden && !isMasterAdmin" icon="mdi-refresh" size="small" variant="text" inset
+                    @click.stop="resetRule(rule)" />
+                  <v-btn
+v-if="isMasterAdmin" :color="rule.locked ? 'primary' : 'primary'"
                     :icon="rule.locked ? 'mdi-lock-outline' : 'mdi-lock-open-variant-outline'" size="small"
-                    variant="text" inset></v-btn>
+                    variant="text" inset @click.stop="lockRule(rule)" />
                 </div>
               </div>
-              <v-divider v-if="index < rules.length - 1"></v-divider>
-
+              <v-divider v-if="index < rules.length - 1" />
             </div>
-
           </div>
         </v-card>
       </v-col>
@@ -95,12 +84,17 @@
         <span class="text-h6">{{ ruleToEdit.name }}</span>
         <span class="opacity-50">Définir une nouvelle valeur pour cette règle ?</span>
 
-        <v-number-input class="my-4" type="number" control-variant="split" rounded="xl" flat hide-details
-          color="primary" size="small" variant="underlined" inset v-model="ruleToEdit.value"></v-number-input>
+        <v-number-input
+v-model="ruleToEdit.value" class="my-4" type="number" control-variant="split" rounded="xl" flat
+          hide-details color="primary" size="small" variant="underlined" inset />
         <div class="d-flex align-center justify-space-between mt-4">
-          <v-spacer></v-spacer>
-          <v-btn color="primary" variant="text" @click="isEditing = false">Annuler</v-btn>
-          <v-btn color="primary" variant="text" @click="updateRuleDialog">Confirmer</v-btn>
+          <v-spacer />
+          <v-btn color="primary" variant="text" @click="isEditing = false">
+            Annuler
+          </v-btn>
+          <v-btn color="primary" variant="text" @click="updateRuleDialog">
+            Confirmer
+          </v-btn>
         </div>
       </v-card>
     </v-dialog>
@@ -111,29 +105,28 @@
         <span>{{ ruleToEdit?.locked ? 'Voulez-vous déverrouiller cette règle ?' : 'Voulez-vous verrouiller cette règle?'
         }}</span>
         <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" variant="text" @click="confirmLock = false">Annuler</v-btn>
-          <v-btn color="primary" variant="text" @click="handleLockAction">Confirmer</v-btn>
+          <v-spacer />
+          <v-btn color="primary" variant="text" @click="confirmLock = false">
+            Annuler
+          </v-btn>
+          <v-btn color="primary" variant="text" @click="handleLockAction">
+            Confirmer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-
   </v-container>
-
-
-
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import { ruleService } from '@/services/ruleService';
 import MainTitle from '@/components/common/Titles/MainTitle.vue';
 import { useDisplay } from 'vuetify';
-import { computed } from 'vue';
+
 
 defineOptions({
   name: 'AdminRules',
@@ -145,7 +138,7 @@ defineOptions({
   }
 });
 
-const router = useRouter();
+// const router = useRouter();
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
 
@@ -154,35 +147,35 @@ const rules = ref([]);
 const ruleToEdit = ref(null);
 const error = ref('');
 const success = ref('');
-const isInitializing = ref(false);
+// const isInitializing = ref(false);
 const confirmLock = ref(false);
 const isEditing = ref(false);
 const isSaving = ref(false);
 const isResetting = ref(false);
-const showResetConfirmation = ref(false);
+// const showResetConfirmation = ref(false);
 const centerId = computed(() =>
   authStore.userData.adminType === 'master' ? null : authStore.userData.centerId);
 
-const formatRuleName = (name) => {
-  return name
-    .split('_')
-    .map(word => word.charAt(0) + word.slice(1).toLowerCase())
-    .join(' ');
-};
+// const formatRuleName = (name) => {
+//   return name
+//     .split('_')
+//     .map(word => word.charAt(0) + word.slice(1).toLowerCase())
+//     .join(' ');
+// };
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
+// const formatDate = (date) => {
+//   return new Date(date).toLocaleDateString('fr-FR', {
+//     day: '2-digit',
+//     month: '2-digit',
+//     year: 'numeric',
+//     hour: '2-digit',
+//     minute: '2-digit'
+//   });
+// };
 
-const getRuleType = (rule) => {
-  return rule.type || 'text';
-};
+// const getRuleType = (rule) => {
+//   return rule.type || 'text';
+// };
 
 const fetchRules = async () => {
   try {

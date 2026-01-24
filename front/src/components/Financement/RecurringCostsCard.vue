@@ -103,7 +103,7 @@
 <script setup>
 import { useFundingStore } from '@/stores/financementStore';
 import { useStatStore } from '@/stores/statStore';
-import { computed } from 'vue';
+
 
 const costPercentage = computed(()=>(cout, totalAnnualCosts) => {
   if (!cout || !totalAnnualCosts) return 0;

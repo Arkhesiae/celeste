@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, onUnmounted } from 'vue';
+
 import { useDate } from 'vuetify';
 import { API_URL } from '@/config/api';
 import LogoCopy from '@/components/Assets/LogoCopy.vue';
@@ -222,8 +222,8 @@ const timeSinceCreation = ref('');
 const showUserDialogModal = ref(false);
 const selectedUserData = ref(null);
 
-const posterUpdated = computed(() => props.demand?.posterId);
-const accepterUpdated = computed(() => props.demand?.accepterId);
+// const posterUpdated = computed(() => props.demand?.posterId);
+// const accepterUpdated = computed(() => props.demand?.accepterId);
 
 // Extraire les données des utilisateurs depuis le demand
 const posterData = computed(() => {
@@ -256,12 +256,12 @@ const typeIcon = computed(() => {
 
 const getTypeName = (type) => {
   return type;
-  const types = {
-    'substitution': 'Remplacement',
-    'switch': 'Permutation',
-    'hybrid': 'Hybride'
-  };
-  return types[type] || type.charAt(0).toUpperCase() + type.slice(1);
+  // const types = {
+  //   'substitution': 'Remplacement',
+  //   'switch': 'Permutation',
+  //   'hybrid': 'Hybride'
+  // };
+  // return types[type] || type.charAt(0).toUpperCase() + type.slice(1);
 };
 
 const typeColor = computed(() => {

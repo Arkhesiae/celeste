@@ -49,22 +49,40 @@
       </v-chip>
     </v-badge>
     <div v-if="!smAndDown">
-    <!-- Bouton règles -->
+      <!-- Bouton règles -->
      
-    <v-btn v-if="isAdmin" icon variant="text" color="onBackground" class="text-body-2"
-      @click="$emit('navigate-rules')">
-      <v-icon size="small">mdi-server-security</v-icon>
-    </v-btn>
+      <v-btn
+        v-if="isAdmin"
+        icon
+        variant="text"
+        color="onBackground"
+        class="text-body-2"
+        @click="$emit('navigate-rules')"
+      >
+        <v-icon size="small">
+          mdi-server-security
+        </v-icon>
+      </v-btn>
 
-    <!-- Lien vers les tickets pour admin master -->
-    <v-btn v-if="isAdmin" icon @click="$emit('navigate-tickets')">
-      <v-badge rounded="lg" offset-x="10" offset-y="28" :content="messageCount" :model-value="messageCount > 0"
-        color="pending">
-
-        <v-icon size="small">mdi-account-question-outline</v-icon>
-      </v-badge>
-    </v-btn>
-   
+      <!-- Lien vers les tickets pour admin master -->
+      <v-btn
+        v-if="isAdmin"
+        icon
+        @click="$emit('navigate-tickets')"
+      >
+        <v-badge
+          rounded="lg"
+          offset-x="10"
+          offset-y="28"
+          :content="messageCount"
+          :model-value="messageCount > 0"
+          color="pending"
+        >
+          <v-icon size="small">
+            mdi-account-question-outline
+          </v-icon>
+        </v-badge>
+      </v-btn>
     </div>
   </div>
 </template>

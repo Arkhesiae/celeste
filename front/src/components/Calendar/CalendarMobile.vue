@@ -109,7 +109,7 @@
 <script setup>
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
-import { computed } from 'vue';
+
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useDisplay } from 'vuetify';
 
@@ -181,7 +181,7 @@ const getShiftName = (date) => {
   return shift ? shift.name : '';
 };
 
-const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
+// const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
 
 const inPast = (date) => {
   return date < new Date();

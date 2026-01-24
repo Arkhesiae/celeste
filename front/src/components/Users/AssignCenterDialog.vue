@@ -1,40 +1,19 @@
 <template>
-  <v-dialog
-    :model-value="dialogVisible"
-    max-width="500"
-    @update:model-value="$emit('update:dialogVisible', $event)"
-  >
-    <v-card
-      class="pa-6"
-      rounded="xl"
-    >
+  <v-dialog :model-value="dialogVisible" max-width="500" @update:model-value="$emit('update:dialogVisible', $event)">
+    <v-card class="pa-6" rounded="xl">
       <v-card-title class="pa-0 ma-0 mb-4">
         Changement de centre
       </v-card-title>
       <v-card-text class="pa-0 ma-0">
         <v-select
-          v-model="selectedCenter"
-          rounded="lg"
-          :items="centers"
-          :reduce="center => center._id"
-          item-title="name"
-          item-value="_id"
-          variant="outlined"
-          label="Sélectionner un centre"
-          dense
-        />
+v-model="selectedCenter" rounded="lg" :items="centers" :reduce="center => center._id"
+          item-title="name" item-value="_id" variant="outlined" label="Sélectionner un centre" dense />
       </v-card-text>
       <v-card-actions class="pa-0 ma-0">
-        <v-btn
-          text
-          @click="$emit('update:dialogVisible', false)"
-        >
+        <v-btn text @click="$emit('update:dialogVisible', false)">
           Annuler
         </v-btn>
-        <v-btn
-          text
-          @click="handleAssignCenter"
-        >
+        <v-btn text @click="handleAssignCenter">
           Assigner
         </v-btn>
       </v-card-actions>
@@ -43,7 +22,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+
 import { useCenterStore } from '@/stores/centerStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useUserStore } from '@/stores/userStore';
@@ -91,4 +70,4 @@ const handleAssignCenter = async () => {
     snackbarStore.showNotification('Erreur lors de l\'assignation du centre', 'onError', 'mdi-alert-circle');
   }
 };
-</script> 
+</script>

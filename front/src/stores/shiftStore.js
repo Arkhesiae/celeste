@@ -1,4 +1,4 @@
-import { ref, computed, watch, reactive } from 'vue';
+;
 import { defineStore } from 'pinia';
 import { vacationService } from '@/services/vacationService';
 import { useAuthStore } from '@/stores/authStore';
@@ -38,7 +38,7 @@ export const useShiftStore = defineStore('shift', () => {
   * @param {string} dateKey - La clé de date (YYYY-MM-DD)
   * @param {object} newValue - L'objet shift à insérer
   */
-  const setEntryWithDetection = (dateKey, newValue, callback) => {
+  const setEntryWithDetection = (dateKey, newValue) => {
     const map = persistentVacationsMap.value;
 
     if (map.has(dateKey)) {
@@ -76,10 +76,10 @@ export const useShiftStore = defineStore('shift', () => {
 
     let start = null;
     let end = null;
-    let startTime = shift?.default?.startTime ;
-    let endTime = shift?.default?.endTime ;
+    let startTime = shift?.default?.startTime;
+    let endTime = shift?.default?.endTime;
     if (shift && shift.type !== 'rest') {
-      if (!date || !shift || !startTime || !endTime ) {
+      if (!date || !shift || !startTime || !endTime) {
         return;
       }
 
@@ -154,7 +154,7 @@ export const useShiftStore = defineStore('shift', () => {
       const newShifts = await vacationService.fetchVacationsOfUser(userId.value, dates);
       newShifts.forEach((shiftData) => {
         addEntry(shiftData);
-      }); 
+      });
 
       shiftsWithSubstitutions.value = newShifts;
 

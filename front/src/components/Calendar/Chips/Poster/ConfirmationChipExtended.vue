@@ -1,14 +1,10 @@
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
-import { API_URL } from '@/config/api';
 
-const teamStore = useTeamStore();
+
 const substitutionStore = useSubstitutionStore();
-const authStore = useAuthStore();
+// const authStore = useAuthStore();
 const userStore = useUserStore();
 const props = defineProps({
   date : { type: Date, required: true },

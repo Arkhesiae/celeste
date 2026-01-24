@@ -224,16 +224,16 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { useTicketStore } from '@/stores/ticketStore';
-import { useSnackbarStore } from '@/stores/snackbarStore';
+// import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useDisplay } from 'vuetify';
-import StatusChip from './StatusChip.vue';
-import EmailButton from './EmailButton.vue';
-import ReplyDialog from './ReplyDialog.vue';
+// import StatusChip from './StatusChip.vue';
+// import EmailButton from './EmailButton.vue';
+// import ReplyDialog from './ReplyDialog.vue';
 
 const { smAndDown } = useDisplay();
 
 const ticketStore = useTicketStore();
-const snackbarStore = useSnackbarStore();
+// const snackbarStore = useSnackbarStore();
 
 const showReplyDialog = ref(false);
 

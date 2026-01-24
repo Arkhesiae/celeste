@@ -1,9 +1,16 @@
 <template>
   <v-container>
-    <SimpleTitle title="Disponibles" back-button subtitle="Consulter les demandes disponibles" />
+    <SimpleTitle
+      title="Disponibles"
+      back-button
+      subtitle="Consulter les demandes disponibles"
+    />
     <div class="mt-16">
-      <AvailableDemands @handle-replacement="handleReplacement" @handle-switch="handleSwitch"
-        @open-details="openDemand" />
+      <AvailableDemands
+        @handle-replacement="handleReplacement"
+        @handle-switch="handleSwitch"
+        @open-details="openDemand"
+      />
     </div>
 
     <DemandDependencies ref="demandDeps" />

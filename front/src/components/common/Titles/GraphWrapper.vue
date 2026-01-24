@@ -4,7 +4,7 @@
 
 <script setup>
 import { substitutionService } from '@/services/substitutionService';
-import { ref, onMounted } from 'vue';
+
 
 const props = defineProps({
     demand: {
@@ -20,7 +20,7 @@ const generateDaysData = (shiftsArray) => {
     if (!props.demand?.posterShift?.date) return []
 
     const demandDate = new Date(props.demand.posterShift.date)
-    
+
 
     // Helper function to match parseShiftTime logic
     const parseTimeUTC = (date, time, endsNextDay = false) => {

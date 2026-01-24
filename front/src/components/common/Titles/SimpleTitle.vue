@@ -32,12 +32,10 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, reactive, nextTick, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const { smAndDown } = useDisplay()
-const { mdAndUp } = useDisplay()  
 const router = useRouter()
 
 const props = defineProps({
@@ -58,13 +56,13 @@ const props = defineProps({
 
 const titleFontSize = computed(() => {
   const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-h5/text-h4
-  const minSize = smAndDown.value ? 10 : 10
+  // const minSize = smAndDown.value ? 10 : 10
   return baseSize
 })
 
 const subtitleFontSize = computed(() => {
   const baseSize = smAndDown.value ? 10 : 12
-  const minSize = smAndDown.value ? 8 : 8
+  // const minSize = smAndDown.value ? 8 : 8
   return baseSize
 })
 

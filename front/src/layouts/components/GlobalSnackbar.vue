@@ -24,9 +24,10 @@
 import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const snackbarStore = useSnackbarStore();
-const safeAreaTop = computed(() => {
-  return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top').replace('px', '')
-})
+
+// const safeAreaTop = computed(() => {
+//   return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top').replace('px', '')
+// })
 
 
 

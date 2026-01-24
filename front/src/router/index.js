@@ -1,9 +1,9 @@
 // router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import { routes, handleHotUpdate } from 'vue-router/auto-routes'
+import { routes } from 'vue-router/auto-routes'
 import { useAuthStore } from '@/stores/authStore.js';
 import { useInitializationStore } from '@/stores/initializationStore';
-import { useAppInitialization } from '@/composables/useAppInitialization';
+// import { useAppInitialization } from '@/composables/useAppInitialization';
 import { setupLayouts } from 'virtual:generated-layouts'
 
 
@@ -39,22 +39,22 @@ const noAuth = ['/login', '/(account-creation)/creation', '/landing', '/(account
 const both = ['/contact-admin', '/loading']
 
 // Configuration des transitions
-const transitionConfigs = {
-  parameter: {
-    forward: 'slide-lefty',
-    backward: 'slide-righty'
-  },
-  auth: {
-    routes: ['/login', '/(account-creation)/creation'],
-    forward: 'slide-left',
-    backward: 'slide-right'
-  },
-  teams: {
-    routes: ['/center/centers', '/center/[centerId]/teams'],
-    forward: 'slide-lefty',
-    backward: 'slide-righty'
-  }
-};
+// const transitionConfigs = {
+//   parameter: {
+//     forward: 'slide-lefty',
+//     backward: 'slide-righty'
+//   },
+//   auth: {
+//     routes: ['/login', '/(account-creation)/creation'],
+//     forward: 'slide-left',
+//     backward: 'slide-right'
+//   },
+//   teams: {
+//     routes: ['/center/centers', '/center/[centerId]/teams'],
+//     forward: 'slide-lefty',
+//     backward: 'slide-righty'
+//   }
+// };
 
 
 router.beforeEach(async (to, from, next) => {
@@ -64,7 +64,7 @@ router.beforeEach(async (to, from, next) => {
 
   const authStore = useAuthStore();
   const initializationStore = useInitializationStore();
-  const { initializeApp } = useAppInitialization();
+  // const { initializeApp } = useAppInitialization();
 
   if (!authStore.isAuthReady) {
     console.log('==> initializeAuth in beforeEach')
@@ -116,10 +116,10 @@ router.beforeEach(async (to, from, next) => {
 
 });
 
-router.afterEach((to, from) => {
+router.afterEach(() => {
   
-  const toDepth = to.path.split('/').length
-  const fromDepth = from.path.split('/').length
+  // const toDepth = to.path.split('/').length
+  // const fromDepth = from.path.split('/').length
   // to.meta.transition = toDepth < fromDepth ? 'slide-right' : 'slide-left'
 })
 
@@ -137,7 +137,7 @@ if (import.meta.hot) {
 }
 
 // Gestion des erreurs de chargement dynamique
-router.onError((err, to) => {
+router.onError((err) => {
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
     const hasReloaded = localStorage.getItem('vuetify:dynamic-reload');
 

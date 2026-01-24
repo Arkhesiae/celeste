@@ -227,9 +227,9 @@ const handleQuickDayEdit = async (updatedDay) => {
   }
 };
 
-const handleEdit = (rotation) => {
-  emit('edit', { ...rotation });
-};
+// const handleEdit = (rotation) => {
+//   emit('edit', { ...rotation });
+// };
 
 const handleDuplicate = async (rotation) => {
   try {

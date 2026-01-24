@@ -1,4 +1,4 @@
-import { computed } from 'vue';
+
 
 /**
  * Regroupe un tableau de jours en semaines.
@@ -11,7 +11,7 @@ const groupDaysByWeeks = (days) => {
   return weeks;
 };
 
-export function useCalendar(selectedYear, selectedMonth) {
+export function useCalendar (selectedYear, selectedMonth) {
   const calendarDays = computed(() => {
     const firstDayOfMonth = new Date(Date.UTC(selectedYear.value, selectedMonth.value, 1));
     const lastDayOfMonth = new Date(Date.UTC(selectedYear.value, selectedMonth.value + 1, 0));

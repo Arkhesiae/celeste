@@ -1,14 +1,14 @@
-import { ref, computed } from 'vue';
+;
 import { useDate } from 'vuetify';
 
-export function useCalendarNavigation() {
+export function useCalendarNavigation () {
   const date = useDate();
   const selectedDate = ref(null);
   const currentLocalDate = ref(new Date());
   const selectedMonth = ref(currentLocalDate.value.getMonth());
   const selectedYear = ref(currentLocalDate.value.getFullYear());
 
-  const formattedDate = computed(() => 
+  const formattedDate = computed(() =>
     selectedDate.value ? date.format(selectedDate.value, "fullDate") : ''
   );
 

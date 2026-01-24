@@ -185,6 +185,7 @@ export default {
     },
     date: {
       type: String,
+      default: null,
 
     },
   },

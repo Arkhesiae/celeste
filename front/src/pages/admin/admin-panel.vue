@@ -12,17 +12,17 @@
           <div class="d-flex align-center justify-space-between">
             <div>
               <div class="align-center ga-2 font-weight-bold d-flex ">
-                <v-icon icon="mdi-shield-crown" size="20" />
+                <v-icon
+                  icon="mdi-shield-crown"
+                  size="20"
+                />
                 <span class="text-h6 font-weight-bold "> Panneau d'Administration </span>
-
               </div>
               <p class="text-body-2 opacity-50 mb-0">
                 Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' :
-                'Administrateur Local' }}
+                  'Administrateur Local' }}
               </p>
             </div>
-
-
           </div>
         </v-card>
       </v-col>
@@ -30,9 +30,21 @@
 
     <!-- Statistiques rapides -->
     <v-row class="mb-6">
-      <v-col v-for="stat in quickStats" :key="stat.key" cols="12" :sm="stat.key === 'totalUsers' ? 12 : 6" md="4">
-        <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest"
-          @click="navigateTo(stat.path)" :class="actionNeeded(stat) ? 'action-needed' : ''">
+      <v-col
+        v-for="stat in quickStats"
+        :key="stat.key"
+        cols="12"
+        :sm="stat.key === 'totalUsers' ? 12 : 6"
+        md="4"
+      >
+        <v-card
+          class="pa-4 opacity-100 px-6"
+          rounded="xl"
+          variant="flat"
+          color="surfaceContainerHighest"
+          :class="actionNeeded(stat) ? 'action-needed' : ''"
+          @click="navigateTo(stat.path)"
+        >
           <div class="d-flex align-center">
             <v-avatar
               :color="actionNeeded(stat) ? 'pending' : 'onBackground'"
@@ -60,11 +72,26 @@
 
     <!-- Sections principales -->
     <v-row :class="smAndDown ? 'mx-n4 ' : ''">
-      <v-col :class="smAndDown ? 'mx-0 pa-0 ' : ''" v-for="section in mainSections" :key="section.id"
-        v-show="!section.requiresMaster || adminType === 'master'" cols="12" md="6" class="mb-4">
-        <v-card :class="smAndDown ? 'pa-0' : 'pa-6'" :rounded="smAndDown ? '0' : 'xl'" variant="flat"
-          :color="smAndDown ? 'transparent' : 'surface'" height="100%">
-          <div class="d-flex align-center mb-4 " :class="smAndDown ? 'px-4' : ''">
+      <v-col
+        v-for="section in mainSections"
+        v-show="!section.requiresMaster || adminType === 'master'"
+        :key="section.id"
+        :class="smAndDown ? 'mx-0 pa-0 ' : ''"
+        cols="12"
+        md="6"
+        class="mb-4"
+      >
+        <v-card
+          :class="smAndDown ? 'pa-0' : 'pa-6'"
+          :rounded="smAndDown ? '0' : 'xl'"
+          variant="flat"
+          :color="smAndDown ? 'transparent' : 'surface'"
+          height="100%"
+        >
+          <div
+            class="d-flex align-center mb-4 "
+            :class="smAndDown ? 'px-4' : ''"
+          >
             <div>
               <span class="text-h7 font-weight-bold">{{ section.title }}</span>
               <p class="text-body-2 opacity-50 mb-0">
@@ -74,17 +101,34 @@
           </div>
 
           <div class="pa-0 d-flex flex-column b">
-            <div v-for="(item, index) in section.items" :key="item.id" v-ripple
-              v-show="!item.requiresMaster || adminType === 'master'" class="cursor-pointer"
-              :class="{ 'px-4': smAndDown, 'action-needed': actionNeeded(item) }" height="60" rounded="xl"
-              @click="navigateTo(item.path)">
-              <div class="d-flex align-center justify-space-between" :class="smAndDown ? 'py-6' : 'py-4'">
+            <div
+              v-for="(item, index) in section.items"
+              v-show="!item.requiresMaster || adminType === 'master'"
+              :key="item.id"
+              v-ripple
+              class="cursor-pointer"
+              :class="{ 'px-4': smAndDown, 'action-needed': actionNeeded(item) }"
+              height="60"
+              rounded="xl"
+              @click="navigateTo(item.path)"
+            >
+              <div
+                class="d-flex align-center justify-space-between"
+                :class="smAndDown ? 'py-6' : 'py-4'"
+              >
                 <div>
-                  <div class="title">{{ item.title }}</div>
-                  <div class="subtitle">{{ item.subtitle }}</div>
+                  <div class="title">
+                    {{ item.title }}
+                  </div>
+                  <div class="subtitle">
+                    {{ item.subtitle }}
+                  </div>
                 </div>
-                <v-icon icon="mdi-chevron-right" size="16" color="primary" />
-
+                <v-icon
+                  icon="mdi-chevron-right"
+                  size="16"
+                  color="primary"
+                />
               </div>
               <!-- <template v-slot:prepend>
             
@@ -100,14 +144,10 @@
         </v-card>
       </v-col>
     </v-row>
-
-
   </v-container>
 </template>
 
 <script setup>
-
-import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
@@ -123,8 +163,6 @@ const centerStore = useCenterStore()
 const ticketStore = useTicketStore()
 const { smAndDown } = useDisplay()
 
-
-console.log(router.currentRoute.value.meta)
 // Navigation guard - vérifier les droits d'admin
 if (!authStore.userData.isAdmin) {
   router.push('/dashboard')
@@ -318,40 +356,40 @@ const mainSections = computed(() => [
 ])
 
 // Actions rapides pour v-for
-const quickActions = computed(() => [
-  {
-    id: 'approve-users',
-    title: 'Approuver des candidatures',
-    color: 'primary',
-    icon: 'mdi-account-plus',
-    path: '/admin/pending-users',
-    requiresMaster: false
-  },
-  {
-    id: 'view-tickets',
-    title: 'Voir les tickets',
-    color: 'info',
-    icon: 'mdi-message-question',
-    path: '/admin/tickets',
-    requiresMaster: false
-  },
-  {
-    id: 'configure-rules',
-    title: 'Configurer les règles',
-    color: 'error',
-    icon: 'mdi-server-security',
-    path: '/admin/rules',
-    requiresMaster: true
-  },
-  {
-    id: 'manage-teams',
-    title: 'Gérer les équipes',
-    color: 'success',
-    icon: 'mdi-office-building',
-    path: `/center/${authStore.userData.centerId}/teams`,
-    requiresMaster: false
-  }
-])
+// const quickActions = computed(() => [
+//   {
+//     id: 'approve-users',
+//     title: 'Approuver des candidatures',
+//     color: 'primary',
+//     icon: 'mdi-account-plus',
+//     path: '/admin/pending-users',
+//     requiresMaster: false
+//   },
+//   {
+//     id: 'view-tickets',
+//     title: 'Voir les tickets',
+//     color: 'info',
+//     icon: 'mdi-message-question',
+//     path: '/admin/tickets',
+//     requiresMaster: false
+//   },
+//   {
+//     id: 'configure-rules',
+//     title: 'Configurer les règles',
+//     color: 'error',
+//     icon: 'mdi-server-security',
+//     path: '/admin/rules',
+//     requiresMaster: true
+//   },
+//   {
+//     id: 'manage-teams',
+//     title: 'Gérer les équipes',
+//     color: 'success',
+//     icon: 'mdi-office-building',
+//     path: `/center/${authStore.userData.centerId}/teams`,
+//     requiresMaster: false
+//   }
+// ])
 
 // Fonction de navigation
 const navigateTo = (path) => {

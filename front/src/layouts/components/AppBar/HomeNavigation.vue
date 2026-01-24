@@ -68,7 +68,7 @@
 </template>
 
 <script setup>
-import ThemeSwitch from './ThemeSwitch.vue';
+// import ThemeSwitch from './ThemeSwitch.vue';
 
 // Props
 defineProps({

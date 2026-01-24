@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+;
 import { useDisplay } from 'vuetify';
 
 const props = defineProps({
@@ -64,36 +64,21 @@ const close = () => {
 </script>
 
 <template>
-  <v-dialog 
-    :model-value="isDialogVisible" 
-    :max-width="maxWidth" 
-    :fullscreen="fullscreen || smAndDown"
-    @update:model-value="$emit('update:modelValue', $event)"
-  >
-    <v-card
-      :class="smAndDown ? '' : 'rounded-xxl'"
-      elevation="0"
-      class="pa-0 pt-0 "
-    >
+  <v-dialog
+:model-value="isDialogVisible" :max-width="maxWidth" :fullscreen="fullscreen || smAndDown"
+    @update:model-value="$emit('update:modelValue', $event)">
+    <v-card :class="smAndDown ? '' : 'rounded-xxl'" elevation="0" class="pa-0 pt-0 ">
       <div class="bar py-2 px-2 d-flex align-center justify-space-between">
         <div class="d-flex align-center">
           <div v-if="showCloseButton && smAndDown">
-            <v-btn
-              icon="mdi-arrow-left"
-              variant="text"
-              @click="close"
-            />
+            <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
           </div>
           <v-card-title>{{ title }}</v-card-title>
         </div>
 
 
         <div v-if="!smAndDown && showCloseButton">
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="close"
-          />
+          <v-btn icon="mdi-close" variant="text" @click="close" />
         </div>
       </div>
 
@@ -101,29 +86,14 @@ const close = () => {
         <slot />
       </v-card-text>
 
-      <v-card-actions
-        v-if="showActions"
-        class="pa-6"
-      >
-        <v-btn
-          v-if="showSecondaryAction"
-          color="primary"
-          variant="text"
-          rounded="xl"
-          :slim="true"
-          @click="close"
-        >
+      <v-card-actions v-if="showActions" class="pa-6">
+        <v-btn v-if="showSecondaryAction" color="primary" variant="text" rounded="xl" :slim="true" @click="close">
           {{ secondaryActionText }}
         </v-btn>
         <v-spacer />
         <v-btn
-          color="primary"
-          variant="tonal"
-          :slim="true"
-          rounded="xl"
-          :disabled="isPrimaryActionDisabled"
-          @click="submit"
-        >
+color="primary" variant="tonal" :slim="true" rounded="xl" :disabled="isPrimaryActionDisabled"
+          @click="submit">
           {{ primaryActionText }}
         </v-btn>
       </v-card-actions>
@@ -153,4 +123,4 @@ const close = () => {
   background-color: rgba(var(--v-theme-surface), 1);
   top: 0;
 }
-</style> 
+</style>

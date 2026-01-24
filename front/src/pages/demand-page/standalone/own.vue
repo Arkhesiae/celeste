@@ -1,6 +1,10 @@
 <template>
   <v-container>
-    <SimpleTitle title="Mes demandes" back-button subtitle="Consulter mes demandes" />
+    <SimpleTitle
+      title="Mes demandes"
+      back-button
+      subtitle="Consulter mes demandes"
+    />
 
     <div class="mt-16">
       <OwnDemands @open-details="openDemandDetails" />

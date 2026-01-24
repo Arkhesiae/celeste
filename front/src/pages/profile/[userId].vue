@@ -284,7 +284,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, onUnmounted, onBeforeUnmount } from 'vue';
+import { computed, onMounted, ref, onUnmounted } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
@@ -311,12 +311,10 @@ const isLoading = ref(false);
 const isSticky = ref(false);
 const sentinel = ref(null);
 const containerHeight = ref(0);
-const headerHeight = ref(0);
 const headerWidth = ref(0);
 const observer = ref(null);
 const container = ref(null);
 const header = ref(null);
-const containerWidth = ref(0);
 const safeMarginTop = ref(0);
 let resizeObserver = null;
 const userId = computed(() => authStore.userData.userId);

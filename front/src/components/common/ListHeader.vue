@@ -94,7 +94,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
+
 import { useDisplay } from 'vuetify';
 const props = defineProps({
     filters: {

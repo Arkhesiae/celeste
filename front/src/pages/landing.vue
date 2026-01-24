@@ -362,7 +362,7 @@ const startAnimation = (target, current, key, duration) => {
 };
 
 const getStats = async () => {
-  const response = await statStore.fetchStats();
+  await statStore.fetchStats();
 }
 
 const setupStatsObserver = async () => {
@@ -429,7 +429,6 @@ onUnmounted(() => {
   });
 });
 
-const targetNumber = 500;
 
 onMounted(() => {
   const observer = new IntersectionObserver((entries) => {

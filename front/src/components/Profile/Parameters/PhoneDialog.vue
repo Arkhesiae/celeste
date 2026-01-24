@@ -1,37 +1,17 @@
 <template>
   <v-dialog
-    v-model="localDialogVisible"
-    transition="scroll-x-reverse-transition"
-    max-width="500px"
-    :fullscreen="smAndDown"
-  >
-    <v-card
-      :rounded="smAndDown ? '' : 'xl'"
-      class="pa-0 pt-6"
-    >
+v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
+    :fullscreen="smAndDown">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           Modifier le numéro de téléphone
         </v-card-title>
-        <template
-          v-if="!smAndDown"
-          #append
-        >
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="close"
-          />
+        <template v-if="!smAndDown" #append>
+          <v-btn icon="mdi-close" variant="text" @click="close" />
         </template>
-        <template
-          v-else
-          #prepend
-        >
-          <v-btn
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="close"
-          />
+        <template v-else #prepend>
+          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
         </template>
       </v-card-item>
 
@@ -41,60 +21,28 @@
             <span>Numéro de téléphone actuel </span>
             <v-list-item-subtitle>{{ authStore.userData.phone || 'Non renseigné' }}</v-list-item-subtitle>
           </div>
-          <v-btn
-            v-if="authStore.userData.phone"
-            size="small"
-            variant="text"
-            color="error"
-            @click="deletePhone"
-          >
+          <v-btn v-if="authStore.userData.phone" size="small" variant="text" color="error" @click="deletePhone">
             Supprimer
           </v-btn>
         </div>
 
-        <v-form
-          ref="phoneForm"
-          v-model="phoneValid"
-          @submit.prevent="handleSubmit"
-        >
+        <v-form ref="phoneForm" v-model="phoneValid" @submit.prevent="handleSubmit">
           <v-text-field
-            v-model="phone"
-            flat
-            :rules="phoneRules"
-            label="Nouveau numéro de téléphone"
-            required
-            type="tel"
-            prepend-inner-icon="mdi-phone-outline"
-            variant="solo-filled"
-            color="primary"
-            rounded="xl"
-            bg-color="surface"
-            hide-details="auto"
-            placeholder="06 12 34 56 78"
-          />
+v-model="phone" flat :rules="phoneRules" label="Nouveau numéro de téléphone" required type="tel"
+            prepend-inner-icon="mdi-phone-outline" variant="solo-filled" color="primary" rounded="xl" bg-color="surface"
+            hide-details="auto" placeholder="06 12 34 56 78" />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6">
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          :disabled="loading"
-          @click="close"
-        >
+        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
-      
+
         <v-spacer />
         <v-btn
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!phoneValid"
-          @click="handleSubmit"
-        >
+color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!phoneValid"
+          @click="handleSubmit">
           Enregistrer
         </v-btn>
       </v-card-actions>
@@ -103,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
 import { useAuthStore } from '@/stores/authStore'
 import { useDisplay } from 'vuetify'
 import { profileService } from '@/services/profileService'
@@ -199,4 +147,4 @@ const deletePhone = async () => {
   text-transform: none;
   letter-spacing: 0;
 }
-</style> 
+</style>

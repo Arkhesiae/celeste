@@ -85,12 +85,12 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+
+// import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import CalendarMonth from './CalendarMonth.vue';
 
-const substitutionStore = useSubstitutionStore();
+// const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
 
 const props = defineProps({
@@ -189,7 +189,7 @@ const generateCalendarDays = (year, month) => {
     const week = [];
     for (let i = 0; i < 7; i++) {
    
-      let date = new Date(currentDate);
+      const date = new Date(currentDate);
       date.setUTCHours(0, 0, 0, 0);
       week.push({
         date: date,
@@ -293,7 +293,7 @@ const handleGestureMove = (wrapperEvent) => {
 };
 
 // Gestion de la fin du geste
-const handleGestureEnd = (wrapperEvent) => {
+const handleGestureEnd = () => {
   if (!gestureState.value.isActive) return;
   
   // Déterminer la direction du geste

@@ -22,7 +22,7 @@ import CalendarPanel from './common/CalendarPanel.vue';
 
 const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancel', 'withdraw']);
 
-const props = defineProps({
+defineProps({
   cols: {
     type: Number,
     required: true

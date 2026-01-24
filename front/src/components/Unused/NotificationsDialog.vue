@@ -43,7 +43,7 @@
           appear
         >
           <v-card
-            v-for="(notification, index) in notifications"
+            v-for="(notification) in notifications"
             v-if="dialogOpen"
             :key="notification.id"
             elevation="0"

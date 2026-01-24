@@ -1,29 +1,14 @@
 <template>
   <v-container>
-    <MainTitle
-      title="Liste des utilisateurs"
-      subtitle="Gérer et organiser les membres"
-    >
-      <template #actions> 
+    <MainTitle title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
+      <template #actions>
         <v-select
-          v-if="authStore.userData.adminType === 'master'"
-          v-model="selectedCenterId"
-          :items="centers"
-    
+v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
           :item-props="center => ({
             title: center.name,
             subtitle: center.oaci
-          })"
-          item-value="_id"
-          label="Sélectionner un centre"
-          variant="solo-filled"
-          rounded="xl"
-          class=""
-          flat
-          min-width="200px" 
-          max-width="300px"
-          @update:model-value="handleCenterChange"
-        />
+          })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="" flat
+          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
       </template>
     </MainTitle>
 
@@ -47,57 +32,36 @@
         <Loading />
       </div>
       <v-col
-        v-for="user in sortedAndFilteredUsers"
-        v-else
-        :key="user._id"
-        cols="12"
-        md="6"
-        lg="4"
-        :class="smAndDown ? 'pa-0' : ''"
-      >
+v-for="user in sortedAndFilteredUsers" v-else :key="user._id" cols="12" md="6" lg="4"
+        :class="smAndDown ? 'pa-0' : ''">
         <UserCard
-          :user="user"
-          @click="openUserDialog(user._id)"
-          @approve="approveUser"
-          @make-admin="makeAdmin"
-          @remove-admin="removeAdmin"
-          @assign-center="openCenterDialog"
-          @delete="deleteUser"
-        />
+:user="user" @click="openUserDialog(user._id)" @approve="approveUser" @make-admin="makeAdmin"
+          @remove-admin="removeAdmin" @assign-center="openCenterDialog" @delete="deleteUser" />
       </v-col>
     </v-row>
 
-   
+
     <!-- User Details Dialog -->
     <UserCardDetails
-      :user-id="selectedUser"
-      :dialog-visible="userDialog"
-      @update:dialog-visible="userDialog = $event"
-      @make-admin="makeAdmin"
-      @remove-admin="removeAdmin"
-      @assign-center="openCenterDialog"
-      @delete="deleteUser"
-    />
+:user-id="selectedUser" :dialog-visible="userDialog" @update:dialog-visible="userDialog = $event"
+      @make-admin="makeAdmin" @remove-admin="removeAdmin" @assign-center="openCenterDialog" @delete="deleteUser" />
     <!-- 
     Center Assignment Dialog -->
     <AssignCenterDialog
-      :dialog-visible="centerDialog"
-      :user-id="selectedUser"
-      @update:dialog-visible="centerDialog = $event"
-      @center-assigned="assignCenter"
-    />
+:dialog-visible="centerDialog" :user-id="selectedUser"
+      @update:dialog-visible="centerDialog = $event" @center-assigned="assignCenter" />
   </v-container>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+
 import { useCenterStore } from "@/stores/centerStore";
 import { useUserStore } from "@/stores/userStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
-import ListHeader from '@/components/common/ListHeader.vue';
+// import ListHeader from '@/components/common/ListHeader.vue';
 import UserCard from '@/components/Users/UserCard.vue';
 import UserCardDetails from '@/components/Users/UserCardDetails.vue';
 import AssignCenterDialog from '@/components/Users/AssignCenterDialog.vue';
@@ -129,17 +93,17 @@ const isLoading = ref(false);
 
 // })
 
-const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
-const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
+// const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
+// const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 const centers = computed(() => centerStore.centers);
 const users = computed(() => userStore.users);
-const sortOptions = [
-  { text: 'Prénom', sortValue: 'name' },
-  { text: 'Nom', sortValue: 'lastName' },
-  { text: 'Email', sortValue: 'email' },
-  { text: 'Statut', sortValue: 'status' },
-  { text: 'Date d\'inscription', sortValue: 'createdAt' },
-];
+// const sortOptions = [
+//   { text: 'Prénom', sortValue: 'name' },
+//   { text: 'Nom', sortValue: 'lastName' },
+//   { text: 'Email', sortValue: 'email' },
+//   { text: 'Statut', sortValue: 'status' },
+//   { text: 'Date d\'inscription', sortValue: 'createdAt' },
+// ];
 
 const filteredUsers = computed(() => {
   let filtered = users.value;
@@ -177,13 +141,13 @@ const filteredUsers = computed(() => {
 const sortedAndFilteredUsers = computed(() => {
   return [...filteredUsers.value].sort((a, b) => {
     let comparison = 0;
-    
+
     if (sortBy.value.sortValue === 'createdAt') {
       comparison = new Date(a[sortBy.value.sortValue]).getTime() - new Date(b[sortBy.value.sortValue]).getTime();
     } else {
       comparison = String(a[sortBy.value.sortValue]).localeCompare(String(b[sortBy.value.sortValue]));
     }
-    
+
     return sortDirection.value === 'asc' ? comparison : -comparison;
   });
 });

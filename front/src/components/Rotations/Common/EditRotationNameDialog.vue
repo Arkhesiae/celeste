@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+;
 
 const props = defineProps({
   isDialogVisible: {
@@ -32,15 +32,8 @@ const submit = () => {
 </script>
 
 <template>
-  <v-dialog
-    v-model="localDialogVisible"
-    max-width="500px"
-  >
-    <v-card
-      rounded="xl"
-      elevation="0"
-      color="surfaceContainerHigh"
-    >
+  <v-dialog v-model="localDialogVisible" max-width="500px">
+    <v-card rounded="xl" elevation="0" color="surfaceContainerHigh">
       <v-card-item class="pa-6">
         <div class="d-flex align-center justify-space-between">
           <div>
@@ -51,34 +44,19 @@ const submit = () => {
               Modifiez le nom du tour de service
             </div>
           </div>
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="localDialogVisible = false"
-          />
+          <v-btn icon="mdi-close" variant="text" @click="localDialogVisible = false" />
         </div>
       </v-card-item>
 
       <v-card-text class="pa-6 pt-0">
         <v-text-field
-          v-model="newName"
-          label="Nom du tour de service"
-          :rules="nameRules"
-          variant="outlined"
-          rounded="xl"
-          hide-details="auto"
-        />
+v-model="newName" label="Nom du tour de service" :rules="nameRules" variant="outlined"
+          rounded="xl" hide-details="auto" />
       </v-card-text>
 
       <v-card-actions class="pa-6 pt-0">
         <v-spacer />
-        <v-btn
-          color="primary"
-          variant="flat"
-          rounded="xl"
-          :disabled="!newName"
-          @click="submit"
-        >
+        <v-btn color="primary" variant="flat" rounded="xl" :disabled="!newName" @click="submit">
           Enregistrer
         </v-btn>
       </v-card-actions>

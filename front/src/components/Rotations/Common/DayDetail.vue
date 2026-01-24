@@ -8,30 +8,14 @@
           </div>
 
 
-          <v-chip
-            v-if="day.optional"
-            color="surfaceContainerHighest"
-            size="x-small"
-            variant="flat"
-            rounded="lg"
-            flat
-          >
+          <v-chip v-if="day.optional" color="surfaceContainerHighest" size="x-small" variant="flat" rounded="lg" flat>
             <div class="d-flex align-center ga-2">
               <span class="text-caption text-onSurface">Option</span>
-              <v-icon
-                size="small"
-                icon="mdi-plus-box-outline"
-                class="text-onSurface"
-              />
+              <v-icon size="small" icon="mdi-plus-box-outline" class="text-onSurface" />
             </div>
           </v-chip>
         </div>
-        <v-btn
-          v-if="!isMobile"
-          icon="mdi-close"
-          variant="text"
-          @click="$emit('close')"
-        />
+        <v-btn v-if="!isMobile" icon="mdi-close" variant="text" @click="$emit('close')" />
       </v-card-title>
       <v-card-subtitle class="text-medium-emphasis">
         {{ day?.type === 'rest' ? 'Jour de repos' : 'Jour de travail' }}
@@ -60,43 +44,28 @@
                   {{ day?.default?.endTime || '--:--' }}
                 </div>
                 <span
-                  v-if="day?.default?.endsNextDay"
-                  class="ml-1"
-                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;"
-                >+1</span>
+v-if="day?.default?.endsNextDay" class="ml-1"
+                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
               </div>
             </div>
           </div>
         </template>
         <template v-else>
           <v-chip-group
-            v-model="selectedVariant"
-            color="background"
-            base-color="surfaceContainerHighest"
-            variant="tonal"
-            class=""
-          >
+v-model="selectedVariant" color="background" base-color="surfaceContainerHighest"
+            variant="tonal" class="">
             <v-chip
-              v-for="(variant, index) in day?.variations"
-              :key="index"
-              :value="index"
-              color="onBackground"
-              variant="flat"
-              rounded="lg"
-            >
+v-for="(variant, index) in day?.variations" :key="index" :value="index" color="onBackground"
+              variant="flat" rounded="lg">
               {{ day?.name }} {{ variant.name }}
             </v-chip>
           </v-chip-group>
 
-          <div
-            class="text-caption text-medium-emphasis"
-            style="height: 40px"
-          >
+          <div class="text-caption text-medium-emphasis" style="height: 40px">
             <v-slide-y-transition>
               <div
-                v-show="!selectedVariant && selectedVariant !== 0"
-                class="text-caption text-error text-medium-emphasis"
-              >
+v-show="!selectedVariant && selectedVariant !== 0"
+                class="text-caption text-error text-medium-emphasis">
                 Veuillez
                 sélectionner une vacation élémentaire
               </div>
@@ -110,10 +79,7 @@
                 Début
               </div>
 
-              <div
-                :key="selectedVariant"
-                class="text-h6"
-              >
+              <div :key="selectedVariant" class="text-h6">
                 {{ !selectedVariant && selectedVariant !== 0 ?
                   (day?.default?.startTime ||
                     '--:--') :
@@ -125,10 +91,7 @@
                 Fin
               </div>
               <div class="d-flex align-center">
-                <div
-                  :key="selectedVariant"
-                  class="text-h6"
-                >
+                <div :key="selectedVariant" class="text-h6">
                   {{ selectedVariant === undefined ? (day?.default?.endTime ||
                     '--:--')
                     :
@@ -136,27 +99,19 @@
                 </div>
 
                 <span
-                  v-if="(selectedVariant === undefined) && day?.default?.endsNextDay"
-                  class="ml-1"
-                  style=" font-size: 10px; opacity: 0.8; top: -2px; position: relative;"
-                >+1</span>
+v-if="(selectedVariant === undefined) && day?.default?.endsNextDay" class="ml-1"
+                  style=" font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
                 <span
-                  v-if="(selectedVariant !== undefined && day?.variations[selectedVariant]?.endsNextDay)"
-                  class="ml-1"
-                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;"
-                >+1</span>
+v-if="(selectedVariant !== undefined && day?.variations[selectedVariant]?.endsNextDay)"
+                  class="ml-1" style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
               </div>
             </div>
           </div>
-          <div
-            class="text-caption text-medium-emphasis"
-            style="height: 40px"
-          >
+          <div class="text-caption text-medium-emphasis" style="height: 40px">
             <v-fade-transition>
               <div
-                v-show="!selectedVariant && selectedVariant !== 0"
-                class="text-caption font-weight-bold text-medium-emphasis"
-              >
+v-show="!selectedVariant && selectedVariant !== 0"
+                class="text-caption font-weight-bold text-medium-emphasis">
                 Amplitude maximale
               </div>
             </v-fade-transition>
@@ -174,26 +129,13 @@
     <v-card-actions class="pa-6">
       <v-spacer />
       <v-btn
-        v-if="deletable"
-        color="error"
-        variant="text"
-        rounded="lg"
-        prepend-icon="mdi-delete"
-        size="small"
-        slim
-        @click="$emit('onDelete')"
-      >
+v-if="deletable" color="error" variant="text" rounded="lg" prepend-icon="mdi-delete" size="small" slim
+        @click="$emit('onDelete')">
         Supprimer
       </v-btn>
       <v-btn
-        v-if="authStore.userData.isAdmin && day?.type !== 'rest'"
-        size="small"
-        slim
-        prepend-icon="mdi-pencil"
-        variant="text"
-        class="mr-2"
-        @click="$emit('onEdit')"
-      >
+v-if="authStore.userData.isAdmin && day?.type !== 'rest'" size="small" slim prepend-icon="mdi-pencil"
+        variant="text" class="mr-2" @click="$emit('onEdit')">
         Modifier
       </v-btn>
     </v-card-actions>
@@ -201,7 +143,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+
 import { useAuthStore } from '@/stores/authStore';
 
 const props = defineProps({

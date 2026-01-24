@@ -153,7 +153,7 @@
 import { useDisplay } from 'vuetify';
 import StatusChip from './StatusChip.vue';
 import { useTicketStore } from '@/stores/ticketStore';
-import EmailButton from './EmailButton.vue';
+// import EmailButton from './EmailButton.vue';
 
 const { smAndDown, xs } = useDisplay();
 
@@ -229,41 +229,41 @@ const getTicketColor = (type) => {
   }
 };
 
-const getTicketTypeLabel = (type) => {
-  const found = ticketTypes.find(t => t.value === type);
-  return found ? found.title : type;
-};
+// const getTicketTypeLabel = (type) => {
+//   const found = ticketTypes.find(t => t.value === type);
+//   return found ? found.title : type;
+// };
 
-const getTicketTypeLabelShort = (type) => {
-  switch (type) {
-    case 'assistance':
-      return 'Assistance';
-    case 'review':
-      return 'Bug';
-    case 'other':
-      return 'Autre';
-    default:
-      return type;
-  }
-};
+// const getTicketTypeLabelShort = (type) => {
+//   switch (type) {
+//     case 'assistance':
+//       return 'Assistance';
+//     case 'review':
+//       return 'Bug';
+//     case 'other':
+//       return 'Autre';
+//     default:
+//       return type;
+//   }
+// };
 
-const getCenterShortName = (centerName) => {
-  if (!centerName) return '';
-  // Prendre les premières lettres ou utiliser un acronyme
-  return centerName.length > 8
-    ? centerName.substring(0, 8) + '...'
-    : centerName;
-};
+// const getCenterShortName = (centerName) => {
+//   if (!centerName) return '';
+//   // Prendre les premières lettres ou utiliser un acronyme
+//   return centerName.length > 8
+//     ? centerName.substring(0, 8) + '...'
+//     : centerName;
+// };
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
+// const formatDate = (date) => {
+//   return new Date(date).toLocaleDateString('fr-FR', {
+//     day: '2-digit',
+//     month: '2-digit',
+//     year: 'numeric',
+//     hour: '2-digit',
+//     minute: '2-digit'
+//   });
+// };
 
 const formatDateShort = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', {

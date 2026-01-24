@@ -1,37 +1,17 @@
 <template>
   <v-dialog
-    v-model="localDialogVisible"
-    transition="scroll-x-reverse-transition"
-    max-width="500px"
-    :fullscreen="smAndDown"
-  >
-    <v-card
-      :rounded="smAndDown ? '' : 'xl'"
-      class="pa-0 pt-6"
-    >
+v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
+    :fullscreen="smAndDown">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           Modifier la date de naissance
         </v-card-title>
-        <template
-          v-if="!smAndDown"
-          #append
-        >
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="close"
-          />
+        <template v-if="!smAndDown" #append>
+          <v-btn icon="mdi-close" variant="text" @click="close" />
         </template>
-        <template
-          v-else
-          #prepend
-        >
-          <v-btn
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="close"
-          />
+        <template v-else #prepend>
+          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
         </template>
       </v-card-item>
 
@@ -39,52 +19,27 @@
         <div class="d-flex align-center justify-space-between mb-4">
           <div>
             <span>Date de naissance actuelle </span>
-            <v-list-item-subtitle>{{ formatbirthDate(authStore.userData.birthDate) || 'Non renseignée' }}</v-list-item-subtitle>
+            <v-list-item-subtitle>{{ formatbirthDate(authStore.userData.birthDate) || 'Non renseignée'
+              }}</v-list-item-subtitle>
           </div>
         </div>
 
-        <v-form
-          ref="birthDateForm"
-          v-model="birthDateValid"
-          @submit.prevent="handleSubmit"
-        >
+        <v-form ref="birthDateForm" v-model="birthDateValid" @submit.prevent="handleSubmit">
           <v-text-field
-            v-model="birthDate"
-            flat
-            :rules="birthDateRules"
-            label="Date de naissance"
-            required
-            type="date"
-            prepend-inner-icon="mdi-calendar"
-            variant="solo-filled"
-            color="primary"
-            rounded="xl"
-            bg-color="surface"
-            hide-details="auto"
-            :max="maxDate"
-          />
+v-model="birthDate" flat :rules="birthDateRules" label="Date de naissance" required type="date"
+            prepend-inner-icon="mdi-calendar" variant="solo-filled" color="primary" rounded="xl" bg-color="surface"
+            hide-details="auto" :max="maxDate" />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6">
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          :disabled="loading"
-          @click="close"
-        >
+        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
         <v-spacer />
         <v-btn
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!birthDateValid"
-          @click="handleSubmit"
-        >
+color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!birthDateValid"
+          @click="handleSubmit">
           Enregistrer
         </v-btn>
       </v-card-actions>
@@ -93,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
 import { useAuthStore } from '@/stores/authStore'
 import { useDisplay } from 'vuetify'
 import { profileService } from '@/services/profileService'
@@ -190,4 +145,4 @@ const handleSubmit = async () => {
   text-transform: none;
   letter-spacing: 0;
 }
-</style> 
+</style>

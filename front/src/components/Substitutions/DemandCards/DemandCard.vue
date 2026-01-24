@@ -2,98 +2,199 @@
   <div>
     <div class="d-flex justify-space-between">
       <div class="d-flex align-center mr-3 ga-2">
-        <v-avatar size="16" variant="tonal">
-          <v-img v-if="getUserById(demand?.posterId)?.avatar"
-            :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
-          <v-icon v-else size="12">
+        <v-avatar
+          size="16"
+          variant="tonal"
+        >
+          <v-img
+            v-if="getUserById(demand?.posterId)?.avatar"
+            :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`"
+            alt="Avatar"
+          />
+          <v-icon
+            v-else
+            size="12"
+          >
             mdi-account
           </v-icon>
         </v-avatar>
         <span style="font-weight: 800; font-size: .75rem;">{{ posterName
         }}</span>
       
-        <div style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);" class="d-flex align-center justify-center">
-          <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{ posterTeamName }}</span>
+        <div
+          style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
+          class="d-flex align-center justify-center"
+        >
+          <span
+            class="text-truncate"
+            style="font-size: .6250rem; font-weight: 700; opacity: .8;"
+          >{{ posterTeamName }}</span>
         </div>
         <div class="small-dot" />
         <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
         }}</span>
 
-        <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
+        <v-icon
+          v-if="demand?.comment"
+          size="x-small"
+          color="onBackground"
+          style="opacity: 0.8;"
+        >
           mdi-comment-text-outline
         </v-icon>
 
-        <v-icon v-if="isInterested" size="x-small" color="primary" style="opacity: 0.8;">
+        <v-icon
+          v-if="isInterested"
+          size="x-small"
+          color="primary"
+          style="opacity: 0.8;"
+        >
           mdi-heart
         </v-icon>
       </div>
 
       <div class="d-flex align-center ga-2">
-        
-        <v-chip class=" text-medium-emphasis px-0" size="small" rounded="pill" variant="text">
+        <v-chip
+          class=" text-medium-emphasis px-0"
+          size="small"
+          rounded="pill"
+          variant="text"
+        >
           {{ timeSinceCreation }}
         </v-chip>
-        <div v-if="demand.isNew" class="new-dot" />
+        <div
+          v-if="demand.isNew"
+          class="new-dot"
+        />
       </div>
     </div>
 
-    <div v-long-press:500="handleInterest" v-ripple
+    <div
+      v-long-press:500="handleInterest"
+      v-ripple
       class="long-press-target d-flex align-center bg-surfaceContainer demand justify-space-between pr-4 cursor-pointer"
-      @click="openDetails" @contextmenu.prevent>
+      @click="openDetails"
+      @contextmenu.prevent
+    >
       <div class=" pa-4 pl-8 pr-0 flex-shrink-0 position-relative">
         <div class="d-flex align-center flex-shrink-0   ga-3">
           <div class="pb-0 mb-0 d-flex align-center ga-2">
             <div class="d-flex align-center ga-2">
-              <div class="d-flex align-center " style="position: relative; width: 20px;">
-                <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
-                  <v-icon class="" style="top: 1px; font-size: 14px;" icon="mdi-swap-horizontal" />
+              <div
+                class="d-flex align-center "
+                style="position: relative; width: 20px;"
+              >
+                <div
+                  v-if="demand?.type === 'switch'"
+                  class="d-flex align-center ga-2"
+                >
+                  <v-icon
+                    class=""
+                    style="top: 1px; font-size: 14px;"
+                    icon="mdi-swap-horizontal"
+                  />
                 </div>
-                <div v-if="demand?.type === 'substitution'" class="d-flex align-center ga-2">
-                  <v-icon class="" style="top: 1px; font-size: 14px;" icon="mdi-account-arrow-left-outline " />
+                <div
+                  v-if="demand?.type === 'substitution'"
+                  class="d-flex align-center ga-2"
+                >
+                  <v-icon
+                    class=""
+                    style="top: 1px; font-size: 14px;"
+                    icon="mdi-account-arrow-left-outline "
+                  />
                 </div>
-                <div v-if="demand?.type === 'hybrid'" class="d-flex align-center ga-2 position-relative">
-                  <v-icon class="ml-n1" style="top: 1px; font-size: 14px;" icon="mdi-account-arrow-left-outline " />
-                  <v-icon class="ml-n2" style="top: 2px; font-size: 14px; position: absolute; left: 10px;"
-                    icon="mdi-swap-horizontal" />
+                <div
+                  v-if="demand?.type === 'hybrid'"
+                  class="d-flex align-center ga-2 position-relative"
+                >
+                  <v-icon
+                    class="ml-n1"
+                    style="top: 1px; font-size: 14px;"
+                    icon="mdi-account-arrow-left-outline "
+                  />
+                  <v-icon
+                    class="ml-n2"
+                    style="top: 2px; font-size: 14px; position: absolute; left: 10px;"
+                    icon="mdi-swap-horizontal"
+                  />
                 </div>
               </div>
             </div>
-            <div> <span style="position: relative; top: 1px; font-size: 1rem; font-weight: 600;">{{ getShiftName
-                }}</span></div>
+            <div>
+              <span style="position: relative; top: 1px; font-size: 1rem; font-weight: 600;">{{ getShiftName
+              }}</span>
+            </div>
           </div>
           <div class="d-flex align-start flex-column justify-space-between">
             <div>
               <span class="text-caption font-weight-bold text-medium-emphasis">{{ getShiftHours.startTime }} - {{
                 getShiftHours.endTime
               }}</span>
-              <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-                style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+              <span
+                v-if="getShiftEndsNextDay"
+                class="text-caption font-weight-bold opacity-50 ml-1"
+                style="font-size: 10px !important; top: -2px; position: relative;"
+              >+1</span>
             </div>
-            <div class="py-0 text-caption text-disabled" style="margin-top: -8px; font-size: 11px !important;">
+            <div
+              class="py-0 text-caption text-disabled"
+              style="margin-top: -8px; font-size: 11px !important;"
+            >
               Dans
               équipe {{ teamName }}
             </div>
           </div>
-          <v-chip variant="outlined" size="small" rounded="lg" class="font-weight-bold point-chip mr-2">
-            <LogoCopy color="onBackground" style="top:-2px; position: relative; transform: scale(0.87);" />
+          <v-chip
+            variant="outlined"
+            size="small"
+            rounded="lg"
+            class="font-weight-bold point-chip mr-2"
+          >
+            <LogoCopy
+              color="onBackground"
+              style="top:-2px; position: relative; transform: scale(0.87);"
+            />
             <span style="font-size: .875rem; font-weight: 600;">{{ totalPoints }}</span>
-            <v-icon v-if="hasVariablePoints" color="primary" style="position: relative; top: 0px;" icon="mdi-tune" />
+            <v-icon
+              v-if="hasVariablePoints"
+              color="primary"
+              style="position: relative; top: 0px;"
+              icon="mdi-tune"
+            />
           </v-chip>
         </div>
       </div>
 
       <div class="d-flex align-center ga-2">
-        <v-icon v-if="smAndDown" size="small">
+        <v-icon
+          v-if="smAndDown"
+          size="small"
+        >
           mdi-chevron-right
         </v-icon>
-        <div v-else class="d-flex align-center ga-2">
+        <div
+          v-else
+          class="d-flex align-center ga-2"
+        >
           <div :class="canSwitch ? 'order-2' : 'order-1'">
-            <v-tooltip location="top" text="Cet utilisateur n'accepte pas cette permutation" :disabled="canSwitch">
-              <template v-slot:activator="{ props }">
-                <v-btn v-bind="props" @click.stop="handleSwitch" icon
+            <v-tooltip
+              location="top"
+              text="Cet utilisateur n'accepte pas cette permutation"
+              :disabled="canSwitch"
+            >
+              <template #activator="{ props }">
+                <v-btn
                   v-if="demand.type === 'hybrid' || demand.type === 'switch'"
-                  :class="{ 'disabled': !canSwitch, 'main-btn': canSwitch }" flat variant="text" size="small"
-                  rounded="xl">
+                  v-bind="props"
+                  icon
+                  :class="{ 'disabled': !canSwitch, 'main-btn': canSwitch }"
+                  flat
+                  variant="text"
+                  size="small"
+                  rounded="xl"
+                  @click.stop="handleSwitch"
+                >
                   <v-icon>
                     mdi-swap-horizontal
                   </v-icon>
@@ -101,9 +202,19 @@
               </template>
             </v-tooltip>
           </div>
-          <div v-if="!isSwitch(demand)" :class="canSwitch ? 'order-1' : 'order-2'">
-            <v-btn @click.stop="handleReplace" icon :class="replaceClasses(demand)" flat variant="text" size="small"
-              rounded="xl">
+          <div
+            v-if="!isSwitch(demand)"
+            :class="canSwitch ? 'order-1' : 'order-2'"
+          >
+            <v-btn
+              icon
+              :class="replaceClasses(demand)"
+              flat
+              variant="text"
+              size="small"
+              rounded="xl"
+              @click.stop="handleReplace"
+            >
               <v-icon>
                 mdi-account-arrow-left-outline
               </v-icon>
@@ -113,7 +224,12 @@
       </div>
     </div>
     <div class="d-flex align-center justify-end ga-1 text-disabled">
-      <v-icon size="12" color="onBackground" class="text-disabled" style="opacity: 0.5;">
+      <v-icon
+        size="12"
+        color="onBackground"
+        class="text-disabled"
+        style="opacity: 0.5;"
+      >
         mdi-eye-outline
       </v-icon>
       <span class="text-caption font-weight-medium text-disabled">{{ demand?.seenBy?.length || 0 }}</span>
@@ -261,7 +377,7 @@ const formatDate = (dateString) => {
 
   const currentYear = new Date().getFullYear()
   const dateYear = new Date(dateString).getFullYear()
-  let formattedDate = date.format(dateString, 'fullDate')
+  const formattedDate = date.format(dateString, 'fullDate')
   console.log(formattedDate)
 
 

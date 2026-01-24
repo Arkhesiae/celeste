@@ -14,7 +14,7 @@ import '@mdi/font/css/materialdesignicons.css'
 // import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 
-import { aliases, md } from 'vuetify/iconsets/md'
+// import { aliases, md } from 'vuetify/iconsets/md'
 // Composables
 import { createVuetify } from 'vuetify'
 import {fr} from "vuetify/locale";
@@ -94,8 +94,6 @@ export default createVuetify({
           "surfaceContainerHighest": "#303637",
           "remplacement": "#f6ccfd",
           "onRemplacement": "#4e3e64",
-          "permutation": "#635876",
-          "onPermutation": "#a000a0",
           "pendingDemand": "#d5b178",
           "onPendingDemand": "#412b13",
           "acceptedDemand": "#b3ebd7",

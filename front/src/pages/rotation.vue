@@ -220,14 +220,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+
 import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 
 import { useDisplay } from "vuetify";
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import { toUTCNormalized } from '@/utils';
 import SavedRotation from '@/components/Rotations/Information/SavedRotation.vue';
 
@@ -237,7 +237,7 @@ const authStore = useAuthStore()
 const rotationStore = useRotationStore();
 
 const snackbarStore = useSnackbarStore();
-const selectedCenter = computed(() => authStore.userData.centerId);
+// const selectedCenter = computed(() => authStore.userData.centerId);
 const centers = computed(() => centerStore.centers);
 const isAdmin = computed(() => authStore.userData.isAdmin);
 
@@ -268,41 +268,41 @@ const showDateConfirmationDialog = ref(false);
 const showConfirmChangeDialog = ref(false);
 const pendingActivation = ref({ rotation: null, date: null, changes: [] });
 
-const router = useRouter();
+// const router = useRouter();
 
 const rotationToEdit = ref(null);
 
 const selectedCenterId = ref(null);
 
-const getDayStyle = (startTime, endTime) => {
-  if (!startTime || !endTime) {
-    return {
-      overflow: 'visible',
-      position: 'absolute',
-    };
-  }
-  const containerHeight = 300;
-  const totalMinutesInDay = 1440;
+// const getDayStyle = (startTime, endTime) => {
+//   if (!startTime || !endTime) {
+//     return {
+//       overflow: 'visible',
+//       position: 'absolute',
+//     };
+//   }
+//   const containerHeight = 300;
+//   const totalMinutesInDay = 1440;
 
-  const convertToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
+//   const convertToMinutes = (time) => {
+//     const [hours, minutes] = time.split(':').map(Number);
+//     return hours * 60 + minutes;
+//   };
 
-  const startMinutes = convertToMinutes(startTime);
-  const endMinutes = convertToMinutes(endTime);
+//   const startMinutes = convertToMinutes(startTime);
+//   const endMinutes = convertToMinutes(endTime);
 
-  const minuteHeight = containerHeight / totalMinutesInDay;
-  const top = startMinutes * minuteHeight;
-  const height = (endMinutes - startMinutes) * minuteHeight;
+//   const minuteHeight = containerHeight / totalMinutesInDay;
+//   const top = startMinutes * minuteHeight;
+//   const height = (endMinutes - startMinutes) * minuteHeight;
 
-  return {
-    top: `${top}px`,
-    overflow: 'visible',
-    height: `${height}px`,
-    position: 'absolute',
-  };
-}
+//   return {
+//     top: `${top}px`,
+//     overflow: 'visible',
+//     height: `${height}px`,
+//     position: 'absolute',
+//   };
+// }
 
 
 const saveRotation = async (newRotation) => {
@@ -446,7 +446,7 @@ const onActivationSuccess = (result) => {
 
 const buildChangeMessage = (change) => {
   let dateInterval = '';
-  let ruleChange = '';
+  // const ruleChange = '';
   if (change.to) {
     dateInterval = "du " + new Date(change.from).toLocaleDateString() + " au " + new Date(change.to).toLocaleDateString();
   } else {
@@ -458,21 +458,21 @@ const buildChangeMessage = (change) => {
   return "Changement " + dateInterval + " : " + (change.oldRule ? change.oldRule : 'aucun tour de service actif') + " -> " + (change.newRule ? change.newRule : 'aucun tour de service actif');
 }
 
-const closeErrorDialog = () => {
-  showErrorDialog.value = false;
-};
+// const closeErrorDialog = () => {
+//   showErrorDialog.value = false;
+// };
 
 const closeAddDialog = () => {
   showAddDialog.value = false;
   rotationToEdit.value = null;
 };
 
-const handleCalendarTransition = () => {
-  router.push({
-    path: '/parameter',
-    meta: { transition: 'slide' }
-  });
-};
+// const handleCalendarTransition = () => {
+//   router.push({
+//     path: '/parameter',
+//     meta: { transition: 'slide' }
+//   });
+// };
 
 const handleEdit = (rotation) => {
   rotationToEdit.value = rotation;

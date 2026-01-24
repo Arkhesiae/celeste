@@ -1,83 +1,140 @@
 <template>
-    <div class="amplitude-graph-container pa-4 d-flex flex-column" style="height: 100%;">
-        <!-- Header -->
-        <div class="d-flex justify-end ga-2 align-center mb-4">
-            <v-menu location="bottom start">
-                <template v-slot:activator="{ props }">
-                    <v-chip v-bind="props" variant="tonal" rounded="lg" color="primary" class="font-weight-bold"
-                        style="cursor: pointer;">
-                        Orientation {{ isVertical ? 'verticale' : 'horizontale' }}
-                        <v-icon end icon="mdi-chevron-down" size="small"></v-icon>
-                    </v-chip>
-                </template>
-                <v-list>
-                    <v-list-item @click="isVertical = true" :active="isVertical" prepend-icon="mdi-format-list-bulleted"
-                        title="Vue verticale (Heures en Y)"></v-list-item>
-                    <v-list-item @click="isVertical = false" :active="!isVertical"
-                        prepend-icon="mdi-format-list-bulleted-type" title="Vue horizontale (Inversée)"></v-list-item>
-                </v-list>
-            </v-menu>
+  <div
+    class="amplitude-graph-container pa-4 d-flex flex-column"
+    style="height: 100%;"
+  >
+    <!-- Header -->
+    <div class="d-flex justify-end ga-2 align-center mb-4">
+      <v-menu location="bottom start">
+        <template #activator="{ props }">
+          <v-chip
+            v-bind="props"
+            variant="tonal"
+            rounded="lg"
+            color="primary"
+            class="font-weight-bold"
+            style="cursor: pointer;"
+          >
+            Orientation {{ isVertical ? 'verticale' : 'horizontale' }}
+            <v-icon
+              end
+              icon="mdi-chevron-down"
+              size="small"
+            />
+          </v-chip>
+        </template>
+        <v-list>
+          <v-list-item
+            :active="isVertical"
+            prepend-icon="mdi-format-list-bulleted"
+            title="Vue verticale (Heures en Y)"
+            @click="isVertical = true"
+          />
+          <v-list-item
+            :active="!isVertical"
+            prepend-icon="mdi-format-list-bulleted-type"
+            title="Vue horizontale (Inversée)"
+            @click="isVertical = false"
+          />
+        </v-list>
+      </v-menu>
 
-            <v-btn icon density="comfortable" variant="text" color="medium-emphasis">
-                <v-icon icon="mdi-information-outline"></v-icon>
-                <v-tooltip activator="parent" location="bottom">
-                    Compatibilité avec les vacs adjacentes
-                </v-tooltip>
-            </v-btn>
-        </div>
+      <v-btn
+        icon
+        density="comfortable"
+        variant="text"
+        color="medium-emphasis"
+      >
+        <v-icon icon="mdi-information-outline" />
+        <v-tooltip
+          activator="parent"
+          location="bottom"
+        >
+          Compatibilité avec les vacs adjacentes
+        </v-tooltip>
+      </v-btn>
+    </div>
 
-        <!-- Window -->
-        <v-window v-model="step" class="flex-grow-1">
-            <v-window-item :value="0">
-                <div class="graph-wrapper" :class="{ 'is-horizontal': !isVertical }" @mouseleave="clearHover">
-                    <!-- Y Axis -->
-                    <div class="y-axis" :class="{ 'is-horizontal': !isVertical }">
-                        <template v-if="isVertical">
-                            <div v-for="hour in yTickValues" :key="hour" class="y-tick"
-                                :style="{ top: getYPosition(hour) + '%' }">
-                                <span class="y-label ">{{ formatHour(hour) }}</span>
-                            </div>
-                        </template>
-                        <template v-else>
-                            <div v-for="(col, index) in processedData.columns" :key="'y-lbl-' + index" class="y-tick"
-                                :style="{ top: (index + 0.5) * (100 / processedData.columns.length) + '%' }">
-                                <span class="y-label" :class="{ 'text-primary font-weight-bold': col.isToday }">{{
-                                    col.date.getDate() }}</span>
-                            </div>
-                        </template>
+    <!-- Window -->
+    <v-window
+      v-model="step"
+      class="flex-grow-1"
+    >
+      <v-window-item :value="0">
+        <div
+          class="graph-wrapper"
+          :class="{ 'is-horizontal': !isVertical }"
+          @mouseleave="clearHover"
+        >
+          <!-- Y Axis -->
+          <div
+            class="y-axis"
+            :class="{ 'is-horizontal': !isVertical }"
+          >
+            <template v-if="isVertical">
+              <div
+                v-for="hour in yTickValues"
+                :key="hour"
+                class="y-tick"
+                :style="{ top: getYPosition(hour) + '%' }"
+              >
+                <span class="y-label ">{{ formatHour(hour) }}</span>
+              </div>
+            </template>
+            <template v-else>
+              <div
+                v-for="(col, index) in processedData.columns"
+                :key="'y-lbl-' + index"
+                class="y-tick"
+                :style="{ top: (index + 0.5) * (100 / processedData.columns.length) + '%' }"
+              >
+                <span
+                  class="y-label"
+                  :class="{ 'text-primary font-weight-bold': col.isToday }"
+                >{{
+                  col.date.getDate() }}</span>
+              </div>
+            </template>
+          </div>
+
+          <!-- Chart Content -->
+          <div class="chart-area">
+            <!-- Highlight Window (Absolute behind bars) -->
+            <div
+              class="window-highlight"
+              :style="highlightStyle"
+            >
+              <div class="window-label text-overline text-error font-weight-bold" />
+            </div>
+
+            <!-- Dynamic Info Bubble (Moving Div) -->
+            <div class="bubble-container">
+              <div class="bubble-content">
+                <Transition name="fade">
+                  <div
+                    v-if="hoverInfo.visible"
+                    class="moving-info-bubble"
+                    :style="{ left: hoverInfo.leftPos }"
+                  >
+                    <div class="d-flex flex-column align-center">
+                      <span class="text-caption font-weight-bold text-primary">{{
+                        hoverInfo.mainLabel
+                      }}</span>
+                      <span
+                        v-if="hoverInfo.subLabel"
+                        class="text-caption text-medium-emphasis mt-n1"
+                      >{{
+                        hoverInfo.subLabel }}</span>
                     </div>
-
-                    <!-- Chart Content -->
-                    <div class="chart-area">
-                        <!-- Highlight Window (Absolute behind bars) -->
-                        <div class="window-highlight" :style="highlightStyle">
-                            <div class="window-label text-overline text-error font-weight-bold">
-
-                            </div>
-                        </div>
-
-                        <!-- Dynamic Info Bubble (Moving Div) -->
-                        <div class="bubble-container">
-                            <div class="bubble-content">
-                                <Transition name="fade">
-                                    <div v-if="hoverInfo.visible" class="moving-info-bubble"
-                                        :style="{ left: hoverInfo.leftPos }">
-                                        <div class="d-flex flex-column align-center">
-                                            <span class="text-caption font-weight-bold text-primary">{{
-                                                hoverInfo.mainLabel
-                                                }}</span>
-                                            <span class="text-caption text-medium-emphasis mt-n1"
-                                                v-if="hoverInfo.subLabel">{{
-                                                    hoverInfo.subLabel }}</span>
-                                        </div>
-                                        <div class="info-stem"
-                                            :style="{ height: (10 + (hoverInfo.topPos / 100 * 150)) + 'px' }"></div>
-                                    </div>
-                                </Transition>
-                            </div>
-
-                        </div>
-                        <!-- <div v-if="hoverInfo.visible" class="moving-info-bubble" :style="{ left: hoverInfo.leftPos }">
+                    <div
+                      class="info-stem"
+                      :style="{ height: (10 + (hoverInfo.topPos / 100 * 150)) + 'px' }"
+                    />
+                  </div>
+                </Transition>
+              </div>
+            </div>
+            <!-- <div v-if="hoverInfo.visible" class="moving-info-bubble" :style="{ left: hoverInfo.leftPos }">
                             <div class="d-flex flex-column align-center">
                                 <span class="text-caption font-weight-bold text-primary">{{ hoverInfo.mainLabel
                                     }}</span>
@@ -87,96 +144,140 @@
                             <div class="info-stem"></div>
                         </div> -->
 
-                        <!-- Bars Container -->
-                        <div class="bars-container" :class="{ 'is-horizontal': !isVertical }">
-                            <template v-for="(col, colIndex) in processedData.columns" :key="col.date.toISOString()">
-                                <!-- Day Column -->
-                                <div class="day-column" @click="onColumnInteract(col, colIndex)"
-                                    @mouseenter="onColumnInteract(col, colIndex)">
+            <!-- Bars Container -->
+            <div
+              class="bars-container"
+              :class="{ 'is-horizontal': !isVertical }"
+            >
+              <template
+                v-for="(col, colIndex) in processedData.columns"
+                :key="col.date.toISOString()"
+              >
+                <!-- Day Column -->
+                <div
+                  class="day-column"
+                  @click="onColumnInteract(col, colIndex)"
+                  @mouseenter="onColumnInteract(col, colIndex)"
+                >
+                  <!-- REST BLOCKS (Background) -->
+                  <div
+                    :key="'rest-' + colIndex"
+                    class="rest-bar"
+                    :style="getRestSegmentStyle(colIndex)"
+                  >
+                    <div class="rest-bar__inner" />
+                  </div>
 
-                                    <!-- REST BLOCKS (Background) -->
-                                    <div :key="'rest-' + colIndex" class="rest-bar"
-                                        :style="getRestSegmentStyle(colIndex)">
-                                        <div class="rest-bar__inner" />
-                                    </div>
-
-                                    <!-- HOVERED REST BLOCKS -->
-                                    <TransitionGroup name="rest-pop">
-                                        <div v-for="(seg, sIdx) in activeRestSegments.filter(s => s.colIndex === colIndex)"
-                                            :key="'active-rest-' + colIndex + '-' + sIdx"
-                                            class="rest-bar is-active-hover" :style="getSegmentStyle(seg)">
-                                            <div class="rest-bar__inner" />
-                                        </div>
-                                    </TransitionGroup>
-
-                                    <!-- INCOMPATIBILITY BLOCKS (Background) -->
-                                    <div v-for="(win, wIdx) in col.incompatibilitySegments"
-                                        :key="'incompatibility-' + win.shiftId + '-' + wIdx" class="incompatibility-bar"
-                                        :class="{
-                                            'is-hovered': hoveredShiftId === win.shiftId
-                                        }" :style="getSegmentStyle(win)">
-                                        <div class="incompatibility-bar__inner" />
-                                    </div>
-
-                                    <!-- WORK BLOCKS (Foreground) -->
-                                    <div v-for="(segment, sIdx) in col.workSegments"
-                                        :key="'work-' + segment.shiftId + '-' + sIdx" class="work-bar" :class="{
-                                            'is-hovered': hoveredShiftId === segment.shiftId,
-                                            'is-middle-day': col.isToday,
-                                            'is-demand-shift': segment.isDemandShift
-                                        }" :style="getSegmentStyle(segment)"
-                                        @mouseenter.stop="onWorkHover(segment, col, colIndex)"
-                                        @click.stop="onWorkHover(segment, col, colIndex)"
-                                        @mouseleave="hoveredShiftId = null" />
-                                </div>
-                            </template>
-                        </div>
+                  <!-- HOVERED REST BLOCKS -->
+                  <TransitionGroup name="rest-pop">
+                    <div
+                      v-for="(seg, sIdx) in activeRestSegments.filter(s => s.colIndex === colIndex)"
+                      :key="'active-rest-' + colIndex + '-' + sIdx"
+                      class="rest-bar is-active-hover"
+                      :style="getSegmentStyle(seg)"
+                    >
+                      <div class="rest-bar__inner" />
                     </div>
+                  </TransitionGroup>
+
+                  <!-- INCOMPATIBILITY BLOCKS (Background) -->
+                  <div
+                    v-for="(win, wIdx) in col.incompatibilitySegments"
+                    :key="'incompatibility-' + win.shiftId + '-' + wIdx"
+                    class="incompatibility-bar"
+                    :class="{
+                      'is-hovered': hoveredShiftId === win.shiftId
+                    }"
+                    :style="getSegmentStyle(win)"
+                  >
+                    <div class="incompatibility-bar__inner" />
+                  </div>
+
+                  <!-- WORK BLOCKS (Foreground) -->
+                  <div
+                    v-for="(segment, sIdx) in col.workSegments"
+                    :key="'work-' + segment.shiftId + '-' + sIdx"
+                    class="work-bar"
+                    :class="{
+                      'is-hovered': hoveredShiftId === segment.shiftId,
+                      'is-middle-day': col.isToday,
+                      'is-demand-shift': segment.isDemandShift
+                    }"
+                    :style="getSegmentStyle(segment)"
+                    @mouseenter.stop="onWorkHover(segment, col, colIndex)"
+                    @click.stop="onWorkHover(segment, col, colIndex)"
+                    @mouseleave="hoveredShiftId = null"
+                  />
                 </div>
+              </template>
+            </div>
+          </div>
+        </div>
 
-                <!-- X Axis -->
-                <div class="x-axis mt-2">
-                    <template v-if="isVertical">
-                        <template v-for="(col, index) in processedData.columns" :key="'lbl-' + index">
-                            <div class="x-label" :class="{
-                                'font-weight-bold text-primary': col.isToday,
-                                'text-medium-emphasis': !col.isToday
-                            }">
-                                {{ col.date.getDate() }}
-                            </div>
-                        </template>
-                    </template>
-                    <template v-else>
-                        <div v-for="hour in yTickValues" :key="'x-hour-' + hour" class="x-label"
-                            style="flex: none; position: absolute;" :style="{ left: (hour / 24 * 100) + '%' }">
-                            {{ formatHour(hour) }}
-                        </div>
-                    </template>
-                </div>
+        <!-- X Axis -->
+        <div class="x-axis mt-2">
+          <template v-if="isVertical">
+            <template
+              v-for="(col, index) in processedData.columns"
+              :key="'lbl-' + index"
+            >
+              <div
+                class="x-label"
+                :class="{
+                  'font-weight-bold text-primary': col.isToday,
+                  'text-medium-emphasis': !col.isToday
+                }"
+              >
+                {{ col.date.getDate() }}
+              </div>
+            </template>
+          </template>
+          <template v-else>
+            <div
+              v-for="hour in yTickValues"
+              :key="'x-hour-' + hour"
+              class="x-label"
+              style="flex: none; position: absolute;"
+              :style="{ left: (hour / 24 * 100) + '%' }"
+            >
+              {{ formatHour(hour) }}
+            </div>
+          </template>
+        </div>
 
-                <!-- Window Controls -->
-                <div class="controls-section mt-4 pt-2">
-                    <div class="d-flex align-center justify-end">
+        <!-- Window Controls -->
+        <div class="controls-section mt-4 pt-2">
+          <div class="d-flex align-center justify-end">
+            <div
+              class="d-flex align-center"
+              style="gap: 8px;"
+            >
+              <v-btn
+                icon="mdi-chevron-left"
+                variant="text"
+                density="compact"
+                :disabled="windowStartIndex <= 0"
+                @click="windowStartIndex--"
+              />
 
-                        <div class="d-flex align-center" style="gap: 8px;">
-                            <v-btn icon="mdi-chevron-left" variant="text" density="compact"
-                                :disabled="windowStartIndex <= 0" @click="windowStartIndex--" />
+              <span class="text-caption font-weight-bold">
+                {{ getWindowDateLabel(windowStartIndex) }} - {{ getWindowDateLabel(windowStartIndex + 6)
+                }}
+              </span>
 
-                            <span class="text-caption font-weight-bold">
-                                {{ getWindowDateLabel(windowStartIndex) }} - {{ getWindowDateLabel(windowStartIndex + 6)
-                                }}
-                            </span>
+              <v-btn
+                icon="mdi-chevron-right"
+                variant="text"
+                density="compact"
+                :disabled="windowStartIndex >= processedData.columns.length - 7"
+                @click="windowStartIndex++"
+              />
+            </div>
+          </div>
+        </div>
+      </v-window-item>
 
-                            <v-btn icon="mdi-chevron-right" variant="text" density="compact"
-                                :disabled="windowStartIndex >= processedData.columns.length - 7"
-                                @click="windowStartIndex++" />
-                        </div>
-                    </div>
-
-                </div>
-            </v-window-item>
-
-            <!-- Placeholder Windows
+      <!-- Placeholder Windows
             <v-window-item :value="1">
                 <div class="d-flex align-center justify-center fill-height" style="height: 300px;">
                     <div class="text-h6 text-medium-emphasis">Window 2 Placeholder</div>
@@ -188,55 +289,95 @@
                     <div class="text-h6 text-medium-emphasis">Window 3 Placeholder</div>
                 </div>
             </v-window-item> -->
-        </v-window>
+    </v-window>
 
-        <!-- Footer Indicators -->
-        <!-- <div class="d-flex justify-center mt-4" style="gap: 8px;">
+    <!-- Footer Indicators -->
+    <!-- <div class="d-flex justify-center mt-4" style="gap: 8px;">
             <div v-for="i in 3" :key="i" class="window-dot" :class="{ 'is-active': step === i - 1 }"
                 @click="step = i - 1"></div>
         </div> -->
-
-
+  </div>
+  <!-- Incompatibilities Chips -->
+  <div
+    v-if="props.compatibility?.limit?.length > 0 || (props.compatibility?.invalidWindows?.length > 0)"
+    class="pb-4 pl-2"
+  >
+    <div class="text-caption mb-2 text-disabled px-2">
+      Anomalies détectées
     </div>
-    <!-- Incompatibilities Chips -->
-    <div class="pb-4 pl-2"
-        v-if="props.compatibility?.limit?.length > 0 || (props.compatibility?.invalidWindows?.length > 0)">
-        <div class="text-caption mb-2 text-disabled px-2">Anomalies détectées</div>
-        <div class="d-flex flex-wrap ga-2 px-2">
-            <v-chip v-for="limit in props.compatibility.limit" :key="limit" color="error" rounded variant="tonal"
-                size="small" class="font-weight-bold">
-                <v-icon start icon="mdi-alert-circle-outline"></v-icon>
-                {{ limitLabels[limit] || limit }}
-            </v-chip>
+    <div class="d-flex flex-wrap ga-2 px-2">
+      <v-chip
+        v-for="limit in props.compatibility.limit"
+        :key="limit"
+        color="error"
+        rounded
+        variant="tonal"
+        size="small"
+        class="font-weight-bold"
+      >
+        <v-icon
+          start
+          icon="mdi-alert-circle-outline"
+        />
+        {{ limitLabels[limit] || limit }}
+      </v-chip>
 
-            <v-chip @mouseenter.stop="onIncompatibilityHover(win)" @mouseleave="clearRestSegments"
-                v-for="(win, idx) in props.compatibility.invalidRest35" :key="'win-' + idx" rounded color="error"
-                variant="tonal" size="small" class="font-weight-bold cursor-pointer">
-                <v-icon start icon="mdi-calendar-clock"></v-icon>
-                Repos hebdo : {{ Math.round(win.longestRest / 60) }}h / 35h
-                <v-tooltip activator="parent" location="bottom">
-                    {{ new Date(win.windowStart).toLocaleDateString() }} - {{ new
-                        Date(win.windowEnd).toLocaleDateString()
-                    }}
-                </v-tooltip>
-            </v-chip>
-            <v-chip @mouseenter.stop="onIncompatibilityHover(win)" @mouseleave="clearRestSegments"
-                v-for="(win, idx) in props.compatibility.invalidWork48" :key="'win-' + idx" rounded color="error"
-                variant="tonal" size="small" class="font-weight-bold cursor-pointer">
-                <v-icon start icon="mdi-alarm"></v-icon>
-                Travail hebdo : {{ Math.round(win.totalWorkMinutes / 60) }}h / 48h
-                <v-tooltip activator="parent" location="bottom">
-                    {{ new Date(win.windowStart).toLocaleDateString() }} - {{ new
-                        Date(win.windowEnd).toLocaleDateString()
-                    }}
-                </v-tooltip>
-            </v-chip>
-        </div>
+      <v-chip
+        v-for="(win, idx) in props.compatibility.invalidRest35"
+        :key="'win-' + idx"
+        rounded
+        color="error"
+        variant="tonal"
+        size="small"
+        class="font-weight-bold cursor-pointer"
+        @mouseenter.stop="onIncompatibilityHover(win)"
+        @mouseleave="clearRestSegments"
+      >
+        <v-icon
+          start
+          icon="mdi-calendar-clock"
+        />
+        Repos hebdo : {{ Math.round(win.longestRest / 60) }}h / 35h
+        <v-tooltip
+          activator="parent"
+          location="bottom"
+        >
+          {{ new Date(win.windowStart).toLocaleDateString() }} - {{ new
+            Date(win.windowEnd).toLocaleDateString()
+          }}
+        </v-tooltip>
+      </v-chip>
+      <v-chip
+        v-for="(win, idx) in props.compatibility.invalidWork48"
+        :key="'win-' + idx"
+        rounded
+        color="error"
+        variant="tonal"
+        size="small"
+        class="font-weight-bold cursor-pointer"
+        @mouseenter.stop="onIncompatibilityHover(win)"
+        @mouseleave="clearRestSegments"
+      >
+        <v-icon
+          start
+          icon="mdi-alarm"
+        />
+        Travail hebdo : {{ Math.round(win.totalWorkMinutes / 60) }}h / 48h
+        <v-tooltip
+          activator="parent"
+          location="bottom"
+        >
+          {{ new Date(win.windowStart).toLocaleDateString() }} - {{ new
+            Date(win.windowEnd).toLocaleDateString()
+          }}
+        </v-tooltip>
+      </v-chip>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+
 
 const props = defineProps({
     days: {
@@ -318,14 +459,14 @@ const updateHoverPos = (colIndex, hourCenterPct = null) => {
     hoverInfo.value.visible = true;
 };
 
-const formatTimeRange = (startH, endH) => {
-    const format = (h) => {
-        const hh = Math.floor(h);
-        const mm = Math.round((h % 1) * 60);
-        return `${hh}:${mm.toString().padStart(2, '0')}`;
-    };
-    return `${format(startH)} - ${format(endH)}`;
-};
+// const formatTimeRange = (startH, endH) => {
+//     const format = (h) => {
+//         const hh = Math.floor(h);
+//         const mm = Math.round((h % 1) * 60);
+//         return `${hh}:${mm.toString().padStart(2, '0')}`;
+//     };
+//     return `${format(startH)} - ${format(endH)}`;
+// };
 
 const formatFullTimeRange = (start, end) => {
     console.log(start, end)
@@ -422,15 +563,15 @@ const getColIndex = (dateObj) => {
     return diffDays;
 };
 
-const addToColumn = (colIndex, type, header, additionalProps = {}) => {
-    if (colIndex >= 0 && colIndex < columns.length) {
-        columns[colIndex][type].push({
-            startHour: header.startHour,
-            endHour: header.endHour,
-            ...additionalProps
-        });
-    }
-};
+// const addToColumn = (colIndex, type, header, additionalProps = {}) => {
+//     if (colIndex >= 0 && colIndex < columns.length) {
+//         columns[colIndex][type].push({
+//             startHour: header.startHour,
+//             endHour: header.endHour,
+//             ...additionalProps
+//         });
+//     }
+// };
 
 const processedData = computed(() => {
     // 1. Sort shifts (filter out empty placeholders created by parent)

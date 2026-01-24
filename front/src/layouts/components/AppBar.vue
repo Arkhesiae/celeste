@@ -150,7 +150,7 @@ const HOME_PATH = "/landing";
 const PARAMETER_PATH = "/parameter";
 
 // Props
-const props = defineProps({
+defineProps({
   showButtons: {
     type: Boolean,
     default: false,
@@ -208,11 +208,11 @@ const handleTitleClick = () => {
   router.push({ path: HOME_PATH });
 };
 
-const navigateToAdminPanel = () => {
-  router.push({ path: '/admin/admin-panel' });
-};
+// const navigateToAdminPanel = () => {
+//   router.push({ path: '/admin/admin-panel' });
+// };
 
-const toggleNotifications = (event) => {
+const toggleNotifications = () => {
   isDialogOpen.value = !isDialogOpen.value;
 };
 

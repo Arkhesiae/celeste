@@ -1,6 +1,11 @@
 <template>
-  <GenericDialog title="Demande " :model-value="modelValue" max-width="600" :show-actions="false"
-    @update:model-value="$emit('update:modelValue', $event)">
+  <GenericDialog
+    title="Demande "
+    :model-value="modelValue"
+    max-width="600"
+    :show-actions="false"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
     <template #content>
       <div class="text-center mb-6">
         <h1 class="text-h3 font-weight-bold">
@@ -10,8 +15,11 @@
           <span class="text-caption font-weight-bold text-medium-emphasis">{{ getShiftHours.startTime }} - {{
             getShiftHours.endTime
           }}</span>
-          <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-            style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+          <span
+            v-if="getShiftEndsNextDay"
+            class="text-caption font-weight-bold opacity-50 ml-1"
+            style="font-size: 10px !important; top: -2px; position: relative;"
+          >+1</span>
         </div>
 
 
@@ -27,29 +35,57 @@
         </div> -->
       </div>
 
-      <v-card :hover="false" v-ripple="false" rounded="xl" color="background" elevation="0" class="mb-4 pa-4"
-        @click="showUserDetails = !showUserDetails">
+      <v-card
+        v-ripple="false"
+        :hover="false"
+        rounded="xl"
+        color="background"
+        elevation="0"
+        class="mb-4 pa-4"
+        @click="showUserDetails = !showUserDetails"
+      >
         <div class="d-flex justify-space-between align-center">
-          <h3 class="text-subtitle-1 font-weight-medium mb-0" :class="isOwner ? 'text-primary' : ''">
+          <h3
+            class="text-subtitle-1 font-weight-medium mb-0"
+            :class="isOwner ? 'text-primary' : ''"
+          >
             {{ poster?.name }} {{ poster?.lastName }}
           </h3>
           <div class="d-flex ga-2 align-center">
-            <v-avatar size="32" variant="tonal">
-              <v-img v-if="getUserById(demand?.posterId)?.avatar"
-                :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`" alt="Avatar" />
-              <v-icon v-else size="x-small">
+            <v-avatar
+              size="32"
+              variant="tonal"
+            >
+              <v-img
+                v-if="getUserById(demand?.posterId)?.avatar"
+                :src="`${API_URL}${getUserById(demand?.posterId)?.avatar}`"
+                alt="Avatar"
+              />
+              <v-icon
+                v-else
+                size="x-small"
+              >
                 mdi-account
               </v-icon>
             </v-avatar>
-            <v-icon icon="mdi-menu-down" :class="showUserDetails ? 'rotate-180' : ''" size="small" />
+            <v-icon
+              icon="mdi-menu-down"
+              :class="showUserDetails ? 'rotate-180' : ''"
+              size="small"
+            />
           </div>
-
         </div>
         <v-expand-transition>
           <div v-if="showUserDetails">
             <div class="d-flex flex-column">
-              <div @click.stop="copyEmail" class="d-flex ga-1 align-center">
-                <span class="pa-0 text-medium-emphasis" style="font-size: 14px;">
+              <div
+                class="d-flex ga-1 align-center"
+                @click.stop="copyEmail"
+              >
+                <span
+                  class="pa-0 text-medium-emphasis"
+                  style="font-size: 14px;"
+                >
                   {{ poster?.email }}
                 </span>
                 <v-icon size="12">
@@ -65,50 +101,114 @@
         </v-expand-transition>
       </v-card>
 
-      <v-card rounded="xl" color="background" elevation="0" class="mb-4 pa-4">
+      <v-card
+        rounded="xl"
+        color="background"
+        elevation="0"
+        class="mb-4 pa-4"
+      >
         <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center " style="position: relative; width: 20px;">
-            <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
-              <v-icon class="" style="top: 1px; font-size: 14px;" icon="mdi-swap-horizontal" />
+          <div
+            class="d-flex align-center "
+            style="position: relative; width: 20px;"
+          >
+            <div
+              v-if="demand?.type === 'switch'"
+              class="d-flex align-center ga-2"
+            >
+              <v-icon
+                class=""
+                style="top: 1px; font-size: 14px;"
+                icon="mdi-swap-horizontal"
+              />
             </div>
-            <div v-if="demand?.type === 'substitution'" class="d-flex align-center ga-2">
-              <v-icon class="" style="top: 1px; font-size: 14px;" icon="mdi-account-arrow-left-outline " />
+            <div
+              v-if="demand?.type === 'substitution'"
+              class="d-flex align-center ga-2"
+            >
+              <v-icon
+                class=""
+                style="top: 1px; font-size: 14px;"
+                icon="mdi-account-arrow-left-outline "
+              />
             </div>
-            <div v-if="demand?.type === 'hybrid'" class="d-flex align-center ga-2 position-relative">
-              <v-icon class="ml-n1" style="top: 1px; font-size: 14px;" icon="mdi-account-arrow-left-outline " />
-              <v-icon class="ml-n2" style="top: 2px; font-size: 14px; position: absolute; left: 10px;"
-                icon="mdi-swap-horizontal" />
+            <div
+              v-if="demand?.type === 'hybrid'"
+              class="d-flex align-center ga-2 position-relative"
+            >
+              <v-icon
+                class="ml-n1"
+                style="top: 1px; font-size: 14px;"
+                icon="mdi-account-arrow-left-outline "
+              />
+              <v-icon
+                class="ml-n2"
+                style="top: 2px; font-size: 14px; position: absolute; left: 10px;"
+                icon="mdi-swap-horizontal"
+              />
             </div>
           </div>
           <span class="text-disabled text-body-2 font-weight-medium">{{ formatType(demand.type) }}</span>
         </div>
       </v-card>
 
-      <v-card :hover="false" v-ripple="false" @click="showAccepterDetails = !showAccepterDetails" color="background"
-        v-if="demand.accepterId" rounded="xl" elevation="0" class="mb-4 pa-4">
+      <v-card
+        v-if="demand.accepterId"
+        v-ripple="false"
+        :hover="false"
+        color="background"
+        rounded="xl"
+        elevation="0"
+        class="mb-4 pa-4"
+        @click="showAccepterDetails = !showAccepterDetails"
+      >
         <div class="d-flex justify-space-between align-center ">
           <span class="text-body-2 font-weight-medium text-medium-emphasis">Acceptée par </span>
           <div class="d-flex align-center ga-1">
-            <v-avatar size="20" color="surfaceContainer" class="mr-1">
-              <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
-              <v-icon v-else size="16">
+            <v-avatar
+              size="20"
+              color="surfaceContainer"
+              class="mr-1"
+            >
+              <v-img
+                v-if="accepter?.avatar"
+                :src="`${API_URL}${accepter?.avatar}`"
+                alt="Avatar"
+              />
+              <v-icon
+                v-else
+                size="16"
+              >
                 mdi-account-check-outline
               </v-icon>
             </v-avatar>
             <div class="d-flex align-center text-left ga-1">
-              <span class="font-weight-bold text-truncate" :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: .75rem;">
+              <span
+                class="font-weight-bold text-truncate"
+                :class="isAccepter ? 'text-primary' : ''"
+                style="max-width: 100px; font-size: .75rem;"
+              >
                 {{ accepterName }}
               </span>
             </div>
-            <v-icon icon="mdi-menu-down" :class="showAccepterDetails ? 'rotate-180' : ''" size="small" />
+            <v-icon
+              icon="mdi-menu-down"
+              :class="showAccepterDetails ? 'rotate-180' : ''"
+              size="small"
+            />
           </div>
         </div>
         <v-expand-transition>
           <div v-if="showAccepterDetails">
             <div class="d-flex flex-column">
-              <div @click.stop="copyEmail" class="d-flex ga-1 align-center">
-                <span class="pa-0 text-medium-emphasis" style="font-size: 14px;">
+              <div
+                class="d-flex ga-1 align-center"
+                @click.stop="copyEmail"
+              >
+                <span
+                  class="pa-0 text-medium-emphasis"
+                  style="font-size: 14px;"
+                >
                   {{ accepter?.email }}
                 </span>
                 <v-icon size="12">
@@ -124,9 +224,17 @@
         </v-expand-transition>
       </v-card>
 
-      <v-card rounded="xl" elevation="0" class="mb-4 px-4 py-2" color="background">
-        <div v-if="demand.type !== 'switch'" class="d-flex justify-space-between py-2 align-center"
-          style="height: 48px;">
+      <v-card
+        rounded="xl"
+        elevation="0"
+        class="mb-4 px-4 py-2"
+        color="background"
+      >
+        <div
+          v-if="demand.type !== 'switch'"
+          class="d-flex justify-space-between py-2 align-center"
+          style="height: 48px;"
+        >
           <span class="text-body-2 font-weight-medium text-medium-emphasis">Points</span>
           <div class="d-flex ga-1 align-end">
             <span class="text-body-2 font-weight-medium text-disabled">{{ demand.points }}</span>
@@ -134,14 +242,26 @@
           </div>
         </div>
         <v-divider v-if="demand.acceptedSwitches.length > 0 && demand.type === 'hybrid'" />
-        <div v-if="demand.acceptedSwitches.length > 0" class="d-flex justify-space-between py-2 align-center"
-          style="height: 48px;">
+        <div
+          v-if="demand.acceptedSwitches.length > 0"
+          class="d-flex justify-space-between py-2 align-center"
+          style="height: 48px;"
+        >
           <span class="text-body-2 font-weight-medium text-medium-emphasis">Permutations</span>
           <div class="d-flex ga-2">
-            <v-chip v-for="s in demand.acceptedSwitches" :key="s.shift" rounded="lg" size="small" variant="text">
+            <v-chip
+              v-for="s in demand.acceptedSwitches"
+              :key="s.shift"
+              rounded="lg"
+              size="small"
+              variant="text"
+            >
               <div class="d-flex ga-2 align-center">
                 <div class="d-flex ga-0 align-center">
-                  <v-icon start size="small">
+                  <v-icon
+                    start
+                    size="small"
+                  >
                     mdi-swap-horizontal
                   </v-icon>
                   <span class="text-caption font-weight-medium ">{{ getShiftNameById(s.shift) }}</span>
@@ -155,45 +275,92 @@
       </v-card>
 
 
-      <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
+      <v-card
+        color="background"
+        rounded="xl"
+        elevation="0"
+        class="mb-4 pa-4"
+      >
         <div class="d-flex justify-space-between align-center text-disabled">
           <span class="text-body-2 font-weight-medium text-medium-emphasis">Date</span>
           <span class="text-body-2 text-disabled">{{ formatDate(demand.posterShift?.date) }}</span>
         </div>
       </v-card>
 
-      <v-card v-if="demand.comment" color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
+      <v-card
+        v-if="demand.comment"
+        color="background"
+        rounded="xl"
+        elevation="0"
+        class="mb-4 pa-4"
+      >
         <span class="text-disabled text-body-2 font-weight-medium">{{ demand.comment }}</span>
       </v-card>
 
-      <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
+      <v-card
+        color="background"
+        rounded="xl"
+        elevation="0"
+        class="mb-4 pa-4"
+      >
         <div class="d-flex align-center ga-2">
-          <v-icon size="12" icon="mdi-eye-outline" />
+          <v-icon
+            size="12"
+            icon="mdi-eye-outline"
+          />
           <span class="text-body-2 text-medium-emphasis">
             Vue par {{ demand.seenBy?.length }} personnes
           </span>
         </div>
       </v-card>
 
-      <v-card class="pa-0 rounded-xl" color="background" elevation="0">
+      <v-card
+        class="pa-0 rounded-xl"
+        color="background"
+        elevation="0"
+      >
         <GraphWrapper :demand="demand" />
       </v-card>
 
-      <div v-if="!isAccepted && !isOwner" class="mx-n6 d-flex flex-column my-4 text-body-2 font-weight-medium">
-        <div @click="handleReplacement" v-if="demand.type !== 'switch'" v-ripple
-          class="px-6 d-flex align-center justify-space-between py-3 ga-2">
+      <div
+        v-if="!isAccepted && !isOwner"
+        class="mx-n6 d-flex flex-column my-4 text-body-2 font-weight-medium"
+      >
+        <div
+          v-if="demand.type !== 'switch'"
+          v-ripple
+          class="px-6 d-flex align-center justify-space-between py-3 ga-2"
+          @click="handleReplacement"
+        >
           <span>Remplacer</span>
           <v-icon icon="mdi-chevron-right" />
         </div>
-        <v-divider class="mx-6" v-if="demand.type === 'hybrid'" />
-        <div v-if="demand.type === 'hybrid' || demand.type === 'switch'" @click="handleSwitch" v-ripple
-          class="px-6 d-flex align-center justify-space-between py-3 ga-2" :class="{ 'text-disabled': !canSwitch }">
+        <v-divider
+          v-if="demand.type === 'hybrid'"
+          class="mx-6"
+        />
+        <div
+          v-if="demand.type === 'hybrid' || demand.type === 'switch'"
+          v-ripple
+          class="px-6 d-flex align-center justify-space-between py-3 ga-2"
+          :class="{ 'text-disabled': !canSwitch }"
+          @click="handleSwitch"
+        >
           <div class="d-flex align-center ga-2">
-
             <span>Permuter</span>
-            <v-btn v-if="!canSwitch" icon density="comfortable" variant="text" size="small" color="medium-emphasis">
-              <v-icon icon="mdi-information-outline"></v-icon>
-              <v-tooltip activator="parent" location="bottom">
+            <v-btn
+              v-if="!canSwitch"
+              icon
+              density="comfortable"
+              variant="text"
+              size="small"
+              color="medium-emphasis"
+            >
+              <v-icon icon="mdi-information-outline" />
+              <v-tooltip
+                activator="parent"
+                location="bottom"
+              >
                 Cet utilisateur n'accepte pas cette permutation
               </v-tooltip>
             </v-btn>
@@ -203,14 +370,33 @@
       </div>
 
 
-      <v-card @click="cancelOrWithdraw" v-ripple rounded="xl" elevation="0" class="mb-4" color="error"
-        v-if="isOwner || isAccepter">
+      <v-card
+        v-if="isOwner || isAccepter"
+        v-ripple
+        rounded="xl"
+        elevation="0"
+        class="mb-4"
+        color="error"
+        @click="cancelOrWithdraw"
+      >
         <v-list bg-color="error">
-          <v-list-item v-if="isAccepter" color="error" append-icon="mdi-chevron-right">
-            <v-list-item-title class="text-body-2 font-weight-medium">Se désister</v-list-item-title>
+          <v-list-item
+            v-if="isAccepter"
+            color="error"
+            append-icon="mdi-chevron-right"
+          >
+            <v-list-item-title class="text-body-2 font-weight-medium">
+              Se désister
+            </v-list-item-title>
           </v-list-item>
-          <v-list-item v-if="isOwner" color="error" append-icon="mdi-chevron-right">
-            <v-list-item-title class="text-body-2 font-weight-medium">Annuler</v-list-item-title>
+          <v-list-item
+            v-if="isOwner"
+            color="error"
+            append-icon="mdi-chevron-right"
+          >
+            <v-list-item-title class="text-body-2 font-weight-medium">
+              Annuler
+            </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
@@ -225,7 +411,6 @@
 </template>
 
 <script setup>
-import { ref, watch, computed, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/userStore';
 import { useDate } from 'vuetify'
 import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -254,7 +439,7 @@ const props = defineProps({
   },
   demand: {
     type: Object,
-
+    default: null
   }
 })
 
@@ -334,9 +519,9 @@ const timeSinceCreation = computed(() => {
 
 const formatDate = (dateString) => {
   if (!dateString) return ''
-  const currentYear = new Date().getFullYear()
-  const dateYear = new Date(dateString).getFullYear()
-  let formattedDate = date.format(dateString, 'fullDate')
+  // const currentYear = new Date().getFullYear()
+  // const dateYear = new Date(dateString).getFullYear()
+  const formattedDate = date.format(dateString, 'fullDate')
   return formattedDate
 }
 
@@ -420,7 +605,7 @@ const withdrawDemand = () => {
 const copyEmail = async () => {
   try {
 
-    await navigator.clipboard.writeText(poster?.email);
+    await navigator.clipboard.writeText(poster.value?.email);
     snackbarStore.showNotification('Email copié dans le presse-papiers', 'success', 'mdi-check');
 
   } catch (error) {

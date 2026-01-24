@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+
 import { statService } from '@/services/statService';
 
 /**
@@ -35,13 +35,13 @@ export const useStatStore = defineStore('stat', () => {
     try {
       isLoading.value = true;
       error.value = null;
-      
+
       const stats = await statService.getStats();
-      
+
       totalUsers.value = stats.data.totalUsers;
       totalCenters.value = stats.data.totalCenters;
       totalSubstitutions.value = stats.data.totalSubstitutions;
-      
+
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des statistiques';
       console.error('Erreur lors de la récupération des statistiques:', err);
@@ -67,14 +67,13 @@ export const useStatStore = defineStore('stat', () => {
     totalSubstitutions,
     isLoading,
     error,
-    
+
     // Getters
     hasStats,
     getStatsSummary,
-    
+
     // Actions
     fetchStats,
     resetStats
   };
 });
-    

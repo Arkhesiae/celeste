@@ -1,23 +1,8 @@
 <template>
-  <v-container
-    class="fill-height"
-    fluid
-  >
-    <v-row
-      justify="center"
-      align-content="center"
-    >
-      <v-col
-        cols="12"
-        sm="8"
-        md="6"
-        lg="4"
-        align-self="center"
-      >
-        <v-card
-          class="rounded-xl pa-6"
-          flat
-        >
+  <v-container class="fill-height" fluid>
+    <v-row justify="center" align-content="center">
+      <v-col cols="12" sm="8" md="6" lg="4" align-self="center">
+        <v-card class="rounded-xl pa-6" flat>
           <v-card-title class="text-h5 mb-4 pa-0">
             Réinitialisation du mot de passe
           </v-card-title>
@@ -25,55 +10,29 @@
           <v-card-text class="pa-0 py-4">
             <v-window v-model="step">
               <v-window-item :value="1">
-                <v-form
-                  ref="form"
-                  v-model="valid"
-                  @submit.prevent="submit"
-                >
+                <v-form ref="form" v-model="valid" @submit.prevent="submit">
                   <v-text-field
-                    v-model="password"
-                    :rules="passwordRules"
-                    label="Nouveau mot de passe"
-                    type="password"
-                    autocomplete="new-password"
-                    variant="solo-filled"
-                    flat
-                    color="primary"
-                    rounded="xl"
-                    bg-color="surface"
-                    hide-details="auto"
-                    class="mb-4"
-                  />
+v-model="password" :rules="passwordRules" label="Nouveau mot de passe" type="password"
+                    autocomplete="new-password" variant="solo-filled" flat color="primary" rounded="xl"
+                    bg-color="surface" hide-details="auto" class="mb-4" />
 
                   <v-text-field
-                    v-model="confirmPassword"
-                    :rules="confirmPasswordRules"
-                    label="Confirmer le mot de passe"
-                    type="password"
-                    autocomplete="new-password"
-                    variant="solo-filled"
-                    flat
-                    color="primary"
-                    rounded="xl"
-                    bg-color="surface"
-                    hide-details="auto"
-                  />
+v-model="confirmPassword" :rules="confirmPasswordRules"
+                    label="Confirmer le mot de passe" type="password" autocomplete="new-password" variant="solo-filled"
+                    flat color="primary" rounded="xl" bg-color="surface" hide-details="auto" />
                 </v-form>
               </v-window-item>
 
               <v-window-item :value="2">
                 <div class="text-center py-4">
-                  <v-icon
-                    color="primary"
-                    size="24"
-                    class="mb-4"
-                  >
+                  <v-icon color="primary" size="24" class="mb-4">
                     mdi-check-circle-outline
                   </v-icon>
                   <h3 class="text-h6 mb-2">
                     Mot de passe réinitialisé avec succès !
                   </h3>
-                  <span class="text-body-1 mb-4 text-medium-emphasis">Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.</span>
+                  <span class="text-body-1 mb-4 text-medium-emphasis">Vous pouvez maintenant vous connecter avec votre
+                    nouveau mot de passe.</span>
                 </div>
               </v-window-item>
             </v-window>
@@ -81,31 +40,15 @@
 
           <v-card-actions>
             <v-spacer />
-            <v-btn
-              v-if="isDev"
-              color="info"
-              variant="text"
-              class="me-2"
-              @click="step = step === 1 ? 2 : 1"
-            >
+            <v-btn v-if="isDev" color="info" variant="text" class="me-2" @click="step = step === 1 ? 2 : 1">
               Dev: Switch Window ({{ step }})
             </v-btn>
             <v-btn
-              v-if="step === 1"
-              color="primary"
-              :loading="loading"
-              :disabled="!valid"
-              class="rounded-xl"
-              @click="submit"
-            >
+v-if="step === 1" color="primary" :loading="loading" :disabled="!valid" class="rounded-xl"
+              @click="submit">
               Réinitialiser
             </v-btn>
-            <v-btn
-              v-else
-              color="primary"
-              class="rounded-xl"
-              @click="goToLogin"
-            >
+            <v-btn v-else color="primary" class="rounded-xl" @click="goToLogin">
               Aller à la connexion
             </v-btn>
           </v-card-actions>
@@ -116,7 +59,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+
 import { useRoute, useRouter } from 'vue-router'
 import { authService } from '@/services/authService'
 import { useSnackbarStore } from '@/stores/snackbarStore'
@@ -148,7 +91,7 @@ const confirmPasswordRules = [
 onMounted(() => {
   if (!route.query.token) {
     snackbarStore.showNotification('Token de réinitialisation manquant', 'error', 'mdi-alert-circle')
- 
+
   }
 })
 
@@ -176,9 +119,8 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
-
 .v-btn {
   text-transform: none;
   letter-spacing: 0;
 }
-</style> 
+</style>

@@ -1,17 +1,13 @@
 <template>
   <div>
-    <TicketList
-      :tickets="filteredTickets"
-      :loading="loading"
-      @open-ticket="$emit('open-ticket', $event)"
-    />
+    <TicketList :tickets="filteredTickets" :loading="loading" @open-ticket="$emit('open-ticket', $event)" />
   </div>
 </template>
 
 
 <script setup>
 
-import { ref, computed } from 'vue';
+;
 import { useTicketStore } from '@/stores/ticketStore';
 import TicketList from '@/components/Tickets/TicketList.vue';
 
@@ -46,7 +42,7 @@ const filteredTickets = computed(() => {
 
   if (props.filters?.search) {
     const search = props.filters.search.toLowerCase();
-    tickets = tickets.filter(ticket => 
+    tickets = tickets.filter(ticket =>
       ticket.title.toLowerCase().includes(search) ||
       ticket.content.toLowerCase().includes(search) ||
       ticket.senderEmail.toLowerCase().includes(search)

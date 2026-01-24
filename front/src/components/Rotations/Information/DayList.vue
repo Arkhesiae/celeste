@@ -36,7 +36,7 @@
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   rotation: {
     type: Array,
     required: true

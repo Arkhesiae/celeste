@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
+
 import { useDisplay } from 'vuetify';
 const props = defineProps({
     filters: {
@@ -98,15 +98,15 @@ const props = defineProps({
 const emit = defineEmits(['update:filter', 'update:search', 'update:sort']);
 
 const selectedFilter = ref(props.initialFilter);
-const searchQuery = ref('');
+// const searchQuery = ref('');
 const { smAndDown } = useDisplay();
 const selectedSort = ref(props.initialSort);
 const header = ref(null);
 const headerHeight = ref(0);
 const headerWidth = ref(0);
-const isSticky = ref(false);
-let observer = null;
-const actions = ref(null);
+// const isSticky = ref(false);
+const observer = null;
+// const actions = ref(null);
 
 const updateHeaderDimensions = async () => {
     await nextTick();
@@ -165,9 +165,9 @@ watch(selectedFilter, (newValue) => {
     emit('update:filter', newValue);
 });
 
-const onSearch = (value) => {
-    emit('update:search', value);
-};
+// const onSearch = (value) => {
+//     emit('update:search', value);
+// };
 
 const onSortChange = (option) => {
     selectedSort.value = option;

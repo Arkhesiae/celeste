@@ -22,8 +22,14 @@
     >
       {{ filter.label }}
 
-      <template #append v-if="filter.count">
-       <span class="font-weight-bold " style="font-size: .685rem !important;">{{  filter.count }}</span>
+      <template
+        v-if="filter.count"
+        #append
+      >
+        <span
+          class="font-weight-bold "
+          style="font-size: .685rem !important;"
+        >{{ filter.count }}</span>
       </template>
     </v-chip>
   </v-chip-group>

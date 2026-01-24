@@ -1,115 +1,54 @@
 <template>
   <v-dialog
-    v-model="localDialogVisible"
-    transition="scroll-x-reverse-transition"
-    max-width="500px"
-    :fullscreen="smAndDown"
-  >
-    <v-card
-      :rounded="smAndDown ? '' : 'xl'"
-      class="pa-0 pt-6"
-    >
+v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
+    :fullscreen="smAndDown">
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           {{ step === 1 ? 'Vérification du mot de passe' : 'Modifier le mot de passe' }}
         </v-card-title>
-        <template
-          v-if="!smAndDown"
-          #append
-        >
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="close"
-          />
+        <template v-if="!smAndDown" #append>
+          <v-btn icon="mdi-close" variant="text" @click="close" />
         </template>
-        <template
-          v-else
-          #prepend
-        >
-          <v-btn
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="close"
-          />
+        <template v-else #prepend>
+          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
         </template>
       </v-card-item>
 
       <v-card-text class="px-6">
-        <v-form
-          ref="form"
-          v-model="valid"
-          @submit.prevent="handleStepAction"
-        >
+        <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
           <!-- Étape 1 : Vérification du mot de passe actuel -->
           <template v-if="step === 1">
             <v-text-field
-              v-model="currentPassword"
-              :rules="[v => !!v || 'Le mot de passe actuel est requis']"
-              label="Mot de passe actuel"
-              type="password"
-              autocomplete="current-password"
-              variant="outlined"
-              color="primary"
-              rounded="xl"
-              bg-color="surface"
-              hide-details="auto"
-            />
+v-model="currentPassword" :rules="[v => !!v || 'Le mot de passe actuel est requis']"
+              label="Mot de passe actuel" type="password" autocomplete="current-password" variant="outlined"
+              color="primary" rounded="xl" bg-color="surface" hide-details="auto" />
           </template>
 
           <!-- Étape 2 : Nouveau mot de passe -->
           <template v-else>
             <v-text-field
-              v-model="newPassword"
-              :rules="passwordRules"
-              label="Nouveau mot de passe"
-              type="password"
-              autocomplete="new-password"
-              variant="solo-filled"
-              flat
-              color="primary"
-              rounded="xl"
-              bg-color="surface"
-              hide-details="auto"
-            />
+v-model="newPassword" :rules="passwordRules" label="Nouveau mot de passe" type="password"
+              autocomplete="new-password" variant="solo-filled" flat color="primary" rounded="xl" bg-color="surface"
+              hide-details="auto" />
 
             <v-text-field
-              v-model="confirmPassword"
-              :rules="confirmPasswordRules"
-              label="Confirmer le nouveau mot de passe"
-              type="password"
-              variant="solo-filled"
-              autocomplete="new-password"
-              flat
-              color="primary"
-              rounded="xl"
-              bg-color="surface"
-              hide-details="auto"
-              class="mt-4"
-            />
+v-model="confirmPassword" :rules="confirmPasswordRules"
+              label="Confirmer le nouveau mot de passe" type="password" variant="solo-filled"
+              autocomplete="new-password" flat color="primary" rounded="xl" bg-color="surface" hide-details="auto"
+              class="mt-4" />
           </template>
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6">
         <v-spacer />
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          :disabled="loading"
-          @click="close"
-        >
+        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
         <v-btn
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!valid"
-          @click="handleStepAction"
-        >
+color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid"
+          @click="handleStepAction">
           {{ step === 1 ? 'Vérifier' : 'Modifier' }}
         </v-btn>
       </v-card-actions>
@@ -118,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+
 import { useDisplay } from 'vuetify'
 import { authService } from '@/services/authService'
 
@@ -199,7 +138,7 @@ const updatePassword = async () => {
 
 const handleStepAction = async () => {
   if (!form.value?.validate()) return
-  
+
   if (step.value === 1) {
     await verifyCurrentPassword()
   } else {
@@ -213,4 +152,4 @@ const handleStepAction = async () => {
   text-transform: none;
   letter-spacing: 0;
 }
-</style> 
+</style>

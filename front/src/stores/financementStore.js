@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+;
 import { useUserStore } from './userStore';
 
 export const useFundingStore = defineStore('funding', () => {
@@ -94,7 +94,7 @@ export const useFundingStore = defineStore('funding', () => {
       date: '2025-06-04',
       montant: 1.45,
       description: 'Mise en service Hetzner',
-  
+
     },
     {
       date: '2025-08-04',
@@ -121,8 +121,8 @@ export const useFundingStore = defineStore('funding', () => {
       montant: 17.20,
       description: 'Utilisation Cursor AI Aout',
     },
-    
-   
+
+
   ]);
 
   // Current campaign if exists
@@ -152,13 +152,13 @@ export const useFundingStore = defineStore('funding', () => {
     });
   });
 
-  function getCampaignsStatus(campaigns) {
+  function getCampaignsStatus (campaigns) {
     const now = new Date();
     // Trie les campagnes par date de début décroissante
     const sorted = [...campaigns].sort((a, b) => parseDate(b.startDate) - parseDate(a.startDate));
-    return sorted.map((c, idx) => {
+    return sorted.map((c) => {
       const start = parseDate(c.startDate);
-      const end = c.endDate ? parseDate(c.endDate) : null; 
+      const end = c.endDate ? parseDate(c.endDate) : null;
       if (start > now) {
         return { ...c, status: 'a_venir' };
       }
@@ -170,7 +170,7 @@ export const useFundingStore = defineStore('funding', () => {
     });
   }
 
-  function parseDate(dateStr) {
+  function parseDate (dateStr) {
     // Si c'est déjà un format ISO ou reconnu, ça marche directement
     let date = new Date(dateStr);
     if (!isNaN(date)) return date;
@@ -200,12 +200,11 @@ export const useFundingStore = defineStore('funding', () => {
   const usedBudget = computed(() => {
     let used = campaignExpenses.value.reduce((total, expense) => total + expense.montant, 0)
     console.log(used)
-    return Math.round(used*100)/100;
+    return Math.round(used * 100) / 100;
   });
 
   // Current budget (remainder of the current campaign)
-  const currentBudget = computed(() => 
-  {
+  const currentBudget = computed(() => {
     console.log(initialBudget.value, usedBudget.value)
     return initialBudget.value - usedBudget.value
   });
@@ -230,7 +229,7 @@ export const useFundingStore = defineStore('funding', () => {
   });
 
   const totalAnnualCost = computed(() => {
-    return  totalAnnualCosts.value;
+    return totalAnnualCosts.value;
   });
 
   const budgetUsageRate = computed(() => {
@@ -242,7 +241,7 @@ export const useFundingStore = defineStore('funding', () => {
   });
 
   // Methods
-  const updateBudget = (newBudget) => {
+  const updateBudget = () => {
     // This method is deprecated as currentBudget is now computed
     // but kept for compatibility
     console.warn('updateBudget is deprecated. Use updateBudgetEvolution instead.');
@@ -298,9 +297,9 @@ export const useFundingStore = defineStore('funding', () => {
     const monthsLeft = Math.floor(currentBudget.value / totalMonthlyCost.value);
     const date = new Date();
     date.setMonth(date.getMonth() + monthsLeft);
-    return date.toLocaleDateString('fr-FR', { 
-      year: 'numeric', 
-      month: 'long' 
+    return date.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long'
     });
   };
 
@@ -320,7 +319,7 @@ export const useFundingStore = defineStore('funding', () => {
     recurringCosts,
     budgetEvolution,
     expenses,
-    
+
     // Computed
 
     costPerUser,
@@ -336,7 +335,7 @@ export const useFundingStore = defineStore('funding', () => {
 
 
 
-    
+
     // Methods
     updateBudget,
     updateUserCount,

@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+;
 import { defineStore } from 'pinia';
 import { substitutionService } from '@/services/substitutionService';
 import { useAuthStore } from '@/stores/authStore';
@@ -109,14 +109,6 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const availableTrueSwitches = computed(() => {
     if (!userId.value) return [];
     return pendingTrueSwitches.value.filter(substitution =>
-      substitution.posterId !== userId.value &&
-      substitution.canSwitch
-    );
-  });
-
-  const availableHybridSubstitutions = computed(() => {
-    if (!userId.value) return [];
-    return pendingHybridSubstitutions.value.filter(substitution =>
       substitution.posterId !== userId.value &&
       substitution.canSwitch
     );
@@ -292,7 +284,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   // =============== ACTIONS ===============
 
   // ----- Récupération des données -----
-  const getAllSubstitutions = async (dates) => {
+  const getAllSubstitutions = async () => {
     return substitutions.value.filter(substitution =>
       substitution.status === 'open' || substitution.status === 'accepted'
     );

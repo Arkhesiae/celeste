@@ -84,21 +84,26 @@ const handleCancel = () => {
         {{ text }}
       </v-card-text>
       <div class="d-flex align-center justify-end ga-2">
-        <v-btn color="primary" variant="text" flat  class="custom-btn" @click="handleCancel">
+        <v-btn
+          color="primary"
+          variant="text"
+          flat
+          class="custom-btn"
+          @click="handleCancel"
+        >
           {{ cancelText }}
         </v-btn>
         <slot name="actions">
-       
-        <v-spacer />
-        <v-btn
-          :color="confirmColor || 'primary'"
-          :slim="true"
-          :disabled="isConfirmDisabled"
-          @click="handleConfirm"
-        >
-          {{ confirmText }}
-        </v-btn>
-      </slot>
+          <v-spacer />
+          <v-btn
+            :color="confirmColor || 'primary'"
+            :slim="true"
+            :disabled="isConfirmDisabled"
+            @click="handleConfirm"
+          >
+            {{ confirmText }}
+          </v-btn>
+        </slot>
       </div>
     </v-card>
   </v-dialog>

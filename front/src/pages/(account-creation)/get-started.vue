@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router'
-import { ref, onMounted } from 'vue'
+
 
 const router = useRouter()
 const showContent = ref(false)
@@ -23,10 +23,7 @@ const handleExistingAccount = () => {
 <template>
   <v-container class="fill-height">
     <v-row justify="center">
-      <v-col
-        cols="12"
-        md="6"
-      >  
+      <v-col cols="12" md="6">
         <Transition name="fade">
           <div v-if="showContent">
             <div>
@@ -38,26 +35,15 @@ const handleExistingAccount = () => {
               </p>
             </div>
             <div class="options-container">
-              <Transition
-                name="slide-up"
-                appear
-              >
-                <div
-                  class="option-card ga-4 pa-6"
-                  @click="handleExistingAccount"
-                >
+              <Transition name="slide-up" appear>
+                <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
                   <span class="text-h6 font-weight-bold">Compte Remplacer</span>
-                  <span class="text-body-2 text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span>
+                  <span class="text-body-2 text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite
+                    le récupérer</span>
                 </div>
               </Transition>
-              <Transition
-                name="slide-up"
-                appear
-              >
-                <div
-                  class="option-card ga-4 pa-6"
-                  @click="handleNewAccount"
-                >
+              <Transition name="slide-up" appear>
+                <div class="option-card ga-4 pa-6" @click="handleNewAccount">
                   <span class="text-h6 font-weight-bold">Nouveau compte</span>
                   <span class="text-body-2 text-medium-emphasis">Je souhaite créer un nouveau compte</span>
                 </div>
@@ -71,8 +57,6 @@ const handleExistingAccount = () => {
 </template>
 
 <style scoped>
-
-
 h1 {
   font-size: 2.5rem;
 
@@ -153,6 +137,7 @@ h1 {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

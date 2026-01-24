@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, onMounted, nextTick } from 'vue';
+
 
 const props = defineProps({
   items: { type: Array, required: true },

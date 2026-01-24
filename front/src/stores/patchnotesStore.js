@@ -1,6 +1,6 @@
 
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+;
 
 export const usePatchnotesStore = defineStore('patchnotes', () => {
   // État réactif
@@ -64,7 +64,7 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
           description: 'Mise à jour des dépendances dans package-lock.json et package.json pour assurer la compatibilité avec les dernières versions.'
         }
       ],
-     
+
     },
     {
       id: '0.202506.1',
@@ -120,7 +120,7 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
           title: 'Intégration des règles',
           description: 'Ajout des règles de calcul au regarde l\'arrété 2024 (3/7) pour le calcul des compatibilités.'
         },
-     
+
 
 
       ],
@@ -179,7 +179,7 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
           title: 'Préparation des retours haptiques',
           description: 'Préparation des retours haptiques déploiement Android'
         }
-     
+
 
 
       ],
@@ -207,7 +207,7 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
 
       ]
     },
-   
+
   ]);
 
   // Computed properties
@@ -265,13 +265,13 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
   return {
     // État
     patchNotes,
-    
+
     // Computed
     currentVersion,
     futureVersions,
     stableVersions,
     allVersions,
-    
+
     // Méthodes
     getVersionById,
     getVersionsByStatus,

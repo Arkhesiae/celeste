@@ -126,9 +126,8 @@
 <script setup>
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore.js";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { computed } from "vue";
-import { useNotificationStore } from '../../stores/notificationStore';
 import { API_URL } from '@/config/api';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -142,12 +141,11 @@ const missingPhone = computed(() => !authStore.userData.phone);
 
 const { smAndDown } = useDisplay();
 const router = useRouter();
-const route = useRoute();
 const authStore = useAuthStore();
-const notificationStore = useNotificationStore();
+// const notificationStore = useNotificationStore();
 const substitutionStore = useSubstitutionStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
+// const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
 const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
 
 const isActive = (path) => {
@@ -157,10 +155,10 @@ const isActive = (path) => {
 
 
 
-const toggleNotifications = () => {
-  // Émettre un événement pour gérer les notifications
-  emit('toggle-notifications');
-};
+// const toggleNotifications = () => {
+//   // Émettre un événement pour gérer les notifications
+//   emit('toggle-notifications');
+// };
 
 const emit = defineEmits(['toggle-notifications']);
 </script>

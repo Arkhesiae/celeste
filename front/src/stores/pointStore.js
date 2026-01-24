@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+;
 import { pointService } from '@/services/pointService';
 import { useAuthStore } from './authStore';
 
@@ -90,7 +90,7 @@ export const usePointStore = defineStore('points', () => {
     }
   };
 
-  const transferPoints = async  (fromUserId, toUserId, amount, description = '', scheduledDate = null)  => {
+  const transferPoints = async (fromUserId, toUserId, amount, description = '', scheduledDate = null) => {
     try {
       isLoading.value = true;
       await pointService.transferPoints(fromUserId, toUserId, amount, description, scheduledDate);
@@ -112,14 +112,12 @@ export const usePointStore = defineStore('points', () => {
     return transactions.value.filter(t => t.status === 'completed');
   });
 
- 
 
-  const formattedPoints = computed(() => formatPoints(points.value));
 
   const emptyStore = () => {
     points.value = [];
     transactions.value = [];
-  
+
   };
 
   return {

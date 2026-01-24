@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+
 import { useAuthStore } from '@/stores/authStore'
 
 const authStore = useAuthStore()
@@ -50,44 +50,27 @@ onMounted(fetchRequests)
       <v-col cols="12">
         <v-card class="elevation-2">
           <v-card-title class="text-h4 d-flex align-center">
-            <v-icon
-              icon="mdi-account-sync"
-              class="mr-2"
-            />
+            <v-icon icon="mdi-account-sync" class="mr-2" />
             Demandes de récupération de compte
           </v-card-title>
 
           <v-card-text>
-            <v-alert
-              v-if="error"
-              type="error"
-              variant="tonal"
-              class="mb-4"
-            >
+            <v-alert v-if="error" type="error" variant="tonal" class="mb-4">
               {{ error }}
             </v-alert>
 
-            <v-progress-circular
-              v-if="loading"
-              indeterminate
-              color="primary"
-              class="ma-4"
-            />
+            <v-progress-circular v-if="loading" indeterminate color="primary" class="ma-4" />
 
             <v-data-table
-              v-else
-              :headers="[
-                { title: 'Date', key: 'createdAt', sortable: true },
-                { title: 'Email', key: 'email', sortable: true },
-                { title: 'Prénom', key: 'firstName', sortable: true },
-                { title: 'Nom', key: 'lastName', sortable: true },
-                { title: 'Centre', key: 'center', sortable: true },
-                { title: 'Statut', key: 'status', sortable: true },
-                { title: 'Actions', key: 'actions', sortable: false }
-              ]"
-              :items="requests"
-              class="elevation-1"
-            >
+v-else :headers="[
+              { title: 'Date', key: 'createdAt', sortable: true },
+              { title: 'Email', key: 'email', sortable: true },
+              { title: 'Prénom', key: 'firstName', sortable: true },
+              { title: 'Nom', key: 'lastName', sortable: true },
+              { title: 'Centre', key: 'center', sortable: true },
+              { title: 'Statut', key: 'status', sortable: true },
+              { title: 'Actions', key: 'actions', sortable: false }
+            ]" :items="requests" class="elevation-1">
               <template #item.createdAt="{ item }">
                 {{ new Date(item.createdAt).toLocaleDateString() }}
               </template>
@@ -95,30 +78,20 @@ onMounted(fetchRequests)
               <template #item.status="{ item }">
                 <v-chip
                   :color="item.status === 'PENDING' ? 'warning' : item.status === 'APPROVED' ? 'success' : 'error'"
-                  variant="tonal"
-                >
+                  variant="tonal">
                   {{ item.status }}
                 </v-chip>
               </template>
 
               <template #item.actions="{ item }">
                 <v-btn
-                  v-if="item.status === 'PENDING'"
-                  color="success"
-                  size="small"
-                  class="mr-2"
-                  prepend-icon="mdi-check"
-                  @click="updateRequestStatus(item._id, 'APPROVED')"
-                >
+v-if="item.status === 'PENDING'" color="success" size="small" class="mr-2"
+                  prepend-icon="mdi-check" @click="updateRequestStatus(item._id, 'APPROVED')">
                   Approuver
                 </v-btn>
                 <v-btn
-                  v-if="item.status === 'PENDING'"
-                  color="error"
-                  size="small"
-                  prepend-icon="mdi-close"
-                  @click="updateRequestStatus(item._id, 'REJECTED')"
-                >
+v-if="item.status === 'PENDING'" color="error" size="small" prepend-icon="mdi-close"
+                  @click="updateRequestStatus(item._id, 'REJECTED')">
                   Rejeter
                 </v-btn>
               </template>
@@ -139,4 +112,4 @@ onMounted(fetchRequests)
   color: rgb(var(--v-theme-primary));
   font-weight: 600;
 }
-</style> 
+</style>

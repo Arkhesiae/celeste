@@ -1,26 +1,12 @@
 <template>
   <v-card
-    :class="['expandable-selector', { 'expanded': isExpanded }]"
-    rounded="xl"
-    width="200px"
-    class="pa-4 position-absolute"
-    elevation="0"
-  >
-    <v-row
-      class="d-flex pa-1 align-center"
-      @click="toggleExpand"
-    >
+:class="['expandable-selector', { 'expanded': isExpanded }]" rounded="xl" width="200px"
+    class="pa-4 position-absolute" elevation="0">
+    <v-row class="d-flex pa-1 align-center" @click="toggleExpand">
       <!-- Selected value column -->
 
-      <v-col
-        class="pa-2"
-        link
-      >
-        <v-card
-          color="primary"
-          variant="tonal"
-          link
-        >
+      <v-col class="pa-2" link>
+        <v-card color="primary" variant="tonal" link>
           <v-card-title class="text-body-1">
             <span>{{ selectedValue }}</span>
           </v-card-title>
@@ -29,16 +15,8 @@
 
       <!-- Chevron icon, aligned to the right -->
       <v-col class="d-flex justify-end">
-        <v-btn
-          icon
-          size="sm"
-          variant="outlined"
-          class="text-medium-emphasis"
-        >
-          <v-icon
-            :class="{'rotate-180': isExpanded}"
-            size="24px"
-          >
+        <v-btn icon size="sm" variant="outlined" class="text-medium-emphasis">
+          <v-icon :class="{ 'rotate-180': isExpanded }" size="24px">
             mdi-menu-down
           </v-icon>
         </v-btn>
@@ -47,24 +25,12 @@
 
     <!-- Expandable section -->
     <v-expand-transition>
-      <div
-        v-show="isExpanded"
-        class="pa-1"
-      >
+      <div v-show="isExpanded" class="pa-1">
         <v-divider class="pb-2" />
 
-        <v-row
-          v-for="choice in filteredChoices"
-
-          :key="choice"
-          @click.stop="selectValue(choice)"
-        >
+        <v-row v-for="choice in filteredChoices" :key="choice" @click.stop="selectValue(choice)">
           <v-col class="d-flex pa-2">
-            <v-card
-              color="primary"
-              variant="tonal"
-              link
-            >
+            <v-card color="primary" variant="tonal" link>
               <v-card-title class="text-body-1">
                 <span>aeaeaaazeaeaa{{ choice }}</span>
               </v-card-title>
@@ -77,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+;
 
 // State variables
 const isExpanded = ref(false);
@@ -100,8 +66,6 @@ const selectValue = (choice) => {
 </script>
 
 <style scoped>
-
-
 .circled {
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.35);

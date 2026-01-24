@@ -1,13 +1,6 @@
 import { apiFetch } from '@/config/api';
 
 export const ticketService = {
-  async fetchTickets() {
-    const response = await apiFetch(`/tickets?archived=false`, {
-      method: 'GET'
-    });
-    return response;
-  },
-
   async createTicket(ticketData) {
     console.log(ticketData);
     const response = await apiFetch(`/tickets/create`, {

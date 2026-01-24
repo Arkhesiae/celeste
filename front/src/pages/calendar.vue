@@ -168,7 +168,7 @@ const DIALOG_MODES = {
 const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
-const userStore = useUserStore();
+// const userStore = useUserStore();
 const shiftStore = useShiftStore();
 const demandDeps = ref(null);
 const rotationStore = useRotationStore();
@@ -217,11 +217,11 @@ const selectedVacation = computed(() => {
   return {shift : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.shift, teamObject : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.teamObject};
 });
 
-const accepterName = computed(() => {
-  if (!substitutionToCancel.value?.accepterId) return '';
-  const accepter = userStore.users.find(u => u._id === substitutionToCancel.value.accepterId);
-  return accepter ? `${accepter.name} ${accepter.lastName}` : '';
-});
+// const accepterName = computed(() => {
+//   if (!substitutionToCancel.value?.accepterId) return '';
+//   const accepter = userStore.users.find(u => u._id === substitutionToCancel.value.accepterId);
+//   return accepter ? `${accepter.name} ${accepter.lastName}` : '';
+// });
 
 const isSelected = (date) => selectedDate.value === date.toISOString();
 

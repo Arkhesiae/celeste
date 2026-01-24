@@ -52,15 +52,14 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, reactive, nextTick, watch, computed } from 'vue'
+
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const { smAndDown } = useDisplay()
-const { mdAndUp } = useDisplay()  
 const router = useRouter()
 
-const props = defineProps({
+defineProps({
   title: {
     type: String,
     required: true,
@@ -145,16 +144,16 @@ onMounted(() => {
     entries => {
       entries.forEach(entry => {  
     
-      let titlePadding = 60
-      let initialTop = safeMarginTop.value
-      let threshold = (initialTop - titlePadding) * -1
-      let threshold2 = (initialTop - headerHeight.value) * -1
+      const titlePadding = 60
+      const initialTop = safeMarginTop.value
+      const threshold = (initialTop - titlePadding) * -1
+      const threshold2 = (initialTop - headerHeight.value) * -1
       
-      let maxScrolledValue = 1
-      let minScrolledValue = 0.6
+      const maxScrolledValue = 1
+      const minScrolledValue = 0.6
 
-      let A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
-      let B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
+      const A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
+      const B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
 
       scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top)*A + B))
       isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0

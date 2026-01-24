@@ -1,21 +1,11 @@
 <template>
   <v-container>
-    <MainTitle
-      title="Messages"
-      :subtitle="`Consultez ici les messages envoyés par les utilisateurs`"
-    >
+    <MainTitle title="Messages" :subtitle="`Consultez ici les messages envoyés par les utilisateurs`">
       <template #actions>
         <div class="d-flex ga-2 align-center">
           <v-btn
-            color="surfaceContainerHigh"
-            variant="flat"
-            prepend-icon="mdi-plus"
-            rounded="xl "
-            flat 
-            height="32"
-            size="small"
-            @click="openNewMessageDialog"
-          >
+color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl " flat height="32"
+            size="small" @click="openNewMessageDialog">
             Nouveau message
           </v-btn>
           <!-- <v-btn
@@ -35,7 +25,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+
 import { useMessageStore } from '@/stores/messageStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
@@ -48,125 +38,14 @@ const snackbarStore = useSnackbarStore();
 
 // États
 const messageDialog = ref(false);
-const deleteDialog = ref(false);
-const showFilters = ref(false);
-const selectedMessage = ref(null);
-const messageToDelete = ref(null);
-const deleting = ref(false);
 
-const filters = ref({
-  type: null,
-  status: 'all',
-  search: ''
-});
 
-const messageTypes = [
-  { title: 'Demande d\'assistance', value: 'assistance' },
-  { title: 'Signaler un bug', value: 'review' },
-  { title: 'Autre', value: 'other' }
-];
 
-// Computed
-const filteredMessages = computed(() => {
-  let messages = messageStore.sortedMessages;
 
-  if (filters.value.type) {
-    messages = messages.filter(msg => msg.type === filters.value.type);
-  }
 
-  if (filters.value.status !== 'all') {
-    const isUnread = filters.value.status === 'unread';
-    messages = messages.filter(msg => msg.isRead !== isUnread);
-  }
 
-  if (filters.value.search) {
-    const search = filters.value.search.toLowerCase();
-    messages = messages.filter(msg => 
-      msg.title.toLowerCase().includes(search) ||
-      msg.content.toLowerCase().includes(search) ||
-      msg.senderEmail.toLowerCase().includes(search)
-    );
-  }
 
-  return messages;
-});
 
-// Méthodes
-const getMessageIcon = (type) => {
-  switch (type) {
-    case 'assistance':
-      return 'mdi-help-circle';
-    case 'review':
-      return 'mdi-bug';
-    default:
-      return 'mdi-email';
-  }
-};
-
-const getMessageColor = (type) => {
-  switch (type) {
-    case 'assistance':
-      return 'onBackground' ;
-    case 'review':
-      return 'onBackground' ;
-    default:
-      return 'primary';
-  }
-};
-
-const getMessageTypeLabel = (type) => {
-  const found = messageTypes.find(t => t.value === type);
-  return found ? found.title : type;
-};
-
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-};
-
-const openMessageDetails = (message) => {
-  selectedMessage.value = message;
-  messageDialog.value = true;
-  if (!message.isRead) {
-    markAsRead(message._id);
-  }
-};
-
-const markAsRead = async (messageId) => {
-  try {
-    await messageStore.markAsRead(messageId);
-
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors du marquage du message', 'error', 'mdi-alert-circle');
-  }
-};
-
-const confirmDelete = (message) => {
-  messageToDelete.value = message;
-  deleteDialog.value = true;
-  messageDialog.value = false;
-};
-
-const confirmDeleteAction = async () => {
-  if (!messageToDelete.value) return;
-  
-  deleting.value = true;
-  try {
-    await messageStore.deleteMessage(messageToDelete.value._id);
-    snackbarStore.showNotification('Message supprimé', 'onPrimary', 'mdi-delete');
-    deleteDialog.value = false;
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la suppression du message', 'error', 'mdi-alert-circle');
-  } finally {
-    deleting.value = false;
-    messageToDelete.value = null;
-  }
-};
 
 const openNewMessageDialog = () => {
   messageDialog.value = true;
@@ -180,15 +59,13 @@ onMounted(async () => {
   }
   try {
     await messageStore.fetchMessages();
-  } catch (error) {
+  } catch {
     snackbarStore.showNotification('Erreur lors du chargement des messages', 'error', 'mdi-alert-circle');
   }
 });
 </script>
 
 <style scoped>
-
-
 .message-item {
   border-radius: 16px !important;
   transition: all 0.2s ease;
@@ -216,4 +93,4 @@ onMounted(async () => {
 .gap-2 {
   gap: 8px;
 }
-</style> 
+</style>

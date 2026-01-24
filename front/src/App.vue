@@ -26,7 +26,7 @@
 <script setup>
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
-import { ref, onMounted } from 'vue';
+
 
 const safeAreaTop = ref([]);
 const safeAreaBottom = ref([]);
@@ -92,8 +92,8 @@ async function getSafeAreaAndApply() {
   try {
     await SafeArea.getSafeAreaInsets().then(({ insets }) => {
 
-      let top = insets.top;
-      let bottom = insets.bottom;
+      const top = insets.top;
+      const bottom = insets.bottom;
 
       safeAreaTop.value.push(top);
       safeAreaBottom.value.push(bottom);
@@ -118,7 +118,7 @@ async function getSafeAreaAndApply() {
     });
 
 
-    await SafeArea.getStatusBarHeight().then(({ statusBarHeight }) => {
+    await SafeArea.getStatusBarHeight().then(() => {
       // console.log(statusBarHeight, 'statusbarHeight');
     });
 
@@ -128,8 +128,8 @@ async function getSafeAreaAndApply() {
     await SafeArea.addListener('safeAreaChanged', data => {
       const { insets } = data;
       // console.log(insets, 'insets');
-      let top = insets.top;
-      let bottom = insets.bottom;
+      const top = insets.top;
+      const bottom = insets.bottom;
       safeAreaTop.value.push(top);
       safeAreaBottom.value.push(bottom);
 
@@ -150,7 +150,7 @@ async function getSafeAreaAndApply() {
       }
     });
 
-  } catch (error) {
+  } catch {
     insets.value = 'error';
   }
 

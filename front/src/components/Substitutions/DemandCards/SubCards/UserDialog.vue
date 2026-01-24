@@ -74,8 +74,8 @@ const dialogVisible = computed({
   set: (value) => emit('update:modelValue', value)
 })
 
-const getTeamName = computed(() => {
-  return props.user.teamId.name;
-})
+// const getTeamName = computed(() => {
+//   return props.user.teamId.name;
+// })
 
 </script>

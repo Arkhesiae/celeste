@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+
 import { rotationService } from '@/services/rotationService';
 
 /**
@@ -35,7 +35,7 @@ export const useRotationStore = defineStore('rotation', () => {
    * @param {string} centerId - L'ID du centre pour rafraîchir les données.
    */
   const removeActivationDate = async (rotation, date, centerId) => {
-    try { 
+    try {
       const result = await rotationService.removeActivationDate(rotation._id, date);
       await fetchRotations(centerId);
       return result;
@@ -113,8 +113,8 @@ export const useRotationStore = defineStore('rotation', () => {
    * @param {string} centerId - L'ID du centre pour rafraîchir les données.
    */
   const deleteRotation = async (rotationId, centerId) => {
-      await rotationService.deleteRotation(rotationId);
-      await fetchRotations(centerId); // Rafraîchir les données
+    await rotationService.deleteRotation(rotationId);
+    await fetchRotations(centerId); // Rafraîchir les données
   };
 
   /**
@@ -169,14 +169,14 @@ export const useRotationStore = defineStore('rotation', () => {
     sortedRotations.value = [];
     activeRotation.value = null;
 
- 
+
   };
 
   return {
     rotations,
     sortedRotations,
     activeRotation,
-  
+
     fetchRotations,
     removeActivationDate,
     saveRotation,

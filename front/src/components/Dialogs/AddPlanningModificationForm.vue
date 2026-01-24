@@ -1,101 +1,55 @@
 <template>
-  <v-dialog
-    v-model="isDialogVisible"
-    :max-width="smAndDown ? '95%' : '600px'"
-    persistent
-  >
+  <v-dialog v-model="isDialogVisible" :max-width="smAndDown ? '95%' : '600px'" persistent>
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <span>{{ dialogTitle }}</span>
-        <v-btn
-          icon
-          @click="closeDialog"
-        >
+        <v-btn icon @click="closeDialog">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text>
-        <v-form
-          ref="form"
-          v-model="formValid"
-        >
+        <v-form ref="form" v-model="formValid">
           <!-- Type de modification -->
           <v-select
-            v-model="modification.type"
-            :items="modificationTypes"
-            item-title="label"
-            item-value="value"
-            label="Type de modification"
-            :rules="[rules.required]"
-            required
-            @update:model-value="onTypeChange"
-          />
+v-model="modification.type" :items="modificationTypes" item-title="label" item-value="value"
+            label="Type de modification" :rules="[rules.required]" required @update:model-value="onTypeChange" />
 
           <!-- Date -->
           <v-date-picker
-            v-model="modification.date"
-            :min="minDate"
-            :max="maxDate"
-            label="Date"
-            :rules="[rules.required]"
-            required
-            @update:model-value="onDateChange"
-          />
+v-model="modification.date" :min="minDate" :max="maxDate" label="Date"
+            :rules="[rules.required]" required @update:model-value="onDateChange" />
 
           <!-- Heures (optionnel selon le type) -->
           <div v-if="showTimeFields">
             <v-row>
               <v-col cols="6">
                 <v-text-field
-                  v-model="modification.startTime"
-                  label="Heure de début"
-                  type="time"
-                  :rules="timeRules"
-                  placeholder="HH:MM"
-                />
+v-model="modification.startTime" label="Heure de début" type="time" :rules="timeRules"
+                  placeholder="HH:MM" />
               </v-col>
               <v-col cols="6">
                 <v-text-field
-                  v-model="modification.endTime"
-                  label="Heure de fin"
-                  type="time"
-                  :rules="timeRules"
-                  placeholder="HH:MM"
-                />
+v-model="modification.endTime" label="Heure de fin" type="time" :rules="timeRules"
+                  placeholder="HH:MM" />
               </v-col>
             </v-row>
           </div>
 
           <!-- Commentaire -->
           <v-textarea
-            v-model="modification.comment"
-            label="Commentaire (optionnel)"
-            :rules="[rules.maxLength]"
-            :maxlength="500"
-            :counter="500"
-            rows="3"
-            auto-grow
-          />
+v-model="modification.comment" label="Commentaire (optionnel)" :rules="[rules.maxLength]"
+            :maxlength="500" :counter="500" rows="3" auto-grow />
 
           <!-- Avertissement sur les conflits -->
-          <v-alert
-            v-if="hasConflicts"
-            type="warning"
-            variant="tonal"
-            class="mt-3"
-          >
-            <strong>Attention :</strong> Vous avez des demandes de substitution ou êtes impliqué dans une substitution pour cette date. 
+          <v-alert v-if="hasConflicts" type="warning" variant="tonal" class="mt-3">
+            <strong>Attention :</strong> Vous avez des demandes de substitution ou êtes impliqué dans une substitution
+            pour cette date.
             Les modifications de planning ne peuvent pas être créées dans ce cas.
           </v-alert>
 
           <!-- Informations sur la modification -->
-          <v-alert
-            v-if="modificationInfo"
-            :type="modificationInfo.type"
-            variant="tonal"
-            class="mt-3"
-          >
+          <v-alert v-if="modificationInfo" :type="modificationInfo.type" variant="tonal" class="mt-3">
             {{ modificationInfo.message }}
           </v-alert>
         </v-form>
@@ -103,20 +57,10 @@
 
       <v-card-actions class="pa-4">
         <v-spacer />
-        <v-btn
-          color="grey"
-          variant="text"
-          :disabled="loading"
-          @click="closeDialog"
-        >
+        <v-btn color="grey" variant="text" :disabled="loading" @click="closeDialog">
           Annuler
         </v-btn>
-        <v-btn
-          color="primary"
-          :loading="loading"
-          :disabled="!formValid || hasConflicts"
-          @click="submitModification"
-        >
+        <v-btn color="primary" :loading="loading" :disabled="!formValid || hasConflicts" @click="submitModification">
           {{ submitButtonText }}
         </v-btn>
       </v-card-actions>
@@ -125,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
+
 import { useDisplay, useDate } from 'vuetify';
 import { usePlanningModificationStore } from '@/stores/planningModificationStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -223,7 +167,7 @@ const maxDate = computed(() => {
 
 const modificationInfo = computed(() => {
   if (!modification.value.type) return null;
-  
+
   switch (modification.value.type) {
     case 'absence':
       return {
@@ -264,7 +208,7 @@ const checkConflicts = async () => {
     hasConflicts.value = false;
     return;
   }
-  
+
   try {
     hasConflicts.value = await planningModificationStore.checkSubstitutionConflicts(modification.value.date);
   } catch (error) {
@@ -297,20 +241,20 @@ const resetForm = () => {
 
 const submitModification = async () => {
   if (!form.value?.validate()) return;
-  
+
   try {
     loading.value = true;
-    
+
     const modificationData = {
       ...modification.value,
       date: new Date(modification.value.date).toISOString()
     };
-    
+
     const newModification = await planningModificationStore.createModification(modificationData);
-    
+
     emit('onSubmit', newModification);
     closeDialog();
-    
+
   } catch (error) {
     console.error('Erreur lors de la création de la modification:', error);
     // L'erreur sera gérée par le store

@@ -30,7 +30,6 @@
           width="100%"
           min-width="100%"
           flat
-          
           :color="getColor(day.date)"
           class="d-flex flex-column calendar-day pa-0 overflow-visible"
           :style="{
@@ -43,19 +42,19 @@
             'top-right-corner': index === 0 && week.indexOf(day) === week.length - 1,
             'bottom-left-corner': index === calendarDays.length - 1 && week.indexOf(day) === 0,
             'bottom-right-corner': index === calendarDays.length - 1 && week.indexOf(day) === week.length - 1,
-      
-  
+
+
           }"
           @click="$emit('select-day', day.date)"
         >
           <!-- Contenu principal de la carte -->
-          <v-card-item class="py-3 pt-2  "> 
+          <v-card-item class="py-3 pt-2  ">
             <v-card-title :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 500'">
               {{ day.date.getUTCDate() }}
             </v-card-title>
           </v-card-item>
 
-          
+
           <PendingChip
             v-if="pendingDemand(day.date)"
             style="bottom:8px !important; right: 8px !important"
@@ -77,7 +76,7 @@
           <div class="d-flex justify-space-between align-center px-4">
             <!-- Informations du shift -->
             <v-card-subtitle
-              v-if=" getShiftType(day.date) !== 'rest'"
+              v-if="getShiftType(day.date) !== 'rest'"
               class="pa-0"
               :class="isOff(day.date) ? 'offDay' : ''"
             >
@@ -85,28 +84,28 @@
             </v-card-subtitle>
             <!-- Indicateurs de substitution -->
             <div
-              class="position-absolute pr-4 pb-4"
-              style="bottom: 0; right: 0;" 
               v-if="!pendingDemand(day.date) && !acceptedAsAccepter(day.date) && !acceptedAsPoster(day.date)"
+              class="position-absolute pr-4 pb-4"
+              style="bottom: 0; right: 0;"
             >
               <div class="d-flex justify-center">
-                <div 
+                <div
                   v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
                   class="indicator-dot remplacement "
-                  style="background: rgb(var(--v-theme-primary)) !important" 
+                  style="background: rgb(var(--v-theme-primary)) !important"
                 />
-                <div 
+                <div
                   v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
                   class="indicator-dot permutation ml-1"
                   style="background: rgb(var(--v-theme-primary)) !important"
                 />
-                <div 
+                <div
                   v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
                   class="indicator-dot other-demand ml-1"
                   style="background: rgba(var(--v-theme-error), .3) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.05) !important"
                 />
               </div>
-            </div>      
+            </div>
           </div>
         </v-card>
       </v-col>
@@ -115,10 +114,10 @@
 </template>
 
 <script setup>
-import {defineProps, defineEmits} from 'vue';
+
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { computed } from 'vue';
+
 
 
 const substitutionStore = useSubstitutionStore();
@@ -154,11 +153,11 @@ const acceptedAsPoster = computed(() => (date) => {
 const getColor = (date) => {
   if (props.isSelected(date)) {
     return 'onBackground';
-  // } else if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date.toISOString())) {
-  //   return 'remplacement';
-  }  else if (isWorkDay(date) && !inPast(date)) {
+    // } else if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date.toISOString())) {
+    //   return 'remplacement';
+  } else if (isWorkDay(date) && !inPast(date)) {
     return 'surfaceContainerHigh';
-    }  else {
+  } else {
     return 'surface';
   }
 };
@@ -249,8 +248,8 @@ const emit = defineEmits(['select-day']);
 
 
 .today-center-highlight {
- 
-  border : 1px solid  rgba(var(--v-theme-onBackground), 0.25)
+
+  border: 1px solid rgba(var(--v-theme-onBackground), 0.25)
 }
 
 .isWorkDay {
@@ -264,16 +263,19 @@ const emit = defineEmits(['select-day']);
 }
 
 .top-left-corner {
-  border-top-left-radius: 24px  !important;
+  border-top-left-radius: 24px !important;
 }
+
 .top-right-corner {
-  border-top-right-radius: 24px  !important;
+  border-top-right-radius: 24px !important;
 }
+
 .bottom-left-corner {
-  border-bottom-left-radius: 24px  !important;
+  border-bottom-left-radius: 24px !important;
 }
+
 .bottom-right-corner {
-  border-bottom-right-radius: 24px  !important;
+  border-bottom-right-radius: 24px !important;
 }
 
 
@@ -284,6 +286,4 @@ const emit = defineEmits(['select-day']);
 .permutation {
   background: rgb(var(--v-theme-permutation)) !important;
 }
-
-
 </style>

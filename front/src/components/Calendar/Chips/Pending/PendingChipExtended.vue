@@ -1,14 +1,11 @@
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const teamStore = useTeamStore();
+// const teamStore = useTeamStore();
 const substitutionStore = useSubstitutionStore();
-const authStore = useAuthStore();
+// const authStore = useAuthStore();
 const props = defineProps({
   date: {
     type: Date,
@@ -17,7 +14,7 @@ const props = defineProps({
   text: { type: String },
 });
 
-const type = ref('');
+// const type = ref('');
 
 const isTrueSwitch = computed(() => {
   if (substitutionStore.hasOwnPendingTrueSwitches(props.date.toISOString())) {

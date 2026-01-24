@@ -1,37 +1,68 @@
 <template>
-  <v-dialog :z-index="2500"
+  <v-dialog
+    :z-index="2500"
     :style="{zIndex: 2500 }"
-    :model-value="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
-    :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent" :retain-focus="false"
-    @update:model-value="$emit('update:modelValue', $event)" @after-enter="handleAfterEnter"
-    @after-leave="handleAfterLeave">
-    <v-card height="100vh" :class="smAndDown ? '' : 'rounded-xxl'" class="pt-0 pb-6 px-0 overflow-y-hidden">
+    :model-value="modelValue"
+    :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
+    :fullscreen="smAndDown"
+    :max-width="maxWidth"
+    :persistent="persistent"
+    :retain-focus="false"
+    @update:model-value="$emit('update:modelValue', $event)"
+    @after-enter="handleAfterEnter"
+    @after-leave="handleAfterLeave"
+  >
+    <v-card
+      height="100vh"
+      :class="smAndDown ? '' : 'rounded-xxl'"
+      class="pt-0 pb-6 px-0 overflow-y-hidden"
+    >
       <!-- Header avec titre et boutons -->
-      <div ref="headerRef" :style="{
-        paddingTop: 'calc(var(--safe-area-top,0px) + 8px) !important',
-        paddingLeft: smAndDown ? '4px !important' : '24px !important',
-      }" :class="[
-        'pb-2 pr-2  d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
-        isScrolled ? 'bg-surfaceContainerHigh' : ''
-      ]">
+      <div
+        ref="headerRef"
+        :style="{
+          paddingTop: 'calc(var(--safe-area-top,0px) + 8px) !important',
+          paddingLeft: smAndDown ? '4px !important' : '24px !important',
+        }"
+        :class="[
+          'pb-2 pr-2  d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
+          isScrolled ? 'bg-surfaceContainerHigh' : ''
+        ]"
+      >
         <div class="d-flex align-center justify-space-between flex-grow-1">
           <div class="d-flex align-center">
-            <v-btn v-if="smAndDown && showCloseButton" icon="mdi-arrow-left" variant="text" @click="handleClose"
-              class="mr-1" />
+            <v-btn
+              v-if="smAndDown && showCloseButton"
+              icon="mdi-arrow-left"
+              variant="text"
+              class="mr-1"
+              @click="handleClose"
+            />
 
-            <span :class="{
-              'text-h6': !smAndDown,
-              'text-h7': smAndDown
-            }" class=" font-weight-medium">
+            <span
+              :class="{
+                'text-h6': !smAndDown,
+                'text-h7': smAndDown
+              }"
+              class=" font-weight-medium"
+            >
               {{ title }}
             </span>
           </div>
 
 
-          <v-btn v-if="!smAndDown && showCloseButton" icon="mdi-close" variant="text" @click="handleClose" />
+          <v-btn
+            v-if="!smAndDown && showCloseButton"
+            icon="mdi-close"
+            variant="text"
+            @click="handleClose"
+          />
         </div>
 
-        <div v-if="smAndDown" class="d-flex align-center gap-2">
+        <div
+          v-if="smAndDown"
+          class="d-flex align-center gap-2"
+        >
           <!-- Bouton de fermeture/retour adaptatif -->
 
 
@@ -44,9 +75,18 @@
 
 
       <!-- Contenu principal -->
-      <v-card-text ref="contentRef" class="px-6 pb-0 ma-0 overflow-y-auto flex-column d-flex justify-space-between">
-        <div ref="sentinel" class="flex-grow-0 flex-shrink-0" />
-        <div ref="content" class="flex-grow-1 flex-shrink-0">
+      <v-card-text
+        ref="contentRef"
+        class="px-6 pb-0 ma-0 overflow-y-auto flex-column d-flex justify-space-between"
+      >
+        <div
+          ref="sentinel"
+          class="flex-grow-0 flex-shrink-0"
+        />
+        <div
+          ref="content"
+          class="flex-grow-1 flex-shrink-0"
+        >
           <slot name="content" />
         </div>
 
@@ -61,7 +101,6 @@
 </template>
 
 <script setup>
-import { computed, watch, ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useDisplay } from 'vuetify';
 
 // Props

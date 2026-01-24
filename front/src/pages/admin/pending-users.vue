@@ -1,31 +1,18 @@
 <template>
   <v-container>
-    <MainTitle
-      title="Nouvelles inscriptions"
-      subtitle="Gérer les nouvelles inscriptions"
-    >
-      <template #actions> 
+    <MainTitle title="Nouvelles inscriptions" subtitle="Gérer les nouvelles inscriptions">
+      <template #actions>
         <v-select
-          v-if="authStore.userData.adminType === 'master'"
-          v-model="selectedCenterId"
-          :items="centers"
+v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
           :item-props="center => ({
             title: center.name,
             subtitle: center.oaci
-          })"
-          item-value="_id"
-          label="Sélectionner un centre"
-          variant="solo-filled"
-          rounded="xl"
-          flat
-          min-width="200px" 
-          max-width="300px"
-          @update:model-value="handleCenterChange"
-        />
+          })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" flat min-width="200px"
+          max-width="300px" @update:model-value="handleCenterChange" />
       </template>
     </MainTitle>
-    
-    
+
+
 
     <!-- <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6" >
@@ -75,26 +62,12 @@
     </v-row> -->
 
     <v-row>
-      <v-col
-        v-for="user in pendingUsers"
-        :key="user._id"
-        cols="12"
-      >
-        <v-card
-          class="pa-2"
-          rounded="xl"
-          variant="flat"
-          color="surface"
-        >
+      <v-col v-for="user in pendingUsers" :key="user._id" cols="12">
+        <v-card class="pa-2" rounded="xl" variant="flat" color="surface">
           <v-card-item>
             <v-card-title class="d-flex justify-space-between align-center">
               <div class="d-flex align-center">
-                <v-avatar
-                  color="primary"
-                  variant="tonal"
-                  size="40"
-                  class="mr-2"
-                >
+                <v-avatar color="primary" variant="tonal" size="40" class="mr-2">
                   {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
                 </v-avatar>
                 <div>
@@ -118,22 +91,10 @@
           </v-card-text>
           <v-card-actions class="pt-0 flex-wrap justify-end">
             <v-spacer />
-            <v-btn
-              color="success"
-              variant="tonal"
-              rounded="lg"
-              prepend-icon="mdi-check"
-              @click="approveUser(user)"
-            >
+            <v-btn color="success" variant="tonal" rounded="lg" prepend-icon="mdi-check" @click="approveUser(user)">
               Approuver l'inscription
             </v-btn>
-            <v-btn
-              color="error"
-              variant="text"
-
-
-              @click="rejectUser(user)"
-            >
+            <v-btn color="error" variant="text" @click="rejectUser(user)">
               Rejeter
             </v-btn>
           </v-card-actions>
@@ -142,15 +103,8 @@
     </v-row>
 
     <!-- Confirmation Dialog -->
-    <v-dialog
-      v-model="confirmDialog"
-      max-width="400"
-    >
-      <v-card
-        rounded="xl"
-        variant="flat"
-        class="pa-6"
-      >
+    <v-dialog v-model="confirmDialog" max-width="400">
+      <v-card rounded="xl" variant="flat" class="pa-6">
         <v-card-title class="text-h6 pa-0">
           Confirmer l'action
         </v-card-title>
@@ -159,18 +113,12 @@
         </v-card-text>
         <v-card-actions class="pa-0 ">
           <v-spacer />
-          <v-btn
-            color="onSurface"
-            variant="text"
-            @click="confirmDialog = false"
-          >
+          <v-btn color="onSurface" variant="text" @click="confirmDialog = false">
             Annuler
           </v-btn>
           <v-btn
-            :color="confirmAction === 'approve' ? 'success' : 'error'"
-            variant="tonal"
-            @click="handleConfirmAction"
-          >
+:color="confirmAction === 'approve' ? 'success' : 'error'" variant="tonal"
+            @click="handleConfirmAction">
             Confirmer
           </v-btn>
         </v-card-actions>
@@ -180,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+
 import { useUserStore } from "@/stores/userStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useAuthStore } from '@/stores/authStore';
@@ -203,7 +151,7 @@ const centers = computed(() => centerStore.centers);
 
 const pendingUsers = computed(() => {
   let users = userStore.users.filter(user => user.registrationStatus === 'pending');
-  
+
   // Si c'est un admin local, ne montrer que les utilisateurs de son centre
   if (authStore.userData.adminType !== 'master') {
     users = users.filter(user => user.centerId === authStore.userData.centerId);
@@ -212,13 +160,13 @@ const pendingUsers = computed(() => {
   else if (selectedCenterId.value) {
     users = users.filter(user => user.centerId === selectedCenterId.value);
   }
-  
+
   return users;
 });
 
 const centerTeams = computed(() => {
   return teamStore.centerTeams;
-}); 
+});
 
 const userCurrentTeam = computed(() => (user) => {
   if (user.currentTeam) {
@@ -305,6 +253,4 @@ onMounted(async () => {
 });
 </script>
 
-<style scoped>
-
-</style> 
+<style scoped></style>

@@ -471,7 +471,6 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from "vue";
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { accountCreationService } from "@/services/accountCreationService.js";
@@ -512,7 +511,7 @@ const acceptedTerms = ref(false);
 const emailExists = ref(false);
 const stepValid = ref({1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false});
 const stepErrors = ref({1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: ""});
-const form = ref(null);
+// const form = ref(null);
 
 // Loading states
 const loadingCenters = ref(false);
@@ -524,18 +523,18 @@ const showLegacyAlert = ref(false);
 // Side panel state
 const sidePanelOpen = ref(false);
 const activeSidePanel = ref(null);
-const sidePanelTitle = computed(() => {
-  if (activeSidePanel.value === 'contact') return "Contacter un administrateur";
-  if (activeSidePanel.value === 'privacy') return "Politique de confidentialité";
-  return "";
-});
+// const sidePanelTitle = computed(() => {
+//   if (activeSidePanel.value === 'contact') return "Contacter un administrateur";
+//   if (activeSidePanel.value === 'privacy') return "Politique de confidentialité";
+//   return "";
+// });
 
 // Contact form
-const contactForm = ref({
-  subject: "",
-  message: "",
-  submitting: false
-});
+// const contactForm = ref({
+//   subject: "",
+//   message: "",
+//   submitting: false
+// });
 
 // Computed properties
 const progressValue = computed(() => ((step.value - 1) * 100) / 8);

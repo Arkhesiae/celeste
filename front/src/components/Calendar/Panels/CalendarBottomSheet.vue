@@ -2,8 +2,8 @@
   <v-bottom-sheet
     :model-value="modelValue"
     inset
-    @update:model-value="emit('update:modelValue', $event)"
     class="safe-area-bottom"
+    @update:model-value="emit('update:modelValue', $event)"
   >
     <CalendarPanel
       :formatted-date="formattedDate"
@@ -20,7 +20,7 @@
 <script setup>
 const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openDrawer', 'cancel', 'withdraw']);
 
-const props = defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
     required: true

@@ -1,6 +1,11 @@
 <template>
-  <v-card class="px-2 ma-0" :rounded="smAndDown ? 'lg' : 'xl'" variant="flat" @click="$emit('click', user)"
-    :color="smAndDown ? 'transparent ' : 'surface'">
+  <v-card
+    class="px-2 ma-0"
+    :rounded="smAndDown ? 'lg' : 'xl'"
+    variant="flat"
+    :color="smAndDown ? 'transparent ' : 'surface'"
+    @click="$emit('click', user)"
+  >
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
@@ -21,8 +26,13 @@
             </div>
           </div>
         </div>
-        <v-icon class="position-absolute top-0 right-0 ma-4 opacity-50" color="onBackground"
-          size="x-small">mdi-arrow-expand</v-icon>
+        <v-icon
+          class="position-absolute top-0 right-0 ma-4 opacity-50"
+          color="onBackground"
+          size="x-small"
+        >
+          mdi-arrow-expand
+        </v-icon>
         <!-- <v-menu color="onBackground" rounded="lg">
           <template v-slot:activator="{ props }">
             <v-btn icon variant="text" v-bind="props" @click.stop>
@@ -63,36 +73,79 @@
       </v-card-title>
     </v-card-item>
     <v-card-text class="pt-0 d-flex justify-start">
-      <div v-if="user.isAdmin" class="d-flex mr-2" :class="user.adminType === 'master' ? 'block' : ''">
-        <v-chip rounded="lg" variant="flat" color="surface" size="small">
-          <v-icon class="mr-2" v-if="user.isAdmin && user.adminType === 'master'" color="primary">
+      <div
+        v-if="user.isAdmin"
+        class="d-flex mr-2"
+        :class="user.adminType === 'master' ? 'block' : ''"
+      >
+        <v-chip
+          rounded="lg"
+          variant="flat"
+          color="surface"
+          size="small"
+        >
+          <v-icon
+            v-if="user.isAdmin && user.adminType === 'master'"
+            class="mr-2"
+            color="primary"
+          >
             mdi-star-four-points
           </v-icon>
-          <v-icon class="mr-2" v-else color="secondary">
+          <v-icon
+            v-else
+            class="mr-2"
+            color="secondary"
+          >
             mdi-shield-crown-outline
           </v-icon>
           Admin
         </v-chip>
       </div>
 
-      <v-chip color="onBackground" rounded="lg" size="small" class="mr-2">
+      <v-chip
+        color="onBackground"
+        rounded="lg"
+        size="small"
+        class="mr-2"
+      >
         {{ getCenterById(user.centerId)?.name || "No center" }}
       </v-chip>
       <div class="d-flex justify-space-between align-center flex-column position-absolute bottom-0 right-0 mr-6 mb-4">
         <div v-if="user.points > 99999">
-          <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
+          <v-icon
+            class="mb-1"
+            size="x-large"
+          >
+            mdi-infinity
+          </v-icon>
         </div>
-        <div v-else class="text-h6 font-weight-bold" :class="user.points || user.points === 0 ? '' : 'blurred'"> {{
-          user.points || user.points === 0 ? user.points :
-          "XX" }}</div>
-        <div class="text-body-2 text-medium-emphasis mt-n2">Points </div>
-
+        <div
+          v-else
+          class="text-h6 font-weight-bold"
+          :class="user.points || user.points === 0 ? '' : 'blurred'"
+        >
+          {{
+            user.points || user.points === 0 ? user.points :
+            "XX" }}
+        </div>
+        <div class="text-body-2 text-medium-emphasis mt-n2">
+          Points
+        </div>
       </div>
-      <v-chip color="onBackground" rounded="lg" size="small" class="mr-2">
+      <v-chip
+        color="onBackground"
+        rounded="lg"
+        size="small"
+        class="mr-2"
+      >
         {{ getTeamName(user.currentTeam?.teamId) }}
       </v-chip>
 
-      <v-chip v-if="user.status === 'pending'" :color="user.status === 'pending' ? 'warning' : 'success'" size="small">
+      <v-chip
+        v-if="user.status === 'pending'"
+        :color="user.status === 'pending' ? 'warning' : 'success'"
+        size="small"
+      >
         {{ user.status === 'pending' ? 'En attente' : 'Approuvé' }}
       </v-chip>
     </v-card-text>
@@ -105,7 +158,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterStore } from '@/stores/centerStore';
@@ -116,7 +169,7 @@ const authStore = useAuthStore();
 const centerStore = useCenterStore();
 const teamStore = useTeamStore();
 
-const props = defineProps({
+defineProps({
   user: {
     type: Object,
     required: true
@@ -126,7 +179,7 @@ const props = defineProps({
 const emit = defineEmits(['click', 'approve', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
 
 const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
-const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
+// const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 
 const getCenterById = (centerId) => {
   return centerStore.centers.find(center => center._id === centerId) || null;

@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue';
+;
 import { defineStore } from 'pinia';
 import { planningModificationService } from '@/services/planningModificationService';
 import { useAuthStore } from '@/stores/authStore';
@@ -24,7 +24,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
   const userId = computed(() => authStore.userData.userId);
 
   // =============== COMPUTED PROPERTIES ===============
-  
+
   // Modifications en attente d'approbation
   const pendingModifications = computed(() => {
     if (!userId.value) return [];
@@ -72,10 +72,10 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       const newModification = await planningModificationService.createModification(modificationData);
       modifications.value.push(newModification);
-      
+
       return newModification;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la création de la modification';
@@ -94,10 +94,10 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       const userModifications = await planningModificationService.getUserModifications(params);
       modifications.value = userModifications;
-      
+
       return userModifications;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des modifications';
@@ -117,10 +117,10 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       const centerModifications = await planningModificationService.getCenterModifications(centerId, params);
       modifications.value = centerModifications;
-      
+
       return centerModifications;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des modifications du centre';
@@ -140,15 +140,15 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       const updatedModification = await planningModificationService.updateModification(id, modificationData);
-      
+
       // Mettre à jour la modification dans le store
       const index = modifications.value.findIndex(mod => mod._id === id);
       if (index !== -1) {
         modifications.value[index] = updatedModification;
       }
-      
+
       return updatedModification;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la mise à jour de la modification';
@@ -167,9 +167,9 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       await planningModificationService.deleteModification(id);
-      
+
       // Supprimer la modification du store
       modifications.value = modifications.value.filter(mod => mod._id !== id);
     } catch (err) {
@@ -191,15 +191,15 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       const updatedModification = await planningModificationService.updateModificationStatus(id, status, comment);
-      
+
       // Mettre à jour la modification dans le store
       const index = modifications.value.findIndex(mod => mod._id === id);
       if (index !== -1) {
         modifications.value[index] = updatedModification;
       }
-      
+
       return updatedModification;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la mise à jour du statut';
@@ -218,10 +218,10 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     try {
       loading.value = true;
       error.value = null;
-      
+
       const modification = await planningModificationService.getModification(id);
       currentModification.value = modification;
-      
+
       return modification;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération de la modification';
@@ -261,7 +261,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     loading,
     error,
     currentModification,
-    
+
     // Computed
     pendingModifications,
     approvedModifications,
@@ -269,7 +269,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     absences,
     offDays,
     customModifications,
-    
+
     // Actions
     createModification,
     fetchUserModifications,

@@ -1,9 +1,5 @@
 <template>
-  <v-card
-    class="pa-1 my-1 occurrence-card"
-    flat
-    :color="occurrence.type === 'Renfort' ? 'background' : 'background'"
-  >
+  <v-card class="pa-1 my-1 occurrence-card" flat :color="occurrence.type === 'Renfort' ? 'background' : 'background'">
     <v-card-item :prepend-icon="occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline'">
       <div class="d-flex align-start justify-space-between">
         <div class="d-flex align-start flex-column">
@@ -11,20 +7,14 @@
           <v-card-subtitle v-if="occurrence.type === 'Renfort'">
             Du
             <v-chip
-              :class="smAndDown ? 'px-0 ' : 'px-4'"
-              :size="smAndDown ? 'small' : 'default'"
-              :variant="smAndDown ? 'text' : 'tonal'"
-              rounded="lg"
-            >
+:class="smAndDown ? 'px-0 ' : 'px-4'" :size="smAndDown ? 'small' : 'default'"
+              :variant="smAndDown ? 'text' : 'tonal'" rounded="lg">
               {{ formattedOccurenceDate(occurrence.fromDate) }}
             </v-chip>
             au
             <v-chip
-              :class="smAndDown ? 'px-0 ' : 'px-4 '"
-              :size="smAndDown ? 'small' : 'default'"
-              :variant="smAndDown ? 'text' : 'tonal'"
-              rounded="lg"
-            >
+:class="smAndDown ? 'px-0 ' : 'px-4 '" :size="smAndDown ? 'small' : 'default'"
+              :variant="smAndDown ? 'text' : 'tonal'" rounded="lg">
               {{ formattedOccurenceDate(occurrence.toDate) }}
             </v-chip>
           </v-card-subtitle>
@@ -34,45 +24,21 @@
           </v-card-subtitle>
         </div>
         <div>
-          <v-chip
-            v-if="!smAndDown"
-            class=""
-            color="onBackground"
-            size="small"
-            rounded="lg"
-          >
+          <v-chip v-if="!smAndDown" class="" color="onBackground" size="small" rounded="lg">
             {{ "Dans " + relativeDays + " jours" }}
           </v-chip>
         </div>
       </div>
       <template #append>
         <v-scroll-x-transition mode="out-in">
-          <div
-            v-if="activeCardId !== occurrence._id"
-            key="not-active"
-          >
-            <v-btn
-              rounded="xl"
-              variant="text"
-              color="onBackground"
-              icon
-              @click.stop="handleDelete(occurrence._id)"
-            >
+          <div v-if="activeCardId !== occurrence._id" key="not-active">
+            <v-btn rounded="xl" variant="text" color="onBackground" icon @click.stop="handleDelete(occurrence._id)">
               <v-icon>mdi-delete-outline</v-icon>
             </v-btn>
           </div>
 
-          <div
-            v-else
-            key="not-subscribed"
-            class="text-caption"
-          >
-            <v-btn
-              rounded="lg"
-              prepend-icon="mdi-delete"
-              color="error "
-              @click.stop="handleDelete(occurrence._id)"
-            >
+          <div v-else key="not-subscribed" class="text-caption">
+            <v-btn rounded="lg" prepend-icon="mdi-delete" color="error " @click.stop="handleDelete(occurrence._id)">
               CONFIRMER
             </v-btn>
           </div>
@@ -83,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+
 import { useAuthStore } from "@/stores/authStore.js";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useDisplay } from "vuetify";

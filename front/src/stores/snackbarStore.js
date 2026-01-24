@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed, reactive } from 'vue';
+
 
 /**
  * Store Pinia pour gérer l'état des notifications snackbar.
@@ -68,7 +68,7 @@ export const useSnackbarStore = defineStore('snackbar', () => {
       message: newText,
       icon: newIcon,
       timeout: newTimeout,
-      iconColor:  newColor,
+      iconColor: newColor,
     })
     showAdditionalSnackbar(newText, newColor, newIcon, newTimeout);
     message.value = newText;
@@ -83,7 +83,7 @@ export const useSnackbarStore = defineStore('snackbar', () => {
       message: newText,
       icon: newIcon,
       timeout: newTimeout,
-      iconColor:  newColor,
+      iconColor: newColor,
     })
   }
 

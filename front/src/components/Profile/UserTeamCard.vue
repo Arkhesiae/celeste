@@ -346,7 +346,7 @@
   </v-dialog>
 
   <ConfirmationDialog
-    :is-dialog-visible="showConfirmationDialog"
+    v-model="showConfirmationDialog"
     title="Suppression du changement"
     text="Êtes-vous sûr de vouloir supprimer ce changement ? Cette action est irréversible."
     icon="mdi-delete-outline"

@@ -172,24 +172,24 @@
     />
 
     <ConfirmationDialog
-      :is-dialog-visible="showConfirmationDialog"
+      v-model="showConfirmationDialog"
       :title="'Suppression du tour de service'"
       :text="'Êtes-vous sûr de vouloir supprimer ce tour de service ? Cette action est irréversible.'"
       :icon="'mdi-delete-outline'"
       :icon-color="'error'"
       :confirm-text="'Supprimer'"
       @confirm="confirmDelete"
-      @update:is-dialog-visible="showConfirmationDialog = $event"
+      @update:model-value="showConfirmationDialog = $event"
     />
 
     <ConfirmationDialog
-      :is-dialog-visible="showDateConfirmationDialog"
+      v-model="showDateConfirmationDialog"
       :title="'Suppression de la date d\'activation'"
       :text="'Êtes-vous sûr de vouloir supprimer cette date d\'activation ? Cette action est irréversible.'"
       :icon-color="'error'"
       :confirm-text="'Supprimer'"
       @confirm="removeActivationDate"
-      @update:is-dialog-visible="showDateConfirmationDialog = $event"
+      @update:model-value="showDateConfirmationDialog = $event"
     />
 
     <AddRotation

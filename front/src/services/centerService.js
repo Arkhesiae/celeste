@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux centres.
  * @module centerService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const centerService = {
   /**
@@ -10,10 +10,10 @@ export const centerService = {
    * @returns {Promise<Array>} Liste des centres.
    */
   async fetchCenters() {
-    const response = await fetch(`${API_URL}/center`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/center`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -22,10 +22,10 @@ export const centerService = {
    * @returns {Promise<Array>} Liste des utilisateurs du centre.
    */
   async fetchUsersByCenter(centerId) {
-    const response = await fetch(`${API_URL}/users/center/${centerId}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/users/center/${centerId}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -34,20 +34,20 @@ export const centerService = {
    * @returns {Promise<Object>} Le centre de l'utilisateur.
    */
   async getUserCenterById(userId) {
-    const userResponse = await fetch(`${API_URL}/users/${userId}`, {
-      headers: getAuthHeaders()
+    const userResponse = await apiFetch(`/users/${userId}`, {
+      method: 'GET'
     });
-    const user = await handleResponse(userResponse);
+    const user = await userResponse;
     const centerId = user.centerId;
 
     if (!centerId) {
       throw new Error('L\'utilisateur n\'appartient à aucun centre.');
     }
 
-    const centerResponse = await fetch(`${API_URL}/center/${centerId}`, {
-      headers: getAuthHeaders()
+    const centerResponse = await apiFetch(`/center/${centerId}`, {
+      method: 'GET'
     });
-    return handleResponse(centerResponse);
+    return centerResponse;
   },
 
   /**
@@ -56,12 +56,11 @@ export const centerService = {
    * @returns {Promise<Object>} Le centre ajouté.
    */
   async createCenter(newCenter) {
-    const response = await fetch(`${API_URL}/center`, {
+    const response = await apiFetch(`/center`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(newCenter),
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -70,11 +69,10 @@ export const centerService = {
    * @returns {Promise<void>}
    */
   async deleteCenter(centerId) {
-    const response = await fetch(`${API_URL}/center/${centerId}`, {
+    const response = await apiFetch(`/center/${centerId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -82,10 +80,10 @@ export const centerService = {
    * @returns {Promise<Object>} Les rotations actives par centre.
    */
   async fetchActiveRotations() {
-    const response = await fetch(`${API_URL}/center/all-active-rotations`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/center/all-active-rotations`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -94,10 +92,10 @@ export const centerService = {
    * @returns {Promise<Object>} La rotation active du centre.
    */
   async fetchActiveRotationOfCenter(centerId) {
-    const response = await fetch(`${API_URL}/center/${centerId}/active-rotation`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/center/${centerId}/active-rotation`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -105,10 +103,10 @@ export const centerService = {
    * @returns {Promise<Object>} Les administrateurs du centre.
    */
   async fetchAdminsByCenter() {
-    const response = await fetch(`${API_URL}/center/admins`, {
-      headers: getAuthHeaders()
+      const response = await apiFetch(`/center/admins`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -116,9 +114,9 @@ export const centerService = {
    * @returns {Promise<Object>} Le nombre d'utilisateurs par centre.
    */
   async fetchUsersCountByCenter() { 
-    const response = await fetch(`${API_URL}/center/users/count`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/center/users/count`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   } 
 };

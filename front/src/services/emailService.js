@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux emails et annonces.
  * @module emailService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const emailService = {
   /**
@@ -10,10 +10,10 @@ export const emailService = {
    * @returns {Promise<Array>} Liste des templates.
    */
   async getTemplates() {
-    const response = await fetch(`${API_URL}/announcements/templates`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/announcements/templates`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -21,10 +21,10 @@ export const emailService = {
    * @returns {Promise<number>} Le nombre d'utilisateurs.
    */
   async getUserCount() {
-    const response = await fetch(`${API_URL}/announcements/users-count`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/announcements/users-count`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -33,12 +33,11 @@ export const emailService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async sendAnnouncement(announcementData) {
-    const response = await fetch(`${API_URL}/announcements/send`, {
+    const response = await apiFetch(`/announcements/send`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(announcementData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -48,10 +47,10 @@ export const emailService = {
    */
   async getHistory(params = {}) {
     const queryParams = new URLSearchParams(params);
-    const response = await fetch(`${API_URL}/announcements/history?${queryParams}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/announcements/history?${queryParams}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -59,10 +58,10 @@ export const emailService = {
    * @returns {Promise<Object>} Les statistiques.
    */
   async getStats() {
-    const response = await fetch(`${API_URL}/announcements/stats`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/announcements/stats`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -71,11 +70,10 @@ export const emailService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async deleteAnnouncement(id) {
-    const response = await fetch(`${API_URL}/announcements/${id}`, {
+    const response = await apiFetch(`/announcements/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -85,12 +83,11 @@ export const emailService = {
    * @returns {Promise<string>} Le HTML du template.
    */
   async getTemplatePreview(templateType, data) {
-    const response = await fetch(`${API_URL}/announcements/templates/${templateType}/preview`, {
+    const response = await apiFetch(`/announcements/templates/${templateType}/preview`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(data)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**

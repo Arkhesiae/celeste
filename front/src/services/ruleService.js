@@ -1,37 +1,34 @@
-import { API_URL } from '@/config/api';
-import { handleResponse, getAuthHeaders } from '@/config/api';
+import { apiFetch } from '../config/api';
 
 export const ruleService = {
-  async getAllRules() {
-    const response = await fetch(`${API_URL}/rules`, {
+  async getAllRules (centerId) {
+    const response = await apiFetch(`/rules?centerId=${centerId}`, {
       method: 'GET',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
-  async updateRule(name, data) {
-    const response = await fetch(`${API_URL}/rules/${name}`, {
+  async updateRule (name, centerId, data) {
+    const response = await apiFetch(`/rules/${name}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(data)
+      body: JSON.stringify({ ...data, centerId })
     });
-    return handleResponse(response);
+    return response;
   },
 
-  async initializeRules() {
-    const response = await fetch(`${API_URL}/rules/initialize`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
+  async toggleLock (name, locked) {
+    const response = await apiFetch(`/rules/${name}/lock`, {
+      method: 'PUT',
+      body: JSON.stringify({ locked })
     });
-    return handleResponse(response);
+    return response;
   },
 
-  async resetRules() {
-    const response = await fetch(`${API_URL}/rules/reset`, {
-      method: 'POST',
-      headers: getAuthHeaders(),
+  async resetRule (name, centerId) {
+    const response = await apiFetch(`/rules/${name}?centerId=${centerId}`, {
+      method: 'DELETE',
     });
-    return handleResponse(response);
-  }
+    return response;
+  },
+
 }; 

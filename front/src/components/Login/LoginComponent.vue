@@ -479,19 +479,20 @@ const handleLogin = async () => {
     });
 
     saveRememberedEmail();
+    router.push({ path: '/dashboard', replace: true });
 
-    try {
-      router.push({ path: '/loading', replace: true });
-      await initializeApp();
+    // try {
+    //   router.push({ path: '/loading', replace: true });
+    //   await initializeApp();
 
-      router.push({ path: '/dashboard', replace: true });
-      snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
+    //   router.push({ path: '/dashboard', replace: true });
+    //   snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
 
       
-    } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
-      throw error;
-    }
+    // } catch (error) {
+    //   console.error('Erreur lors du chargement des données:', error);
+    //   throw error;
+    // }
   } catch (error) {
     if (error.status === 401) {
       snackbarStore.showNotification('Identifiants incorrects', 'onError', 'mdi-alert-circle');

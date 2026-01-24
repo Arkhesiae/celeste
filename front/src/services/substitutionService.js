@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux substitutions.
  * @module substitutionService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const substitutionService = {
   /**
@@ -31,13 +31,12 @@ export const substitutionService = {
     if (status && status !== 'undefined') {
       requestBody.status = status;
     }
-
-    const response = await fetch(`${API_URL}/substitution/center`, {
+    
+    const response = await apiFetch(`/substitution/center`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(requestBody)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -45,11 +44,11 @@ export const substitutionService = {
    * @param {string} id - L'ID de la substitution.
    * @returns {Promise<Object>} Les données de la substitution.
    */
-  async getSubstitutionById (id) {
-    const response = await fetch(`${API_URL}/substitution/${id}`, {
-      headers: getAuthHeaders()
+  async getSubstitutionById(id) {
+    const response = await apiFetch(`/substitution/${id}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -57,13 +56,12 @@ export const substitutionService = {
    * @param {Object} substitutionData - Les données de la nouvelle substitution.
    * @returns {Promise<Object>} La substitution créée.
    */
-  async createSubstitutionDemand (substitutionData) {
-    const response = await fetch(`${API_URL}/substitution`, {
+  async createSubstitutionDemand(substitutionData) {
+    const response = await apiFetch(`/substitution`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(substitutionData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -72,13 +70,12 @@ export const substitutionService = {
    * @param {Object} substitutionData - Les nouvelles données de la substitution.
    * @returns {Promise<Object>} La substitution mise à jour.
    */
-  async updateSubstitution (id, substitutionData) {
-    const response = await fetch(`${API_URL}/substitution/${id}`, {
+  async updateSubstitution(id, substitutionData) {
+    const response = await apiFetch(`/substitution/${id}`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(substitutionData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -86,12 +83,11 @@ export const substitutionService = {
    * @param {string} id - L'ID de la substitution à supprimer.
    * @returns {Promise<void>}
    */
-  async cancelDemand (id) {
-    const response = await fetch(`${API_URL}/substitution/${id}/cancel`, {
+  async cancelDemand(id) {
+    const response = await apiFetch(`/substitution/${id}/cancel`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -99,12 +95,11 @@ export const substitutionService = {
    * @param {string} id - L'ID de la substitution.
    * @returns {Promise<Object>} La substitution acceptée.
    */
-  async acceptDemand (id) {
-    const response = await fetch(`${API_URL}/substitution/${id}/accept`, {
+  async acceptDemand(id) {
+    const response = await apiFetch(`/substitution/${id}/accept`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -112,12 +107,11 @@ export const substitutionService = {
    * @param {string} id - L'ID de la substitution.
    * @returns {Promise<Object>} La substitution refusée.
    */
-  async rejectSubstitution (id) {
-    const response = await fetch(`${API_URL}/substitution/${id}/reject`, {
+  async rejectSubstitution(id) {
+    const response = await apiFetch(`/substitution/${id}/reject`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -125,11 +119,11 @@ export const substitutionService = {
    * @param {string} userId - L'ID de l'utilisateur.
    * @returns {Promise<Array>} Liste des substitutions de l'utilisateur.
    */
-  async getUserSubstitutions (userId) {
-    const response = await fetch(`${API_URL}/users/${userId}/substitution`, {
-      headers: getAuthHeaders()
+  async getUserSubstitutions(userId) {
+    const response = await apiFetch(`/users/${userId}/substitution`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -137,11 +131,11 @@ export const substitutionService = {
    * @param {string} date - La date à vérifier.
    * @returns {Promise<Object>} Les informations du shift.
    */
-  async checkUserShift (date) {
-    const response = await fetch(`${API_URL}/substitution/check-shift/${date}`, {
-      headers: getAuthHeaders()
+  async checkUserShift(date) {
+    const response = await apiFetch(`/substitution/check-shift/${date}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -149,12 +143,11 @@ export const substitutionService = {
    * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} Les informations de l'échange.
    */
-  async swapShifts (demandId) {
-    const response = await fetch(`${API_URL}/substitution/${demandId}/swap`, {
+  async swapShifts(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/swap`, {
       method: 'POST',
-      headers: getAuthHeaders(),
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -162,12 +155,11 @@ export const substitutionService = {
    * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} Les informations de la demande.
    */
-  async markInterest (demandId) {
-    const response = await fetch(`${API_URL}/substitution/${demandId}/interest`, {
+  async markInterest(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/interest`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -175,12 +167,11 @@ export const substitutionService = {
    * @param {string} id - L'ID de la substitution.
    * @returns {Promise<Object>} La substitution mise à jour.
    */
-  async unacceptDemand (id) {
-    const response = await fetch(`${API_URL}/substitution/${id}/unaccept`, {
+  async unacceptDemand(id) {
+    const response = await apiFetch(`/substitution/${id}/unaccept`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -188,13 +179,12 @@ export const substitutionService = {
    * @param {Object} params - { userId, newTeamId, fromDate }
    * @returns {Promise<Object>} Liste des IDs de substitutions conflictuelles.
    */
-  async detectTeamChangeConflicts (params) {
-    const response = await fetch(`${API_URL}/substitution/detect-team-change-conflicts`, {
+  async detectTeamChangeConflicts(params) {
+    const response = await apiFetch(`/substitution/detect-team-change-conflicts`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(params)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -202,21 +192,20 @@ export const substitutionService = {
    * @param {Array<string>} substitutionIds - Liste des IDs de substitutions à recatégoriser
    * @returns {Promise<Array>} Liste des substitutions recatégorisées
    */
-  async recategorizeSubstitutions (substitutionIds) {
-    const response = await fetch(`${API_URL}/substitution/recategorize`, {
+  async recategorizeSubstitutions(substitutionIds) {
+    const response = await apiFetch(`/substitution/recategorize`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ substitutionIds })
     });
-    return handleResponse(response);
+    return response;
   },
 
 
-  async fetchCompatibleSwitches (date) {
-    const response = await fetch(`${API_URL}/substitution/compatible-switches/${date}`, {
-      headers: getAuthHeaders()
+  async fetchCompatibleSwitches(date) {
+    const response = await apiFetch(`/substitution/compatible-switches/${date}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**

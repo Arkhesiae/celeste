@@ -1,7 +1,7 @@
 /**
  * Service pour gérer les opérations liées aux points
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 
 export const pointService = {
@@ -11,11 +11,10 @@ export const pointService = {
  * @returns {Promise<Object>} Les points de l'utilisateur
  */
   getUserPoints: async (id) => {
-    const response = await fetch(`${API_URL}/users/${id}/points`, {
+      const response = await apiFetch(`/users/${id}/points`, {
       method: 'GET',
-    headers: getAuthHeaders(),
-  });
-  return handleResponse(response);
+    });
+  return response;
   },
 
 /**
@@ -28,9 +27,8 @@ export const pointService = {
  * @returns {Promise<Object>} La transaction créée
  */
   transferPoints: async (fromUserId, toUserId, amount, description = '', scheduledDate = null) => {
-    const response = await fetch(`${API_URL}/users/${fromUserId}/points/transfer`, {
+    const response = await apiFetch(`/users/${fromUserId}/points/transfer`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({
       toUserId,
       amount,
@@ -39,7 +37,7 @@ export const pointService = {
       scheduledDate
     }),
   });
-  return handleResponse(response);
+  return response;
   },
 
 /**
@@ -49,11 +47,10 @@ export const pointService = {
  * @returns {Promise<Array>} Liste des transactions
  */
   getTransactionHistory: async (userId, limit = 1000) => {
-    const response = await fetch(`${API_URL}/users/${userId}/transactions?limit=${limit}`, {
+    const response = await apiFetch(`/users/${userId}/transactions?limit=${limit}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
     });
-    return handleResponse(response);
+    return response;
       },
 
 /**
@@ -62,10 +59,9 @@ export const pointService = {
  * @returns {Promise<Array>} Liste des transactions en attente
  */
   getPendingTransactions: async (userId) => {
-    const response = await fetch(`${API_URL}/users/${userId}/transactions/pending`, {
+    const response = await apiFetch(`/users/${userId}/transactions/pending`, {
       method: 'GET',
-      headers: getAuthHeaders(),
     });
-    return handleResponse(response);
+    return response;
   },
 }; 

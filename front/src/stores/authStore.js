@@ -1,13 +1,11 @@
 import {defineStore} from 'pinia';
-import {ref, computed} from 'vue';
+import {ref} from 'vue';
 import {authService} from '@/services/authService';
-import {jwtDecode} from "jwt-decode";
+
 import { userService } from '@/services/userService';
 import { emptyAllStores } from '@/utils/emptyAllStores';
-
-const STORAGE_KEY = 'authData';
-const TOKEN_EXPIRATION_THRESHOLD = 5 * 60; // 5 minutes en secondes
-
+import { useInitializationStore } from '@/stores/initializationStore';
+  
 /**
  * Store Pinia pour gérer l'état de l'authentification.
  * @module authStore
@@ -17,78 +15,50 @@ export const useAuthStore = defineStore('auth', () => {
   const userData = ref({});
   const accessToken = ref();
   const isLoggedIn = ref(false);
+  const isAuthReady = ref(false);
+  const isCheckingAuth = ref(false);
+  const initializationStore = useInitializationStore();
 
-  // Getters
-  const isTokenExpired = computed(() => {
-    if (!accessToken.value) return true;
-    try {
-      const decodedToken = jwtDecode(accessToken.value);
-      const currentTime = Math.floor(Date.now() / 1000);
-      return decodedToken.exp < currentTime;
-    } catch {
-      return true;
-    }
-  });
-
-  const isTokenExpiringSoon = computed(() => {
-    if (!accessToken.value) return true;
-    try {
-      const decodedToken = jwtDecode(accessToken.value);
-      const currentTime = Math.floor(Date.now() / 1000);
-      return decodedToken.exp - currentTime < TOKEN_EXPIRATION_THRESHOLD;
-    } catch {
-      return true;
-    }
-  });
-
-  // const isAdmin = computed(() => {
-  //   return  userData.value.isAdmin;
-  // });
-
-  // Actions
   /**
-   * Charge les données de l'utilisateur depuis le localStorage.
+   * Initialise l'authentification.
    */
-  const loadFromLocalStorage = async () => {
+  const initializeAuth = async () => {
+    if (isAuthReady.value) return;
+    if (isCheckingAuth.value) return;
+  
     try {
-      const data = JSON.parse(localStorage.getItem(STORAGE_KEY)); 
-      if (data?.accessToken) {
-        setUser(data);
-        isLoggedIn.value = await validateAccessToken();
-        return true;
-      }
+      isCheckingAuth.value = true;
+      const data = await authService.refreshToken();
 
+      setUser(data);
+      isLoggedIn.value = true;
     } catch (err) {
+      console.error('Erreur d\'initialisation de l\'authentification:', err.message);
       logOut();
-      throw err;
-    } 
+    } finally {
+      isAuthReady.value = true;
+      isCheckingAuth.value = false;
+    }
   };
 
+  
   /**
-   * Valide le token d'accès.
-   * @returns {Promise<boolean>} True si le token est valide.
+   * Rafraîchit le token d'accès si l'utilisateur est connecté.
    */
-  const validateAccessToken = async () => {
+  const refreshToken = async () => {
+    if (!isLoggedIn.value) return;
     try {
-       if (!accessToken.value) {
-         throw new Error('Aucun token d\'accès trouvé.');
-       }
+    
+      const data = await authService.refreshToken();
+      accessToken.value = data.accessToken;
+   
+    } catch (err) {
+      console.error('Echec du rafraîchissement du token:', err.message);
+      logOut();
+      throw err;
+    }
+  };
 
-       if (isTokenExpired.value) {
-         throw new Error('Le token d\'accès a expiré.');
-       }
-
-       if (isTokenExpiringSoon.value) {
-         throw new Error('Le token d\'accès a expiré.');
-        //  await refreshToken();
-       }
-       
-       return true;
-     } catch (err) {
-       logOut();
-       throw err;
-     }
-   };
 
 
   /**
@@ -98,20 +68,36 @@ export const useAuthStore = defineStore('auth', () => {
   const setUser = (data) => {
     userData.value = data.userData;
     accessToken.value = data.accessToken;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
+
+
+  const clearAuth = () => {
+    userData.value = {};
+    accessToken.value = '';
+    isLoggedIn.value = false;
+    // isAuthReady.value = false;
   };
 
   /**
    * Déconnecte l'utilisateur et supprime les données du localStorage.
    */
-  const logOut = () => {
-    userData.value = {};
-    accessToken.value = '';
-    isLoggedIn.value = false;
+  const logOut = async () => {
+    clearAuth();
     emptyAllStores();
-    localStorage.removeItem(STORAGE_KEY);
+    initializationStore.setAppReady(false);
+  
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error('Erreur lors de la déconnexion:', err.message);
+      throw err;
+    }
   };
 
+
+  const setAccessToken = (newAccessToken) => {
+    accessToken.value = newAccessToken;
+  };
 
 
   /**
@@ -119,7 +105,6 @@ export const useAuthStore = defineStore('auth', () => {
    * @param {Object} credentials - Les identifiants de l'utilisateur (email, password).
    */
   const logIn = async (credentials) => {
-    console.log("Logging in");
     try {
       const result = await authService.login(credentials);
       setUser(result);
@@ -132,29 +117,13 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   /**
-   * Rafraîchit le token d'accès.
-   */
-  const refreshToken = async () => {
-    try {
-      const data = await authService.refreshToken(accessToken.value);
-      accessToken.value = data.accessToken;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (err) {
-      console.error('Échec du rafraîchissement du token:', err.message);
-      logOut();
-      throw err;
-    }
-  };
-
-  /**
    * Met à jour les préférences utilisateur.
    * @param {Object} preferences - Les nouvelles préférences.
    */
   const updateUserPreferences = async (preferences) => {
     try {
       if (!isLoggedIn.value) return;
-      
-      console.log(preferences);
+
       const userId = userData.value.userId;
       const currentPreferences = userData.value.preferences || {};
       const updatedPreferences = { ...currentPreferences, ...preferences };
@@ -164,9 +133,9 @@ export const useAuthStore = defineStore('auth', () => {
 
       console.log('data', data);
 
-      const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      existingData.userData = { ...existingData.userData, preferences: updatedPreferences };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+      // const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      // existingData.userData = { ...existingData.userData, preferences: updatedPreferences };
+      // localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
@@ -183,9 +152,9 @@ export const useAuthStore = defineStore('auth', () => {
       
       userData.value.avatar = data.avatar;
 
-      const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      existingData.userData = { ...existingData.userData, avatar: data.avatar };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
+      // const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      // existingData.userData = { ...existingData.userData, avatar: data.avatar };
+      // localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
     } catch (err) {
       console.error('Erreur lors de la mise à jour de l\'avatar:', err.message);
@@ -197,14 +166,13 @@ export const useAuthStore = defineStore('auth', () => {
     userData,
     accessToken,
     isLoggedIn,
-    isTokenExpired,
-    isTokenExpiringSoon,
-    
-    
-    loadFromLocalStorage,
+    isAuthReady,
+    isCheckingAuth,
+    initializeAuth,
+    clearAuth,
+    setAccessToken,
     setUser,
     logOut,
-    validateAccessToken,
     logIn,
     refreshToken,
     updateUserPreferences,

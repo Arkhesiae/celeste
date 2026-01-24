@@ -2,7 +2,12 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { routes, handleHotUpdate } from 'vue-router/auto-routes'
 import { useAuthStore } from '@/stores/authStore.js';
+import { useInitializationStore } from '@/stores/initializationStore';
+import { useAppInitialization } from '@/composables/useAppInitialization';
 import { setupLayouts } from 'virtual:generated-layouts'
+
+
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -58,26 +63,13 @@ router.beforeEach(async (to, from, next) => {
   }
 
   const authStore = useAuthStore();
+  const initializationStore = useInitializationStore();
+  const { initializeApp } = useAppInitialization();
 
-
-  if (!authStore.accessToken) {
-    console.log("No access token");
-    try {
-      await authStore.loadFromLocalStorage();
-    } catch (error) {
-      console.warn("⚠️ Erreur lors du chargement des données d'authentification:", error);
-    }
-  } else {
-    console.log("Access token");
-    try {
-      await authStore.validateAccessToken();
-    } catch (error) {
-      
-      console.warn("⚠️ Token invalide ou expiré", error);
-    }
+  if (!authStore.isAuthReady) {
+    console.log('==> initializeAuth in beforeEach')
+    await authStore.initializeAuth();
   }
-
-
 
   if (to.path === '/') {
     if (authStore.isLoggedIn) {
@@ -87,7 +79,16 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
+  // Navigation guard pour les routes d'administration
+
+
   if (authStore.isLoggedIn) {
+    if (!initializationStore.isAppReady && to.path !== '/loading') {
+      initializationStore.setPendingRoute(to.path);
+      return next({ path: '/loading' });
+    } 
+
+
     if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
       return next({ path: '/pending-approval' });
     }
@@ -105,7 +106,8 @@ router.beforeEach(async (to, from, next) => {
 
 
   else {  
- 
+
+    // console.log(to.name)
    if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ path: '/login' });
     }
@@ -132,14 +134,12 @@ router.afterEach((to, from) => {
 
 
 if (import.meta.hot) {
-  import.meta.hot.accept('./auto-routes.js', (mod) => {
-    if (mod?.default) {
-      console.log('♻️ Hot update des routes détecté');
-      handleHotUpdate(mod.default);
-    } else {
-      console.warn('⚠️ Hot update: module auto-routes vide ou invalide');
+  import.meta.hot.accept((newModule) => {
+    if (nouveauModule) {
+      // newModule est indéfini au moment de l'apparition de la SyntaxError
+      console.log('updated : count is now ', newModule.count)
     }
-  });
+  })
 }
 
 // Gestion des erreurs de chargement dynamique

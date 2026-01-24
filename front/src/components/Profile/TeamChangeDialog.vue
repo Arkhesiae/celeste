@@ -357,21 +357,16 @@
         <div v-if="substitutionConflicts.length">
           <p>Les demandes suivantes sont impactées par le changement d'équipe / annulation et seront annulées :</p>
           <v-list class="pa-0 ga-3 my-2 d-flex flex-column">
-            <v-card
-              v-for="(conf, idx) in substitutionConflicts"
-              :key="idx"
-              color="background"
-              class="pa-4"
-              rounded="xl"
-              elevation="0"
-            >
-              <v-list-item-title>
-                Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                Demande initiale : <strong>{{ conf.sub?.posterShift?.name }}</strong> → après changement : <strong>{{ conf.newShift?.name }}</strong>
-              </v-list-item-subtitle>
-            </v-card>
+       
+                <v-card  v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl" elevation="0">
+                <v-list-item-title>
+                  Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  Demande initiale : <strong>{{ conf.sub?.posterShift?.shift?.name }}</strong> → après changement : <strong>{{ conf.newShift?.name }}</strong>
+                </v-list-item-subtitle>
+              </v-card>
+        
           </v-list>
         </div>
       </v-card-text>

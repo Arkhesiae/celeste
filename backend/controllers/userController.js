@@ -15,6 +15,9 @@ import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
 import { sendAdminNotificationEmail } from '../services/email/adminNotificationEmail.js';
 import * as userShiftsService from '../services/userService/userShiftsService.js'
+import { generateDateArray } from '../utils/generateDateArray.js';
+import ruleService from '../services/rules/ruleService.js';
+import { getUsersByCenter as getUsersByCenterService } from '../services/userService/getUsersByCenter.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -287,21 +290,15 @@ const assignUserToCenter = async (req, res) => {
 // Obtenir les utilisateurs d'un centre spécifique
 const getUsersByCenter = async (req, res) => {
     const { centerId } = req.params;
+   
+    console.log("centerId", centerId);
+    if (!centerId) {
+        return res.status(400).json({ message: 'ID du centre manquant' });
+    }
 
     try {
-        const users = await User.find({ centerId }).populate('teams');
-        if (!users.length) {
-            res.status(200).json([]);
-        }
-
-        const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
-            const currentTeam = await getTeamAtGivenDate(user.teams, new Date());
-            return {
-                ...user.toObject(),
-                currentTeam
-            };
-        }));
-
+        console.log(centerId);
+        const usersWithCurrentTeam = await getUsersByCenterService(centerId, req.user);
         res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs pour un centre:', error);

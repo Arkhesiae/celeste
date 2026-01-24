@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux rotations.
  * @module rotationService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const rotationService = {
   /**
@@ -10,10 +10,10 @@ export const rotationService = {
    * @returns {Promise<Array>} Liste des rotations.
    */
   async fetchRotations(centerId) {
-    const response = await fetch(`${API_URL}/rotations/status/${centerId}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/rotations/status/${centerId}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -22,10 +22,10 @@ export const rotationService = {
    * @returns {Promise<Object>} Les données de la rotation.
    */
   async getRotationById(id) {
-    const response = await fetch(`${API_URL}/rotations/${id}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/rotations/${id}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -34,12 +34,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation créée.
    */
   async createRotation(rotationData) {
-    const response = await fetch(`${API_URL}/rotations/create`, {
+    const response = await apiFetch(`/rotations/create`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(rotationData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -49,12 +48,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation mise à jour.
    */
   async updateRotation(id, rotationData) {
-    const response = await fetch(`${API_URL}/rotations/${id}/update`, {
+    const response = await apiFetch(`/rotations/${id}/update`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(rotationData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -63,11 +61,10 @@ export const rotationService = {
    * @returns {Promise<void>}
    */
   async deleteRotation(id) {
-    const response = await fetch(`${API_URL}/rotations/${id}`, {
+    const response = await apiFetch(`/rotations/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -76,12 +73,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation activée.
    */
   async setActiveRotation(id, activationDate  ) {
-    const response = await fetch(`${API_URL}/rotations/${id}/activate`, {
+    const response = await apiFetch(`/rotations/${id}/activate`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ activationDate })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -90,12 +86,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation activée.
    */
   async confirmAddActivation(id, activationDate) {
-    const response = await fetch(`${API_URL}/rotations/${id}/confirm-activate`, {
+    const response = await apiFetch(`/rotations/${id}/confirm-activate`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ activationDate })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -104,12 +99,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation activée.
    */
   async confirmRemoveActivation(id, activationDate) {
-    const response = await fetch(`${API_URL}/rotations/${id}/confirm-remove-activate`, {
+    const response = await apiFetch(`/rotations/${id}/confirm-remove-activate`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ activationDate })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -118,12 +112,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation désactivée.
    */
   async removeActivationDate(id, activationDate) {
-    const response = await fetch(`${API_URL}/rotations/${id}/remove-date`, {
+    const response = await apiFetch(`/rotations/${id}/remove-date`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ activationDate })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -132,10 +125,10 @@ export const rotationService = {
    * @returns {Promise<Array>} Liste des rotations du centre.
    */
   async getCenterRotations(centerId) {
-    const response = await fetch(`${API_URL}/centers/${centerId}/rotations`, {
-      headers: getAuthHeaders()
+      const response = await apiFetch(`/centers/${centerId}/rotations`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -145,12 +138,11 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation mise à jour.
    */
   async updateDayInRotation(id, updatedDay) {
-    const response = await fetch(`${API_URL}/rotations/${id}/day`, {
+    const response = await apiFetch(`/rotations/${id}/day`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ updatedDay })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -159,10 +151,9 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation dupliquée.
    */
   async duplicateRotation(id) {
-    const response = await fetch(`${API_URL}/rotations/${id}/duplicate`, {
+    const response = await apiFetch(`/rotations/${id}/duplicate`, {
       method: 'POST',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   }
 };

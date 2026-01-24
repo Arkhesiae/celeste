@@ -1,50 +1,14 @@
 <template>
   <div>
-    <div
-      class="position-fixed ma-2"
-      style="bottom: 0; right: 0 ; z-index: 99"
-    >
-      <v-btn
-        variant="tonal"
-        class="mr-2"
-        icon="mdi-star-four-points"
-        @click="autoLogin('master')"
-      >
-        Master
-      </v-btn>
-      <v-btn
-        variant="tonal"
-        class="mr-2"
-        icon="mdi-shield-crown-outline"
-        @click="autoLogin('admin')"
-      >
-        Local
-      </v-btn>
-      <v-btn
-        variant="tonal"
-        class="mr-2"
-        icon="mdi-account-outline"
-        @click="autoLogin('user')"
-      >
-        User
-      </v-btn>
-      <v-btn
-        variant="tonal"
-        class="mr-2"
-        icon="mdi-account-multiple"
-        @click="showTeamUsers = !showTeamUsers"
-      >
-        Team Users
-      </v-btn>
-      <v-btn
-        variant="tonal"
-        icon="mdi-logout"
-        color="error"
-        @click="handleLogout"
-      />
+    <div class="position-fixed ma-2" style="bottom: 0; right: 0 ; z-index: 99">
+      <v-btn color="background" flat  class="mr-2 auto-login-btn" :class="{ 'selected': selectedRole === 'master' }" icon="mdi-star-four-points" @click="autoLogin('master')">Master</v-btn>
+      <v-btn color="background" flat class="mr-2 auto-login-btn" :class="{ 'selected': selectedRole === 'admin' }" icon="mdi-shield-crown-outline" @click="autoLogin('admin')">Local</v-btn>
+      <v-btn color="background" flat class="mr-2 auto-login-btn" :class="{ 'selected': selectedRole === 'user' }" icon="mdi-account-outline" @click="autoLogin('user')">User</v-btn>
+      <!-- <v-btn  class="mr-2 auto-login-btn" icon="mdi-account-multiple" @click="showTeamUsers = !showTeamUsers">Team Users</v-btn> -->
+      <v-btn  icon="mdi-logout" color="error" @click="handleLogout"></v-btn>
 
       <!-- Menu des utilisateurs d'équipe -->
-      <v-menu
+      <!-- <v-menu
         v-model="showTeamUsers"
         :close-on-content-click="false"
         location="top"
@@ -85,25 +49,19 @@
             </v-list>
           </v-card-text>
         </v-card>
-      </v-menu>
+      </v-menu> -->
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from "@/stores/authStore.js";
-import { API_URL } from '@/config/api';
 import { useAppInitialization } from '@/composables/useAppInitialization';
 
 const authStore = useAuthStore();
 const router = useRouter();
 const { initializeApp } = useAppInitialization();
-const showTeamUsers = ref(false);
-const teamUsers = ref([]);
-const generatingUsers = ref(false);
-const showLoadingScreen = ref(false);
 const adminEmail = import.meta.env.VITE_ADMIN_MAIL;
 const adminPassword = import.meta.env.VITE_ADMIN_PASS;
 
@@ -112,13 +70,17 @@ const localAdminPassword = import.meta.env.VITE_LOCAL_ADMIN_PASS;
 console.log(import.meta.env)
 
 const handleLogout = async () => {
-  await authStore.logOut();
+  authStore.logOut();
   await router.push({ path: "/login", replace: true });
 };
 
+const selectedRole = computed(() => {
+  return authStore.userData?.adminType;
+});
+
 const autoLogin = async (role) => {
   try {
-    authStore.logOut(); // Déconnexion de l'utilisateur actuel
+    await authStore.logOut(); // Déconnexion de l'utilisateur actuel
   
     
     if (role === 'admin') {
@@ -132,7 +94,6 @@ const autoLogin = async (role) => {
         password: 'userpassword',
       });
     } else if (role === 'master') {
-      console.log(adminEmail, adminPassword)
       await authStore.logIn({
         email: adminEmail,
         password: adminPassword,
@@ -140,7 +101,7 @@ const autoLogin = async (role) => {
     }
 
         // Initialiser l'application avec le callback de progression
-    await initializeApp();
+    // await initializeApp();
     router.push({ path: "/dashboard", replace: true });
  
   } catch (error) {
@@ -149,71 +110,88 @@ const autoLogin = async (role) => {
   }
 };
 
-const generateTeamUsers = async () => {
-  try {
-    generatingUsers.value = true;
-    const response = await fetch(`${API_URL}/dev/populate-users`, {
-      method: 'POST',
-      headers: {
-          'Authorization': `Bearer ${authStore.accessToken}`,
-          'Content-Type': 'application/json'
-      },
+// const generateTeamUsers = async () => {
+//   try {
+//     generatingUsers.value = true;
+//     const response = await fetch(`${API_URL}/dev/populate-users`, {
+//       method: 'POST',
+//       headers: {
+//           'Authorization': `Bearer ${authStore.accessToken}`,
+//           'Content-Type': 'application/json'
+//       },
 
-    });
+//     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+//     if (!response.ok) {
+//       throw new Error(`HTTP error! status: ${response.status}`);
+//     }
 
-    const data = await response.json();
-    if (data.success) {
-      await fetchTeamUsers();
-    } else {
-      throw new Error(data.message || 'Erreur lors de la génération des utilisateurs');
-    }
-  } catch (error) {
-    console.error('Erreur lors de la génération des utilisateurs:', error);
-  } finally {
-    generatingUsers.value = false;
-  }
-};
+//     const data = await response.json();
+//     if (data.success) {
+//       await fetchTeamUsers();
+//     } else {
+//       throw new Error(data.message || 'Erreur lors de la génération des utilisateurs');
+//     }
+//   } catch (error) {
+//     console.error('Erreur lors de la génération des utilisateurs:', error);
+//   } finally {
+//     generatingUsers.value = false;
+//   }
+// };
 
-const fetchTeamUsers = async () => {
-  try {
-    const response = await fetch(`${API_URL}/users/devlist?role=team`, {
-      headers: {
-        'Authorization': `Bearer ${authStore.accessToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    const data = await response.json();
-    teamUsers.value = data;
-  } catch (error) {
-    console.error('Erreur lors de la récupération des utilisateurs:', error);
-    teamUsers.value = [];
-  }
-};
+// const fetchTeamUsers = async () => {
+//   try {
+//     const response = await fetch(`${API_URL}/users/devlist?role=team`, {
+//       headers: {
+//         'Authorization': `Bearer ${authStore.accessToken}`,
+//         'Content-Type': 'application/json'
+//       }
+//     });
+//     const data = await response.json();
+//     teamUsers.value = data;
+//   } catch (error) {
+//     console.error('Erreur lors de la récupération des utilisateurs:', error);
+//     teamUsers.value = [];
+//   }
+// };
 
-const autoLoginTeamUser = async (user) => {
-  try {
+// const autoLoginTeamUser = async (user) => {
+//   try {
 
-    await authStore.logOut();
-    await authStore.logIn({
-      email: user.email,
-      password: 'user',
-    });
+//     await authStore.logOut();
+//     await authStore.logIn({
+//       email: user.email,
+//       password: 'user',
+//     });
 
-    // Initialiser l'application avec le callback de progression
-    await initializeApp();
-    router.push({ path: "/dashboard", replace: true });
-    showTeamUsers.value = false;
-  } catch (error) {
-    console.error('Échec de la connexion:', error);
+//     // Initialiser l'application avec le callback de progression
+//     await initializeApp();
+//     router.push({ path: "/dashboard", replace: true });
+//     showTeamUsers.value = false;
+//   } catch (error) {
+//     console.error('Échec de la connexion:', error);
  
-  }
-};
+//   }
+// };
 
-onMounted(() => {
-  fetchTeamUsers();
-});
+// onMounted(() => {
+//   fetchTeamUsers();
+// });
 </script> 
+
+
+<style scoped>
+  .auto-login-btn {
+    border-radius: 16px !important;
+    padding: 8px 16px !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    border: 1px solid rgba(var(--v-theme-surface), 0.8) !important;
+
+
+  }
+
+  .auto-login-btn.selected {
+    border: 1px solid rgba(var(--v-theme-primary), 1) !important;
+  }
+</style>

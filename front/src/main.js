@@ -13,6 +13,8 @@ import 'material-symbols';
 // Composables
 import { createApp } from 'vue'
 
+import './styles/fonts.css';
+
 const app = createApp(App)
 
 

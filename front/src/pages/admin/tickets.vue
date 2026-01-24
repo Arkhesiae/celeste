@@ -184,31 +184,13 @@
   </v-container>
 </template>
 
-<route lang="yaml">
-meta:
-  test: true
-</route>
-
 <script setup>
-
-
 
 import { ref, computed, onMounted, watch } from 'vue';
 import { useTicketStore } from '@/stores/ticketStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter, useRoute } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-
-
-
-definePage({
-  meta: {
-    requiresAuth: true,
-  }
-})
-
-
-
 
 const ticketStore = useTicketStore();
 const authStore = useAuthStore();

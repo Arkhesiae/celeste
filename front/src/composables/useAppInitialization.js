@@ -10,6 +10,8 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useInitializationStore } from '@/stores/initializationStore';
 import { useTheme } from 'vuetify';
+import { useRouter } from 'vue-router';
+
 
 
 export function useAppInitialization() {
@@ -24,16 +26,13 @@ export function useAppInitialization() {
   const substitutionStore = useSubstitutionStore();
   const rotationStore = useRotationStore();
   const initializationStore = useInitializationStore();
-  const theme = useTheme();
 
 
   const initializeAuth = async () => {
-    // Ne charger que si pas déjà chargé (éviter les appels redondants)
-    if (!authStore.accessToken) {
-      await authStore.loadFromLocalStorage();
-    } else {
-      await authStore.validateAccessToken();
-    }
+
+    if (authStore.isAuthReady) return;
+    console.log('==> checkAuth in useAppInitialization')
+    await authStore.initializeAuth();
 
   };
 
@@ -51,7 +50,6 @@ export function useAppInitialization() {
 
   const initializeCenters = async () => {
     await centerStore.fetchCenters();
-    initializationStore.updateInitializationState('centers', true);
   };
 
   const initializeUserList = async () => {
@@ -135,23 +133,12 @@ export function useAppInitialization() {
     try {
       initializationStore.setLoading(true);
   
-  
       await initializeAuth();
+      const router = useRouter();
+      const parallelTasks = [];
   
 
-      const loggedIn = authStore.isLoggedIn;
-  
-      if (typeof onStatusChange === 'function') {
-        onStatusChange({ loggedIn });
-      }
-  
-      const parallelTasks = [
-        initializeTheme(),
-        initializeCenters(),
-      ];
-  
-
-      if (loggedIn) {
+      if (authStore.isLoggedIn) {
         parallelTasks.push(
           initializeUserList(),
           initializeTeam(),
@@ -163,7 +150,8 @@ export function useAppInitialization() {
       }
   
       await Promise.all(parallelTasks);
-  
+      initializationStore.setAppReady(true);
+      
     } catch (error) {
       console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
       authStore.logOut();
@@ -177,6 +165,7 @@ export function useAppInitialization() {
 
   return {
     initializeApp,
+    initializeCenters,
     initializationState: initializationStore.initializationState,
     isLoading: initializationStore.isLoading
   };

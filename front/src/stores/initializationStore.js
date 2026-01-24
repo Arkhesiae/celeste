@@ -14,10 +14,24 @@ export const useInitializationStore = defineStore('initialization', () => {
     tickets: false
   });
 
+  const isAppReady = ref(false);
   const lastLoaded = ref('');
+  const pendingRoute = ref('');
 
   function setLoading(value) {
     isLoading.value = value;
+  }
+
+  function setAppReady(value) {
+    isAppReady.value = value;
+  }
+
+  function getPendingRoute() {
+    return pendingRoute.value;
+  }
+
+  function setPendingRoute(route) {
+    pendingRoute.value = route;
   }
 
   watch(isLoading, (newVal) => {
@@ -41,7 +55,11 @@ export const useInitializationStore = defineStore('initialization', () => {
   }
 
   return {
-    isLoading,
+    isLoading,  
+    isAppReady,
+    getPendingRoute,
+    setPendingRoute,
+    setAppReady,
     initializationState,
     setLoading,
     updateInitializationState,

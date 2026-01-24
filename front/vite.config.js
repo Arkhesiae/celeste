@@ -1,12 +1,11 @@
 import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vuetify, {transformAssetUrls} from 'vite-plugin-vuetify'
+import {transformAssetUrls} from 'vite-plugin-vuetify'
 import VueRouter from 'unplugin-vue-router/vite'
-import Layouts from 'vite-plugin-vue-layouts'
+import Layouts from 'vite-plugin-vue-layouts-next'
 import Vue from "@vitejs/plugin-vue";
 import Vuetify from "vite-plugin-vuetify";
-import Components from "unplugin-vue-components/dist/vite.js";
+import Components from "unplugin-vue-components/vite";
 import Fonts from "unplugin-fonts/vite";
 import AutoImport from "unplugin-auto-import/vite";
 
@@ -15,7 +14,9 @@ export default defineConfig({
   base: '/',
   plugins: [
     VueRouter(),
-    Layouts(),
+    Layouts({
+      inheritDefaultLayout: false
+    }),
     Vue({
       template: { transformAssetUrls }
     }),

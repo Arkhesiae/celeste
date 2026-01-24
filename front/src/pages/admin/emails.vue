@@ -491,7 +491,7 @@ const sendAnnouncement = () => {
     if (isGlobal.value) {
       formData.value.centerId = null;
     }
-   
+    formData.value.testMode = false;
     confirmSend();
   } else {
     snackbarStore.showNotification('Veuillez remplir tous les champs', 'error', 'mdi-alert-circle');
@@ -519,7 +519,6 @@ onMounted(async () => {
       await centerStore.fetchCenters();
     } else {
       formData.value.centerId = authStore.userData.centerId || '';
-      console.log(formData.value.centerId);
     }
   } catch (e) {
     // ignore; UI will just show empty selector

@@ -15,7 +15,7 @@
         </div>
 
 
-        <div class="d-flex justify-center mt-3 gap-3">
+        <!-- <div class="d-flex justify-center mt-3 gap-3">
           <v-chip class="px-4" rounded="xl" color="surfaceContainer" variant="flat">
             <div class="dot-big dot-green mr-2" />
             Compatible
@@ -24,7 +24,7 @@
             <div class="dot-big dot-red mr-2" />
             Incompatible
           </v-chip>
-        </div>
+        </div> -->
       </div>
 
       <v-card :hover="false" v-ripple="false" rounded="xl" color="background" elevation="0" class="mb-4 pa-4"

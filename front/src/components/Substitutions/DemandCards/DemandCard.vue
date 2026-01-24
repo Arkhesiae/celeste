@@ -12,8 +12,9 @@
         <span style="font-weight: 800; font-size: .75rem;">{{ posterName
         }}</span>
       
-        <span class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">( {{
-          posterTeamName }})</span>
+        <div style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);" class="d-flex align-center justify-center">
+          <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{ posterTeamName }}</span>
+        </div>
         <div class="small-dot" />
         <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
         }}</span>
@@ -179,7 +180,7 @@ const canSwitch = computed(() => {
   return props.demand?.canSwitch
 })
 
-const getTeamById = (teamId) => teamStore.teams.find((team) => team._id === teamId);
+const getTeamById = (teamId) => teamStore.centerTeams.find((team) => team._id === teamId);
 const getUserById = (userId) => userStore.users.find((user) => user._id === userId);
 
 const poster = computed(() => {
@@ -197,6 +198,9 @@ const posterName = computed(() => {
 
 const posterTeamName = computed(() => {
   const teamId = poster.value?.currentTeam?.teamId;
+  if (typeof teamId === 'object' && teamId !== null) {
+    return teamId.name;
+  }
   return teamId ? getTeamById(teamId)?.name : 'N/A';
 });
 

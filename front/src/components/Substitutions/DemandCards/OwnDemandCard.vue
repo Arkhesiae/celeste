@@ -10,8 +10,13 @@
           </v-icon>
           <span style="font-weight: 800; font-size: .75rem;" :class="{ 'text-primary': isOwner }">{{ posterName
           }}</span>
-          <span v-if="!isOwner" class="text-truncate" style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
-            posterTeamName }})</span>
+          <div
+            v-if="!isOwner"
+            style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
+            class="d-flex align-center justify-center">
+            <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
+              posterTeamName }}</span>
+          </div>
           <div class="small-dot" />
           <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
           }}</span>
@@ -89,9 +94,13 @@
                 style="max-width: 100px; font-size: .75rem;">
                 {{ accepterName }}
               </span>
-              <span v-if="isOwner" class="text-truncate"
-                style="max-width: 80px; font-size: .70rem; font-weight: 600;">({{
-                  accepterTeamName }})</span>
+              <div
+                v-if="!isAccepter"
+                style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
+                class="d-flex align-center justify-center">
+                <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
+                  accepterTeamName }}</span>
+              </div>
             </div>
           </template>
           <template v-else>
@@ -146,7 +155,7 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 };
 
-const getTeamById = (teamId) => teamStore.teams.find((team) => team._id === teamId);
+const getTeamById = (teamId) => teamStore.centerTeams.find((team) => team._id === teamId);
 const getUserById = (userId) => userStore.users.find((user) => user._id === userId);
 
 const accepter = computed(() => {
@@ -198,6 +207,9 @@ const posterTeamName = computed(() => {
 
 const accepterTeamName = computed(() => {
   const teamId = accepter.value?.currentTeam?.teamId;
+  if (typeof teamId === 'object' && teamId !== null) {
+    return teamId.name;
+  }
   return teamId ? getTeamById(teamId)?.name : 'N/A';
 });
 

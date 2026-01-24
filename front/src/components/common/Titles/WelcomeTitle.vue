@@ -1,26 +1,46 @@
 <template>
-  <div class="position-relative mx-n4 d-flex flex-column" :style="{ height: `${headerHeight}px` }">
-    <div ref="placeholder" :style="{ height: `${headerHeight}px`, width: '100%' }" class="position-absolute " />
-    <div ref="titleRef" :class="['main-title px-4  py-16']" :style=headerStyle class="">
+  <div
+    class="position-relative mx-n4 d-flex flex-column"
+    :style="{ height: `${headerHeight}px` }"
+  >
+    <div
+      ref="placeholder"
+      :style="{ height: `${headerHeight}px`, width: '100%' }"
+      class="position-absolute "
+    />
+    <div
+      ref="titleRef"
+      :class="['main-title px-4  py-16']"
+      :style="headerStyle"
+      class=""
+    >
       <div class="d-flex justify-space-between align-center mb-2">
-        <div class="d-flex flex-column" >
+        <div class="d-flex flex-column">
           <div class="d-flex align-center">
-            <span :style="{ fontSize: titleFontSize + 'px !important' }"
-              class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
-            <span :style="{ fontSize: titleFontSize + 'px !important' }"
-              class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold">{{ userName }}</span>
+            <span
+              :style="{ fontSize: titleFontSize + 'px !important' }"
+              class="text-h4 d-inline-block font-weight-medium font-weight-bold"
+            >Bienvenue </span>
+            <span
+              :style="{ fontSize: titleFontSize + 'px !important' }"
+              class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold"
+            >{{ userName }}</span>
           </div>
-          <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50"> Tableau de bord </span>
+          <span
+            :style="{ fontSize: subtitleFontSize + 'px !important' }"
+            style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;"
+            class="opacity-50"
+          > Tableau de bord </span>
         </div>
 
-        <div class="flex-shrink-0" ref="actionsRef">
+        <div
+          ref="actionsRef"
+          class="flex-shrink-0"
+        >
           <slot name="actions" />
         </div>
-    
       </div>
-
     </div>
-
   </div>
 </template>
 

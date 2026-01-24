@@ -150,16 +150,49 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/exchange/replace': RouteRecordInfo<
-      '/exchange/replace',
-      '/exchange/replace',
+    '/demand-page': RouteRecordInfo<
+      '/demand-page',
+      '/demand-page',
+      Record<never, never>,
+      Record<never, never>,
+      | '/demand-page/demands'
+      | '/demand-page/demands/'
+      | '/demand-page/standalone'
+      | '/demand-page/standalone/available'
+      | '/demand-page/standalone/own'
+    >,
+    '/demand-page/demands': RouteRecordInfo<
+      '/demand-page/demands',
+      '/demand-page/demands',
+      Record<never, never>,
+      Record<never, never>,
+      | '/demand-page/demands/'
+    >,
+    '/demand-page/demands/': RouteRecordInfo<
+      '/demand-page/demands/',
+      '/demand-page/demands',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '/exchange/switch': RouteRecordInfo<
-      '/exchange/switch',
-      '/exchange/switch',
+    '/demand-page/standalone': RouteRecordInfo<
+      '/demand-page/standalone',
+      '/demand-page/standalone',
+      Record<never, never>,
+      Record<never, never>,
+      | '/demand-page/standalone/available'
+      | '/demand-page/standalone/own'
+    >,
+    '/demand-page/standalone/available': RouteRecordInfo<
+      '/demand-page/standalone/available',
+      '/demand-page/standalone/available',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/demand-page/standalone/own': RouteRecordInfo<
+      '/demand-page/standalone/own',
+      '/demand-page/standalone/own',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -251,6 +284,13 @@ declare module 'vue-router/auto-routes' {
     '/rotation': RouteRecordInfo<
       '/rotation',
       '/rotation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/test-graph': RouteRecordInfo<
+      '/test-graph',
+      '/test-graph',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -392,15 +432,47 @@ declare module 'vue-router/auto-routes' {
       views:
         | never
     }
-    'src/pages/exchange/replace.vue': {
+    'src/pages/demand-page.vue': {
       routes:
-        | '/exchange/replace'
+        | '/demand-page'
+        | '/demand-page/demands'
+        | '/demand-page/demands/'
+        | '/demand-page/standalone'
+        | '/demand-page/standalone/available'
+        | '/demand-page/standalone/own'
+      views:
+        | 'default'
+    }
+    'src/pages/demand-page/demands.vue': {
+      routes:
+        | '/demand-page/demands'
+        | '/demand-page/demands/'
+      views:
+        | 'default'
+    }
+    'src/pages/demand-page/demands/index.vue': {
+      routes:
+        | '/demand-page/demands/'
       views:
         | never
     }
-    'src/pages/exchange/switch.vue': {
+    'src/pages/demand-page/standalone.vue': {
       routes:
-        | '/exchange/switch'
+        | '/demand-page/standalone'
+        | '/demand-page/standalone/available'
+        | '/demand-page/standalone/own'
+      views:
+        | 'default'
+    }
+    'src/pages/demand-page/standalone/available.vue': {
+      routes:
+        | '/demand-page/standalone/available'
+      views:
+        | never
+    }
+    'src/pages/demand-page/standalone/own.vue': {
+      routes:
+        | '/demand-page/standalone/own'
       views:
         | never
     }
@@ -479,6 +551,12 @@ declare module 'vue-router/auto-routes' {
     'src/pages/rotation.vue': {
       routes:
         | '/rotation'
+      views:
+        | never
+    }
+    'src/pages/test-graph.vue': {
+      routes:
+        | '/test-graph'
       views:
         | never
     }

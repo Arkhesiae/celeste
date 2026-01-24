@@ -1,5 +1,5 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
-import { parseShiftTime } from './parseShiftTime.js';
+import { parseShiftUTC } from './parseShiftTime.js';
 
 
 
@@ -9,53 +9,43 @@ import { parseShiftTime } from './parseShiftTime.js';
  * @param {string} userId - ID de l'utilisateur à analyser
  * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
  */
-export async function generateShiftsMap(dates, userId) {
+export async function generateShiftsMap (dates, userId) {
   try {
-    const shiftsMap = new Map();
+    const userDates = new Set();
 
-    // Construire un ensemble de dates ±6 jours autour de chaque date
-    const userDates = new Set(
-      dates.flatMap(date => {
-        const base = date.toISOString().split('T')[0];
-        const before = Array.from({ length: 6 }, (_, i) => {
-          const d = new Date(date);
-          d.setDate(date.getDate() - (i + 1));
-          return d.toISOString().split('T')[0];
-        });
-        const after = Array.from({ length: 6 }, (_, i) => {
-          const d = new Date(date);
-          d.setDate(date.getDate() + (i + 1));
-          return d.toISOString().split('T')[0];
-        });
-        return [base, ...before, ...after];
-      })
-    );
+    for (const date of dates) {
+      const baseTime = date.getTime();
 
-    const dateArray = Array.from(userDates).sort();
-
-    // Récupérer tous les shifts en parallèle
-    await Promise.all(
-      dateArray.map(async (date) => {
-        const shifts = await computeShiftOfUserWithSubstitutions(date, userId);
-        for (const shift of shifts) {
-          shiftsMap.set(shift.date, shift);
-        }
-      })
-    );
-
-    // Construire la map finale (filtrer uniquement les shifts "work")
-    const finalMap = new Map();
-    for (const [date, entry] of shiftsMap) {
-      if (!entry.shift || entry.shift?.type !== 'work') continue;
-
-      const { shift, teamObject } = entry;
-      const { startTime, endTime, endsNextDay } = shift?.default || {};
-
-      const start = parseShiftTime(date, startTime);
-      const end = parseShiftTime(date, endTime, endsNextDay);
-
-      finalMap.set(date, { shift, team: teamObject, date, start, end });
+      for (let offset = -6; offset <= 6; offset++) {
+        const d = new Date(baseTime);
+        d.setDate(d.getDate() + offset);
+        userDates.add(d.toISOString().slice(0, 10));
+      }
     }
+
+    const dateArray = [...userDates].sort();
+
+    const finalMap = new Map();
+
+    await Promise.all(
+      dateArray.map(date =>
+        computeShiftOfUserWithSubstitutions(date, userId).then(shifts =>
+          shifts
+            .filter(s => s.shift?.type === 'work')
+            .forEach(({ shift, teamObject, date }) => {
+              const { startTime, endTime, endsNextDay } = shift.default ?? {};
+              finalMap.set(date, {
+                shift,
+                team: teamObject,
+                date,
+                start: parseShiftUTC(date, startTime),
+                end: parseShiftUTC(date, endTime, endsNextDay)
+              });
+            })
+        )
+      )
+    );
+
 
     return finalMap;
   } catch (error) {
@@ -63,6 +53,7 @@ export async function generateShiftsMap(dates, userId) {
     throw error;
   }
 }
+
 
 /**
  * Génère une map des shifts à partir d'un tableau de demandes
@@ -72,7 +63,18 @@ export async function generateShiftsMap(dates, userId) {
  */
 export function generateMapFromDemands(demands, userId) {
   const demandDates = demands.map(d => new Date(d.posterShift.date));
-  return generateShiftsMap(demandDates, userId); // pas besoin de `await` ici
+  return generateShiftsMap(demandDates, userId); 
+}
+
+/**
+ * Génère une map des shifts à partir d'une seule demande
+ * @param {{ posterShift: { date: string } }} demand - Demande
+ * @param {string} userId - ID de l'utilisateur à analyser
+ * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
+ */
+export async function shiftMapFromSingleDemand (demand, userId) {
+  const demandDates = [new Date(demand.posterShift.date)];
+  return await generateShiftsMap(demandDates, userId);
 }
 
 /**

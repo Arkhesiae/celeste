@@ -1,14 +1,23 @@
 <template>
-  <v-dialog :model-value="dialogVisible" @update:model-value="$emit('update:dialogVisible', $event)" max-width="500">
-    <v-card class="pa-6" rounded="xl">
-      <v-card-title class="pa-0 ma-0 mb-4">Changement de centre</v-card-title>
+  <v-dialog
+    :model-value="dialogVisible"
+    max-width="500"
+    @update:model-value="$emit('update:dialogVisible', $event)"
+  >
+    <v-card
+      class="pa-6"
+      rounded="xl"
+    >
+      <v-card-title class="pa-0 ma-0 mb-4">
+        Changement de centre
+      </v-card-title>
       <v-card-text class="pa-0 ma-0">
         <v-select
-          rounded="lg"
           v-model="selectedCenter"
+          rounded="lg"
           :items="centers"
           :reduce="center => center._id"
-          item-title='name'
+          item-title="name"
           item-value="_id"
           variant="outlined"
           label="Sélectionner un centre"
@@ -16,8 +25,18 @@
         />
       </v-card-text>
       <v-card-actions class="pa-0 ma-0">
-        <v-btn text @click="$emit('update:dialogVisible', false)">Annuler</v-btn>
-        <v-btn text @click="handleAssignCenter">Assigner</v-btn>
+        <v-btn
+          text
+          @click="$emit('update:dialogVisible', false)"
+        >
+          Annuler
+        </v-btn>
+        <v-btn
+          text
+          @click="handleAssignCenter"
+        >
+          Assigner
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

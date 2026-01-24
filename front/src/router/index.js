@@ -114,8 +114,6 @@ router.beforeEach(async (to, from, next) => {
   } 
 
 
-  // console.log(to.meta)
-  // console.log(to.path)
   next();
 
 

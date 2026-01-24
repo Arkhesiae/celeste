@@ -11,10 +11,13 @@ defineOptions({
 
 <template>
   <v-container>
-    <MainTitle title="Contacter un administrateur" subtitle="Besoin d'aide ? Envoyez un message à un administrateur" />
+    <MainTitle
+      title="Contacter un administrateur"
+      subtitle="Besoin d'aide ? Envoyez un message à un administrateur"
+    />
 
-    <v-row >
-      <v-col cols="12" >
+    <v-row>
+      <v-col cols="12">
         <v-slide-y-transition appear>
           <ContactAdminForm admins="both" />
         </v-slide-y-transition>

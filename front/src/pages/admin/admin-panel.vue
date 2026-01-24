@@ -3,7 +3,12 @@
     <!-- En-tête avec titre et informations admin -->
     <v-row class="my-16">
       <v-col cols="12">
-        <v-card class="pa-6" rounded="xl" variant="flat" color="surface">
+        <v-card
+          class="pa-6"
+          rounded="xl"
+          variant="flat"
+          color="surface"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <div class="align-center ga-2 font-weight-bold d-flex ">
@@ -29,12 +34,24 @@
         <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest"
           @click="navigateTo(stat.path)" :class="actionNeeded(stat) ? 'action-needed' : ''">
           <div class="d-flex align-center">
-            <v-avatar :color="actionNeeded(stat) ? 'pending' : 'onBackground'" variant="tonal" size="24" class="mr-4">
-              <v-icon :icon="stat.icon" size="12" />
+            <v-avatar
+              :color="actionNeeded(stat) ? 'pending' : 'onBackground'"
+              variant="tonal"
+              size="24"
+              class="mr-4"
+            >
+              <v-icon
+                :icon="stat.icon"
+                size="12"
+              />
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">{{ stat.value }}</div>
-              <div class="text-caption opacity-50">{{ stat.label }}</div>
+              <div class="text-h6 font-weight-bold">
+                {{ stat.value }}
+              </div>
+              <div class="text-caption opacity-50">
+                {{ stat.label }}
+              </div>
             </div>
           </div>
         </v-card>
@@ -50,7 +67,9 @@
           <div class="d-flex align-center mb-4 " :class="smAndDown ? 'px-4' : ''">
             <div>
               <span class="text-h7 font-weight-bold">{{ section.title }}</span>
-              <p class="text-body-2 opacity-50 mb-0">{{ section.description }}</p>
+              <p class="text-body-2 opacity-50 mb-0">
+                {{ section.description }}
+              </p>
             </div>
           </div>
 

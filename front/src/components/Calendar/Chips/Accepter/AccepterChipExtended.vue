@@ -24,7 +24,7 @@ const findAcceptedAsAccepter = computed(() => {
 });
 
 const teamName = computed(() => {
-  return teamStore.centerTeams.find(team => team._id === findAcceptedAsAccepter.value.posterShift.teamId)?.name;
+  return findAcceptedAsAccepter.value?.posterShift?.teamId?.name;
 });
 
 const shiftType = computed(() => {
@@ -39,35 +39,34 @@ const userName = computed(() => {
 </script>
 
 <template>
-
-    <v-chip
+  <v-chip
  
-      rounded="lg"
-      color="background"
-      variant="flat"
-      size="x-small"
-      style=" opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
-      class="text-caption font-weight-bold px-2 overflow-visible"
-    >
+    rounded="lg"
+    color="background"
+    variant="flat"
+    size="x-small"
+    style=" opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    class="text-caption font-weight-bold px-2 overflow-visible"
+  >
     <div class="mr-2">
-      <v-icon color="error"  v-if="findAcceptedAsAccepter.length > 1">mdi-alert-circle-outline</v-icon>
-      <v-icon color="remplacement"  >mdi-crowd</v-icon>
-    
+      <v-icon
+        v-if="findAcceptedAsAccepter.length > 1"
+        color="error"
+      >
+        mdi-alert-circle-outline
+      </v-icon>
+      <v-icon color="remplacement">
+        mdi-crowd
+      </v-icon>
     </div>
     
-      <div v-if="findAcceptedAsAccepter" > 
-
-        <span v-if="findAcceptedAsAccepter.type === 'substitution'">Remplace dans équipe {{teamName}}</span> 
-        <span v-if="findAcceptedAsAccepter.type === 'hybrid' && !findAcceptedAsAccepter.accepterShift">Remplace dans équipe {{teamName}}</span> 
-        <span v-if="findAcceptedAsAccepter.type === 'switch' || (findAcceptedAsAccepter.type === 'hybrid' && findAcceptedAsAccepter.accepterShift)">Permute avec {{ userName }}</span>
-        
-
-
-      </div>
-      <div  v-else>
-       
-        <span >?</span>
-      </div>
-    </v-chip>
-
+    <div v-if="findAcceptedAsAccepter">
+      <span v-if="findAcceptedAsAccepter.type === 'substitution'">Remplace dans l'équipe {{ teamName }}</span> 
+      <span v-if="findAcceptedAsAccepter.type === 'hybrid' && !findAcceptedAsAccepter.accepterShift">Remplace dans l'équipe {{ teamName }}</span> 
+      <span v-if="findAcceptedAsAccepter.type === 'switch' || (findAcceptedAsAccepter.type === 'hybrid' && findAcceptedAsAccepter.accepterShift)">Permute avec {{ userName }}</span>
+    </div>
+    <div v-else>
+      <span>?</span>
+    </div>
+  </v-chip>
 </template>

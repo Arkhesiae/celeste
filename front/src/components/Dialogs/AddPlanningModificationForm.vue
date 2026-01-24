@@ -7,13 +7,19 @@
     <v-card>
       <v-card-title class="d-flex justify-space-between align-center">
         <span>{{ dialogTitle }}</span>
-        <v-btn icon @click="closeDialog">
+        <v-btn
+          icon
+          @click="closeDialog"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text>
-        <v-form ref="form" v-model="formValid">
+        <v-form
+          ref="form"
+          v-model="formValid"
+        >
           <!-- Type de modification -->
           <v-select
             v-model="modification.type"
@@ -100,16 +106,16 @@
         <v-btn
           color="grey"
           variant="text"
-          @click="closeDialog"
           :disabled="loading"
+          @click="closeDialog"
         >
           Annuler
         </v-btn>
         <v-btn
           color="primary"
-          @click="submitModification"
           :loading="loading"
           :disabled="!formValid || hasConflicts"
+          @click="submitModification"
         >
           {{ submitButtonText }}
         </v-btn>

@@ -32,17 +32,30 @@ const submit = () => {
 </script>
 
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="500px">
-    <v-card rounded="xl" elevation="0" color="surfaceContainerHigh">
+  <v-dialog
+    v-model="localDialogVisible"
+    max-width="500px"
+  >
+    <v-card
+      rounded="xl"
+      elevation="0"
+      color="surfaceContainerHigh"
+    >
       <v-card-item class="pa-6">
         <div class="d-flex align-center justify-space-between">
           <div>
-            <div class="text-h6 font-weight-medium">Modifier le nom</div>
+            <div class="text-h6 font-weight-medium">
+              Modifier le nom
+            </div>
             <div class="text-medium-emphasis text-body-2 mt-1">
               Modifiez le nom du tour de service
             </div>
           </div>
-          <v-btn icon="mdi-close" variant="text" @click="localDialogVisible = false"></v-btn>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="localDialogVisible = false"
+          />
         </div>
       </v-card-item>
 
@@ -54,17 +67,17 @@ const submit = () => {
           variant="outlined"
           rounded="xl"
           hide-details="auto"
-        ></v-text-field>
+        />
       </v-card-text>
 
       <v-card-actions class="pa-6 pt-0">
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="primary"
           variant="flat"
           rounded="xl"
-          @click="submit"
           :disabled="!newName"
+          @click="submit"
         >
           Enregistrer
         </v-btn>

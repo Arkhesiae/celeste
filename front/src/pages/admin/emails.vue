@@ -1,10 +1,21 @@
 <template>
   <v-container>
-    <MainTitle title="E-mails" :subtitle="`Envoyer des emails d'annonce à tous les utilisateurs`">
-      <template v-slot:actions>
+    <MainTitle
+      title="E-mails"
+      :subtitle="`Envoyer des emails d'annonce à tous les utilisateurs`"
+    >
+      <template #actions>
         <div class="d-flex ga-2 align-center">
-          <v-btn color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" @click="openAnnouncementDialog"
-            rounded="xl" flat height="32" size="small">
+          <v-btn
+            color="surfaceContainerHigh"
+            variant="flat"
+            prepend-icon="mdi-plus"
+            rounded="xl"
+            flat
+            height="32"
+            size="small"
+            @click="openAnnouncementDialog"
+          >
             Nouvel email
           </v-btn>
         </div>
@@ -13,35 +24,89 @@
 
     <!-- Statistiques -->
     <v-row class="mb-6">
-      <v-col cols="12" md="4">
-        <v-card class="pa-4 pl-8" rounded="xl" color="surfaceContainerLow" flat>
+      <v-col
+        cols="12"
+        md="4"
+      >
+        <v-card
+          class="pa-4 pl-8"
+          rounded="xl"
+          color="surfaceContainerLow"
+          flat
+        >
           <div class="d-flex align-center ga-4 ">
-            <v-icon size="16" color="onBackground" class="mr-3">mdi-account-group</v-icon>
+            <v-icon
+              size="16"
+              color="onBackground"
+              class="mr-3"
+            >
+              mdi-account-group
+            </v-icon>
             <div>
-              <div class="text-h6 font-weight-bold">{{ emailStore.userCount }}</div>
-              <div class="text-body-2 text-medium-emphasis">Utilisateurs actifs</div>
+              <div class="text-h6 font-weight-bold">
+                {{ emailStore.userCount }}
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
+                Utilisateurs actifs
+              </div>
             </div>
           </div>
         </v-card>
       </v-col>
-      <v-col cols="12" md="4">
-        <v-card class="pa-4 pl-8" rounded="xl" color="surfaceContainerLow" flat>
+      <v-col
+        cols="12"
+        md="4"
+      >
+        <v-card
+          class="pa-4 pl-8"
+          rounded="xl"
+          color="surfaceContainerLow"
+          flat
+        >
           <div class="d-flex align-center ga-4">
-            <v-icon size="16" color="surfaceContainerHighest" class="mr-3">mdi-email-check</v-icon>
+            <v-icon
+              size="16"
+              color="surfaceContainerHighest"
+              class="mr-3"
+            >
+              mdi-email-check
+            </v-icon>
             <div>
-              <div class="text-h6 font-weight-bold">{{ emailStore.lastSentCount }}</div>
-              <div class="text-body-2 text-medium-emphasis">Emails envoyés</div>
+              <div class="text-h6 font-weight-bold">
+                {{ emailStore.lastSentCount }}
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
+                Emails envoyés
+              </div>
             </div>
           </div>
         </v-card>
       </v-col>
-      <v-col cols="12" md="4">
-        <v-card class="pa-4 pl-8" rounded="xl" color="surfaceContainerLow" flat>
+      <v-col
+        cols="12"
+        md="4"
+      >
+        <v-card
+          class="pa-4 pl-8"
+          rounded="xl"
+          color="surfaceContainerLow"
+          flat
+        >
           <div class="d-flex align-center ga-4">
-            <v-icon size="16" color="surfaceContainerHighest" class="mr-3">mdi-email-alert</v-icon>
+            <v-icon
+              size="16"
+              color="surfaceContainerHighest"
+              class="mr-3"
+            >
+              mdi-email-alert
+            </v-icon>
             <div>
-              <div class="text-h6 font-weight-bold">{{ emailStore.lastFailedCount }}</div>
-              <div class="text-body-2 text-medium-emphasis">Échecs d'envoi</div>
+              <div class="text-h6 font-weight-bold">
+                {{ emailStore.lastFailedCount }}
+              </div>
+              <div class="text-body-2 text-medium-emphasis">
+                Échecs d'envoi
+              </div>
             </div>
           </div>
         </v-card>
@@ -49,29 +114,45 @@
     </v-row>
 
     <!-- Historique des envois -->
-    <v-card class="mb-6 pa-6" rounded="xl" color="surfaceContainerLow" flat>
+    <v-card
+      class="mb-6 pa-6"
+      rounded="xl"
+      color="surfaceContainerLow"
+      flat
+    >
       <v-card-title class="pa-0 ma-0 mb-4">
-
         Historique des envois
       </v-card-title>
       <v-card-text class="pa-0">
-        <v-data-table :headers="historyHeaders" :items="emailStore.emailHistory" :loading="emailStore.loading"
-          class="elevation-0" density="compact">
-          <template v-slot:item.templateType="{ item }">
-            <v-chip :color="emailStore.getTemplateColor(item.templateType)" size="small" rounded="lg">
+        <v-data-table
+          :headers="historyHeaders"
+          :items="emailStore.emailHistory"
+          :loading="emailStore.loading"
+          class="elevation-0"
+          density="compact"
+        >
+          <template #item.templateType="{ item }">
+            <v-chip
+              :color="emailStore.getTemplateColor(item.templateType)"
+              size="small"
+              rounded="lg"
+            >
               {{ emailStore.getTemplateLabel(item.templateType) }}
             </v-chip>
           </template>
-          <template v-slot:item.sentBy="{ item }">
+          <template #item.sentBy="{ item }">
             {{ formatSender(item.sentBy) }}
           </template>
-          <template v-slot:item.sentAt="{ item }">
+          <template #item.sentAt="{ item }">
             {{ formatDate(item.sentAt) }}
           </template>
-          <template v-slot:item.results="{ item }">
+          <template #item.results="{ item }">
             <div class="d-flex align-center">
               <span class="text-success mr-2">{{ item.results.sent }} envoyés</span>
-              <span v-if="item.results.failed > 0" class="text-error">{{ item.results.failed }} échecs</span>
+              <span
+                v-if="item.results.failed > 0"
+                class="text-error"
+              >{{ item.results.failed }} échecs</span>
             </div>
           </template>
         </v-data-table>
@@ -79,51 +160,119 @@
     </v-card>
 
     <!-- Dialog d'envoi d'annonce -->
-    <v-dialog v-model="announcementDialog" max-width="900px" persistent :fullscreen="smAndDown">
-      <v-card :rounded="smAndDown ? '' : 'xl'" color="surfaceContainerLow" flat class="pa-6">
+    <v-dialog
+      v-model="announcementDialog"
+      max-width="900px"
+      persistent
+      :fullscreen="smAndDown"
+    >
+      <v-card
+        :rounded="smAndDown ? '' : 'xl'"
+        color="surfaceContainerLow"
+        flat
+        class="pa-6"
+      >
         <v-card-title class="pa-0 ma-0">
           Nouveau message
         </v-card-title>
 
         <v-card-text class="pa-0 pt-8">
-
           <!-- Type de template -->
-          <v-text-field v-model="formData.title" label="Titre" :rules="[v => !!v || 'Le titre est requis']" required
-            variant="solo-filled" flat color="onBackground" bg-color="surfaceContainer" rounded="xl"
-            class="mb-4"></v-text-field>
+          <v-text-field
+            v-model="formData.title"
+            label="Titre"
+            :rules="[v => !!v || 'Le titre est requis']"
+            required
+            variant="solo-filled"
+            flat
+            color="onBackground"
+            bg-color="surfaceContainer"
+            rounded="xl"
+            class="mb-4"
+          />
 
           <!-- Message -->
-          <v-textarea variant="solo" rounded="xl" color="surfaceContainerHigh" flat v-model="formData.message"
+          <v-textarea
+            v-model="formData.message"
+            variant="solo"
+            rounded="xl"
+            color="surfaceContainerHigh"
+            flat
             label="Message"
             :rules="[v => !!v || 'Le message est requis', v => v.length >= 10 || 'Le message doit contenir au moins 10 caractères']"
-            rows="6" class="mb-4" placeholder="Entrez votre message ici..." />
+            rows="6"
+            class="mb-4"
+            placeholder="Entrez votre message ici..."
+          />
 
           <!-- Portée d'envoi -->
-          <v-row class="mb-4" align="center" v-if="isMasterAdmin">
-            <v-col cols="12" md="5">
-
-              <v-btn color="surfaceContainerHigh" variant="flat" rounded="xl" @click="toggleScopeMode" block
-                :height="smAndDown ? '56px' : '56px'">
+          <v-row
+            v-if="isMasterAdmin"
+            class="mb-4"
+            align="center"
+          >
+            <v-col
+              cols="12"
+              md="5"
+            >
+              <v-btn
+                color="surfaceContainerHigh"
+                variant="flat"
+                rounded="xl"
+                block
+                :height="smAndDown ? '56px' : '56px'"
+                @click="toggleScopeMode"
+              >
                 <template #prepend>
-                  <div class="icon-container d-flex align-center justify-center" style="transition: all 0.5s ease;"
-                    :style="{ 'width': isGlobal ? '24px' : '0px' }">
+                  <div
+                    class="icon-container d-flex align-center justify-center"
+                    style="transition: all 0.5s ease;"
+                    :style="{ 'width': isGlobal ? '24px' : '0px' }"
+                  >
                     <v-slide-x-reverse-transition mode="out-in">
-                      <div v-if="isGlobal" key="icon">
-                        <v-icon color="primary" icon="mdi-earth" size="16" />
+                      <div
+                        v-if="isGlobal"
+                        key="icon"
+                      >
+                        <v-icon
+                          color="primary"
+                          icon="mdi-earth"
+                          size="16"
+                        />
                       </div>
-                      <div v-else key="empty"></div>
+                      <div
+                        v-else
+                        key="empty"
+                      />
                     </v-slide-x-reverse-transition>
                   </div>
                 </template>
                 {{ isGlobal ? 'Envoi global' : 'Envoi local' }}
               </v-btn>
             </v-col>
-            <v-col cols="12" md="7" v-if="!isGlobal">
-              <v-select v-model="formData.centerId" :items="centers" item-title="name" item-value="_id"
-                label="Sélectionner un centre" variant="solo" rounded="xl" flat hide-details
-                :rules="[v => !!v || 'Le centre est requis en mode local']"><template #content>
-                  <v-icon size="16">mdi-chevron-down</v-icon>
-                </template></v-select>
+            <v-col
+              v-if="!isGlobal"
+              cols="12"
+              md="7"
+            >
+              <v-select
+                v-model="formData.centerId"
+                :items="centers"
+                item-title="name"
+                item-value="_id"
+                label="Sélectionner un centre"
+                variant="solo"
+                rounded="xl"
+                flat
+                hide-details
+                :rules="[v => !!v || 'Le centre est requis en mode local']"
+              >
+                <template #content>
+                  <v-icon size="16">
+                    mdi-chevron-down
+                  </v-icon>
+                </template>
+              </v-select>
             </v-col>
           </v-row>
 
@@ -135,39 +284,73 @@
               <v-btn color="onBackground" @click="handlePreview" rounded="lg" :size="smAndDown ? 'default' : 'small'"
                 :block="smAndDown">Aperçu</v-btn>
             </div> -->
-
         </v-card-text>
 
         <v-card-actions class="pa-0 mt-6">
-
-          <v-btn color="onSurface" variant="text" @click="announcementDialog = false" :disabled="emailStore.sending">
+          <v-btn
+            color="onSurface"
+            variant="text"
+            :disabled="emailStore.sending"
+            @click="announcementDialog = false"
+          >
             Annuler
           </v-btn>
           <v-spacer />
-          <v-btn color="surfaceContainerHigh" class="px-4" variant="flat" @click="sendTest" rounded="lg">Envoi test
+          <v-btn
+            color="surfaceContainerHigh"
+            class="px-4"
+            variant="flat"
+            rounded="lg"
+            @click="sendTest"
+          >
+            Envoi test
           </v-btn>
-          <v-btn color="onBackground" variant="flat" rounded="xl" @click="sendAnnouncement"
-            :loading="emailStore.sending" :disabled="!formValid" prepend-icon="mdi-send" class="px-4">
+          <v-btn
+            color="onBackground"
+            variant="flat"
+            rounded="xl"
+            :loading="emailStore.sending"
+            :disabled="!formValid"
+            prepend-icon="mdi-send"
+            class="px-4"
+            @click="sendAnnouncement"
+          >
             <template #prepend>
-              <v-icon size="12">mdi-send</v-icon>
+              <v-icon size="12">
+                mdi-send
+              </v-icon>
             </template>
             Envoi
           </v-btn>
-
         </v-card-actions>
       </v-card>
     </v-dialog>
 
 
     <!-- Dialog d'aperçu -->
-    <v-dialog v-model="previewDialog" max-width="1200px">
-      <v-card rounded="xl" color="surfaceContainerLow" flat class="pa-6">
+    <v-dialog
+      v-model="previewDialog"
+      max-width="1200px"
+    >
+      <v-card
+        rounded="xl"
+        color="surfaceContainerLow"
+        flat
+        class="pa-6"
+      >
         <v-card-title class="pa-0 ma-0">
           Aperçu de l'email
         </v-card-title>
         <v-card-text class="pa-0 pt-8">
-          <div v-if="emailPreview" v-html="emailPreview" class="email-preview"></div>
-          <div v-else class="text-medium-emphasis text-center pa-4">
+          <div
+            v-if="emailPreview"
+            class="email-preview"
+            v-html="emailPreview"
+          />
+          <div
+            v-else
+            class="text-medium-emphasis text-center pa-4"
+          >
             Sélectionnez un type d'annonce et entrez un message pour voir l'aperçu
           </div>
         </v-card-text>
@@ -175,23 +358,41 @@
     </v-dialog>
 
     <!-- Dialog de confirmation -->
-    <v-dialog v-model="confirmDialog" max-width="500px">
+    <v-dialog
+      v-model="confirmDialog"
+      max-width="500px"
+    >
       <v-card rounded="lg">
         <v-card-title class="text-h6">
-          <v-icon class="mr-2" color="warning">mdi-alert</v-icon>
+          <v-icon
+            class="mr-2"
+            color="warning"
+          >
+            mdi-alert
+          </v-icon>
           Confirmation d'envoi
         </v-card-title>
         <v-card-text>
-          <p>Vous êtes sur le point d'envoyer une annonce à <strong>{{ emailStore.userCount }} utilisateurs</strong>.
+          <p>
+            Vous êtes sur le point d'envoyer une annonce à <strong>{{ emailStore.userCount }} utilisateurs</strong>.
           </p>
-          <p class="text-medium-emphasis">Cette action ne peut pas être annulée.</p>
+          <p class="text-medium-emphasis">
+            Cette action ne peut pas être annulée.
+          </p>
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="confirmDialog = false">
+          <v-btn
+            variant="text"
+            @click="confirmDialog = false"
+          >
             Annuler
           </v-btn>
-          <v-btn color="primary" @click="confirmSend" :loading="emailStore.sending">
+          <v-btn
+            color="primary"
+            :loading="emailStore.sending"
+            @click="confirmSend"
+          >
             Confirmer l'envoi
           </v-btn>
         </v-card-actions>

@@ -6,14 +6,15 @@ import { hash } from "bcrypt";
 import Team from '../models/Team.js';
 import { getTeamAtGivenDate } from "../utils/getTeamAtGivenDate.js";
 import { computeShiftOfUser } from "../utils/computeShiftOfUser.js";
-import { computeShiftOfUserWithSubstitutions } from "../utils/computeShiftOfUserWithSubstitutions.js";
 import Transaction from '../models/Transaction.js';
 import { createDelayedTransaction, processPendingTransactions } from '../services/transactionService.js';
 import path from 'path';
 import fs from 'fs';
+import { isValidDateRange, isValidDate, isValidId } from '../utils/validation.js';
 import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
 import { sendAdminNotificationEmail } from '../services/email/adminNotificationEmail.js';
+import * as userShiftsService from '../services/userService/userShiftsService.js'
 import { generateDateArray } from '../utils/generateDateArray.js';
 import ruleService from '../services/rules/ruleService.js';
 import { getUsersByCenter as getUsersByCenterService } from '../services/userService/getUsersByCenter.js';
@@ -592,21 +593,26 @@ const getUserShifts = async (req, res) => {
 };
 
 
-// Obtenir les vacances d'un utilisateur
+// Obtenir les vacations d'un utilisateur
 const getUserShiftsWithSubstitutions = async (req, res) => {
     try {
         const { dates } = req.body;
         const { id: userId } = req.params;
 
-        if (!dates || !dates.startDate || !dates.endDate || !userId) {
-            return res.status(400).json({ message: !dates ? 'No dates provided' : !dates.startDate ? 'No start date provided' : !dates.endDate ? 'No end date provided' : 'No user provided' });
+        if (!dates.startDate || !dates.endDate) {
+            return res.status(400).json({ message: 'startDate et endDate sont requis' })
         }
 
+        if (!isValidDateRange({ startDate: dates.startDate.slice(0, 10), endDate: dates.endDate.slice(0, 10) })) {
+            return res.status(400).json({ message: 'Intervalle de dates invalide (format ou cohérence)' })
+        }
 
-        const dateArray = generateDateArray(dates.startDate, dates.endDate);
-        const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
+        if (!userId || !isValidId(userId)) {
+            return res.status(400).json({ message: 'User ID invalide ou manquant' })
+        }
 
-        res.json(results);
+        const shifts = await userShiftsService.getUserShifts(dates, userId)
+        res.json(shifts);
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ error: error.message });

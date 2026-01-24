@@ -13,8 +13,8 @@
         :close-on-content-click="false"
         location="top"
       >
-        <template v-slot:activator="{ props }">
-          <div v-bind="props"></div>
+        <template #activator="{ props }">
+          <div v-bind="props" />
         </template>
         <v-card min-width="300">
           <v-card-title class="text-h6">
@@ -24,9 +24,9 @@
               variant="text"
               size="small"
               class="ml-2"
-              @click="generateTeamUsers"
               :loading="generatingUsers"
-            ></v-btn>
+              @click="generateTeamUsers"
+            />
           </v-card-title>
           <v-card-text>
             <v-list>
@@ -37,8 +37,11 @@
                 :subtitle="user.email"
                 @click="autoLoginTeamUser(user)"
               >
-                <template v-slot:prepend>
-                  <v-avatar color="primary" size="32">
+                <template #prepend>
+                  <v-avatar
+                    color="primary"
+                    size="32"
+                  >
                     {{ user.name.charAt(0) }}
                   </v-avatar>
                 </template>
@@ -62,6 +65,9 @@ const { initializeApp } = useAppInitialization();
 const adminEmail = import.meta.env.VITE_ADMIN_MAIL;
 const adminPassword = import.meta.env.VITE_ADMIN_PASS;
 
+const localAdminEmail = import.meta.env.VITE_LOCAL_ADMIN_MAIL;
+const localAdminPassword = import.meta.env.VITE_LOCAL_ADMIN_PASS;
+console.log(import.meta.env)
 
 const handleLogout = async () => {
   authStore.logOut();
@@ -79,8 +85,8 @@ const autoLogin = async (role) => {
     
     if (role === 'admin') {
       await authStore.logIn({
-        email: 'localadmin@celeste.com',
-        password: 'adminpassword',
+        email: localAdminEmail,
+        password: localAdminPassword,
       });
     } else if (role === 'user') {
       await authStore.logIn({

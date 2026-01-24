@@ -1,7 +1,5 @@
 <template>
-    <LoadingScreen>
-
-    </LoadingScreen>
+  <LoadingScreen />
 </template>
 
 <script setup>

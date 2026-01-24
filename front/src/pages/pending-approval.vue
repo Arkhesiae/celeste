@@ -1,9 +1,22 @@
 <template>
   <v-container class="d-flex fill-height">
-    <v-row justify="center" align-content="center">
-      <v-col cols="12" md="8" lg="6">
-        <v-card class="pa-6" rounded="xl" elevation="0">
-          <v-card-title class=" mb-4">En attente d'approbation</v-card-title>
+    <v-row
+      justify="center"
+      align-content="center"
+    >
+      <v-col
+        cols="12"
+        md="8"
+        lg="6"
+      >
+        <v-card
+          class="pa-6"
+          rounded="xl"
+          elevation="0"
+        >
+          <v-card-title class=" mb-4">
+            En attente d'approbation
+          </v-card-title>
           
           <v-card-text>
             <div class="d-flex flex-column align-center mb-6">
@@ -12,7 +25,7 @@
                 size="24"
                 color="warning"
                 class="mb-4"
-              ></v-icon>
+              />
               
               <p class="text-body-1  mb-4">
                 Votre compte est en attente d'approbation par un administrateur.
@@ -29,9 +42,9 @@
               color="error"
               rounded="xl"
               variant="tonal"
-              @click="handleLogout"
               class="mt-4"
               height="48"
+              @click="handleLogout"
             >
               Se déconnecter
             </v-btn>

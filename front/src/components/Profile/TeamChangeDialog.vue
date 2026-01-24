@@ -1,161 +1,269 @@
 <template>
-
-  <GenericDialog max-width="900" v-model="dialogVisible" :title="dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe'" :subtitle="dialogModeValue === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement'" :icon="dialogModeValue === 'Renfort' ? 'mdi-calendar-plus' : 'mdi-account-outline'" @close="close">
+  <GenericDialog
+    v-model="dialogVisible"
+    max-width="900"
+    :title="dialogModeValue === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe'"
+    :subtitle="dialogModeValue === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement'"
+    :icon="dialogModeValue === 'Renfort' ? 'mdi-calendar-plus' : 'mdi-account-outline'"
+    @close="close"
+  >
     <template #content>
-      <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
-          <!-- Première fenêtre - Sélection de l'équipe -->
-          <v-window-item :value="0">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-card-item class="pa-0 mb-6">
-                  <v-card-subtitle class="text-medium-emphasis">
-                    Sélectionnez l'équipe pour votre {{ dialogModeValue === 'Renfort' ? 'renfort' : 'changement' }}
-                  </v-card-subtitle>
-                </v-card-item>
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select prepend-icon="mdi-account-outline" variant="outlined" class="mb-8" :items="teams"
-                  :item-title="item => 'Equipe ' + item.name" v-model="selectedTeam" label="Equipe" single-line
-                  item-value="_id" :rules="[rules.required]" bg-color="surface" rounded="lg"></v-select>
-              </v-col>
-            </v-row>
-          </v-window-item>
+      <v-window
+        v-model="currentWindow"
+        class="pt-1 pa-0"
+        height="100"
+      >
+        <!-- Première fenêtre - Sélection de l'équipe -->
+        <v-window-item :value="0">
+          <v-row>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-card-item class="pa-0 mb-6">
+                <v-card-subtitle class="text-medium-emphasis">
+                  Sélectionnez l'équipe pour votre {{ dialogModeValue === 'Renfort' ? 'renfort' : 'changement' }}
+                </v-card-subtitle>
+              </v-card-item>
+            </v-col>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-select
+                v-model="selectedTeam"
+                prepend-icon="mdi-account-outline"
+                variant="outlined"
+                class="mb-8"
+                :items="teams"
+                :item-title="item => 'Equipe ' + item.name"
+                label="Equipe"
+                single-line
+                item-value="_id"
+                :rules="[rules.required]"
+                bg-color="surface"
+                rounded="lg"
+              />
+            </v-col>
+          </v-row>
+        </v-window-item>
 
-          <!-- Deuxième fenêtre - Sélection de la date -->
-          <v-window-item :value="1">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-card-item class="pa-0 mb-6">
-                  <span class="text-overline font-weight-medium">Equipe {{ selectedTeamName }}</span>
-                  <v-card-title class="d-flex justify-space-between align-center">
-                    <div class="text-h5 font-weight-medium">Configuration des dates</div>
+        <!-- Deuxième fenêtre - Sélection de la date -->
+        <v-window-item :value="1">
+          <v-row>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-card-item class="pa-0 mb-6">
+                <span class="text-overline font-weight-medium">Equipe {{ selectedTeamName }}</span>
+                <v-card-title class="d-flex justify-space-between align-center">
+                  <div class="text-h5 font-weight-medium">
+                    Configuration des dates
+                  </div>
+                </v-card-title>
+                <v-card-subtitle class="text-medium-emphasis">
+                  {{ dialogModeValue === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement' }}
+                </v-card-subtitle>
+              </v-card-item>
+            </v-col>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-fade-transition>
+                <v-card
+                  color="background"
+                  class="mb-8 pa-4"
+                  rounded="xl"
+                  elevation="0"
+                >
+                  <v-card-item>
+                    <div class="d-flex justify-space-between align-center">
+                      <v-card-title class="text-subtitle-1 font-weight-medium">
+                        {{ dialogModeValue === 'Renfort' ? 'Période de renfort' : 'Date de changement' }}
+                      </v-card-title>
+                      <v-chip
+                        v-if="selectedDates.startDate"
+                        class="ml-4"
+                        color="onBackground"
+                        size="small"
+                        rounded="lg"
+                      >
+                        {{ dialogModeValue === 'Renfort' ? `${numberOfDays} jour${numberOfDays > 1 ? 's' : ''}` :
+                          relativeDaysText }}
+                      </v-chip>
+                    </div>
+                  </v-card-item>
+
+                  <v-card-text>
+                    <div class="text-body-2">
+                      <v-slide-y-transition mode="out-in">
+                        <template v-if="!selectedDates.startDate">
+                          <span v-if="dialogModeValue === 'Renfort'">Sélectionnez la période de renfort</span>
+                          <span v-else>Sélectionnez la date de changement</span>
+                        </template>
+                        <template v-else>
+                          <div class="d-flex align-center flex-wrap">
+                            <span class="d-inline-block">{{ dialogModeValue === 'Renfort' ? 'Du' : 'Le' }}</span>
+                            <v-fade-transition>
+                              <span
+                                v-if="selectedDates.startDate"
+                                class="d-inline-block"
+                              >
+                                &nbsp;{{ toDisplayFormat(selectedDates.startDate) }}&nbsp;
+                              </span>
+                            </v-fade-transition>
+                            <v-fade-transition>
+                              <div v-if="dialogModeValue === 'Renfort' && selectedDates.endDate">
+                                <span class="d-inline-block">au</span>
+                                <span class="d-inline-block "> &nbsp;{{ toDisplayFormat(selectedDates.endDate)
+                                }}</span>
+                              </div>
+                            </v-fade-transition>
+                          </div>
+                        </template>
+                      </v-slide-y-transition>
+                    </div>
+                  </v-card-text>
+                </v-card>
+              </v-fade-transition>
+            </v-col>
+          </v-row>
+
+          <v-row>
+            <v-col
+              cols="12"
+              md="6"
+              class="pa-4"
+            >
+              <v-slide-y-transition>
+                <v-alert
+                  v-if="conflict"
+                  color="error"
+                  type="warning"
+                  rounded="lg"
+                  variant="tonal"
+                  class="mt-4"
+                >
+                  <v-card-title class="pa-0 ma-0">
+                    Conflit
                   </v-card-title>
-                  <v-card-subtitle class="text-medium-emphasis">
-                    {{ dialogModeValue === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement' }}
-                  </v-card-subtitle>
-                </v-card-item>
-
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-fade-transition>
-                  <v-card color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
-                    <v-card-item>
-                      <div class="d-flex justify-space-between align-center">
-                        <v-card-title class="text-subtitle-1 font-weight-medium">
-                          {{ dialogModeValue === 'Renfort' ? 'Période de renfort' : 'Date de changement' }}
-                        </v-card-title>
-                        <v-chip v-if="selectedDates.startDate" class="ml-4" color="onBackground" size="small"
-                          rounded="lg">
-                          {{ dialogModeValue === 'Renfort' ? `${numberOfDays} jour${numberOfDays > 1 ? 's' : ''}` :
-                            relativeDaysText }}
-                        </v-chip>
-                      </div>
-                    </v-card-item>
-
-                    <v-card-text>
-                      <div class="text-body-2">
-                        <v-slide-y-transition mode="out-in">
-
-
-                          <template v-if="!selectedDates.startDate">
-                            <span v-if="dialogModeValue === 'Renfort'">Sélectionnez la période de renfort</span>
-                            <span v-else>Sélectionnez la date de changement</span>
-                          </template>
-                          <template v-else>
-                            <div class="d-flex align-center flex-wrap">
-                              <span class="d-inline-block">{{ dialogModeValue === 'Renfort' ? 'Du' : 'Le' }}</span>
-                              <v-fade-transition>
-                                <span v-if="selectedDates.startDate" class="d-inline-block">
-                                  &nbsp;{{ toDisplayFormat(selectedDates.startDate) }}&nbsp;
-                                </span>
-                              </v-fade-transition>
-                              <v-fade-transition>
-                                <div v-if="dialogModeValue === 'Renfort' && selectedDates.endDate">
-                                  <span class="d-inline-block">au</span>
-                                  <span class="d-inline-block "> &nbsp;{{ toDisplayFormat(selectedDates.endDate)
-                                  }}</span>
-                                </div>
-                              </v-fade-transition>
-                            </div>
-                          </template>
-                        </v-slide-y-transition>
-                      </div>
-                    </v-card-text>
-
-                  </v-card>
-                </v-fade-transition>
-              </v-col>
-            </v-row>
-
-            <v-row>
-              <v-col cols="12" md="6" class="pa-4">
-                <v-slide-y-transition>
-                  <v-alert v-if="conflict" color="error" type="warning" rounded="lg" variant="tonal" class="mt-4">
-
-                    <v-card-title class="pa-0 ma-0">Conflit</v-card-title>
-                    <v-card-text class="pa-0 ma-0">
-                      <p class="opacity-50">Vous avez déjà un changement prévu pour le {{
+                  <v-card-text class="pa-0 ma-0">
+                    <p class="opacity-50">
+                      Vous avez déjà un changement prévu pour le {{
                         toDisplayFormat(conflict.fromDate)
-                        }} dans l'équipe <strong>{{ conflict.teamName }}</strong></p>
-
-                    </v-card-text>
-
-
-                  </v-alert>
-                  <v-alert v-if="enRenfortConflict" color="error" type="warning" rounded="lg" variant="tonal" class="mt-4">
-
-                    <v-card-title class="pa-0 ma-0">Renfort déjà prévu</v-card-title>
-                    <v-card-text class="pa-0 ma-0">
-                      <p class="opacity-50">Vous avez déjà un renfort prévu entre le {{
+                      }} dans l'équipe <strong>{{ conflict.teamName }}</strong>
+                    </p>
+                  </v-card-text>
+                </v-alert>
+                <v-alert
+                  v-if="enRenfortConflict"
+                  color="error"
+                  type="warning"
+                  rounded="lg"
+                  variant="tonal"
+                  class="mt-4"
+                >
+                  <v-card-title class="pa-0 ma-0">
+                    Renfort déjà prévu
+                  </v-card-title>
+                  <v-card-text class="pa-0 ma-0">
+                    <p class="opacity-50">
+                      Vous avez déjà un renfort prévu entre le {{
                         toDisplayFormat(enRenfortConflict.fromDate) }} et le {{
                         toDisplayFormat(enRenfortConflict.toDate) }}
-                        dans l'équipe <strong>{{ enRenfortConflict.teamName }}</strong></p>
-
-                    </v-card-text>
-
-
-                  </v-alert>
-                </v-slide-y-transition>
-              </v-col>
-              <v-col cols="12" md="6"> <v-date-picker hide-header class="mx-auto mt-4" elevation="0" width="100%"
-                  max-width="600px" :min="new Date().toISOString().split('T')[0]"
-                  :multiple="dialogModeValue === 'Renfort' ? 'range' : false" v-model="pickerDates"
-                  @update:model-value="updateFormattedDate" locale="fr"></v-date-picker></v-col>
-            </v-row>
-
-
-          </v-window-item>
-        </v-window>
+                      dans l'équipe <strong>{{ enRenfortConflict.teamName }}</strong>
+                    </p>
+                  </v-card-text>
+                </v-alert>
+              </v-slide-y-transition>
+            </v-col>
+            <v-col
+              cols="12"
+              md="6"
+            >
+              <v-date-picker
+                v-model="pickerDates"
+                hide-header
+                class="mx-auto mt-4"
+                elevation="0"
+                width="100%"
+                max-width="600px"
+                :min="new Date().toISOString().split('T')[0]"
+                :multiple="dialogModeValue === 'Renfort' ? 'range' : false"
+                locale="fr"
+                @update:model-value="updateFormattedDate"
+              />
+            </v-col>
+          </v-row>
+        </v-window-item>
+      </v-window>
     </template>
     <template #actions>
-    
-      
-        <v-btn v-if="currentWindow === 0" color="primary" variant="tonal" rounded="xl" @click="currentWindow = 1" :disabled="!selectedTeam">
-          Suivant
-        </v-btn>
+      <v-btn
+        v-if="currentWindow === 0"
+        color="primary"
+        variant="tonal"
+        rounded="xl"
+        :disabled="!selectedTeam"
+        @click="currentWindow = 1"
+      >
+        Suivant
+      </v-btn>
    
 
 
-        <v-btn v-if="currentWindow === 1" color="primary" variant="tonal" :disabled="!formValid" rounded="xl" @click="handleTeamChange">
-          Valider
-        </v-btn>
-    
+      <v-btn
+        v-if="currentWindow === 1"
+        color="primary"
+        variant="tonal"
+        :disabled="!formValid"
+        rounded="xl"
+        @click="handleTeamChange"
+      >
+        Valider
+      </v-btn>
     </template>
     <template #footer>  
-      <div v-if="currentWindow === 0" class="pa-0 ma-0 d-flex flex-grow-1">
-        <v-spacer></v-spacer>
-        <v-btn class="flex-shrink-0" color="primary" variant="tonal" rounded="xl" @click="currentWindow = 1" :disabled="!selectedTeam">
+      <div
+        v-if="currentWindow === 0"
+        class="pa-0 ma-0 d-flex flex-grow-1"
+      >
+        <v-spacer />
+        <v-btn
+          class="flex-shrink-0"
+          color="primary"
+          variant="tonal"
+          rounded="xl"
+          :disabled="!selectedTeam"
+          @click="currentWindow = 1"
+        >
           Suivant
         </v-btn>
       </div>
 
       <!-- Actions pour la deuxième fenêtre -->
-      <div v-if="currentWindow === 1" class="pa-0 ma-0 d-flex flex-grow-1">
-        <v-btn color="primary" variant="text" rounded="xl" @click="currentWindow = 0">
+      <div
+        v-if="currentWindow === 1"
+        class="pa-0 ma-0 d-flex flex-grow-1"
+      >
+        <v-btn
+          color="primary"
+          variant="text"
+          rounded="xl"
+          @click="currentWindow = 0"
+        >
           Retour
         </v-btn>
-        <v-spacer></v-spacer>
-        <v-btn color="primary" variant="tonal" :disabled="!formValid" rounded="xl" @click="handleTeamChange">
+        <v-spacer />
+        <v-btn
+          color="primary"
+          variant="tonal"
+          :disabled="!formValid"
+          rounded="xl"
+          @click="handleTeamChange"
+        >
           Valider
         </v-btn>
       </div>
@@ -192,8 +300,15 @@
   </v-dialog> --> 
 
   <!-- Confirmation Dialog -->
-  <v-dialog v-model="showConfirmationDialog" max-width="400px">
-    <v-card rounded="xl" elevation="0" class="pa-2">
+  <v-dialog
+    v-model="showConfirmationDialog"
+    max-width="400px"
+  >
+    <v-card
+      rounded="xl"
+      elevation="0"
+      class="pa-2"
+    >
       <v-card-item prepend-icon="mdi-alert-outline">
         <v-card-title>Conflit de changement</v-card-title>
       </v-card-item>
@@ -203,19 +318,39 @@
         Ecraser le changement ?
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" rounded="xl" @click="showConfirmationDialog = false">
+        <v-btn
+          variant="text"
+          color="secondary"
+          rounded="xl"
+          @click="showConfirmationDialog = false"
+        >
           Annuler
         </v-btn>
-        <v-btn variant="tonal" rounded="xl" color="primary" @click="overrideDateConflict">
+        <v-btn
+          variant="tonal"
+          rounded="xl"
+          color="primary"
+          @click="overrideDateConflict"
+        >
           Valider
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 
-  <v-dialog v-model="showConflictDialog" max-width="600px">
-    <v-card rounded="xl" elevation="0" class="pa-6">
-      <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
+  <v-dialog
+    v-model="showConflictDialog"
+    max-width="600px"
+  >
+    <v-card
+      rounded="xl"
+      elevation="0"
+      class="pa-6"
+    >
+      <v-card-item
+        prepend-icon="mdi-alert-outline"
+        class="pa-0 ma-0"
+      >
         <v-card-title>Conflits détectés</v-card-title>
       </v-card-item>
       <v-card-text class="pa-0 my-4 ma-0">
@@ -236,10 +371,20 @@
         </div>
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" rounded="xl" @click="showConflictDialog = false">
+        <v-btn
+          variant="text"
+          color="secondary"
+          rounded="xl"
+          @click="showConflictDialog = false"
+        >
           Annuler
         </v-btn>
-        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleDeleteAndSubmit">
+        <v-btn
+          variant="tonal"
+          rounded="xl"
+          color="primary"
+          @click="handleDeleteAndSubmit"
+        >
           Valider et annuler les demandes
         </v-btn>
       </v-card-actions>

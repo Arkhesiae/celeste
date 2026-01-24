@@ -23,14 +23,9 @@ dotenv.config({
     : '.env.development',
 });
 
-
-
 // ─── Création de l'application Express ────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-
-
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
 import './cron/processTransactions.js';
@@ -92,7 +87,6 @@ app.get(/^\/(?!api).*/, (req, res) => {
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-
   .then(async () => {
     console.log('✅ MongoDB connecté via Docker');
     await initializeRules();  

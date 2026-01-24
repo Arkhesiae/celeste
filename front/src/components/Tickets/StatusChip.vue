@@ -1,6 +1,6 @@
 <template>
   <v-menu>
-    <template v-slot:activator="{ props }">
+    <template #activator="{ props }">
       <v-chip
         v-bind="props"
         size="x-small"
@@ -11,7 +11,13 @@
         class="cursor-pointer"
         @click.stop
       >
-      <v-icon v-if="prependIcon" size="small" class="mr-1">mdi-chevron-down</v-icon>
+        <v-icon
+          v-if="prependIcon"
+          size="small"
+          class="mr-1"
+        >
+          mdi-chevron-down
+        </v-icon>
         {{ getStatusLabel(status) }}
       </v-chip>
     </template>

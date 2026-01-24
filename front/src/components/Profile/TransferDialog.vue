@@ -1,15 +1,34 @@
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="500">
-    <v-card rounded="xl" class="pa-6">
-      <v-card-title class="pa-0">Faire un Virement</v-card-title>
+  <v-dialog
+    v-model="localDialogVisible"
+    max-width="500"
+  >
+    <v-card
+      rounded="xl"
+      class="pa-6"
+    >
+      <v-card-title class="pa-0">
+        Faire un Virement
+      </v-card-title>
       <v-card-text class="pa-0 py-6 ">
         <v-form @submit.prevent="confirmTransfer">
-          <v-number-input v-model="transferAmount" class="text-primary" reverse controlVariant="split" label=""
-                    rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
-                    base-color="transparent" variant="outlined"
-                    :min="0"
-                    :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']">
-          </v-number-input>
+          <v-number-input
+            v-model="transferAmount"
+            class="text-primary"
+            reverse
+            control-variant="split"
+            label=""
+            rounded="xl"
+            bg-color="surfaceContainer"
+            color="blue"
+            glow
+            :hide-input="false"
+            inset
+            base-color="transparent"
+            variant="outlined"
+            :min="0"
+            :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']"
+          />
     
           <v-autocomplete
             v-model="transferRecipient"
@@ -25,10 +44,17 @@
             :rules="[v => !!v || 'Le destinataire est requis']"
             class="mb-4"
           >
-            <template v-slot:item="{ props, item }">
-              <v-list-item v-bind="props" :title="getUserFullName(item.raw)" :subtitle="getUserSubtitle(item.raw)">
-                <template v-slot:prepend>
-                  <v-avatar size="32" color="primary">
+            <template #item="{ props, item }">
+              <v-list-item
+                v-bind="props"
+                :title="getUserFullName(item.raw)"
+                :subtitle="getUserSubtitle(item.raw)"
+              >
+                <template #prepend>
+                  <v-avatar
+                    size="32"
+                    color="primary"
+                  >
                     {{ getUserFullName(item.raw).charAt(0) }}
                   </v-avatar>
                 </template>
@@ -52,7 +78,7 @@
             elevation="0"
             :rules="[v => !!v || 'La date est requise', v => isFutureDate(v) || 'La date doit être dans le futur']"
             :min="minDate"
-          ></v-text-field>
+          />
         </v-form>
       </v-card-text>
       <v-card-actions class="pa-0">
@@ -60,8 +86,8 @@
           color="secondary"
           text
 
-          @click="closeDialog"
           :disabled="isLoading"
+          @click="closeDialog"
         >
           Annuler
         </v-btn>
@@ -69,8 +95,8 @@
           color="primary"
           text
 
-          @click="confirmTransfer"
           :loading="isLoading"
+          @click="confirmTransfer"
         >
           Confirmer
         </v-btn>

@@ -1,15 +1,31 @@
 <template>
-  <v-sheet rounded="xl" elevation="0" color="transparent">
+  <v-sheet
+    rounded="xl"
+    elevation="0"
+    color="transparent"
+  >
     <!-- En-têtes des jours de la semaine -->
     <v-row class="mt-1">
-      <v-col v-for="day in daysOfWeek" :key="day" class="text-center">
+      <v-col
+        v-for="day in daysOfWeek"
+        :key="day"
+        class="text-center"
+      >
         <strong>{{ day }}</strong>
       </v-col>
     </v-row>
 
     <!-- Jours du calendrier -->
-    <v-row v-for="(week, index) in calendarDays" :key="index" class="calendar-row" dense>
-      <v-col v-for="day in week" :key="day.date">
+    <v-row
+      v-for="(week, index) in calendarDays"
+      :key="index"
+      class="calendar-row"
+      dense
+    >
+      <v-col
+        v-for="day in week"
+        :key="day.date"
+      >
         <v-card
           width="100%"
           min-width="100%"
@@ -17,7 +33,6 @@
           
           :color="getColor(day.date)"
           class="d-flex flex-column calendar-day pa-0 overflow-visible"
-          @click="$emit('select-day', day.date)"
           :style="{
             'opacity': getOpacity(day)
           }"
@@ -31,49 +46,68 @@
       
   
           }"
+          @click="$emit('select-day', day.date)"
         >
-         
-
           <!-- Contenu principal de la carte -->
           <v-card-item class="py-3 pt-2  "> 
-            <v-card-title :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 500'">{{ day.date.getUTCDate() }}</v-card-title>
+            <v-card-title :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 500'">
+              {{ day.date.getUTCDate() }}
+            </v-card-title>
           </v-card-item>
 
           
-          <PendingChip v-if="substitutionStore.hasOwnPendingDemand(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
-          <AccepterChip v-if="substitutionStore.hasAcceptedAsAccepter(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
-          <ConfirmationChip v-if="substitutionStore.hasAcceptedAsPoster(day.date.toISOString())" style="bottom:8px !important; right: 8px !important" :date="day.date"/>
+          <PendingChip
+            v-if="pendingDemand(day.date)"
+            style="bottom:8px !important; right: 8px !important"
+            :date="day.date"
+          />
+          <AccepterChip
+            v-if="acceptedAsAccepter(day.date)"
+            style="bottom:8px !important; right: 8px !important"
+            :date="day.date"
+          />
+          <ConfirmationChip
+            v-if="acceptedAsPoster(day.date)"
+            style="bottom:8px !important; right: 8px !important"
+            :date="day.date"
+          />
           <!-- <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" style="bottom:8px !important; right: 8px !important" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/> -->
 
 
           <div class="d-flex justify-space-between align-center px-4">
- <!-- Informations du shift -->
-          <v-card-subtitle class="pa-0" v-if=" getShiftType(day.date) !== 'rest'" :class="isOff(day.date) ? 'offDay' : ''">
-            {{ getShiftName(day.date) }}
-          </v-card-subtitle>
-              <!-- Indicateurs de substitution -->
-          <div  class="position-absolute pr-4 pb-4" style="bottom: 0; right: 0;">
-            <div class="d-flex justify-center">
-              <div 
-                v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
-                class="indicator-dot remplacement "
-                style="background: rgb(var(--v-theme-remplacement)) !important" 
-              ></div>
-              <div 
-                v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
-                class="indicator-dot permutation ml-1"
-                style="background: rgb(var(--v-theme-permutation)) !important"
-              ></div>
-              <div 
-                v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
-                class="indicator-dot other-demand ml-1"
-                style="background: rgba(var(--v-theme-background), 1) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.25) !important"
-              ></div>
-            </div>
-          </div>      
+            <!-- Informations du shift -->
+            <v-card-subtitle
+              v-if=" getShiftType(day.date) !== 'rest'"
+              class="pa-0"
+              :class="isOff(day.date) ? 'offDay' : ''"
+            >
+              {{ getShiftName(day.date) }}
+            </v-card-subtitle>
+            <!-- Indicateurs de substitution -->
+            <div
+              class="position-absolute pr-4 pb-4"
+              style="bottom: 0; right: 0;" 
+              v-if="!pendingDemand(day.date) && !acceptedAsAccepter(day.date) && !acceptedAsPoster(day.date)"
+            >
+              <div class="d-flex justify-center">
+                <div 
+                  v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
+                  class="indicator-dot remplacement "
+                  style="background: rgb(var(--v-theme-primary)) !important" 
+                />
+                <div 
+                  v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
+                  class="indicator-dot permutation ml-1"
+                  style="background: rgb(var(--v-theme-primary)) !important"
+                />
+                <div 
+                  v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
+                  class="indicator-dot other-demand ml-1"
+                  style="background: rgba(var(--v-theme-error), .3) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.05) !important"
+                />
+              </div>
+            </div>      
           </div>
-         
-      
         </v-card>
       </v-col>
     </v-row>
@@ -99,6 +133,21 @@ const props = defineProps({
 });
 
 
+const pendingDemand = computed(() => (date) => [
+  ...substitutionStore.ownPendingHybridSubstitutions,
+  ...substitutionStore.ownPendingTrueSubstitutions,
+  ...substitutionStore.ownPendingTrueSwitches
+].find(d => d.posterShift.date === date.toISOString()));
+
+const acceptedAsAccepter = computed(() => (date) => {
+  if (!date) return null;
+  return substitutionStore.acceptedAsAccepter.find(d => d.posterShift.date === date.toISOString());
+});
+
+const acceptedAsPoster = computed(() => (date) => {
+  if (!date) return null;
+  return substitutionStore.acceptedAsPoster.find(d => d.posterShift.date === date.toISOString());
+});
 
 
 

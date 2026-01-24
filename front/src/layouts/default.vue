@@ -1,24 +1,33 @@
 <template>
   <div class="transition-wrapper d-flex">
+    <AppBar
+      :show-buttons="inScreen"
+      :is-mobile-drawer-open="mobileDrawer"
+      @toggle-mobile-drawer="toggleMobileDrawer"
+      @toggle-drawer="toggleDrawer"
+    />
 
+    <DesktopNavigationDrawer2 v-model:nav-expanded="navExpanded" />
 
-    <AppBar :showButtons="inScreen" :isMobileDrawerOpen="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
-
-    <DesktopNavigationDrawer2 v-model:navExpanded="navExpanded" />
-
-    <MobileNavigationDrawer class="user-safe-area" v-model:modelValue="mobileDrawer" />
+    <MobileNavigationDrawer
+      v-model:model-value="mobileDrawer"
+      class="user-safe-area"
+    />
 
     <LoginButtons v-if="isDev" />
 
 
 
 
-      <v-main  position="relative" >
-        <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
+    <v-main>
+      <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
         
-          <router-view   v-slot="{ Component, route }">
-            <transition :name="'fade-one' " mode="out-in">
-            <!-- <transition 
+      <router-view v-slot="{ Component, route }">
+        <transition
+          :name="'fade-one' "
+          mode="out-in"
+        >
+          <!-- <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
             @enter="onEnter"
@@ -28,14 +37,13 @@
             :name="route.meta.transition || ''"
             > -->
           
-                <component :is="Component"   />
-      
-          </transition>
-        </router-view>
-       
-    
-
-      </v-main>
+          <component
+            :is="Component"
+            :key="route.fullPath"
+          />
+        </transition>
+      </router-view>
+    </v-main>
  
     <BottomNavigation />
     <AdditionnalSnackbar /> 
@@ -181,6 +189,7 @@ const onAfterLeave = (el) => {
 }
 
 .v-main {
+  overflow: visible !important;
   position: relative !important;
   width: 100% !important;
   padding-top: calc(var(--safe-area-top) + var(--v-layout-top)) !important;

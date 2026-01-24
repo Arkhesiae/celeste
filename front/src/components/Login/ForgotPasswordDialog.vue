@@ -1,8 +1,11 @@
 <template>
-  <v-dialog v-model="dialog" max-width="500px" transition="dialog-bottom-transition">
+  <v-dialog
+    v-model="dialog"
+    max-width="500px"
+    transition="dialog-bottom-transition"
+  >
     <v-card class="rounded-xl pa-2">
       <v-card-title class="text-h5 pa-6 pb-2">
-
         Mot de passe oublié
       </v-card-title>
 
@@ -11,7 +14,11 @@
           Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe.
           Si cet email existe, vous recevrez un lien de réinitialisation de votre mot de passe.
         </p>
-        <v-form ref="form" v-model="valid" @submit.prevent="submit">
+        <v-form
+          ref="form"
+          v-model="valid"
+          @submit.prevent="submit"
+        >
           <v-text-field
             v-model="email"
             :rules="emailRules"
@@ -25,18 +32,17 @@
             rounded="xl"
             bg-color="surface"
             hide-details="auto"
-          ></v-text-field>
+          />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6 pt-2">
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="primary"
           variant="text"
           rounded="xl"
           @click="closeDialog"
-
         >
           Annuler
         </v-btn>
@@ -47,9 +53,11 @@
           :loading="loading"
           :disabled="!valid"
           @click="submit"
-         
         >
-          <v-icon icon="mdi-send" class="me-1"></v-icon>
+          <v-icon
+            icon="mdi-send"
+            class="me-1"
+          />
           Réinitialiser
         </v-btn>
       </v-card-actions>

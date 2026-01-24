@@ -1,6 +1,6 @@
 <script setup>
 const props = defineProps({
-  isDialogVisible: {
+  modelValue: {
     type: Boolean,
     required: true,
   },
@@ -38,27 +38,31 @@ const props = defineProps({
   },  
 });
 
-const emit = defineEmits(['update:isDialogVisible', 'confirm', 'cancel']);
+const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
 
 const handleConfirm = () => {
   emit('confirm');
-  emit('update:isDialogVisible', false);
+  emit('update:modelValue', false);
 };
 
 const handleCancel = () => {
   emit('cancel');
-  emit('update:isDialogVisible', false);
+  emit('update:modelValue', false);
 };
 </script>
 
 <template>
   <v-dialog
-    :model-value="isDialogVisible"
-    @update:model-value="$emit('update:modelValue', $event)"
+    :model-value="modelValue"
     max-width="400"
+    :z-index="2600"
+    :style="{zIndex: 2600 }"
+    @update:model-value="$emit('update:modelValue', $event)"
   >
-    <v-card rounded="xl" class="pa-6">
-      <v-card-item  class="text-center ma-0 pa-0">
+    <v-card
+      class="pa-6 rounded-xxl"
+    >
+      <v-card-item class="text-start ma-0 pa-0">
         <v-icon
           v-if="icon"
           :icon="icon"
@@ -66,42 +70,46 @@ const handleCancel = () => {
           :color="iconColor"
           class="mb-4"
         />
-        <v-card-title v-if="title" class="text-h6 mb-4">{{ title }}</v-card-title> 
-       
-      </v-card-item>
-      <v-card-text v-if="text" class="text-body-2 pb-6 pa-0">
-          {{ text }}
-        </v-card-text>
-      <v-card-actions class="pa-0 ">
-        
-        <v-btn
-          color="secondary"
-          variant="outlined"         
-          :slim="true"  
-          @click="handleCancel"
-          class="border-white"
+        <v-card-title
+          v-if="title"
+          class="text-h6 mb-4"
         >
+          {{ title }}
+        </v-card-title>
+      </v-card-item>
+      <v-card-text
+        v-if="text"
+        class="text-body-2 pb-6 pa-0"
+      >
+        {{ text }}
+      </v-card-text>
+      <div class="d-flex align-center justify-end ga-2">
+        <v-btn color="primary" variant="text" flat  class="custom-btn" @click="handleCancel">
           {{ cancelText }}
         </v-btn>
+        <slot name="actions">
+       
         <v-spacer />
         <v-btn
           :color="confirmColor || 'primary'"
           :slim="true"
           :disabled="isConfirmDisabled"
           @click="handleConfirm"
-          
         >
           {{ confirmText }}
         </v-btn>
-      </v-card-actions>
+      </slot>
+      </div>
     </v-card>
   </v-dialog>
 </template>
 
-<style scoped>
+<style>
+.rounded-xxl {
+  border-radius: 28px !important;
+}
 
-
-.border-white {
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+.custom-btn {
+  border: 1px solid rgba(185, 185, 185, 0.3) !important;
 }
 </style> 

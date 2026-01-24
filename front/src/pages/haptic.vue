@@ -1,12 +1,23 @@
 <template>
   <v-container>
-    <MainTitle title="Test Haptique" subtitle="Testez les retours haptiques de l'appareil" :back-button="true" />
+    <MainTitle
+      title="Test Haptique"
+      subtitle="Testez les retours haptiques de l'appareil"
+      :back-button="true"
+    />
 
     <v-row>
       <v-col cols="12">
-        <v-card rounded="xl" elevation="0" class="pa-6" color="surfaceContainer">
+        <v-card
+          rounded="xl"
+          elevation="0"
+          class="pa-6"
+          color="surfaceContainer"
+        >
           <v-card-title class="text-h5 mb-4">
-            <v-icon class="mr-2">mdi-vibrate</v-icon>
+            <v-icon class="mr-2">
+              mdi-vibrate
+            </v-icon>
             Retours Haptiques
           </v-card-title>
           
@@ -20,9 +31,16 @@
               elevation="0" 
               @click="triggerImpactLight"
             >
-              <v-icon class="mr-3">mdi-hand-front</v-icon>
+              <v-icon class="mr-3">
+                mdi-hand-front
+              </v-icon>
               <span class="text-h7">Impact Léger</span>
-              <v-chip color="info" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="info"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Light
               </v-chip>
             </v-btn>
@@ -36,9 +54,16 @@
               elevation="0" 
               @click="triggerImpactMedium"
             >
-              <v-icon class="mr-3">mdi-hand-front</v-icon>
+              <v-icon class="mr-3">
+                mdi-hand-front
+              </v-icon>
               <span class="text-h7">Impact Moyen</span>
-              <v-chip color="warning" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="warning"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Medium
               </v-chip>
             </v-btn>
@@ -52,9 +77,16 @@
               elevation="0" 
               @click="triggerImpactHeavy"
             >
-              <v-icon class="mr-3">mdi-hand-front</v-icon>
+              <v-icon class="mr-3">
+                mdi-hand-front
+              </v-icon>
               <span class="text-h7">Impact Fort</span>
-              <v-chip color="error" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="error"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Heavy
               </v-chip>
             </v-btn>
@@ -68,9 +100,16 @@
               elevation="0" 
               @click="triggerImpactRigid"
             >
-              <v-icon class="mr-3">mdi-hand-front</v-icon>
+              <v-icon class="mr-3">
+                mdi-hand-front
+              </v-icon>
               <span class="text-h7">Impact Rigide</span>
-              <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Rigid
               </v-chip>
             </v-btn>
@@ -84,18 +123,32 @@
               elevation="0" 
               @click="triggerImpactSoft"
             >
-              <v-icon class="mr-3">mdi-hand-front</v-icon>
+              <v-icon class="mr-3">
+                mdi-hand-front
+              </v-icon>
               <span class="text-h7">Impact Doux</span>
-              <v-chip color="success" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="success"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Soft
               </v-chip>
             </v-btn>
           </v-card-text>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card
+          rounded="xl"
+          elevation="0"
+          class="pa-6 mt-4"
+          color="surfaceContainer"
+        >
           <v-card-title class="text-h5 mb-4">
-            <v-icon class="mr-2">mdi-bell-ring</v-icon>
+            <v-icon class="mr-2">
+              mdi-bell-ring
+            </v-icon>
             Notifications
           </v-card-title>
           
@@ -109,9 +162,16 @@
               elevation="0" 
               @click="triggerNotificationSuccess"
             >
-              <v-icon class="mr-3">mdi-check-circle</v-icon>
+              <v-icon class="mr-3">
+                mdi-check-circle
+              </v-icon>
               <span class="text-h7">Notification Succès</span>
-              <v-chip color="success" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="success"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Success
               </v-chip>
             </v-btn>
@@ -125,9 +185,16 @@
               elevation="0" 
               @click="triggerNotificationWarning"
             >
-              <v-icon class="mr-3">mdi-alert</v-icon>
+              <v-icon class="mr-3">
+                mdi-alert
+              </v-icon>
               <span class="text-h7">Notification Avertissement</span>
-              <v-chip color="warning" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="warning"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Warning
               </v-chip>
             </v-btn>
@@ -141,18 +208,32 @@
               elevation="0" 
               @click="triggerNotificationError"
             >
-              <v-icon class="mr-3">mdi-close-circle</v-icon>
+              <v-icon class="mr-3">
+                mdi-close-circle
+              </v-icon>
               <span class="text-h7">Notification Erreur</span>
-              <v-chip color="error" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="error"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Error
               </v-chip>
             </v-btn>
           </v-card-text>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card
+          rounded="xl"
+          elevation="0"
+          class="pa-6 mt-4"
+          color="surfaceContainer"
+        >
           <v-card-title class="text-h5 mb-4">
-            <v-icon class="mr-2">mdi-tune</v-icon>
+            <v-icon class="mr-2">
+              mdi-tune
+            </v-icon>
             Sélection
           </v-card-title>
           
@@ -166,9 +247,16 @@
               elevation="0" 
               @click="triggerSelectionStart"
             >
-              <v-icon class="mr-3">mdi-cursor-pointer</v-icon>
+              <v-icon class="mr-3">
+                mdi-cursor-pointer
+              </v-icon>
               <span class="text-h7">Sélection Start</span>
-              <v-chip color="info" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="info"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Selection
               </v-chip>
             </v-btn>
@@ -180,9 +268,16 @@
               elevation="0" 
               @click="triggerSelectionChanged"
             >
-              <v-icon class="mr-3">mdi-cursor-pointer</v-icon>
+              <v-icon class="mr-3">
+                mdi-cursor-pointer
+              </v-icon>
               <span class="text-h7">Sélection Changed²</span>
-              <v-chip color="info" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="info"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Selection Changed
               </v-chip>
             </v-btn>
@@ -194,18 +289,32 @@
               elevation="0" 
               @click="triggerSelectionEnd"
             >
-              <v-icon class="mr-3">mdi-cursor-pointer</v-icon>
+              <v-icon class="mr-3">
+                mdi-cursor-pointer
+              </v-icon>
               <span class="text-h7">Sélection End</span>
-              <v-chip color="info" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="info"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Selection
               </v-chip>
             </v-btn>
           </v-card-text>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card
+          rounded="xl"
+          elevation="0"
+          class="pa-6 mt-4"
+          color="surfaceContainer"
+        >
           <v-card-title class="text-h5 mb-4">
-            <v-icon class="mr-2">mdi-cog</v-icon>
+            <v-icon class="mr-2">
+              mdi-cog
+            </v-icon>
             Actions Avancées
           </v-card-title>
           
@@ -219,99 +328,148 @@
               elevation="0" 
               @click="triggerVibrate"
             >
-              <v-icon class="mr-3">mdi-vibrate</v-icon>
+              <v-icon class="mr-3">
+                mdi-vibrate
+              </v-icon>
               <span class="text-h7">Vibration Simple</span>
-              <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
                 Vibrate
               </v-chip>
             </v-btn>
 
-                         <!-- Séquence personnalisée -->
-             <v-btn 
-               block 
-               height="64" 
-               class="rounded-lg py-4" 
-               color="secondary" 
-               elevation="0" 
-               @click="triggerCustomSequence"
-             >
-               <v-icon class="mr-3">mdi-playlist-play</v-icon>
-               <span class="text-h7">Séquence Personnalisée</span>
-               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
-                 Custom
-               </v-chip>
-             </v-btn>
+            <!-- Séquence personnalisée -->
+            <v-btn 
+              block 
+              height="64" 
+              class="rounded-lg py-4" 
+              color="secondary" 
+              elevation="0" 
+              @click="triggerCustomSequence"
+            >
+              <v-icon class="mr-3">
+                mdi-playlist-play
+              </v-icon>
+              <span class="text-h7">Séquence Personnalisée</span>
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
+                Custom
+              </v-chip>
+            </v-btn>
 
-             <!-- Impact Ultra-Léger -->
-             <v-btn 
-               block 
-               height="64" 
-               class="rounded-lg py-4" 
-               color="secondary" 
-               elevation="0" 
-               @click="triggerUltraLight"
-             >
-               <v-icon class="mr-3">mdi-feather</v-icon>
-               <span class="text-h7">Impact Ultra-Léger</span>
-               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
-                 Ultra Light
-               </v-chip>
-             </v-btn>
+            <!-- Impact Ultra-Léger -->
+            <v-btn 
+              block 
+              height="64" 
+              class="rounded-lg py-4" 
+              color="secondary" 
+              elevation="0" 
+              @click="triggerUltraLight"
+            >
+              <v-icon class="mr-3">
+                mdi-feather
+              </v-icon>
+              <span class="text-h7">Impact Ultra-Léger</span>
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
+                Ultra Light
+              </v-chip>
+            </v-btn>
 
-             <!-- Tap Léger -->
-             <v-btn 
-               block 
-               height="64" 
-               class="rounded-lg py-4" 
-               color="secondary" 
-               elevation="0" 
-               @click="triggerLightTap"
-             >
-               <v-icon class="mr-3">mdi-hand-pointing-up</v-icon>
-               <span class="text-h7">Tap Léger</span>
-               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
-                 Light Tap
-               </v-chip>
-             </v-btn>
+            <!-- Tap Léger -->
+            <v-btn 
+              block 
+              height="64" 
+              class="rounded-lg py-4" 
+              color="secondary" 
+              elevation="0" 
+              @click="triggerLightTap"
+            >
+              <v-icon class="mr-3">
+                mdi-hand-pointing-up
+              </v-icon>
+              <span class="text-h7">Tap Léger</span>
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
+                Light Tap
+              </v-chip>
+            </v-btn>
 
-             <!-- Micro Impact -->
-             <v-btn 
-               block 
-               height="64" 
-               class="rounded-lg py-4" 
-               color="secondary" 
-               elevation="0" 
-               @click="triggerMicroImpact"
-             >
-               <v-icon class="mr-3">mdi-dot-small</v-icon>
-               <span class="text-h7">Micro Impact</span>
-               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
-                 Micro
-               </v-chip>
-             </v-btn>
+            <!-- Micro Impact -->
+            <v-btn 
+              block 
+              height="64" 
+              class="rounded-lg py-4" 
+              color="secondary" 
+              elevation="0" 
+              @click="triggerMicroImpact"
+            >
+              <v-icon class="mr-3">
+                mdi-dot-small
+              </v-icon>
+              <span class="text-h7">Micro Impact</span>
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
+                Micro
+              </v-chip>
+            </v-btn>
 
-             <!-- Whisper Touch -->
-             <v-btn 
-               block 
-               height="64" 
-               class="rounded-lg py-4" 
-               color="secondary" 
-               elevation="0" 
-               @click="triggerWhisperTouch"
-             >
-               <v-icon class="mr-3">mdi-air-humidifier</v-icon>
-               <span class="text-h7">Whisper Touch</span>
-               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
-                 Whisper
-               </v-chip>
-             </v-btn>
-           </v-card-text>
-         </v-card>
+            <!-- Whisper Touch -->
+            <v-btn 
+              block 
+              height="64" 
+              class="rounded-lg py-4" 
+              color="secondary" 
+              elevation="0" 
+              @click="triggerWhisperTouch"
+            >
+              <v-icon class="mr-3">
+                mdi-air-humidifier
+              </v-icon>
+              <span class="text-h7">Whisper Touch</span>
+              <v-chip
+                color="secondary"
+                variant="flat"
+                class="ml-auto"
+                size="small"
+              >
+                Whisper
+              </v-chip>
+            </v-btn>
+          </v-card-text>
+        </v-card>
 
         <!-- Informations sur la compatibilité -->
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card
+          rounded="xl"
+          elevation="0"
+          class="pa-6 mt-4"
+          color="surfaceContainer"
+        >
           <v-card-title class="text-h5 mb-4">
-            <v-icon class="mr-2">mdi-information</v-icon>
+            <v-icon class="mr-2">
+              mdi-information
+            </v-icon>
             Informations
           </v-card-title>
           

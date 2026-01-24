@@ -1,33 +1,41 @@
 <template>
-    <div class="d-flex  justify-space-between" :class="smAndDown ? 'flex-column ga-2 align-end' : ' align-center'">
-        <div class="d-flex align-center  rounded-lg" :class="smAndDown ? 'bg-surface pa-2 flex-grow-1 w-100' : ''">
-
-
-            <v-chip-group content-class="content-custom" v-model="selectedFilter" variant="flat" color="onBackground"
-                class="pa-0 ma-0 w-100" :class="smAndDown ? 'd-flex flex-grow-1' : 'justify-center d-flex'">
-                <v-chip class="ma-0 justify-center" :size="smAndDown ? 'small' : 'default'" v-for="filter in filters"
-                    :key="filter.value" variant="text" rounded="lg" :value="filter.value" :color="filter.color"
-                    :class="smAndDown ? 'flex-grow-1' : ''">
-                    {{ filter.label }}
-                </v-chip>
-            </v-chip-group>
-        </div>
-        <v-menu color="onBackground" rounded="lg">
-            <template v-slot:activator="{ props }">
-                <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-                    <span class="text-overline">{{ selectedSort ? selectedSort.text : sortLabel }}</span>
-                    <v-icon>mdi-chevron-down</v-icon>
-                </v-btn>
-            </template>
-            <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4 ">
-                <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg"
-                    @click="onSortChange(option)">
-                    <v-list-item-title>{{ option.text }}</v-list-item-title>
-                </v-list-item>
-            </v-list>
-        </v-menu>
-    </div>
-    <!-- <div ref="header" :class="['header-placeholder']" class="mb-16 position-relative"  :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }">
+  <div
+    class="d-flex  justify-space-between"
+    :class="smAndDown ? 'flex-column ga-2 align-end' : ' align-center'"
+  >
+    <v-menu
+      color="onBackground"
+      rounded="lg"
+    >
+      <template #activator="{ props }">
+        <v-btn
+          color="primary"
+          variant="text"
+          rounded="lg"
+          v-bind="props"
+        >
+          <span>{{ selectedSort ? selectedSort.text : sortLabel }}</span>
+          <v-icon>mdi-chevron-down</v-icon>
+        </v-btn>
+      </template>
+      <v-list
+        color="onBackground"
+        bg-color="onBackground"
+        rounded="xl"
+        class="pa-4 "
+      >
+        <v-list-item
+          v-for="option in sortOptions"
+          :key="option.value"
+          rounded="lg"
+          @click="onSortChange(option)"
+        >
+          <v-list-item-title>{{ option.text }}</v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+  </div>
+  <!-- <div ref="header" :class="['header-placeholder']" class="mb-16 position-relative"  :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }">
         <div :class="[
             'list-header justify-space-between  flex-wrap align-center',
             { 'is-sticky': isSticky }
@@ -55,7 +63,6 @@
             </div>
         </div>
     </div> -->
-
 </template>
 
 <script setup>

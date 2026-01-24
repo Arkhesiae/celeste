@@ -1,20 +1,46 @@
 <template>
-  <v-dialog transition="scroll-x-reverse-transition" v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'"  class="pa-0 pt-6">
+  <v-dialog
+    v-model="localDialogVisible"
+    transition="scroll-x-reverse-transition"
+    max-width="500px"
+    :fullscreen="smAndDown"
+  >
+    <v-card
+      :rounded="smAndDown ? '' : 'xl'"
+      class="pa-0 pt-6"
+    >
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           {{ step === 1 ? 'Vérification du mot de passe' : 'Modifier le mot de passe' }}
         </v-card-title>
-        <template #append v-if="!smAndDown">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+        <template
+          v-if="!smAndDown"
+          #append
+        >
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="close"
+          />
         </template>
-        <template #prepend v-else>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
+        <template
+          v-else
+          #prepend
+        >
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="close"
+          />
         </template>
       </v-card-item>
 
       <v-card-text class="px-6">
-        <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
+        <v-form
+          ref="form"
+          v-model="valid"
+          @submit.prevent="handleStepAction"
+        >
           <!-- Étape 1 : Vérification du mot de passe actuel -->
           <template v-if="step === 1">
             <v-text-field
@@ -28,7 +54,7 @@
               rounded="xl"
               bg-color="surface"
               hide-details="auto"
-            ></v-text-field>
+            />
           </template>
 
           <!-- Étape 2 : Nouveau mot de passe -->
@@ -45,7 +71,7 @@
               rounded="xl"
               bg-color="surface"
               hide-details="auto"
-            ></v-text-field>
+            />
 
             <v-text-field
               v-model="confirmPassword"
@@ -60,20 +86,19 @@
               bg-color="surface"
               hide-details="auto"
               class="mt-4"
-            ></v-text-field>
+            />
           </template>
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6">
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="primary"
           variant="text"
           rounded="xl"
-          @click="close"
           :disabled="loading"
-
+          @click="close"
         >
           Annuler
         </v-btn>
@@ -81,10 +106,9 @@
           color="primary"
           variant="tonal"
           rounded="xl"
-          @click="handleStepAction"
           :loading="loading"
           :disabled="!valid"
-
+          @click="handleStepAction"
         >
           {{ step === 1 ? 'Vérifier' : 'Modifier' }}
         </v-btn>

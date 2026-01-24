@@ -25,7 +25,11 @@
               class="mb-4"
               closable
             >
-            <v-icon icon="mdi-check" size="small" color="success" ></v-icon>
+              <v-icon
+                icon="mdi-check"
+                size="small"
+                color="success"
+              />
               {{ success }}
             </v-alert> -->
         <v-card :rounded="smAndDown ? '0' : 'xl'" flat
@@ -132,7 +136,7 @@ import { useDisplay } from 'vuetify';
 import { computed } from 'vue';
 
 defineOptions({
-  name: 'admin-rules',
+  name: 'AdminRules',
   meta: {
     requiresAuth: true,
     requiresAuth: true,

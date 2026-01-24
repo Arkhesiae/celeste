@@ -1,65 +1,132 @@
 <template>
-  <v-navigation-drawer :model-value="navExpanded" @update:model-value="$emit('update:navExpanded', $event)"
-    v-if="!smAndDown && isLoggedIn" border="none" order="-20" color="surfaceContainer" open-delay="200"
-    class="px-2 pt-16" elevation="0" flat style="transition: all .25s ease-in-out; display: flex !important;">
-    <v-list variant="text" active-class="active-item" nav class="pl-4 mt-16">
-   
-
+  <v-navigation-drawer
+    v-if="!smAndDown && isLoggedIn"
+    :model-value="navExpanded"
+    border="none"
+    order="-20"
+    color="surfaceContainer"
+    open-delay="200"
+    class="px-2 pt-16"
+    elevation="0"
+    flat
+    style="transition: all .25s ease-in-out; display: flex !important;"
+    @update:model-value="$emit('update:navExpanded', $event)"
+  >
+    <v-list
+      variant="text"
+      active-class="active-item"
+      nav
+      class="pl-4 mt-16"
+    >
       <!-- Regular navigation items -->
-      <v-list-item :ripple="false" v-for="navItem in navigationItems" :key="navItem.path"
-        @click="router.push({ path: navItem?.path })" rounded="xl"
-        :class="isActive(navItem?.path) ? 'active-item' : 'inactive-item'"  :title="navItem?.title" :value="navItem?.value">
-
+      <v-list-item
+        v-for="navItem in navigationItems"
+        :key="navItem.path"
+        :ripple="false"
+        rounded="xl"
+        :class="isActive(navItem?.path) ? 'active-item' : 'inactive-item'"
+        :title="navItem?.title"
+        :value="navItem?.value"
+        @click="router.push({ path: navItem?.path })"
+      >
         <template #item>
           <span class="text-body-2">{{ navItem?.title }}</span>
         </template>
 
         <template #prepend>
-          <v-icon size="16" :icon="isActive(navItem?.path) ? navItem?.iconActive : navItem?.iconInactive" />
+          <v-icon
+            size="16"
+            :icon="isActive(navItem?.path) ? navItem?.iconActive : navItem?.iconInactive"
+          />
         </template>
-        <template #append v-if="navItem?.badgeCount">
-          <v-chip color="background" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
-            v-if="demandsCount > 0">
+        <template
+          v-if="navItem?.badgeCount"
+          #append
+        >
+          <v-chip
+            v-if="demandsCount > 0"
+            color="background"
+            size="x-small"
+            variant="flat"
+            rounded="lg"
+            class="font-weight-bold ml-2"
+          >
             <span class="font-weight-bold">{{ demandsCount }}</span>
           </v-chip>
         </template>
       </v-list-item>
 
-      <v-divider opacity=".01"></v-divider>
+      <v-divider opacity=".01" />
 
       <!-- Admin navigation items -->
-      <v-list-item v-if="isAdmin" v-for="adminItem in adminNavigationItems" :key="adminItem.path"
-        @click="router.push({ path: adminItem?.path })" rounded="xl"
-        :class="isActive(adminItem?.path) ? 'active-item' : 'inactive-item'" :ripple="false" :title="adminItem?.title" :value="adminItem?.value">
-
+      <v-list-item
+        v-for="adminItem in adminNavigationItems"
+        v-if="isAdmin"
+        :key="adminItem.path"
+        rounded="xl"
+        :class="isActive(adminItem?.path) ? 'active-item' : 'inactive-item'"
+        :ripple="false"
+        :title="adminItem?.title"
+        :value="adminItem?.value"
+        @click="router.push({ path: adminItem?.path })"
+      >
         <template #prepend>
-          <v-icon size="16" :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive" />
+          <v-icon
+            size="16"
+            :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive"
+          />
         </template>
-        <template #append v-if="adminItem?.badgeCount">
-          <v-chip color="pending" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
-            v-if="adminItem?.badgeCount > 0">
+        <template
+          v-if="adminItem?.badgeCount"
+          #append
+        >
+          <v-chip
+            v-if="adminItem?.badgeCount > 0"
+            color="pending"
+            size="x-small"
+            variant="flat"
+            rounded="lg"
+            class="font-weight-bold ml-2"
+          >
             <span class="font-weight-bold">{{ adminItem?.badgeCount }}</span>
           </v-chip>
         </template>
       </v-list-item>
 
-           <!-- Admin navigation items -->
-           <v-list-item v-if="isMaster" v-for="adminItem in masterNavigationItems" :key="adminItem.path"
-        @click="router.push({ path: adminItem?.path })" rounded="xl"
-        :class="isActive(adminItem?.path) ? 'active-item' : 'inactive-item'" :ripple="false" :title="adminItem?.title" :value="adminItem?.value">
-
+      <!-- Admin navigation items -->
+      <v-list-item
+        v-for="adminItem in masterNavigationItems"
+        v-if="isMaster"
+        :key="adminItem.path"
+        rounded="xl"
+        :class="isActive(adminItem?.path) ? 'active-item' : 'inactive-item'"
+        :ripple="false"
+        :title="adminItem?.title"
+        :value="adminItem?.value"
+        @click="router.push({ path: adminItem?.path })"
+      >
         <template #prepend>
-          <v-icon size="16" :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive" />
+          <v-icon
+            size="16"
+            :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive"
+          />
         </template>
-        <template #append v-if="adminItem?.badgeCount">
-          <v-chip color="pending" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2"
-            v-if="adminItem?.badgeCount > 0">
+        <template
+          v-if="adminItem?.badgeCount"
+          #append
+        >
+          <v-chip
+            v-if="adminItem?.badgeCount > 0"
+            color="pending"
+            size="x-small"
+            variant="flat"
+            rounded="lg"
+            class="font-weight-bold ml-2"
+          >
             <span class="font-weight-bold">{{ adminItem?.badgeCount }}</span>
           </v-chip>
         </template>
       </v-list-item>
-
-   
     </v-list>
   </v-navigation-drawer>
 </template>
@@ -99,7 +166,7 @@ const pendingUsersCount = computed(() => {
 // Navigation items configuration
 const navigationItems = computed(() => [
   {
-    path: '/exchange/replace',
+    path: '/demand-page/demands',
     title: 'Demandes',
     value: 'replace',
     iconActive: 'mdi-account-arrow-left',

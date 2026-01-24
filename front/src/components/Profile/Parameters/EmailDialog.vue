@@ -1,15 +1,37 @@
 <template>
-  <v-dialog transition="scroll-x-reverse-transition" v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
+  <v-dialog
+    v-model="localDialogVisible"
+    transition="scroll-x-reverse-transition"
+    max-width="500px"
+    :fullscreen="smAndDown"
+  >
+    <v-card
+      :rounded="smAndDown ? '' : 'xl'"
+      class="pa-0 pt-6"
+    >
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           {{ currentStep === 1 ? 'Modifier l\'adresse email' : 'Vérification OTP' }}
         </v-card-title>
-        <template #append v-if="!smAndDown">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+        <template
+          v-if="!smAndDown"
+          #append
+        >
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="close"
+          />
         </template>
-        <template #prepend v-else>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
+        <template
+          v-else
+          #prepend
+        >
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="close"
+          />
         </template>
       </v-card-item>
 
@@ -20,14 +42,17 @@
               <span>Addresse email actuelle </span>
               <v-list-item-subtitle>{{ authStore.userData.email }}</v-list-item-subtitle>
             </div>
-            
           </div>
           <!-- Étape 1: Email -->
           <v-window-item :value="1">
-            <v-form ref="emailForm" v-model="emailValid" @submit.prevent="handleNext">
+            <v-form
+              ref="emailForm"
+              v-model="emailValid"
+              @submit.prevent="handleNext"
+            >
               <v-text-field
-                flat
                 v-model="email"
+                flat
                 :rules="emailRules"
                 label="Nouvelle adresse email"
                 required
@@ -38,7 +63,7 @@
                 rounded="xl"
                 bg-color="surface"
                 hide-details="auto"
-              ></v-text-field>
+              />
             </v-form>
           </v-window-item>
 
@@ -55,25 +80,24 @@
       </v-card-text>
 
       <v-card-actions class="pa-6">
-      
         <v-btn
           color="primary"
           variant="text"
           rounded="xl"
-          @click="handleBack"
           :disabled="loading"
+          @click="handleBack"
         >
           {{ currentStep === 1 ? 'Annuler' : 'Retour' }}
         </v-btn>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           v-if="currentStep === 1"
           color="primary"
           variant="tonal"
           rounded="xl"
-          @click="handleNext"
           :loading="loading"
           :disabled="!emailValid"
+          @click="handleNext"
         >
           Continuer
         </v-btn>

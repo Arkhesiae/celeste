@@ -1,36 +1,86 @@
 <template>
   <v-container class="pa-4">
-    <MainTitle title="Historique des changements d'équipe" :backButton="true" subtitle="Voir tous les changements d'équipe" />
+    <MainTitle
+      title="Historique des changements d'équipe"
+      :back-button="true"
+      subtitle="Voir tous les changements d'équipe"
+    />
 
     <v-row class="ma-0">
       <div class="d-flex justify-center chip-container pa-2">
-        <v-chip-group v-model="selectedChangeType" class="pa-0 ma-0 gap-2 d-flex justify-center">
-          <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2" value="all" size="large" rounded="lg"
-            color="primary" variant="text">Tous</v-chip>
-          <v-chip class="pa-0 ma-0 mr-2 px-4 text-body-2" value="Changement" size="large" rounded="lg"
-            color="primary" variant="text">Changements</v-chip>
-          <v-chip class="pa-0 ma-0 px-4 text-body-2" value="Renfort" size="large" rounded="lg"
-            color="primary" variant="text">Renforts</v-chip>
+        <v-chip-group
+          v-model="selectedChangeType"
+          class="pa-0 ma-0 gap-2 d-flex justify-center"
+        >
+          <v-chip
+            class="pa-0 ma-0 mr-2 px-4 text-body-2"
+            value="all"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
+            Tous
+          </v-chip>
+          <v-chip
+            class="pa-0 ma-0 mr-2 px-4 text-body-2"
+            value="Changement"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
+            Changements
+          </v-chip>
+          <v-chip
+            class="pa-0 ma-0 px-4 text-body-2"
+            value="Renfort"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
+            Renforts
+          </v-chip>
         </v-chip-group>
       </div>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <transition name="fade" mode="out-in">
-          <v-card :key="selectedChangeType" elevation="0" class="mb-4 pa-0" color="background">
+        <transition
+          name="fade"
+          mode="out-in"
+        >
+          <v-card
+            :key="selectedChangeType"
+            elevation="0"
+            class="mb-4 pa-0"
+            color="background"
+          >
             <v-card-text class="pa-0">
-              <v-progress-circular v-if="isLoading" indeterminate color="primary"
-                class="mx-auto my-4"></v-progress-circular>
+              <v-progress-circular
+                v-if="isLoading"
+                indeterminate
+                color="primary"
+                class="mx-auto my-4"
+              />
 
               <div v-else-if="filteredOccurrences.length > 0">
-                <v-card v-for="(occurrence, index) in filteredOccurrences" :key="index" 
+                <v-card
+                  v-for="(occurrence, index) in filteredOccurrences"
+                  :key="index" 
                   :color="occurrence.status === 'pending' ? 'surfaceContainerHigh' : 'surfaceContainer'" 
-                  flat rounded="lg"
+                  flat
+                  rounded="lg"
                   class="occurrence-item pa-4 d-flex justify-space-between align-center py-2 mb-2"
-                  :class="occurrence.status === 'pending' ? 'opacity-50' : ''">
+                  :class="occurrence.status === 'pending' ? 'opacity-50' : ''"
+                >
                   <div class="d-flex align-center">
-                    <v-icon :color="occurrence.type === 'Renfort' ? 'primary' : 'secondary'" class="mr-2">
+                    <v-icon
+                      :color="occurrence.type === 'Renfort' ? 'primary' : 'secondary'"
+                      class="mr-2"
+                    >
                       {{ occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline' }}
                     </v-icon>
                     <div>
@@ -49,17 +99,31 @@
                   </div>
                   <div v-if="occurrence.status === 'cancelled'">
                     <span class="text-caption text-medium-emphasis mr-2">Annulé</span>
-                    <v-icon color="error" class="mr-2">mdi-close-circle-outline</v-icon>
+                    <v-icon
+                      color="error"
+                      class="mr-2"
+                    >
+                      mdi-close-circle-outline
+                    </v-icon>
                   </div>
-                  <div v-else-if="occurrence.type === 'Renfort' && occurrence.toDate > new Date().toISOString()" class="text-caption text-medium-emphasis">
+                  <div
+                    v-else-if="occurrence.type === 'Renfort' && occurrence.toDate > new Date().toISOString()"
+                    class="text-caption text-medium-emphasis"
+                  >
                     En cours
                   </div>
-                  <div v-else class="text-caption text-medium-emphasis">
+                  <div
+                    v-else
+                    class="text-caption text-medium-emphasis"
+                  >
                     Effectué
                   </div>
                 </v-card>
               </div>
-              <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
+              <div
+                v-else
+                class="text-center text-medium-emphasis text-body-2 mt-4"
+              >
                 Aucun changement d'équipe trouvé
               </div>
             </v-card-text>

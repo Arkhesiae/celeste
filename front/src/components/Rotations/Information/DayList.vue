@@ -6,18 +6,26 @@
       class="day-item"
       @click="$emit('day-click', day)"
     >
-      <v-tooltip :text="day?.type === 'rest' ? 'Repos' : 'Travail'" location="top">
-        <template v-slot:activator="{ props }">
-          <div class="day-content position-relative" v-bind="props">
-            <div v-if="day.optional" class="day-content-optional" >
-                  <v-icon>mdi-plus-box-outline</v-icon>
+      <v-tooltip
+        :text="day?.type === 'rest' ? 'Repos' : 'Travail'"
+        location="top"
+      >
+        <template #activator="{ props }">
+          <div
+            class="day-content position-relative"
+            v-bind="props"
+          >
+            <div
+              v-if="day.optional"
+              class="day-content-optional"
+            >
+              <v-icon>mdi-plus-box-outline</v-icon>
             </div>
             <div class="text-subtitle-1 font-weight-bold text-medium-emphasis d-flex align-center justify-center">
               <div class="d-flex align-center ga-2">
                 <div class="text-subtitle-1 font-weight-bold text-medium-emphasis ">
                   {{ day?.name === 'Rest Day' ? 'R' : day?.name?.slice(0, 2) }}
                 </div>
-                
               </div>
             </div>
           </div>

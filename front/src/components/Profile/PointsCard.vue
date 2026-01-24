@@ -1,13 +1,28 @@
 <template>
-  <v-card :class="smAndDown ? 'points-card-mobile' : 'points-card'"  elevation="0" class="">
-    <v-card-text class="pa-0 height-transition" style="height: 100%">
-      <Logo color="remplacement"
-        style="width: 100%; height: 100%; position: absolute; bottom: -60; left: 0; opacity: 0.05; filter: blur(10px);"  />
-      <div class="d-flex flex-column justify-space-between height-transition" style=" height: 100% ">
+  <v-card
+    :class="smAndDown ? 'points-card-mobile' : 'points-card'"
+    elevation="0"
+    class=""
+  >
+    <v-card-text
+      class="pa-0 height-transition"
+      style="height: 100%"
+    >
+      <Logo
+        color="remplacement"
+        style="width: 100%; height: 100%; position: absolute; bottom: -60; left: 0; opacity: 0.05; filter: blur(10px);"
+      />
+      <div
+        class="d-flex flex-column justify-space-between height-transition"
+        style=" height: 100% "
+      >
         <!-- En-tête avec l'icône et le menu -->
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="points-icon d-flex justify-center align-center">
-            <Logo color="remplacement" style="margin-top: -2px; margin-left: 2px; " />
+            <Logo
+              color="remplacement"
+              style="margin-top: -2px; margin-left: 2px; "
+            />
           </div>
           <!-- <v-btn icon variant="text">
             <v-icon>mdi-dots-horizontal</v-icon>
@@ -16,52 +31,109 @@
 
         <!-- Section des points -->
         <div class="points-section justify-center align-center flex-column mb-6">
-          
-          <transition v-if="points || points === 0" name="slide-points" mode="out-in">
-            <div v-if="points > 99999" class="text-center text-h6 ">
-                <v-icon class="mb-1" size="x-large">mdi-infinity</v-icon>
+          <transition
+            v-if="points || points === 0"
+            name="slide-points"
+            mode="out-in"
+          >
+            <div
+              v-if="points > 99999"
+              class="text-center text-h6 "
+            >
+              <v-icon
+                class="mb-1"
+                size="x-large"
+              >
+                mdi-infinity
+              </v-icon>
             </div>
-            <div v-else :key="points" class="text-h3 font-weight-bold text-center"> 
+            <div
+              v-else
+              :key="points"
+              class="text-h3 font-weight-bold text-center"
+            > 
               {{ points }}
             </div>
           </transition>
-          <div class="text-subtitle-1 text-center mb-1 mt-n1" style="opacity: 0.5;"> points</div>
+          <div
+            class="text-subtitle-1 text-center mb-1 mt-n1"
+            style="opacity: 0.5;"
+          >
+            points
+          </div>
         </div>
 
         <!-- Boutons d'action -->
         <div class="d-flex justify-center align-center">
-          <v-btn prepend-icon="mdi-transfer" color="background" variant="flat" rounded="lg" height="40"
-            class="transaction-button" @click="$emit('transfer')">
+          <v-btn
+            prepend-icon="mdi-transfer"
+            color="background"
+            variant="flat"
+            rounded="lg"
+            height="40"
+            class="transaction-button"
+            @click="$emit('transfer')"
+          >
             Transférer
           </v-btn>
-
         </div>
 
         <!-- Historique des transactions -->
         <div class="mt-6 pa-0">
           <div class="d-flex justify-space-between align-center mb-3">
-            <div class="text-h6">Dernière activité</div>
-            <v-btn variant="text" density="compact" color="auto"
-              @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')">
+            <div class="text-h6">
+              Dernière activité
+            </div>
+            <v-btn
+              variant="text"
+              density="compact"
+              color="auto"
+              @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')"
+            >
               Voir tout
-              <v-icon end>mdi-chevron-right</v-icon>
+              <v-icon end>
+                mdi-chevron-right
+              </v-icon>
             </v-btn>
           </div>
-          <v-progress-circular v-if="isLoading" indeterminate color="primary"
-            class="mx-auto my-4"></v-progress-circular>
-          <div v-else-if="transactions.length > 0" class="ga-2 d-flex flex-column">
-            <TransactionItem v-for="(transaction, index) in processedTransactions.slice(0, 2)" :key="index"
-              color="background" :transaction="transaction" />
+          <v-progress-circular
+            v-if="isLoading"
+            indeterminate
+            color="primary"
+            class="mx-auto my-4"
+          />
+          <div
+            v-else-if="transactions.length > 0"
+            class="ga-2 d-flex flex-column"
+          >
+            <TransactionItem
+              v-for="(transaction, index) in processedTransactions.slice(0, 2)"
+              :key="index"
+              color="background"
+              :transaction="transaction"
+            />
           </div>
-          <div v-else class="text-center opacity-50 text-body-2 mt-4">
+          <div
+            v-else
+            class="text-center opacity-50 text-body-2 mt-4"
+          >
             Aucune transaction récente
           </div>
 
           <!-- Transactions en attente -->
-          <div v-if="pendingTransactions.length > 0" class="mt-4 ga-2 d-flex flex-column">
-            <div class="text-subtitle-2 opacity-50 mb-2">Prochaines transactions en attente</div>
-            <TransactionItem v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="index" color="surfaceContainerHighest"
-              :transaction="transaction" />
+          <div
+            v-if="pendingTransactions.length > 0"
+            class="mt-4 ga-2 d-flex flex-column"
+          >
+            <div class="text-subtitle-2 opacity-50 mb-2">
+              Prochaines transactions en attente
+            </div>
+            <TransactionItem
+              v-for="(transaction, index) in pendingTransactions.slice(0, 2)"
+              :key="index"
+              color="surfaceContainerHighest"
+              :transaction="transaction"
+            />
           </div>
         </div>
       </div>

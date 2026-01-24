@@ -1,8 +1,23 @@
 <template>
-  <v-container class="fill-height" fluid>
-    <v-row justify="center" align-content="center">
-      <v-col cols="12" sm="8" md="6" lg="4" align-self="center">
-        <v-card class="rounded-xl pa-6" flat>
+  <v-container
+    class="fill-height"
+    fluid
+  >
+    <v-row
+      justify="center"
+      align-content="center"
+    >
+      <v-col
+        cols="12"
+        sm="8"
+        md="6"
+        lg="4"
+        align-self="center"
+      >
+        <v-card
+          class="rounded-xl pa-6"
+          flat
+        >
           <v-card-title class="text-h5 mb-4 pa-0">
             Réinitialisation du mot de passe
           </v-card-title>
@@ -10,7 +25,11 @@
           <v-card-text class="pa-0 py-4">
             <v-window v-model="step">
               <v-window-item :value="1">
-                <v-form ref="form" v-model="valid" @submit.prevent="submit">
+                <v-form
+                  ref="form"
+                  v-model="valid"
+                  @submit.prevent="submit"
+                >
                   <v-text-field
                     v-model="password"
                     :rules="passwordRules"
@@ -24,7 +43,7 @@
                     bg-color="surface"
                     hide-details="auto"
                     class="mb-4"
-                  ></v-text-field>
+                  />
 
                   <v-text-field
                     v-model="confirmPassword"
@@ -38,7 +57,7 @@
                     rounded="xl"
                     bg-color="surface"
                     hide-details="auto"
-                  ></v-text-field>
+                  />
                 </v-form>
               </v-window-item>
 
@@ -51,7 +70,9 @@
                   >
                     mdi-check-circle-outline
                   </v-icon>
-                  <h3 class="text-h6 mb-2">Mot de passe réinitialisé avec succès !</h3>
+                  <h3 class="text-h6 mb-2">
+                    Mot de passe réinitialisé avec succès !
+                  </h3>
                   <span class="text-body-1 mb-4 text-medium-emphasis">Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.</span>
                 </div>
               </v-window-item>
@@ -59,7 +80,7 @@
           </v-card-text>
 
           <v-card-actions>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn
               v-if="isDev"
               color="info"

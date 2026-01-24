@@ -1,12 +1,17 @@
 <template>
-
-   
- 
-  <div class="d-flex align-center ga-1" >
-    <v-icon  v-if="prependIcon" size="small" class="">mdi-chevron-down</v-icon>
-    <span :style=" 'color :' + getStatusColor(status) + ' !important'" class="text-subtitle-2 id font-weight-medium">{{ getStatusLabel(status) }}</span>
+  <div class="d-flex align-center ga-1">
+    <v-icon
+      v-if="prependIcon"
+      size="small"
+      class=""
+    >
+      mdi-chevron-down
+    </v-icon>
+    <span
+      :style=" 'color :' + getStatusColor(status) + ' !important'"
+      class="text-subtitle-2 id font-weight-medium"
+    >{{ getStatusLabel(status) }}</span>
   </div>
-
 </template>
 
 <script setup>

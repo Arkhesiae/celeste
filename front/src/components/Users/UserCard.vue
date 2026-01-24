@@ -4,12 +4,21 @@
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
-          <v-avatar color="primary" variant="tonal" size="40" class="mr-2">
+          <v-avatar
+            color="primary"
+            variant="tonal"
+            size="40"
+            class="mr-2"
+          >
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-subtitle-1">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
-            <div class="text-caption text-medium-emphasis">{{ user.email }}</div>
+            <div class="text-subtitle-1">
+              {{ user.name }} {{ user.lastName.toUpperCase() }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              {{ user.email }}
+            </div>
           </div>
         </div>
         <v-icon class="position-absolute top-0 right-0 ma-4 opacity-50" color="onBackground"
@@ -88,7 +97,11 @@
       </v-chip>
     </v-card-text>
   </v-card>
-  <v-divider v-if="smAndDown" opacity="0.05" class="ma-0 pa-0"></v-divider>
+  <v-divider
+    v-if="smAndDown"
+    opacity="0.05"
+    class="ma-0 pa-0"
+  />
 </template>
 
 <script setup>

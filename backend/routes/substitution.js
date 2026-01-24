@@ -1,57 +1,41 @@
 import express from 'express';
 const router = express.Router();
 import { verifyToken, isUserOrAdmin, isAdmin } from '../middleware/authMiddleware.js';
-import {
-    getCenterDemands,
-    getUserDemands,
-    createDemand,
-    deleteDemand,
-    updateDemandStatus,
-    acceptRequest,
-    getSeenCount,
-    swapShifts,
-    cancelDemand,
-    checkUserShift,
-    recategorizeSubstitutions,
-    markInterest,
-    unacceptRequest,
-    detectTeamChangeConflicts,
-    getCompatibleSwitches,
-    getAllCenterDemands,
-
-} from '../controllers/substitutionController.js';
+import * as substitutionController from '../controllers/substitutionController.js';
 
 // Routes protégées par token
-router.post('/center', verifyToken, getCenterDemands);
-router.get('/center/:centerId/all', verifyToken, isAdmin, getAllCenterDemands);
-router.get('/user', verifyToken, getUserDemands);
-router.post('/', verifyToken, createDemand);
-router.put('/:id/status', verifyToken, updateDemandStatus);
+router.post('/center', verifyToken, substitutionController.getCenterDemands);
+router.get('/center/:centerId/all', verifyToken, isAdmin, substitutionController.getAllCenterDemands);
+router.get('/user', verifyToken, substitutionController.getUserDemands);
+router.post('/', verifyToken, substitutionController.createDemand);
+router.put('/:id/status', verifyToken, substitutionController.updateDemandStatus);
 
 
-router.post('/:id/interest', verifyToken, markInterest);
+router.post('/:id/consult', verifyToken, substitutionController.consultDemand);
 
-router.post('/:id/accept', verifyToken, acceptRequest);
+router.post('/:id/interest', verifyToken, substitutionController.markInterest);
 
-router.post('/:id/swap', verifyToken, swapShifts);
+router.post('/:id/accept', verifyToken, substitutionController.acceptRequest);
 
-router.post('/:id/cancel', verifyToken, cancelDemand);
+router.post('/:id/swap', verifyToken, substitutionController.swapShifts);
 
-router.post('/:id/unaccept', verifyToken, unacceptRequest);
+router.post('/:id/cancel', verifyToken, substitutionController.cancelDemand);
 
-router.delete('/:id/delete', verifyToken, deleteDemand);
+router.post('/:id/unaccept', verifyToken, substitutionController.unacceptRequest);
 
-router.post('/recategorize', verifyToken, recategorizeSubstitutions);
+router.delete('/:id/delete', verifyToken, substitutionController.deleteDemand);
 
-router.get('/check-shift/:date', verifyToken, checkUserShift);
+router.post('/recategorize', verifyToken, substitutionController.recategorizeSubstitutions);
 
-router.get('/:id/seen-count', verifyToken, getSeenCount);
+router.get('/check-shift/:date', verifyToken, substitutionController.checkUserShift);
 
-router.post('/detect-team-change-conflicts', verifyToken, detectTeamChangeConflicts);
+router.get('/:id/seen-count', verifyToken, substitutionController.getSeenCount);
 
+router.post('/detect-team-change-conflicts', verifyToken, substitutionController.detectTeamChangeConflicts);
 
+router.get('/compatibility/:id', verifyToken, substitutionController.getCompatibility);
 
-router.get('/compatible-switches/:date', verifyToken, getCompatibleSwitches);
+router.get('/compatible-switches/:date', verifyToken, substitutionController.getCompatibleSwitches);
 
 
 export default router;

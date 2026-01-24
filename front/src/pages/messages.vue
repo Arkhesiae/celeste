@@ -1,17 +1,20 @@
 <template>
   <v-container>
-    <MainTitle title="Messages" :subtitle="`Consultez ici les messages envoyés par les utilisateurs`"  >
-      <template v-slot:actions>
+    <MainTitle
+      title="Messages"
+      :subtitle="`Consultez ici les messages envoyés par les utilisateurs`"
+    >
+      <template #actions>
         <div class="d-flex ga-2 align-center">
-        <v-btn
-          color="surfaceContainerHigh"
-          variant="flat"
-          prepend-icon="mdi-plus"
-          @click="openNewMessageDialog"
-          rounded="xl " 
-          flat
-          height="32"
-          size="small"
+          <v-btn
+            color="surfaceContainerHigh"
+            variant="flat"
+            prepend-icon="mdi-plus"
+            rounded="xl "
+            flat 
+            height="32"
+            size="small"
+            @click="openNewMessageDialog"
           >
             Nouveau message
           </v-btn>
@@ -28,7 +31,6 @@
         </div>
       </template>
     </MainTitle>
-  
   </v-container>
 </template>
 

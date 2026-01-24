@@ -1,18 +1,45 @@
 <template>
-  <v-dialog transition="scroll-x-reverse-transition" v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'"  class="pa-0 pt-6">
+  <v-dialog
+    v-model="localDialogVisible"
+    transition="scroll-x-reverse-transition"
+    max-width="500px"
+    :fullscreen="smAndDown"
+  >
+    <v-card
+      :rounded="smAndDown ? '' : 'xl'"
+      class="pa-0 pt-6"
+    >
       <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">Demander une mutation</v-card-title>
-        <template #append v-if="!smAndDown">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+        <v-card-title class="d-flex justify-space-between align-center">
+          Demander une mutation
+        </v-card-title>
+        <template
+          v-if="!smAndDown"
+          #append
+        >
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="close"
+          />
         </template>
-        <template #prepend v-else>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
+        <template
+          v-else
+          #prepend
+        >
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="close"
+          />
         </template>
       </v-card-item>
 
       <v-card-text class="px-6">
-        <v-form ref="form" v-model="valid">
+        <v-form
+          ref="form"
+          v-model="valid"
+        >
           <v-select
             v-model="selectedCenter"
             :items="centers"
@@ -24,7 +51,7 @@
             bg-color="surface"
             hide-details="auto"
             :rules="[v => !!v || 'Le centre de destination est requis']"
-          ></v-select>
+          />
 
           <v-textarea
             v-model="reason"
@@ -37,19 +64,18 @@
             hide-details="auto"
             class="mt-4"
             :rules="[v => !!v || 'Le motif est requis']"
-          ></v-textarea>
+          />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6">
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="primary"
           variant="text"
           rounded="xl"
-          @click="close"
           :disabled="loading"
-
+          @click="close"
         >
           Annuler
         </v-btn>
@@ -57,10 +83,9 @@
           color="primary"
           variant="tonal"
           rounded="xl"
-          @click="submit"
           :loading="loading"
           :disabled="!valid"
-
+          @click="submit"
         >
           Envoyer la demande
         </v-btn>

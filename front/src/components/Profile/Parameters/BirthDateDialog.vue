@@ -1,15 +1,37 @@
 <template>
-  <v-dialog transition="scroll-x-reverse-transition" v-model="localDialogVisible" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
+  <v-dialog
+    v-model="localDialogVisible"
+    transition="scroll-x-reverse-transition"
+    max-width="500px"
+    :fullscreen="smAndDown"
+  >
+    <v-card
+      :rounded="smAndDown ? '' : 'xl'"
+      class="pa-0 pt-6"
+    >
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
           Modifier la date de naissance
         </v-card-title>
-        <template #append v-if="!smAndDown">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
+        <template
+          v-if="!smAndDown"
+          #append
+        >
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            @click="close"
+          />
         </template>
-        <template #prepend v-else>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
+        <template
+          v-else
+          #prepend
+        >
+          <v-btn
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="close"
+          />
         </template>
       </v-card-item>
 
@@ -21,10 +43,14 @@
           </div>
         </div>
 
-        <v-form ref="birthDateForm" v-model="birthDateValid" @submit.prevent="handleSubmit">
+        <v-form
+          ref="birthDateForm"
+          v-model="birthDateValid"
+          @submit.prevent="handleSubmit"
+        >
           <v-text-field
-            flat
             v-model="birthDate"
+            flat
             :rules="birthDateRules"
             label="Date de naissance"
             required
@@ -36,7 +62,7 @@
             bg-color="surface"
             hide-details="auto"
             :max="maxDate"
-          ></v-text-field>
+          />
         </v-form>
       </v-card-text>
 
@@ -45,19 +71,19 @@
           color="primary"
           variant="text"
           rounded="xl"
-          @click="close"
           :disabled="loading"
+          @click="close"
         >
           Annuler
         </v-btn>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
           color="primary"
           variant="tonal"
           rounded="xl"
-          @click="handleSubmit"
           :loading="loading"
           :disabled="!birthDateValid"
+          @click="handleSubmit"
         >
           Enregistrer
         </v-btn>

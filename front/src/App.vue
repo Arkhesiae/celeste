@@ -1,15 +1,25 @@
 <template>
   <v-app class="app-container">
-    <div class="position-absolute"
-      style="z-index: 100000000000000 !important;position:  absolute; top: 50px; left: 0;  background-color: red;"> {{
-        insets }} </div>
+    <div
+      class="position-absolute"
+      style="z-index: 100000000000000 !important;position:  absolute; top: 50px; left: 0;  background-color: red;"
+    >
+      {{
+        insets }}
+    </div>
     <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
     <router-view v-slot="{ Component, route }">
-      <transition :name="route.meta.transition || ''" mode="out-in">
-        <component :is="Component" class="page" />
+      <transition
+        :name="route.meta.transition || ''"
+        mode="out-in"
+      >
+        <component
+          :is="Component"
+          :key="route.fullPath"
+          class="page"
+        />
       </transition>
     </router-view>
-
   </v-app>
 </template>
 
@@ -209,7 +219,7 @@ body,
 .slide-lefty-leave-active,
 .slide-righty-enter-active,
 .slide-righty-leave-active {
-  transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0) !important;
+  transition: all 0.2s ease-out !important;
 }
 
 .slide-lefty-enter-from {

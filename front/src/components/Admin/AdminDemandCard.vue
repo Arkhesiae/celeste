@@ -1,38 +1,72 @@
 <template>
-  <v-card class="demand-card pa-6" rounded="xl" elevation="0" variant="flat" color="surface">
+  <v-card
+    class="demand-card pa-6"
+    rounded="xl"
+    elevation="0"
+    variant="flat"
+    color="surface"
+  >
     <v-card-item class="pa-0">
       <div class="d-flex align-start justify-space-between mb-4">
         <div class="d-flex align-center ga-2">
-        <div class="d-flex align-center ga-2">
-          <v-icon :icon="typeIcon" :color="typeColor" size="20"></v-icon>
-          <span class="text-h6 font-weight-bold">{{ getTypeName(demand?.type) }}</span>
-        </div>
-        <div class="d-flex align-center ga-2" @click="showUserDialog('poster')" style="cursor: pointer">
-          <v-avatar size="24" variant="tonal">
-            <v-img v-if="posterData?.avatar" :src="`${API_URL}${posterData?.avatar}`" alt="Avatar"></v-img>
-            <v-icon size="x-small" v-else>mdi-account</v-icon>
-          </v-avatar>
-          <span class="text-body-2 font-weight-bold">{{ posterData?.name }} {{ posterData?.lastName }}</span>
-        </div>
+          <div class="d-flex align-center ga-2">
+            <v-icon
+              :icon="typeIcon"
+              :color="typeColor"
+              size="20"
+            />
+            <span class="text-h6 font-weight-bold">{{ getTypeName(demand?.type) }}</span>
+          </div>
+          <div
+            class="d-flex align-center ga-2"
+            style="cursor: pointer"
+            @click="showUserDialog('poster')"
+          >
+            <v-avatar
+              size="24"
+              variant="tonal"
+            >
+              <v-img
+                v-if="posterData?.avatar"
+                :src="`${API_URL}${posterData?.avatar}`"
+                alt="Avatar"
+              />
+              <v-icon
+                v-else
+                size="x-small"
+              >
+                mdi-account
+              </v-icon>
+            </v-avatar>
+            <span class="text-body-2 font-weight-bold">{{ posterData?.name }} {{ posterData?.lastName }}</span>
+          </div>
         </div>
  
   
         <div class="d-flex align-end flex-column  ga-2">
           <v-chip 
-          :color="getStatusColor(demand?.status)" 
-          variant="tonal" 
-          size="small" 
-          rounded="lg"
-          class="font-weight-bold"
-        >
-          {{ getStatusLabel(demand?.status) }}
-        </v-chip>
-          <v-chip size="x-small" variant="flat" color="surfaceContainerHigh" rounded="pill">
-          <v-icon icon="mdi-clock-time-three-outline" size="x-small" class="mr-1"></v-icon>
-          Créée {{ timeSinceCreation }}
-        </v-chip>
+            :color="getStatusColor(demand?.status)" 
+            variant="tonal" 
+            size="small" 
+            rounded="lg"
+            class="font-weight-bold"
+          >
+            {{ getStatusLabel(demand?.status) }}
+          </v-chip>
+          <v-chip
+            size="x-small"
+            variant="flat"
+            color="surfaceContainerHigh"
+            rounded="pill"
+          >
+            <v-icon
+              icon="mdi-clock-time-three-outline"
+              size="x-small"
+              class="mr-1"
+            />
+            Créée {{ timeSinceCreation }}
+          </v-chip>
         </div>
- 
       </div>
 
       <!-- Date et vacation -->
@@ -44,13 +78,21 @@
             size="x-small" 
             rounded="lg"
             class="font-weight-bold text-onBackground"
-          ><v-icon icon="mdi-calendar" size="16" color="primary"></v-icon>
-          <span class=" font-weight-bold">{{ formatDate(demand?.posterShift?.date) }}</span>
+          >
+            <v-icon
+              icon="mdi-calendar"
+              size="16"
+              color="primary"
+            />
+            <span class=" font-weight-bold">{{ formatDate(demand?.posterShift?.date) }}</span>
           </v-chip>
-          
         </div>
         <div class="d-flex align-center ga-2">
-          <v-icon icon="mdi-clock-outline" size="16" color="onSurface"></v-icon>
+          <v-icon
+            icon="mdi-clock-outline"
+            size="16"
+            color="onSurface"
+          />
           <span class="text-body-2">{{ getShiftName }}</span>
           <span class="text-body-2">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}</span>
         </div>
@@ -60,22 +102,45 @@
       
 
 
-      <div v-if="demand?.accepterId" class="d-flex align-center justify-space-between">
+      <div
+        v-if="demand?.accepterId"
+        class="d-flex align-center justify-space-between"
+      >
         <div class="d-flex align-center ga-2">
-          <v-icon icon="mdi-account-check-outline" size="20" color="success"></v-icon>
+          <v-icon
+            icon="mdi-account-check-outline"
+            size="20"
+            color="success"
+          />
           <span class="text-caption font-weight-bold opacity-70">Accepteur</span>
         </div>
-        <div class="d-flex align-center ga-2" @click="showUserDialog('accepter')" style="cursor: pointer">
-          <v-avatar size="24" variant="tonal">
-            <v-img v-if="accepterData?.avatar" :src="`${API_URL}${accepterData?.avatar}`" alt="Avatar"></v-img>
-            <v-icon size="x-small" v-else>mdi-account</v-icon>
+        <div
+          class="d-flex align-center ga-2"
+          style="cursor: pointer"
+          @click="showUserDialog('accepter')"
+        >
+          <v-avatar
+            size="24"
+            variant="tonal"
+          >
+            <v-img
+              v-if="accepterData?.avatar"
+              :src="`${API_URL}${accepterData?.avatar}`"
+              alt="Avatar"
+            />
+            <v-icon
+              v-else
+              size="x-small"
+            >
+              mdi-account
+            </v-icon>
           </v-avatar>
           <span class="text-body-2 font-weight-bold">{{ accepterData?.name }} {{ accepterData?.lastName }}</span>
         </div>
       </div>
 
       <!-- Points -->
-      <v-divider class="my-3"></v-divider>
+      <v-divider class="my-3" />
       
       <div class="d-flex align-center justify-space-between">
         <span class="text-caption font-weight-bold opacity-70">Points</span>
@@ -86,22 +151,39 @@
           rounded="lg"
           class="font-weight-bold"
         >
-          <LogoCopy color="remplacement" style="top:-2px; position: relative;"></LogoCopy>
+          <LogoCopy
+            color="remplacement"
+            style="top:-2px; position: relative;"
+          />
           {{ demand?.points }}
         </v-chip>
       </div>
-
-    
     </v-card-item>
 
     <!-- Dialog utilisateur -->
-    <v-dialog v-model="showUserDialogModal" max-width="350">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-6">
+    <v-dialog
+      v-model="showUserDialogModal"
+      max-width="350"
+    >
+      <v-card
+        rounded="xl"
+        color="surfaceContainer"
+        class="pa-6"
+      >
         <div class="d-flex flex-column ga-2">
           <div class="d-flex align-center ga-2">
-            <v-avatar size="40" variant="tonal">
-              <v-img v-if="selectedUserData?.avatar" :src="`${API_URL}${selectedUserData?.avatar}`" alt="Avatar"></v-img>
-              <v-icon v-else>mdi-account</v-icon>
+            <v-avatar
+              size="40"
+              variant="tonal"
+            >
+              <v-img
+                v-if="selectedUserData?.avatar"
+                :src="`${API_URL}${selectedUserData?.avatar}`"
+                alt="Avatar"
+              />
+              <v-icon v-else>
+                mdi-account
+              </v-icon>
             </v-avatar>
             <div>
               <div class="text-h7 font-weight-bold">
@@ -112,7 +194,7 @@
               </div>
             </div>
           </div>
-          <v-divider class="my-2"></v-divider>
+          <v-divider class="my-2" />
           <div class="text-caption">
             <strong>Téléphone:</strong> {{ selectedUserData?.personalData?.phoneNumber || 'N/A' }}
           </div>

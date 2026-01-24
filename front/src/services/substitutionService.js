@@ -13,20 +13,20 @@ export const substitutionService = {
    * @param {string} [status] - Statut optionnel pour filtrer les demandes ('open', 'accepted', 'completed', 'cancelled')
    * @returns {Promise<Array>} Liste des demandes de substitution
    */
-  async fetchAndMarkAsSeen(dates, status) {
-   
-    
+  async fetchAndMarkAsSeen (dates, status) {
+
+
     // Vérifier que les dates sont définies
     if (!dates || !dates.startDate || !dates.endDate) {
       throw new Error('Les dates de début et de fin sont requises');
     }
-    
+
     // Préparer le corps de la requête
     const requestBody = {
       startDate: dates.startDate,
       endDate: dates.endDate
     };
-    
+
     // Ajouter le statut uniquement s'il est défini
     if (status && status !== 'undefined') {
       requestBody.status = status;
@@ -213,10 +213,35 @@ export const substitutionService = {
    * @param {string} centerId - L'ID du centre.
    * @returns {Promise<Array>} Liste de toutes les demandes du centre.
    */
-  async fetchAllCenterDemands(centerId) {
-    const response = await apiFetch(`/substitution/center/${centerId}/all`, {
-      method: 'GET'
+  async fetchAllCenterDemands (centerId) {
+    const response = await fetch(`${API_URL}/substitution/center/${centerId}/all`, {
+      headers: getAuthHeaders()
     });
-    return response;
+    return handleResponse(response);
+  },
+
+  /**
+   * Récupère les compatibilités d'une demande.
+   * @param {string} demandId - L'ID de la demande.
+   * @returns {Promise<Object>} Les compatibilités de la demande.
+   */
+  async fetchCompatibility (demandId) {
+    const response = await fetch(`${API_URL}/substitution/compatibility/${demandId}`, {
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
+  },
+
+  /**
+   * Marque une demande comme consultée.
+   * @param {string} id - L'ID de la substitution.
+   * @returns {Promise<Object>} La substitution mise à jour.
+   */
+  async consultDemand (id) {
+    const response = await fetch(`${API_URL}/substitution/${id}/consult`, {
+      method: 'POST',
+      headers: getAuthHeaders()
+    });
+    return handleResponse(response);
   }
 };

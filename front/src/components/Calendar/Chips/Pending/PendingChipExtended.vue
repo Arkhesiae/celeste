@@ -53,30 +53,53 @@ const hasMultiplePending = computed(() => {
 </script>
 
 <template>
-
-    <v-chip
-      @click="router.push(`/exchange/replace`)"
-      rounded="lg"
-      color="background"
-      variant="flat"
-      size="x-small"
-      style="border-color: rgba(var(--v-theme-remplacement), 0.4);"
-      class="text-caption font-weight-bold px-2 overflow-visible"
-    >
+  <v-chip
+    rounded="lg"
+    color="background"
+    variant="flat"
+    size="x-small"
+    style="border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    class="text-caption font-weight-bold px-2 overflow-visible"
+    @click="router.push(`/exchange/replace`)"
+  >
     <div class="mr-2">
-
-  
-      <v-icon color="error"  v-if="hasMultiplePending">mdi-alert-circle-outline</v-icon>
-      <v-icon color="pendingDemand"  v-if="isTrueSwitch">mdi-swap-horizontal-hidden</v-icon>
-      <v-icon color="pendingDemand"  v-if="isTrueSubstitution">mdi-account-arrow-left</v-icon>
-      <v-icon color="pendingDemand"  v-if="isHybridSubstitution">mdi-account-arrow-left</v-icon>
-      <v-icon color="pendingDemand"  class="ml-n2" style="top: 1px; font-size: 16px;" v-if="isHybridSubstitution">mdi-swap-horizontal</v-icon>
+      <v-icon
+        v-if="hasMultiplePending"
+        color="error"
+      >
+        mdi-alert-circle-outline
+      </v-icon>
+      <v-icon
+        v-if="isTrueSwitch"
+        color="pendingDemand"
+      >
+        mdi-swap-horizontal-hidden
+      </v-icon>
+      <v-icon
+        v-if="isTrueSubstitution"
+        color="pendingDemand"
+      >
+        mdi-account-arrow-left
+      </v-icon>
+      <v-icon
+        v-if="isHybridSubstitution"
+        color="pendingDemand"
+      >
+        mdi-account-arrow-left
+      </v-icon>
+      <v-icon
+        v-if="isHybridSubstitution"
+        color="pendingDemand"
+        class="ml-n2"
+        style="top: 1px; font-size: 16px;"
+      >
+        mdi-swap-horizontal
+      </v-icon>
     </div>
-      <span v-if="isTrueSwitch">Demande de permutation</span>
-      <span v-if="isTrueSubstitution">Demande de remplacement</span>
-      <span v-if="isHybridSubstitution">Demande en cours</span>
+    <span v-if="isTrueSwitch">Demande de permutation</span>
+    <span v-if="isTrueSubstitution">Demande de remplacement</span>
+    <span v-if="isHybridSubstitution">Demande en cours</span>
 
-      <v-icon >mdi-chevron-right</v-icon>
-    </v-chip>
-
+    <v-icon>mdi-chevron-right</v-icon>
+  </v-chip>
 </template>

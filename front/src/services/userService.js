@@ -3,6 +3,8 @@
  * @module userService
  */
 import { apiFetch } from '../config/api';
+import { API_URL } from '../config/api';
+import { useAuthStore } from '../stores/authStore';
 
 export const userService = {
   /**
@@ -87,11 +89,16 @@ export const userService = {
    * @returns {Promise<Object>} Les données mises à jour de l'utilisateur.
    */
   async updateAvatar(userId, formData) {
-    const response = await apiFetch(`/users/${userId}/avatar`, {
+    const authStore = useAuthStore();
+    const response = await fetch(`${API_URL}/users/${userId}/avatar`, {
       method: 'POST',
-      body: formData
+      body: formData,
+      headers: {
+        'Authorization': `Bearer ${authStore.accessToken}`,
+      }
     });
-    return response;
+    const data = await response.json() // évite crash si pas de JSON
+    return data;
   },
 
   /**

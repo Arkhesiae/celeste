@@ -6,9 +6,71 @@ export const usePatchnotesStore = defineStore('patchnotes', () => {
   // État réactif
   const patchNotes = ref([
     {
+      id: '0.202601.1',
+      version: 'alpha-202601.1',
+      releaseDate: '25/01/2026',
+      status: 'current',
+      description: 'Version majeure marquante avec l\'introduction du panel de règles, des améliorations de l\'interface mobile et une refactorisation globale du code.',
+      improvements: [
+        {
+          title: 'Panel de gestion des règles',
+          description: 'Ajout d\'un panneau pour les administrateurs permettant de gérer les règles de fonctionnement et l\'option de transparence.'
+        },
+        {
+          title: 'Optimisation de l\'interface mobile',
+          description: 'Ajout de badges de notification, d\'infobulles et refonte du menu mobile pour une meilleure ergonomie.'
+        },
+        {
+          title: 'Nouveau système de gestion des vacances',
+          description: 'Introduction du composant Vacation subCard et amélioration de l\'affichage des périodes de congés.'
+        },
+        {
+          title: 'Alertes profil utilisateur',
+          description: 'Ajout d\'un badge d\'avertissement si le numéro de téléphone n\'est pas renseigné, facilitant la complétion des profils.'
+        },
+        {
+          title: 'Clarté des demandes',
+          description: 'Renommage et restructuration des catégories de demandes pour une navigation plus intuitive.'
+        }
+      ],
+      bugFixes: [
+        {
+          title: 'Correction des cartes de demandes',
+          description: 'Résolution du bug affichant des informations utilisateur erronées dans OwnDemandCard lors de l\'acceptation d\'une demande.'
+        },
+        {
+          title: 'Stabilité de l\'administration',
+          description: 'Plusieurs correctifs appliqués à la section administration pour améliorer la fiabilité des outils de gestion.'
+        },
+        {
+          title: 'Fiabilité des e-mails',
+          description: 'Correction du mode test des e-mails pour garantir que les notifications réelles ne sont pas perturbées.'
+        },
+        {
+          title: 'Transitions d\'équipe',
+          description: 'Correction de la mise à jour des noms d\'équipes lors des changements effectués via le dialogue teamcard.'
+        }
+      ],
+      technicalNotes: [
+        {
+          title: 'Refactorisation et Qualité du code',
+          description: 'Nettoyage massif de la syntaxe et application systématique des règles de linting sur l\'ensemble du codebase.'
+        },
+        {
+          title: 'Maintenance des dépendances',
+          description: 'Mise à jour globale des dépendances (dotenv, vite, etc.) pour assurer la sécurité et les performances.'
+        },
+        {
+          title: 'Documentation développeur',
+          description: 'Ajout d\'un fichier CONTRIBUTING.md pour faciliter l\'onboarding des nouveaux contributeurs.'
+        }
+      ]
+    },
+    {
       id: '0.202509.3',
       version: 'alpha-202509.3',
       releaseDate: '15/09/2025',
+      status: 'stable',
       description: 'Version avec des améliorations majeures du système de substitution, sécurisation de la base de données et optimisations techniques.',
       improvements: [
         {

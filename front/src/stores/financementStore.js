@@ -31,7 +31,7 @@ export const useFundingStore = defineStore('funding', () => {
     {
       nom: 'Hébergement serveur',
       description: 'Serveur dédié',
-      cout: 5,
+      cout: 6,
       periodicite: 'mois',
       icon: 'mdi-server-network',
       color: 'primary'
@@ -39,7 +39,7 @@ export const useFundingStore = defineStore('funding', () => {
     {
       nom: 'Base de données',
       description: 'Hébergement et maintenance de la base de données',
-      cout: 0.5,
+      cout: 3,
       periodicite: 'mois',
       icon: 'mdi-database',
       color: 'secondary'
@@ -54,8 +54,8 @@ export const useFundingStore = defineStore('funding', () => {
     },
     {
       nom: 'Développement agent IA',
-      description: "Utilisation d'un agent IA",
-      cout: 10,
+      description: "Utilisation d'un agent IA jusqu'à janvier 2026",
+      cout: 15,
       periodicite: 'mois',
       icon: 'mdi-robot',
       color: 'success'
@@ -71,7 +71,7 @@ export const useFundingStore = defineStore('funding', () => {
     {
       nom: 'Envoi de mail',
       description: 'Envoi de mail',
-      cout: 5,
+      cout: 6,
       periodicite: 'mois',
       icon: 'mdi-email',
       color: 'error'
@@ -102,6 +102,16 @@ export const useFundingStore = defineStore('funding', () => {
       description: 'Hebergement Juillet-Août',
     },
     {
+      date: '2025-10-03',
+      montant: 9.10,
+      description: 'Hebergement Septembre-Octobre',
+    },
+    {
+      date: '2025-12-03',
+      montant: 9.10,
+      description: 'Hebergement Novembre-Décembre',
+    },
+    {
       date: '2025-05-26',
       montant: 18.70,
       description: 'Allocation nom de domaine',
@@ -121,7 +131,57 @@ export const useFundingStore = defineStore('funding', () => {
       montant: 17.20,
       description: 'Utilisation Cursor AI Aout',
     },
+    {
+      date: '2025-09-11',
+      montant: 17.25,
+      description: 'Utilisation Cursor AI Septembre',
+    },
+    {
+      date: '2025-10-11',
+      montant: 17.25,
+      description: 'Utilisation Cursor AI Octobre',
+    },
+    {
+      date: '2025-11-11',
+      montant: 17.35,
+      description: 'Utilisation Cursor AI Novembre',
+    },
+    {
+      date: '2025-12-11',
+      montant: 17.22,
+      description: 'Utilisation Cursor AI Decembre',
+    },
+    {
+      date: '2026-01-11',
+      montant: 20.62,
+      description: 'Utilisation Cursor AI Janvier',
+    },
+    {
+      date: '2025-12-03',
+      montant: 2.08,
+      description: 'Service clouds AWS (mails) décembre',
+    },
+    {
+      date: '2025-11-03',
+      montant: 2.12,
+      description: 'Service clouds AWS (mails) novembre',
+    },
+    {
+      date: '2025-10-03',
+      montant: 2.39,
+      description: 'Service clouds AWS (mails) octobre',
+    },
+    {
+      date: '2025-09-03',
+      montant: .12,
+      description: 'Service clouds AWS (mails) septembre',
+    }, {
+      date: '2026-01-03',
+      montant: 1.88,
+      description: 'Service clouds AWS (mails) janvier',
+    },
 
+   
 
   ]);
 

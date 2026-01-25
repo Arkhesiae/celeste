@@ -2,8 +2,7 @@
   <v-container ref="containerRef" :class="smAndDown ? 'mb-n16' : ''">
     <WelcomeTitle :user-name="userName">
       <template #actions>
-        <v-btn
-v-if="!smAndDown" height="48px"
+        <v-btn v-if="!smAndDown" height="48px"
           class="px-6 bg-primary text-background highlight-shadow new-demand-button" flat
           style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="$router.push('/calendar')">
           Nouvelle demande
@@ -25,8 +24,7 @@ v-if="!smAndDown" height="48px"
     <v-row class="mt-2">
       <v-col cols="12" class="pa-2" />
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
-        <v-alert
-v-if="!authStore.userData.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+        <v-alert v-if="!authStore.userData.centerId" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-alert-outline" style="cursor: pointer;"
           @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
@@ -47,8 +45,7 @@ v-if="!authStore.userData.centerId" color="error" variant="tonal" rounded="xl" c
           </div>
         </v-alert>
 
-        <v-alert
-v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+        <v-alert v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-alert-circle-outline" style="cursor: pointer;"
           @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
@@ -69,8 +66,7 @@ v-if="!teamStore.currentTeam" color="error" variant="tonal" rounded="xl" class="
           </div>
         </v-alert>
 
-        <v-alert
-v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal"
+        <v-alert v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="error" variant="tonal"
           rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;"
           @click="router.push('/contact-admin')">
           <div class="d-flex align-center justify-space-between">
@@ -91,8 +87,7 @@ v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate" color="err
             <v-icon icon="mdi-chevron-right" color="error" size="32" class="mr-2" />
           </div>
         </v-alert>
-        <v-alert
-v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+        <v-alert v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
           icon="mdi-alert-circle-outline" style="cursor: pointer;"
           @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
@@ -118,8 +113,7 @@ v-if="false" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
         </v-alert>
 
 
-        <v-alert
-v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4  "
+        <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4  "
           icon="mdi-alert-outline" style="cursor: pointer;"
           @click="router.push('/profile/' + authStore.userData.userId)">
           <div class="d-flex align-center justify-space-between">
@@ -153,8 +147,7 @@ v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa
           <v-card-text>
             <div v-if="getVacation && getVacation.shift?.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
-                <v-icon
-icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                   style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
               </div>
             </div>
@@ -169,8 +162,7 @@ icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                       getVacation.shift?.default?.endTime || getVacation.shift?.endTime }}
                   </div>
                 </div>
-                <v-chip
-class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
+                <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
                   style="right: 0; top: 0;">
                   Équipe {{ getVacation.teamObject?.name }}
                 </v-chip>
@@ -185,8 +177,7 @@ class="position-absolute ma-6" color="onBackground" variant="flat" size="small" 
 
 
         <!-- Carte de la vacation de demain -->
-        <v-card
-rounded="xl" elevation="0" variant="flat" class="mb-4 smooth-shadow pa-6 pl-8  "
+        <v-card rounded="xl" elevation="0" variant="flat" class="mb-4 smooth-shadow pa-6 pl-8  "
           color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium">
             Demain
@@ -194,8 +185,7 @@ rounded="xl" elevation="0" variant="flat" class="mb-4 smooth-shadow pa-6 pl-8  "
           <v-card-text>
             <div v-if="getTomorrowVacation && getTomorrowVacation.shift?.type === 'rest'">
               <div class="text-medium-emphasis position-absolute" style="bottom: 0; right: 0;">
-                <v-icon
-icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
+                <v-icon icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                   style="filter: blur(0px); z-index: -1; opacity: 0.070;" />
               </div>
             </div>
@@ -210,8 +200,7 @@ icon="mdi-sleep" color="remplacement" size="128" class="mr-2"
                     }}
                   </div>
                 </div>
-                <v-chip
-class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
+                <v-chip class="position-absolute ma-6" color="onBackground" variant="flat" size="small" rounded="lg"
                   style="right: 0; top: 0;">
                   Équipe {{ getTomorrowVacation.teamObject?.name }}
                 </v-chip>
@@ -229,8 +218,7 @@ class="position-absolute ma-6" color="onBackground" variant="flat" size="small" 
 
       <!-- Section Points et Équipe -->
       <v-col cols="12" md="5" xl="4" offset-xl="0" :class="smAndDown ? 'pa-0  mt-16 ' : 'pa-2'">
-        <v-card
-v-if="getCenterName?.includes('CRNA Nord')" rounded="xl" elevation="0" class="mb-4 pa-6 "
+        <v-card v-if="getCenterName?.includes('CRNA Nord')" rounded="xl" elevation="0" class="mb-4 pa-6 "
           :class="smAndDown ? 'mx-4 ' : 'mx-0'" color="surfaceContainer">
           <v-card-title class="text-h6 font-weight-medium pa-0 ma-0">
             Recommandations locales
@@ -274,8 +262,7 @@ v-if="getCenterName?.includes('CRNA Nord')" rounded="xl" elevation="0" class="mb
         </v-card>
 
         <!-- Carte du tour de service actif -->
-        <v-card
-rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-4' : 'mx-0'"
+        <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-4' : 'mx-0'"
           color="surfaceContainer" style="cursor: pointer;" @click="$router.push('/rotation')">
           <div class="d-flex align-center justify-space-between">
             <div>
@@ -293,8 +280,7 @@ rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-4' : 'mx-0'
                         Actif depuis le {{ new Date(activeRotation.activationDate).toLocaleDateString() }}
                       </div>
                     </div>
-                    <v-chip
-class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
+                    <v-chip class="position-absolute ma-6" color="remplacement" variant="flat" size="small" rounded="lg"
                       style="right: 0; top: 0;">
                       Actif
                     </v-chip>
@@ -345,23 +331,19 @@ class="position-absolute ma-6" color="remplacement" variant="flat" size="small" 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-32 ' : ''" color="surfaceContainer">
           <!-- Carte des points -->
           <div class="mb-4 smooth-shadow rounded-xl">
-            <PointsCard
-color="surfaceContainer" class="pa-0" :points="stats.points" :transactions="[]"
+            <PointsCard color="surfaceContainer" class="pa-0" :points="stats.points" :transactions="[]"
               @transfer="transferDialog = true" />
           </div>
 
           <!-- Section Calendrier -->
 
-          <v-card
-ref="calendarCard" rounded="xl" flat class="mb-8 mt-8 v-card-dashboard smooth-shadow  calendar-card"
+          <v-card ref="calendarCard" rounded="xl" flat class="mb-8 mt-8 v-card-dashboard smooth-shadow  calendar-card"
             color="surfaceContainer" :class="{ 'pa-0 py-2 ml-n4 mr-n4': xs, 'pa-0': !xs }">
-            <CalendarHeader
-:class="smAndDown ? 'pa-2' : 'pa-4  '" :current-month="currentMonth"
+            <CalendarHeader :class="smAndDown ? 'pa-2' : 'pa-4  '" :current-month="currentMonth"
               :current-year="currentYear" @update:current-month="handleMonthUpdate"
               @update:current-year="handleYearUpdate" />
             <v-card-text>
-              <CalendarMobile
-:days-of-week="daysOfWeek" :calendar-days="calendarDays" :is-selected="isSelected"
+              <CalendarMobile :days-of-week="daysOfWeek" :calendar-days="calendarDays" :is-selected="isSelected"
                 :is-today="isToday" :rotations-map="rotationsMap" @select-day="selectedDate = $event"
                 @swipe-left="currentMonth = (currentMonth + 1) % 12"
                 @swipe-right="currentMonth = (currentMonth - 1 + 12) % 12" />
@@ -374,8 +356,7 @@ ref="calendarCard" rounded="xl" flat class="mb-8 mt-8 v-card-dashboard smooth-sh
               <v-card-title class="text-body-1 font-weight-bold">
                 Mon équipe
               </v-card-title>
-              <v-icon
-icon="mdi-crowd" size="16" color="onBackground"
+              <v-icon icon="mdi-crowd" size="16" color="onBackground"
                 style="position: absolute; bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1; opacity: 0.10;" />
 
               <div v-if="teamStore.currentTeam" class="d-flex flex-column align-end pa-2">
@@ -479,8 +460,7 @@ icon="mdi-crowd" size="16" color="onBackground"
         </v-card>
       </v-col>
     </v-row> -->
-    <TransferDialog
-:dialog-visible="transferDialog" :user-id="authStore.userData.userId"
+    <TransferDialog :dialog-visible="transferDialog" :user-id="authStore.userData.userId"
       @update:dialog-visible="transferDialog = $event" />
   </v-container>
 </template>

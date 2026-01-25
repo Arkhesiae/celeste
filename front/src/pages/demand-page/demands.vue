@@ -5,14 +5,13 @@
       <template #actions>
         <!-- Bouton pour afficher/masquer la colonne latérale sur mobile -->
         <div v-if="smAndDown" class="d-flex position-relative flex-column align-end ga-1">
-          <v-btn
-color="onSurface" size="small" variant="text" prepend-icon="mdi-book-open-variant"
+          <v-btn color="primary" size="small" variant="text" append-icon="mdi-chevron-right"
             @click="showRulesDialog = true">
             Règles de travail
           </v-btn>
         </div>
         <div v-else>
-          <v-btn color="onSurface" rounded="lg" prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
+          <v-btn color="primary" flat style="border-radius: 16px !important;" class="px-6" height="48" rounded="lg" prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
             Règles de travail
           </v-btn>
         </div>
@@ -42,8 +41,7 @@ color="onSurface" size="small" variant="text" prepend-icon="mdi-book-open-varian
 
 
 
-    <div
-v-if="smAndDown" class="d-flex align-center justify-center flex-1-1 flex-column ga-2"
+    <div v-if="smAndDown" class="d-flex align-center justify-center flex-1-1 flex-column ga-2"
       style="font-size: 0.75rem;">
       <!-- <div class="d-flex justify-center flex-column align-center ga-2 my-16">
 
@@ -55,25 +53,21 @@ v-if="smAndDown" class="d-flex align-center justify-center flex-1-1 flex-column 
       <div class="d-flex justify-center flex-column align-center ga-2 my-8">
         <span>Des demandes sont disponibles</span>
       </div>
-      <v-btn
-variant="flat" rounded="pill" style="font-size: 0.75rem;" color="surfaceContainer" class="flex-0-1"
+      <v-btn variant="flat" rounded="pill" style="font-size: 0.75rem;" color="surfaceContainer" class="flex-0-1"
         @click="router.push('/demand-page/standalone/available')">
         <template #prepend>
           <div class="d-flex  ga-1" style="right: 0px; top: -18px;">
-            <div
-class="category-indicator"
+            <div class="category-indicator"
               :title="`${substitutionStore.availableSubstitutions.length} demande(s) en attente`">
               <v-icon icon="mdi-account-arrow-left-outline" size="small" color="primary" />
               {{ substitutionStore.availableSubstitutions.length }}
             </div>
-            <div
-class="category-indicator"
+            <div class="category-indicator"
               :title="`${substitutionStore.availableSwitches.length} demande(s) permutable(s)`">
               <v-icon icon="mdi-swap-horizontal" size="small" color="primary" />
               {{ substitutionStore.availableSwitches.length }}
             </div>
-            <div
-class="category-indicator"
+            <div class="category-indicator"
               :title="`${substitutionStore.otherDemands.length} demande(s) incompatible(s)`">
               <v-icon icon="mdi-close" size="small" color="primary" />
               {{ substitutionStore.otherDemands.length }}
@@ -82,20 +76,17 @@ class="category-indicator"
         </template>
         Voir tout
       </v-btn>
-      <v-btn
-variant="flat" style="font-size: 0.75rem;" rounded="pill" color="surfaceContainer"
+      <v-btn variant="flat" style="font-size: 0.75rem;" rounded="pill" color="surfaceContainer"
         @click="router.push('/demand-page/standalone/own')">
         Mes demandes
         <template #prepend>
           <div class="d-flex  ga-1" style="right: 0px; top: -18px;">
-            <div
-v-if="pendingDemands.length > 0" class="category-indicator"
+            <div v-if="pendingDemands.length > 0" class="category-indicator"
               :title="`${pendingDemands.length} demande(s) en attente`">
               <v-icon icon="mdi-help" size="small" color="primary" />
               {{ pendingDemands.length }}
             </div>
-            <div
-v-if="acceptedAsPoster?.length > 0" class="category-indicator"
+            <div v-if="acceptedAsPoster?.length > 0" class="category-indicator"
               :title="`${acceptedAsPoster.length} demande(s) acceptée(s)`">
               <v-icon icon="mdi-check" size="small" color="primary" />
               {{ acceptedAsPoster.length + acceptedAsAccepter.length }}

@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 
 const ShiftSchema = new mongoose.Schema({
-    name: {type: String, required: true},
+    name: { type: String, required: true },
     startTime: {
         type: String,
         validate: {
-            validator: function(v) {
+            validator: function (v) {
                 return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
             },
             message: props => `${props.value} n'est pas un format d'heure valide (HH:MM)`
@@ -14,28 +14,28 @@ const ShiftSchema = new mongoose.Schema({
     endTime: {
         type: String,
         validate: {
-            validator: function(v) {
+            validator: function (v) {
                 return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
             },
             message: props => `${props.value} n'est pas un format d'heure valide (HH:MM)`
         }
     },
-    endsNextDay: {type: Boolean, default: false},
-    date: {type: Date, required: true},
+    endsNextDay: { type: Boolean, default: false },
+    date: { type: Date, required: true },
     defaultPoints: {
-        type: Number, 
+        type: Number,
         required: true,
         min: [0, 'Les points doivent être positifs']
     },
-    teamId: {type: mongoose.Schema.Types.ObjectId, ref: 'Team'},
-    type: {type: String},
+    teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
+    type: { type: String },
 });
 
 const NewShiftSchema = new mongoose.Schema({
-    shift: {type: mongoose.Schema.Types.ObjectId, ref: 'Shift'},
-    date: {type: Date, required: false},
-    teamId: {type: mongoose.Schema.Types.ObjectId, ref: 'Team'},
-    selectedVariation : {type : mongoose.Schema.Types.ObjectId, ref: 'Variation', default: null},
+    shift: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
+    date: { type: Date, required: false },
+    teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
+    selectedVariation: { type: mongoose.Schema.Types.ObjectId, ref: 'Variation', default: null },
 });
 
 const SubstitutionSchema = new mongoose.Schema({
@@ -55,7 +55,7 @@ const SubstitutionSchema = new mongoose.Schema({
         required: true
     },
     accepterShift: {
-        type: NewShiftSchema, 
+        type: NewShiftSchema,
         default: null
     },
     centerId: {
@@ -64,20 +64,20 @@ const SubstitutionSchema = new mongoose.Schema({
         required: true,
     },
     rotation: {
-        type: mongoose.Schema.Types.ObjectId, 
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Rotation'
     },
     acceptedSwitches: [
         {
-            shift : { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
-            points : {
+            shift: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
+            points: {
                 type: Number,
                 default: 0,
                 min: [0, 'Les points doivent être positifs']
             }
         }],
-    isTrueSwitch: {type: Boolean, default: false},
-    type: {type: String, enum: ['switch', 'hybrid', 'substitution']},
+    isTrueSwitch: { type: Boolean, default: false },
+    type: { type: String, enum: ['switch', 'hybrid', 'substitution'] },
     comment: {
         type: String,
         default: ''
@@ -103,6 +103,10 @@ const SubstitutionSchema = new mongoose.Schema({
         default: null
     },
     seenBy: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    consultedBy: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],

@@ -2,12 +2,12 @@
 import CentersComponent from "@/components/Centers/CentersComponent.vue";
 
 defineOptions({
-  name: "centers"
+  name: "Centers"
 });
 </script>
 
 <template>
-  <CentersComponent></CentersComponent>
+  <CentersComponent />
 </template>
 
 <style scoped>

@@ -1,47 +1,124 @@
 <template>
-  <v-bottom-navigation v-if="smAndDown && isLoggedIn" elevation="0" flat class="bottom-nav" bg-color="background" grow height="64"
-    style="z-index: 2000 !important;" shift>
-    <v-btn :ripple="false" value="home" icon @click="router.push({ path: '/dashboard' }); hapticsImpact()"
+  <v-bottom-navigation
+    v-if="smAndDown && isLoggedIn"
+    elevation="0"
+    flat
+    class="bottom-nav"
+    bg-color="background"
+    grow
+    height="64"
+    style="z-index: 2000 !important;"
+    shift
+  >
+    <v-btn
+      :ripple="false"
+      value="home"
+      icon
       :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
-      :active="router.currentRoute.value.path === '/dashboard'">
-      <v-icon size="20">{{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}</v-icon>
-      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Accueil</span>
+      :active="router.currentRoute.value.path === '/dashboard'"
+      @click="router.push({ path: '/dashboard' }); hapticsImpact()"
+    >
+      <v-icon size="20">
+        {{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}
+      </v-icon>
+      <span
+        class="text-body-2 "
+        style="font-weight: 600; font-size: 10px !important; "
+      >Accueil</span>
     </v-btn>
-    <v-btn :ripple="false" value="calendar" icon @click="router.push({ path: '/calendar' }); hapticsImpact()"
+    <v-btn
+      :ripple="false"
+      value="calendar"
+      icon
       :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
-      :active="router.currentRoute.value.path === '/calendar'">
-      <v-icon size="20">{{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}</v-icon>
-      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
+      :active="router.currentRoute.value.path === '/calendar'"
+      @click="router.push({ path: '/calendar' }); hapticsImpact()"
+    >
+      <v-icon size="20">
+        {{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}
+      </v-icon>
+      <span
+        class="text-body-2 "
+        style="font-weight: 600; font-size: 10px !important; "
+      >Calendrier</span>
     </v-btn>
-    <v-btn :ripple="false" value="demandes" icon @click="router.push({ path: '/exchange/replace' }); hapticsImpact()"
-      :class="isActive('/exchange/replace') ? 'active-item' : 'inactive-item'"
-      :active="router.currentRoute.value.path === '/exchange'">
-      <v-badge size="x-small" rounded="lg" color="onBackground" class="font-weight-bold text-subtitle-2" offset-x="-12"
-        offset-y="6" :content="demandsCount" :model-value="demandsCount !== 0">
-        <v-icon size="20">{{ isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'
-        }}</v-icon>
+    <v-btn
+      :ripple="false"
+      value="demandes"
+      icon
+      :class="isActive('/demand-page/demands') ? 'active-item' : 'inactive-item'"
+      :active="router.currentRoute.value.path === '/demand-page/demands'"
+      @click="router.push({ path: '/demand-page/demands' }); hapticsImpact()"
+    >
+      <v-badge
+        size="x-small"
+        rounded="lg"
+        color="onBackground"
+        class="font-weight-bold text-subtitle-2"
+        offset-x="-12"
+        offset-y="6"
+        :content="demandsCount"
+        :model-value="demandsCount !== 0"
+      >
+        <v-icon size="20">
+          {{ isActive('/demand-page/demands') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'
+          }}
+        </v-icon>
       </v-badge>
-      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Demandes</span>
-
+      <span
+        class="text-body-2 "
+        style="font-weight: 600; font-size: 10px !important; "
+      >Demandes</span>
     </v-btn>
     <!-- <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
     </v-btn> -->
-    <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon
-      @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()"
+
+
+    <v-btn
+      :ripple="false"
+      value="profile"
+      active-color="onPrimary"
+      active-class="active-item"
+      icon
       :class="isActive('/profile/' + authStore.userData.userId) ? 'active-item' : 'inactive-item'"
-      :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId">
-      <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false">
-        <div class="d-flex align-center justify-center"
+      :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId"
+      @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()"
+    >
+      <!-- <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false"> -->
+
+      <v-badge
+        v-model="missingPhone"
+        color="error"
+        icon="mdi-exclamation-thick"
+        overlap
+        location="top start"
+      >
+        <div
+          class="d-flex align-center justify-center"
           :class="isActive('/profile/' + authStore.userData.userId) ? 'opacity-100' : 'opacity-50'"
-          style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
-          <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
-            <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-            <v-icon v-else>mdi-account</v-icon>
+          style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;"
+        >
+          <!-- Badge rouge "!" si téléphone manquant -->
+
+          <v-avatar
+            size="28"
+            class=""
+            variant="tonal"
+            style="background-color: rgba(var(--v-theme-background), 1);"
+          >
+            <v-img
+              v-if="authStore.userData.avatar"
+              :src="`${API_URL}${authStore.userData.avatar}`"
+              alt="Avatar"
+            />
+            <v-icon v-else>
+              mdi-account
+            </v-icon>
           </v-avatar>
         </div>
       </v-badge>
-
+      <!-- </v-badge> -->
     </v-btn>
   </v-bottom-navigation>
 </template>
@@ -49,26 +126,26 @@
 <script setup>
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore.js";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { computed } from "vue";
-import { useNotificationStore } from '../../stores/notificationStore';
 import { API_URL } from '@/config/api';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
-const hapticsImpact= async () => {
+const hapticsImpact = async () => {
   await Haptics.impact({ style: ImpactStyle.Light });
 };
 
 
+const missingPhone = computed(() => !authStore.userData.phone);
+
 const { smAndDown } = useDisplay();
 const router = useRouter();
-const route = useRoute();
 const authStore = useAuthStore();
-const notificationStore = useNotificationStore();
+// const notificationStore = useNotificationStore();
 const substitutionStore = useSubstitutionStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
+// const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
 const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
 
 const isActive = (path) => {
@@ -78,10 +155,10 @@ const isActive = (path) => {
 
 
 
-const toggleNotifications = () => {
-  // Émettre un événement pour gérer les notifications
-  emit('toggle-notifications');
-};
+// const toggleNotifications = () => {
+//   // Émettre un événement pour gérer les notifications
+//   emit('toggle-notifications');
+// };
 
 const emit = defineEmits(['toggle-notifications']);
 </script>
@@ -90,7 +167,7 @@ const emit = defineEmits(['toggle-notifications']);
 .bottom-nav {
   position: fixed;
   height: calc(64px + var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
-  padding-bottom:   calc(var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
+  padding-bottom: calc(var(--safe-area-bottom) + env(safe-area-inset-bottom)) !important;
   /* box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); */
   /* border-radius: 24px 24px 0 0; */
 }

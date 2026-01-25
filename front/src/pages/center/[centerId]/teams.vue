@@ -1,47 +1,40 @@
 <template>
   <v-container>
-
-
-     <MainTitle :title="centerName" subtitle="Liste des équipes et leurs membres" :backButton="authStore.userData.adminType === 'master'">
-
-      <template #actions> 
-        <v-btn @click="openAddTeamDialog" color="onBackground" style="border-radius: 16px !important" height="48px"  class="px-4   add-team-btn" prepend-icon="mdi-plus">Ajouter une équipe</v-btn>
+    <MainTitle
+:title="centerName" subtitle="Liste des équipes et leurs membres"
+      :back-button="authStore.userData.adminType === 'master'">
+      <template #actions>
+        <v-btn
+color="onBackground" style="border-radius: 16px !important" height="48px" class="px-4   add-team-btn"
+          prepend-icon="mdi-plus" @click="openAddTeamDialog">
+          Ajouter une équipe
+        </v-btn>
       </template>
-
-      </MainTitle>
+    </MainTitle>
 
 
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6">
         <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
-          <v-chip variant="text" rounded="lg" value="all">Toutes</v-chip>
-          <v-chip variant="text" color="tertiary" rounded="lg" value="active">Actives</v-chip>
-          <v-chip variant="text" rounded="lg" value="inactive">Inactives</v-chip>
+          <v-chip variant="text" rounded="lg" value="all">
+            Toutes
+          </v-chip>
+          <v-chip variant="text" color="tertiary" rounded="lg" value="active">
+            Actives
+          </v-chip>
+          <v-chip variant="text" rounded="lg" value="inactive">
+            Inactives
+          </v-chip>
         </v-chip-group>
       </v-col>
-      
+
       <v-col cols="12" md="6" class="d-flex justify-end gap-2">
         <v-text-field
-          v-model="searchQuery"
-          label="Rechercher"
-          variant="solo"
-          flat
-          rounded="xl"
-          single-line
-          hide-details
-          density="compact"
-          class="search-field"
-          style="max-width: 300px"
-          clearable
-        />
+v-model="searchQuery" label="Rechercher" variant="solo" flat rounded="xl" single-line hide-details
+          density="compact" class="search-field" style="max-width: 300px" clearable />
         <v-btn
-          v-if="isAdmin"
-          color="primary"
-          variant="text"
-          rounded="lg"
-          @click="openReorderDialog"
-          prepend-icon="mdi-sort"
-        >
+v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sort"
+          @click="openReorderDialog">
           <span class="text-overline">Réorganiser</span>
         </v-btn>
       </v-col>
@@ -51,58 +44,48 @@
       <span v-if="filteredAndSortedTeams.length === 0">Aucune équipe trouvée</span>
       <v-col v-for="team in filteredAndSortedTeams" :key="team._id" cols="12" md="6" lg="4">
         <TeamCard
-          :team="team"
-          :is-admin="isAdmin"
+:team="team" :is-admin="isAdmin"
           :members-count="teamMembers(team._id).length + teamRenforts(team._id).length"
-          :renforts-count="teamRenforts(team._id).length"
-          :next-cycle-date="getNextCycleDate(team)"
-          @edit-team-name="openEditTeamNameDialog"
-          @edit-cycle="openDatePickerDialog"
-          @add-member="openAddMemberDialog"
-          @remove-team="removeTeam"
-          @view-members="openMembersPanel"
-        />
+          :renforts-count="teamRenforts(team._id).length" :next-cycle-date="getNextCycleDate(team)"
+          @edit-team-name="openEditTeamNameDialog" @edit-cycle="openDatePickerDialog" @add-member="openAddMemberDialog"
+          @remove-team="removeTeam" @view-members="openMembersPanel" />
       </v-col>
     </v-row>
 
     <!-- Dialog pour ajouter une équipe -->
     <v-dialog v-model="addTeamDialog" max-width="500">
       <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">Ajouter une équipe</v-card-title>
+        <v-card-title class="pa-0">
+          Ajouter une équipe
+        </v-card-title>
         <v-card-text class="pa-0 mt-4">
-          <v-text-field
-            v-model="newTeamName"
-            label="Nom de l'équipe"
-            variant="outlined"
-            flat
-            rounded="xl"
-            required
-          />
+          <v-text-field v-model="newTeamName" label="Nom de l'équipe" variant="outlined" flat rounded="xl" required />
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn text color="primary" @click="addTeamDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="addNewTeam">Enregistrer</v-btn>
+          <v-btn text color="primary" @click="addTeamDialog = false">
+            Annuler
+          </v-btn>
+          <v-btn text color="primary" @click="addNewTeam">
+            Enregistrer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog pour le sélecteur de date -->
-    <v-dialog v-model="datePickerDialog" max-width="380"  persistent :fullscreen="xs">
+    <v-dialog v-model="datePickerDialog" max-width="380" persistent :fullscreen="xs">
       <v-card rounded="xl" :class="xs ? 'pa-4' : 'pa-6'">
-        <v-card-title>Définir le  début de cycle</v-card-title>
+        <v-card-title>Définir le début de cycle</v-card-title>
         <v-card-text class="pa-0  d-flex flex-column justify-space-between align-center">
-          <v-date-picker
-            width="100%"
-            elevation="0"
-            flat
-            rounded="xl"
-            v-model="selectedDate"
-            locale="fr"
-          />
+          <v-date-picker v-model="selectedDate" width="100%" elevation="0" flat rounded="xl" locale="fr" />
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="closeDatePickerDialog">Annuler</v-btn>
-          <v-btn text color="primary" @click="setCycleStartDate">Définir</v-btn>
+          <v-btn text @click="closeDatePickerDialog">
+            Annuler
+          </v-btn>
+          <v-btn text color="primary" @click="setCycleStartDate">
+            Définir
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -113,18 +96,16 @@
         <v-card-title>Ajouter un membre</v-card-title>
         <v-card-text>
           <v-select
-            v-model="selectedUser"
-            :items="availableUsers"
-            item-title="name"
-            item-value="_id"
-            label="Sélectionner un utilisateur"
-            return-object
-            dense
-          />
+v-model="selectedUser" :items="availableUsers" item-title="name" item-value="_id"
+            label="Sélectionner un utilisateur" return-object dense />
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="addMemberDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="addUserToTeam">Ajouter</v-btn>
+          <v-btn text @click="addMemberDialog = false">
+            Annuler
+          </v-btn>
+          <v-btn text color="primary" @click="addUserToTeam">
+            Ajouter
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -132,20 +113,21 @@
     <!-- Dialog pour modifier le nom de l'équipe -->
     <v-dialog v-model="editTeamNameDialog" max-width="360">
       <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">Modifier le nom de l'équipe</v-card-title>
+        <v-card-title class="pa-0">
+          Modifier le nom de l'équipe
+        </v-card-title>
         <v-card-text class="pa-0 my-6">
           <v-text-field
-            variant="underlined"
-            flat
-            rounded="xl"
-            v-model="editedTeamName"
-            label="Nom de l'équipe"
-            required
-          />
+v-model="editedTeamName" variant="underlined" flat rounded="xl" label="Nom de l'équipe"
+            required />
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn text @click="editTeamNameDialog = false">Annuler</v-btn>
-          <v-btn text color="primary" @click="renameTeam">Enregistrer</v-btn>
+          <v-btn text @click="editTeamNameDialog = false">
+            Annuler
+          </v-btn>
+          <v-btn text color="primary" @click="renameTeam">
+            Enregistrer
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -155,7 +137,7 @@
       <v-card rounded="xl" class="pa-6">
         <v-card-title class="d-flex justify-space-between align-center pa-0">
           <span>Réorganiser les équipes</span>
-          <v-btn icon @click="closeReorderDialog" variant="text">
+          <v-btn icon variant="text" @click="closeReorderDialog">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
@@ -164,19 +146,12 @@
             Glissez-déposez les équipes pour modifier leur ordre. L'ordre sera sauvegardé automatiquement.
           </div>
           <VueDraggable
-            v-model="orderedTeams"
-            :animation="150"
-            ghostClass="ghost"
-            target=".sort-target"
-            class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded"
-          >
-            <TransitionGroup
-              type="transition"
-              tag="div"
-              name="fade"
-              class="sort-target"
-            >
-              <div v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg pa-2" style="background-color: rgba(var(--v-theme-background), 1)">
+v-model="orderedTeams" :animation="150" ghost-class="ghost" target=".sort-target"
+            class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded">
+            <TransitionGroup type="transition" tag="div" name="fade" class="sort-target">
+              <div
+v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg pa-2"
+                style="background-color: rgba(var(--v-theme-background), 1)">
                 <v-icon>mdi-drag</v-icon>
                 {{ item.name }}
               </div>
@@ -184,11 +159,7 @@
           </VueDraggable>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn
-            color="primary"
-            variant="text"
-            @click="closeReorderDialog"
-          >
+          <v-btn color="primary" variant="text" @click="closeReorderDialog">
             Fermer
           </v-btn>
         </v-card-actions>
@@ -197,15 +168,8 @@
 
     <!-- Panneau latéral pour les membres -->
     <v-navigation-drawer
-      v-model="membersPanel"
-      location="right"
-      order="-6"
-      style="z-index: 3000;"
-      width="400"
-      floating
-      temporary
-      v-if="!smAndDown"
-    >
+v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-index: 3000;"
+      width="400" floating temporary>
       <v-card-title class="d-flex justify-space-between align-center pa-4">
         <span class="text-h6">Equipe {{ selectedTeamForMembers?.name }}</span>
         <v-btn variant="text" icon @click="membersPanel = false">
@@ -214,17 +178,13 @@
       </v-card-title>
       <v-card-text>
         <TeamMembersList
-          :members="teamMembers(selectedTeamForMembers?._id)"
-          :renforts="teamRenforts(selectedTeamForMembers?._id)"
-        />
+:members="teamMembers(selectedTeamForMembers?._id)"
+          :renforts="teamRenforts(selectedTeamForMembers?._id)" />
       </v-card-text>
     </v-navigation-drawer>
 
     <!-- Feuille du bas pour les membres -->
-    <v-bottom-sheet
-      v-model="membersPanel"
-      v-if="smAndDown"
-    >
+    <v-bottom-sheet v-if="smAndDown" v-model="membersPanel">
       <v-card rounded="0">
         <v-card-title class="d-flex justify-space-between align-center pa-4">
           <span class="text-h6">Membres de l'équipe {{ selectedTeamForMembers?.name }}</span>
@@ -234,9 +194,8 @@
         </v-card-title>
         <v-card-text>
           <TeamMembersList
-            :members="teamMembers(selectedTeamForMembers?._id)"
-            :renforts="teamRenforts(selectedTeamForMembers?._id)"
-          />
+:members="teamMembers(selectedTeamForMembers?._id)"
+            :renforts="teamRenforts(selectedTeamForMembers?._id)" />
         </v-card-text>
       </v-card>
     </v-bottom-sheet>
@@ -244,13 +203,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { VueDraggable } from 'vue-draggable-plus'
-import { useRotationStore } from '@/stores/rotationStore';
+// import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
@@ -258,10 +217,10 @@ import { useAuthStore } from '@/stores/authStore';
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
-const router = useRouter();
+// const router = useRouter();
 const route = useRoute();
 const snackbarStore = useSnackbarStore();
-const rotationStore = useRotationStore();
+// const rotationStore = useRotationStore();
 const centerStore = useCenterStore();
 const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.userData.isAdmin);
@@ -289,7 +248,7 @@ const newTeamName = ref('');
 const selectedDate = ref(new Date());
 const selectedTeam = ref(null);
 const selectedUser = ref(null);
-const minDate = new Date().toISOString().split('T')[0];
+// const minDate = new Date().toISOString().split('T')[0];
 const editTeamNameDialog = ref(false);
 const editedTeamName = ref('');
 const selectedTeamForEdit = ref(null);
@@ -310,7 +269,7 @@ const filteredAndSortedTeams = computed(() => {
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(team => 
+    filtered = filtered.filter(team =>
       team.name.toLowerCase().includes(query)
     );
   }
@@ -333,7 +292,7 @@ const filteredAndSortedTeams = computed(() => {
 });
 
 const availableUsers = computed(() => {
-  return users.value.filter(user => 
+  return users.value.filter(user =>
     !selectedTeam.value?.members?.includes(user._id)
   );
 });
@@ -353,7 +312,7 @@ const openAddTeamDialog = () => {
 
 const addNewTeam = async () => {
   if (!newTeamName.value) return;
-  
+
   try {
     await teamStore.addTeam(centerId, newTeamName.value);
     snackbarStore.showNotification('Equipe ajoutée', 'onPrimary', "mdi-check");
@@ -367,7 +326,7 @@ const addNewTeam = async () => {
 
 const removeTeam = async (teamId) => {
   if (!confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?')) return;
-  
+
   try {
     await teamStore.deleteTeam(teamId);
     snackbarStore.showNotification('Équipe supprimée', 'onPrimary', "mdi-check");
@@ -390,7 +349,7 @@ const closeDatePickerDialog = () => {
 
 const setCycleStartDate = async () => {
   if (!selectedTeam.value) return;
-  
+
   try {
     // Créer une nouvelle date à partir de la date sélectionnée
     const date = new Date(selectedDate.value);
@@ -418,7 +377,7 @@ const openAddMemberDialog = (team) => {
 
 const addUserToTeam = async () => {
   if (!selectedTeam.value || !selectedUser.value) return;
-  
+
   try {
     await teamStore.assignUserToTeam(selectedUser.value._id, selectedTeam.value._id);
     snackbarStore.showNotification('Membre ajouté', 'onPrimary', "mdi-check");
@@ -437,7 +396,7 @@ const openEditTeamNameDialog = (team) => {
 
 const renameTeam = async () => {
   if (!selectedTeamForEdit.value || !editedTeamName.value) return;
-  
+
   try {
     await teamStore.renameTeam(selectedTeamForEdit.value._id, editedTeamName.value);
     snackbarStore.showNotification('Nom de l\'équipe mis à jour', 'onPrimary', "mdi-check");
@@ -472,48 +431,48 @@ const closeReorderDialog = async () => {
 // Fonction pour calculer la prochaine date de cycle
 const getNextCycleDate = (team) => {
   if (!team.cycleStartDate) return 'Non défini';
-  
+
   const activeRotation = centerStore.activeRotationsByCenter[centerId];
   if (!activeRotation) return null;
-  
+
   const cycleStartDate = new Date(team.cycleStartDate);
   const now = new Date();
   const rotationDays = activeRotation.days?.length;
 
-  
+
   // Calculer combien de cycles complets se sont écoulés depuis la date de début
   const daysSinceStart = Math.floor((now - cycleStartDate) / (1000 * 60 * 60 * 24));
   const completedCycles = Math.floor(daysSinceStart / rotationDays);
-  
+
   // Calculer la date du prochain cycle
   const nextCycleDate = new Date(cycleStartDate);
   nextCycleDate.setDate(cycleStartDate.getDate() + (completedCycles + 1) * rotationDays);
-  
+
   return nextCycleDate.toLocaleDateString();
 };
 
 // Fonction pour calculer le jour actuel dans le cycle
-const getCurrentDay = (team) => {
-  if (!team.cycleStartDate) return 'Non défini';
-  
-  const activeRotation = centerStore.activeRotationsByCenter[centerId];
-  if (!activeRotation || !activeRotation.days?.length) return 'Rotation non définie';
-  
-  const cycleStartDate = new Date(team.cycleStartDate);
-  const now = new Date();
-  const rotationDays = activeRotation.days.length;
-  
-  // Calculer combien de jours se sont écoulés depuis la date de début
-  const daysSinceStart = Math.floor((now - cycleStartDate) / (1000 * 60 * 60 * 24));
-  
-  // Calculer le jour actuel dans le cycle (1-indexed)
-  const currentDayInCycle = (daysSinceStart % rotationDays) + 1;
-  
-  // Trouver le nom du jour correspondant
-  const currentDayName = activeRotation.days[currentDayInCycle - 1]?.name || `Jour ${currentDayInCycle}`;
-  
-  return currentDayName;
-};
+// const getCurrentDay = (team) => {
+//   if (!team.cycleStartDate) return 'Non défini';
+
+//   const activeRotation = centerStore.activeRotationsByCenter[centerId];
+//   if (!activeRotation || !activeRotation.days?.length) return 'Rotation non définie';
+
+//   const cycleStartDate = new Date(team.cycleStartDate);
+//   const now = new Date();
+//   const rotationDays = activeRotation.days.length;
+
+//   // Calculer combien de jours se sont écoulés depuis la date de début
+//   const daysSinceStart = Math.floor((now - cycleStartDate) / (1000 * 60 * 60 * 24));
+
+//   // Calculer le jour actuel dans le cycle (1-indexed)
+//   const currentDayInCycle = (daysSinceStart % rotationDays) + 1;
+
+//   // Trouver le nom du jour correspondant
+//   const currentDayName = activeRotation.days[currentDayInCycle - 1]?.name || `Jour ${currentDayInCycle}`;
+
+//   return currentDayName;
+// };
 
 const openMembersPanel = (team) => {
   selectedTeamForMembers.value = team;
@@ -563,7 +522,7 @@ onMounted(async () => {
   border: 1px dashed rgba(var(--v-theme-onBackground), .1) !important;
 }
 
-div .sortable-drag{
+div .sortable-drag {
   background-color: blue !important;
   opacity: 0 !important;
   cursor: grabbing;

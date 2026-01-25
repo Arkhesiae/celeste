@@ -1,9 +1,20 @@
 <template>
   <v-container>
-    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4" icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/'+authStore.userData.userId)">
-          <div class="d-flex align-center justify-space-between">
-            <div>
-          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+    <v-alert
+      v-if="!activeRotation"
+      color="error"
+      variant="tonal"
+      rounded="xl"
+      class="mb-4 pa-4"
+      icon="mdi-alert-outline"
+      style="cursor: pointer;"
+      @click="router.push('/profile/'+authStore.userData.userId)"
+    >
+      <div class="d-flex align-center justify-space-between">
+        <div>
+          <v-card-title class="text-h6 font-weight-medium">
+            Aucun tour de service actif
+          </v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
               Aucun tour de service n'est actuellement actif.
@@ -13,66 +24,106 @@
             </div>
           </v-card-text>
         </div>
-        
- 
-        </div>
-        </v-alert> 
+      </div>
+    </v-alert> 
     <v-row class="mt-16">
       <!-- Section Calendrier --> 
 
-      <v-col cols="12" lg="8" class="">
-        <CalendarHeader :currentMonth="selectedMonth" :currentYear="selectedYear"
-          @update:currentMonth="handleMonthUpdate" @update:currentYear="handleYearUpdate"></CalendarHeader>
+      <v-col
+        cols="12"
+        lg="8"
+        class=""
+      >
+        <CalendarHeader
+          :current-month="selectedMonth"
+          :current-year="selectedYear"
+          @update:current-month="handleMonthUpdate"
+          @update:current-year="handleYearUpdate"
+        />
 
 
-        <CalendarDesktop v-if="!smAndDown" :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays"
-            :isSelected="isSelected" :isToday="isToday"
-           :rotationsMap="rotationsMap" @select-day="selectDay" />
+        <CalendarDesktop
+          v-if="!smAndDown"
+          :days-of-week="CALENDAR_DAYS"
+          :calendar-days="calendarDays"
+          :is-selected="isSelected"
+          :is-today="isToday"
+          :rotations-map="rotationsMap"
+          @select-day="selectDay"
+        />
 
-<!-- 
+        <!-- 
            <CalendarMobileSwipe v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
           :isWorkDay="isWorkDay" 
           :isToday="isToday" :rotationsMap="rotationsMap"
           :vacationsOfUser="vacationsOfUser" @select-day="selectDay"  /> -->
-        <CalendarMobile v-else :daysOfWeek="CALENDAR_DAYS" :calendarDays="calendarDays" :isSelected="isSelected"
+        <CalendarMobile
+          v-else
+          :days-of-week="CALENDAR_DAYS"
+          :calendar-days="calendarDays"
+          :is-selected="isSelected"
           
-          :isToday="isToday" :rotationsMap="rotationsMap"
-          @select-day="selectDay" @swipe-left="handleSwipeLeft"
-          @swipe-right="handleSwipeRight" />
-
+          :is-today="isToday"
+          :rotations-map="rotationsMap"
+          @select-day="selectDay"
+          @swipe-left="handleSwipeLeft"
+          @swipe-right="handleSwipeRight"
+        />
       </v-col>
 
       <!-- Side Panel (Desktop) -->
     
-      <CalendarSidePanel v-if="selectedDate && !mdAndDown":cols="4" :formattedDate="formattedDate"
-        :selectedDate="selectedDate"
-        @openRemplaDialog="openRemplaDialog"
-        @openDrawer="handleOpenDrawer"
-        @cancelDemand="handleCancelDemand"
-        @unacceptDemand="handleUnacceptDemand" />
+      <CalendarSidePanel
+        v-if="selectedDate && !mdAndDown"
+        :cols="4"
+        :formatted-date="formattedDate"
+        :selected-date="selectedDate"
+        @open-rempla-dialog="openRemplaDialog"
+        @open-drawer="handleOpenDrawer"
+        @cancel="handleCancel"
+        @withdraw="handleWithdraw"
+      />
  
 
       <!-- Bottom Sheet (Mobile) -->
-      <CalendarBottomSheet v-if="mdAndDown" v-model="showBottomSheet" :formattedDate="formattedDate"
-        :selectedDate="selectedDate"
-        @update:modelValue="onBottomSheetClose"
-        @openRemplaDialog="openRemplaDialog" 
-        @openDrawer="handleOpenDrawer"
-        @cancelDemand="handleCancelDemand" 
-        @unacceptDemand="handleUnacceptDemand" />
+      <CalendarBottomSheet
+        v-if="mdAndDown"
+        v-model="showBottomSheet"
+        :formatted-date="formattedDate"
+        :selected-date="selectedDate"
+        @update:model-value="onBottomSheetClose"
+        @open-rempla-dialog="openRemplaDialog" 
+        @open-drawer="handleOpenDrawer"
+        @cancel="handleCancel" 
+        @withdraw="handleWithdraw"
+      />
     </v-row>
 
-    <AddSubstitutionForm :submitting="subInProgress" :dialogMode="dialogMode" :dialogVisible="remplaDialog"
-      :date="selectedDate" :selectedShift="selectedVacation" @onClose="closeRemplaDialog" @onSubmit="handleSubmit"
-      @update:dialogModeValue="dialogMode = $event" @update:dialogVisible="remplaDialog = $event">
-    </AddSubstitutionForm>
+    <AddSubstitutionForm
+      :submitting="subInProgress"
+      :dialog-mode="dialogMode"
+      :dialog-visible="remplaDialog"
+      :date="selectedDate"
+      :selected-shift="selectedVacation"
+      @on-close="closeRemplaDialog"
+      @on-submit="handleSubmit"
+      @update:dialog-mode-value="dialogMode = $event"
+      @update:dialog-visible="remplaDialog = $event"
+    />
 
 
-
-    <v-dialog v-model="loadingVacations" persistent max-width="250">
+    <v-dialog
+      v-model="loadingVacations"
+      persistent
+      max-width="250"
+    >
       <div class="pa-6 rounded-xl bg-surfaceContainer">
         <div class="d-flex align-center ga-4">
-          <v-progress-circular size="24" indeterminate color="remplacement"></v-progress-circular>
+          <v-progress-circular
+            size="24"
+            indeterminate
+            color="remplacement"
+          />
           <span class="ml-4">Chargement...</span>
         </div>
       </div>
@@ -84,29 +135,12 @@
       :selected-date="selectedDate"
       :drawer-type="activeDrawer.type"
       @update:model-value="activeDrawer.show = false"
+      @handle-replacement="handleReplacement"
+      @handle-switch="handleSwitch"
+      @open-details="openDemand"
     />
 
-    <ConfirmationDialog
-      :isDialogVisible="showCancelConfirmationDialog"
-      :title="'Confirmer l\'annulation'"
-      :text="`Cette demande a été acceptée par ${accepterName}. Êtes-vous sûr de vouloir l'annuler ?`"
-      :icon="'mdi-alert-outline'"
-      :iconColor="'error'"
-      :confirmText="'Confirmer l\'annulation'"
-      @confirm="confirmCancelDemand"
-      @update:isDialogVisible="showCancelConfirmationDialog = $event"
-    />
-
-    <ConfirmationDialog
-      :isDialogVisible="showUnacceptConfirmationDialog"
-      :title="'Confirmer l\'annulation'"
-      :text="'Êtes-vous sûr de vouloir annuler votre acceptation de ce remplacement ?'"
-      :icon="'mdi-alert-outline'"
-      :iconColor="'error'"
-      :confirmText="'Confirmer l\'annulation'"
-      @confirm="confirmUnacceptDemand"
-      @update:isDialogVisible="showUnacceptConfirmationDialog = $event"
-    />
+    <DemandDependencies ref="demandDeps" />
   </v-container>
 </template>
 
@@ -121,13 +155,6 @@ import { useCalendar } from '@/composables/useCalendar';
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
-import CalendarHeader from "@/components/Calendar/CalendarHeader.vue";
-import CalendarDesktop from "@/components/Calendar/CalendarDesktop.vue";
-import CalendarMobile from "@/components/Calendar/CalendarMobile.vue";
-
-import AddSubstitutionForm from "@/components/Substitutions/AddSubstitutionForm.vue";
-import UnifiedDrawer from "@/components/Calendar/Drawers/UnifiedDrawer.vue";
-import ConfirmationDialog from "@/components/Dialogs/ConfirmationDialog.vue";
 
 /** Constantes */
 const CALENDAR_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -141,8 +168,9 @@ const DIALOG_MODES = {
 const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
-const userStore = useUserStore();
+// const userStore = useUserStore();
 const shiftStore = useShiftStore();
+const demandDeps = ref(null);
 const rotationStore = useRotationStore();
 
 /**  États */
@@ -152,10 +180,6 @@ const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const loadingVacations = ref(false);
 const activeDrawer = ref({ show: false, type: 'substitutions' });
-const showCancelConfirmationDialog = ref(false);
-const showUnacceptConfirmationDialog = ref(false);
-const substitutionToCancel = ref(null);
-const substitutionToUnaccept = ref(null);
 const subInProgress = ref(false);
 
 const activeRotation = computed(() => {
@@ -193,11 +217,11 @@ const selectedVacation = computed(() => {
   return {shift : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.shift, teamObject : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.teamObject};
 });
 
-const accepterName = computed(() => {
-  if (!substitutionToCancel.value?.accepterId) return '';
-  const accepter = userStore.users.find(u => u._id === substitutionToCancel.value.accepterId);
-  return accepter ? `${accepter.name} ${accepter.lastName}` : '';
-});
+// const accepterName = computed(() => {
+//   if (!substitutionToCancel.value?.accepterId) return '';
+//   const accepter = userStore.users.find(u => u._id === substitutionToCancel.value.accepterId);
+//   return accepter ? `${accepter.name} ${accepter.lastName}` : '';
+// });
 
 const isSelected = (date) => selectedDate.value === date.toISOString();
 
@@ -305,49 +329,25 @@ const handleSubmit = async (demand) => {
     }
   };
 
-const handleCancelDemand = async (substitutionId) => {
 
-  try {
-    const substitution = substitutionStore.substitutions.find(s => s._id === substitutionId);
-    if (substitution?.accepterId) {
-      substitutionToCancel.value = substitution;
-      showCancelConfirmationDialog.value = true;
-      return;
-    }
-    
-    await substitutionStore.cancelDemand(substitutionId);
-    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check');
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'annulation de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-  }
+const handleCancel = (substitutionId) => {
+  demandDeps.value.handleCancel(substitutionId);
 };
 
-const confirmCancelDemand = async () => {
-  try {
-    await substitutionStore.cancelDemand(substitutionToCancel.value._id);
-    snackbarStore.showNotification('Demande annulée', 'onPrimary', 'mdi-check');
-    showCancelConfirmationDialog.value = false;
-    substitutionToCancel.value = null;
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'annulation de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-  }
+const handleWithdraw = (substitutionId) => {
+  demandDeps.value.handleWithdraw(substitutionId);
 };
 
-const handleUnacceptDemand = (substitutionId) => {
-  substitutionToUnaccept.value = substitutionId;
-  showUnacceptConfirmationDialog.value = true;
+const handleReplacement = (demand) => {
+  demandDeps.value.handleReplacement(demand);
 };
 
-const confirmUnacceptDemand = async () => {
-  try {
-    await substitutionStore.unacceptDemand(substitutionToUnaccept.value);
-    snackbarStore.showNotification('Acceptation annulée', 'onPrimary', 'mdi-check');
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors de l\'annulation de l\'acceptation', 'onError', 'mdi-alert-circle-outline');
-  } finally {
-    showUnacceptConfirmationDialog.value = false;
-    substitutionToUnaccept.value = null;
-  }
+const handleSwitch = (demand) => {
+  demandDeps.value.handleSwitch(demand);
+};
+
+const openDemand = (demand) => {
+  demandDeps.value.openDemandDetails(demand);
 };
 
 // Watchers

@@ -1,24 +1,24 @@
 <template>
   <div class="transition-wrapper d-flex">
+    <AppBar
+:show-buttons="inScreen" :is-mobile-drawer-open="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer"
+      @toggle-drawer="toggleDrawer" />
 
+    <DesktopNavigationDrawer2 v-model:nav-expanded="navExpanded" />
 
-    <AppBar :showButtons="inScreen" :isMobileDrawerOpen="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer" @toggle-drawer="toggleDrawer"></AppBar>
-
-    <DesktopNavigationDrawer2 v-model:navExpanded="navExpanded" />
-
-    <MobileNavigationDrawer class="user-safe-area" v-model:modelValue="mobileDrawer" />
+    <MobileNavigationDrawer v-model:model-value="mobileDrawer" class="user-safe-area" />
 
     <LoginButtons v-if="isDev" />
 
 
 
 
-      <v-main  position="relative" >
-        <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
-        
-          <router-view   v-slot="{ Component, route }">
-            <transition :name="'fade-one' " mode="out-in">
-            <!-- <transition 
+    <v-main>
+      <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
+
+      <router-view v-slot="{ Component, route }">
+        <transition :name="'fade-one'" mode="out-in">
+          <!-- <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
             @enter="onEnter"
@@ -27,25 +27,19 @@
             @after-leave="onAfterLeave"
             :name="route.meta.transition || ''"
             > -->
-          
-                <component :is="Component"   />
-      
-          </transition>
-        </router-view>
-       
-    
 
-      </v-main>
- 
+          <component :is="Component" :key="route.fullPath" />
+        </transition>
+      </router-view>
+    </v-main>
+
     <BottomNavigation />
-    <AdditionnalSnackbar /> 
+    <AdditionnalSnackbar />
     <GlobalSnackbar />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useInitializationStore } from '@/stores/initializationStore';
 import AppBar from './components/AppBar.vue';
 import DesktopNavigationDrawer2 from './components/DesktopNavigationDrawer2.vue';
 import MobileNavigationDrawer from './components/MobileNavigationDrawer.vue';
@@ -58,14 +52,14 @@ import AdditionnalSnackbar from './components/AdditionnalSnackbar.vue';
 
 
 const isDev = ref(import.meta.env.DEV);
-const initializationStore = useInitializationStore();
+// const initializationStore = useInitializationStore();
 
 // Références
 const navExpanded = ref(true);
 const mobileDrawer = ref(false);
 const inScreen = ref(false);
-const theme = ref(false);
-const showLoadingScreen = computed(() => initializationStore.isLoading);
+// const theme = ref(false);
+// const showLoadingScreen = computed(() => initializationStore.isLoading);
 
 // Fonctions
 const toggleMobileDrawer = () => {
@@ -77,87 +71,87 @@ const toggleDrawer = () => {
 };
 
 // Fonction utilitaire pour appliquer les marges correctement
-const applyMargins = (el) => {
-  const vMain = el.closest('.v-main');
-  const vMainStyle = vMain ? window.getComputedStyle(vMain) : null;
-  const paddingTop = vMainStyle ? parseFloat(vMainStyle.paddingTop) : 0;
-  const paddingLeft = vMainStyle ? parseFloat(vMainStyle.paddingLeft) : 0;
-  const paddingRight = vMainStyle ? parseFloat(vMainStyle.paddingRight) : 0;
-  const paddingBottom = vMainStyle ? parseFloat(vMainStyle.paddingBottom) : 0;
+// const applyMargins = (el) => {
+//   const vMain = el.closest('.v-main');
+//   const vMainStyle = vMain ? window.getComputedStyle(vMain) : null;
+//   const paddingTop = vMainStyle ? parseFloat(vMainStyle.paddingTop) : 0;
+//   const paddingLeft = vMainStyle ? parseFloat(vMainStyle.paddingLeft) : 0;
+//   const paddingRight = vMainStyle ? parseFloat(vMainStyle.paddingRight) : 0;
+//   const paddingBottom = vMainStyle ? parseFloat(vMainStyle.paddingBottom) : 0;
 
-  el.style.position = 'absolute';
-  el.style.top = `${paddingTop}px`;
-  el.style.left = `${paddingLeft}px`;
-  el.style.right = `${paddingRight}px`;
+//   el.style.position = 'absolute';
+//   el.style.top = `${paddingTop}px`;
+//   el.style.left = `${paddingLeft}px`;
+//   el.style.right = `${paddingRight}px`;
 
-  el.style.width = `calc(100% - ${paddingLeft + paddingRight}px)`;
+//   el.style.width = `calc(100% - ${paddingLeft + paddingRight}px)`;
 
 
-  return { paddingTop, paddingLeft, paddingRight, paddingBottom };
-};
+//   return { paddingTop, paddingLeft, paddingRight, paddingBottom };
+// };
 
-function fixPosition(el) {
-  const rect = el.getBoundingClientRect()
+// function fixPosition (el) {
+//   const rect = el.getBoundingClientRect()
 
-  // Lock dimensions & position
-  el.style.position = 'fixed'
-  el.style.top = rect.top + 'px'
-  el.style.left = rect.left + 'px'
-  el.style.width = rect.width + 'px'
-  el.style.height = rect.height + 'px'
-  el.style.margin = '0' // évite que le margin disparaisse
-}
+//   // Lock dimensions & position
+//   el.style.position = 'fixed'
+//   el.style.top = rect.top + 'px'
+//   el.style.left = rect.left + 'px'
+//   el.style.width = rect.width + 'px'
+//   el.style.height = rect.height + 'px'
+//   el.style.margin = '0' // évite que le margin disparaisse
+// }
 
-function resetPosition(el) {
-  el.removeAttribute('style') // nettoyage complet
-}
+// function resetPosition (el) {
+//   el.removeAttribute('style') // nettoyage complet
+// }
 
-const beforeEnter = (el) => {
-  // Important: utiliser setProperty pour "!important"
- 
-  el.style.position = 'fixed'
+// const beforeEnter = (el) => {
+//   // Important: utiliser setProperty pour "!important"
 
-  // récupérer la variable layout-left
-  const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
-    .getPropertyValue('--v-layout-left')
+//   el.style.position = 'fixed'
 
-  el.style.width = `calc(100% - ${vLayoutLeftVar})`
-  el.style.left = '100%'
-  el.style.transition = 'left .5s ease-out, opacity .5s ease-out'
-}
+//   // récupérer la variable layout-left
+//   const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
+//     .getPropertyValue('--v-layout-left')
 
-const onEnter = (el, done) => {
- 
+//   el.style.width = `calc(100% - ${vLayoutLeftVar})`
+//   el.style.left = '100%'
+//   el.style.transition = 'left .5s ease-out, opacity .5s ease-out'
+// }
 
-  const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
-    .getPropertyValue('--v-layout-left')
+// const onEnter = (el, done) => {
 
-  // slide depuis la droite jusqu’à la position finale
-  el.style.left = vLayoutLeftVar.trim()
 
-  setTimeout(done, 500) // même durée que la transition
-}
+//   const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
+//     .getPropertyValue('--v-layout-left')
 
-const onAfterEnter = (el) => {
-  resetPosition(el) // repasse en flow normal
-}
+//   // slide depuis la droite jusqu’à la position finale
+//   el.style.left = vLayoutLeftVar.trim()
 
-const beforeLeave = (el) => {
- 
-  fixPosition(el)
-}
+//   setTimeout(done, 500) // même durée que la transition
+// }
 
-const onLeave = (el, done) => {
+// const onAfterEnter = (el) => {
+//   resetPosition(el) // repasse en flow normal
+// }
 
-  el.style.transition = 'left .5s ease-out, opacity .5s ease-out'
-  el.style.left = '-40%'
+// const beforeLeave = (el) => {
 
-  setTimeout(done, 500) // aligné avec la durée CSS
-}
+//   fixPosition(el)
+// }
 
-const onAfterLeave = (el) => {
-  resetPosition(el)
-}
+// const onLeave = (el, done) => {
+
+//   el.style.transition = 'left .5s ease-out, opacity .5s ease-out'
+//   el.style.left = '-40%'
+
+//   setTimeout(done, 500) // aligné avec la durée CSS
+// }
+
+// const onAfterLeave = (el) => {
+//   resetPosition(el)
+// }
 
 
 </script>
@@ -181,6 +175,7 @@ const onAfterLeave = (el) => {
 }
 
 .v-main {
+  overflow: visible !important;
   position: relative !important;
   width: 100% !important;
   padding-top: calc(var(--safe-area-top) + var(--v-layout-top)) !important;
@@ -251,16 +246,16 @@ a {
   width: 100% !important;
   height: 100% !important;
   background-color: rgb(var(--v-theme-background));
- 
+
 }
 
 .wrapper {
   position: relative;
   width: 100%;
   height: 100%;
-  background-color: rgba(var(--v-theme-background),1) !important;
-  
-  
+  background-color: rgba(var(--v-theme-background), 1) !important;
+
+
 }
 
 
@@ -273,6 +268,4 @@ a {
 .fade-one-leave-to {
   opacity: 0;
 }
-
-
 </style>

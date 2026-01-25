@@ -4,11 +4,11 @@
     rounded="xl"
   >
     <v-list-item
+      v-for="user in members"
+      :key="user._id"
       color="primary"
       rounded="lg"
       bg-color="onBackground"
-      v-for="user in members"
-      :key="user._id"
     >
       <v-list-item-title>
         {{ user.name }} {{ user.lastName.toUpperCase() }}

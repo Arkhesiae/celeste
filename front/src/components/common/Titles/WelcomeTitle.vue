@@ -1,40 +1,57 @@
 <template>
-  <div class="position-relative mx-n4 d-flex flex-column" :style="{ height: `${headerHeight}px` }">
-    <div ref="placeholder" :style="{ height: `${headerHeight}px`, width: '100%' }" class="position-absolute " />
-    <div ref="titleRef" :class="['main-title px-4  py-16']" :style=headerStyle class="">
+  <div
+    class="position-relative mx-n4 d-flex flex-column"
+    :style="{ height: `${headerHeight}px` }"
+  >
+    <div
+      ref="placeholder"
+      :style="{ height: `${headerHeight}px`, width: '100%' }"
+      class="position-absolute "
+    />
+    <div
+      ref="titleRef"
+      :class="['main-title px-4  py-16']"
+      :style="headerStyle"
+      class=""
+    >
       <div class="d-flex justify-space-between align-center mb-2">
-        <div class="d-flex flex-column" >
+        <div class="d-flex flex-column">
           <div class="d-flex align-center">
-            <span :style="{ fontSize: titleFontSize + 'px !important' }"
-              class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
-            <span :style="{ fontSize: titleFontSize + 'px !important' }"
-              class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold">{{ userName }}</span>
+            <span
+              :style="{ fontSize: titleFontSize + 'px !important' }"
+              class="text-h4 d-inline-block font-weight-medium font-weight-bold"
+            >Bienvenue </span>
+            <span
+              :style="{ fontSize: titleFontSize + 'px !important' }"
+              class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold"
+            >{{ userName }}</span>
           </div>
-          <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50"> Tableau de bord </span>
+          <span
+            :style="{ fontSize: subtitleFontSize + 'px !important' }"
+            style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;"
+            class="opacity-50"
+          > Tableau de bord </span>
         </div>
 
-        <div class="flex-shrink-0" ref="actionsRef">
+        <div
+          ref="actionsRef"
+          class="flex-shrink-0"
+        >
           <slot name="actions" />
         </div>
-    
       </div>
-
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, reactive, nextTick, watch, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 
 const { smAndDown } = useDisplay()
-const { mdAndUp } = useDisplay()
-const router = useRouter()
 
-const props = defineProps({
+
+defineProps({
   userName: {
     type: String,
     required: true,
@@ -115,16 +132,16 @@ onMounted(() => {
     entries => {
       entries.forEach(entry => {  
         console.log(entry.intersectionRatio)
-      let titlePadding = 60
-      let initialTop = safeMarginTop.value
-      let threshold = (initialTop - titlePadding) * -1
-      let threshold2 = (initialTop - headerHeight.value) * -1
+      const titlePadding = 60
+      const initialTop = safeMarginTop.value
+      const threshold = (initialTop - titlePadding) * -1
+      const threshold2 = (initialTop - headerHeight.value) * -1
       
-      let maxScrolledValue = 1
-      let minScrolledValue = 0.6
+      const maxScrolledValue = 1
+      const minScrolledValue = 0.6
 
-      let A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
-      let B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
+      const A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
+      const B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
 
       scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top)*A + B))
       isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0
@@ -198,7 +215,7 @@ const headerStyle = reactive({
   fill: transparent;
   color: #000;
   font-weight: 900 !important;
-  background: linear-gradient(to right, rgb(var(--v-theme-remplacement)) 20%, #a779cd 40%, rgb(var(--v-theme-permutation)) 60%, #dc8474 80%);
+  background: linear-gradient(to right, rgb(var(--v-theme-primary)) 20%,  rgb(var(--v-theme-background))80%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;

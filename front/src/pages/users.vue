@@ -7,7 +7,7 @@ defineOptions({
 </script>
 
 <template>
-      <UserList></UserList>
+  <UserList />
 </template>
 
 <style scoped>

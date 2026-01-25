@@ -7,6 +7,15 @@ dotenv.config();
 
 const router = express.Router();
 
+// Route pour rafraîchir le token
+router.post('/refresh', authController.refreshAccessToken);
+
+// Route pour se déconnecter
+router.post('/logout', authController.logout);
+
+// Route pour se connecter
+router.post('/login', authController.loginUser);
+
 // Route pour demander une réinitialisation de mot de passe
 router.post('/reset-password-request', authController.requestPasswordReset);
 

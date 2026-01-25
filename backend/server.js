@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { renderMail } from './src/mail/mailRenderer.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -22,14 +23,9 @@ dotenv.config({
     : '.env.development',
 });
 
-
-
 // ─── Création de l'application Express ────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-
-
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
 import './cron/processTransactions.js';
@@ -37,6 +33,9 @@ import './cron/processDemands.js';
 
 // ─── Initialisation de l'admin ────────────────────────────────────────────────
 import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
+
+// ─── Initialisation des règles ────────────────────────────────────────────────
+import { initializeRules } from './services/rules/initializeRules.js';
 
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
@@ -62,6 +61,7 @@ app.use(cors({
 // ─── Middlewares Express ──────────────────────────────────────────────────────
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(cookieParser());
 
 // ─── Fichiers statiques ───────────────────────────────────────────────────────
 app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
@@ -70,12 +70,10 @@ app.get("/preview/:template", (req, res) => {
   res.send(html);
 });
 
-
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 // ─── Routes API ───────────────────────────────────────────────────────────────
 app.use('/api', mainRouter);
-
 
 // ─── Route API par défaut ─────────────────────────────────────────────────────
 app.get('/api', (req, res) => {
@@ -89,10 +87,9 @@ app.get(/^\/(?!api).*/, (req, res) => {
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
 mongoose.connect(process.env.MONGO_URI)
-
   .then(async () => {
     console.log('✅ MongoDB connecté via Docker');
-
+    await initializeRules();  
     await createAdmin(); // Créer l'admin si nécessaire
     await createLocalAdmin(); // Créer les admins locaux si nécessaire
     

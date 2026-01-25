@@ -1,31 +1,44 @@
-  <template>
+<template>
   <v-container class="fill-height ">
-    <v-row >
-      <v-col cols="12" >
-        <v-card flat class="pa-6" color="transparent">         
-          <span class="text-h7 mb-2 font-weight-bold">Chargement en cours</span>
+    <v-row>
+      <v-col
+        cols="12"
+        class="d-flex justify-center align-center"
+      >
+        <div
+          class="d-flex justify-center align-center flex-column pa-6 "
+          style="max-width: 600px;"
+        >
+          <img
+            src="@/assets/Orly1.png"
+            class="img"
+          >
+          <div class="progress-container">
+            <!-- <span class="text-h7 mb-2 font-weight-bold">Chargement en cours</span>
           <p class="text-body-2 opacity-50 text-medium-emphasis mb-4">
             Veuillez patienter pendant le chargement de vos données...
-          </p>
+          </p> -->
 
-         
-          <span class="text-caption text-medium-emphasis mb-4">{{ progressPercentage }}%</span>
 
-          <v-progress-linear
-            :model-value="progressPercentage"
-            color="remplacement"
-            height="4"
-            class="mt-4 rounded-xl"
-          ></v-progress-linear>
-          <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded }}</span>
-        </v-card>
+            <span class="text-caption text-medium-emphasis mb-4">{{ progressPercentage }}%</span>
+
+            <v-progress-linear
+              indeterminate
+              :model-value="progressPercentage"
+              color="remplacement"
+              height="4"
+              class="mt-4 rounded-xl "
+            />
+            <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded || 'Chargement en cours' }}</span>
+          </div>
+        </div>
       </v-col>
     </v-row>
   </v-container>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+
 import { useInitializationStore } from '@/stores/initializationStore';
 
 const initializationStore = useInitializationStore();
@@ -49,11 +62,43 @@ const progressPercentage = computed(() => {
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
   }
+
   100% {
     transform: scale(1);
   }
+}
+
+
+.img-desktop {
+  z-index: -2;
+  width: 70%;
+  height: 100%;
+  object-fit: cover;
+  left: 25px;
+  top: 0px;
+  position: absolute;
+}
+
+.img {
+  max-width: 330px;
+  width: 100%;
+
+}
+
+.img-mobile-xs {
+  width: 300px;
+  object-fit: cover;
+  position: absolute;
+  right: -100px;
+}
+
+.progress-container {
+  width: 100%;
+  max-width: 200px;
+
 }
 </style> 

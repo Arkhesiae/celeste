@@ -2,7 +2,9 @@
  * Service pour gérer les appels API liés à l'authentification.
  * @module authService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { API_URL } from '../config/api';
+import { apiFetch } from '../config/api';
+import { handleResponse } from '../config/api';
 
 export const authService = {
   /**
@@ -12,15 +14,13 @@ export const authService = {
    * @returns {Promise<Object>} Les informations d'authentification.
    */
   async login(credentials) {
-    console.log(credentials);
-    const response = await fetch(`${API_URL}/login`, {
+    const response = await apiFetch(`/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(credentials)
+      credentials: 'include', // Important pour recevoir les cookies HTTP-only
+      body: JSON.stringify(credentials),
+      allowRetry: false
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -28,29 +28,26 @@ export const authService = {
    * @returns {Promise<void>}
    */
   async logout() {
-    const response = await fetch(`${API_URL}/auth/logout`, {
+    const response = await apiFetch(`/auth/logout`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      credentials: 'include', // Important pour envoyer les cookies
+      allowRetry: false
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
    * Rafraîchit le token d'authentification.
-   * @param {string} refreshToken - Le token de rafraîchissement.
+   * Le refresh token est automatiquement envoyé via les cookies HTTP-only.
    * @returns {Promise<Object>} Les nouveaux tokens.
    */
-  async refreshToken(refreshToken) {
-    const response = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ refreshToken })
-    });
-    return handleResponse(response);
+  async refreshToken() {
+      const response = await apiFetch(`/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include', // Important pour envoyer les cookies
+        allowRetry: false
+      });
+      return response;
   },
 
   /**
@@ -58,12 +55,12 @@ export const authService = {
    * @returns {Promise<boolean>} True si l'utilisateur est authentifié.
    */
   async checkAuth() {
-    const response = await fetch(`${API_URL}/auth/check`, {
+    const response = await apiFetch(`/auth/check`, {
       headers: {
         'Content-Type': 'application/json'
       }
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -72,14 +69,11 @@ export const authService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async requestPasswordReset(email) {
-    const response = await fetch(`${API_URL}/auth/reset-password-request`, {
+    const response = await apiFetch(`/auth/reset-password-request`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ email })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -89,14 +83,11 @@ export const authService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async resetPassword(token, newPassword) {
-    const response = await fetch(`${API_URL}/auth/reset-password`, {
+    const response = await apiFetch(`/auth/reset-password`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ token, newPassword })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -105,12 +96,11 @@ export const authService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async verifyCurrentPassword(currentPassword) {
-    const response = await fetch(`${API_URL}/auth/verify-password`, {
+    const response = await apiFetch(`/auth/verify-password`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ currentPassword })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -119,11 +109,10 @@ export const authService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async updatePassword(newPassword) {
-    const response = await fetch(`${API_URL}/auth/update-password`, {
+    const response = await apiFetch(`/auth/update-password`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ newPassword })
     });
-    return handleResponse(response);
+    return response;
   }
 };

@@ -1,11 +1,11 @@
 <template>
   <v-switch 
     :model-value="modelValue" 
-    @update:model-value="$emit('update:modelValue', $event)"
-    inset 
+    inset
     hide-details 
-    false-icon="mdi-weather-sunny"
+    false-icon="mdi-weather-sunny" 
     true-icon="mdi-weather-night"
+    @update:model-value="$emit('update:modelValue', $event)"
   />
 </template>
 

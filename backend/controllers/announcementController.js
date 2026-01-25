@@ -6,15 +6,16 @@ import Center from '../models/Center.js';
 // /**
 //  * Récupère la liste des templates disponibles
 //  */
+
 // const getTemplates = async (req, res) => {
 //   try {
 //     const templates = getAvailableTemplates();
 //     res.json({ success: true, templates });
 //   } catch (error) {
 //     console.error('Erreur lors de la récupération des templates:', error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: 'Erreur lors de la récupération des templates' 
+//     res.status(500).json({
+//       success: false,
+//       message: 'Erreur lors de la récupération des templates'
 //     });
 //   }
 // };
@@ -26,6 +27,7 @@ import Center from '../models/Center.js';
 //   try {
 //     const { templateType } = req.params;
 //     const data = req.body;
+
 
 //     // Vérifier que le template existe
 //     if (!EMAIL_TEMPLATES[templateType]) {

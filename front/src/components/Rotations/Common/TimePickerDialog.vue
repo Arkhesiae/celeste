@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+;
 
 const props = defineProps({
   modelValue: {
@@ -50,51 +50,31 @@ const saveTimePicker = () => {
               Sélectionnez l'heure pour cette vacation
             </div>
           </div>
-          <v-btn icon="mdi-close" variant="text" @click="closeTimePicker"></v-btn>
+          <v-btn icon="mdi-close" variant="text" @click="closeTimePicker" />
         </div>
       </v-card-item>
 
       <v-card-text class="d-flex justify-center pa-0 pt-0">
         <v-time-picker
-          v-model="localTime"
-          color="primary"
-         
-          bg-color="transparent"
-          format="24hr"
-          scrollable
-          title=""
-          locale="fr"
-          rounded="xl"
-          :allowed-minutes="[0, 30, 15, 45]"
-          elevation="0"
-          width="100%"
-        ></v-time-picker>
+v-model="localTime" color="primary" bg-color="transparent" format="24hr" scrollable title=""
+          locale="fr" rounded="xl" :allowed-minutes="[0, 30, 15, 45]" elevation="0" width="100%" />
       </v-card-text>
 
       <v-card-actions class="pa-6">
-       
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          class="ml-4"
-          @click="saveTimePicker"
-          :slim="true"
-          size="large"
-        >
+color="primary" variant="text" rounded="xl" class="ml-4" :slim="true" size="large"
+          @click="saveTimePicker">
           Enregistrer
         </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
-</template> 
+</template>
 
 <style scoped>
 :deep(.v-time-picker-clock) {
-  background: rgba(var(--v-theme-background), 1  ) !important;
+  background: rgba(var(--v-theme-background), 1) !important;
   border: 1px solid rgba(var(--v-theme-surface-variant), 0.05);
 }
-
-
 </style>

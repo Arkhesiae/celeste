@@ -1,19 +1,44 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainerLow">
+  <v-card
+    rounded="xl"
+    elevation="0"
+    class="smooth-shadow pa-6"
+    color="surfaceContainerLow"
+  >
     <div class="d-flex align-center justify-space-between mb-4"> 
-    <span class="text-body-2 font-weight-medium mb-4" style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;">
-      <v-icon icon="mdi-cog" color="primary" class="mr-2" size="16" />  
-      Coûts Fixes
-    </span>
+      <span
+        class="text-body-2 font-weight-medium mb-4"
+        style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;"
+      >
+        <v-icon
+          icon="mdi-cog"
+          color="primary"
+          class="mr-2"
+          size="16"
+        />  
+        Coûts Fixes
+      </span>
     </div>
     <v-list class="bg-transparent">
-      <v-list-item v-for="(cout, index) in fixedCosts" :key="index" class="mb-2 rounded-lg">
-        <template v-slot:prepend>
-          <v-icon :icon="cout.icon" :color="cout.color" size="20" />
+      <v-list-item
+        v-for="(cout, index) in fixedCosts"
+        :key="index"
+        class="mb-2 rounded-lg"
+      >
+        <template #prepend>
+          <v-icon
+            :icon="cout.icon"
+            :color="cout.color"
+            size="20"
+          />
         </template>
-        <v-list-item-title class="font-weight-medium">{{ cout.nom }}</v-list-item-title>
-        <v-list-item-subtitle class="mt-1">{{ cout.description }}</v-list-item-subtitle>
-        <template v-slot:append>
+        <v-list-item-title class="font-weight-medium">
+          {{ cout.nom }}
+        </v-list-item-title>
+        <v-list-item-subtitle class="mt-1">
+          {{ cout.description }}
+        </v-list-item-subtitle>
+        <template #append>
           <span class="font-weight-bold">{{ cout.cout }}€</span>
         </template>
       </v-list-item>

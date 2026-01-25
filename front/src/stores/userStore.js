@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+;
 import { userService } from '@/services/userService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -63,6 +63,7 @@ export const useUserStore = defineStore('user', () => {
     try {
       loading.value = true;
       error.value = null;
+      console.log(centerId);
       users.value = await userService.fetchUsersByCenter(centerId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des utilisateurs du centre';
@@ -99,7 +100,7 @@ export const useUserStore = defineStore('user', () => {
       error.value = null;
       await userService.assignCenter(userId, centerId);
       await fetchUsers();
-    
+
     } catch (err) {
       error.value = err.message || 'Erreur lors de l\'attribution du centre';
       throw err;

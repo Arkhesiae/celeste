@@ -26,12 +26,13 @@
 
 
 path {
-    fill: rgb(var(--v-theme-remplacement));
+    fill: rgb(var(--v-theme-primary));
+   
 }
 
 path.path2 {
-
-    fill: rgb(var(--v-theme-permutation));
+   opacity: 1;
+    fill: rgb(var(--v-theme-onBackground));
 }
 
 

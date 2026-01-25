@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+
 import { centerService } from '@/services/centerService';
 import { teamService } from '@/services/teamService';
 
@@ -233,7 +233,7 @@ export const useCenterStore = defineStore('center', () => {
     usersCountByCenter,
     adminsByCenter,
     activeRotationsByCenter,
- 
+
     // Actions
     fetchCenters,
     fetchUsersByCenter,

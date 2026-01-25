@@ -5,20 +5,29 @@
       v-if="variant === 'button'"
       color="surfaceContainerHigh" 
       variant="flat" 
-      @click="copyToClipboard" 
-      rounded="xl"
+      rounded="xl" 
       :height="height"
       :size="size"
+      @click="copyToClipboard"
     >
       <div class="d-flex align-center">
-        <v-icon size="small" class="mr-1">mdi-email-outline</v-icon>
+        <v-icon
+          size="small"
+          class="mr-1"
+        >
+          mdi-email-outline
+        </v-icon>
         {{ email }}
-        <v-icon size="small" class="ml-1">mdi-content-copy</v-icon>
+        <v-icon
+          size="small"
+          class="ml-1"
+        >
+          mdi-content-copy
+        </v-icon>
       </div>
     </v-btn>
 
     <!-- Version span pour TicketList -->
-   
   </div>
 </template>
 

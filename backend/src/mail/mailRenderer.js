@@ -27,6 +27,18 @@ Handlebars.registerHelper('formatText', function (text) {
   )
 })
 
+Handlebars.registerHelper('formatText', function (text) {
+  if (!text) return ''
+  return new Handlebars.SafeString(
+    text
+      .replace(/&/g, '&') // escape &
+      .replace(/</g, '<') // escape <
+      .replace(/>/g, '>') // escape >
+      .replace(/\n/g, '<br>') // newlines to <br>
+      .replace(/\t/g, '    ') // tabs
+  )
+})
+
 /**
  * Render a full email template.
  * @param {string} templateName - Name of the template file (without .hbs)

@@ -82,7 +82,7 @@ const getMailList = async (testMode, isGlobal, centerId) => {
   try {
     let userEmails;
     if (testMode) {
-      return ["nicolas.m.gardet@gmail.com", "cresson@netc.fr"];
+      return ["nicolas.m.gardet@gmail.com", "cress1@atcat.fr"];
     }
 
     if (isGlobal) {

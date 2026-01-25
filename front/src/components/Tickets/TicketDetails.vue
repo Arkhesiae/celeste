@@ -137,7 +137,7 @@
           Ticket
         </div>
         <div
-          class="bg-surfaceContainer pa-4 rounded-xl"
+          class="bg-surfaceContainer pa-4 rounded-xl pre"
           style="font-size: 0.75rem !important; line-height: 1.2 !important;"
         >
           {{ ticket.content }}
@@ -169,12 +169,7 @@
                   {{ formatDate(reply.createdAt) }}
                 </span>
               </div>
-              <div
-                class="text-body-2"
-                style="font-size: 0.75rem !important; line-height: 1.2 !important;"
-              >
-                {{ reply.content }}
-              </div>
+              <div class="text-body-2 pre" style="font-size: 0.75rem !important; line-height: 1.2 !important;">{{ reply.content }}</div>
             </div>
           </div>
         </div>
@@ -342,5 +337,11 @@ const openReplyDialog = () => {
   }
   
  
+}
+
+.pre {
+  white-space: pre-line;
+  word-wrap: break-word;
+  font-family: inherit;
 }
 </style>

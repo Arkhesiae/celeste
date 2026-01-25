@@ -81,6 +81,11 @@ color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl"
               {{ emailStore.getTemplateLabel(item.templateType) }}
             </v-chip>
           </template>
+          <template #item.message="{ item }">
+            <div class="text-block">
+              {{ item.message }}
+            </div>
+          </template>
           <template #item.sentBy="{ item }">
             {{ formatSender(item.sentBy) }}
           </template>
@@ -356,6 +361,7 @@ onMounted(async () => {
 });
 
 
+
 </script>
 
 <style scoped>
@@ -383,4 +389,9 @@ onMounted(async () => {
   padding: 8px;
   text-align: left;
 }
+
+.text-block {
+    white-space: pre-line;
+}
+
 </style>

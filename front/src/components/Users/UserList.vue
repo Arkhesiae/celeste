@@ -1,10 +1,26 @@
 <template>
   <v-container>
     <v-app-bar :elevation="2" rounded color="transparent">
+      <template v-slot:prepend>
+          <v-btn
+          icon="mdi-arrow-left"
+          @click="showSearchBar = !showSearchBar"
+        ></v-btn>
+      </template>
       <v-app-bar-title class="text-h5 font-weight-bold"
         >Liste des utilisateurs</v-app-bar-title
       >
-
+      <v-text-field
+      v-if="showSearchBar"
+        v-model="searchQuery"
+        density="compact"
+        label="Rechercher un utilisateur"
+        variant="solo-filled"
+        flat
+        hide-details
+        rounded="xl"
+        class="mx-3"
+      ></v-text-field>
       <template v-slot:append>
         <v-btn
           icon="mdi-magnify"
@@ -34,16 +50,7 @@
         min-width="200px"
         max-width="300px"
         @update:model-value="handleCenterChange"
-      /><v-text-field
-        v-model="searchQuery"
-        density="compact"
-        label="Rechercher un utilisateur"
-        variant="solo-filled"
-        flat
-        hide-details
-        rounded="xl"
-        class="mx-3"
-      ></v-text-field>
+      />
     </v-container>
     <v-container
       v-if="showSearchBar"

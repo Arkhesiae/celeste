@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
+
 
 export const useInitializationStore = defineStore('initialization', () => {
   const isLoading = ref(false);
@@ -14,10 +14,24 @@ export const useInitializationStore = defineStore('initialization', () => {
     tickets: false
   });
 
+  const isAppReady = ref(false);
   const lastLoaded = ref('');
+  const pendingRoute = ref('');
 
-  function setLoading(value) {
+  function setLoading (value) {
     isLoading.value = value;
+  }
+
+  function setAppReady (value) {
+    isAppReady.value = value;
+  }
+
+  function getPendingRoute () {
+    return pendingRoute.value;
+  }
+
+  function setPendingRoute (route) {
+    pendingRoute.value = route;
   }
 
   watch(isLoading, (newVal) => {
@@ -35,13 +49,17 @@ export const useInitializationStore = defineStore('initialization', () => {
     }
   });
 
-  function updateInitializationState(key, value) {
+  function updateInitializationState (key, value) {
     initializationState.value[key] = value;
     lastLoaded.value = key;
   }
 
   return {
     isLoading,
+    isAppReady,
+    getPendingRoute,
+    setPendingRoute,
+    setAppReady,
     initializationState,
     setLoading,
     updateInitializationState,

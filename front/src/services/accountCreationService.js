@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés à la création de compte.
  * @module accountCreationService
  */
-import { API_URL, handleResponse } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const accountCreationService = {
   /**
@@ -11,14 +11,11 @@ export const accountCreationService = {
    * @returns {Promise<Object>} L'utilisateur créé.
    */
   async createAccount(userData) {
-    const response = await fetch(`${API_URL}/users/create`, {
+    const response = await apiFetch(`/users/create`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify(userData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -27,14 +24,11 @@ export const accountCreationService = {
    * @returns {Promise<boolean>} True si l'email est disponible.
    */
   async checkEmailAvailability(email) {
-    const response = await fetch(`${API_URL}/users/check-email`, {
+    const response = await apiFetch(`/users/check-email`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ email })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -43,14 +37,11 @@ export const accountCreationService = {
    * @returns {Promise<Object>} Le compte activé.
    */
   async activateAccount(token) {
-    const response = await fetch(`${API_URL}/auth/activate`, {
+    const response = await apiFetch(`/auth/activate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
       body: JSON.stringify({ token })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -59,12 +50,9 @@ export const accountCreationService = {
    * @returns {Promise<Object>} Les informations de l'utilisateur.
    */
   async getUserInfo(email) {
-    const response = await fetch(`${API_URL}/users/info/${encodeURIComponent(email)}`, {
+    const response = await apiFetch(`/users/info/${encodeURIComponent(email)}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
     });
-    return handleResponse(response);
+    return response;
   }
 };

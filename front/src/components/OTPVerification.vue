@@ -1,8 +1,13 @@
 <template>
   <div class="otp-verification">
     <div class="text-center">
-      <v-card-title class="pl-0 text-h5">{{ title }}</v-card-title>
-      <p v-if="email" class="text-body-2 text-medium-emphasis mb-6">
+      <v-card-title class="pl-0 text-h5">
+        {{ title }}
+      </v-card-title>
+      <p
+        v-if="email"
+        class="text-body-2 text-medium-emphasis mb-6"
+      >
         Un code de vérification a été envoyé à {{ email }}
       </p>
 
@@ -11,21 +16,24 @@
         :length="length"
         class="mb-4"
         :disabled="loading"
-        @update:modelValue="onOtpChange"
-      ></v-otp-input>
+        @update:model-value="onOtpChange"
+      />
 
       <div class="d-flex justify-center align-center mb-4">
         <v-btn
           variant="text"
           :disabled="timer > 0 || loading"
-          @click="resendOtp"
           class="text-caption"
+          @click="resendOtp"
         >
           {{ timer > 0 ? `Renvoyer le code (${timer}s)` : 'Renvoyer le code' }}
         </v-btn>
       </div>
 
-      <p v-if="timer > 0" class="text-caption text-medium-emphasis">
+      <p
+        v-if="timer > 0"
+        class="text-caption text-medium-emphasis"
+      >
         Le code expirera dans 10 minutes
       </p>
 
@@ -48,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+
 import { useOtpStore } from '@/stores/otpStore';
 
 const props = defineProps({

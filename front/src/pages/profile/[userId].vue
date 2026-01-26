@@ -1,51 +1,92 @@
 <template>
-
-  <v-container class="position-relative" :class="smAndDown ? 'pa-0' : ''">
-
-    <div class="w-100 debug3 my-16" ref="container" :style="{ height: containerHeight + 'px' }">
-      <div class="debug4" ref="sentinel"></div>
-      <v-card flat class="debug2 " ref="header" :style="headerStyle">
+  <v-container
+    class="position-relative"
+    :class="smAndDown ? 'pa-0' : ''"
+  >
+    <div
+      ref="container"
+      class="w-100 debug3 my-16"
+      :style="{ height: containerHeight + 'px' }"
+    >
+      <div
+        ref="sentinel"
+        class="debug4"
+      />
+      <v-card
+        ref="header"
+        flat
+        class="debug2 "
+        :style="headerStyle"
+      >
         <div class="d-flex align-start justify-space-between pa-6">
           <div class="d-flex align-start flex-column justify-space-between">
-
-
-            
-              <v-card-title v-if="!isSticky" class="text-h5 pa-0 mb-4">Profil</v-card-title>
+            <v-card-title
+              v-if="!isSticky"
+              class="text-h5 pa-0 mb-4"
+            >
+              Profil
+            </v-card-title>
             
 
             <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
-
-                <v-avatar size="64" class="mr-4" variant="tonal">
-                  <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-                  <v-icon v-else>mdi-account</v-icon>
+                <v-avatar
+                  size="64"
+                  class="mr-4"
+                  variant="tonal"
+                >
+                  <v-img
+                    v-if="authStore.userData.avatar"
+                    :src="`${API_URL}${authStore.userData.avatar}`"
+                    alt="Avatar"
+                  />
+                  <v-icon v-else>
+                    mdi-account
+                  </v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-subtitle-1">{{ authStore.userData.name }}</div>
-                  <div class="text-caption text-medium-emphasis">{{ authStore.userData.email }}</div>
+                  <div class="text-subtitle-1">
+                    {{ authStore.userData.name }}
+                  </div>
+                  <div class="text-caption text-medium-emphasis">
+                    {{ authStore.userData.email }}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-          <v-btn icon variant="text" size="large" @click="router.push('/user-params')" color="onBackground">
+          <v-btn
+            icon
+            variant="text"
+            size="large"
+            color="onBackground"
+            @click="router.push('/user-params')"
+          >
             <v-icon>mdi-cog-outline</v-icon>
           </v-btn>
         </div>
 
         
-          <!-- Popup Numéro de téléphone manquant UserMenu Mobile -->
-          
+        <!-- Popup Numéro de téléphone manquant UserMenu Mobile -->
       </v-card>
-
-
     </div>
 
 
-    <v-row :class="smAndDown ? 'px-4' : ''" v-if="!authStore.userData.phone">
+    <v-row
+      v-if="!authStore.userData.phone"
+      :class="smAndDown ? 'px-4' : ''"
+    >
       <v-col cols="12">
-       
-          <v-alert class="cursor-pointer text-medium-emphasis" rounded="xl" color="error" icon="mdi-alert-circle-outline" density="compact" @click="router.push('/user-params')">Numéro de téléphone manquant</v-alert>
-      
+        <v-alert
+          class="cursor-pointer text-medium-emphasis"
+          rounded="xl"
+          color="error"
+          icon="mdi-alert-circle-outline"
+          density="compact"
+          @click="router.push('/user-params')"
+        >
+          Numéro de téléphone manquant
+        </v-alert>
       </v-col>
     </v-row>
 
@@ -53,12 +94,27 @@
 
     <v-slide-y-transition appear>
       <v-row :class="smAndDown ? 'px-4' : ''">
-        <v-col cols="12" md="4">
-          <PointsCard rounded="xl" color="surfaceContainer" class="pa-6" height="100%"
-            @transfer="transferDialog = true" />
+        <v-col
+          cols="12"
+          md="4"
+        >
+          <PointsCard
+            rounded="xl"
+            color="surfaceContainer"
+            class="pa-6"
+            height="100%"
+            @transfer="transferDialog = true"
+          />
         </v-col>
-        <v-col :class="smAndDown ? 'my-16' : ''" cols="12" md="8">
-          <UserTeamCard height="100%" @show-team-change-dialog="openAddDialog" />
+        <v-col
+          :class="smAndDown ? 'my-16' : ''"
+          cols="12"
+          md="8"
+        >
+          <UserTeamCard
+            height="100%"
+            @show-team-change-dialog="openAddDialog"
+          />
         </v-col>
       </v-row>
     </v-slide-y-transition>
@@ -72,81 +128,163 @@
       </v-row> -->
 
     <v-row :class="smAndDown ? 'px-4' : 'mt-16'">
-      <v-col cols="12" md="4" v-for="item in items" :key="item.id">
-        <v-card v-if="!smAndDown" color="surfaceContainer" rounded="xl" class="pa-6 pl-8 cursor-pointer" height="80"
-          @click="router.push(item.link)" link flat>
+      <v-col
+        v-for="item in items"
+        :key="item.id"
+        cols="12"
+        md="4"
+      >
+        <v-card
+          v-if="!smAndDown"
+          color="surfaceContainer"
+          rounded="xl"
+          class="pa-6 pl-8 cursor-pointer"
+          height="80"
+          link
+          flat
+          @click="router.push(item.link)"
+        >
           <div class="d-flex align-center justify-space-between h-100">
             <div class="d-flex align-center ga-2">
-              <v-icon size="16" class="" color="onSurface">{{ item.icon }}</v-icon>
+              <v-icon
+                size="16"
+                class=""
+                color="onSurface"
+              >
+                {{ item.icon }}
+              </v-icon>
               <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
             </div>
-            <v-icon color="onSurface">mdi-chevron-right</v-icon>
+            <v-icon color="onSurface">
+              mdi-chevron-right
+            </v-icon>
           </div>
         </v-card>
-        <div v-else class="px-2 cursor-pointer" @click="router.push(item.link)">
+        <div
+          v-else
+          class="px-2 cursor-pointer"
+          @click="router.push(item.link)"
+        >
           <div class="d-flex align-center ga-2 justify-space-between mb-6">
-          <div class="d-flex align-center ga-2">
-            <!-- <v-icon size="16" color="onSurface">{{ item.icon }}</v-icon> -->
-            <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
+            <div class="d-flex align-center ga-2">
+              <!-- <v-icon size="16" color="onSurface">{{ item.icon }}</v-icon> -->
+              <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
+            </div>
+            <v-icon color="onSurface">
+              mdi-chevron-right
+            </v-icon>
           </div>
-          <v-icon color="onSurface">mdi-chevron-right</v-icon>
-          </div>
-          <v-divider v-if="item.id !== items.length"></v-divider>
+          <v-divider v-if="item.id !== items.length" />
         </div>
       </v-col>
-      
     </v-row>
     <v-row :class="smAndDown ? 'px-4' : ''">
-      <v-col cols="6" md="6">
-        <v-card v-if="authStore.userData.centerId" color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="64"
-          @click="router.push('/patchnotes')" link flat>
+      <v-col
+        cols="6"
+        md="6"
+      >
+        <v-card
+          v-if="authStore.userData.centerId"
+          color="surfaceContainer"
+          rounded="xl"
+          class="pa-6 cursor-pointer"
+          height="64"
+          link
+          flat
+          @click="router.push('/patchnotes')"
+        >
           <div class="d-flex align-center justify-space-between h-100">
             <span class="text-onSurface text-caption">Patchnotes</span>
-            <v-icon size="16" color="onSurface">mdi-update</v-icon>
+            <v-icon
+              size="16"
+              color="onSurface"
+            >
+              mdi-update
+            </v-icon>
           </div>
         </v-card>
       </v-col>
-      <v-col cols="6" md="6">
-        <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="64"
-          @click="router.push('/financement')" link flat>
+      <v-col
+        cols="6"
+        md="6"
+      >
+        <v-card
+          color="surfaceContainer"
+          rounded="xl"
+          class="pa-6 cursor-pointer"
+          height="64"
+          link
+          flat
+          @click="router.push('/financement')"
+        >
           <div class="d-flex align-center justify-space-between h-100">
-              <span class="text-onSurface text-caption">Financement</span>
-            <v-icon size="16" color="onSurface">mdi-currency-eur</v-icon>
+            <span class="text-onSurface text-caption">Financement</span>
+            <v-icon
+              size="16"
+              color="onSurface"
+            >
+              mdi-currency-eur
+            </v-icon>
           </div>
         </v-card>
       </v-col>
-  
     </v-row>
-    <v-row :class="smAndDown ? 'px-4' : ''" class="mb-4">
-      <v-col cols="12" md="4" order-lg="1">
-
-      </v-col>
-      <v-col cols="12" md="4" order-lg="1">
-
-      </v-col>
-      <v-col cols="12" md="4" order-lg="3" class="d-flex justify-center">
-        <v-card color="surfaceContainerLow" rounded="xl" width="200px" class="pa-6 cursor-pointer" height="48" @click="logout" flat>
+    <v-row
+      :class="smAndDown ? 'px-4' : ''"
+      class="mb-4"
+    >
+      <v-col
+        cols="12"
+        md="4"
+        order-lg="1"
+      />
+      <v-col
+        cols="12"
+        md="4"
+        order-lg="1"
+      />
+      <v-col
+        cols="12"
+        md="4"
+        order-lg="3"
+        class="d-flex justify-center"
+      >
+        <v-card
+          color="surfaceContainerLow"
+          rounded="xl"
+          width="200px"
+          class="pa-6 cursor-pointer"
+          height="48"
+          flat
+          @click="logout"
+        >
           <div class="d-flex align-center justify-center h-100">
             <span class="text-h7 font-weight-medium text-error">Se déconnecter</span>
-
           </div>
         </v-card>
       </v-col>
-
     </v-row>
-    <TransferDialog :dialogVisible="transferDialog" :userId="userId" @update:dialogVisible="transferDialog = $event"
-      @transfer-success="handleTransferSuccess" />
+    <TransferDialog
+      :dialog-visible="transferDialog"
+      :user-id="userId"
+      @update:dialog-visible="transferDialog = $event"
+      @transfer-success="handleTransferSuccess"
+    />
 
 
 
-    <TeamChangeDialog :dialogMode="dialogMode" :modelValue="addDialog" @onSubmit="handleTeamChange"
-      @onClose="closeAddDialog" @update:modelValue="addDialog = $event" />
+    <TeamChangeDialog
+      :dialog-mode="dialogMode"
+      :model-value="addDialog"
+      @on-submit="handleTeamChange"
+      @on-close="closeAddDialog"
+      @update:model-value="addDialog = $event"
+    />
   </v-container>
-
 </template>
 
 <script setup>
-import { computed, onMounted, ref, onUnmounted, onBeforeUnmount } from 'vue';
+import { computed, onMounted, ref, onUnmounted } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
@@ -173,12 +311,10 @@ const isLoading = ref(false);
 const isSticky = ref(false);
 const sentinel = ref(null);
 const containerHeight = ref(0);
-const headerHeight = ref(0);
 const headerWidth = ref(0);
 const observer = ref(null);
 const container = ref(null);
 const header = ref(null);
-const containerWidth = ref(0);
 const safeMarginTop = ref(0);
 let resizeObserver = null;
 const userId = computed(() => authStore.userData.userId);

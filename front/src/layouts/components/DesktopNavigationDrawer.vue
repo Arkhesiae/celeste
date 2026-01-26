@@ -1,95 +1,126 @@
 <template>
   <v-navigation-drawer
   
+    v-if="!smAndDown && isLoggedIn"
     floating
     expand-on-hover
     :model-value="navExpanded"
-    @update:model-value="$emit('update:navExpanded', $event)"
-    v-if="!smAndDown && isLoggedIn"
     rounded="xl"
     open-delay="200"
     color="transparent"
-    
     rail-width="106"
+    
     style="transition: all .25s ease-in-out; display: flex !important; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.0) !important;"
+    @update:model-value="$emit('update:navExpanded', $event)"
   >
-    <v-list variant="text" active-class="active-item" base-color="background" nav bg-color="onBackground" class="pa-4 elevation-3 ma-4 mt-16" rounded="xl">
-  
+    <v-list
+      variant="text"
+      active-class="active-item"
+      base-color="background"
+      nav
+      bg-color="onBackground"
+      class="pa-4 elevation-3 ma-4 mt-16"
+      rounded="xl"
+    >
       <!-- <v-list-item @click="router.push({ path: '/permutations' })"
       rounded="xl" 
                    
                    :prepend-icon="isActive('/permutations') ? 'mdi-swap-horizontal' : 'mdi-swap-horizontal-hidden'"
                    title="Permutations"
                    value="permutations"></v-list-item> -->
-      <v-list-item @click="router.push({ path: '/exchange/replace' })"
-         rounded="xl"
-         class="d-flex align-center"
-         :class="isActive('/exchange/replace') ? 'active-item' : 'inactive-item'"
-         :prepend-icon="isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'"
-         title="Demandes"
-         value="replace"> 
+      <v-list-item
+        rounded="xl"
+        class="d-flex align-center"
+        :class="isActive('/exchange/replace') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/exchange/replace') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'"
+        title="Demandes"
+        value="replace"
+        @click="router.push({ path: '/exchange/replace' })"
+      > 
         <template #append>
-          <v-chip color="background" size="x-small" variant="flat" rounded="lg" class="font-weight-bold ml-2 "  v-if="demandsCount > 0">
+          <v-chip
+            v-if="demandsCount > 0"
+            color="background"
+            size="x-small"
+            variant="flat"
+            rounded="lg"
+            class="font-weight-bold ml-2 "
+          >
             <span class="font-weight-bold">{{ demandsCount }}</span>
           </v-chip>
         </template>
       </v-list-item>
 
-      <v-list-item @click="router.push({ path: '/calendar' })"
-                   rounded="xl"
-                   :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline'"
-                   title="Calendrier"
-                   value="rep"></v-list-item>
+      <v-list-item
+        rounded="xl"
+        :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline'"
+        title="Calendrier"
+        value="rep"
+        @click="router.push({ path: '/calendar' })"
+      />
 
-      <v-list-item @click="router.push({ path: '/rotation' })"
-                   rounded="xl"
-                   :class="isActive('/rotation') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/rotation') ? 'mdi-file-plus' : 'mdi-file-plus-outline'"
-                   title="Tour de service"
-                   value="tservice"></v-list-item>
-      <v-list-item @click="router.push({ path: '/patchnotes' })"
-                   rounded="xl"
-                   :class="isActive('/patchnotes') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/patchnotes') ? 'mdi-update' : 'mdi-update'"
-                   title="Patch Notes"
-                   value="patchnotes"></v-list-item>
-      <v-list-item @click="router.push({ path: '/financement' })"
-                   rounded="xl"
-                   :class="isActive('/financement') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/financement') ? 'mdi-currency-eur' : 'mdi-currency-eur'"
-                   title="Financement"
-                   value="financement"></v-list-item>
-      <v-divider opacity=".01"></v-divider>
+      <v-list-item
+        rounded="xl"
+        :class="isActive('/rotation') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/rotation') ? 'mdi-file-plus' : 'mdi-file-plus-outline'"
+        title="Tour de service"
+        value="tservice"
+        @click="router.push({ path: '/rotation' })"
+      />
+      <v-list-item
+        rounded="xl"
+        :class="isActive('/patchnotes') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/patchnotes') ? 'mdi-update' : 'mdi-update'"
+        title="Patch Notes"
+        value="patchnotes"
+        @click="router.push({ path: '/patchnotes' })"
+      />
+      <v-list-item
+        rounded="xl"
+        :class="isActive('/financement') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/financement') ? 'mdi-currency-eur' : 'mdi-currency-eur'"
+        title="Financement"
+        value="financement"
+        @click="router.push({ path: '/financement' })"
+      />
+      <v-divider opacity=".01" />
       <v-list-item 
-               v-if="authStore.userData.isAdmin"
-      @click="router.push({ path: '/users' })"
-                   rounded="xl"
-                   :class="isActive('/users') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/users') ? 'mdi-account-group' : 'mdi-account-group-outline'"
-                   title="Utilisateurs"
-                   value="users"></v-list-item>
-      <v-list-item v-if="authStore.userData.isAdmin" 
-                   @click="router.push({ path: '/admin/pending-users' })"
-                   rounded="xl"
-                   :class="isActive('/admin/pending-users') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/admin/pending-users') ? 'mdi-account-clock' : 'mdi-account-clock-outline'"
-                   title="Candidatures"
-                   value="pending-users"></v-list-item>
-      <v-list-item v-if="authStore.userData.adminType === 'master'"
-                   @click="router.push({ path: '/center/centers' })"
-                   rounded="xl"
-                   :class="isActive('/center/centers') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/center/centers') ? 'mdi-home' : 'mdi-home-outline'"
-                   title="Centres"
-                   value="centers"></v-list-item>
-      <v-list-item v-else
-                   @click="router.push({ path: '/center/'+authStore.userData.centerId+'/teams' })"
-                   rounded="xl"
-                   :class="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'active-item' : 'inactive-item'"
-                   :prepend-icon="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'mdi-airport' : 'mdi-airport'"
-                   title="Mon centre"
-                   value="my-center"></v-list-item>
+        v-if="authStore.userData.isAdmin"
+        rounded="xl"
+        :class="isActive('/users') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/users') ? 'mdi-account-group' : 'mdi-account-group-outline'"
+        title="Utilisateurs"
+        value="users"
+        @click="router.push({ path: '/users' })"
+      />
+      <v-list-item
+        v-if="authStore.userData.isAdmin" 
+        rounded="xl"
+        :class="isActive('/admin/pending-users') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/admin/pending-users') ? 'mdi-account-clock' : 'mdi-account-clock-outline'"
+        title="Candidatures"
+        value="pending-users"
+        @click="router.push({ path: '/admin/pending-users' })"
+      />
+      <v-list-item
+        v-if="authStore.userData.adminType === 'master'"
+        rounded="xl"
+        :class="isActive('/center/centers') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/center/centers') ? 'mdi-home' : 'mdi-home-outline'"
+        title="Centres"
+        value="centers"
+        @click="router.push({ path: '/center/centers' })"
+      />
+      <v-list-item
+        v-else
+        rounded="xl"
+        :class="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'mdi-airport' : 'mdi-airport'"
+        title="Mon centre"
+        value="my-center"
+        @click="router.push({ path: '/center/'+authStore.userData.centerId+'/teams' })"
+      />
     </v-list>
   </v-navigation-drawer>
 </template>
@@ -98,9 +129,8 @@
 import { useRouter } from 'vue-router';
 import { useDisplay } from "vuetify";
 import { useAuthStore } from "@/stores/authStore.js";
-import { computed } from 'vue';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-import { useNotificationStore } from '@/stores/notificationStore';
+// import { useNotificationStore } from '@/stores/notificationStore';
 
 
 const substitutionStore = useSubstitutionStore();

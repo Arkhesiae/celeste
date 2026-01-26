@@ -1,23 +1,41 @@
-import js from '@eslint/js'
-import pluginVue from 'eslint-plugin-vue'
 
-export default [
+
+import eslint from '@eslint/js';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import eslintPluginVue from 'eslint-plugin-vue';
+import globals from 'globals';
+import typescriptEslint from 'typescript-eslint';
+
+export default typescriptEslint.config(
+  { ignores: ['*.d.ts', '**/coverage', '**/dist'] },
   {
-    name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}'],
+    extends: [
+      eslint.configs.recommended,
+      ...typescriptEslint.configs.recommended,
+      ...eslintPluginVue.configs['flat/recommended'],
+    ],
+    files: ['**/*.{ts,vue}'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ref: 'readonly',
+        computed: 'readonly',
+        watch: 'readonly',
+        watchEffect: 'readonly',
+      },
+      parserOptions: {
+        parser: typescriptEslint.parser,
+      },
+    }
   },
-
+  
   {
-    name: 'app/files-to-ignore',
-    ignores: ['**/dist/**', '**/dist-ssr/**', '**/coverage/**'],
-  },
-
-  js.configs.recommended,
-  ...pluginVue.configs['flat/recommended'],
-
-  {
+    files: ['src/pages/**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
     },
-  }
-]
+  },
+  eslintConfigPrettier
+);

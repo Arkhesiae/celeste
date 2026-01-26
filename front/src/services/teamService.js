@@ -2,7 +2,7 @@
  * Service pour gérer les appels API liés aux équipes.
  * @module teamService
  */
-import { API_URL, handleResponse, getAuthHeaders } from '../config/api';
+import { apiFetch } from '../config/api';
 
 export const teamService = {
   /**
@@ -10,10 +10,10 @@ export const teamService = {
    * @returns {Promise<Array>} Liste des équipes.
    */
   async getTeams(centerId) {
-    const response = await fetch(`${API_URL}/teams/${centerId}`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/teams/${centerId}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
    /**
@@ -21,10 +21,10 @@ export const teamService = {
    * @returns {Promise<Array>} Liste des équipes.
    */
   async getAllTeams() {
-    const response = await fetch(`${API_URL}/teams`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/teams`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -33,10 +33,10 @@ export const teamService = {
    * @returns {Promise<Object>} Les données de l'équipe.
    */
   async getTeamById(id) {
-    const response = await fetch(`${API_URL}/teams/${id}`, {
-      headers: getAuthHeaders()
+      const response = await apiFetch(`/teams/${id}`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
 
@@ -46,12 +46,11 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe créée.
    */
   async createTeam(teamData) {
-    const response = await fetch(`${API_URL}/teams/create-team`, {
+    const response = await apiFetch(`/teams/create-team`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(teamData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -61,12 +60,11 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
   async renameTeam(id, teamData) {
-    const response = await fetch(`${API_URL}/teams/${id}/name`, {
+    const response = await apiFetch(`/teams/${id}/name`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify(teamData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -75,11 +73,10 @@ export const teamService = {
    * @returns {Promise<void>}
    */
   async deleteTeam(id) {
-    const response = await fetch(`${API_URL}/teams/${id}`, {
+    const response = await apiFetch(`/teams/${id}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -89,20 +86,18 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
   async assignToTeam(userId, teamData) {
-    const response = await fetch(`${API_URL}/users/${userId}/assign-team`, {
+    const response = await apiFetch(`/users/${userId}/assign-team`, {
       method: 'POST',
-      headers: getAuthHeaders(),
       body: JSON.stringify(teamData)
     });
-    return handleResponse(response);
+    return response;
   },
 
   async deleteTeamOccurrence(userId, occurrenceId) {
-    const response = await fetch(`${API_URL}/users/${userId}/team-occurrences/${occurrenceId}`, {
+    const response = await apiFetch(`/users/${userId}/team-occurrences/${occurrenceId}`, {
       method: 'DELETE',
-      headers: getAuthHeaders()
     });
-    return handleResponse(response);
+    return response;
   },
 
 
@@ -112,10 +107,10 @@ export const teamService = {
    * @returns {Promise<Array>} Liste des membres de l'équipe.
    */
   async getTeamMembers(teamId) {
-    const response = await fetch(`${API_URL}/teams/${teamId}/members`, {
-      headers: getAuthHeaders()
+    const response = await apiFetch(`/teams/${teamId}/members`, {
+      method: 'GET'
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -125,12 +120,11 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
   async updateTeamCycleStartDate(teamId, cycleStartDate) {
-    const response = await fetch(`${API_URL}/teams/${teamId}/cycle-start-date`, {
+    const response = await apiFetch(`/teams/${teamId}/cycle-start-date`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ cycleStartDate })
     });
-    return handleResponse(response);
+    return response;
   },
 
   /**
@@ -139,11 +133,10 @@ export const teamService = {
    * @returns {Promise<Array>} Liste mise à jour des équipes.
    */
   async updateTeamsOrder(teamIds) {
-    const response = await fetch(`${API_URL}/teams/order`, {
+    const response = await apiFetch(`/teams/order`, {
       method: 'PUT',
-      headers: getAuthHeaders(),
       body: JSON.stringify({ teamIds })
     });
-    return handleResponse(response);
+    return response;
   }
 };

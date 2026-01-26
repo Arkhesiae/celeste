@@ -1,11 +1,19 @@
 <template>
-  <div >
-    <v-card v-if="!currentActive" color="surfaceContainerHigh" variant="tonal" class="pa-2 mb-4" rounded="xl">
+  <div>
+    <v-card
+      v-if="!currentActive"
+      color="surfaceContainerHigh"
+      variant="tonal"
+      class="pa-2 mb-4"
+      rounded="xl"
+    >
       <v-card-item>
         <template #prepend>
-          <v-icon icon="mdi-alert-outline"></v-icon>
+          <v-icon icon="mdi-alert-outline" />
         </template>
-        <v-card-title class="text-body-1">Aucun tour de service actif</v-card-title>
+        <v-card-title class="text-body-1">
+          Aucun tour de service actif
+        </v-card-title>
       </v-card-item>
       <v-card-text>
         <p class="text-medium-emphasis">
@@ -14,9 +22,23 @@
         </p>
       </v-card-text>
     </v-card>
-    <v-card v-if="sortedRotations?.length>0" rounded="xl" elevation="0" class="py-4" >
-      <v-timeline line-inset="4px" line-color="surface-variant" truncate-line="end" side="end" line-thickness="2">
-        <v-scroll-y-transition group appear>
+    <v-card
+      v-if="sortedRotations?.length>0"
+      rounded="xl"
+      elevation="0"
+      class="py-4"
+    >
+      <v-timeline
+        line-inset="4px"
+        line-color="surface-variant"
+        truncate-line="end"
+        side="end"
+        line-thickness="2"
+      >
+        <v-scroll-y-transition
+          group
+          appear
+        >
           <v-timeline-item
             v-for="rotation in sortedRotations"
             :key="rotation._id"
@@ -28,32 +50,37 @@
             <div class="d-flex flex-column justify-start">
               <div class="d-flex align-center justify-start">
                 <span class="text-overline font-weight-bold">{{ rotation.name }}</span>
-                <v-chip v-if="rotation.status === 'Active'" class="ms-0" color="primary" size="small" rounded="pill" label>
+                <v-chip
+                  v-if="rotation.status === 'Active'"
+                  class="ms-0"
+                  color="primary"
+                  size="small"
+                  rounded="pill"
+                  label
+                >
                   Actif
                 </v-chip>
               </div>
               <v-tooltip
-                  location="top"
-                  text="Supprimer la date d'activation"
-                >
-                  <template v-slot:activator="{ props }">
-              <v-chip
-                class="ms-0"
-                color="tertiary"
-                size="small"
-                rounded="lg"
-                label
-                append-icon="mdi-close"
-                @click="$emit('removeActivationDate', rotation._id, rotation.activationDate, rotation.centerId)"
+                location="top"
+                text="Supprimer la date d'activation"
               >
-            
+                <template #activator="{ props }">
+                  <v-chip
+                    class="ms-0"
+                    color="tertiary"
+                    size="small"
+                    rounded="lg"
+                    label
+                    append-icon="mdi-close"
+                    @click="$emit('removeActivationDate', rotation._id, rotation.activationDate, rotation.centerId)"
+                  >
                     <span v-bind="props">
                       {{ new Date(rotation.activationDate).toLocaleDateString() || 'N/A' }}
                     </span>
-                  
-              </v-chip>
-            </template>
-          </v-tooltip>
+                  </v-chip>
+                </template>
+              </v-tooltip>
             </div>
           </v-timeline-item>
         </v-scroll-y-transition>

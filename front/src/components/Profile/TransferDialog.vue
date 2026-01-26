@@ -1,33 +1,24 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="500">
     <v-card rounded="xl" class="pa-6">
-      <v-card-title class="pa-0">Faire un Virement</v-card-title>
+      <v-card-title class="pa-0">
+        Faire un Virement
+      </v-card-title>
       <v-card-text class="pa-0 py-6 ">
         <v-form @submit.prevent="confirmTransfer">
-          <v-number-input v-model="transferAmount" class="text-primary" reverse controlVariant="split" label=""
-                    rounded="xl" bg-color="surfaceContainer" color="blue" glow :hideInput="false" inset
-                    base-color="transparent" variant="outlined"
-                    :min="0"
-                    :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']">
-          </v-number-input>
-    
+          <v-number-input
+v-model="transferAmount" class="text-primary" reverse control-variant="split" label=""
+            rounded="xl" bg-color="surfaceContainer" color="blue" glow :hide-input="false" inset
+            base-color="transparent" variant="outlined" :min="0"
+            :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']" />
+
           <v-autocomplete
-            v-model="transferRecipient"
-            :items="availableUsers"
-            :item-title="getUserFullName"
-            item-value="_id"
-            label="Destinataire"
-            variant="solo"
-            elevation="0"
-            bg-color="onBackground"
-            rounded="xl"
-            :loading="isLoadingUsers"
-            :rules="[v => !!v || 'Le destinataire est requis']"
-            class="mb-4"
-          >
-            <template v-slot:item="{ props, item }">
+v-model="transferRecipient" :items="availableUsers" :item-title="getUserFullName"
+            item-value="_id" label="Destinataire" variant="solo" elevation="0" bg-color="onBackground" rounded="xl"
+            :loading="isLoadingUsers" :rules="[v => !!v || 'Le destinataire est requis']" class="mb-4">
+            <template #item="{ props, item }">
               <v-list-item v-bind="props" :title="getUserFullName(item.raw)" :subtitle="getUserSubtitle(item.raw)">
-                <template v-slot:prepend>
+                <template #prepend>
                   <v-avatar size="32" color="primary">
                     {{ getUserFullName(item.raw).charAt(0) }}
                   </v-avatar>
@@ -44,34 +35,17 @@
           ></v-checkbox> -->
 
           <v-text-field
-            v-if="isDelayedTransfer"
-            v-model="transferDate"
-            type="date"
-            label="Date du virement"
-            variant="solo"
-            elevation="0"
+v-if="isDelayedTransfer" v-model="transferDate" type="date" label="Date du virement"
+            variant="solo" elevation="0"
             :rules="[v => !!v || 'La date est requise', v => isFutureDate(v) || 'La date doit être dans le futur']"
-            :min="minDate"
-          ></v-text-field>
+            :min="minDate" />
         </v-form>
       </v-card-text>
       <v-card-actions class="pa-0">
-        <v-btn
-          color="secondary"
-          text
-
-          @click="closeDialog"
-          :disabled="isLoading"
-        >
+        <v-btn color="secondary" text :disabled="isLoading" @click="closeDialog">
           Annuler
         </v-btn>
-        <v-btn
-          color="primary"
-          text
-
-          @click="confirmTransfer"
-          :loading="isLoading"
-        >
+        <v-btn color="primary" text :loading="isLoading" @click="confirmTransfer">
           Confirmer
         </v-btn>
       </v-card-actions>
@@ -80,7 +54,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+
 import { userService } from "@/services/userService.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
@@ -102,7 +76,7 @@ const props = defineProps({
 const emit = defineEmits(['update:dialogVisible', 'transfer-success']);
 
 const localDialogVisible = ref(props.dialogVisible);
-const transferAmount = ref( 0  );
+const transferAmount = ref(0);
 const transferRecipient = ref('');
 const isLoading = ref(false);
 const isLoadingUsers = ref(false);
@@ -130,7 +104,7 @@ const fetchAvailableUsers = async () => {
   try {
     isLoadingUsers.value = true;
     let users;
-    
+
     // Si c'est un administrateur maître, récupérer tous les utilisateurs
     if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
       users = await userService.getUsers();
@@ -138,11 +112,11 @@ const fetchAvailableUsers = async () => {
       // Sinon, récupérer seulement les utilisateurs du centre
       users = await userService.fetchUsersByCenter(authStore.userData.centerId);
     }
-    
+
     // Filtrer l'utilisateur courant de la liste
     availableUsers.value = users.filter(user => user._id !== props.userId);
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la récupération des utilisateurs', 'onError' , 'mdi-alert-circle');
+    snackbarStore.showNotification('Erreur lors de la récupération des utilisateurs', 'onError', 'mdi-alert-circle');
   } finally {
     isLoadingUsers.value = false;
   }
@@ -150,18 +124,18 @@ const fetchAvailableUsers = async () => {
 
 const validateTransferForm = () => {
   if (!transferAmount.value || transferAmount.value <= 0) {
-    snackbarStore.showNotification('Le montant doit être supérieur à 0', 'onError' , 'mdi-alert-circle');
+    snackbarStore.showNotification('Le montant doit être supérieur à 0', 'onError', 'mdi-alert-circle');
     return false;
   }
   if (!transferRecipient.value) {
-    snackbarStore.showNotification('Le destinataire est requis', 'onError' , 'mdi-alert-circle');
+    snackbarStore.showNotification('Le destinataire est requis', 'onError', 'mdi-alert-circle');
     return false;
   }
   if (isDelayedTransfer.value && !transferDate.value) {
-    snackbarStore.showNotification('La date du virement différé est requise', 'onError' , 'mdi-alert-circle');
+    snackbarStore.showNotification('La date du virement différé est requise', 'onError', 'mdi-alert-circle');
     return false;
   }
- 
+
   return true;
 };
 
@@ -173,17 +147,17 @@ const confirmTransfer = async () => {
     const scheduledDate = isDelayedTransfer.value ? transferDate.value : null;
     await pointStore.transferPoints(props.userId, transferRecipient.value, transferAmount.value, '', scheduledDate);
     snackbarStore.showNotification(
-      isDelayedTransfer.value 
-        ? 'Virement différé programmé avec succès' 
-        : 'Transfert de points effectué', 
-      'onPrimary' , 'mdi-check'
+      isDelayedTransfer.value
+        ? 'Virement différé programmé avec succès'
+        : 'Transfert de points effectué',
+      'onPrimary', 'mdi-check'
     );
     closeDialog();
     console.log("Success");
     emit('transfer-success');
   } catch (error) {
     console.log("error", error);
-    snackbarStore.showNotification(error.message, 'onError' , 'mdi-alert-circle');
+    snackbarStore.showNotification(error.message, 'onError', 'mdi-alert-circle');
   } finally {
     isLoading.value = false;
   }
@@ -219,7 +193,7 @@ const getUserFullName = (user) => {
   if (!user) return '';
   return `${user.name} ${user.lastName}`;
 };
-</script> 
+</script>
 
 <style scoped>
 :deep(.v-number-input .v-field__field input) {

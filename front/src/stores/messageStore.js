@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+;
 import { messageService } from '@/services/messageService';
 
 
@@ -10,16 +10,16 @@ export const useMessageStore = defineStore('message', () => {
   const error = ref(null);
 
   // Getters
-  const unreadCount = computed(() => 
+  const unreadCount = computed(() =>
     messages.value.filter(msg => !msg.isRead).length
   );
-  
-  const sortedMessages = computed(() => 
+
+  const sortedMessages = computed(() =>
     [...messages.value].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
   );
 
   // Actions
-  async function fetchMessages() {
+  async function fetchMessages () {
     loading.value = true;
     try {
       messages.value = await messageService.fetchMessages();
@@ -31,7 +31,7 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  async function createMessage(messageData) {
+  async function createMessage (messageData) {
     loading.value = true;
     try {
       const message = new Message(messageData);
@@ -47,11 +47,11 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  async function markAsRead(messageId) {
+  async function markAsRead (messageId) {
     try {
       const updatedMessage = await messageService.markAsRead(messageId);
       await fetchMessages();
-     
+
       error.value = null;
     } catch (err) {
       error.value = err.message;
@@ -59,10 +59,10 @@ export const useMessageStore = defineStore('message', () => {
     }
   }
 
-  async function deleteMessage(messageId) {
+  async function deleteMessage (messageId) {
     try {
       await messageService.deleteMessage(messageId);
-     
+
       await fetchMessages();
       error.value = null;
     } catch (err) {

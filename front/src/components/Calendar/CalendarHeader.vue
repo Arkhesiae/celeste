@@ -1,12 +1,14 @@
 <template>
-  <div v-if="!smAndDown" class="d-flex align-center justify-space-between mb-4" :class="smAndDown ? 'mx-auto' : ''"
+  <div
+v-if="!smAndDown" class="d-flex align-center justify-space-between mb-4" :class="smAndDown ? 'mx-auto' : ''"
     :style="smAndDown ? 'max-width : 600px' : ''">
-
     <div class="d-flex align-center">
       <div class="d-flex align-center bg-surfaceContainerHighest rounded-lg pa-2 px-4">
-        <h2 class="text-body-2 font-weight-medium mb-0">{{ currentMonthName }} {{ currentYear }}</h2>
+        <h2 class="text-body-2 font-weight-medium mb-0">
+          {{ currentMonthName }} {{ currentYear }}
+        </h2>
       </div>
-     
+
       <v-slide-x-reverse-transition>
         <v-btn v-if="!isCurrentMonthAndYear" icon variant="text" class="ml-2" @click="goToToday">
           <v-icon>mdi-calendar-refresh-outline</v-icon>
@@ -26,17 +28,17 @@
     </div>
   </div>
   <!-- Indicateurs de navigation -->
-  <div v-else class="calendar-indicators mx-auto mb-8" :style="smAndDown ? 'max-width : 600px' : ''" >
-    <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="navigateMonth(-1)" :disabled="isAnimating" />
+  <div v-else class="calendar-indicators mx-auto mb-8" :style="smAndDown ? 'max-width : 600px' : ''">
+    <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="navigateMonth(-1)" />
     <div class="month-indicator">
       {{ currentMonthName }} {{ currentYear }}
     </div>
-    <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="navigateMonth(1)" :disabled="isAnimating" />
+    <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="navigateMonth(1)" />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+
 import { useDisplay } from "vuetify";
 
 const props = defineProps({

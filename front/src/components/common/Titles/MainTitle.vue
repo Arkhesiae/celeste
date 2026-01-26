@@ -1,41 +1,65 @@
 <template>
-  <div class="position-relative mx-n2 d-flex flex-column" :style="{ height: `${headerHeight}px` }">
-    <div ref="placeholder" :style="{ height: `${headerHeight}px`, width: '100%' }" class="position-absolute " />
-    <div ref="titleRef" :class="['main-title px-4  py-16']" :style=headerStyle class="">
+  <div
+    class="position-relative mx-n2 d-flex flex-column"
+    :style="{ height: `${headerHeight}px` }"
+  >
+    <div
+      ref="placeholder"
+      :style="{ height: `${headerHeight}px`, width: '100%' }"
+      class="position-absolute "
+    />
+    <div
+      ref="titleRef"
+      :class="['main-title px-4  py-16']"
+      :style="headerStyle"
+      class=""
+    >
       <div class="d-flex justify-space-between align-center flex-shrink-0 ">
         <div class="d-flex align-center ga-4 ">
-          <v-btn v-if="backButton" icon="mdi-arrow-left" variant="text" @click="router.back()" />
+          <v-btn
+            v-if="backButton"
+            icon="mdi-arrow-left"
+            variant="text"
+            @click="router.back()"
+          />
           <div
             class="d-flex flex-column"
             :style="{ transformOrigin: 'left', maxWidth: titleMaxWidth + 'px' }"
           >
             <div class="d-flex align-center">
-              <span :style="{ fontSize: titleFontSize + 'px !important' }" class="font-weight-bold" style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ title }} </span>
+              <span
+                :style="{ fontSize: titleFontSize + 'px !important' }"
+                class="font-weight-bold"
+                style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+              >{{ title }} </span>
             </div>
-            <span :style="{ fontSize: subtitleFontSize + 'px !important' }" style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50">{{ subtitle }} </span>
+            <span
+              :style="{ fontSize: subtitleFontSize + 'px !important' }"
+              style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;"
+              class="opacity-50"
+            >{{ subtitle }} </span>
           </div>
-         
-      
         </div>
-        <div class="flex-shrink-0" ref="actionsRef">
+        <div
+          ref="actionsRef"
+          class="flex-shrink-0"
+        >
           <slot name="actions" />
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, reactive, nextTick, watch, computed } from 'vue'
+
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
 const { smAndDown } = useDisplay()
-const { mdAndUp } = useDisplay()  
 const router = useRouter()
 
-const props = defineProps({
+defineProps({
   title: {
     type: String,
     required: true,
@@ -120,16 +144,16 @@ onMounted(() => {
     entries => {
       entries.forEach(entry => {  
     
-      let titlePadding = 60
-      let initialTop = safeMarginTop.value
-      let threshold = (initialTop - titlePadding) * -1
-      let threshold2 = (initialTop - headerHeight.value) * -1
+      const titlePadding = 60
+      const initialTop = safeMarginTop.value
+      const threshold = (initialTop - titlePadding) * -1
+      const threshold2 = (initialTop - headerHeight.value) * -1
       
-      let maxScrolledValue = 1
-      let minScrolledValue = 0.6
+      const maxScrolledValue = 1
+      const minScrolledValue = 0.6
 
-      let A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
-      let B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
+      const A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
+      const B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
 
       scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top)*A + B))
       isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0

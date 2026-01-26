@@ -7,12 +7,36 @@ const cache = new Map();
 
 // Load all partials once
 
-Handlebars.registerHelper('ifEquals', function (arg1, arg2, options) {
-  return arg1 === arg2 ? options.fn(this) : options.inverse(this)
+Handlebars.registerHelper("ifEquals", function (arg1, arg2, options) {
+  return arg1 === arg2 ? options.fn(this) : options.inverse(this);
+});
+
+Handlebars.registerHelper("ifNotEquals", function (arg1, arg2, options) {
+  return arg1 !== arg2 ? options.fn(this) : options.inverse(this);
+});
+
+Handlebars.registerHelper('formatText', function (text) {
+  if (!text) return ''
+  return new Handlebars.SafeString(
+    text
+      .replace(/&/g, '&') // escape &
+      .replace(/</g, '<') // escape <
+      .replace(/>/g, '>') // escape >
+      .replace(/\n/g, '<br>') // newlines to <br>
+      .replace(/\t/g, '    ') // tabs
+  )
 })
 
-Handlebars.registerHelper('ifNotEquals', function (arg1, arg2, options) {
-  return arg1 !== arg2 ? options.fn(this) : options.inverse(this)
+Handlebars.registerHelper('formatText', function (text) {
+  if (!text) return ''
+  return new Handlebars.SafeString(
+    text
+      .replace(/&/g, '&') // escape &
+      .replace(/</g, '<') // escape <
+      .replace(/>/g, '>') // escape >
+      .replace(/\n/g, '<br>') // newlines to <br>
+      .replace(/\t/g, '    ') // tabs
+  )
 })
 
 /**
@@ -31,14 +55,13 @@ export function renderMail(templateName, data = {}) {
   }
 
   const partialsDir = path.join(__dirname, "src/mail/templates/partials");
-fs.readdirSync(partialsDir).forEach(file => {
-  if (file.endsWith(".html")) {
-    const name = path.basename(file, ".html");
-    const partial = fs.readFileSync(path.join(partialsDir, file), "utf8");
-    Handlebars.registerPartial(name, partial);
-  }
-});
-
+  fs.readdirSync(partialsDir).forEach((file) => {
+    if (file.endsWith(".html")) {
+      const name = path.basename(file, ".html");
+      const partial = fs.readFileSync(path.join(partialsDir, file), "utf8");
+      Handlebars.registerPartial(name, partial);
+    }
+  });
 
   // Cache compiled templates
   const cacheKey = `mail-${templateName}-a`;

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+;
 
 const props = defineProps({
   isDialogVisible: {
@@ -37,35 +37,26 @@ const submit = () => {
       <v-card-item class="pa-6">
         <div class="d-flex align-center justify-space-between">
           <div>
-            <div class="text-h6 font-weight-medium">Modifier le nom</div>
+            <div class="text-h6 font-weight-medium">
+              Modifier le nom
+            </div>
             <div class="text-medium-emphasis text-body-2 mt-1">
               Modifiez le nom du tour de service
             </div>
           </div>
-          <v-btn icon="mdi-close" variant="text" @click="localDialogVisible = false"></v-btn>
+          <v-btn icon="mdi-close" variant="text" @click="localDialogVisible = false" />
         </div>
       </v-card-item>
 
       <v-card-text class="pa-6 pt-0">
         <v-text-field
-          v-model="newName"
-          label="Nom du tour de service"
-          :rules="nameRules"
-          variant="outlined"
-          rounded="xl"
-          hide-details="auto"
-        ></v-text-field>
+v-model="newName" label="Nom du tour de service" :rules="nameRules" variant="outlined"
+          rounded="xl" hide-details="auto" />
       </v-card-text>
 
       <v-card-actions class="pa-6 pt-0">
-        <v-spacer></v-spacer>
-        <v-btn
-          color="primary"
-          variant="flat"
-          rounded="xl"
-          @click="submit"
-          :disabled="!newName"
-        >
+        <v-spacer />
+        <v-btn color="primary" variant="flat" rounded="xl" :disabled="!newName" @click="submit">
           Enregistrer
         </v-btn>
       </v-card-actions>

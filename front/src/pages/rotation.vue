@@ -1,57 +1,117 @@
 <template>
   <v-container class="mb-16">
-    
+    <MainTitle
+      title="Tours de service"
+      subtitle="Créer, modifier et activer un tour de service"
+    >
+      <template #actions> 
+        <v-select
+          v-if="authStore.userData.adminType === 'master'"
+          v-model="selectedCenterId"
+          :items="centers"
+          :item-props="center => ({
+            title: center.name,
+            subtitle: center.oaci
+          })"
+          item-value="_id"
+          label="Sélectionner un centre"
+          variant="solo-filled"
+          rounded="xl"
+          class="mt-4"
+          flat
+          min-width="200px"
+          max-width="300px"
+          @update:model-value="handleCenterChange"
+        />
 
-
-      <MainTitle title="Tours de service" subtitle="Créer, modifier et activer un tour de service">
-        <template #actions> 
-        <v-select v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers" :item-props="center => ({
-          title: center.name,
-          subtitle: center.oaci
-        })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="mt-4" flat
-          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
-
-        <v-btn v-else-if="isAdmin" icon color="onBackground" variant="text" size="" @click="showAddDialog = true">
-          <v-icon size="32">mdi-plus</v-icon>
+        <v-btn
+          v-else-if="isAdmin"
+          icon
+          color="onBackground"
+          variant="text"
+          size=""
+          @click="showAddDialog = true"
+        >
+          <v-icon size="32">
+            mdi-plus
+          </v-icon>
         </v-btn>
-        </template>
-
-      </MainTitle>
+      </template>
+    </MainTitle>
 
       
       
 
     <v-row class="position-relative">
-      <v-col cols="12" md="8">
+      <v-col
+        cols="12"
+        md="8"
+      >
         <!-- Workshifts List -->
-        <SavedRotation v-for="rotation in rotations" :key="rotation._id" :rotation="rotation" :isActive="isRotationActive(rotation)"
-          :is-expanded="expandedRotations[rotation._id]" @set-activation-date="handleSetActivationDate"
-          @delete="deleteRotation" @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
+        <SavedRotation
+          v-for="rotation in rotations"
+          :key="rotation._id"
+          :rotation="rotation"
+          :is-active="isRotationActive(rotation)"
+          :is-expanded="expandedRotations[rotation._id]"
+          @set-activation-date="handleSetActivationDate"
+          @delete="deleteRotation"
+          @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
           @edit="handleEdit" 
-          ></SavedRotation>
+        />
       
 
         <v-row class="mt-8">
-          <v-col cols="12" lg="4" sm="4" xs="12" md="12">
-            <v-btn block class="justify-space-between" rounded="xl" color="surface" height="64" v-if="smAndDown"
-              variant="flat" @click="showTimelineDrawer = !showTimelineDrawer">
+          <v-col
+            cols="12"
+            lg="4"
+            sm="4"
+            xs="12"
+            md="12"
+          >
+            <v-btn
+              v-if="smAndDown"
+              block
+              class="justify-space-between"
+              rounded="xl"
+              color="surface"
+              height="64"
+              variant="flat"
+              @click="showTimelineDrawer = !showTimelineDrawer"
+            >
               <template #append>
-                <v-icon color="primary">mdi-chevron-right</v-icon>
+                <v-icon color="primary">
+                  mdi-chevron-right
+                </v-icon>
               </template>
-              <v-icon class="mr-4">mdi-timeline-clock</v-icon>
+              <v-icon class="mr-4">
+                mdi-timeline-clock
+              </v-icon>
               Voir la timeline
             </v-btn>
           </v-col>
-
         </v-row>
-
       </v-col>
 
       <!-- Timeline -->
-      <v-col cols="12" md="4">
-        <div v-if="!smAndDown" style="top:150px; position: sticky !important;">
-          <v-btn v-if="isAdmin" class="mb-8" prepend-icon="mdi-file-plus-outline" color="onBackground" height="80px"
-            width="100%" elevation="0" @click="showAddDialog = true">
+      <v-col
+        cols="12"
+        md="4"
+      >
+        <div
+          v-if="!smAndDown"
+          style="top:150px; position: sticky !important;"
+        >
+          <v-btn
+            v-if="isAdmin"
+            class="mb-8"
+            prepend-icon="mdi-file-plus-outline"
+            color="onBackground"
+            height="80px"
+            width="100%"
+            elevation="0"
+            @click="showAddDialog = true"
+          >
             Ajouter un tour de service
           </v-btn>
           <div class="d-flex flex-column mb-6">
@@ -60,15 +120,27 @@
               Timeline d'activation des tours de service
             </span>
           </div>
-          <Timeline :current-active="currentActive" :sorted-rotations="sortedRotations"
-            @remove-activation-date="handleRemoveActivationDate" />
+          <Timeline
+            :current-active="currentActive"
+            :sorted-rotations="sortedRotations"
+            @remove-activation-date="handleRemoveActivationDate"
+          />
         </div>
       </v-col>
     </v-row>
 
     <!-- Mobile Timeline Drawer -->
-    <v-bottom-sheet v-if="smAndDown" v-model="showTimelineDrawer" location="bottom" temporary class="timeline-drawer">
-      <v-card class="pa-6" color="surfaceContainerHigh">
+    <v-bottom-sheet
+      v-if="smAndDown"
+      v-model="showTimelineDrawer"
+      location="bottom"
+      temporary
+      class="timeline-drawer"
+    >
+      <v-card
+        class="pa-6"
+        color="surfaceContainerHigh"
+      >
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="d-flex flex-column">
             <span class="text-h5 font-weight-medium">Timeline</span>
@@ -77,8 +149,11 @@
             </span>
           </div>
         </div>
-        <Timeline :current-active="currentActive" :sorted-rotations="sortedRotations"
-          @remove-activation-date="handleRemoveActivationDate" />
+        <Timeline
+          :current-active="currentActive"
+          :sorted-rotations="sortedRotations"
+          @remove-activation-date="handleRemoveActivationDate"
+        />
       </v-card>
     </v-bottom-sheet>
 
@@ -88,42 +163,71 @@
       location="bottom end" text="Tour de service" extended app color="onBackground"
       @click="showAddDialog = true"></v-fab> -->
 
-    <ErrorDialog error-title="Impossible de supprimer ce tour de service" :error-message="errorMessage"
-      error-icon="mdi-delete-alert-outline" :isDialogVisible="showErrorDialog"
-      @update:dialogVisible="showErrorDialog = $event"></ErrorDialog>
+    <ErrorDialog
+      error-title="Impossible de supprimer ce tour de service"
+      :error-message="errorMessage"
+      error-icon="mdi-delete-alert-outline"
+      :is-dialog-visible="showErrorDialog"
+      @update:dialog-visible="showErrorDialog = $event"
+    />
 
-    <ConfirmationDialog :isDialogVisible="showConfirmationDialog" :title="'Suppression du tour de service'"
+    <ConfirmationDialog
+      v-model="showConfirmationDialog"
+      :title="'Suppression du tour de service'"
       :text="'Êtes-vous sûr de vouloir supprimer ce tour de service ? Cette action est irréversible.'"
-      :icon="'mdi-delete-outline'" :iconColor="'error'" :confirmText="'Supprimer'" @confirm="confirmDelete"
-      @update:isDialogVisible="showConfirmationDialog = $event"></ConfirmationDialog>
+      :icon="'mdi-delete-outline'"
+      :icon-color="'error'"
+      :confirm-text="'Supprimer'"
+      @confirm="confirmDelete"
+      @update:model-value="showConfirmationDialog = $event"
+    />
 
-    <ConfirmationDialog :isDialogVisible="showDateConfirmationDialog" :title="'Suppression de la date d\'activation'"
+    <ConfirmationDialog
+      v-model="showDateConfirmationDialog"
+      :title="'Suppression de la date d\'activation'"
       :text="'Êtes-vous sûr de vouloir supprimer cette date d\'activation ? Cette action est irréversible.'"
-       :iconColor="'error'" :confirmText="'Supprimer'" @confirm="removeActivationDate"
-      @update:isDialogVisible="showDateConfirmationDialog = $event"></ConfirmationDialog>
+      :icon-color="'error'"
+      :confirm-text="'Supprimer'"
+      @confirm="removeActivationDate"
+      @update:model-value="showDateConfirmationDialog = $event"
+    />
 
-    <AddRotation :modelValue="showAddDialog" :rotation="rotationToEdit" @rotationSubmit="saveRotation"
-      @rotationEditSubmit="updateRotation" @rotationEditCancel="closeAddDialog" @update:modelValue="closeAddDialog">
-    </AddRotation>
+    <AddRotation
+      :model-value="showAddDialog"
+      :rotation="rotationToEdit"
+      @rotation-submit="saveRotation"
+      @rotation-edit-submit="updateRotation"
+      @rotation-edit-cancel="closeAddDialog"
+      @update:model-value="closeAddDialog"
+    />
 
-    <ActivateRotationDialog :isDialogVisible="showActivateDialog" :rotation="rotationToActivate" @onSubmit="setActivationDate"
-      @update:dialogVisible="showActivateDialog = $event"></ActivateRotationDialog>
+    <ActivateRotationDialog
+      :is-dialog-visible="showActivateDialog"
+      :rotation="rotationToActivate"
+      @on-submit="setActivationDate"
+      @update:dialog-visible="showActivateDialog = $event"
+    />
 
 
-    <ConfirmChangeDialog :dialogVisible="showConfirmChangeDialog" :pendingActivation="pendingActivation" @confirm="confirmChange" @cancel="cancelActivation"
-      @update:dialogVisible="showConfirmChangeDialog = $event"></ConfirmChangeDialog>
+    <ConfirmChangeDialog
+      :dialog-visible="showConfirmChangeDialog"
+      :pending-activation="pendingActivation"
+      @confirm="confirmChange"
+      @cancel="cancelActivation"
+      @update:dialog-visible="showConfirmChangeDialog = $event"
+    />
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+
 import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 
 import { useDisplay } from "vuetify";
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import { toUTCNormalized } from '@/utils';
 import SavedRotation from '@/components/Rotations/Information/SavedRotation.vue';
 
@@ -133,7 +237,7 @@ const authStore = useAuthStore()
 const rotationStore = useRotationStore();
 
 const snackbarStore = useSnackbarStore();
-const selectedCenter = computed(() => authStore.userData.centerId);
+// const selectedCenter = computed(() => authStore.userData.centerId);
 const centers = computed(() => centerStore.centers);
 const isAdmin = computed(() => authStore.userData.isAdmin);
 
@@ -164,41 +268,41 @@ const showDateConfirmationDialog = ref(false);
 const showConfirmChangeDialog = ref(false);
 const pendingActivation = ref({ rotation: null, date: null, changes: [] });
 
-const router = useRouter();
+// const router = useRouter();
 
 const rotationToEdit = ref(null);
 
 const selectedCenterId = ref(null);
 
-const getDayStyle = (startTime, endTime) => {
-  if (!startTime || !endTime) {
-    return {
-      overflow: 'visible',
-      position: 'absolute',
-    };
-  }
-  const containerHeight = 300;
-  const totalMinutesInDay = 1440;
+// const getDayStyle = (startTime, endTime) => {
+//   if (!startTime || !endTime) {
+//     return {
+//       overflow: 'visible',
+//       position: 'absolute',
+//     };
+//   }
+//   const containerHeight = 300;
+//   const totalMinutesInDay = 1440;
 
-  const convertToMinutes = (time) => {
-    const [hours, minutes] = time.split(':').map(Number);
-    return hours * 60 + minutes;
-  };
+//   const convertToMinutes = (time) => {
+//     const [hours, minutes] = time.split(':').map(Number);
+//     return hours * 60 + minutes;
+//   };
 
-  const startMinutes = convertToMinutes(startTime);
-  const endMinutes = convertToMinutes(endTime);
+//   const startMinutes = convertToMinutes(startTime);
+//   const endMinutes = convertToMinutes(endTime);
 
-  const minuteHeight = containerHeight / totalMinutesInDay;
-  const top = startMinutes * minuteHeight;
-  const height = (endMinutes - startMinutes) * minuteHeight;
+//   const minuteHeight = containerHeight / totalMinutesInDay;
+//   const top = startMinutes * minuteHeight;
+//   const height = (endMinutes - startMinutes) * minuteHeight;
 
-  return {
-    top: `${top}px`,
-    overflow: 'visible',
-    height: `${height}px`,
-    position: 'absolute',
-  };
-}
+//   return {
+//     top: `${top}px`,
+//     overflow: 'visible',
+//     height: `${height}px`,
+//     position: 'absolute',
+//   };
+// }
 
 
 const saveRotation = async (newRotation) => {
@@ -342,7 +446,7 @@ const onActivationSuccess = (result) => {
 
 const buildChangeMessage = (change) => {
   let dateInterval = '';
-  let ruleChange = '';
+  // const ruleChange = '';
   if (change.to) {
     dateInterval = "du " + new Date(change.from).toLocaleDateString() + " au " + new Date(change.to).toLocaleDateString();
   } else {
@@ -354,21 +458,21 @@ const buildChangeMessage = (change) => {
   return "Changement " + dateInterval + " : " + (change.oldRule ? change.oldRule : 'aucun tour de service actif') + " -> " + (change.newRule ? change.newRule : 'aucun tour de service actif');
 }
 
-const closeErrorDialog = () => {
-  showErrorDialog.value = false;
-};
+// const closeErrorDialog = () => {
+//   showErrorDialog.value = false;
+// };
 
 const closeAddDialog = () => {
   showAddDialog.value = false;
   rotationToEdit.value = null;
 };
 
-const handleCalendarTransition = () => {
-  router.push({
-    path: '/parameter',
-    meta: { transition: 'slide' }
-  });
-};
+// const handleCalendarTransition = () => {
+//   router.push({
+//     path: '/parameter',
+//     meta: { transition: 'slide' }
+//   });
+// };
 
 const handleEdit = (rotation) => {
   rotationToEdit.value = rotation;

@@ -1,24 +1,18 @@
 <template>
   <div>
-    <TicketList
-      :tickets="filteredTickets"
-      :loading="loading"
-      @open-ticket="$emit('open-ticket', $event)"
-    />
+    <TicketList :tickets="filteredTickets" :loading="loading" @open-ticket="$emit('open-ticket', $event)" />
   </div>
 </template>
 
-<route lang="json">
-{
+<route lang="json">{
   "meta": {
     "test": false
   }
-}
-</route>
+}</route>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { ticketService } from '@/services/ticketService';
+
+// import { ticketService } from '@/services/ticketService';
 import TicketList from '@/components/Tickets/TicketList.vue';
 import { useTicketStore } from '@/stores/ticketStore';
 
@@ -52,7 +46,7 @@ const filteredTickets = computed(() => {
 
   if (props.filters.search) {
     const search = props.filters.search.toLowerCase();
-    tickets = tickets.filter(ticket => 
+    tickets = tickets.filter(ticket =>
       ticket.title.toLowerCase().includes(search) ||
       ticket.content.toLowerCase().includes(search) ||
       ticket.senderEmail.toLowerCase().includes(search)

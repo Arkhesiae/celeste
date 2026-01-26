@@ -6,7 +6,8 @@ import Transaction from '../models/Transaction.js';
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 import * as substitutionService from '../services/substitution.service.js';
-import {  sendUserPoolNotification, sendAcceptedDemandEmail, sendCancelledAcceptanceEmail } from '../services/email/userPoolNotificationEmail.js';
+import * as compatibilityService from '../services/substitution/compatibilityService.js';
+import { sendUserPoolNotification, sendAcceptedDemandEmail, sendCancelledAcceptanceEmail } from '../services/email/userPoolNotificationEmail.js';
 
 
 const MIN_POINTS_TO_ACCEPT_REQUEST = -2000;
@@ -75,11 +76,11 @@ const createDemand = async (req, res) => {
             { path: 'posterId', select: 'name lastName' },
             { path: 'posterShift.teamId', select: 'name' },
             { path: 'acceptedSwitches.shift', select: 'name default' },
-          ])
-    
-     
+        ])
+
+
         try {
-            console.log("-- Compute user pool for demand from : ", demand.posterId.name+ " " + demand.posterId.lastName)
+            console.log("-- Compute user pool for demand from : ", demand.posterId.name + " " + demand.posterId.lastName)
             let perf = performance.now();
             const userPool = await computeUserPool(populatedDemand);
             let perf2 = performance.now();
@@ -195,26 +196,17 @@ const updateDemandStatus = async (req, res) => {
     res.json(demand);
 };
 
-// const markRequestAsSeen = async (req, res) => {
-//     try {
-//         const userId = req.user.id;
-//         const requestId = req.params.id;
-
-//         const request = await Substitution.findByIdAndUpdate(
-//             requestId,
-//             {$addToSet: {seenBy: userId}},
-//             {new: true}
-//         );
-
-//         if (!request) {
-//             return res.status(404).json({message: 'Request not found'});
-//         }
-
-//         res.json({message: 'Request marked as seen', request});
-//     } catch (error) {
-//         res.status(500).json({message: 'Server error', error});
-//     }
-// };
+const consultDemand = async (req, res) => {
+    try {
+        const demandId = req.params.id;
+        const userId = req.user.userId;
+        const demand = await substitutionService.consultDemand(demandId, userId);
+        res.status(200).json({ message: 'Demande consultée avec succès', demand });
+    } catch (error) {
+        console.error('Erreur lors de la consultation de la demande:', error);
+        res.status(error.status || 500).json({ error: error.message });
+    }
+};
 
 const markInterest = async (req, res) => {
     try {
@@ -317,7 +309,7 @@ const acceptRequest = async (req, res) => {
                 { path: 'accepterId', select: 'name lastName email' },
                 { path: 'posterShift.shift', select: 'name' },
                 { path: 'posterShift.teamId', select: 'name' },
-              
+
             ]);
             sendAcceptedDemandEmail(populatedDemand)
                 .then(results => {
@@ -468,16 +460,16 @@ const swapShifts = async (req, res) => {
                 { path: 'accepterShift.teamId', select: 'name' }
             ]);
             sendAcceptedDemandEmail(populatedDemand)
-                        .then(results => {
-                            console.log(`📧 Notifications envoyées avec succès:`, {
-                                demandId: updatedDemand._id,
-                                totalSent: results.sent,
-                                totalFailed: results.failed
-                            });
-                        })
-                        .catch(error => {
-                            console.error('❌ Erreur lors de l\'envoi des notifications:', error);
-                        });
+                .then(results => {
+                    console.log(`📧 Notifications envoyées avec succès:`, {
+                        demandId: updatedDemand._id,
+                        totalSent: results.sent,
+                        totalFailed: results.failed
+                    });
+                })
+                .catch(error => {
+                    console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+                });
         } catch (emailError) {
             console.error('❌ Erreur lors de la préparation des notifications:', emailError);
         }
@@ -582,21 +574,21 @@ const getCompatibleSwitches = async (req, res) => {
 const getAllCenterDemands = async (req, res) => {
     try {
         const { centerId } = req.params;
-        
+
         if (!centerId) {
             return res.status(400).json({ error: 'centerId is required' });
         }
 
         // Récupérer toutes les demandes du centre avec les informations du poster et de l'accepteur
-        const demands = await Substitution.find({ 
+        const demands = await Substitution.find({
             centerId: centerId,
-            deleted: false 
+            deleted: false
         })
-        .populate('posterId', 'name lastName email avatar personalData')
-        .populate('accepterId', 'name lastName email avatar personalData')
-        .populate('posterShift.shift')
-        .populate('accepterShift.shift')
-        .sort({ createdAt: -1 }); // Ordonner par date de création décroissante
+            .populate('posterId', 'name lastName email avatar personalData')
+            .populate('accepterId', 'name lastName email avatar personalData')
+            .populate('posterShift.shift')
+            .populate('accepterShift.shift')
+            .sort({ createdAt: -1 }); // Ordonner par date de création décroissante
 
         res.status(200).json(demands);
     } catch (error) {
@@ -605,11 +597,24 @@ const getAllCenterDemands = async (req, res) => {
     }
 };
 
+const getCompatibility = async (req, res) => {
+    try {
+        const demandId = req.params.id;
+        const userId = req.user.userId;
+        const data = await compatibilityService.getCompatibility(demandId, userId);
+        res.status(200).json(data);
+    } catch (error) {
+        console.error('Erreur lors de la récupération compatibilité:', error);
+        res.status(error.status || 500).json({ error: error.message });
+    }
+};
+
 export {
     getCenterDemands,
     getUserDemands,
     createDemand,
     cancelDemand,
+    getCompatibility,
     deleteDemand,
     updateDemandStatus,
     // markRequestAsSeen,
@@ -622,6 +627,7 @@ export {
     detectTeamChangeConflicts,
     getAvailableUsers,
     recategorizeSubstitutions,
+    consultDemand,
     //   previewEmailTemplate,
     getCompatibleSwitches,
     getAllCenterDemands

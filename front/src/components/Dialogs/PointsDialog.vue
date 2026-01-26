@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+
 import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
 
 const props = defineProps({
@@ -60,7 +60,8 @@ const formValid = computed(() => {
 const savePoints = () => {
   if (!formValid.value) return;
 
-  emit('update:points', { switchDay: props.switch.id,
+  emit('update:points', {
+    switchDay: props.switch.id,
     points: localPoints.value,
   });
   localPoints.value = 0;
@@ -74,58 +75,32 @@ const cancel = () => {
 </script>
 
 <template>
-  <GenericDialog 
-    v-model="isDialogVisible" 
-    :title="title" 
-    max-width="400px" 
-    @close="cancel"
-  >
+  <GenericDialog v-model="isDialogVisible" :title="title" max-width="400px" @close="cancel">
     <template #content>
       <div>
         <div class="mb-4 d-flex align-center ga-2">
-          <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70"></v-icon>
-          <p class="text-body-2 font-weight-medium">Permutation avec {{ props.switch.name }}</p>
+          <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70" />
+          <p class="text-body-2 font-weight-medium">
+            Permutation avec {{ props.switch.name }}
+          </p>
         </div>
-        
+
         <v-form>
           <v-text-field
-            v-model="localPoints"
-        
-            :min="0"
-            :rules="[rules.points]"
-            variant="underlined"
-            bg-color="transparent"
-            class="big-number-input"
-          >
-          <template #default>
-         
-          </template>
-        
-        </v-text-field>
-       
+v-model="localPoints" :min="0" :rules="[rules.points]" variant="underlined"
+            bg-color="transparent" class="big-number-input">
+            <template #default />
+          </v-text-field>
         </v-form>
       </div>
     </template>
 
     <template #footer>
       <div class="d-flex justify-space-between ">
-        <v-btn 
-          variant="text" 
-          color="secondary" 
-          size="small"
-          rounded="xl"
-          @click="cancel"
-        >
+        <v-btn variant="text" color="secondary" size="small" rounded="xl" @click="cancel">
           Annuler
         </v-btn>
-        <v-btn 
-          variant="flat" 
-          color="onSurface" 
-          size="small"
-          rounded="xl"
-          :disabled="!formValid"
-          @click="savePoints"
-        >
+        <v-btn variant="flat" color="onSurface" size="small" rounded="xl" :disabled="!formValid" @click="savePoints">
           Sauvegarder
         </v-btn>
       </div>

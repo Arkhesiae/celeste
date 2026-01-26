@@ -1,44 +1,87 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-4 overflow-hidden d-flex flex-column" color="surfaceContainer" style="max-height: 100%;">
-    <v-card-title v-if="title" class="text-h6 font-weight-medium mb-4 flex-grow-0">{{ title }}</v-card-title>
+  <v-card
+    rounded="xl"
+    elevation="0"
+    class="pa-4 overflow-hidden d-flex flex-column"
+    color="surfaceContainer"
+    style="max-height: 100%;"
+  >
+    <v-card-title
+      v-if="title"
+      class="text-h6 font-weight-medium mb-4 flex-grow-0"
+    >
+      {{ title }}
+    </v-card-title>
     <div class="version-list-container flex-grow-1 overflow-hidden">
-      <div class="version-list d-flex flex-column ga-2 overflow-y-auto hide-scrollbar" ref="scrollContainer" @scroll="handleScroll">
-        <div v-for="item in items" :key="item[itemKey]"
-          class="version-item  pa-3 rounded-lg cursor-pointer transition-all" :class="[
+      <div
+        ref="scrollContainer"
+        class="version-list d-flex flex-column ga-2 overflow-y-auto hide-scrollbar"
+        @scroll="handleScroll"
+      >
+        <div
+          v-for="item in items"
+          :key="item[itemKey]"
+          class="version-item  pa-3 rounded-lg cursor-pointer transition-all"
+          :class="[
             modelValue?.[itemKey] === item[itemKey] ? 'selected-version' : 'version-hover',
             itemStatus && item[itemStatus] === 'future' ? 'future-version' : '',
             itemStatus && item[itemStatus] === 'current' ? 'current-version' : ''
-          ]" @click="selectItem(item)">
+          ]"
+          @click="selectItem(item)"
+        >
           <div class="d-flex align-center justify-space-between">
             <div class="d-flex flex-column">
               <span class="text-h6 font-weight-bold">{{ prefix ? prefix + ' ' + item[itemTitle] : item[itemTitle] }}</span>
               <span class="text-caption text-medium-emphasis">{{ itemSubtitle ? item[itemSubtitle] : '' }}</span>
             </div>
             <div class="d-flex align-center">
-              <slot name="statusChip" :item="item">
-                <v-chip v-if="itemStatus && item[itemStatus] === 'future'" size="x-small" color="warning" variant="tonal" rounded="lg">
+              <slot
+                name="statusChip"
+                :item="item"
+              >
+                <v-chip
+                  v-if="itemStatus && item[itemStatus] === 'future'"
+                  size="x-small"
+                  color="warning"
+                  variant="tonal"
+                  rounded="lg"
+                >
                   Future
                 </v-chip>
-                <v-chip v-else-if="itemStatus && item[itemStatus] === 'current'" size="x-small" color="onBackground" variant="flat" rounded="lg">
+                <v-chip
+                  v-else-if="itemStatus && item[itemStatus] === 'current'"
+                  size="x-small"
+                  color="onBackground"
+                  variant="flat"
+                  rounded="lg"
+                >
                   Actuelle
                 </v-chip>
-             
               </slot>
             </div>
           </div>
           <div>
-            <slot name="itemDetails" :item="item" />
+            <slot
+              name="itemDetails"
+              :item="item"
+            />
           </div>
         </div>
       </div>
-      <div class="scroll-indicator-top" :class="{ 'hidden': isScrolledToTop }"></div>
-      <div class="scroll-indicator-bottom" :class="{ 'hidden': isScrolledToBottom }"></div>
+      <div
+        class="scroll-indicator-top"
+        :class="{ 'hidden': isScrolledToTop }"
+      />
+      <div
+        class="scroll-indicator-bottom"
+        :class="{ 'hidden': isScrolledToBottom }"
+      />
     </div>
   </v-card>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, onMounted, nextTick } from 'vue';
+
 
 const props = defineProps({
   items: { type: Array, required: true },

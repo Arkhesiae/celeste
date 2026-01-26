@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+
 import { teamService } from '@/services/teamService';
 import { userService } from '@/services/userService';
 
@@ -84,7 +84,7 @@ export const useTeamStore = defineStore('team', () => {
       currentTeam.value = await userService.fetchCurrentTeamOfUser(userId);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération de l\'équipe actuelle';
-      
+
     } finally {
       loading.value = false;
     }
@@ -213,7 +213,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       await teamService.updateTeamCycleStartDate(teamId, cycleStartDate);
       await fetchCenterTeams(currentCenter.value);
-    } catch (err) { 
+    } catch (err) {
       console.error('Erreur lors de la mise à jour de la date de début de cycle:', err);
       error.value = err.message || 'Erreur lors de la mise à jour de la date de début de cycle';
       throw err;
@@ -249,7 +249,7 @@ export const useTeamStore = defineStore('team', () => {
     teamOccurrences,
     loading,
     error,
-   
+
     // Actions
     fetchCenterTeams,
     fetchAllTeams,
@@ -266,68 +266,3 @@ export const useTeamStore = defineStore('team', () => {
   };
 });
 
-
-// updated code to review
-
-// import { defineStore } from 'pinia';
-// import { ref } from 'vue';
-//
-// export const useTeamStore = defineStore('team', () => {
-//   const teams = ref([]);  // List of all teams (for reference)
-//   const centerTeams = ref({});  // Object to store teams by centerId
-//
-//   // Fetch teams for a specific center and store them in the centerTeams object
-//   const fetchCenterTeams = async (centerId) => {
-//     if (centerTeams.value[centerId]) {
-//       // Return the cached teams for the center if already fetched
-//       return centerTeams.value[centerId];
-//     }
-//
-//     try {
-//       const response = await fetch(`http://192.168.1.36:3000/teams/${centerId}`);
-//       const data = await response.json();
-//       centerTeams.value[centerId] = data;  // Store the teams in the dictionary
-//       return data;
-//     } catch (error) {
-//       console.error('Error fetching teams for the center:', error);
-//     }
-//   };
-//
-//   // Add a new team to a specific center
-//   const addTeam = async (centerId, teamName) => {
-//     try {
-//       const response = await fetch('http://192.168.1.36:3000/teams/create-team', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify({ centerId, name: teamName }),
-//       });
-//       const newTeam = await response.json();
-//       if (!centerTeams.value[centerId]) {
-//         centerTeams.value[centerId] = [];  // If no teams exist for the center, initialize the array
-//       }
-//       centerTeams.value[centerId].push(newTeam);  // Add the new team to the center's list
-//     } catch (error) {
-//       console.error('Error adding team:', error);
-//     }
-//   };
-//
-//   // Delete a team from a specific center
-//   const deleteTeam = async (centerId, teamId) => {
-//     try {
-//       const response = await fetch(`http://192.168.1.36:3000/teams/delete-team/${teamId}`, { method: 'DELETE' });
-//       if (!response.ok) throw new Error('Failed to delete team');
-//
-//       centerTeams.value[centerId] = centerTeams.value[centerId].filter((team) => team._id !== teamId);  // Remove the team from the list
-//     } catch (error) {
-//       console.error('Error deleting team:', error);
-//     }
-//   };
-//
-//   return {
-//     teams,
-//     centerTeams,
-//     fetchCenterTeams,
-//     addTeam,
-//     deleteTeam,
-//   };
-// });

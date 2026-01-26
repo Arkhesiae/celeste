@@ -1,10 +1,9 @@
 <template>
-
-    <v-main>
-      <router-view />
-    </v-main>
-
-   
+  <v-main>
+    <router-view v-slot="{ Component }">
+      <component :is="Component" />
+    </router-view>
+  </v-main>
 </template>
 
 
@@ -13,7 +12,5 @@
 </script>
 
 <style scoped>
-.v-main {
-  padding: 0;
-}
+
 </style> 

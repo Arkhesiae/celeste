@@ -3,38 +3,31 @@
     <MainTitle title="Demandes du centre" subtitle="Consulter et gérer toutes les demandes du centre">
       <template #actions>
         <v-select
-          v-if="authStore.userData.adminType === 'master'"
-          v-model="selectedCenterId"
-          :items="centers"
+v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
           :item-props="center => ({
             title: center.name,
             subtitle: center.oaci
-          })"
-          item-value="_id"
-          label="Sélectionner un centre"
-          variant="solo-filled"
-          rounded="xl"
-          class=""
-          flat
-          min-width="200px"
-          max-width="300px"
-          @update:model-value="handleCenterChange"
-        />
+          })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="" flat
+          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
       </template>
     </MainTitle>
 
     <v-row>
-      <v-col cols="12" v-if="isLoading">
+      <v-col v-if="isLoading" cols="12">
         <Loading />
       </v-col>
-      <v-col v-else v-for="demand in sortedDemands" :key="demand._id" cols="12" >
+      <v-col v-for="demand in sortedDemands" v-else :key="demand._id" cols="12">
         <AdminDemandCard :demand="demand" />
       </v-col>
       <v-col v-if="!isLoading && demands.length === 0" cols="12">
         <v-card class="pa-8 text-center" rounded="xl" elevation="0">
-          <v-icon icon="mdi-information-outline" size="48" color="onSurface" opacity="0.3"></v-icon>
-          <p class="text-h6 mt-4 mb-0">Aucune demande trouvée</p>
-          <p class="text-body-2 opacity-70">Il n'y a actuellement aucune demande dans ce centre</p>
+          <v-icon icon="mdi-information-outline" size="48" color="onSurface" opacity="0.3" />
+          <p class="text-h6 mt-4 mb-0">
+            Aucune demande trouvée
+          </p>
+          <p class="text-body-2 opacity-70">
+            Il n'y a actuellement aucune demande dans ce centre
+          </p>
         </v-card>
       </v-col>
     </v-row>
@@ -42,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+
 import { useCenterStore } from '@/stores/centerStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
@@ -50,7 +43,7 @@ import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import { substitutionService } from '@/services/substitutionService.js';
 
 defineOptions({
-  name: 'admin-demands',
+  name: 'AdminDemands',
   meta: {
     requiresAuth: true,
     requiresAdmin: true,
@@ -86,7 +79,7 @@ const fetchCenterDemands = async (centerId) => {
   try {
     const response = await substitutionService.fetchAllCenterDemands(centerId);
     demands.value = response;
-    
+
     snackbarStore.showNotification('Demandes chargées avec succès', 'onPrimary', 'mdi-check');
   } catch (error) {
     console.error('Erreur lors du chargement des demandes:', error);
@@ -100,7 +93,7 @@ const fetchCenterDemands = async (centerId) => {
 onMounted(async () => {
   try {
     await centerStore.fetchCenters();
-    
+
     // Charger les demandes en fonction du type d'admin
     if (authStore.userData.adminType === 'master') {
       selectedCenterId.value = null;
@@ -108,12 +101,10 @@ onMounted(async () => {
       await fetchCenterDemands(authStore.userData.centerId);
       selectedCenterId.value = authStore.userData.centerId;
     }
-  } catch (error) {
+  } catch {
     snackbarStore.showNotification('Erreur lors de la récupération des centres', 'onError', 'mdi-alert-circle-outline');
   }
 });
 </script>
 
-<style scoped>
-</style>
-
+<style scoped></style>

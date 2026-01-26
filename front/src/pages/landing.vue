@@ -1,113 +1,226 @@
 <template>
-  <v-container fluid class="fill-height">
-    <v-row justify="center" style="min-height: 800px">
-      <v-col cols="12" sm="12" md="12" lg="12" class="py-16 mt-16">
-        <div class="d-flex align-center" :class="mdAndUp ? 'justify-space-between' : 'justify-center'">
+  <v-container
+    fluid
+    class="fill-height"
+  >
+    <v-row
+      justify="center"
+      style="min-height: 800px"
+    >
+      <v-col
+        cols="12"
+        sm="12"
+        md="12"
+        lg="12"
+        class="py-16 mt-16"
+      >
+        <div
+          class="d-flex align-center"
+          :class="mdAndUp ? 'justify-space-between' : 'justify-center'"
+        >
+          <v-card
+            variant="text"
+            class="mt-16"
+            style="z-index: 34 !important;"
+          >
+            <v-card-text
+              class="d-flex align-start flex-column"
+              :class="{ 'align-center': !mdAndUp }"
+            >
+              <div class="text-overline subtitle-animation">
+                Votre site de rempla
+              </div>
+              <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
 
-         
+              <div
+                class="font-weight-medium d-flex flex-wrap mt-4"
+                :class="[
+                  mdAndUp ? 'text-h1' : 'text-h3',
+                  { 'justify-center': !mdAndUp }
+                ]"
+                :style="mdAndUp ? 'left: -8px; position: relative' : ''"
+              >
+                <span
+                  class="title-animation"
+                  style="margin-right: 1rem ; font-weight: 900 !important;"
+                >Bienvenue</span>
 
-        
-        <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
-          <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
-            <div class="text-overline subtitle-animation">Votre site de rempla</div>
-            <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
+                <span
+                  class="title-animation"
+                  style="margin-right: 1rem ; font-weight: 900 !important;"
+                >sur</span>
+                <span class="gradient font-weight-bold title-animation">Céleste</span>
+              </div>
+              <div class="text-h6 mt-5 subtitle-animation">
+                Remplacer s'offre un nouveau look !
+              </div>
+            </v-card-text>
 
-            <div class="font-weight-medium d-flex flex-wrap mt-4" :class="[
-              mdAndUp ? 'text-h1' : 'text-h3',
-              { 'justify-center': !mdAndUp }
-            ]" :style="mdAndUp ? 'left: -8px; position: relative' : ''">
-
-              <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">Bienvenue</span>
-
-              <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">sur</span>
-              <span class="gradient font-weight-bold title-animation">Céleste</span>
-
-
-            </div>
-            <div class="text-h6 mt-5 subtitle-animation">Remplacer s'offre un nouveau look !</div>
-          </v-card-text>
-
-          <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
-            <div class="block d-flex button-animation" style="animation-delay: 1.1s;">
-              <v-btn prepend-icon="mdi-lightning-bolt" style="border-radius: 12px !important;" height="48px "
-                class="px-8" variant="flat" rounded="lg" color="surface" @click="router.push({ path: '/get-started' })">
-                Get started
-              </v-btn>
-            </div>
-            <div class="d-flex button-animation" style="animation-delay: 1.3s; z-index: 34 !important;">
-              <v-btn class="px-8 pr-8" variant="flat" style="border-radius: 12px !important;" height="48px" rounded="lg"
-                color="onBackground" @click="router.push({ path: '/login' })">
-                <template #append>
-                  <v-icon style="left:10px">mdi-arrow-right</v-icon>
-                </template>
-                Se connecter
-              </v-btn>
-            </div>
-          </v-card-actions>
-        </v-card>
-        <v-img src="@/assets/CRNA.png" alt="landing" :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }" />
-      </div>
+            <v-card-actions
+              class="ml-2 pb-5 flex-wrap ga-4"
+              :class="{ 'justify-center': !mdAndUp }"
+            >
+              <div
+                class="block d-flex button-animation"
+                style="animation-delay: 1.1s;"
+              >
+                <v-btn
+                  prepend-icon="mdi-lightning-bolt"
+                  style="border-radius: 12px !important;"
+                  height="48px "
+                  class="px-8"
+                  variant="flat"
+                  rounded="lg"
+                  color="surface"
+                  @click="router.push({ path: '/get-started' })"
+                >
+                  Get started
+                </v-btn>
+              </div>
+              <div
+                class="d-flex button-animation"
+                style="animation-delay: 1.3s; z-index: 34 !important;"
+              >
+                <v-btn
+                  class="px-8 pr-8"
+                  variant="flat"
+                  style="border-radius: 12px !important;"
+                  height="48px"
+                  rounded="lg"
+                  color="onBackground"
+                  @click="router.push({ path: '/login' })"
+                >
+                  <template #append>
+                    <v-icon style="left:10px">
+                      mdi-arrow-right
+                    </v-icon>
+                  </template>
+                  Se connecter
+                </v-btn>
+              </div>
+            </v-card-actions>
+          </v-card>
+          <v-img
+            src="@/assets/CRNA.png"
+            alt="landing"
+            :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }"
+          />
+        </div>
       </v-col>
-
-     
-
-
     </v-row>
 
-    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch bg-background" width="100%" style="min-height: 200px ; width: 100%;">
-      <v-col cols="12" md="4" v-for="(card, index) in cards" :key="index">
-
-        <div  style="min-height: 200px;" :ref="el => { if (el) cardRefs[index] = el }">
+    <v-row
+      class="px-4 py-16 mt-16 d-flex align-content-stretch bg-background"
+      width="100%"
+      style="min-height: 200px ; width: 100%;"
+    >
+      <v-col
+        v-for="(card, index) in cards"
+        :key="index"
+        cols="12"
+        md="4"
+      >
+        <div
+          :ref="el => { if (el) cardRefs[index] = el }"
+          style="min-height: 200px;"
+        >
           <transition name="card">
-            <div v-show="card.isVisible" >
-         
-            <v-card :class="{ 'card-hover': mdAndUp }" flat height="100%"
-              rounded="xl" class="flex-column d-flex pa-8 bg-surfaceContainer">
-       
-              <v-scale-transition>
-                <v-icon color="remplacement" class="mt-4 mb-4 align-self-center">{{ card.icon }}</v-icon>
-              </v-scale-transition>
-              <v-icon color="remplacement" style="filter: blur(10px); transform: scale(8) ; opacity: 0.2"
-                class="position-absolute">{{ card.icon }}</v-icon>
-              <v-slide-y-transition>
-                <span class="text-h7 mt-2 font-weight-bold">{{ card.title }}</span>
-              </v-slide-y-transition>
-              <v-slide-y-transition>
-                <span class="text-caption text-medium-emphasis">{{ card.description }}</span>
-              </v-slide-y-transition>
-            </v-card>
-                 
-          </div>
+            <div v-show="card.isVisible">
+              <v-card
+                :class="{ 'card-hover': mdAndUp }"
+                flat
+                height="100%"
+                rounded="xl"
+                class="flex-column d-flex pa-8 bg-surfaceContainer"
+              >
+                <v-scale-transition>
+                  <v-icon
+                    color="remplacement"
+                    class="mt-4 mb-4 align-self-center"
+                  >
+                    {{ card.icon }}
+                  </v-icon>
+                </v-scale-transition>
+                <v-icon
+                  color="remplacement"
+                  style="filter: blur(10px); transform: scale(8) ; opacity: 0.2"
+                  class="position-absolute"
+                >
+                  {{ card.icon }}
+                </v-icon>
+                <v-slide-y-transition>
+                  <span class="text-h7 mt-2 font-weight-bold">{{ card.title }}</span>
+                </v-slide-y-transition>
+                <v-slide-y-transition>
+                  <span class="text-caption text-medium-emphasis">{{ card.description }}</span>
+                </v-slide-y-transition>
+              </v-card>
+            </div>
           </transition>
         </div>
-
       </v-col>
     </v-row>
 
     <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
-      <v-fade-transition group appear>
-        <v-col key="center" cols="12" md="4">
-          <v-card ref="statsRef" color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
+      <v-fade-transition
+        group
+        appear
+      >
+        <v-col
+          key="center"
+          cols="12"
+          md="4"
+        >
+          <v-card
+            ref="statsRef"
+            color="transparent"
+            flat
+            height="100%"
+            rounded="xl"
+            class="flex-column align-center d-flex pa-4"
+          >
             <span class="text-h1 mt-2 font-weight-bold text-remplacement">{{ Math.floor(animatedCenters) }}</span>
             <span class="text-h7 text-medium-emphasis">centres</span>
           </v-card>
         </v-col>
-        <v-col key="controllers" cols="12" md="4">
-          <v-card color="transparent" flat height="100%" rounded="xl"
-            class="flex-column align-center d-flex pa-4">
+        <v-col
+          key="controllers"
+          cols="12"
+          md="4"
+        >
+          <v-card
+            color="transparent"
+            flat
+            height="100%"
+            rounded="xl"
+            class="flex-column align-center d-flex pa-4"
+          >
             <span class="text-h1 mt-2 font-weight-bold text-onSurface">{{ Math.floor(animatedNumber) }}</span>
             <span class="text-h7 text-medium-emphasis">contrôleurs</span>
           </v-card>
         </v-col>
-        <v-col key="replace" cols="12" md="4">
-          <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold" style="opacity: 0.7;">{{ Math.floor(animatedReplacements) }}</span>
+        <v-col
+          key="replace"
+          cols="12"
+          md="4"
+        >
+          <v-card
+            color="transparent"
+            flat
+            height="100%"
+            rounded="xl"
+            class="flex-column align-center d-flex pa-4"
+          >
+            <span
+              class="text-h1 mt-2 font-weight-bold"
+              style="opacity: 0.7;"
+            >{{ Math.floor(animatedReplacements) }}</span>
             <span class="text-h7 text-medium-emphasis">remplacements</span>
           </v-card>
         </v-col>
       </v-fade-transition>
     </v-row>
-<!-- 
+    <!-- 
     <v-row class="px-4 mt-16 d-flex align-content-stretch">
       <v-col cols="12" md="12">
         <v-card flat height="100%" rounded="xl" class="flex-column d-flex pa-8">
@@ -249,7 +362,7 @@ const startAnimation = (target, current, key, duration) => {
 };
 
 const getStats = async () => {
-  const response = await statStore.fetchStats();
+  await statStore.fetchStats();
 }
 
 const setupStatsObserver = async () => {
@@ -316,7 +429,6 @@ onUnmounted(() => {
   });
 });
 
-const targetNumber = 500;
 
 onMounted(() => {
   const observer = new IntersectionObserver((entries) => {

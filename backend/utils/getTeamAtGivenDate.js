@@ -1,34 +1,17 @@
-import Team from '../models/Team.js';
-
-// Trouver l'équipe active à une date
-const getTeamAtGivenDate = async (teams, date) => {
-    if (!teams || teams.length === 0) {
-        return null; // Retourner null si aucune équipe n'est assignée
-    }
-
-    const sortedTeams = teams.slice().sort((a, b) => new Date(b.fromDate) - new Date(a.fromDate));
+export const getTeamAtGivenDate = (teamOccurences, date) => {
+    const sortedTeamOccurences = teamOccurences.slice().sort((a, b) => new Date(b.fromDate) - new Date(a.fromDate));
     
-    // Vérifier d'abord les renforts actifs
-    for (const team of sortedTeams) {
+    for (const team of sortedTeamOccurences) {
         if (new Date(team.fromDate) <= date && new Date(team.toDate) >= date) {
-            const teamDoc = await Team.findById(team.teamId);
-            if (teamDoc && !teamDoc.deleted) {
-                return team;
-            }
+            return team;
         }
     }
 
-    // Vérifier ensuite les équipes permanentes
-    for (const team of sortedTeams) {
+    for (const team of sortedTeamOccurences) {
         if (!team.toDate && new Date(team.fromDate) <= date) {
-            const teamDoc = await Team.findById(team.teamId);
-            if (teamDoc && !teamDoc.deleted) {
-                return team;
-            }
+            return team;
         }
     }
 
     return null;
 };
-
-export { getTeamAtGivenDate };

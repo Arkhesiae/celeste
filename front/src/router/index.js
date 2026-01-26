@@ -1,8 +1,13 @@
 // router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import { routes, handleHotUpdate } from 'vue-router/auto-routes'
+import { routes } from 'vue-router/auto-routes'
 import { useAuthStore } from '@/stores/authStore.js';
+import { useInitializationStore } from '@/stores/initializationStore';
+// import { useAppInitialization } from '@/composables/useAppInitialization';
 import { setupLayouts } from 'virtual:generated-layouts'
+
+
+
 
 const router = createRouter({
   history: createWebHistory(),
@@ -34,54 +39,37 @@ const noAuth = ['/login', '/(account-creation)/creation', '/landing', '/(account
 const both = ['/contact-admin', '/loading']
 
 // Configuration des transitions
-const transitionConfigs = {
-  parameter: {
-    forward: 'slide-lefty',
-    backward: 'slide-righty'
-  },
-  auth: {
-    routes: ['/login', '/(account-creation)/creation'],
-    forward: 'slide-left',
-    backward: 'slide-right'
-  },
-  teams: {
-    routes: ['/center/centers', '/center/[centerId]/teams'],
-    forward: 'slide-lefty',
-    backward: 'slide-righty'
-  }
-};
+// const transitionConfigs = {
+//   parameter: {
+//     forward: 'slide-lefty',
+//     backward: 'slide-righty'
+//   },
+//   auth: {
+//     routes: ['/login', '/(account-creation)/creation'],
+//     forward: 'slide-left',
+//     backward: 'slide-right'
+//   },
+//   teams: {
+//     routes: ['/center/centers', '/center/[centerId]/teams'],
+//     forward: 'slide-lefty',
+//     backward: 'slide-righty'
+//   }
+// };
 
 
 router.beforeEach(async (to, from, next) => {
-
-  console.log(to.path)
-  console.log(from.path)
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
     return next();
   }
 
   const authStore = useAuthStore();
+  const initializationStore = useInitializationStore();
+  // const { initializeApp } = useAppInitialization();
 
-
-  if (!authStore.accessToken) {
-    console.log("No access token");
-    try {
-      await authStore.loadFromLocalStorage();
-    } catch (error) {
-      console.warn("⚠️ Erreur lors du chargement des données d'authentification:", error);
-    }
-  } else {
-    console.log("Access token");
-    try {
-      await authStore.validateAccessToken();
-    } catch (error) {
-      
-      console.warn("⚠️ Token invalide ou expiré", error);
-    }
+  if (!authStore.isAuthReady) {
+    console.log('==> initializeAuth in beforeEach')
+    await authStore.initializeAuth();
   }
-
-  console.log("1")
-
 
   if (to.path === '/') {
     if (authStore.isLoggedIn) {
@@ -92,11 +80,14 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Navigation guard pour les routes d'administration
- 
-  console.log("2")
 
   if (authStore.isLoggedIn) {
-    console.log("3")
+    if (!initializationStore.isAppReady && to.path !== '/loading') {
+      initializationStore.setPendingRoute(to.path);
+      return next({ path: '/loading' });
+    } 
+
+
     if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
       return next({ path: '/pending-approval' });
     }
@@ -114,27 +105,21 @@ router.beforeEach(async (to, from, next) => {
 
 
   else {  
-    console.log("4")
-    // console.log(to.name)
-   if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
+    if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
       return next({ path: '/login' });
     }
   } 
 
-
-  // console.log(to.meta)
-  // console.log(to.path)
   next();
 
 
 
 });
 
-router.afterEach((to, from) => {
+router.afterEach(() => {
   
-  // console.log(to.meta)
-  const toDepth = to.path.split('/').length
-  const fromDepth = from.path.split('/').length
+  // const toDepth = to.path.split('/').length
+  // const fromDepth = from.path.split('/').length
   // to.meta.transition = toDepth < fromDepth ? 'slide-right' : 'slide-left'
 })
 
@@ -144,25 +129,22 @@ router.afterEach((to, from) => {
 
 
 if (import.meta.hot) {
-  import.meta.hot.accept('./auto-routes.js', (mod) => {
-    if (mod?.default) {
-      console.log('♻️ Hot update des routes détecté');
-      handleHotUpdate(mod.default);
-    } else {
-      console.warn('⚠️ Hot update: module auto-routes vide ou invalide');
+  import.meta.hot.accept((newModule) => {
+    if (newModule) {
+      console.log('updated : count is now ', newModule.count)
     }
-  });
+  })
 }
 
 // Gestion des erreurs de chargement dynamique
-router.onError((err, to) => {
+router.onError((err) => {
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
     const hasReloaded = localStorage.getItem('vuetify:dynamic-reload');
 
     if (!hasReloaded) {
-      console.warn('⚡ Dynamic import error, forcing reload');
+      console.warn('⚡ Dynamic import error, please force reload');
       localStorage.setItem('vuetify:dynamic-reload', 'true');
-      window.location.reload(); // Hard reload
+      // window.location.reload(); // Hard reload
     } else {
       console.error('❌ Reload did not fix dynamic import error:', err);
     }

@@ -1,7 +1,14 @@
 <template>
-  <v-dialog v-model="isDialogVisible"
-            max-width="600px" :fullscreen="mobile">
-    <v-card rounded="xl" elevation="8" class="pa-2">
+  <v-dialog
+    v-model="isDialogVisible"
+    max-width="600px"
+    :fullscreen="mobile"
+  >
+    <v-card
+      rounded="xl"
+      elevation="8"
+      class="pa-2"
+    >
       <!-- Titre principal -->
 
       <v-card-title class="d-flex justify-space-between align-center">
@@ -13,68 +20,77 @@
           icon="mdi-close"
           variant="text"
           @click="close"
-        ></v-btn>
+        />
       </v-card-title>
 
       <v-card-text class="overflow-auto">
-        {{userShift?.shift?.name }}
-        <v-form ref="addForm" v-model="formValid">
-
+        {{ userShift?.shift?.name }}
+        <v-form
+          ref="addForm"
+          v-model="formValid"
+        >
           <div class="d-flex  justify-space-between">
-            <v-icon icon="mdi-calendar" @click="" class="mr-4 mt-4"></v-icon>
+            <v-icon
+              icon="mdi-calendar"
+              class="mr-4 mt-4"
+              @click=""
+            />
             <v-text-field
+              v-model="formattedDate"
               rounded="lg"
               class="cursor-pointer mt-00"
               bg-color="primary"
-              v-model="formattedDate"
               persistent-hint
               hint="Remplacement"
               label="Date de remplacement"
+              readonly
               @blur="formatDateForDisplay"
               @focus="formatDateForInput"
-              readonly
-            ></v-text-field>
-            <div v-if="dialogModeValue === 'Renfort'" class="text-h4 ma-3">-</div>
+            />
+            <div
+              v-if="dialogModeValue === 'Renfort'"
+              class="text-h4 ma-3"
+            >
+              -
+            </div>
           </div>
           <v-date-picker
+            v-model="selectedDate"
             show-adjacent-months
             show-current
             hide-header
             class="mx-auto"
             width="400px"
-            v-model="selectedDate"
-            @update:model-value="updateFormattedDate"
             locale="fr"
-          ></v-date-picker>
+            @update:model-value="updateFormattedDate"
+          />
           <v-textarea
-            rounded="xl"
             v-model="demand.comment"
+            rounded="xl"
             no-resize
             label="Commentaire"
             outlined
-          ></v-textarea>
+          />
 
 
           <div class="d-flex justify-start align-center ">
             <v-number-input
+              v-model="demand.points"
               hide-input
               hide-details
-              v-model="demand.points"
               max-width="50px"
               rounded="lg"
               color="white"
               bg-color="primary"
               label="Points"
               required
-            >
-            </v-number-input>
+            />
             <input
+              v-model="demand.points"
               type="number"
               class="rounded-xl text-h2 font-weight-bold  pa-4"
               style="  width: 150px; color: #85cde6"
-              v-model="demand.points"
-            />
-
+            >
           </div>
         </v-form>
       </v-card-text>
@@ -84,7 +100,6 @@
           color="secondary" 
           rounded="xl"
           @click="close"
-
         >
           Annuler
         </v-btn>
@@ -94,35 +109,48 @@
           color="primary"
           :disabled="!formValid"
           @click="submit"
-
         >
           Poster la demande
         </v-btn>
       </v-card-actions>
-
-
     </v-card>
   </v-dialog>
 
   <!-- Confirmation Dialog -->
-  <v-dialog v-model="showConfirmationDialog" max-width="400px">
-    <v-card rounded="xl" elevation="0" class="pa-2">
+  <v-dialog
+    v-model="showConfirmationDialog"
+    max-width="400px"
+  >
+    <v-card
+      rounded="xl"
+      elevation="0"
+      class="pa-2"
+    >
       <v-card-item prepend-icon="mdi-alert-outline">
         <v-card-title>Conflit de changement</v-card-title>
-
       </v-card-item>
 
       <v-card-text>
         Ecraser le changement du {{ toDisplayFormat(selectedDate) }} ?
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" @click="showConfirmationDialog = false">Annuler</v-btn>
-        <v-btn variant="tonal" rounded="lg" color="primary" @click="submit() ; showConfirmationDialog=false">Valider
+        <v-btn
+          variant="text"
+          color="secondary"
+          @click="showConfirmationDialog = false"
+        >
+          Annuler
         </v-btn>
-
+        <v-btn
+          variant="tonal"
+          rounded="lg"
+          color="primary"
+          @click="submit() ; showConfirmationDialog=false"
+        >
+          Valider
+        </v-btn>
       </v-card-actions>
     </v-card>
-
   </v-dialog>
 
   <v-snackbar
@@ -134,7 +162,6 @@
   >
     {{ snackbarMessage }}
   </v-snackbar>
-
 </template>
 
 <script>
@@ -158,6 +185,7 @@ export default {
     },
     date: {
       type: String,
+      default: null,
 
     },
   },

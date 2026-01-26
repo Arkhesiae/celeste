@@ -3,20 +3,26 @@
     <!-- En-tête avec titre et informations admin -->
     <v-row class="my-16">
       <v-col cols="12">
-        <v-card class="pa-6" rounded="xl" variant="flat" color="surface">
+        <v-card
+          class="pa-6"
+          rounded="xl"
+          variant="flat"
+          color="surface"
+        >
           <div class="d-flex align-center justify-space-between">
             <div>
               <div class="align-center ga-2 font-weight-bold d-flex ">
-                <v-icon icon="mdi-shield-crown" size="20"   />
-                <span class="text-h6 font-weight-bold ">  Panneau d'Administration   </span>
-               
+                <v-icon
+                  icon="mdi-shield-crown"
+                  size="20"
+                />
+                <span class="text-h6 font-weight-bold "> Panneau d'Administration </span>
               </div>
               <p class="text-body-2 opacity-50 mb-0">
-                Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' : 'Administrateur Local' }}
+                Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' :
+                  'Administrateur Local' }}
               </p>
             </div>
-         
-
           </div>
         </v-card>
       </v-col>
@@ -24,21 +30,40 @@
 
     <!-- Statistiques rapides -->
     <v-row class="mb-6">
-      <v-col 
-        v-for="stat in quickStats" 
+      <v-col
+        v-for="stat in quickStats"
         :key="stat.key"
-        cols="12" 
-        :sm="stat.key === 'totalUsers' ? 12 : 6" 
+        cols="12"
+        :sm="stat.key === 'totalUsers' ? 12 : 6"
         md="4"
       >
-        <v-card class="pa-4 opacity-100 px-6" rounded="xl" variant="flat" color="surfaceContainerHighest" @click="navigateTo(stat.path)" :class="actionNeeded(stat) ? 'action-needed' : ''">
+        <v-card
+          class="pa-4 opacity-100 px-6"
+          rounded="xl"
+          variant="flat"
+          color="surfaceContainerHighest"
+          :class="actionNeeded(stat) ? 'action-needed' : ''"
+          @click="navigateTo(stat.path)"
+        >
           <div class="d-flex align-center">
-            <v-avatar :color="actionNeeded(stat) ? 'pending' : 'onBackground'" variant="tonal" size="24" class="mr-4">
-              <v-icon :icon="stat.icon" size="12" />
+            <v-avatar
+              :color="actionNeeded(stat) ? 'pending' : 'onBackground'"
+              variant="tonal"
+              size="24"
+              class="mr-4"
+            >
+              <v-icon
+                :icon="stat.icon"
+                size="12"
+              />
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">{{ stat.value }}</div>
-              <div class="text-caption opacity-50">{{ stat.label }}</div>
+              <div class="text-h6 font-weight-bold">
+                {{ stat.value }}
+              </div>
+              <div class="text-caption opacity-50">
+                {{ stat.label }}
+              </div>
             </div>
           </div>
         </v-card>
@@ -46,56 +71,83 @@
     </v-row>
 
     <!-- Sections principales -->
-    <v-row>
-      <v-col 
-        :class="smAndDown ? 'mx-0 pa-0 ' : ''"
-        v-for="section in mainSections" 
-        :key="section.id"
+    <v-row :class="smAndDown ? 'mx-n4 ' : ''">
+      <v-col
+        v-for="section in mainSections"
         v-show="!section.requiresMaster || adminType === 'master'"
-        cols="12" 
-        md="6" 
+        :key="section.id"
+        :class="smAndDown ? 'mx-0 pa-0 ' : ''"
+        cols="12"
+        md="6"
         class="mb-4"
       >
-        <v-card class="pa-6" rounded="xl" variant="flat" :color="smAndDown ? 'transparent' : 'surface'" height="100%">
-          <div class="d-flex align-center mb-4">
+        <v-card
+          :class="smAndDown ? 'pa-0' : 'pa-6'"
+          :rounded="smAndDown ? '0' : 'xl'"
+          variant="flat"
+          :color="smAndDown ? 'transparent' : 'surface'"
+          height="100%"
+        >
+          <div
+            class="d-flex align-center mb-4 "
+            :class="smAndDown ? 'px-4' : ''"
+          >
             <div>
               <span class="text-h7 font-weight-bold">{{ section.title }}</span>
-              <p class="text-body-2 opacity-50 mb-0">{{ section.description }}</p>
+              <p class="text-body-2 opacity-50 mb-0">
+                {{ section.description }}
+              </p>
             </div>
           </div>
-          
-          <v-list class="pa-0 ga-4 d-flex flex-column bg-transparent overflow-visible" >
-            <v-list-item 
-              v-for="item in section.items" 
-              :key="item.id"
+
+          <div class="pa-0 d-flex flex-column b">
+            <div
+              v-for="(item, index) in section.items"
               v-show="!item.requiresMaster || adminType === 'master'"
-              class="px-4" 
-              :class="(actionNeeded(item) ? ' action-needed' : '')"
+              :key="item.id"
+              v-ripple
+              class="cursor-pointer"
+              :class="{ 'px-4': smAndDown, 'action-needed': actionNeeded(item) }"
               height="60"
-              rounded="xl" 
+              rounded="xl"
               @click="navigateTo(item.path)"
             >
-              <template v-slot:prepend>
+              <div
+                class="d-flex align-center justify-space-between"
+                :class="smAndDown ? 'py-6' : 'py-4'"
+              >
+                <div>
+                  <div class="title">
+                    {{ item.title }}
+                  </div>
+                  <div class="subtitle">
+                    {{ item.subtitle }}
+                  </div>
+                </div>
+                <v-icon
+                  icon="mdi-chevron-right"
+                  size="16"
+                  color="primary"
+                />
+              </div>
+              <!-- <template v-slot:prepend>
             
                 <v-icon  :icon="item.icon" color="onSurface" size="16" />
-              </template>
-              <v-list-item-title class="title">{{ item.title }}</v-list-item-title>
-              <v-list-item-subtitle class="subtitle">{{ item.subtitle }}</v-list-item-subtitle>
-              <template v-slot:append>
+              </template> -->
+
+              <!-- <template v-slot:append>
                 <v-icon icon="mdi-chevron-right" />
-              </template>
-            </v-list-item>
-          </v-list>
+              </template> -->
+              <v-divider v-if="index !== section.items.length - 1" />
+            </div>
+          </div>
         </v-card>
       </v-col>
     </v-row>
-
-   
   </v-container>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
@@ -103,14 +155,6 @@ import { useCenterStore } from '@/stores/centerStore'
 import { useTicketStore } from '@/stores/ticketStore'
 import { useDisplay } from 'vuetify'
 
-defineOptions({
-  name: 'admin-panel',
-  meta: {
-    requiresAuth: true,
-    requiresAdmin: true,
-    layout: 'default'
-  }
-})
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -201,7 +245,7 @@ const mainSections = computed(() => [
       {
         id: 'all-users',
         title: 'Tous les utilisateurs',
-        subtitle: 'Voir et gérer tous les utilisateurs',
+       
         icon: 'mdi-account-multiple',
         iconColor: 'primary',
         path: '/users',
@@ -220,7 +264,7 @@ const mainSections = computed(() => [
       {
         id: 'all-centers',
         title: 'Tous les centres',
-        subtitle: 'Gérer tous les centres du système',
+    
         icon: 'mdi-office-building-marker',
         iconColor: 'success',
         path: '/center/centers',
@@ -229,17 +273,17 @@ const mainSections = computed(() => [
       {
         id: 'teams',
         title: adminType.value === 'master' ? 'Équipes par centre' : 'Mon centre',
-        subtitle: adminType.value === 'master' ? 'Gérer les équipes de chaque centre' : 'Gérer les équipes de mon centre',
+       
         icon: 'mdi-account-group',
         iconColor: 'info',
         path: `/center/${authStore.userData.centerId}/teams`,
         requiresMaster: false
       },
-      
+
       {
         id: 'center-demands',
         title: 'Demandes du centre',
-        subtitle: 'Voir toutes les demandes de remplacement et permutation',
+       
         icon: 'mdi-swap-horizontal',
         iconColor: 'remplacement',
         path: '/admin/demands',
@@ -249,7 +293,7 @@ const mainSections = computed(() => [
   },
   {
     id: 'support',
-    title: 'Support & Tickets',
+    title: 'Tickets et E-mails',
     description: 'Gérer les demandes de support',
     icon: 'mdi-help-circle',
     color: 'info',
@@ -273,7 +317,7 @@ const mainSections = computed(() => [
       {
         id: 'emails',
         title: 'Gestion des emails',
-        subtitle: 'Envoyer et gérer les emails',
+       
         icon: 'mdi-email',
         iconColor: 'primary',
         path: '/admin/emails',
@@ -283,69 +327,69 @@ const mainSections = computed(() => [
   },
   {
     id: 'system',
-    title: 'Configuration Système',
+    title: 'Configuration système',
     description: 'Paramètres avancés du système',
     icon: 'mdi-cog',
     color: 'error',
-    requiresMaster: true,
+    requiresMaster: false,
     items: [
       {
         id: 'rules',
         title: 'Règles de l\'application',
-        subtitle: 'Configurer les règles système',
+       
         icon: 'mdi-server-security',
         iconColor: 'error',
         path: '/admin/rules',
-        requiresMaster: true
+        requiresMaster: false
       },
-    //   {
-    //     id: 'account-recovery',
-    //     title: 'Récupération de comptes',
-    //     subtitle: 'Gérer les demandes de récupération',
-    //     icon: 'mdi-account-sync',
-    //     iconColor: 'warning',
-    //     path: '/admin/account-recovery',
-    //     requiresMaster: true
-    //   }
+      //   {
+      //     id: 'account-recovery',
+      //     title: 'Récupération de comptes',
+      //     subtitle: 'Gérer les demandes de récupération',
+      //     icon: 'mdi-account-sync',
+      //     iconColor: 'warning',
+      //     path: '/admin/account-recovery',
+      //     requiresMaster: true
+      //   }
     ]
   }
 ])
 
 // Actions rapides pour v-for
-const quickActions = computed(() => [
-  {
-    id: 'approve-users',
-    title: 'Approuver des candidatures',
-    color: 'primary',
-    icon: 'mdi-account-plus',
-    path: '/admin/pending-users',
-    requiresMaster: false
-  },
-  {
-    id: 'view-tickets',
-    title: 'Voir les tickets',
-    color: 'info',
-    icon: 'mdi-message-question',
-    path: '/admin/tickets',
-    requiresMaster: false
-  },
-  {
-    id: 'configure-rules',
-    title: 'Configurer les règles',
-    color: 'error',
-    icon: 'mdi-server-security',
-    path: '/admin/rules',
-    requiresMaster: true
-  },
-  {
-    id: 'manage-teams',
-    title: 'Gérer les équipes',
-    color: 'success',
-    icon: 'mdi-office-building',
-    path: `/center/${authStore.userData.centerId}/teams`,
-    requiresMaster: false
-  }
-])
+// const quickActions = computed(() => [
+//   {
+//     id: 'approve-users',
+//     title: 'Approuver des candidatures',
+//     color: 'primary',
+//     icon: 'mdi-account-plus',
+//     path: '/admin/pending-users',
+//     requiresMaster: false
+//   },
+//   {
+//     id: 'view-tickets',
+//     title: 'Voir les tickets',
+//     color: 'info',
+//     icon: 'mdi-message-question',
+//     path: '/admin/tickets',
+//     requiresMaster: false
+//   },
+//   {
+//     id: 'configure-rules',
+//     title: 'Configurer les règles',
+//     color: 'error',
+//     icon: 'mdi-server-security',
+//     path: '/admin/rules',
+//     requiresMaster: true
+//   },
+//   {
+//     id: 'manage-teams',
+//     title: 'Gérer les équipes',
+//     color: 'success',
+//     icon: 'mdi-office-building',
+//     path: `/center/${authStore.userData.centerId}/teams`,
+//     requiresMaster: false
+//   }
+// ])
 
 // Fonction de navigation
 const navigateTo = (path) => {
@@ -362,16 +406,16 @@ const loadStats = async () => {
     } else {
       await userStore.fetchUsersByCenter(authStore.userData.centerId)
     }
-    
+
     // Charger les tickets
     await ticketStore.fetchTickets()
-    
+
     // Calculer les statistiques
     stats.value.totalUsers = userStore.users.length
     stats.value.pendingUsers = userStore.users.filter(user => user.registrationStatus === 'pending').length
     stats.value.pendingTickets = ticketStore.tickets.filter(ticket => ticket.status != 'closed').length
     stats.value.totalCenters = centerStore.centers.length
-    
+
   } catch (error) {
     console.error('Erreur lors du chargement des statistiques:', error)
   }
@@ -418,22 +462,22 @@ onMounted(() => {
 
 .action-needed {
   position: relative;
-  border-radius: 24px !important;
-  color : rgba(var(--v-theme-onPending), 1) !important;
+  /* border-radius: 24px !important; */
+  color: rgba(var(--v-theme-onPending), 1) !important;
   background-color: rgba(var(--v-theme-pending), 0.01) !important;
   overflow: hidden;
   box-shadow: 0 0 28px 0 rgba(var(--v-theme-pending), 0.4) !important;
 }
 
 .title {
-  font-size: 0.80rem !important;
-  font-weight: 900 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
   color: rgba(var(--v-theme-onBackground), 1) !important;
 }
 
 
 .subtitle {
-  font-size: 0.75rem !important;
+  font-size: 11px !important;
   color: rgba(var(--v-theme-onBackground), 0.5) !important;
 }
 </style>

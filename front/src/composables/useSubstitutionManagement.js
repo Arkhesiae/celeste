@@ -1,6 +1,6 @@
-import { computed } from 'vue';
 
-export function useSubstitutionManagement(substitutionStore) {
+
+export function useSubstitutionManagement (substitutionStore) {
   const availableSubstitutions = computed(() => substitutionStore.availableSubstitutions);
   const acceptedSubstitutionsToDo = computed(() => substitutionStore.acceptedSubstitutionsToDo);
   const ownAcceptedSubstitutions = computed(() => substitutionStore.ownAcceptedSubstitutions);
@@ -38,7 +38,7 @@ export function useSubstitutionManagement(substitutionStore) {
     return 0;
   };
 
-  
+
   return {
     hasOwnOpenSubstitution,
     hasAvailableSubstitution,
@@ -46,6 +46,6 @@ export function useSubstitutionManagement(substitutionStore) {
     hasAcceptedSubstitutionAsAccepter,
     getAvailableSubstitutionsCount,
     getAvailableSwitchesCount,
-   
+
   };
 } 

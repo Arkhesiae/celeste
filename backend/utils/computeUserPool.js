@@ -1,8 +1,9 @@
+import pLimit from 'p-limit';
 import User from '../models/User.js';
 import { categorize } from './categorizeDemand.js';
 import { generateMapFromDemands } from './generateShiftsMap.js';
 
-
+const limit = pLimit(10);
 
 /**
  * Calcule le pool d'utilisateurs pouvant potentiellement accepter une demande
@@ -25,15 +26,16 @@ const computeUserPool = async (demand) => {
         });
 
         console.log("Found", users.length, "users for demand");
-
+        
+        let totalt1 = performance.now();
         const results = await Promise.allSettled(
-            users.map(async (user) => {
-                let t1 = performance.now();
+            users.map((user) => limit(async () => {
+                // let t1 = performance.now();
                 const shiftsMap = await generateMapFromDemands([demand], user._id);
-                let t2 = performance.now();
-                console.log("Time taken to generate shifts map and categorize demand :", t2 - t1);
+                // let t2 = performance.now();
+                // c onsole.log("Time taken to generate shifts map and categorize demand :", t2 - t1);
                 const categorizedDemand = await categorize(demand, shiftsMap);
-         
+
 
                 let canSwitch = false;
                 let canReplace = false;
@@ -63,17 +65,17 @@ const computeUserPool = async (demand) => {
 
                 if (demand.type === 'switch') {
                     isSendable = mailPrefs.switch;
-                 
+
                 } else if (demand.type === 'substitution') {
                     isSendable = mailPrefs.replacement;
-                 
+
                 } else if (demand.type === 'hybrid') {
                     if (canSwitch && mailPrefs.switch) isSendable = true;
                     if (canReplace && mailPrefs.replacement) isSendable = true;
-                  
+
                 }
 
-              
+
 
                 if (!isSendable) return null;
 
@@ -92,9 +94,11 @@ const computeUserPool = async (demand) => {
                     rest: categorizedDemand.rest,
                     shiftsMap
                 };
-            })
+            }))
         );
 
+        let totalt2 = performance.now();
+        console.log("Time taken to compute user pool:", totalt2 - totalt1);
         // Filter valid results
         const userPool = results
             .filter(r => r.status === "fulfilled" && r.value !== null)

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+;
 import { useDisplay } from 'vuetify';
 
 const props = defineProps({
@@ -9,7 +9,6 @@ const props = defineProps({
   },
   title: {
     type: String,
-    required: true,
   },
   subtitle: {
     type: String,
@@ -49,68 +48,52 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:dialogVisible', 'submit', 'cancel']);
+const emit = defineEmits(['update:modelValue', 'submit', 'cancel']);
 
 const { smAndDown } = useDisplay();
 
-const localDialogVisible = computed({
-  get: () => props.isDialogVisible,
-  set: (value) => emit('update:dialogVisible', value),
-});
-
 const submit = () => {
   emit('submit');
-  localDialogVisible.value = false;
+  emit('update:modelValue', false);
 };
 
 const close = () => {
   emit('cancel');
-  localDialogVisible.value = false;
+  emit('update:modelValue', false);
 };
 </script>
 
 <template>
-  <v-dialog 
-    v-model="localDialogVisible" 
-    :max-width="maxWidth" 
-    :fullscreen="fullscreen || smAndDown"
-  >
-    <v-card :rounded="smAndDown ? '' : 'xl'" elevation="0" class="pa-0 pt-6">
-      <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">{{ title }}</v-card-title>
-        <template #append v-if="!smAndDown && showCloseButton">
-          <v-btn icon="mdi-close" variant="text" @click="close"></v-btn>
-        </template>
-        <template #prepend v-else-if="showCloseButton">
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close"></v-btn>
-        </template>
-      </v-card-item>
+  <v-dialog
+:model-value="isDialogVisible" :max-width="maxWidth" :fullscreen="fullscreen || smAndDown"
+    @update:model-value="$emit('update:modelValue', $event)">
+    <v-card :class="smAndDown ? '' : 'rounded-xxl'" elevation="0" class="pa-0 pt-0 ">
+      <div class="bar py-2 px-2 d-flex align-center justify-space-between">
+        <div class="d-flex align-center">
+          <div v-if="showCloseButton && smAndDown">
+            <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
+          </div>
+          <v-card-title>{{ title }}</v-card-title>
+        </div>
+
+
+        <div v-if="!smAndDown && showCloseButton">
+          <v-btn icon="mdi-close" variant="text" @click="close" />
+        </div>
+      </div>
 
       <v-card-text class="px-6">
-        <slot></slot>
+        <slot />
       </v-card-text>
 
       <v-card-actions v-if="showActions" class="pa-6">
-        <v-btn
-          v-if="showSecondaryAction"
-          color="primary"
-          variant="text"
-          rounded="xl"
-          @click="close"
-          :slim="true"
-
-        >
+        <v-btn v-if="showSecondaryAction" color="primary" variant="text" rounded="xl" :slim="true" @click="close">
           {{ secondaryActionText }}
         </v-btn>
-        <v-spacer></v-spacer>
+        <v-spacer />
         <v-btn
-          color="primary"
-          variant="tonal"
-          :slim="true"
-          rounded="xl"
-          @click="submit"
-          :disabled="isPrimaryActionDisabled"
-        >
+color="primary" variant="tonal" :slim="true" rounded="xl" :disabled="isPrimaryActionDisabled"
+          @click="submit">
           {{ primaryActionText }}
         </v-btn>
       </v-card-actions>
@@ -127,4 +110,17 @@ const close = () => {
   text-transform: none;
   letter-spacing: 0;
 }
-</style> 
+
+.rounded-xxl {
+  border-radius: 28px !important;
+}
+
+.bar {
+  position: sticky;
+  width: 100%;
+  min-height: 64px;
+  z-index: 1000;
+  background-color: rgba(var(--v-theme-surface), 1);
+  top: 0;
+}
+</style>

@@ -1,70 +1,142 @@
 <template>
   <v-container>
-    <MainTitle title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
-      <template #actions>
-        <v-select
-v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
-          :item-props="center => ({
-            title: center.name,
-            subtitle: center.oaci
-          })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="" flat
-          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
+    <v-app-bar :elevation="2" rounded color="transparent">
+      <v-app-bar-title class="text-h5 font-weight-bold"
+        >Liste des utilisateurs</v-app-bar-title
+      >
+
+      <template v-slot:append>
+        <v-btn
+          icon="mdi-magnify"
+          @click="showSearchBar = !showSearchBar"
+        ></v-btn>
       </template>
-    </MainTitle>
+    </v-app-bar>
+    <v-container
+      v-if="showSearchBar"
+      class="d-flex align-center justify-center"
+    >
+      <v-select
+        v-if="authStore.userData.adminType === 'master'"
+        v-model="selectedCenterId"
+        :items="centers"
+        :item-props="
+          (center) => ({ title: center.name, subtitle: center.oaci })
+        "
+        item-value="_id"
+        label="Sélectionner un centre"
+        variant="solo-filled"
+        density="compact"
+        rounded="xl"
+        class=""
+        flat
+        hide-details
+        min-width="200px"
+        max-width="300px"
+        @update:model-value="handleCenterChange"
+      /><v-text-field
+        v-model="searchQuery"
+        density="compact"
+        label="Rechercher un utilisateur"
+        variant="solo-filled"
+        flat
+        hide-details
+        rounded="xl"
+        class="mx-3"
+      ></v-text-field>
+    </v-container>
+    <v-container
+      v-if="showSearchBar"
+      class="d-flex align-center justify-center"
+    >
+      <v-select
+        :items="[
+          { label: 'Tous', value: 'all' },
+          { label: 'Administrateurs', value: 'admin', color: 'tertiary' },
+          { label: 'Utilisateurs', value: 'user' },
+        ]"
+        item-title="label"
+        item-value="value"
+        label="Filtrer par"
+        variant="solo-filled"
+        rounded="xl"
+        flat
+        hide-details
+        density="compact"
+        v-model="selectedFilter"
+        class="mx-3 filter-select"
+      />
+      <v-select
+        :items="sortOptions"
+        item-title="text"
+        item-value="sortValue"
+        label="Trier par"
+        variant="solo-filled"
+        rounded="xl"
+        flat
+        hide-details
+        density="compact"
+        v-model="sortBy"
+        class="mx-3 sort-select"
+      />
+    </v-container>
 
-
-    <!-- <div class="list-header-container"> 
-    <ListHeader
-      :filters="[
-        { label: 'Tous', value: 'all' },
-        { label: 'Administrateurs', value: 'admin', color: 'tertiary' },
-        { label: 'Utilisateurs', value: 'user' }
-      ]"
-      :sort-options="sortOptions"
-      v-model:filter="selectedFilter"
-      v-model:search="searchQuery"
-      v-model:sort="sortBy"
-    /> -->
-    <!-- </div> -->
-
-    <v-row>
+    <v-row class="mt-4">
       <div v-if="isLoading || !showUserList">
         <Loading />
       </div>
       <v-col
-v-for="user in sortedAndFilteredUsers" v-else :key="user._id" cols="12" md="6" lg="4"
-        :class="smAndDown ? 'pa-0' : ''">
+        v-for="user in sortedAndFilteredUsers"
+        v-else
+        :key="user._id"
+        cols="12"
+        md="6"
+        lg="4"
+        :class="smAndDown ? 'pa-0' : ''"
+      >
         <UserCard
-:user="user" @click="openUserDialog(user._id)" @approve="approveUser" @make-admin="makeAdmin"
-          @remove-admin="removeAdmin" @assign-center="openCenterDialog" @delete="deleteUser" />
+          :user="user"
+          @click="openUserDialog(user._id)"
+          @approve="approveUser"
+          @make-admin="makeAdmin"
+          @remove-admin="removeAdmin"
+          @assign-center="openCenterDialog"
+          @delete="deleteUser"
+        />
       </v-col>
     </v-row>
 
-
     <!-- User Details Dialog -->
     <UserCardDetails
-:user-id="selectedUser" :dialog-visible="userDialog" @update:dialog-visible="userDialog = $event"
-      @make-admin="makeAdmin" @remove-admin="removeAdmin" @assign-center="openCenterDialog" @delete="deleteUser" />
-    <!-- 
+      :user-id="selectedUser"
+      :dialog-visible="userDialog"
+      @update:dialog-visible="userDialog = $event"
+      @make-admin="makeAdmin"
+      @remove-admin="removeAdmin"
+      @assign-center="openCenterDialog"
+      @delete="deleteUser"
+    />
+    <!--
     Center Assignment Dialog -->
     <AssignCenterDialog
-:dialog-visible="centerDialog" :user-id="selectedUser"
-      @update:dialog-visible="centerDialog = $event" @center-assigned="assignCenter" />
+      :dialog-visible="centerDialog"
+      :user-id="selectedUser"
+      @update:dialog-visible="centerDialog = $event"
+      @center-assigned="assignCenter"
+    />
   </v-container>
 </template>
 
 <script setup>
-
 import { useCenterStore } from "@/stores/centerStore";
 import { useUserStore } from "@/stores/userStore";
 import { useSnackbarStore } from "@/stores/snackbarStore";
-import { useTeamStore } from '@/stores/teamStore';
-import { useAuthStore } from '@/stores/authStore';
-import { useDisplay } from 'vuetify';
-// import ListHeader from '@/components/common/ListHeader.vue';
-import UserCard from '@/components/Users/UserCard.vue';
-import UserCardDetails from '@/components/Users/UserCardDetails.vue';
-import AssignCenterDialog from '@/components/Users/AssignCenterDialog.vue';
+import { useTeamStore } from "@/stores/teamStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useDisplay } from "vuetify";
+import UserCard from "@/components/Users/UserCard.vue";
+import UserCardDetails from "@/components/Users/UserCardDetails.vue";
+import AssignCenterDialog from "@/components/Users/AssignCenterDialog.vue";
 
 const centerStore = useCenterStore();
 const teamStore = useTeamStore();
@@ -74,51 +146,57 @@ const snackbarStore = useSnackbarStore();
 const { smAndDown } = useDisplay();
 
 const centerDialog = ref(false);
-const selectedFilter = ref('all');
-const selectedUser = ref('');
-const sortBy = ref('');
-const sortDirection = ref('asc');
-const searchQuery = ref('');
+const selectedFilter = ref("all");
+const selectedUser = ref("");
+const sortBy = ref("");
+const sortDirection = ref("asc");
+const searchQuery = ref("");
 const selectedCenterId = ref(null);
 const userDialog = ref(false);
 const showUserList = ref(false);
 const isLoading = ref(false);
+const showSearchBar = ref(false);
 
 // import { defineAsyncComponent } from 'vue'
 
-// const AsyncUserCard = defineAsyncComponent({
-//   loader: () => import('@/components/Users/UserCard.vue'),
-//   loadingComponent: () => import('@/components/common/Loaders/Loading.vue'),
-//   delay: 0,
+const AsyncUserCard = defineAsyncComponent({
+  loader: () => import("@/components/Users/UserCard.vue"),
+  loadingComponent: () => import("@/components/common/Loaders/Loading.vue"),
+  delay: 0,
+});
 
-// })
-
-// const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
-// const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
+const isMasterAdmin = computed(
+  () => authStore.userData.isAdmin && authStore.userData.adminType === "master",
+);
+const isLocalAdmin = computed(
+  () => authStore.userData.isAdmin && authStore.userData.adminType === "local",
+);
 const centers = computed(() => centerStore.centers);
 const users = computed(() => userStore.users);
-// const sortOptions = [
-//   { text: 'Prénom', sortValue: 'name' },
-//   { text: 'Nom', sortValue: 'lastName' },
-//   { text: 'Email', sortValue: 'email' },
-//   { text: 'Statut', sortValue: 'status' },
-//   { text: 'Date d\'inscription', sortValue: 'createdAt' },
-// ];
+const sortOptions = [
+  { text: "Prénom", sortValue: "name" },
+  { text: "Nom", sortValue: "lastName" },
+  { text: "Email", sortValue: "email" },
+  { text: "Statut", sortValue: "status" },
+  { text: "Date d'inscription", sortValue: "createdAt" },
+];
 
 const filteredUsers = computed(() => {
   let filtered = users.value;
   if (!users.value) return [];
 
   // Filtrer par type d'admin
-  if (authStore.userData.adminType !== 'master') {
-    filtered = filtered.filter(user => user.centerId === authStore.userData.centerId);
+  if (authStore.userData.adminType !== "master") {
+    filtered = filtered.filter(
+      (user) => user.centerId === authStore.userData.centerId,
+    );
   }
 
-  if (selectedFilter.value === 'admin') {
+  if (selectedFilter.value === "admin") {
     filtered = filtered.filter((user) => user.isAdmin);
-  } else if (selectedFilter.value === 'pending') {
-    filtered = filtered.filter((user) => user.status === 'pending');
-  } else if (selectedFilter.value === 'user') {
+  } else if (selectedFilter.value === "pending") {
+    filtered = filtered.filter((user) => user.status === "pending");
+  } else if (selectedFilter.value === "user") {
     filtered = filtered.filter((user) => !user.isAdmin);
   }
 
@@ -142,22 +220,26 @@ const sortedAndFilteredUsers = computed(() => {
   return [...filteredUsers.value].sort((a, b) => {
     let comparison = 0;
 
-    if (sortBy.value.sortValue === 'createdAt') {
-      comparison = new Date(a[sortBy.value.sortValue]).getTime() - new Date(b[sortBy.value.sortValue]).getTime();
+    if (sortBy.value.sortValue === "createdAt") {
+      comparison =
+        new Date(a[sortBy.value.sortValue]).getTime() -
+        new Date(b[sortBy.value.sortValue]).getTime();
     } else {
-      comparison = String(a[sortBy.value.sortValue]).localeCompare(String(b[sortBy.value.sortValue]));
+      comparison = String(a[sortBy.value.sortValue]).localeCompare(
+        String(b[sortBy.value.sortValue]),
+      );
     }
 
-    return sortDirection.value === 'asc' ? comparison : -comparison;
+    return sortDirection.value === "asc" ? comparison : -comparison;
   });
 });
 
 const getCenterById = (centerId) => {
-  return centers.value.find(center => center._id === centerId) || null;
+  return centers.value.find((center) => center._id === centerId) || null;
 };
 
 const openCenterDialog = (userId) => {
-  console.log(userId)
+  console.log(userId);
   selectedUser.value = userId;
   centerDialog.value = true;
 };
@@ -166,8 +248,12 @@ const assignCenter = async ({ userId, centerId }) => {
   try {
     await userStore.assignCenter(userId, centerId);
   } catch (error) {
-    console.error('Error assigning center:', error);
-    snackbarStore.showNotification('Erreur lors de l\'assignation du centre', 'onError', 'mdi-alert-circle');
+    console.error("Error assigning center:", error);
+    snackbarStore.showNotification(
+      "Erreur lors de l'assignation du centre",
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 };
 
@@ -176,45 +262,77 @@ const deleteUser = async (user) => {
 
   try {
     await userStore.deleteUser(user._id);
-    snackbarStore.showNotification('Utilisateur supprimé', 'onSuccess', 'mdi-check-circle');
+    snackbarStore.showNotification(
+      "Utilisateur supprimé",
+      "onSuccess",
+      "mdi-check-circle",
+    );
   } catch (error) {
-    console.error('Error deleting user:', error);
-    snackbarStore.showNotification('Erreur lors de la suppression', 'onError', 'mdi-alert-circle');
+    console.error("Error deleting user:", error);
+    snackbarStore.showNotification(
+      "Erreur lors de la suppression",
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 };
 
 const makeAdmin = async (user) => {
   try {
     await userStore.makeAdmin(user._id);
-    snackbarStore.showNotification('Statut admin octroyé', 'onSuccess', 'mdi-check-circle');
+    snackbarStore.showNotification(
+      "Statut admin octroyé",
+      "onSuccess",
+      "mdi-check-circle",
+    );
   } catch (error) {
-    console.error('Error making user admin:', error);
-    snackbarStore.showNotification('Erreur lors de l\'octroi du statut admin', 'onError', 'mdi-alert-circle');
+    console.error("Error making user admin:", error);
+    snackbarStore.showNotification(
+      "Erreur lors de l'octroi du statut admin",
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 };
 
 const removeAdmin = async (user) => {
   try {
     await userStore.removeAdmin(user._id);
-    snackbarStore.showNotification('Statut admin retiré', 'onSuccess', 'mdi-check-circle');
+    snackbarStore.showNotification(
+      "Statut admin retiré",
+      "onSuccess",
+      "mdi-check-circle",
+    );
   } catch (error) {
-    console.error('Error removing user admin:', error);
-    snackbarStore.showNotification('Erreur lors de la suppression du statut admin ' + error.message, 'onError', 'mdi-alert-circle');
+    console.error("Error removing user admin:", error);
+    snackbarStore.showNotification(
+      "Erreur lors de la suppression du statut admin " + error.message,
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 };
 
 const approveUser = async (user) => {
   try {
     await userStore.approveUser(user._id);
-    snackbarStore.showNotification('Utilisateur approuvé', 'onSuccess', 'mdi-check-circle');
+    snackbarStore.showNotification(
+      "Utilisateur approuvé",
+      "onSuccess",
+      "mdi-check-circle",
+    );
   } catch (error) {
-    console.error('Error approving user:', error);
-    snackbarStore.showNotification('Erreur lors de l\'approbation', 'onError', 'mdi-alert-circle');
+    console.error("Error approving user:", error);
+    snackbarStore.showNotification(
+      "Erreur lors de l'approbation",
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 };
 
 const openUserDialog = (userId) => {
-  console.log(userId)
+  console.log(userId);
   selectedUser.value = userId;
   userDialog.value = true;
 };
@@ -227,19 +345,25 @@ const handleCenterChange = async (centerId) => {
     } else {
       await userStore.fetchUsers();
     }
-    snackbarStore.showNotification('Utilisateurs chargés', 'onSuccess', 'mdi-check-circle');
+    snackbarStore.showNotification(
+      "Utilisateurs chargés",
+      "onSuccess",
+      "mdi-check-circle",
+    );
   } catch (error) {
-    console.error('Erreur lors du chargement des utilisateurs:', error);
-    snackbarStore.showNotification('Erreur lors du chargement des utilisateurs', 'onError', 'mdi-alert-circle');
+    console.error("Erreur lors du chargement des utilisateurs:", error);
+    snackbarStore.showNotification(
+      "Erreur lors du chargement des utilisateurs",
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 };
-
-
 
 onMounted(async () => {
   isLoading.value = true;
   try {
-    if (authStore.userData.adminType === 'master') {
+    if (authStore.userData.adminType === "master") {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
     } else {
@@ -247,14 +371,22 @@ onMounted(async () => {
       await userStore.fetchUsersByCenter(authStore.userData.centerId);
       selectedCenterId.value = authStore.userData.centerId;
     }
-    snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
+    snackbarStore.showNotification(
+      "Données chargées",
+      "onPrimary",
+      "mdi-check",
+    );
     isLoading.value = false;
     setTimeout(() => {
       showUserList.value = true;
     }, 500);
   } catch (error) {
-    console.error('Error fetching initial data:', error);
-    snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');
+    console.error("Error fetching initial data:", error);
+    snackbarStore.showNotification(
+      "Erreur lors du chargement des données : " + error.message,
+      "onError",
+      "mdi-alert-circle",
+    );
   }
 });
 </script>
@@ -262,5 +394,17 @@ onMounted(async () => {
 <style scoped>
 .sort-select {
   max-width: 200px;
+}
+
+.filter-select {
+  max-width: 200px;
+}
+
+.app-bar-card {
+  border-radius: 12px;
+}
+
+.header-spacing {
+  margin-top: 16px;
 }
 </style>

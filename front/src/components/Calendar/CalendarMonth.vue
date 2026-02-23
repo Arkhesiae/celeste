@@ -101,14 +101,9 @@
 
 <script setup>
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-// import { useShiftStore } from '@/stores/shiftStore';
-
-
-// Les composants de chips sont disponibles globalement
-// PendingChip, AccepterChip, ConfirmationChip
+import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 
 const substitutionStore = useSubstitutionStore();
-// const shiftStore = useShiftStore();
 
 const props = defineProps({
   daysOfWeek: Array,
@@ -122,11 +117,15 @@ const props = defineProps({
 const emit = defineEmits(['select-day']);
 
 const isWorkDay = computed(() => (date) => {
-  const shift = props.vacationsOfUser.get(date.toISOString())?.shift;
+  const dateKey = date.toISOString().split('T')[0];
+  const shift = props.vacationsOfUser?.get(dateKey)?.shift;
   return shift ? shift.type !== 'rest' : false;
 });
 
-const getShiftName = (date) => props.vacationsOfUser.get(date.toISOString())?.shift?.name;
+const getShiftName = (date) => {
+  const dateKey = date.toISOString().split('T')[0];
+  return getDisplayShiftName(props.vacationsOfUser?.get(dateKey));
+};
 
 const inPast = (date) => {
   return date < new Date();

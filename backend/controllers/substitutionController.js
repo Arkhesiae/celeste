@@ -280,7 +280,10 @@ const acceptRequest = async (req, res) => {
                 updatedAt: new Date()
             },
             { new: true }
-        ).populate('posterShift.shift');
+        ).populate([
+            { path: 'posterShift.shift', populate: { path: 'variations' } },
+            { path: 'posterShift.selectedVariation' }
+        ]);
 
         const shift = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
 

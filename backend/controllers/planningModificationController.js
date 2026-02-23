@@ -2,6 +2,31 @@ import PlanningModification from '../models/PlanningModification.js';
 import User from '../models/User.js';
 import Substitution from '../models/Substitution.js';
 import { computeShiftOfUserWithSubstitutions } from '../utils/computeShiftOfUserWithSubstitutions.js';
+/**
+ * Met à jour posterShift.selectedVariation des demandes ouvertes du user pour la date donnée.
+ * Retourne la demande mise à jour ou null.
+ */
+async function syncDemandSelectedVariation(userId, date, selectedVariationId) {
+    const dateStr = typeof date === 'string' ? date.slice(0, 10) : new Date(date).toISOString().slice(0, 10);
+    const demand = await Substitution.findOne({
+        posterId: userId,
+        'posterShift.date': dateStr,
+        status: 'open',
+        deleted: false
+    });
+    if (!demand) return null;
+
+    const newVariationId = selectedVariationId ? (selectedVariationId._id || selectedVariationId) : null;
+    await Substitution.updateOne(
+        { _id: demand._id },
+        { $set: { 'posterShift.selectedVariation': newVariationId, updatedAt: new Date() } }
+    );
+
+    return Substitution.findById(demand._id).populate([
+        { path: 'posterShift.shift', populate: { path: 'variations' } },
+        { path: 'posterShift.selectedVariation' }
+    ]);
+}
 
 // Créer une nouvelle modification de planning
 const registerModification = async (req, res) => {
@@ -69,12 +94,15 @@ const registerModification = async (req, res) => {
             
         }
         await modification.save();
-       
+
+        const updatedDemand = await syncDemandSelectedVariation(userId, date, selectedVariation);
+
         const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
 
         res.status(201).json({
             message: 'Modification de planning créée avec succès',
-            userShift
+            userShift,
+            updatedDemand
         });
 
     } catch (error) {
@@ -193,9 +221,15 @@ const deleteModification = async (req, res) => {
             });
         }
 
+        const modDate = modification.date;
         await PlanningModification.findByIdAndDelete(id);
 
-        res.json({ message: 'Modification supprimée avec succès' });
+        const updatedDemand = await syncDemandSelectedVariation(userId, modDate, null);
+
+        res.json({
+            message: 'Modification supprimée avec succès',
+            updatedDemand
+        });
 
     } catch (error) {
         console.error('Erreur lors de la suppression de la modification:', error);
@@ -286,6 +320,8 @@ const updateModification = async (req, res) => {
         modification.updatedAt = new Date();
         await modification.save();
 
+        const updatedDemand = await syncDemandSelectedVariation(userId, modification.date, modification.selectedVariation);
+
         // Populate les références pour la réponse
         await modification.populate('userId', 'name lastName email');
         await modification.populate('centerId', 'name');
@@ -295,7 +331,8 @@ const updateModification = async (req, res) => {
 
         res.json({
             message: 'Modification mise à jour avec succès',
-            modification
+            modification,
+            updatedDemand
         });
 
     } catch (error) {

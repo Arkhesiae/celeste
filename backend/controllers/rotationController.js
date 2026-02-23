@@ -219,24 +219,12 @@ const getAllRotationsWithStatus = async (req, res) => {
 
     try {
         const currentDate = new Date();
-        let rotations = await Rotation.find({ centerId, deleted: false })
-
-        for (const rotation of rotations) {
-            if (rotation.days.length > 0) {
-                const firstDay = rotation.days[0];
-                // Vérifier si les days sont déjà populés en testant si c'est un ObjectId ou un objet Shift
-                if (typeof firstDay === 'string' || firstDay.constructor.name === 'ObjectId') {
-                    // Les days ne sont pas populés, on les populate
-                    await rotation.populate({
-                        path: 'days',
-                        populate: {
-                            path: 'variations'
-                        }
-                    });
-                }
-                // Si c'est déjà un objet avec des propriétés de Shift, pas besoin de populate
-            }
-        }
+        const rotations = await Rotation.find({ centerId, deleted: false })
+            .populate({
+                path: 'days',
+                populate: { path: 'variations' }
+            })
+            .lean();
 
 
 

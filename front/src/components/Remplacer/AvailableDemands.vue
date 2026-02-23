@@ -52,9 +52,10 @@ const props = defineProps({
 
 // Options de filtre
 const filters = [
-  { label: 'Toutes', value: 'all', count: computed(() => filteredSubstitutions.value.length + filteredSwitches.value.length + filteredOthers.value.length) },
+  { label: 'Toutes', value: 'all', count: computed(() => filteredSubstitutions.value.length + filteredSwitches.value.length + filteredPotentiallyCompatible.value.length + filteredOthers.value.length) },
   { label: 'Remplaçables', value: 'remplacables', count: computed(() => filteredSubstitutions.value.length) },
   { label: 'Permutables', value: 'permutables', count: computed(() => filteredSwitches.value.length) },
+  { label: 'Potentiellement compatibles', value: 'potentially', count: computed(() => filteredPotentiallyCompatible.value.length) },
   { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: computed(() => filteredOthers.value.length) }
 ];
 
@@ -119,14 +120,19 @@ const filteredSwitches = computed(() =>
   filterAndSortDemands(substitutionStore.availableSwitches)
 );
 
+const filteredPotentiallyCompatible = computed(() =>
+  filterAndSortDemands(substitutionStore.potentiallyCompatibleDemands)
+);
+
 const filteredOthers = computed(() =>
-  filterAndSortDemands(substitutionStore.otherDemands)
+  filterAndSortDemands(substitutionStore.otherDemands.filter(d => !d.potentiallyCompatible))
 );
 
 const demands = computed(() => {
-  if (selectedFilter.value === 'all') return [...filteredSubstitutions.value, ...filteredSwitches.value, ...filteredOthers.value];
+  if (selectedFilter.value === 'all') return [...filteredSubstitutions.value, ...filteredSwitches.value, ...filteredPotentiallyCompatible.value, ...filteredOthers.value];
   if (selectedFilter.value === 'remplacables') return filteredSubstitutions.value;
   if (selectedFilter.value === 'permutables') return filteredSwitches.value;
+  if (selectedFilter.value === 'potentially') return filteredPotentiallyCompatible.value;
   if (selectedFilter.value === 'incompatibles') return filteredOthers.value;
   return [];
 });

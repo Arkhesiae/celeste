@@ -151,7 +151,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                             if (substitution.posterId.toString() === userId) {
                                 // L'utilisateur est le poster, il prend le shift de l'accepter
                                 if (substitution.posterShift.shift) {
-                                    currentShift = await Shift.findById(substitution.accepterShift.shift);
+                                    currentShift = await Shift.findById(substitution.accepterShift.shift).populate('variations');
                                 }
                                 else {
                                     currentShift = substitution.accepterShift;
@@ -167,7 +167,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                             } else {
                                 // L'utilisateur est l'accepter, il prend le shift du poster
                                 if (substitution.posterShift.shift) {
-                                    currentShift = await Shift.findById(substitution.posterShift.shift);
+                                    currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
                                 }
                                 else {
                                     currentShift = substitution.posterShift;
@@ -193,7 +193,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                             } else {
                                 // L'utilisateur est le remplaçant, il prend le shift du poster
                                 if (substitution.posterShift.shift) {
-                                    currentShift = await Shift.findById(substitution.posterShift.shift);
+                                    currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
                                 }
                                 else {
                                     currentShift = substitution.posterShift;

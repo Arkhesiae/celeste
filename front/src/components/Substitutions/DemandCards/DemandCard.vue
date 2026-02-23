@@ -144,6 +144,13 @@
               Dans
               équipe {{ teamName }}
             </div>
+            <div
+              v-if="demand?.potentiallyCompatible && compatibleInfoText"
+              class="text-caption font-weight-medium mt-1"
+              style="font-size: 10px !important; color: rgb(var(--v-theme-primary));"
+            >
+              {{ compatibleInfoText }}
+            </div>
           </div>
           <v-chip
             variant="outlined"
@@ -247,6 +254,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { useTeamStore } from '@/stores/teamStore'
 import { API_URL } from '@/config/api'
 import { useDisplay } from 'vuetify'
+import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes'
 
 const props = defineProps({
   demand: {
@@ -281,16 +289,82 @@ const openDetails = () => {
 }
 
 const getShiftName = computed(() => {
-  return props.demand?.posterShift?.shift?.name || props.demand?.posterShift?.name || ''
+  const ps = props.demand?.posterShift;
+  return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
 })
 
 const getShiftHours = computed(() => {
-  return { startTime: props.demand?.posterShift?.shift?.default?.startTime, endTime: props.demand?.posterShift?.shift?.default?.endTime }
+  const ps = props.demand?.posterShift;
+  const effective = ps?.shift ? getEffectiveShiftTimes(ps.shift, ps?.selectedVariation) : null;
+  return effective ? { startTime: effective.startTime, endTime: effective.endTime } : { startTime: '', endTime: '' }
 })
 
 const getShiftEndsNextDay = computed(() => {
-  return props.demand?.posterShift?.shift?.default?.endsNextDay
+  const ps = props.demand?.posterShift;
+  const effective = ps?.shift ? getEffectiveShiftTimes(ps.shift, ps?.selectedVariation) : null;
+  return effective?.endsNextDay ?? false
 })
+
+const compatibleVariationNames = computed(() => {
+  const vars = props.demand?.compatibleVariations;
+  if (!vars?.length) return '';
+  const baseName = props.demand?.posterShift?.shift?.name || '';
+  return vars.map(v => baseName + (v?.name || '')).join(', ');
+})
+
+const compatiblePairsText = computed(() => {
+  const byDate = props.demand?.compatiblePairsByFetcherDate;
+  if (!byDate?.length) return '';
+  const demandDate = props.demand?.posterShift?.date;
+  return byDate.map(({ date, shiftName, baseShiftName, pairs }) => {
+    const dateLabel = formatDateLabel(date, demandDate);
+    const suffix = dateLabel === 'veille' ? ' la veille' : dateLabel === 'lendemain' ? ' le lendemain' : dateLabel ? ` (${dateLabel})` : '';
+    return (pairs || []).map(({ fetcherVariation, demandVariations }) => {
+      const fetcherFullName = fetcherVariation?.isDefault ? shiftName : shiftName + (fetcherVariation?.name || '');
+      const demandNames = (demandVariations || [])
+        .map(v => baseShiftName + (v?.name || ''))
+        .join(', ');
+      return `${demandNames} si ${fetcherFullName}${suffix}`;
+    }).join(' ; ');
+  }).filter(Boolean).join(' • ');
+})
+
+const compatibleFetcherVariationNames = computed(() => {
+  const byDate = props.demand?.compatibleFetcherVariationsByDate;
+  if (!byDate?.length) return '';
+  const demandDate = props.demand?.posterShift?.date;
+  return byDate.map(({ date, shiftName, variations }) => {
+    const names = (variations || [])
+      .map(v => v?.isDefault ? shiftName : shiftName + (v?.name || ''))
+      .filter(Boolean);
+    if (!names.length) return '';
+    const dateLabel = date === demandDate ? '' : formatDateLabel(date, demandDate);
+    return dateLabel ? `${names.join(', ')} (${dateLabel})` : names.join(', ');
+  }).filter(Boolean).join(' • ');
+})
+
+const compatibleInfoText = computed(() => {
+  if (!props.demand?.potentiallyCompatible) return '';
+  const hasPosterVariation = !!props.demand?.posterShift?.selectedVariation;
+  if (hasPosterVariation) {
+    const names = compatibleFetcherVariationNames.value;
+    return names ? `Compatible si vous êtes en : ${names}` : '';
+  }
+  const pairs = compatiblePairsText.value;
+  if (pairs) return `Compatible avec : ${pairs}`;
+  const names = compatibleVariationNames.value;
+  return names ? `Compatible avec : ${names}` : '';
+})
+
+function formatDateLabel(dateStr, demandDateStr) {
+  if (!dateStr || !demandDateStr) return '';
+  const d = new Date(dateStr);
+  const ref = new Date(demandDateStr);
+  const diff = Math.round((d - ref) / (24 * 60 * 60 * 1000));
+  if (diff === -1) return 'veille';
+  if (diff === 1) return 'lendemain';
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+}
 
 const canSwitch = computed(() => {
   return props.demand?.canSwitch

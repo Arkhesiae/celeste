@@ -1,5 +1,6 @@
 import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
 import { parseShiftUTC } from './parseShiftTime.js';
+import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 
 
 
@@ -32,14 +33,16 @@ export async function generateShiftsMap (dates, userId) {
         computeShiftOfUserWithSubstitutions(date, userId).then(shifts =>
           shifts
             .filter(s => s.shift?.type === 'work')
-            .forEach(({ shift, teamObject, date }) => {
-              const { startTime, endTime, endsNextDay } = shift.default ?? {};
+            .forEach(({ shift, teamObject, date, selectedVariation }) => {
+              const effectiveTimes = getEffectiveShiftTimes(shift, selectedVariation) ?? shift.default;
+              if (!effectiveTimes?.startTime || !effectiveTimes?.endTime) return;
               finalMap.set(date, {
                 shift,
                 team: teamObject,
                 date,
-                start: parseShiftUTC(date, startTime),
-                end: parseShiftUTC(date, endTime, endsNextDay)
+                selectedVariation: selectedVariation ?? null,
+                start: parseShiftUTC(date, effectiveTimes.startTime, false),
+                end: parseShiftUTC(date, effectiveTimes.endTime, effectiveTimes.endsNextDay)
               });
             })
         )

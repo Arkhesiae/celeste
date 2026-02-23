@@ -71,18 +71,42 @@
             Dans l'équipe {{ getShiftTeam }}
           </div>
         </div>
-        <div
-          v-if="getVacation?.shift?.variations?.length > 0 && !isRestDay"
-          class="variation-badge align-self-start"
-        >
-          <v-icon
-            size="10"
-            class="text-caption font-weight-bold text-background"
-          >
-            mdi-clock
-          </v-icon>
-          <span class="text-caption font-weight-bold text-background">?</span>
-        </div>
+      </div>
+
+      <!-- Sélecteur de vacation élémentaire (pour la compatibilité des demandes) -->
+      <div v-if="!isRestDay && !inPast" class="mt-4">
+        <span class="text-caption d-block mb-2 opacity-70">
+          Indiquez quelle vacation vous ferez (améliore la compatibilité des demandes)
+        </span>
+        <template v-if="hasVariationsInCalendar">
+          <div class="d-flex flex-wrap ga-2">
+            <v-chip
+              size="small"
+              rounded="lg"
+              variant="flat"
+              :color="!hasSelectedVariation ? 'primary' : 'surface'"
+              class="ma-1 cursor-pointer"
+              @click="selectVariationForDay(null)"
+            >
+              Non précisée ({{ shiftWithVariationsFromRotation?.default?.startTime }}-{{ shiftWithVariationsFromRotation?.default?.endTime }})
+            </v-chip>
+            <v-chip
+              v-for="v in (shiftWithVariationsFromRotation?.variations || shiftWithVariationsFromRotation?.variation || [])"
+              :key="v._id"
+              size="small"
+              rounded="lg"
+              variant="flat"
+              :color="isVariationSelected(v) ? 'primary' : 'surface'"
+              class="ma-1 cursor-pointer"
+              @click="selectVariationForDay(v)"
+            >
+              {{ v.name }} ({{ v.startTime }}-{{ v.endTime }})
+            </v-chip>
+          </div>
+        </template>
+        <v-alert v-else type="info" density="compact" variant="tonal" class="mt-1">
+          Ce shift n'a pas de variantes configurées. Ajoutez-en dans la gestion des rotations.
+        </v-alert>
       </div>
 
 
@@ -313,15 +337,18 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { useShiftStore } from '@/stores/shiftStore';
+import { useRotationStore } from '@/stores/rotationStore';
+import { useAuthStore } from '@/stores/authStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 
 const substitutionStore = useSubstitutionStore();
 const teamStore = useTeamStore();
-
 const userStore = useUserStore();
-
 const snackbarStore = useSnackbarStore();
+const rotationStore = useRotationStore();
+const authStore = useAuthStore();
 
 const props = defineProps({
   formattedDate: {
@@ -399,6 +426,91 @@ const getVacation = computed(() => {
   return vacationsOfUser.value.get(new Date(props.selectedDate).toISOString().split('T')[0]);
 });
 
+const activeRotationForDate = computed(() => {
+  const date = props.selectedDate ? new Date(props.selectedDate) : null;
+  if (!date || !rotationStore.sortedRotations?.length) return null;
+  for (const r of rotationStore.sortedRotations) {
+    const start = new Date(r.startDate);
+    const end = r.endDate ? new Date(r.endDate) : null;
+    if (date >= start && (!end || date <= end)) {
+      return rotationStore.rotations?.find(rot => rot._id === r._id) ?? null;
+    }
+  }
+  return null;
+});
+
+/** Trouve un shift avec variations : rotation active > toutes les rotations > shift de la vacation (API) */
+const shiftWithVariationsFromRotation = computed(() => {
+  const shift = getVacation.value?.shift;
+  if (!shift) return null;
+  const shiftId = (shift._id || shift.id)?.toString?.();
+  const shiftName = shift?.name;
+
+  const findDayWithVariations = (days) => {
+    if (!days?.length) return null;
+    let day = days.find(d => (d._id || d)?.toString?.() === shiftId);
+    if (!day && shiftName) day = days.find(d => d?.name === shiftName);
+    return (day?.variations?.length || day?.variation?.length) ? day : null;
+  };
+
+  // 1. Rotation active pour la date
+  let found = findDayWithVariations(activeRotationForDate.value?.days);
+  if (found) return found;
+
+  // 2. Toutes les rotations du centre (au cas où la rotation active ne matche pas)
+  for (const rot of rotationStore.rotations || []) {
+    found = findDayWithVariations(rot?.days);
+    if (found) return found;
+  }
+
+  // 3. Shift de la vacation (API avec ensureShiftWithVariations)
+  if (shift?.variations?.length || shift?.variation?.length) return shift;
+  return null;
+});
+
+const hasVariationsInCalendar = computed(() => {
+  const v = shiftWithVariationsFromRotation.value;
+  return (v?.variations?.length || v?.variation?.length || 0) > 0;
+});
+
+const hasSelectedVariation = computed(() => !!getVacation.value?.selectedVariation);
+
+const isVariationSelected = (variation) => {
+  const current = getVacation.value?.selectedVariation;
+  if (!current || !variation) return false;
+  return (current._id || current)?.toString?.() === (variation._id || variation)?.toString?.();
+};
+
+const toDateKey = (d) => {
+  if (!d) return null;
+  const s = typeof d === 'string' ? d : d?.toISOString?.();
+  return s?.split?.('T')[0] ?? null;
+};
+
+const selectVariationForDay = async (variation) => {
+  const dateKey = toDateKey(props.selectedDate);
+  if (!dateKey) return;
+  try {
+    const data = await planningModificationService.registerModification({
+      type: 'selectedVariation',
+      date: dateKey,
+      selectedVariation: variation ? variation._id : null,
+      shift: getVacation.value?.shift?._id,
+      centerId: authStore.userData?.centerId
+    });
+    if (data?.userShift?.[0]) {
+      shiftStore.addEntry(data.userShift[0], toDateKey(data.userShift[0].date));
+    }
+    if (data?.updatedDemand) {
+      substitutionStore.updateDemandInStore(data.updatedDemand);
+    }
+    substitutionStore.recategorizeSubstitutions(dateKey);
+    snackbarStore.showNotification('Vacation précisée', 'onPrimary', 'mdi-check');
+  } catch (err) {
+    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
 const isRestDay = computed(() => {
   return getVacation.value?.shift?.type === 'rest';
 });
@@ -409,28 +521,20 @@ const inPast = computed(() => {
 
 
 const getShiftEndsNextDay = computed(() => {
-  return getVacation.value?.shift?.default?.endsNextDay || false;
+  const shift = getVacation.value?.shift;
+  const selectedVariation = getVacation.value?.selectedVariation;
+  const effective = shift ? getEffectiveShiftTimes(shift, selectedVariation) : null;
+  return effective?.endsNextDay ?? false;
 });
 
 
-const getShiftName = computed(() => {
-  if (isOff.value) {
-    return getVacation.value?.initialShift?.name || '';
-  }
-  return getVacation.value?.shift?.name || '';
-});
+const getShiftName = computed(() => getDisplayShiftName(getVacation.value));
 
 const getShiftHours = computed(() => {
-  if (isOff.value) {
-    return {
-      startTime: getVacation.value?.initialShift?.default?.startTime || '',
-      endTime: getVacation.value?.initialShift?.default?.endTime || ''
-    };
-  }
-  return {
-    startTime: getVacation.value?.shift?.default?.startTime || '',
-    endTime: getVacation.value?.shift?.default?.endTime || ''
-  };
+  const shift = isOff.value ? getVacation.value?.initialShift : getVacation.value?.shift;
+  const selectedVariation = getVacation.value?.selectedVariation;
+  const effective = shift ? getEffectiveShiftTimes(shift, selectedVariation) : null;
+  return effective ? { startTime: effective.startTime, endTime: effective.endTime } : { startTime: '', endTime: '' };
 });
 
 

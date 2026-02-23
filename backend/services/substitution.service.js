@@ -73,12 +73,23 @@ export async function createDemand (data) {
         type = acceptedSwitches.length > 0 ? "hybrid" : "substitution";
     }
 
+    const selectedVariationId = posterShift.selectedVariation || null;
+
+    if (selectedVariationId && userShift.shift.variations?.length > 0) {
+        const validVariation = userShift.shift.variations.some((v) =>
+            (v._id || v).toString() === (selectedVariationId._id || selectedVariationId).toString()
+        );
+        if (!validVariation) {
+            throw new Error({ status: 400, message: 'Variante invalide pour ce shift' });
+        }
+    }
+
     // Création de la demande
     const demand = new Substitution({
         posterId,
         posterShift: {
             shift: userShift.shift._id,
-            selectedVariation: null,
+            selectedVariation: selectedVariationId ? (selectedVariationId._id || selectedVariationId) : null,
             teamId: userShift.teamObject._id,
             date: userShift.date
         },
@@ -98,7 +109,10 @@ export async function createDemand (data) {
 
 
     await demand.save();
-    await demand.populate('posterShift.shift');
+    await demand.populate([
+        { path: 'posterShift.shift', populate: { path: 'variations' } },
+        { path: 'posterShift.selectedVariation' }
+    ]);
     return demand;
 };
 
@@ -151,9 +165,11 @@ export async function getOpenDemands (userId, startDate, endDate) {
             posterId: { $ne: user._id },
             ...dateFilter
         }).populate([
-            { path: 'posterShift.shift' },
+            { path: 'posterShift.shift', populate: { path: 'variations' } },
+            { path: 'posterShift.selectedVariation' },
             { path: 'posterShift.teamId' },
-            { path: 'accepterShift.shift' },
+            { path: 'accepterShift.shift', populate: { path: 'variations' } },
+            { path: 'accepterShift.selectedVariation' },
             { path: 'accepterShift.teamId' },
         ]),
         Substitution.find({
@@ -162,9 +178,11 @@ export async function getOpenDemands (userId, startDate, endDate) {
             posterId: user._id,
             ...dateFilter
         }).populate([
-            { path: 'posterShift.shift' },
+            { path: 'posterShift.shift', populate: { path: 'variations' } },
+            { path: 'posterShift.selectedVariation' },
             { path: 'posterShift.teamId' },
-            { path: 'accepterShift.shift' },
+            { path: 'accepterShift.shift', populate: { path: 'variations' } },
+            { path: 'accepterShift.selectedVariation' },
             { path: 'accepterShift.teamId' },
         ])
     ]);
@@ -391,7 +409,10 @@ export async function recategorizeSubstitutions (substitutionIds, userId) {
     }
 
     // Récupérer les substitutions avec leurs shifts populés
-    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate('posterShift.shift');
+    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate([
+    { path: 'posterShift.shift', populate: { path: 'variations' } },
+    { path: 'posterShift.selectedVariation' }
+]);
 
     if (substitutions.length === 0) {
         throw new Error({ status: 404, message: 'Aucune substitution trouvée' });
@@ -495,7 +516,10 @@ export async function unacceptDemand (requestId, userId) {
             updatedAt: new Date()
         },
         { new: true }
-    ).populate('posterShift.shift');
+    ).populate([
+        { path: 'posterShift.shift', populate: { path: 'variations' } },
+        { path: 'posterShift.selectedVariation' }
+    ]);
 
 
     const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);

@@ -27,11 +27,11 @@ v-model="formattedDate" rounded="lg" class="cursor-pointer mt-00" bg-color="surf
                 </div>
                 <div class="d-flex align-start flex-column justify-space-between">
                   <div>
-                    <span class="text-caption font-weight-bold">{{ selectedShift?.shift?.default?.startTime }} - {{
-                      selectedShift?.shift?.default?.endTime
+                    <span class="text-caption font-weight-bold">{{ displayShiftHours.startTime }} - {{
+                      displayShiftHours.endTime
                     }}</span>
                     <span
-v-if="shiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
+v-if="displayShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
                       style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
                   </div>
                   <div
@@ -41,30 +41,39 @@ v-if="selectedShift?.teamObject?.name" class="py-0 text-caption opacity-70"
                     }}
                   </div>
                 </div>
-                <div
-v-if="selectedShift?.shift?.variations?.length > 0 && !shiftEndsNextDay"
-                  class="variation-badge align-self-start">
-                  <v-icon size="10" class="text-caption font-weight-bold text-background">
-                    mdi-clock
-                  </v-icon>
-                  <span class="text-caption font-weight-bold text-background">?</span>
-                </div>
               </div>
             </div>
 
-            <!-- <span class="text-caption mt-8 pa-4">
-                <v-icon start icon="mdi-information-outline"></v-icon>
-                En cliquant sur <b>TBD</b>, votre remplaçant déterminera l'horaire effectué à postériori.
-              </span> -->
-
-            <span class="text-caption mt-8 pa-4">
-              <v-icon start icon="mdi-information-outline" />
-              En cliquant sur une <b>variante</b>, votre pouvez définir l'horaire de votre remplacement.
-            </span>
-            <span class="text-caption mt-8 pa-4 text-error">
-
-              Fonctionnalité à venir
-            </span>
+            <div v-if="hasVariations" class="mt-4 mb-4">
+              <span class="text-caption d-block mb-2">
+                <v-icon start icon="mdi-information-outline" size="small" />
+                Choisissez une variante pour préciser l'horaire (optionnel, peut rendre plus de permutations compatibles). {{ preselectedVariantHint }}
+              </span>
+              <v-chip-group v-model="selectedVariant" class="pa-0">
+                <v-chip
+                  value=""
+                  size="small"
+                  rounded="lg"
+                  variant="flat"
+                  :class="!selectedVariant ? 'bg-primary' : ''"
+                  class="ma-1"
+                >
+                  Non précisée ({{ shiftWithVariations?.default?.startTime }}-{{ shiftWithVariations?.default?.endTime }})
+                </v-chip>
+                <v-chip
+                  v-for="v in shiftWithVariations?.variations"
+                  :key="v._id"
+                  :value="v._id"
+                  size="small"
+                  rounded="lg"
+                  variant="flat"
+                  :class="selectedVariant === v._id ? 'bg-primary' : ''"
+                  class="ma-1"
+                >
+                  {{ v.name }} ({{ v.startTime }}-{{ v.endTime }})
+                </v-chip>
+              </v-chip-group>
+            </div>
           </div>
           <v-card color="transparent" class="my-12 pa-0" elevation="0">
             <v-card-item class="">
@@ -248,6 +257,10 @@ import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
 import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
 import PointsDialog from '@/components/Dialogs/PointsDialog.vue';
 import { substitutionService } from '@/services/substitutionService';
+import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
+import { useAuthStore } from '@/stores/authStore';
+
+const authStore = useAuthStore();
 const props = defineProps({
   dialogMode: { type: String, required: true },
   dialogVisible: { type: Boolean, required: true },
@@ -304,7 +317,7 @@ const formattedDate = ref('');
 const localDate = ref('');
 const currentWindow = ref(0);
 const formValid = ref(false);
-const selectedVariant = ref(null);
+const selectedVariant = ref('');
 const showConfirmationDialog = ref(false);
 
 const showPointsDialog = ref(false);
@@ -409,12 +422,42 @@ const shiftName = computed(() => {
   return props.selectedShift?.shift?.name || 'Aucun shift sélectionné';
 });
 
-const switchName = computed(() => (dayId) => {
-  return rotationDays.value.find(day => day._id === dayId)?.name || 'Aucun shift sélectionné';
+// Source prioritaire pour les variations : rotation (days peuplés) > selectedShift.shift (vacations API)
+const shiftWithVariations = computed(() => {
+  const shift = props.selectedShift?.shift;
+  if (!shift || !activeRotation.value?.days?.length) return shift;
+  const shiftId = shift._id || shift.id;
+  const shiftName = shift.name;
+  const dayFromRotation = activeRotation.value.days.find(
+    d => (d._id || d)?.toString?.() === shiftId?.toString?.() || d?.name === shiftName
+  );
+  return dayFromRotation ?? shift;
 });
 
-const shiftEndsNextDay = computed(() => {
-  return props.selectedShift?.shift?.default?.endsNextDay || false;
+const hasVariations = computed(() => {
+  return (shiftWithVariations.value?.variations?.length || 0) > 0;
+});
+
+const displayShiftHours = computed(() => {
+  const shift = shiftWithVariations.value;
+  const variant = selectedVariant.value && shift?.variations?.length
+    ? shift.variations.find(v => (v._id || v)?.toString?.() === selectedVariant.value?.toString?.())
+    : null;
+  const effective = shift ? getEffectiveShiftTimes(shift, variant || null) : null;
+  return effective ? { startTime: effective.startTime, endTime: effective.endTime } : { startTime: '', endTime: '' };
+});
+
+const displayShiftEndsNextDay = computed(() => {
+  const shift = shiftWithVariations.value;
+  const variant = selectedVariant.value && shift?.variations?.length
+    ? shift.variations.find(v => (v._id || v)?.toString?.() === selectedVariant.value?.toString?.())
+    : null;
+  const effective = shift ? getEffectiveShiftTimes(shift, variant || null) : null;
+  return effective?.endsNextDay ?? false;
+});
+
+const switchName = computed(() => (dayId) => {
+  return rotationDays.value.find(day => day._id === dayId)?.name || 'Aucun shift sélectionné';
 });
 
 const fetchCompatibleSwitches = async () => {
@@ -441,11 +484,27 @@ const getUnavailabilityReason = function (shiftId) {
 };
 
 
+const preselectedVariantHint = computed(() =>
+  props.selectedShift?.selectedVariation ? 'Variante pré-remplie depuis votre calendrier.' : ''
+);
+
 // Watchers
 watch(() => props.dialogVisible, async (value) => {
   if (value) {
     localDate.value = props.date;
     formattedDate.value = props.date ? toDisplayFormat(props.date) : '';
+
+    // Pré-remplir la variante si l'agent l'a déjà choisie dans le calendrier
+    const sv = props.selectedShift?.selectedVariation;
+    if (sv) {
+      selectedVariant.value = (sv._id || sv)?.toString?.() || sv;
+    }
+
+    // Recharger les rotations pour avoir les variations à jour
+    const centerId = authStore.userData?.centerId;
+    if (centerId) {
+      await rotationStore.fetchRotations(centerId);
+    }
 
     // Charger les données compatibles quand le dialogue s'ouvre
     try {
@@ -459,7 +518,6 @@ watch(() => props.dialogVisible, async (value) => {
       loadingRotations.value = false;
     }
   } else {
-
     resetForm();
   }
 });
@@ -481,7 +539,7 @@ const resetForm = () => {
     acceptedSwitches: []
   };
 
-  selectedVariant.value = null;
+  selectedVariant.value = '';
   localDate.value = '';
   formattedDate.value = '';
 };
@@ -499,7 +557,10 @@ const submit = () => {
   emit('onSubmit', {
     ...demand.value,
     date: localDate.value,
-    selectedShift: props.selectedShift,
+    selectedShift: {
+      ...props.selectedShift,
+      selectedVariation: selectedVariant.value || null
+    },
     acceptedSwitches: acceptedSwitchesWithPoints.value,
     isTrueSwitch: dialogModeValue.value === 'switch'
   });
@@ -510,7 +571,10 @@ const confirmSubmit = () => {
   emit('onSubmit', {
     ...demand.value,
     date: localDate.value,
-    selectedShift: props.selectedShift,
+    selectedShift: {
+      ...props.selectedShift,
+      selectedVariation: selectedVariant.value || null
+    },
     acceptedSwitches: acceptedSwitchesWithPoints.value,
     isTrueSwitch: dialogModeValue.value === 'switch'
   });

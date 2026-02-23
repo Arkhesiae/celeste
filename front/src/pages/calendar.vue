@@ -214,7 +214,8 @@ const rotationsMap = ref(new Map());
 // Computed properties
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
-  return {shift : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.shift, teamObject : vacationsOfUser.value.get(selectedDate.value.split('T')[0])?.teamObject};
+  const v = vacationsOfUser.value.get(selectedDate.value.split('T')[0]);
+  return v ? { shift: v.shift, teamObject: v.teamObject, selectedVariation: v.selectedVariation } : null;
 });
 
 // const accepterName = computed(() => {
@@ -301,7 +302,8 @@ const handleSubmit = async (demand) => {
       const posterShift = {
         date: demand.date,
         shift: demand.selectedShift.shift,
-        teamId: demand.selectedShift.teamObject._id
+        teamId: demand.selectedShift.teamObject._id,
+        selectedVariation: demand.selectedShift.selectedVariation || null
       };
 
       const requestData = {
@@ -370,10 +372,11 @@ watch(calendarDays, async (newCalendarDays) => {
 onMounted(async () => {
   try {
     isLoading.value = true;
-    await Promise.all([
-      getWorkdaysOfUser(),
-      fetchSubstitutions()
-    ]);
+    const tasks = [getWorkdaysOfUser(), fetchSubstitutions()];
+    if (authStore.userData?.centerId) {
+      tasks.push(rotationStore.fetchRotations(authStore.userData.centerId));
+    }
+    await Promise.all(tasks);
     // snackbarStore.showNotification('Substitutions et vacations chargées !', 'onPrimary', 'mdi-check');
   } catch (err) {
     snackbarStore.showNotification('Erreur lors du chargement initial', 'error', 'mdi-alert-outline');

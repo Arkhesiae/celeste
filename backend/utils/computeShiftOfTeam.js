@@ -31,18 +31,17 @@ const computeShiftOfTeam = async (date, teamData) => {
 
         if (latestRotation.days.length > 0) {
             const firstDay = latestRotation.days[0];
-                // Vérifier si les days sont déjà populés en testant si c'est un ObjectId ou un objet Shift
-                if (typeof firstDay === 'string' || firstDay.constructor.name === 'ObjectId') {
-                    // Les days ne sont pas populés, on les populate
-                    latestRotation = await Rotation.findById(latestRotation._id).populate({
-                        path: 'days',
-                        populate: {
-                            path: 'variations'
-                        }
-                    });
-                }
-                // Si c'est déjà un objet avec des propriétés de Shift, pas besoin de populate
+            const needsPopulate = typeof firstDay === 'string' ||
+                firstDay?.constructor?.name === 'ObjectId' ||
+                firstDay?.constructor?.name === 'ObjectID' ||
+                !firstDay?.default;
+            if (needsPopulate) {
+                latestRotation = await Rotation.findById(latestRotation._id).populate({
+                    path: 'days',
+                    populate: { path: 'variations' }
+                });
             }
+        }
         
 
         const diffInMilliseconds = date - new Date(teamData.cycleStartDate);

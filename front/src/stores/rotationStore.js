@@ -141,8 +141,14 @@ export const useRotationStore = defineStore('rotation', () => {
    */
   const updateDayInRotation = async (rotationId, updatedDay, centerId) => {
     try {
-      await rotationService.updateDayInRotation(rotationId, updatedDay);
-      await fetchRotations(centerId); // Rafraîchir les données
+      const result = await rotationService.updateDayInRotation(rotationId, updatedDay);
+      if (result?.rotation) {
+        rotations.value = rotations.value.map(r =>
+          r._id === rotationId ? result.rotation : r
+        );
+      } else {
+        await fetchRotations(centerId);
+      }
     } catch (error) {
       console.error('Erreur lors de la mise à jour du jour :', error);
       throw error;

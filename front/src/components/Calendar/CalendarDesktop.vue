@@ -117,6 +117,7 @@
 
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 
 
 
@@ -198,10 +199,8 @@ const isOff = (date) => {
 };
 
 const getShiftName = (date) => {
-  if (isOff(date)) {
-    return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.initialShift?.name
-  }
-  return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.name;
+  const dateKey = date.toISOString().split('T')[0];
+  return getDisplayShiftName(vacationsOfUser.value.get(dateKey));
 }
 
 const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;

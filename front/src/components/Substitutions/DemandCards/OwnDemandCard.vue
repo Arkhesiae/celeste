@@ -121,12 +121,21 @@
 
 
       <div class="d-flex align-center  ga-2 my-1">
-        <div class="d-flex align-center ga-1">
-          <span
+        <div class="d-flex align-center ga-1 flex-wrap">
+          <div
             v-if="firstShift"
-            :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
-            style="font-size: .875rem; opacity: 0.7;"
-          >{{ firstShift }}</span>
+            class="d-flex align-center ga-2"
+          >
+            <span
+              :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
+              style="font-size: .875rem; opacity: 0.7;"
+            >{{ firstShift }}</span>
+            <span
+              v-if="firstShiftHours"
+              class="text-caption font-weight-medium text-medium-emphasis"
+              style="font-size: .70rem;"
+            >{{ firstShiftHours.startTime }} - {{ firstShiftHours.endTime }}</span>
+          </div>
           <v-icon
             v-if="isAccepted"
             size="x-small"
@@ -134,11 +143,20 @@
             color="primary"
             style="opacity: 0.8;"
           />
-          <span
+          <div
             v-if="secondShift"
-            :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
-            style="font-size: .875rem; opacity: 0.7"
-          >{{ secondShift }}</span>
+            class="d-flex align-center ga-2"
+          >
+            <span
+              :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
+              style="font-size: .875rem; opacity: 0.7"
+            >{{ secondShift }}</span>
+            <span
+              v-if="secondShiftHours"
+              class="text-caption font-weight-medium text-medium-emphasis"
+              style="font-size: .70rem;"
+            >{{ secondShiftHours.startTime }} - {{ secondShiftHours.endTime }}</span>
+          </div>
         </div>
         <div class="mt-0">
           <div class="custom-small-chip">
@@ -231,7 +249,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api'
-// import { resolveTripleslashReference } from 'typescript';
+import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 
 const teamStore = useTeamStore();
@@ -351,18 +369,48 @@ const destinationTeamName = computed(() => {
 
 const firstShift = computed(() => {
   if (isOwner.value) {
-    return props.demand?.posterShift?.shift?.name
+    const ps = props.demand?.posterShift;
+    return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
   } else if (isAccepter.value && props.demand?.accepterShift) {
-    return props.demand?.accepterShift?.shift?.name
+    const as = props.demand?.accepterShift;
+    return getDisplayShiftName(as ? { shift: as.shift, selectedVariation: as.selectedVariation } : null) || ''
   }
+  return ''
 });
 
 const secondShift = computed(() => {
   if (isOwner.value && props.demand?.accepterShift) {
-    return props.demand?.accepterShift?.shift?.name
+    const as = props.demand?.accepterShift;
+    return getDisplayShiftName(as ? { shift: as.shift, selectedVariation: as.selectedVariation } : null) || ''
   } else if (isAccepter.value) {
-    return props.demand?.posterShift?.shift?.name
+    const ps = props.demand?.posterShift;
+    return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
   }
+  return ''
+});
+
+const firstShiftHours = computed(() => {
+  if (isOwner.value) {
+    const ps = props.demand?.posterShift;
+    return ps?.shift ? getEffectiveShiftTimes(ps.shift, ps?.selectedVariation) : null;
+  }
+  if (isAccepter.value && props.demand?.accepterShift) {
+    const as = props.demand?.accepterShift;
+    return as?.shift ? getEffectiveShiftTimes(as.shift, as?.selectedVariation) : null;
+  }
+  return null;
+});
+
+const secondShiftHours = computed(() => {
+  if (isOwner.value && props.demand?.accepterShift) {
+    const as = props.demand?.accepterShift;
+    return as?.shift ? getEffectiveShiftTimes(as.shift, as?.selectedVariation) : null;
+  }
+  if (isAccepter.value) {
+    const ps = props.demand?.posterShift;
+    return ps?.shift ? getEffectiveShiftTimes(ps.shift, ps?.selectedVariation) : null;
+  }
+  return null;
 });
 
 const isFirstShiftBold = computed(() => {

@@ -68,9 +68,14 @@
               {{ substitutionStore.availableSwitches.length }}
             </div>
             <div class="category-indicator"
-              :title="`${substitutionStore.otherDemands.length} demande(s) incompatible(s)`">
+              :title="`${substitutionStore.potentiallyCompatibleDemands.length} demande(s) potentiellement compatible(s)`">
+              <v-icon icon="mdi-help-circle-outline" size="small" color="primary" />
+              {{ substitutionStore.potentiallyCompatibleDemands.length }}
+            </div>
+            <div class="category-indicator"
+              :title="`${substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length} demande(s) incompatible(s)`">
               <v-icon icon="mdi-close" size="small" color="primary" />
-              {{ substitutionStore.otherDemands.length }}
+              {{ substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length }}
             </div>
           </div>
         </template>
@@ -143,8 +148,19 @@ const pendingDemands = computed(() => [
 const acceptedAsPoster = computed(() => substitutionStore.acceptedAsPoster);
 const acceptedAsAccepter = computed(() => substitutionStore.acceptedAsAccepter);
 
+const refetchOnFocus = () => {
+  if (substitutionStore.startDate && substitutionStore.endDate) {
+    substitutionStore.fetchAllDemands({ startDate: substitutionStore.startDate, endDate: substitutionStore.endDate });
+  }
+};
 
+onMounted(() => {
+  window.addEventListener('focus', refetchOnFocus);
+});
 
+onUnmounted(() => {
+  window.removeEventListener('focus', refetchOnFocus);
+});
 
 
 

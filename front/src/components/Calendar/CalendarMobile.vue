@@ -109,7 +109,7 @@
 <script setup>
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
-
+import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useDisplay } from 'vuetify';
 
@@ -172,13 +172,8 @@ const acceptedAsPoster = computed(() => (date) => {
 });
 
 const getShiftName = (date) => {
-  if (vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff) {
-    
-      return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.initialShift?.name;
-  } 
-
-  const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift
-  return shift ? shift.name : '';
+  const dateKey = date.toISOString().split('T')[0];
+  return getDisplayShiftName(vacationsOfUser.value.get(dateKey));
 };
 
 // const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;

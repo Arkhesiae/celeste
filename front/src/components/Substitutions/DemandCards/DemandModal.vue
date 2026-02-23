@@ -9,7 +9,7 @@
     <template #content>
       <div class="text-center mb-6">
         <h1 class="text-h3 font-weight-bold">
-          {{ demand.posterShift?.shift?.name }}
+          {{ getShiftName }}
         </h1>
         <div>
           <span class="text-caption font-weight-bold text-medium-emphasis">{{ getShiftHours.startTime }} - {{
@@ -418,7 +418,7 @@ import { API_URL } from '@/config/api';
 import { useAuthStore } from '@/stores/authStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
-
+import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
@@ -485,12 +485,21 @@ const accepterName = computed(() => {
 
 const showAccepterDetails = ref(false)
 
+const getShiftName = computed(() => {
+  const ps = props.demand?.posterShift;
+  return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
+})
+
 const getShiftHours = computed(() => {
-  return { startTime: props.demand?.posterShift?.shift?.default?.startTime, endTime: props.demand?.posterShift?.shift?.default?.endTime }
+  const ps = props.demand?.posterShift;
+  const effective = ps?.shift ? getEffectiveShiftTimes(ps.shift, ps?.selectedVariation) : null;
+  return effective ? { startTime: effective.startTime, endTime: effective.endTime } : { startTime: '', endTime: '' }
 })
 
 const getShiftEndsNextDay = computed(() => {
-  return props.demand?.posterShift?.shift?.default?.endsNextDay
+  const ps = props.demand?.posterShift;
+  const effective = ps?.shift ? getEffectiveShiftTimes(ps.shift, ps?.selectedVariation) : null;
+  return effective?.endsNextDay ?? false
 })
 
 const canSwitch = computed(() => {

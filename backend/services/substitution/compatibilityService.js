@@ -6,8 +6,8 @@ import { categorize } from "../../utils/categorizeDemand.js";
 
 const getCompatibility = async (demandId, userId) => {
     const demand = await Substitution.findById(demandId).populate([
-        { path: 'posterShift.shift' }
-
+        { path: 'posterShift.shift', populate: { path: 'variations' } },
+        { path: 'posterShift.selectedVariation' }
     ]);
     if (!demand) {
         throw new Error('Demande non trouvée');

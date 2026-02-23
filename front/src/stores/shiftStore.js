@@ -3,6 +3,7 @@ import { defineStore } from 'pinia';
 import { vacationService } from '@/services/vacationService';
 import { useAuthStore } from '@/stores/authStore';
 import { parseShiftDateTime } from '@/utils/parseShiftDateTime';
+import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 
 /**
@@ -72,24 +73,24 @@ export const useShiftStore = defineStore('shift', () => {
       dateKey = entry.date.split('T')[0];
     }
 
-    const { date, shift, teamObject, isSubstitution, substitutionType, initialShift, substitutionHistory, isOff } = entry;
+    const { date, shift, teamObject, isSubstitution, substitutionType, initialShift, substitutionHistory, isOff, selectedVariation } = entry;
 
     let start = null;
     let end = null;
-    let startTime = shift?.default?.startTime;
-    let endTime = shift?.default?.endTime;
+    const effectiveTimes = shift ? getEffectiveShiftTimes(shift, selectedVariation) : null;
     if (shift && shift.type !== 'rest') {
-      if (!date || !shift || !startTime || !endTime) {
+      if (!effectiveTimes || !date || !effectiveTimes.startTime || !effectiveTimes.endTime) {
         return;
       }
-
-      start = parseShiftDateTime(date, startTime, shift.default.endsNextDay);
-      end = parseShiftDateTime(date, endTime, shift.default.endsNextDay);
+      const { startTime, endTime, endsNextDay } = effectiveTimes;
+      start = parseShiftDateTime(date, startTime, false);
+      end = parseShiftDateTime(date, endTime, endsNextDay);
     }
 
     const newValue = {
       shift,
       teamObject,
+      selectedVariation: selectedVariation || null,
       start,
       end,
       isSubstitution: isSubstitution || false,

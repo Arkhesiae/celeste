@@ -1,5 +1,6 @@
 import emailService from './emailService.js';
 import { renderMail } from '../../src/mail/mailRenderer.js';
+import { getEffectiveShiftTimes } from '../../utils/getEffectiveShiftTimes.js';
 
 
 /**
@@ -46,13 +47,28 @@ async function sendUserPoolNotification(userPool, demand) {
       endTime: switchItem.shift.default.endTime,
     }));
 
+    const posterShift = demand.posterShift;
+    const baseName = posterShift?.shift?.name || '';
+    let variationName = null;
+    if (posterShift?.selectedVariation) {
+      if (typeof posterShift.selectedVariation === 'object' && posterShift.selectedVariation?.name) {
+        variationName = posterShift.selectedVariation.name;
+      } else if (posterShift.shift?.variations?.length) {
+        const vid = (posterShift.selectedVariation?._id || posterShift.selectedVariation)?.toString?.();
+        const v = posterShift.shift.variations.find(x => (x._id || x)?.toString?.() === vid);
+        variationName = v?.name || null;
+      }
+    }
+    const shiftDisplayName = variationName ? baseName + variationName : baseName;
+    const effectiveTimes = getEffectiveShiftTimes(posterShift?.shift, posterShift?.selectedVariation) || posterShift?.shift?.default;
+
     const mailOptionsList = [];
     // Envoyer un email personnalisé pour chaque utilisateur
     for (const user of validUsers) {
       try {
 
 
-        // Données du template personnalisées pour chaque utilisateur
+        // Données du template personnalisées pour chaque utilisateur (variante affichée seulement si choisie)
         const templateData = {
           userName: user.name,
           demandType: demand.type,
@@ -61,9 +77,9 @@ async function sendUserPoolNotification(userPool, demand) {
           posterName: fullName,
           teamName: demand.posterShift.teamId.name,
           demandDate: formatDateFr(demand.posterShift.date),
-          shift: demand.posterShift.shift.name,
-          startTime: demand.posterShift.shift.default.startTime,
-          endTime: demand.posterShift.shift.default.endTime,
+          shift: shiftDisplayName,
+          startTime: effectiveTimes?.startTime || demand.posterShift.shift?.default?.startTime,
+          endTime: effectiveTimes?.endTime || demand.posterShift.shift?.default?.endTime,
           comment: demand.comment,
           points: demand.points,
           canSwitch: user.canSwitch || false,

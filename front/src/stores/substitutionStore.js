@@ -163,6 +163,12 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     );
   });
 
+  /** Demandes potentiellement compatibles : dans otherDemands, sans variante choisie, compatibles avec au moins une variante mais pas toutes */
+  const potentiallyCompatibleDemands = computed(() => {
+    if (!userId.value) return [];
+    return otherDemands.value.filter(d => d.potentiallyCompatible === true);
+  });
+
 
   // ----- Accepted as Poster -----
 
@@ -530,7 +536,6 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
 
   const recategorizeSubstitutions = async (dateKey) => {
-    console.log(dateKey)
     try {
       const openSubstitutionIds = getOpenSubstitutionIdsFromOthers(dateKey);
       if (openSubstitutionIds.length > 0) {
@@ -555,6 +560,16 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     error.value = null;
   };
 
+  const updateDemandInStore = (demand) => {
+    if (!demand?._id) return;
+    const index = substitutions.value.findIndex(s => s._id === demand._id);
+    if (index !== -1) {
+      substitutions.value[index] = demand;
+    } else {
+      substitutions.value.push(demand);
+    }
+  };
+
   return {
     // State
     substitutions,
@@ -574,6 +589,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     availableTrueSwitches,
     availableTrueSubstitutions,
     otherDemands,
+    potentiallyCompatibleDemands,
 
     hasAvailableSwitches,
     hasAvailableSubstitutions,
@@ -614,6 +630,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     consultDemand,
     fetchSubstitutions,
     recategorizeSubstitutions,
-    emptyStore
+    emptyStore,
+    updateDemandInStore
   };
 });

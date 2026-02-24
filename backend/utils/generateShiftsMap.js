@@ -92,7 +92,8 @@ export function shiftMapToArray(shiftsMap) {
       date: entry.date,
       start: entry.start,
       end: entry.end,
-      team: entry.team
+      team: entry.team,
+      selectedVariation: entry.selectedVariation ?? null
     }))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 }

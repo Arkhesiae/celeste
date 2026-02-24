@@ -103,7 +103,8 @@ export default createVuetify({
           "pending": "#ffbc66",
           "new": "#28adbb",
           "done": "#25c060",
-      
+          "anomalySoft": "#c9a66b",
+
         }
       },
       lightTheme: {
@@ -170,6 +171,7 @@ export default createVuetify({
           "pending": "#af6200",
           "new": "#28adbb",
           "done": "#25c060",
+          "anomalySoft": "#b8956c",
         }
       },
     },

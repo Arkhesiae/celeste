@@ -299,7 +299,7 @@
   </div>
   <!-- Incompatibilities Chips -->
   <div
-    v-if="props.compatibility?.limit?.length > 0 || (props.compatibility?.invalidWindows?.length > 0)"
+    v-if="filteredLimits.length > 0 || deduplicatedInvalidRest35.length > 0 || deduplicatedInvalidWork48.length > 0"
     class="pb-4 pl-2"
   >
     <div class="text-caption mb-2 text-disabled px-2">
@@ -307,26 +307,33 @@
     </div>
     <div class="d-flex flex-wrap ga-2 px-2">
       <v-chip
-        v-for="limit in props.compatibility.limit"
+        v-for="limit in filteredLimits"
         :key="limit"
-        color="error"
+        :color="isAnomalyFixableByVariation(limit) ? 'anomalySoft' : 'error'"
         rounded
         variant="tonal"
         size="small"
-        class="font-weight-bold"
+        class="font-weight-bold cursor-pointer"
       >
         <v-icon
           start
           icon="mdi-alert-circle-outline"
         />
         {{ limitLabels[limit] || limit }}
+        <v-tooltip
+          activator="parent"
+          location="bottom"
+          open-on-click
+        >
+          {{ getLimitTooltip(limit) }}
+        </v-tooltip>
       </v-chip>
 
       <v-chip
-        v-for="(win, idx) in props.compatibility.invalidRest35"
-        :key="'win-' + idx"
+        v-for="(win, idx) in deduplicatedInvalidRest35"
+        :key="'rest35-' + new Date(win.longestRestStart).getTime() + '-' + new Date(win.longestRestEnd).getTime()"
         rounded
-        color="error"
+        :color="isRestWorkFixable ? 'anomalySoft' : 'error'"
         variant="tonal"
         size="small"
         class="font-weight-bold cursor-pointer"
@@ -337,21 +344,20 @@
           start
           icon="mdi-calendar-clock"
         />
-        Repos hebdo : {{ Math.round(win.longestRest / 60) }}h / 35h
+        Repos hebdo : {{ formatRestMinutes(win.longestRest) }} / 35h
         <v-tooltip
           activator="parent"
           location="bottom"
+          open-on-click
         >
-          {{ new Date(win.windowStart).toLocaleDateString() }} - {{ new
-            Date(win.windowEnd).toLocaleDateString()
-          }}
+          {{ getRestWorkTooltip(win) }}
         </v-tooltip>
       </v-chip>
       <v-chip
-        v-for="(win, idx) in props.compatibility.invalidWork48"
-        :key="'win-' + idx"
+        v-for="(win, idx) in deduplicatedInvalidWork48"
+        :key="'work48-' + new Date(win.windowStart).getTime() + '-' + new Date(win.windowEnd).getTime()"
         rounded
-        color="error"
+        :color="isRestWorkFixable ? 'anomalySoft' : 'error'"
         variant="tonal"
         size="small"
         class="font-weight-bold cursor-pointer"
@@ -362,14 +368,13 @@
           start
           icon="mdi-alarm"
         />
-        Travail hebdo : {{ Math.round(win.totalWorkMinutes / 60) }}h / 48h
+        Travail hebdo : {{ formatRestMinutes(win.totalWorkMinutes) }} / 48h
         <v-tooltip
           activator="parent"
           location="bottom"
+          open-on-click
         >
-          {{ new Date(win.windowStart).toLocaleDateString() }} - {{ new
-            Date(win.windowEnd).toLocaleDateString()
-          }}
+          {{ getRestWorkTooltip(win) }}
         </v-tooltip>
       </v-chip>
     </div>
@@ -377,7 +382,10 @@
 </template>
 
 <script setup>
+import { formatPairsForDate, formatDateLabel, formatDateSuffix } from '@/utils/compatiblePairsFormat';
+import { useShiftStore } from '@/stores/shiftStore';
 
+const shiftStore = useShiftStore();
 
 const props = defineProps({
     days: {
@@ -391,6 +399,10 @@ const props = defineProps({
     compatibility: {
         type: Object,
         default: () => ({ limit: [] })
+    },
+    demand: {
+        type: Object,
+        default: null
     }
 });
 
@@ -415,6 +427,37 @@ const LAYOUT_END = 24;
 const LAYOUT_RANGE = LAYOUT_END - LAYOUT_START;
 const yTickValues = [0, 6, 12, 18, 24];
 
+const deduplicatedInvalidRest35 = computed(() => {
+    const wins = props.compatibility?.invalidRest35 || [];
+    const seen = new Map();
+    return wins.filter((win) => {
+        const key = `${new Date(win.longestRestStart).getTime()}-${new Date(win.longestRestEnd).getTime()}`;
+        if (seen.has(key)) return false;
+        seen.set(key, true);
+        return true;
+    });
+});
+
+const deduplicatedInvalidWork48 = computed(() => {
+    const wins = props.compatibility?.invalidWork48 || [];
+    const seen = new Map();
+    return wins.filter((win) => {
+        const key = `${new Date(win.windowStart).getTime()}-${new Date(win.windowEnd).getTime()}`;
+        if (seen.has(key)) return false;
+        seen.set(key, true);
+        return true;
+    });
+});
+
+/** Exclut 35limit et 48hLimit des limits car déjà affichés via les chips Repos hebdo / Travail hebdo */
+const filteredLimits = computed(() => {
+    const limits = props.compatibility?.limit || [];
+    const exclude = [];
+    if (deduplicatedInvalidRest35.value?.length > 0) exclude.push('35limit');
+    if (deduplicatedInvalidWork48.value?.length > 0) exclude.push('48hLimit');
+    return limits.filter(l => !exclude.includes(l));
+});
+
 const limitLabels = {
     alreadyWorking: 'Déjà en poste',
     insufficientRest: 'Repos < 11h',
@@ -423,6 +466,104 @@ const limitLabels = {
     consecutiveDaysLimit: '> 5 jours consécutifs',
     nightControlRestLimit: 'Repos nuit < 12h',
     consecutiveNightLimit: '> 2 nuits consécutives'
+};
+
+/** Anomalies modifiables en changeant une vacation élémentaire (demande ou accepter) */
+const VARIATION_FIXABLE_LIMITS = new Set([
+    'insufficientRest', '35limit', '48hLimit',
+    'consecutiveDaysLimit', 'nightControlRestLimit', 'consecutiveNightLimit'
+]);
+
+const isVariationFixable = (limit) => VARIATION_FIXABLE_LIMITS.has(limit);
+
+/** Orange uniquement si une modification de vacation élémentaire peut lever l'anomalie (potentiallyCompatible = certaines combinaisons passent) */
+const isAnomalyFixableByVariation = (limit) => {
+    if (!isVariationFixable(limit)) return false;
+    return props.demand?.potentiallyCompatible === true;
+};
+
+const isRestWorkFixable = computed(() => props.demand?.potentiallyCompatible === true);
+
+const TOOLTIP_NOT_FIXABLE = 'Ne peut pas être levée en modifiant une vacation élémentaire.';
+
+const isUserAlreadyCompatibleForDate = (dateStr, variations) => {
+    const map = shiftStore.persistentVacationsMap;
+    const vacation = (map?.value ?? map)?.get?.(dateStr);
+    if (!vacation || !variations?.length) return false;
+    const userVar = vacation.selectedVariation;
+    const userKey = !userVar ? 'default' : (userVar._id || userVar)?.toString?.() ?? null;
+    return variations.some(v => v?.isDefault ? userKey === 'default' : (v._id || v)?.toString?.() === userKey);
+};
+
+const isUserAlreadyCompatibleForPairsDate = (dateStr, pairs) => {
+    const map = shiftStore.persistentVacationsMap;
+    const vacation = (map?.value ?? map)?.get?.(dateStr);
+    if (!vacation || !pairs?.length) return false;
+    const userVar = vacation.selectedVariation;
+    const userKey = !userVar ? 'default' : (userVar._id || userVar)?.toString?.() ?? null;
+    return pairs.some(p => {
+        const fv = p?.fetcherVariation;
+        const fvKey = fv?.isDefault ? 'default' : (fv?._id || fv)?.toString?.();
+        return fvKey === userKey;
+    });
+};
+
+/** Texte de compatibilité (même logique que DemandCard.compatibleInfoText) pour les tooltips */
+const compatibleInfoForTooltip = computed(() => {
+    const demand = props.demand;
+    if (!demand) return '';
+    const hasPosterVariation = !!demand?.posterShift?.selectedVariation;
+    const demandDate = demand?.posterShift?.date;
+
+    if (hasPosterVariation) {
+        const byDate = demand?.compatibleFetcherVariationsByDate;
+        if (!byDate?.length) return '';
+        const filtered = byDate.filter(({ date, variations }) => !isUserAlreadyCompatibleForDate(date, variations));
+        if (!filtered.length) return '';
+        const names = filtered.map(({ date, shiftName, variations }) => {
+            const n = (variations || []).map(v => v?.isDefault ? shiftName : shiftName + (v?.name || '')).filter(Boolean);
+            if (!n.length) return '';
+            const dateLabel = date === demandDate ? '' : formatDateLabel(date, demandDate);
+            return dateLabel ? `${n.join(', ')} (${dateLabel})` : n.join(', ');
+        }).filter(Boolean).join(' • ');
+        return names ? `Compatible si vous êtes en : ${names}` : '';
+    }
+
+    const byDate = demand?.compatiblePairsByFetcherDate;
+    if (byDate?.length) {
+        const filtered = byDate.filter(({ date, pairs }) => !isUserAlreadyCompatibleForPairsDate(date, pairs));
+        if (!filtered.length) return '';
+        const pairs = filtered.map((entry) => {
+            const { date, shiftName, baseShiftName, pairs: p, totalDemandVariations, totalFetcherVariations } = entry;
+            const dateLabel = formatDateLabel(date, demandDate);
+            const suffix = formatDateSuffix(dateLabel);
+            const pairsText = formatPairsForDate({ pairs: p, baseShiftName, shiftName, totalDemandVariations, totalFetcherVariations });
+            return pairsText ? pairsText + suffix : '';
+        }).filter(Boolean).join(' • ');
+        if (pairs) return `Compatible avec : ${pairs}`;
+    }
+
+    const vars = demand?.compatibleVariations;
+    if (vars?.length) {
+        const baseName = demand?.posterShift?.shift?.name || '';
+        const names = vars.map(v => baseName + (v?.name || '')).join(', ');
+        return names ? `Compatible avec : ${names}` : '';
+    }
+    return '';
+});
+
+const getLimitTooltip = (limit) => {
+    if (!isAnomalyFixableByVariation(limit)) return TOOLTIP_NOT_FIXABLE;
+    return compatibleInfoForTooltip.value || 'Précisez ou modifiez la vacation élémentaire du jour de remplacement (modal Demande) ou d\'un jour concerné (calendrier).';
+};
+
+const getRestWorkTooltip = (win) => {
+    if (!isRestWorkFixable.value) return TOOLTIP_NOT_FIXABLE;
+    const start = new Date(win.windowStart).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const end = new Date(win.windowEnd).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const compat = compatibleInfoForTooltip.value;
+    if (compat) return compat;
+    return `Précisez la vacation du jour de remplacement ou modifiez celle d'un jour entre le ${start} et le ${end} (calendrier).`;
 };
 
 onMounted(() => {
@@ -467,6 +608,13 @@ const updateHoverPos = (colIndex, hourCenterPct = null) => {
 //     };
 //     return `${format(startH)} - ${format(endH)}`;
 // };
+
+const formatRestMinutes = (minutes) => {
+    if (minutes == null) return '0h';
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
+    return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
+};
 
 const formatFullTimeRange = (start, end) => {
     console.log(start, end)
@@ -517,26 +665,29 @@ const onWorkHover = (segment, col, idx) => {
 const onIncompatibilityHover = (win) => {
     clearRestSegments();
 
-    const colIndexStart = getColIndex(new Date(win.longestRestStart));
-    const colIndexEnd = getColIndex(new Date(win.longestRestEnd));
-
     const s = new Date(win.longestRestStart);
     const e = new Date(win.longestRestEnd);
-
     const sRawH = s.getUTCHours() + s.getUTCMinutes() / 60;
-    const eRawH_Abs = e.getUTCHours() + e.getUTCMinutes() / 60;
+    const eRawH = e.getUTCHours() + e.getUTCMinutes() / 60;
 
-    const sDay = new Date(s); sDay.setUTCHours(0, 0, 0, 0);
-    const eDay = new Date(e); eDay.setUTCHours(0, 0, 0, 0);
+    const sDay = new Date(s);
+    sDay.setUTCHours(0, 0, 0, 0);
+    const eDay = new Date(e);
+    eDay.setUTCHours(0, 0, 0, 0);
 
-    if (eDay.getTime() > sDay.getTime()) {
-        displayRestSegment(colIndexStart, { startHour: sRawH, endHour: 24 });
-        for (let col = colIndexStart + 1; col < colIndexEnd; col++) {
-            displayRestSegment(col, { startHour: 0, endHour: 24 });
-        }
-        displayRestSegment(colIndexEnd, { startHour: 0, endHour: eRawH_Abs });
+    const colIndexStart = getColIndex(sDay);
+    const colIndexEnd = getColIndex(eDay);
+
+    if (colIndexStart === colIndexEnd) {
+        displayRestSegment(colIndexStart, { startHour: sRawH, endHour: eRawH });
     } else {
-        displayRestSegment(colIndexStart, { startHour: sRawH, endHour: eRawH_Abs });
+        displayRestSegment(colIndexStart, { startHour: sRawH, endHour: 24 });
+        for (let colIdx = colIndexStart + 1; colIdx < colIndexEnd; colIdx++) {
+            displayRestSegment(colIdx, { startHour: 0, endHour: 24 });
+        }
+        if (eRawH > 0) {
+            displayRestSegment(colIndexEnd, { startHour: 0, endHour: eRawH });
+        }
     }
 };
 

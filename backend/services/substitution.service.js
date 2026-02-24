@@ -171,6 +171,7 @@ export async function getOpenDemands (userId, startDate, endDate) {
             { path: 'accepterShift.shift', populate: { path: 'variations' } },
             { path: 'accepterShift.selectedVariation' },
             { path: 'accepterShift.teamId' },
+            { path: 'acceptedSwitches.shift', select: '_id name' },
         ]),
         Substitution.find({
             deleted: false,
@@ -184,6 +185,7 @@ export async function getOpenDemands (userId, startDate, endDate) {
             { path: 'accepterShift.shift', populate: { path: 'variations' } },
             { path: 'accepterShift.selectedVariation' },
             { path: 'accepterShift.teamId' },
+            { path: 'acceptedSwitches.shift', select: '_id name' },
         ])
     ]);
 
@@ -410,9 +412,10 @@ export async function recategorizeSubstitutions (substitutionIds, userId) {
 
     // Récupérer les substitutions avec leurs shifts populés
     const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate([
-    { path: 'posterShift.shift', populate: { path: 'variations' } },
-    { path: 'posterShift.selectedVariation' }
-]);
+        { path: 'posterShift.shift', populate: { path: 'variations' } },
+        { path: 'posterShift.selectedVariation' },
+        { path: 'acceptedSwitches.shift', select: '_id name' }
+    ]);
 
     if (substitutions.length === 0) {
         throw new Error({ status: 404, message: 'Aucune substitution trouvée' });

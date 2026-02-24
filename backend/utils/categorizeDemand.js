@@ -6,6 +6,30 @@ import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
+/**
+ * Échantillonne des combinaisons de manière uniforme quand il y en a trop.
+ * Inclut toujours la combo par défaut (index 0) en premier.
+ */
+function sampleCombos(combos, maxCount) {
+    if (combos.length <= maxCount) return combos;
+    const result = [combos[0]];
+    const step = (combos.length - 1) / Math.max(1, maxCount - 1);
+    for (let i = 1; i < maxCount; i++) {
+        const idx = Math.min(Math.floor(i * step), combos.length - 1);
+        result.push(combos[idx]);
+    }
+    return result;
+}
+
+/**
+ * Complexité des calculs par paire de compatibilité :
+ * - demandVariations × fetcherCombos appels à checkCompatibilityForVariation
+ * - fetcherCombos = ∏(1 + variations_per_date) pour chaque date ambigüe du fetcher
+ *   Ex: 7 dates avec 2 variations = 3^7 = 2187 | 5 dates avec 3 variations = 4^5 = 1024
+ * - Sans limite : 3 demandVars × 2187 = 6561 itérations, chacune avec N appels DB (acceptedSwitches)
+ */
+const MAX_COMPATIBILITY_COMBOS = 500;
+
 
 
 /**
@@ -73,10 +97,37 @@ function getFetcherVariationCombinations(ambiguousDates, shiftsMap) {
 }
 
 /**
+ * Pré-charge les shifts des acceptedSwitches une seule fois pour éviter N×M appels DB.
+ * Utilise les shifts déjà populés si disponibles.
+ * @returns {Promise<Map<string, Object>>} Map shiftId -> shift
+ */
+async function buildPreFetchedAcceptedShifts(demand) {
+    const map = new Map();
+    if (!demand?.acceptedSwitches?.length) return map;
+    const isPopulated = (s) => s?.shift && typeof s.shift === 'object' && '_id' in s.shift && 'name' in s.shift;
+    const populated = demand.acceptedSwitches.filter(isPopulated);
+    const unpopulatedIds = demand.acceptedSwitches
+        .filter(s => !isPopulated(s) && s.shift)
+        .map(s => s.shift?._id ?? s.shift)
+        .filter(Boolean);
+    for (const s of populated) {
+        map.set(s.shift._id.toString(), s.shift);
+    }
+    if (unpopulatedIds.length > 0) {
+        const shifts = await Shift.find({ _id: { $in: unpopulatedIds } }).select('_id name').lean();
+        for (const sh of shifts) {
+            map.set(sh._id.toString(), sh);
+        }
+    }
+    return map;
+}
+
+/**
  * Vérifie la compatibilité pour une variation de la demande et optionnellement des overrides pour les vacations du fetcher.
  * Retourne { limit: string[], canSwitch: boolean }.
+ * @param {Map<string, Object>} [preFetchedAcceptedShifts] - Map shiftId -> shift pour éviter les appels DB répétés
  */
-async function checkCompatibilityForVariation(demand, shiftsMap, demandVariationOrNull, fetcherVariationOverrides = {}) {
+function checkCompatibilityForVariation(demand, shiftsMap, demandVariationOrNull, fetcherVariationOverrides = {}, preFetchedAcceptedShifts = null) {
     if (!demand?.posterShift?.shift) {
         return { limit: ['invalidDemand'], canSwitch: false };
     }
@@ -106,8 +157,9 @@ async function checkCompatibilityForVariation(demand, shiftsMap, demandVariation
         limit.push('alreadyWorking');
         if (demand.acceptedSwitches?.length > 0) {
             for (const switchItem of demand.acceptedSwitches) {
-                const shift = await Shift.findById(switchItem.shift);
-                if ((shift?._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name)) {
+                const shiftId = switchItem.shift?._id?.toString?.() ?? switchItem.shift?.toString?.();
+                const shift = preFetchedAcceptedShifts?.get(shiftId) ?? (switchItem.shift && typeof switchItem.shift === 'object' ? switchItem.shift : null);
+                if (shift && ((shift._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name))) {
                     canSwitch = true;
                     break;
                 }
@@ -144,7 +196,8 @@ const categorize = async (demand, shiftsMap = null) => {
         const hasVariations = shift?.variations?.length >= 2;
         const noSelectedVariation = !demand.posterShift?.selectedVariation;
 
-        const result = await checkCompatibilityForVariation(demand, shiftsMap, demand.posterShift?.selectedVariation);
+        const preFetchedAcceptedShifts = await buildPreFetchedAcceptedShifts(demand);
+        const result = checkCompatibilityForVariation(demand, shiftsMap, demand.posterShift?.selectedVariation, {}, preFetchedAcceptedShifts);
         demandWithLimit.limit = result.limit;
         demandWithLimit.canSwitch = result.canSwitch;
 
@@ -171,10 +224,10 @@ const categorize = async (demand, shiftsMap = null) => {
         demandWithLimit.invalidRest35 = invalidWindows35;
         demandWithLimit.invalidWork48 = invalidWindows48;
 
-        // Jours ambigus du fetcher : vacations avec 2+ variantes sans variante choisie
+        // Jours ambigus du fetcher : vacations avec 2+ variantes (avec ou sans choix, pour calculer les alternatives compatibles)
         const ambiguousFetcherDates = [];
         for (const [dateStr, entry] of shiftsMap) {
-            if (entry?.shift?.variations?.length >= 2 && !entry?.selectedVariation) {
+            if (entry?.shift?.variations?.length >= 2) {
                 ambiguousFetcherDates.push(dateStr);
             }
         }
@@ -192,10 +245,15 @@ const categorize = async (demand, shiftsMap = null) => {
         const compatiblePairsByFetcherDate = new Map();
 
         const fetcherCombos = getFetcherVariationCombinations(ambiguousFetcherDates, shiftsMap);
+        const totalCombos = demandVariationsToTry.length * fetcherCombos.length;
+        const useFullPairs = totalCombos <= MAX_COMPATIBILITY_COMBOS;
+        const combosToIterate = useFullPairs
+            ? fetcherCombos
+            : sampleCombos(fetcherCombos, Math.max(1, Math.floor(MAX_COMPATIBILITY_COMBOS / demandVariationsToTry.length)));
 
         for (const demandVar of demandVariationsToTry) {
-            for (const fetcherCombo of fetcherCombos) {
-                const vr = await checkCompatibilityForVariation(demand, shiftsMap, demandVar, fetcherCombo);
+            for (const fetcherCombo of combosToIterate) {
+                const vr = checkCompatibilityForVariation(demand, shiftsMap, demandVar, fetcherCombo, preFetchedAcceptedShifts);
                 if (vr.limit.length === 0) {
                     anyPass = true;
                     if (hasVariations && noSelectedVariation && demandVar) {
@@ -261,9 +319,10 @@ const categorize = async (demand, shiftsMap = null) => {
                     }
                     if (pairs.length === 0) return null;
                     const totalFetcherOptions = 1 + (entry.shift?.variations?.length || 0);
-                    const allDemandPass = pairs.every(p => p.demandVariations.length >= variations.length);
+                    const totalDemandVariations = variations.length;
+                    const allDemandPass = pairs.every(p => p.demandVariations.length >= totalDemandVariations);
                     if (pairs.length >= totalFetcherOptions && allDemandPass) return null;
-                    return { date: dateStr, shiftName: fetcherShiftName, baseShiftName, pairs };
+                    return { date: dateStr, shiftName: fetcherShiftName, baseShiftName, totalDemandVariations, totalFetcherVariations: totalFetcherOptions, pairs };
                 }).filter(Boolean);
             }
         }
@@ -397,19 +456,26 @@ function checkMinimumRestTime (shiftsSorted, index) {
 
 
 function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
-    let restOk = true;
+    let restOk;
     const invalidWindows35 = [];
 
-    for (let i = 0; i < 7; i++) {
-        let windowRestOk = false;
+    const targetDateNorm = new Date(Date.UTC(
+        targetDate.getUTCFullYear(),
+        targetDate.getUTCMonth(),
+        targetDate.getUTCDate()
+    ));
+
+    for (let i = 0; i < 13; i++) {
+        restOk = false;
         let longestRest = 0;
         let longestRestStart = null;
         let longestRestEnd = null;
 
-        const windowStart = new Date(targetDate);
+        const windowStart = new Date(targetDateNorm);
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        const windowEnd = new Date(targetDate);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
+        windowStart.setUTCHours(0, 0, 0, 0);
+        const windowEnd = new Date(windowStart);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
         const windowShifts = shiftsSorted
             .filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd)
             .sort((a, b) => new Date(a.start) - new Date(b.start));
@@ -417,57 +483,49 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
         let lastEnd = new Date(windowStart);
 
         if (windowShifts.length === 0) {
-            windowRestOk = true;
-        } else {
-            for (let j = 0; j < windowShifts.length; j++) {
-                const s = windowShifts[j];
-                const restMinutes = (new Date(s.start) - lastEnd) / (60 * 1000);
+            restOk = true;
+        }
+        for (let j = 0; j < windowShifts.length; j++) {
+            const s = windowShifts[j];
+            const restMinutes = (s.start - lastEnd) / (60 * 1000);
 
-                if (restMinutes > longestRest) {
-                    longestRest = restMinutes;
-                    longestRestStart = new Date(lastEnd);
-                    longestRestEnd = new Date(s.start);
+            if (restMinutes > longestRest) {
+                longestRest = restMinutes;
+                longestRestStart = lastEnd;
+                longestRestEnd = s.start;
+            }
+
+            if (restMinutes >= 35 * 60) {
+                restOk = true;
+                break;
+            }
+            lastEnd = s.end > lastEnd ? s.end : lastEnd;
+
+            if (j === windowShifts.length - 1) {
+                const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
+                if (restMinutesToEnd > longestRest) {
+                    longestRest = restMinutesToEnd;
+                    longestRestStart = lastEnd;
+                    longestRestEnd = windowEnd;
                 }
-
-                if (restMinutes >= 35 * 60) {
-                    windowRestOk = true;
-                    break;
-                }
-                if (new Date(s.end) > lastEnd) lastEnd = new Date(s.end);
-
-                if (j === windowShifts.length - 1) {
-                    const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
-                    if (restMinutesToEnd > longestRest) {
-                        longestRest = restMinutesToEnd;
-                        longestRestStart = new Date(lastEnd);
-                        longestRestEnd = new Date(windowEnd);
-                    }
-                    if (restMinutesToEnd >= 35 * 60) {
-                        windowRestOk = true;
-                    }
+                if (restMinutesToEnd >= 35 * 60) {
+                    restOk = true;
                 }
             }
         }
 
-        if (!windowRestOk) {
-            restOk = false;
-            const restPeriodKey = `${longestRestStart?.getTime() ?? 0}-${longestRestEnd?.getTime() ?? 0}`;
-            const alreadyReported = invalidWindows35.some(
-                w => `${w.longestRestStart?.getTime() ?? 0}-${w.longestRestEnd?.getTime() ?? 0}` === restPeriodKey
-            );
-            if (!alreadyReported) {
-                invalidWindows35.push({
-                    windowStart,
-                    windowEnd,
-                    longestRest,
-                    longestRestStart,
-                    longestRestEnd
-                });
-            }
+        if (!restOk) {
+            invalidWindows35.push({
+                windowStart,
+                windowEnd,
+                longestRest,
+                longestRestStart,
+                longestRestEnd
+            });
             if (!fullScan) break;
         }
     }
-    return { restOk, invalidWindows35 };
+    return { restOk: invalidWindows35.length === 0, invalidWindows35 };
 }
 
 function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {

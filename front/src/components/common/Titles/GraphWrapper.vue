@@ -1,5 +1,10 @@
 <template>
-    <WorkdayAmplitudeGraph :days="days" :center-date="props.demand?.posterShift?.date" :compatibility="compatibility" />
+    <WorkdayAmplitudeGraph
+        :days="days"
+        :center-date="props.demand?.posterShift?.date"
+        :compatibility="compatibility"
+        :demand="props.demand"
+    />
 </template>
 
 <script setup>
@@ -60,9 +65,10 @@ const generateDaysData = (shiftsArray) => {
         }
         const shift = shiftsArray.find(s => s.date === dateStr)
         if (shift) {
+            const displayName = getDisplayShiftName({ shift: shift.shift, selectedVariation: shift.selectedVariation })
             result.push({
                 ...shift,
-                name: shift.shift?.name || 'Vacation'
+                name: displayName || shift.shift?.name || 'Vacation'
             })
         } else {
             result.push({

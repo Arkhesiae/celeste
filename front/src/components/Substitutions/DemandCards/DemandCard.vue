@@ -145,7 +145,7 @@
               équipe {{ teamName }}
             </div>
             <div
-              v-if="demand?.potentiallyCompatible && compatibleInfoText"
+              v-if="compatibleInfoText"
               class="text-caption font-weight-medium mt-1"
               style="font-size: 10px !important; color: rgb(var(--v-theme-primary));"
             >
@@ -252,9 +252,11 @@ import { useSnackbarStore } from '@/stores/snackbarStore'
 import { useSubstitutionStore } from '@/stores/substitutionStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useTeamStore } from '@/stores/teamStore'
+import { useShiftStore } from '@/stores/shiftStore'
 import { API_URL } from '@/config/api'
 import { useDisplay } from 'vuetify'
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes'
+import { formatPairsForDate, formatDateLabel, formatDateSuffix } from '@/utils/compatiblePairsFormat'
 
 const props = defineProps({
   demand: {
@@ -276,6 +278,7 @@ const userStore = useUserStore()
 const snackbarStore = useSnackbarStore()
 const teamStore = useTeamStore()
 const substitutionStore = useSubstitutionStore()
+const shiftStore = useShiftStore()
 const date = useDate()
 const loading = ref({
   accept: false,
@@ -316,24 +319,50 @@ const compatiblePairsText = computed(() => {
   const byDate = props.demand?.compatiblePairsByFetcherDate;
   if (!byDate?.length) return '';
   const demandDate = props.demand?.posterShift?.date;
-  return byDate.map(({ date, shiftName, baseShiftName, pairs }) => {
+  const filtered = byDate.filter(({ date, pairs }) => !isUserAlreadyCompatibleForPairsDate(date, pairs));
+  if (!filtered.length) return '';
+  return filtered.map((entry) => {
+    const { date, shiftName, baseShiftName, pairs, totalDemandVariations, totalFetcherVariations } = entry;
     const dateLabel = formatDateLabel(date, demandDate);
-    const suffix = dateLabel === 'veille' ? ' la veille' : dateLabel === 'lendemain' ? ' le lendemain' : dateLabel ? ` (${dateLabel})` : '';
-    return (pairs || []).map(({ fetcherVariation, demandVariations }) => {
-      const fetcherFullName = fetcherVariation?.isDefault ? shiftName : shiftName + (fetcherVariation?.name || '');
-      const demandNames = (demandVariations || [])
-        .map(v => baseShiftName + (v?.name || ''))
-        .join(', ');
-      return `${demandNames} si ${fetcherFullName}${suffix}`;
-    }).join(' ; ');
+    const suffix = formatDateSuffix(dateLabel);
+    const pairsText = formatPairsForDate({ pairs, baseShiftName, shiftName, totalDemandVariations, totalFetcherVariations });
+    return pairsText ? pairsText + suffix : '';
   }).filter(Boolean).join(' • ');
 })
+
+/** Retourne true si l'utilisateur est déjà compatible pour cette date (sa vacation actuelle fait partie des variations compatibles) */
+const isUserAlreadyCompatibleForDate = (dateStr, variations) => {
+  const map = shiftStore.persistentVacationsMap;
+  const vacation = (map?.value ?? map)?.get?.(dateStr);
+  if (!vacation || !variations?.length) return false;
+  const userVar = vacation.selectedVariation;
+  const userKey = !userVar ? 'default' : (userVar._id || userVar)?.toString?.() ?? null;
+  return variations.some(v =>
+    v?.isDefault ? userKey === 'default' : (v._id || v)?.toString?.() === userKey
+  );
+};
+
+/** Pour compatiblePairsByFetcherDate : true si la vacation actuelle de l'utilisateur correspond à une fetcherVariation des pairs */
+const isUserAlreadyCompatibleForPairsDate = (dateStr, pairs) => {
+  const map = shiftStore.persistentVacationsMap;
+  const vacation = (map?.value ?? map)?.get?.(dateStr);
+  if (!vacation || !pairs?.length) return false;
+  const userVar = vacation.selectedVariation;
+  const userKey = !userVar ? 'default' : (userVar._id || userVar)?.toString?.() ?? null;
+  return pairs.some(p => {
+    const fv = p?.fetcherVariation;
+    const fvKey = fv?.isDefault ? 'default' : (fv?._id || fv)?.toString?.();
+    return fvKey === userKey;
+  });
+};
 
 const compatibleFetcherVariationNames = computed(() => {
   const byDate = props.demand?.compatibleFetcherVariationsByDate;
   if (!byDate?.length) return '';
   const demandDate = props.demand?.posterShift?.date;
-  return byDate.map(({ date, shiftName, variations }) => {
+  const filtered = byDate.filter(({ date, variations }) => !isUserAlreadyCompatibleForDate(date, variations));
+  if (!filtered.length) return '';
+  return filtered.map(({ date, shiftName, variations }) => {
     const names = (variations || [])
       .map(v => v?.isDefault ? shiftName : shiftName + (v?.name || ''))
       .filter(Boolean);
@@ -344,7 +373,6 @@ const compatibleFetcherVariationNames = computed(() => {
 })
 
 const compatibleInfoText = computed(() => {
-  if (!props.demand?.potentiallyCompatible) return '';
   const hasPosterVariation = !!props.demand?.posterShift?.selectedVariation;
   if (hasPosterVariation) {
     const names = compatibleFetcherVariationNames.value;
@@ -355,16 +383,6 @@ const compatibleInfoText = computed(() => {
   const names = compatibleVariationNames.value;
   return names ? `Compatible avec : ${names}` : '';
 })
-
-function formatDateLabel(dateStr, demandDateStr) {
-  if (!dateStr || !demandDateStr) return '';
-  const d = new Date(dateStr);
-  const ref = new Date(demandDateStr);
-  const diff = Math.round((d - ref) / (24 * 60 * 60 * 1000));
-  if (diff === -1) return 'veille';
-  if (diff === 1) return 'lendemain';
-  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-}
 
 const canSwitch = computed(() => {
   return props.demand?.canSwitch

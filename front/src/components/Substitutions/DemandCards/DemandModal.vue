@@ -315,6 +315,45 @@
       </v-card>
 
       <v-card
+        v-if="isOwner && hasVariations"
+        color="background"
+        rounded="xl"
+        elevation="0"
+        class="mb-4 pa-4"
+      >
+        <span class="text-body-2 font-weight-medium text-medium-emphasis d-block mb-2">Vacation élémentaire</span>
+        <div class="d-flex flex-wrap ga-2">
+          <v-chip
+            size="small"
+            rounded="lg"
+            variant="flat"
+            :color="!hasSelectedVariation ? 'primary' : 'surface'"
+            class="cursor-pointer"
+            :loading="loadingVariation"
+            @click="selectVariationForDemand(null)"
+          >
+            Non précisée
+            <template v-if="shiftDefault">
+              ({{ shiftDefault.startTime }}-{{ shiftDefault.endTime }})
+            </template>
+          </v-chip>
+          <v-chip
+            v-for="v in variationsList"
+            :key="v._id"
+            size="small"
+            rounded="lg"
+            variant="flat"
+            :color="isVariationSelected(v) ? 'primary' : 'surface'"
+            class="cursor-pointer"
+            :loading="loadingVariation"
+            @click="selectVariationForDemand(v)"
+          >
+            {{ v.name }} ({{ v.startTime }}-{{ v.endTime }})
+          </v-chip>
+        </div>
+      </v-card>
+
+      <v-card
         class="pa-0 rounded-xl"
         color="background"
         elevation="0"
@@ -418,6 +457,8 @@ import { API_URL } from '@/config/api';
 import { useAuthStore } from '@/stores/authStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useShiftStore } from '@/stores/shiftStore';
+import { planningModificationService } from '@/services/planningModificationService';
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const userStore = useUserStore();
@@ -426,8 +467,9 @@ const snackbarStore = useSnackbarStore();
 const date = useDate()
 const rotationStore = useRotationStore();
 const substitutionStore = useSubstitutionStore();
+const shiftStore = useShiftStore();
 
-const emit = defineEmits(['update:modelValue', 'handle-replacement', 'handle-switch', 'withdraw-demand', 'cancel-demand']);
+const emit = defineEmits(['update:modelValue', 'handle-replacement', 'handle-switch', 'withdraw-demand', 'cancel-demand', 'update-demand']);
 const showUserDetails = ref(false)
 
 
@@ -466,12 +508,10 @@ const accepter = computed(() => {
 });
 
 const isOwner = computed(() => {
-  console.log(props.demand?.posterId, authStore.userData.userId)
   return props.demand?.posterId === authStore.userData.userId
 })
 
 const isAccepter = computed(() => {
-  console.log(props.demand?.accepterId, authStore.userData.userId)
   return props.demand?.accepterId === authStore.userData.userId
 })
 
@@ -505,6 +545,62 @@ const getShiftEndsNextDay = computed(() => {
 const canSwitch = computed(() => {
   return props.demand?.canSwitch
 })
+
+const variationsList = computed(() => {
+  const shift = props.demand?.posterShift?.shift;
+  return (shift?.variations || shift?.variation || []);
+});
+
+const hasVariations = computed(() => variationsList.value.length > 0);
+
+const hasSelectedVariation = computed(() => !!props.demand?.posterShift?.selectedVariation);
+
+const shiftDefault = computed(() => {
+  const shift = props.demand?.posterShift?.shift;
+  return shift?.default || null;
+});
+
+const isVariationSelected = (variation) => {
+  const current = props.demand?.posterShift?.selectedVariation;
+  if (!current || !variation) return false;
+  return (current._id || current)?.toString?.() === (variation._id || variation)?.toString?.();
+};
+
+const loadingVariation = ref(false);
+
+const toDateKey = (d) => {
+  if (!d) return null;
+  const s = typeof d === 'string' ? d : d?.toISOString?.();
+  return s?.split?.('T')[0] ?? null;
+};
+
+const selectVariationForDemand = async (variation) => {
+  const dateKey = toDateKey(props.demand?.posterShift?.date);
+  const shiftId = props.demand?.posterShift?.shift?._id;
+  if (!dateKey || !shiftId) return;
+  loadingVariation.value = true;
+  try {
+    const data = await planningModificationService.registerModification({
+      type: 'selectedVariation',
+      date: dateKey,
+      selectedVariation: variation ? variation._id : null,
+      shift: shiftId
+    });
+    if (data?.userShift?.[0]) {
+      shiftStore.addEntry(data.userShift[0], toDateKey(data.userShift[0].date));
+    }
+    if (data?.updatedDemand) {
+      substitutionStore.updateDemandInStore(data.updatedDemand);
+      emit('update-demand', data.updatedDemand);
+    }
+    substitutionStore.recategorizeSubstitutions(dateKey);
+    snackbarStore.showNotification('Vacation précisée', 'onPrimary', 'mdi-check');
+  } catch (err) {
+    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
+  } finally {
+    loadingVariation.value = false;
+  }
+};
 
 const timeSinceCreation = computed(() => {
   if (!props.demand?.createdAt) return ''

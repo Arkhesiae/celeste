@@ -1,7 +1,13 @@
 <template>
   <DemandModal
-v-model="showDemandDetailsModal" :demand="selectedDemand" @handle-replacement="handleReplacement"
-    @handle-switch="handleSwitch" @cancel-demand="handleCancel" @withdraw-demand="handleWithdraw" />
+    v-model="showDemandDetailsModal"
+    :demand="selectedDemand"
+    @handle-replacement="handleReplacement"
+    @handle-switch="handleSwitch"
+    @cancel-demand="handleCancel"
+    @withdraw-demand="handleWithdraw"
+    @update-demand="selectedDemand = $event"
+  />
 
   <ConfirmationDialog v-model="showConfirmationDialog" :title="dialogTitle" :text="dialogText">
     <template #actions>

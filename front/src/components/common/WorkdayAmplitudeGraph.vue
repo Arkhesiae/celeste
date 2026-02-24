@@ -523,7 +523,6 @@ const onIncompatibilityHover = (win) => {
     const s = new Date(win.longestRestStart);
     const e = new Date(win.longestRestEnd);
 
-
     const sRawH = s.getUTCHours() + s.getUTCMinutes() / 60;
     const eRawH_Abs = e.getUTCHours() + e.getUTCMinutes() / 60;
 
@@ -532,6 +531,9 @@ const onIncompatibilityHover = (win) => {
 
     if (eDay.getTime() > sDay.getTime()) {
         displayRestSegment(colIndexStart, { startHour: sRawH, endHour: 24 });
+        for (let col = colIndexStart + 1; col < colIndexEnd; col++) {
+            displayRestSegment(col, { startHour: 0, endHour: 24 });
+        }
         displayRestSegment(colIndexEnd, { startHour: 0, endHour: eRawH_Abs });
     } else {
         displayRestSegment(colIndexStart, { startHour: sRawH, endHour: eRawH_Abs });

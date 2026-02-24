@@ -397,11 +397,11 @@ function checkMinimumRestTime (shiftsSorted, index) {
 
 
 function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
-    let restOk
+    let restOk = true;
     const invalidWindows35 = [];
 
     for (let i = 0; i < 7; i++) {
-        restOk = false;
+        let windowRestOk = false;
         let longestRest = 0;
         let longestRestStart = null;
         let longestRestEnd = null;
@@ -410,48 +410,60 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
         const windowEnd = new Date(targetDate);
         windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
-        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        const windowShifts = shiftsSorted
+            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd)
+            .sort((a, b) => new Date(a.start) - new Date(b.start));
 
         let lastEnd = new Date(windowStart);
 
-        for (let j = 0; j < windowShifts.length; j++) {
-            const s = windowShifts[j];
-            const restMinutes = (s.start - lastEnd) / (60 * 1000);
+        if (windowShifts.length === 0) {
+            windowRestOk = true;
+        } else {
+            for (let j = 0; j < windowShifts.length; j++) {
+                const s = windowShifts[j];
+                const restMinutes = (new Date(s.start) - lastEnd) / (60 * 1000);
 
-            if (restMinutes > longestRest) {
-                longestRest = restMinutes;
-                longestRestStart = lastEnd;
-                longestRestEnd = s.start;
-            }
-
-            if (restMinutes >= 35 * 60) {
-                restOk = true;
-                break
-            }
-            if (s.end > lastEnd) lastEnd = s.end;
-
-            // Vérifier s'il y a une période de repos de 35h entre le dernier shift et la fin de la fenêtre
-            if (j === windowShifts.length - 1) {
-                const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
-                if (restMinutesToEnd > longestRest) {
-                    longestRest = restMinutesToEnd;
-                    longestRestStart = lastEnd;
-                    longestRestEnd = windowEnd;
+                if (restMinutes > longestRest) {
+                    longestRest = restMinutes;
+                    longestRestStart = new Date(lastEnd);
+                    longestRestEnd = new Date(s.start);
                 }
-                if (restMinutesToEnd >= 35 * 60) {
-                    restOk = true;
+
+                if (restMinutes >= 35 * 60) {
+                    windowRestOk = true;
+                    break;
+                }
+                if (new Date(s.end) > lastEnd) lastEnd = new Date(s.end);
+
+                if (j === windowShifts.length - 1) {
+                    const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
+                    if (restMinutesToEnd > longestRest) {
+                        longestRest = restMinutesToEnd;
+                        longestRestStart = new Date(lastEnd);
+                        longestRestEnd = new Date(windowEnd);
+                    }
+                    if (restMinutesToEnd >= 35 * 60) {
+                        windowRestOk = true;
+                    }
                 }
             }
         }
 
-        if (!restOk) {
-            invalidWindows35.push({
-                windowStart,
-                windowEnd,
-                longestRest,
-                longestRestStart,
-                longestRestEnd
-            });
+        if (!windowRestOk) {
+            restOk = false;
+            const restPeriodKey = `${longestRestStart?.getTime() ?? 0}-${longestRestEnd?.getTime() ?? 0}`;
+            const alreadyReported = invalidWindows35.some(
+                w => `${w.longestRestStart?.getTime() ?? 0}-${w.longestRestEnd?.getTime() ?? 0}` === restPeriodKey
+            );
+            if (!alreadyReported) {
+                invalidWindows35.push({
+                    windowStart,
+                    windowEnd,
+                    longestRest,
+                    longestRestStart,
+                    longestRestEnd
+                });
+            }
             if (!fullScan) break;
         }
     }

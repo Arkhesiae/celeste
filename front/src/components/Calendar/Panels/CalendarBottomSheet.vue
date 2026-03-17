@@ -2,6 +2,7 @@
   <v-bottom-sheet
     :model-value="modelValue"
     inset
+    scrim="false"
     class="safe-area-bottom"
     @update:model-value="emit('update:modelValue', $event)"
   >

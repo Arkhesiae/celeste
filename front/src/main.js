@@ -14,6 +14,7 @@ import App from './App.vue'
 import { createApp } from 'vue'
 
 import './styles/fonts.css';
+import './styles/transitions.css';
 
 const app = createApp(App)
 

@@ -1,8 +1,8 @@
 <template>
   <GenericDialog v-model="isDialogVisible" :title="dialogTitle" max-width="600px" @close="close">
     <template #actions>
-      <v-btn
-v-if="currentWindow === 1" variant="flat" rounded="xl" size="small" color="onBackground"
+
+      <v-btn v-if="currentWindow === 1" variant="flat" rounded="xl"
         :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-right-outline'"
         :loading="submitting" :disabled="!formValid || !selectedShift || submitting" @click="submit">
         Poster
@@ -11,70 +11,64 @@ v-if="currentWindow === 1" variant="flat" rounded="xl" size="small" color="onBac
     <template #content>
       <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
         <v-window-item :value="0">
-          <div class="d-flex mt-8 justify-space-between">
-            <v-icon icon="mdi-calendar" class="mr-4 mt-4" />
-            <v-text-field
-v-model="formattedDate" rounded="lg" class="cursor-pointer mt-00" bg-color="surface"
-              persistent-hint hint="Remplacement" label="Date de remplacement" :rules="[rules.required, rules.date]"
-              disabled @blur="formatDateForDisplay" @focus="formatDateForInput"
-              @update:model-value="handleDateChange" />
+          <div class="d-flex align-center text-primary justify-end mb-2 mx-2">
+            <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
           </div>
-          <div class="my-12">
-            <div class="my-10 rounded-xl bg-background pa-4 px-8 position-relative">
-              <div class="d-flex align-center  ga-3">
-                <div class="pb-0 mb-0">
-                  <span class="text-h5 font-weight-medium" style="position: relative; top: 2px;">{{ shiftName }}</span>
+
+
+
+          <div class="my-10 mt-3 rounded-xl bg-background pa-4 px-4 position-relative d-flex flex-column ga-4">
+            <div class="d-flex align-center pl-2 ga-3">
+              <div class="pb-0 mb-0">
+                <span class="text-h3 font-weight-medium" style="position: relative; top: 2px;">{{ shiftName }}</span>
+              </div>
+              <div class="d-flex align-start flex-column justify-space-between">
+                <div>
+                  <span class="text-caption font-weight-bold">{{ displayShiftHours.startTime }} - {{
+                    displayShiftHours.endTime
+                  }}</span>
+                  <span v-if="displayShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
+                    style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
                 </div>
-                <div class="d-flex align-start flex-column justify-space-between">
-                  <div>
-                    <span class="text-caption font-weight-bold">{{ displayShiftHours.startTime }} - {{
-                      displayShiftHours.endTime
-                    }}</span>
-                    <span
-v-if="displayShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-                      style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
-                  </div>
-                  <div
-v-if="selectedShift?.teamObject?.name" class="py-0 text-caption opacity-70"
-                    style="margin-top: -8px; font-size: 11px !important;">
-                    Dans l'équipe {{ selectedShift?.teamObject?.name
-                    }}
-                  </div>
+                <div v-if="selectedShift?.teamObject?.name" class="py-0 text-caption opacity-70"
+                  style="margin-top: -8px; font-size: 11px !important;">
+                  Dans l'équipe {{ selectedShift?.teamObject?.name
+                  }}
                 </div>
               </div>
             </div>
-
-            <div v-if="hasVariations" class="mt-4 mb-4">
-              <span class="text-caption d-block mb-2">
+            <div v-if="hasVariations" class="flex-shrink-1 pl-2 text-medium-emphasis">
+              <span class="text-caption mb-2">
                 <v-icon start icon="mdi-information-outline" size="small" />
-                Choisissez une variante pour préciser l'horaire (optionnel, peut rendre plus de permutations compatibles). {{ preselectedVariantHint }}
+                Choisissez une variante pour préciser l'horaire (optionnel, peut rendre plus de permutations
+                compatibles). {{ preselectedVariantHint }}
               </span>
-              <v-chip-group v-model="selectedVariant" class="pa-0">
-                <v-chip
-                  value=""
-                  size="small"
-                  rounded="lg"
-                  variant="flat"
-                  :class="!selectedVariant ? 'bg-primary' : ''"
-                  class="ma-1"
-                >
-                  Non précisée ({{ shiftWithVariations?.default?.startTime }}-{{ shiftWithVariations?.default?.endTime }})
-                </v-chip>
-                <v-chip
-                  v-for="v in shiftWithVariations?.variations"
-                  :key="v._id"
-                  :value="v._id"
-                  size="small"
-                  rounded="lg"
-                  variant="flat"
-                  :class="selectedVariant === v._id ? 'bg-primary' : ''"
-                  class="ma-1"
-                >
-                  {{ v.name }} ({{ v.startTime }}-{{ v.endTime }})
-                </v-chip>
-              </v-chip-group>
+
+            </div>
+
+            <!-- Sélecteur de vacation élémentaire -->
+            <div class="mt-4 d-flex align-center justify-space-between align-self-end">
+
+              <div class="d-flex align-center ga-2 chips-container">
+                <div class="d-flex align-center chips-container-alt">
+                  <v-btn v-for="v in selectedShift?.shift?.variations" :key="v._id" icon size="small" variant="flat"
+                    :color="isVariationSelected(v) ? 'primary' : 'surfaceContainerHigh'" @click="selectVariation(v)"
+                    :class="isVariationSelected(v) ? 'selected' : ''">
+                    {{ v.name }}
+                  </v-btn>
+                </div>
+                <v-scale-transition>
+                  <div v-if="selectedVariant">
+                    <v-btn color="transparent" flat @click="selectVariation(null)" size="small" icon>
+                      <v-icon>mdi-refresh</v-icon>
+                    </v-btn>
+                  </div>
+                </v-scale-transition>
+              </div>
             </div>
           </div>
+
+
           <v-card color="transparent" class="my-12 pa-0" elevation="0">
             <v-card-item class="">
               <v-card-title class="pa-0 mb-0">
@@ -95,8 +89,7 @@ v-if="selectedShift?.teamObject?.name" class="py-0 text-caption opacity-70"
               <!-- Contenu réel quand le chargement est terminé -->
               <v-chip-group v-else v-model="acceptedSwitches" multiple color="surface" :rules="[rules.rotations]">
                 <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center">
-                  <v-chip
-:value="day._id" class="ma-1" rounded="lg" variant="flat"
+                  <v-chip :value="day._id" class="ma-1" rounded="lg" variant="flat"
                     :class="isSwitchAvailable(day._id) ? '' : 'text-error'" base-color="transparent"
                     color="transparent">
                     <template v-if="day.type === 'rest'">
@@ -114,14 +107,13 @@ v-if="selectedShift?.teamObject?.name" class="py-0 text-caption opacity-70"
 
               <div v-if="acceptedSwitches.length > 0" class="mt-4 d-flex flex-column ">
                 <div v-for="switchDay in acceptedSwitches" :key="switchDay">
-                  <div
-v-if="!isSwitchAvailable(switchDay)" class="d-flex align-center pa-2 mb-2 "
+                  <div v-if="!isSwitchAvailable(switchDay)" class="d-flex align-center pa-2 mb-2 "
                     style="background-color: rgba(var(--v-theme-error), 0.05); border-radius: 10px; ">
                     <v-icon icon="mdi-swap-horizontal" color="error" size="16" class="opacity-70" />
                     <div class="text-error d-flex align-center ga-2">
                       <span class="text-body-2  font-weight-bold">{{ switchName(switchDay) }}</span>
                       <span class=" " style="font-size: 12px !important;">{{ getUnavailabilityReason(switchDay)
-                        }}</span>
+                      }}</span>
                     </div>
                   </div>
                 </div>
@@ -131,6 +123,7 @@ v-if="!isSwitchAvailable(switchDay)" class="d-flex align-center pa-2 mb-2 "
         </v-window-item>
 
         <v-window-item :value="1">
+
           <v-progress-circular v-if="loadingRotations" indeterminate color="primary" class="ma-4" />
           <v-alert v-else-if="rotationError" type="error" variant="tonal" class="mt-2" rounded="lg">
             {{ rotationError }}
@@ -138,8 +131,7 @@ v-if="!isSwitchAvailable(switchDay)" class="d-flex align-center pa-2 mb-2 "
           <template v-else>
             <v-form ref="addForm">
               <div>
-                <v-textarea
-v-model="demand.comment" rounded="xl" no-resize label="Commentaire" variant="solo-filled"
+                <v-textarea v-model="demand.comment" rounded="xl" no-resize label="Commentaire" variant="solo-filled"
                   flat color="surfaceContainer" bg-color="surface" />
               </div>
 
@@ -167,9 +159,8 @@ v-model="demand.comment" rounded="xl" no-resize label="Commentaire" variant="sol
 
 
               <div v-if="acceptedSwitchesWithPoints.length > 0" class="d-flex flex-column ga-4 my-8">
-                <div
-v-for="switchDay in acceptedSwitches" :key="switchDay" class="d-flex flex-column cursor-pointer"
-                  cursor="pointer" @click="editPoints(switchDay)">
+                <div v-for="switchDay in acceptedSwitches" :key="switchDay" class="d-flex flex-column cursor-pointer"
+                  @click="editPoints(switchDay)">
                   <div class="d-flex align-center justify-space-between ga-2">
                     <div class="d-flex align-center ga-2">
                       <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70" />
@@ -189,16 +180,15 @@ v-for="switchDay in acceptedSwitches" :key="switchDay" class="d-flex flex-column
                 <div v-if="acceptedSwitchesWithPoints.length > 0" class="mb-4 pl-4">
                   <span class="text-caption opacity-50">Remplacement</span>
                 </div>
-                <v-number-input
-v-model="demand.points" class="text-primary flex-grow-1" width="100%" :class="{
+                <v-number-input v-model="demand.points" class="text-primary flex-grow-1" width="100%" :class="{
                   'excess': demand.points > defaultPoints + 3,
                   'low': demand.points < defaultPoints - 3
                 }" :min="0" reverse control-variant="split" label="" rounded="xl" bg-color="surfaceContainer"
                   color="blue" glow :hide-input="false" inset base-color="transparent" variant="outlined" />
-                <div class=" " style="height: 20px;">
+                <div style="height: 20px;">
                   <v-slide-y-transition>
                     <div v-if="demand.points !== defaultPoints">
-                      <span class="text-caption opacity-50 ">Points par défaut : {{ defaultPoints }} </span>
+                      <span class="text-caption opacity-50">Points par défaut : {{ defaultPoints }}</span>
                     </div>
                   </v-slide-y-transition>
                 </div>
@@ -213,8 +203,7 @@ v-model="demand.points" class="text-primary flex-grow-1" width="100%" :class="{
       <div class="d-flex justify-space-between pa-0">
         <template v-if="currentWindow === 0">
           <v-spacer />
-          <v-btn
-variant="tonal" size="small" rounded="xl" color="secondary" :disabled="isNextButtonDisabled"
+          <v-btn variant="tonal" rounded="xl" color="secondary" :disabled="isNextButtonDisabled"
             @click="currentWindow = 1">
             Suivant
           </v-btn>
@@ -223,8 +212,7 @@ variant="tonal" size="small" rounded="xl" color="secondary" :disabled="isNextBut
           <v-btn variant="text" color="secondary" size="small" @click="currentWindow = 0">
             Retour
           </v-btn>
-          <v-btn
-variant="flat" rounded="xl" size="small" color="onBackground"
+          <v-btn variant="flat" rounded="xl"
             :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-left-outline'"
             :disabled="!formValid || !selectedShift || submitting" :loading="submitting" @click="submit">
             Poster la demande
@@ -234,12 +222,10 @@ variant="flat" rounded="xl" size="small" color="onBackground"
     </template>
   </GenericDialog>
 
-  <PointsDialog
-:is-dialog-visible="showPointsDialog" :points="switchPoints" :switch="switchToEdit"
+  <PointsDialog :is-dialog-visible="showPointsDialog" :points="switchPoints" :switch="switchToEdit"
     @update:is-dialog-visible="showPointsDialog = $event" @update:points="updatePoints" />
 
-  <ConfirmationDialog
-v-model="showConfirmationDialog" :title="'Nombre de points'"
+  <ConfirmationDialog v-model="showConfirmationDialog" :title="'Nombre de points'"
     :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirm-color="'remplacement'"
     :confirm-text="'Poster quand même'" @confirm="confirmSubmit"
     @update:is-dialog-visible="showConfirmationDialog = $event" />
@@ -249,10 +235,6 @@ v-model="showConfirmationDialog" :title="'Nombre de points'"
 <script setup>
 import { useDate } from 'vuetify';
 import { useRotationStore } from '@/stores/rotationStore';
-// import { useCenterStore } from '@/stores/centerStore';
-// import { useAuthStore } from '@/stores/authStore';
-// import { vacationService } from '@/services/vacationService';
-// import { calculateRestDelay } from '@/utils/shiftUtils';
 import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
 import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
 import PointsDialog from '@/components/Dialogs/PointsDialog.vue';
@@ -279,15 +261,12 @@ const emit = defineEmits([
   'update:date'
 ]);
 
-// Stores et utilitaires
-// const { smAndDown } = useDisplay();
 const dateUtil = useDate();
 const rotationStore = useRotationStore();
-// const centerStore = useCenterStore();
-// const authStore = useAuthStore();
 
 const pointsPerSwitch = ref({});
 const switchPoints = ref(0);
+const defaultPoints = ref(10);
 const acceptedSwitches = ref([]);
 
 const acceptedSwitchesWithPoints = computed(() => {
@@ -297,18 +276,11 @@ const acceptedSwitchesWithPoints = computed(() => {
   }));
 });
 
-const defaultPoints = ref(10);
 
-// États du composant
 const demand = ref({
   comment: '',
-  points: defaultPoints.value,
   acceptedSwitches: []
 });
-
-
-
-
 
 const compatibleSwitches = ref([]);
 const loadingRotations = ref(false);
@@ -397,49 +369,50 @@ watch(acceptedSwitches, (newSwitches, oldSwitches) => {
   }
 });
 
-// Méthodes utilitaires
+
 const toDisplayFormat = (input) => (input ? dateUtil.format(input, 'fullDate') : '');
 
-const formatDateForDisplay = () => {
-  if (localDate.value) {
-    formattedDate.value = dateUtil.format(localDate.value, 'fullDate');
-  }
+const editPoints = (switchDay) => {
+  switchToEdit.value = { id: switchDay, name: switchName.value(switchDay) };
+  switchPoints.value = pointsPerSwitch.value[switchDay];
+  showPointsDialog.value = true;
 };
 
-const formatDateForInput = () => {
-  if (localDate.value) {
-    formattedDate.value = dateUtil.format(localDate.value, 'keyboardDate');
-  }
+const updatePoints = (data) => {
+  pointsPerSwitch.value = { ...pointsPerSwitch.value, [data.switchDay]: data.points };
 };
 
-const handleDateChange = () => {
-  if (localDate.value) {
-    emit('update:date', localDate.value);
-  }
-};
 
 const shiftName = computed(() => {
   return props.selectedShift?.shift?.name || 'Aucun shift sélectionné';
 });
 
-// Source prioritaire pour les variations : rotation (days peuplés) > selectedShift.shift (vacations API)
-const shiftWithVariations = computed(() => {
-  const shift = props.selectedShift?.shift;
-  if (!shift || !activeRotation.value?.days?.length) return shift;
-  const shiftId = shift._id || shift.id;
-  const shiftName = shift.name;
-  const dayFromRotation = activeRotation.value.days.find(
-    d => (d._id || d)?.toString?.() === shiftId?.toString?.() || d?.name === shiftName
-  );
-  return dayFromRotation ?? shift;
-});
+// // Source prioritaire pour les variations : rotation (days peuplés) > selectedShift.shift (vacations API)
+// const shiftWithVariations = computed(() => {
+//   const shift = props.selectedShift?.shift;
+//   if (!shift || !activeRotation.value?.days?.length) return shift;
+//   const shiftId = shift._id || shift.id;
+//   const shiftName = shift.name;
+//   const dayFromRotation = activeRotation.value.days.find(
+//     d => (d._id || d)?.toString?.() === shiftId?.toString?.() || d?.name === shiftName
+//   );
+//   return dayFromRotation ?? shift;
+// });
+
+const isVariationSelected = (variation) => {
+  return selectedVariant.value === variation._id;
+};
+
+const selectVariation = (variation) => {
+  selectedVariant.value = variation?._id;
+};
 
 const hasVariations = computed(() => {
-  return (shiftWithVariations.value?.variations?.length || 0) > 0;
+  return props.selectedShift?.shift?.variations?.length > 0;
 });
 
 const displayShiftHours = computed(() => {
-  const shift = shiftWithVariations.value;
+  const shift = props.selectedShift.shift;
   const variant = selectedVariant.value && shift?.variations?.length
     ? shift.variations.find(v => (v._id || v)?.toString?.() === selectedVariant.value?.toString?.())
     : null;
@@ -448,7 +421,7 @@ const displayShiftHours = computed(() => {
 });
 
 const displayShiftEndsNextDay = computed(() => {
-  const shift = shiftWithVariations.value;
+  const shift = props.selectedShift.shift;
   const variant = selectedVariant.value && shift?.variations?.length
     ? shift.variations.find(v => (v._id || v)?.toString?.() === selectedVariant.value?.toString?.())
     : null;
@@ -488,6 +461,8 @@ const preselectedVariantHint = computed(() =>
   props.selectedShift?.selectedVariation ? 'Variante pré-remplie depuis votre calendrier.' : ''
 );
 
+
+
 // Watchers
 watch(() => props.dialogVisible, async (value) => {
   if (value) {
@@ -505,6 +480,8 @@ watch(() => props.dialogVisible, async (value) => {
     if (centerId) {
       await rotationStore.fetchRotations(centerId);
     }
+
+    demand.value.points = dialogModeValue.value === 'substitution' ? defaultPoints.value : 0;
 
     // Charger les données compatibles quand le dialogue s'ouvre
     try {
@@ -535,7 +512,7 @@ const resetForm = () => {
   acceptedSwitches.value = [];
   demand.value = {
     comment: '',
-    points: defaultPoints.value,
+    points: 0,
     acceptedSwitches: []
   };
 
@@ -544,40 +521,33 @@ const resetForm = () => {
   formattedDate.value = '';
 };
 
+const buildSubmitPayload = () => ({
+  ...demand.value,
+  date: localDate.value,
+  selectedShift: {
+    ...props.selectedShift,
+    selectedVariation: selectedVariant.value || null
+  },
+  acceptedSwitches: acceptedSwitchesWithPoints.value,
+  isTrueSwitch: dialogModeValue.value === 'switch'
+});
+
+const isZeroPoints = () =>
+  dialogModeValue.value === 'switch'
+    ? acceptedSwitchesWithPoints.value.every(s => s.points === 0)
+    : demand.value.points === 0;
+
 const submit = () => {
-  if (demand.value.points === 0 && dialogModeValue.value !== 'switch') {
-    showConfirmationDialog.value = true;
-    return;
-  } else if (dialogModeValue.value === 'switch' && acceptedSwitchesWithPoints.value.every(switchItem => switchItem.points === 0)) {
+  if (isZeroPoints()) {
     showConfirmationDialog.value = true;
     return;
   }
-
-
-  emit('onSubmit', {
-    ...demand.value,
-    date: localDate.value,
-    selectedShift: {
-      ...props.selectedShift,
-      selectedVariation: selectedVariant.value || null
-    },
-    acceptedSwitches: acceptedSwitchesWithPoints.value,
-    isTrueSwitch: dialogModeValue.value === 'switch'
-  });
+  emit('onSubmit', buildSubmitPayload());
 };
 
 const confirmSubmit = () => {
   showConfirmationDialog.value = false;
-  emit('onSubmit', {
-    ...demand.value,
-    date: localDate.value,
-    selectedShift: {
-      ...props.selectedShift,
-      selectedVariation: selectedVariant.value || null
-    },
-    acceptedSwitches: acceptedSwitchesWithPoints.value,
-    isTrueSwitch: dialogModeValue.value === 'switch'
-  });
+  emit('onSubmit', buildSubmitPayload());
 };
 
 const close = () => {
@@ -591,24 +561,11 @@ const isNextButtonDisabled = computed(() => {
 
 
 
-const editPoints = (switchDay) => {
-  switchToEdit.value = { id: switchDay, name: switchName.value(switchDay) };
-  switchPoints.value = pointsPerSwitch.value[switchDay];
-  showPointsDialog.value = true;
-};
-
-const updatePoints = (data) => {
-
-  pointsPerSwitch.value = { ...pointsPerSwitch.value, [data.switchDay]: data.points };
-};
-
 </script>
 
 <style scoped>
 :deep(.v-number-input .v-field__field input) {
-  color: rgb(var(--v-theme-remplacement)) !important;
   font-size: 1.5rem;
-  font-weight: 600;
 }
 
 :deep(.v-number-input.secondary .v-field__field input) {
@@ -617,46 +574,78 @@ const updatePoints = (data) => {
   font-weight: 600;
 }
 
-:deep(.v-btn--icon) {
+/* :deep(.v-btn--icon) {
   color: rgb(var(--v-theme-remplacement)) !important;
   background-color: rgb(var(--v-theme-surface-container)) !important;
-
-
-}
+} */
 
 
 :deep(.v-number-input.excess .v-field__field input) {
   color: rgb(var(--v-theme-error)) !important;
   font-size: 1.5rem;
-  font-weight: 600;
-
-}
-
-:deep(.v-number-input.excess .v-btn--icon) {
-  color: rgba(255, 0, 0, 0.5) !important;
-
 
 }
 
 
-:deep(.v-number-input.excess .v-field__overlay) {
-  background-color: rgba(255, 0, 0, 0.05) !important;
-
-
-}
 
 :deep(.v-number-input.low .v-field__field input) {
-  color: rgba(40, 140, 90, 0.9) !important;
+  /* color: rgba(40, 140, 90, 0.9) !important; */
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-:deep(.v-number-input.low .v-field__overlay) {
-  background-color: rgba(40, 140, 90, 0.05) !important;
 
+.chips-container {
+  transition: all 0.5s ease-in-out;
+  border-radius: 24px !important;
+  padding: 4px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-:deep(.v-number-input.low .v-btn--icon) {
-  color: rgba(40, 140, 90, 0.5) !important;
+.chips-container::-webkit-scrollbar {
+  display: none;
+}
+
+.chips-container-alt {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  transition: all 0.5s ease-in-out;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chips-container-alt::-webkit-scrollbar {
+  display: none;
+}
+
+.chips-container-alt .v-btn {
+  border-radius: 8px !important;
+  transition: border-radius var(--motion-expressive-fast-spatial),
+    background-color var(--motion-expressive-fast-effects);
+}
+
+.chips-container-alt .v-btn:first-child {
+  border-radius: 24px 8px 8px 24px !important;
+}
+
+.chips-container-alt .v-btn:nth-child(2) {
+  border-radius: 8px !important;
+}
+
+.chips-container-alt .v-btn:last-child {
+  border-radius: 8px 24px 24px 8px !important;
+}
+
+.chips-container-alt .v-btn.selected {
+  border-radius: 24px !important;
 }
 </style>

@@ -40,7 +40,7 @@ import { initializeRules } from './services/rules/initializeRules.js';
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
   origin: [
-    'http://192.168.1.36:30035',
+    'http://192.168.1.21:30035',
     'http://localhost:30035',
     'http://167.235.244.249',
     'http://celeste-app.fr',

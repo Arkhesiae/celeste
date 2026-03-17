@@ -11,7 +11,7 @@
     min-width="300px"
     max-width="600px"
   >
-    <v-row class="mt-1 mb-8">
+    <v-row class="mt-1 mb-8 px-4">
       <v-col
         v-for="day in daysOfWeek"
         :key="day"
@@ -24,19 +24,18 @@
     <v-row
       v-for="(week, index) in calendarDays"
       :key="index"
-      class="calendar-row d-flex justify-space-between align-center my-4"
-      dense
+      class=" px-4   d-flex justify-space-between align-center my-1 ga-1 "
+      
     >
-      <div
+      <v-col
         v-for="day in week"
         :key="day.date"
         style="height: 48px"
-        class="day-container d-flex justify-space-around align-center"
+        class="ma-0 pa-0 d-flex justify-space-around align-center"
       >
-        <v-sheet
-          color="transparent"
+        <div
           class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
-          style="width: 48px; height: 48px; border-radius: 50%; background-color: rgba(var(--v-theme-surface), 1) !important; position: relative; font-weight: 400 "
+          style=" background-color: rgba(var(--v-theme-surface), 1) ; position: relative; font-weight: 400 "
           :class="{
             'isWorkDay': isWorkDay(day.date),
             'selected': isSelected(day.date),
@@ -100,8 +99,8 @@
               />
             </div>
           </div>
-        </v-sheet>
-      </div>
+        </div>
+      </v-col>
     </v-row>
   </v-sheet>
 </template>
@@ -193,18 +192,24 @@ const inPast = (date) => {
   
 }
 
+.day-block {
+  width: 100% !important;
+  height: 48px;
+  border-radius: 12px;
+  transition: border-radius var(--motion-expressive-default-effects);
+}
+
 .week-day {
   font-size: .600rem !important;
   font-weight: 500 !important;
   opacity: .5;
 }
 
-.day-container {
-  width: calc(100% / 7);
-}
+
 
 .isWorkDay {
   opacity: .9;
+
   font-weight: 900 !important;
 }
 
@@ -215,7 +220,8 @@ const inPast = (date) => {
 }
 
 .selected {
-  background: rgba(var(--v-theme-surface), 0.5) !important;
+  border-radius: 20px !important;
+  background: rgba(var(--v-theme-primary), 1) !important;
 }
 
 

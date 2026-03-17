@@ -1,0 +1,72 @@
+/* ==========================================================================
+   Global Motion Tokens
+   Design system transition presets — use these CSS variables everywhere.
+
+   Usage (CSS):
+     transition: transform var(--motion-expressive-fast-spatial);
+     transition: opacity var(--motion-standard-default-effects);
+
+   Usage (inline style / JS):
+     style="transition: all var(--motion-expressive-default-spatial)"
+   ========================================================================== */
+
+:root {
+  /* -------------------------------------------------------------------------
+     Durations
+     ------------------------------------------------------------------------- */
+  --dur-fast:    150ms;
+  --dur-fast-2:  200ms;
+  --dur-fast-3:  300ms;
+  --dur-fast-4:  350ms;
+  --dur-mid:     500ms;
+  --dur-slow:    650ms;
+  --dur-slow-2:  750ms;
+
+  /* -------------------------------------------------------------------------
+     Easing curves (cubic-bezier only)
+     ------------------------------------------------------------------------- */
+
+  /* Expressive — spatial */
+  --ease-expressive-fast-spatial:    cubic-bezier(0.42, 1.67, 0.21, 0.90);
+  --ease-expressive-default-spatial: cubic-bezier(0.38, 1.21, 0.22, 1.00);
+  --ease-expressive-slow-spatial:    cubic-bezier(0.39, 1.29, 0.35, 0.98);
+
+  /* Expressive — effects */
+  --ease-expressive-fast-effects:    cubic-bezier(0.31, 0.94, 0.34, 1.00);
+  --ease-expressive-default-effects: cubic-bezier(0.34, 0.80, 0.34, 1.00);
+  --ease-expressive-slow-effects:    cubic-bezier(0.34, 0.88, 0.34, 1.00);
+
+  /* Standard — spatial */
+  --ease-standard-spatial:           cubic-bezier(0.27, 1.06, 0.18, 1.00);
+
+  /* Standard — effects */
+  --ease-standard-fast-effects:      cubic-bezier(0.31, 0.94, 0.34, 1.00);
+  --ease-standard-default-effects:   cubic-bezier(0.34, 0.80, 0.34, 1.00);
+  --ease-standard-slow-effects:      cubic-bezier(0.34, 0.88, 0.34, 1.00);
+
+  /* -------------------------------------------------------------------------
+     Shorthand composite tokens  (easing + duration bundled)
+     Use directly in `transition` values:
+       e.g.  transition: transform var(--motion-expressive-fast-spatial);
+     ------------------------------------------------------------------------- */
+
+  /* Expressive — spatial */
+  --motion-expressive-fast-spatial:    350ms cubic-bezier(0.42, 1.67, 0.21, 0.90);
+  --motion-expressive-default-spatial: 500ms cubic-bezier(0.38, 1.21, 0.22, 1.00);
+  --motion-expressive-slow-spatial:    650ms cubic-bezier(0.39, 1.29, 0.35, 0.98);
+
+  /* Expressive — effects */
+  --motion-expressive-fast-effects:    150ms cubic-bezier(0.31, 0.94, 0.34, 1.00);
+  --motion-expressive-default-effects: 200ms cubic-bezier(0.34, 0.80, 0.34, 1.00);
+  --motion-expressive-slow-effects:    300ms cubic-bezier(0.34, 0.88, 0.34, 1.00);
+
+  /* Standard — spatial */
+  --motion-standard-fast-spatial:      350ms cubic-bezier(0.27, 1.06, 0.18, 1.00);
+  --motion-standard-default-spatial:   500ms cubic-bezier(0.27, 1.06, 0.18, 1.00);
+  --motion-standard-slow-spatial:      750ms cubic-bezier(0.27, 1.06, 0.18, 1.00);
+
+  /* Standard — effects */
+  --motion-standard-fast-effects:      150ms cubic-bezier(0.31, 0.94, 0.34, 1.00);
+  --motion-standard-default-effects:   200ms cubic-bezier(0.34, 0.80, 0.34, 1.00);
+  --motion-standard-slow-effects:      300ms cubic-bezier(0.34, 0.88, 0.34, 1.00);
+}

@@ -133,7 +133,6 @@
     <UnifiedDrawer 
       v-model="activeDrawer.show" 
       :selected-date="selectedDate"
-      :drawer-type="activeDrawer.type"
       @update:model-value="activeDrawer.show = false"
       @handle-replacement="handleReplacement"
       @handle-switch="handleSwitch"
@@ -148,7 +147,6 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from "@/stores/authStore.js";
 import { useDisplay } from "vuetify";
-import { useUserStore } from '@/stores/userStore';
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useShiftStore } from "@/stores/shiftStore.js";
 import { useCalendar } from '@/composables/useCalendar';
@@ -168,7 +166,6 @@ const DIALOG_MODES = {
 const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
-// const userStore = useUserStore();
 const shiftStore = useShiftStore();
 const demandDeps = ref(null);
 const rotationStore = useRotationStore();

@@ -1,6 +1,5 @@
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
-import Rotation from '../models/Rotation.js';
 import User from "../models/User.js";
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 

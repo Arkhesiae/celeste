@@ -110,8 +110,8 @@ export default createVuetify({
       lightTheme: {
         dark: false,
         colors: {
-          "primary": "#03677D",
-          "surfaceTint": "#03677D",
+          "primary": "#7C4CFF",
+          "surfaceTint": "#7C4CFF",
           "onPrimary": "#FFFFFF",
           "primaryContainer": "#B4EBFF",
           "onPrimaryContainer": "#001F28",

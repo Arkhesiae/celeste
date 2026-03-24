@@ -42,22 +42,22 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   
-  /**
-   * Rafraîchit le token d'accès si l'utilisateur est connecté.
-   */
-  const refreshToken = async () => {
-    if (!isLoggedIn.value) return;
-    try {
-    
-      const data = await authService.refreshToken();
-      accessToken.value = data.accessToken;
+  // /**
+  //  * Rafraîchit le token d'accès si l'utilisateur est connecté.
+  //  */
+  // const refreshToken = async () => {
+  //   if (!isLoggedIn.value) return;
+
+  //   try {
+  //     const data = await authService.refreshToken();
+  //     accessToken.value = data.accessToken;
    
-    } catch (err) {
-      console.error('Echec du rafraîchissement du token:', err.message);
-      logOut();
-      throw err;
-    }
-  };
+  //   } catch (err) {
+  //     console.error('Echec du rafraîchissement du token:', err.message);
+  //     logOut();
+  //     throw err;
+  //   }
+  // };
 
 
 
@@ -174,7 +174,7 @@ export const useAuthStore = defineStore('auth', () => {
     setUser,
     logOut,
     logIn,
-    refreshToken,
+   // refreshToken,
     updateUserPreferences,
     updateAvatar
   };

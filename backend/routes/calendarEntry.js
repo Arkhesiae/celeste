@@ -2,18 +2,21 @@ import express from 'express';
 const router = express.Router();
 import { verifyToken, isUserOrAdmin } from '../middleware/authMiddleware.js';
 import {
-    registerModification,
-    getUserModifications,
-    // getCenterModifications,
-    // updateModificationStatus,
+    // registerModification,
+    getUserEntries,
     deleteModification,
     getModification,
-    updateModification
-} from '../controllers/planningModificationController.js';
+    updateModification,
+    restoreInitialShift,
+    registerEntry
+} from '../controllers/calendarEntryController.js';
 
 // Routes pour les utilisateurs
-router.post('/register', verifyToken, registerModification);
-router.get('/user/:userId', verifyToken, getUserModifications);
+// router.post('/register', verifyToken, registerModification);
+
+router.post('/restore-initial', verifyToken, restoreInitialShift);
+router.post('/register-entry', verifyToken, registerEntry);
+router.post('/:userId', verifyToken, getUserEntries);
 router.get('/:id', verifyToken, getModification);
 router.put('/:id', verifyToken, updateModification);
 router.delete('/:id', verifyToken, deleteModification);

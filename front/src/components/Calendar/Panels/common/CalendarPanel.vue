@@ -1,9 +1,40 @@
 <template>
   <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4 position-relative safe-area-bottom"
     color="surfaceContainer">
-    <div class="d-flex align-center justify-end mb-4 mx-2">
-      <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
+
+   
+
+    <div class="d-flex align-center justify-space-between mb-4 mr-2 ga-2">
+      <div class="d-flex align-center ga-1">
+        <div v-for="(entry, index) in substitutionsDemands" :key="index" class="position-relative">
+          <v-btn icon size="x-small" variant="flat">
+            <v-icon> {{ typeToIcon(entry?.type) }}</v-icon>
+          </v-btn>
+          <!-- <div class="position-absolute bg-surface text-caption rounded-circle d-flex align-center justify-center" style="top: 0px; right: 0px; width: 16px; height: 16px;">{{ index + 1 }}</div> -->
+        </div>
+      </div>
+      <div class="d-flex align-center ga-2">
+        <v-menu location="top" offset="10">
+          <template #activator="{ props: tooltipProps }">
+            <v-chip v-if="entries.length > 0" color="primary" variant="text" v-bind="tooltipProps" rounded="lg">
+              <v-icon start>mdi-history</v-icon>
+              {{ entries.length }} modifications
+            </v-chip>
+          </template>
+
+          <v-card class="pa-4 rounded-lg">
+            <div v-for="(entry, index) in entries" :key="entry._id">
+              <span class="text-caption">{{ entry.createdAt }} : {{ entry.type }}</span>
+            </div>
+          </v-card>
+
+        </v-menu>
+        <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
+      </div>
+     
     </div>
+
+
 
     <div class="mt-4 mb-4 rounded-xl bg-background pa-4 px-4 position-relative d-flex flex-column"
       :class="getVacation?.isOff ? 'offDay' : ''">
@@ -15,40 +46,70 @@
           <v-icon v-else-if="isRestDay" size="20" color="surfaceContainerHigh">
             mdi-sleep
           </v-icon>
-          <v-icon v-else size="20" color="surfaceContainerHigh">
+          <v-icon v-else-if="isShift" size="20" color="surfaceContainerHigh">
             mdi-airport
+          </v-icon>
+          <v-icon v-else size="20" color="surfaceContainerHigh">
+            mdi-chair-rolling
           </v-icon>
         </v-scroll-x-transition>
       </div>
 
-      <v-tooltip text="Modifier" location="top">
+
+
+
+      <div class="d-flex align-center ga-2" style="position: absolute; top: 12px; right: 12px;">
+        <v-tooltip v-if="!isRemovable" text="Modifier" location="top">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon class="position-absolute" style="top: 12px; right: 12px;" size="small" variant="text">
+          <v-btn v-bind="tooltipProps" icon  size="small"
+            variant="text" @click="openEntryDialog()">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
+         
         </template>
+      
       </v-tooltip>
+       <v-btn icon size="small" variant="text" @click="restoreInitialShift">
+        <v-icon>mdi-close</v-icon>
+       </v-btn>
+      </div>
 
-      <div class="d-flex align-center pl-2 ga-3">
-        <div class="pb-0 mb-0">
+      <div class="d-flex align-center pl-2 ga-3 mt-1">
+        <div v-if="isRestDay" class="pb-0 mb-0">
           <span v-if="isRestDay" class="text-h6 font-weight-medium">Repos</span>
-          <span v-else class="text-h3 font-weight-medium" style="position: relative; top: 2px;">{{ getShiftName }}</span>
         </div>
-        <div class="d-flex align-start flex-column justify-space-between">
-          <div v-if="!isRestDay">
-            <span class="text-caption font-weight-bold">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}</span>
-            <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-              style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+        <div v-else-if="isShift" class="d-flex align-start flex-column justify-space-between">
+          <span class="text-h3 font-weight-medium" style="position: relative; top: 2px;">{{ getShiftName }}</span>
+          <div class="d-flex flex-column ga-1">
+            <div class="d-flex align-center ">
+              <span class="text-caption font-weight-bold">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime
+                }}</span>
+              <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
+                style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+            </div>
+            <div v-if="getShiftTeam" class="py-0 text-caption opacity-70"
+              style="margin-top: -8px; font-size: 11px !important;">
+              Dans l'équipe {{ getShiftTeam }}
+            </div>
           </div>
-          <div v-if="!isRestDay && getShiftTeam" class="py-0 text-caption opacity-70"
-            style="margin-top: -8px; font-size: 11px !important;">
-            Dans l'équipe {{ getShiftTeam }}
+         
+        </div>
+        <div v-else class=" mt-3 d-flex flex-column justify-space-between ga-2 ">
+          <div class="d-flex align-start flex-column ga-1">
+            <div class="d-flex align-start justify-space-between flex-column bg-primary rounded-xl">
+              <span class="text-h7 font-weight-medium pl-4 pr-4 py-2">Bureau</span>
+            </div>
+            <div>
+              <span class="text-caption text-primary">J'ai bureau youpi</span>
+            </div>
           </div>
+      
+          <span class="text-caption font-weight-bold">{{ "09:00 - 17:00" }}</span>
         </div>
       </div>
 
       <!-- Sélecteur de vacation élémentaire -->
-      <div v-if="!isRestDay && !inPast" class="mt-4 d-flex align-center justify-space-between align-self-end">
+      <div v-if="!isRestDay  && isShift" class="mt-4 d-flex align-center justify-space-between align-self-end">
         <div class="d-flex align-center ga-2 chips-container">
           <div class="d-flex align-center chips-container-alt">
             <v-tooltip v-for="v in variations" :key="v._id" :text="v.startTime + ' - ' + v.endTime" location="top">
@@ -62,8 +123,9 @@
             </v-tooltip>
             <v-tooltip :text="getVacation?.isOff ? 'Annuler l\'absence' : 'Déclarer une absence'" location="top">
               <template #activator="{ props: tooltipProps }">
-                <v-btn v-bind="tooltipProps" :disabled="!hasNoDemand" :color="getVacation?.isOff ? 'error' : 'surfaceContainerHigh'" icon
-                  rounded="lg" size="small" flat @click="registerAbsence" :class="getVacation?.isOff ? 'selected' : ''">
+                <v-btn v-bind="tooltipProps" :disabled="!hasNoDemand"
+                  :color="getVacation?.isOff ? 'error' : 'surfaceContainerHigh'" icon rounded="lg" size="small" flat
+                  @click="registerAbsence" :class="getVacation?.isOff ? 'selected' : ''">
                   <v-icon>mdi-cancel</v-icon>
                 </v-btn>
               </template>
@@ -73,7 +135,8 @@
             <div v-if="hasCustomEntry">
               <v-tooltip text="Réinitialiser" location="top">
                 <template #activator="{ props: tooltipProps }">
-                  <v-btn v-bind="tooltipProps" color="transparent" flat @click="selectVariationForDay(null)" size="small" icon>
+                  <v-btn v-bind="tooltipProps" color="transparent" flat @click="selectVariationForDay(null)"
+                    size="small" icon>
                     <v-icon>mdi-refresh</v-icon>
                   </v-btn>
                 </template>
@@ -82,16 +145,15 @@
           </v-scale-transition>
         </div>
       </div>
-
-      <div class="d-flex flex-column align-end justify-end position-absolute"
-        style="top: -38px; left: 0px;">
+<!-- 
+      <div class="d-flex flex-column align-end justify-end position-absolute" style="top: -38px; left: 0px;">
         <ConfirmationChipExtended v-if="substitutionStore.hasAcceptedAsPoster(selectedDateIso)"
           :date="new Date(selectedDate)" />
         <PendingChipExtended v-if="substitutionStore.hasOwnPendingDemand(selectedDateIso)"
           :date="new Date(selectedDate)" />
         <AccepterChipExtended v-if="substitutionStore.hasAcceptedAsAccepter(selectedDateIso)"
           :date="new Date(selectedDate)" />
-      </div>
+      </div> -->
     </div>
 
     <div
@@ -106,19 +168,17 @@
         <template #activator="{ props: tooltipProps }">
           <v-btn v-bind="tooltipProps" height="36" color="surfaceContainerHighest"
             style="border-radius: 12px !important;" max-width="50" width="50" size="" :slim="true"
-            :disabled="isRestDay || inPast || isOff"
-            :class="{ 'opacity-10': isRestDay || inPast || isOff }" flat
+            :disabled="isRestDay || inPast || isOff" :class="{ 'opacity-10': isRestDay || inPast || isOff }" flat
             @click="$emit('openRemplaDialog', 'switch')">
             <v-icon>mdi-swap-horizontal-hidden</v-icon>
           </v-btn>
         </template>
       </v-tooltip>
 
-      <v-tooltip text="Demander un remplacement"  location="bottom">
+      <v-tooltip text="Demander un remplacement" location="bottom">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" height="36px" color="primary"
-            :disabled="isRestDay || inPast || isOff" flat rounded="xl"
-            :class="{ 'opacity-10': isRestDay || inPast || isOff }"
+          <v-btn v-bind="tooltipProps" height="36px" color="primary" :disabled="isRestDay || inPast || isOff" flat
+            rounded="xl" :class="{ 'opacity-10': isRestDay || inPast || isOff }"
             @click="$emit('openRemplaDialog', 'substitution')">
             <v-icon>mdi-account-arrow-left-outline</v-icon>
           </v-btn>
@@ -126,17 +186,17 @@
       </v-tooltip>
     </div>
 
-    <div v-if="pendingDemand || acceptedAsPoster" class="d-flex align-center justify-center mb-4 mx-4">
-      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast || isOff"
-        class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancel', substitutionId)">
-        Annuler ma demande
+    <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex align-center justify-center mb-4 mx-4">
+      <v-btn color="error" height="48px" variant="tonal" 
+        class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancel', lastOwnDemand)">
+        Annuler ma dernière demande
       </v-btn>
     </div>
 
-    <div v-if="acceptedAsAccepter" class="d-flex align-center justify-center mb-4 mx-4">
+    <div v-if="acceptedAsAccepter?.length > 0" class="d-flex align-center justify-center mb-4 mx-4">
       <v-btn color="error" height="48px" variant="tonal" :disabled="inPast"
         class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
-        @click="emit('withdraw', acceptedAsAccepter)">
+        @click="emit('withdraw', lastAccepted)">
         Se désister
       </v-btn>
     </div>
@@ -181,6 +241,20 @@
       </span>
     </v-btn>
   </v-sheet>
+
+  <v-dialog v-model="entryDialog" max-width="500px">
+    <v-card class="rounded-xl pa-4">
+      <v-card-title>Ajouter une entrée</v-card-title>
+      <div class="d-flex ga-2">
+        <v-btn @click="addCustomEntry('office')">Bureau</v-btn>
+        <v-btn @click="addCustomEntry('stage')">Stage</v-btn>
+        <v-btn @click="addCustomEntry('training')">Formation</v-btn>
+      </div>
+    </v-card>
+  </v-dialog>
+
+  <ConfirmationDialog :model-value="confirmationDialog" :title="confirmationDialogTitle"
+    :text="confirmationDialogMessage" @confirm="confirmEntry" @cancel="cancelEntry" />
 </template>
 
 <script setup>
@@ -190,6 +264,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
+
 
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
@@ -219,6 +294,15 @@ const props = defineProps({
   },
 });
 
+const entryDialog = ref(false);
+const confirmationDialog = ref(false);
+const confirmationDialogTitle = ref('Confirmation');
+const confirmationDialogMessage = ref('');
+
+const noShift = ref(false);
+
+
+const entries = ref([]);
 const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancel', 'openAbsenceDialog', 'withdraw']);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -227,6 +311,19 @@ const toDateKey = (d) => {
   if (!d) return null;
   const s = typeof d === 'string' ? d : d?.toISOString?.();
   return s?.slice(0, 10) ?? null;
+};
+
+const typeToIcon = (type) => {
+  switch (type) {
+    case 'switch':
+      return 'mdi-swap-horizontal';
+    case 'substitution':
+      return 'mdi-account-arrow-left-outline';
+    case 'hybrid':
+      return 'mdi-account-arrow-left-outline';
+    default:
+      return 'mdi-close';
+  }
 };
 
 // ─── Core computeds ───────────────────────────────────────────────────────────
@@ -241,13 +338,113 @@ const selectedDateIso = computed(() => new Date(props.selectedDate).toISOString(
 
 const isRestDay = computed(() => getVacation.value?.shift?.type === 'rest');
 
+const isShift = computed(() => {
+  return !!getVacation.value?.shift
+});
+
 const isOff = computed(() => getVacation.value?.isOff);
 
 const inPast = computed(() =>
   toDateKey(props.selectedDate) < toDateKey(new Date())
 );
 
-// ─── Shift display ────────────────────────────────────────────────────────────
+
+const openEntryDialog = () => {
+  entryDialog.value = true;
+}
+
+const addCustomEntry = async (type, data) => {
+  const dateKey = toDateKey(props.selectedDate);
+  if (!dateKey) return;
+  entryToRegister.value = {
+    userId: authStore.userData.userId,
+    type,
+    date: dateKey,
+  }
+  registerEntry(type);
+}
+
+const selectVariationForDay = async (variation) => {
+  const dateKey = toDateKey(props.selectedDate);
+  if (!dateKey) return;
+  entryToRegister.value = {
+    type: 'shiftVariation',
+    date: dateKey,
+    selectedVariation: variation ? variation._id : null,
+    shift: getVacation.value?.shift?._id,
+    centerId: authStore.userData?.centerId,
+    confirmCreation: true
+  };
+  registerEntry();
+};
+
+const registerEntry = async (type) => {
+  try {
+    const res = await planningModificationService.registerEntry(entryToRegister.value);
+    if (res.needsApproval) {
+      confirmationDialog.value = true;
+      confirmationDialogMessage.value = res.message;
+      return;
+    }
+    entryDialog.value = false;
+    shiftStore.addEntry(res.userShift[0], entryToRegister.value.date);
+
+    entries.value = await fetchEntries();
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const restoreInitialShift = async () => {
+  try {
+    const res = await planningModificationService.restoreInitialShift(authStore.userData.userId, toDateKey(props.selectedDate));
+    shiftStore.addEntry(res.userShift[0], toDateKey(props.selectedDate));
+    entries.value = await fetchEntries();
+  } catch (err) {
+    console.log(err);
+    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
+  }
+}
+
+const confirmEntry = async () => {
+  try {
+    const res = await planningModificationService.registerEntry({ ...entryToRegister.value, confirmCreation: true });
+    confirmationDialog.value = false;
+    shiftStore.addEntry(res.userShift[0], entryToRegister.value.date);
+    entryToRegister.value = null;
+    entryDialog.value = false;
+
+    entries.value = await fetchEntries();
+  } catch (err) {
+    console.log(err);
+    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
+
+const registerAbsence = async () => {
+  try {
+    const isCurrentlyOff = getVacation.value?.isOff;
+    const res = await planningModificationService.registerEntry({
+      type: 'absence',
+      date: toDateKey(props.selectedDate),
+      shift: getVacation.value?.shift?._id,
+      isOff: !isCurrentlyOff,
+      comment: isCurrentlyOff ? 'Retour de congé' : 'Absence enregistrée',
+      confirmCreation: true
+    });
+
+    shiftStore.addEntry(res.userShift[0], entryToRegister.value.date);
+    console.log("res", res);
+    entries.value = await fetchEntries();
+  } catch (error) {
+    console.error('Erreur lors de l\'enregistrement de l\'absence:', error);
+
+  };
+}
+
+
+
 
 const getShiftName = computed(() => getDisplayShiftName(getVacation.value));
 
@@ -286,55 +483,31 @@ const hasCustomEntry = computed(() => {
   return getVacation.value?.selectedVariation !== null || isOff.value;
 });
 
-const selectVariationForDay = async (variation) => {
-  const dateKey = toDateKey(props.selectedDate);
-  if (!dateKey) return;
-  try {
-    const data = await planningModificationService.registerModification({
-      type: 'selectedVariation',
-      date: dateKey,
-      selectedVariation: variation ? variation._id : null,
-      shift: getVacation.value?.shift?._id,
-      centerId: authStore.userData?.centerId
-    });
-    if (data?.userShift?.[0]) {
-      shiftStore.addEntry(data.userShift[0], toDateKey(data.userShift[0].date));
-    }
-    if (data?.updatedDemand) {
-      substitutionStore.updateDemandInStore(data.updatedDemand);
-    }
-    substitutionStore.recategorizeSubstitutions(dateKey);
-  } catch (err) {
-    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
-  }
+const entryToRegister = ref(null);
+
+
+
+const cancelEntry = () => {
+  confirmationDialog.value = false;
+  entryToRegister.value = null;
 };
+
 
 // ─── Absence ──────────────────────────────────────────────────────────────────
 
-const registerAbsence = async () => {
+
+const fetchEntries = async () => {
+  const dateKey = toDateKey(props.selectedDate);
+  if (!dateKey) return;
   try {
-    const isCurrentlyOff = getVacation.value?.isOff;
-    const data = await planningModificationService.registerModification({
-      type: 'absence',
-      date: toDateKey(props.selectedDate),
-      isOff: !isCurrentlyOff,
-      comment: isCurrentlyOff ? 'Retour de congé' : 'Absence enregistrée'
-    });
-    shiftStore.addEntry(data.userShift[0], data.userShift[0].date);
-    substitutionStore.recategorizeSubstitutions(data.userShift[0].date);
-    snackbarStore.showNotification(
-      isCurrentlyOff ? 'Absence annulée' : 'Absence enregistrée',
-      'onPrimary', 'mdi-check'
-    );
+    const data = await planningModificationService.fetchEntries(authStore.userData.userId, dateKey);
+
+    return data;
   } catch (error) {
-    console.error('Erreur lors de l\'enregistrement de l\'absence:', error);
-    snackbarStore.showNotification(
-      'Erreur lors de l\'enregistrement de l\'absence : ' + error.message,
-      'onError', 'mdi-alert-circle-outline'
-    );
+
+    console.log(error);
   }
 };
-
 // ─── Substitution state ───────────────────────────────────────────────────────
 
 const pendingDemand = computed(() => [
@@ -345,15 +518,36 @@ const pendingDemand = computed(() => [
 
 const acceptedAsAccepter = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsAccepter.find(d => d.posterShift.date === props.selectedDate);
+  return substitutionStore.acceptedAsAccepter.filter(d => d.posterShift.date === props.selectedDate);
+});
+
+const lastAccepted = computed(() => {
+  if (!props.selectedDate) return null;
+  return acceptedAsAccepter.value.sort((a, b) => b.createdAt - a.createdAt)[0];
 });
 
 const acceptedAsPoster = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsPoster.find(d => d.posterShift.date === props.selectedDate);
+  return substitutionStore.acceptedAsPoster.filter(d => d.posterShift.date === props.selectedDate);
 });
 
-const substitutionId = computed(() => pendingDemand.value ?? acceptedAsPoster.value);
+const lastOwnDemand = computed(() => {
+  if (!props.selectedDate) return null;
+  return [pendingDemand.value, ...acceptedAsPoster.value].sort((a, b) => b.createdAt - a.createdAt)[0];
+});
+
+const substitutionsDemands = computed(() => {
+  if (!props.selectedDate) return [];
+
+  let toReturn = [
+    ...acceptedAsAccepter.value,
+    ...acceptedAsPoster.value
+  ]
+  if (pendingDemand.value) toReturn.push(pendingDemand.value);
+
+  return toReturn.sort((a, b) => a.createdAt - b.createdAt);
+});
+
 
 const hasNoDemand = computed(() =>
   !pendingDemand.value && !acceptedAsPoster.value && !acceptedAsAccepter.value
@@ -370,6 +564,13 @@ const availableSwitches = computed(() =>
 const otherDemands = computed(() =>
   substitutionStore.otherDemands.filter(d => d.posterShift.date === props.selectedDate)
 );
+
+watch(() => props.selectedDate, async (value) => {
+  if (value) {
+    entries.value = await fetchEntries();
+  }
+}, { immediate: true });
+
 </script>
 
 <style scoped>
@@ -416,7 +617,7 @@ const otherDemands = computed(() =>
 .chips-container-alt .v-btn {
   border-radius: 8px !important;
   transition: border-radius var(--motion-expressive-fast-spatial),
-              background-color var(--motion-expressive-fast-effects);
+    background-color var(--motion-expressive-fast-effects);
 }
 
 .chips-container-alt .v-btn:first-child {

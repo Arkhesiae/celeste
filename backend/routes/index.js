@@ -13,7 +13,7 @@ import devRouter from './dev.js';
 import rulesRouter from './rules.js';
 import accountRecoveryRouter from './accountRecovery.js';
 import announcementRoutes from './announcementRoutes.js';
-import planningModificationsRouter from './planningModifications.js';
+import calendarEntryRouter from './calendarEntry.js';
 import statsRouter from './stats.js';
 
 const router = express.Router();
@@ -33,7 +33,7 @@ router.use('/dev', devRouter);
 router.use('/rules', rulesRouter);
 router.use('/account-recovery', accountRecoveryRouter);
 router.use('/announcements', announcementRoutes);
-router.use('/planning-modifications', planningModificationsRouter);
+router.use('/planning-modifications', calendarEntryRouter);
 router.use('/stats', statsRouter);
 
 export default router;

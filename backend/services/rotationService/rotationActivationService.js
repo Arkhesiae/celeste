@@ -1,7 +1,7 @@
 import Rotation from '../../models/Rotation.js';
 import Substitution from '../../models/Substitution.js';
 import Transaction from '../../models/Transaction.js';
-import { cancelDelayedTransaction } from '../../services/transactionService.js';
+import { cancelDelayedTransaction } from '../../services/transaction/scheduledTransactionService.js';
 
 
 

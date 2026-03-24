@@ -1,102 +1,50 @@
 <template>
-  <v-sheet
-    v-touch="{
-      left: () => handleSwipe('left'),
-      right: () => handleSwipe('right')
-    }"
-    rounded="xl"
-    elevation="0"
-    color="transparent"
-    class="calendar-sheet mx-auto"
-    min-width="300px"
-    max-width="600px"
-  >
+  <v-sheet v-touch="{
+    left: () => handleSwipe('left'),
+    right: () => handleSwipe('right')
+  }" rounded="xl" elevation="0" color="transparent" class="calendar-sheet mx-auto" min-width="300px"
+    max-width="600px">
     <v-row class="mt-1 mb-8 px-4">
-      <v-col
-        v-for="day in daysOfWeek"
-        :key="day"
-        class="text-center"
-      >
+      <v-col v-for="day in daysOfWeek" :key="day" class="text-center">
         <span class="week-day">{{ day }}</span>
       </v-col>
     </v-row>
 
-    <v-row
-      v-for="(week, index) in calendarDays"
-      :key="index"
-      class=" px-4   d-flex justify-space-between align-center my-1 ga-1 "
-      
-    >
-      <v-col
-        v-for="day in week"
-        :key="day.date"
-        style="height: 48px"
-        class="ma-0 pa-0 d-flex justify-space-around align-center"
-      >
-        <div
-          class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
-          style=" background-color: rgba(var(--v-theme-surface), 1) ; position: relative; font-weight: 400 "
-          :class="{
+    <v-row v-for="(week, index) in calendarDays" :key="index"
+      class=" px-4   d-flex justify-space-between align-center my-1 ga-1 ">
+      <v-col v-for="day in week" :key="day.date" style="height: 48px"
+        class="ma-0 pa-0 d-flex justify-space-around align-center">
+        <div class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
+          style=" background-color: rgba(var(--v-theme-surface), 1) ; position: relative; font-weight: 400 " :class="{
             'isWorkDay': isWorkDay(day.date),
             'selected': isSelected(day.date),
             'today-center-highlight': isToday(day.date),
             'empty-day': !day.isInMonth
-          }"
-          @click="hapticsImpact(); $emit('select-day', day.date) "
-        >
-          <PendingChip
-            v-if="pendingDemand(day.date)"
-            style="bottom:-4px !important; "
-            :date="day.date"
-          />
-          <AccepterChip
-            v-if="acceptedAsAccepter(day.date)"
-            style="bottom:-4px !important; "
-            :date="day.date"
-          />
-          <ConfirmationChip
-            v-if="acceptedAsPoster(day.date)"
-            style="bottom:-4px !important; "
-            :date="day.date"
-          />
+          }" @click="hapticsImpact(); $emit('select-day', day.date)">
+          <PendingChip v-if="pendingDemand(day.date)" style="bottom:-4px !important; " :date="day.date" />
+          <AccepterChip v-if="acceptedAsAccepter(day.date)" style="bottom:-4px !important; " :date="day.date" />
+          <ConfirmationChip v-if="acceptedAsPoster(day.date)" style="bottom:-4px !important; " :date="day.date" />
 
-          <span
-            class="text-body-2 day"
+          <span class="text-body-2 day"
             :style="isWorkDay(day.date) && !inPast(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'"
-            :class="{'xs': xs}"
-          >
+            :class="{ 'xs': xs }">
             {{ day.date.getUTCDate() }}
           </span>
 
 
-          <span
-            v-if="isWorkDay(day.date) || isOff(day.date)"
+          <span v-if="isWorkDay(day.date) || isOff(day.date)"
             class="text-caption position-absolute opacity-50 shift-name"
-            
-            :class="{'offDay': isOff(day.date), 'xs': xs}"
-          >{{ getShiftName(day.date) }}</span>
+            :class="{ 'offDay': isOff(day.date), 'xs': xs }">{{ getShiftName(day.date) }}</span>
 
-          <div
-            v-if="!acceptedAsAccepter(day.date) && !acceptedAsPoster(day.date) && !pendingDemand(day.date)"
-            style="position: absolute; width: 100%; bottom: 4px"
-            class="d-flex justify-center "
-          >
+          <div v-if="!acceptedAsAccepter(day.date) && !acceptedAsPoster(day.date) && !pendingDemand(day.date)"
+            style="position: absolute; width: 100%; bottom: 4px" class="d-flex justify-center ">
             <div class="d-flex justify-center ga-1">
-              <div
-                v-if="substitutionStore?.hasAvailableSubstitutions(day.date.toISOString())"
-                class="indicator-dot remplacement "
-                style="background: rgb(var(--v-theme-primary)) !important"
-              />
-              <div
-                v-if="substitutionStore?.hasAvailableSwitches(day.date.toISOString())"
-                class="indicator-dot permutation "
-                style="background: rgb(var(--v-theme-primary)) !important"
-              />
-              <div
-                v-if="substitutionStore?.hasOtherDemands(day.date.toISOString())"
-                class="indicator-dot other-demand"
-                style="background: rgba(var(--v-theme-error), .3) !important"
-              />
+              <div v-if="substitutionStore?.hasAvailableSubstitutions(day.date.toISOString())"
+                class="indicator-dot remplacement " style="background: rgb(var(--v-theme-primary)) !important" />
+              <div v-if="substitutionStore?.hasAvailableSwitches(day.date.toISOString())"
+                class="indicator-dot permutation " style="background: rgb(var(--v-theme-primary)) !important" />
+              <div v-if="substitutionStore?.hasOtherDemands(day.date.toISOString())" class="indicator-dot other-demand"
+                style="background: rgba(var(--v-theme-error), .3) !important" />
             </div>
           </div>
         </div>
@@ -136,7 +84,7 @@ const handleSwipe = (direction) => {
   }
 };
 
-const hapticsImpact= async () => {
+const hapticsImpact = async () => {
   await Haptics.impact({ style: ImpactStyle.Light });
 };
 
@@ -189,7 +137,7 @@ const inPast = (date) => {
 .offDay {
   color: rgb(var(--v-theme-error)) !important;
   opacity: 0.5 !important;
-  
+
 }
 
 .day-block {
@@ -245,7 +193,7 @@ const inPast = (date) => {
 
 .day.xs {
   position: relative;
- 
+
   font-size: .6750rem !important;
   font-weight: 300 !important;
 }

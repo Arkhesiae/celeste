@@ -8,9 +8,6 @@ const loginUser = async (req, res) => {
 
         const result = await authService.loginUser(email, password);
 
-        const user = await User.findOne({ email });
-        console.log("Se connecte : ", user.name + " " + user.lastName);
-
         const response = {
             userData: result.userData,
             accessToken: result.accessToken
@@ -40,6 +37,8 @@ const loginUser = async (req, res) => {
 const refreshAccessToken = async (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
+
+        console.log("refreshToken", refreshToken);
 
         if (!refreshToken) {
             return res.status(401).json({ code : 'AUTH_TOKEN_MISSING', error: 'Token manquant' });

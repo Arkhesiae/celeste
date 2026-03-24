@@ -9,7 +9,6 @@ export const API_URL = import.meta.env.VITE_API_URL;
 
 // File d'attente pour les requêtes en attente de refresh token
 let refreshPromise = null;
-const requestQueue = [];
 
 
 /**
@@ -56,11 +55,6 @@ export const handleResponse = async (response, retryFn, retry = true) => {
 
   if (response.status === 401 && data.code === 'INVALID_ACCESS_TOKEN' && retryFn && retry) {
     console.warn('==> 401 Unauthorized, retrying...');
-    const authStore = useAuthStore();
-    if (!authStore.accessToken) {
-      authStore.clearAuth();
-      throw new Error('AUTH_REQUIRED');
-    }
     return handle401(retryFn);  
   }
 
@@ -78,51 +72,7 @@ export const handleResponse = async (response, retryFn, retry = true) => {
 };
 
 
-// /**
-//  * Gère les requêtes 401 (Unauthorized)
-//  * @param {Function} retryFn - La fonction à réessayer
-//  * @returns {Promise<any>} La réponse gérée
-//  */
-// const handle401 = async (retryFn) => {
-//   const authStore = useAuthStore();
 
-//   if (refreshPromise) {
-  
-//     return new Promise((resolve, reject) => {
-//       requestQueue.push({ retryFn, resolve, reject });
-//     }).then(async () => {
-//       const retryResponse = await retryFn();
-//       return handleResponse(retryResponse, retryFn, false);
-//     });
-//   }
-
-//   refreshPromise = (async () => {
-//     try {
-   
-//       const data = await authService.refreshToken();
-//       authStore.setAccessToken(data.accessToken);
- 
-//       const queue = [...requestQueue];
-//       requestQueue.length = 0;
-//       queue.forEach(({ resolve }) => resolve());
-//     } catch (err) {
-//       const queue = [...requestQueue];
-//       requestQueue.length = 0;
-//       queue.forEach(({ reject }) => reject(err));
-
-//       authStore.clearAuth();
-//       router.push('/login');
-//       throw err;
-//     } finally {
-//       refreshPromise = null;
-//     }
-//   })();
-
-//   await refreshPromise;
-
-//   const retryResponse = await retryFn();
-//   return handleResponse(retryResponse, retryFn, false);
-// };
 
 /**
  * Gère les erreurs 401 avec rafraîchissement du token
@@ -149,7 +99,7 @@ const refreshToken = async (authStore) => {
   } catch (err) {
     authStore.clearAuth();
     router.push('/login');
-    throw err;
+    throw new Error('SESSION_EXPIRED');
   } finally {
     refreshPromise = null;
   }

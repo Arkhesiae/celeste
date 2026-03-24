@@ -1,4 +1,4 @@
-import Substitution from '../models/Substitution.js';
+import Substitution from '../../models/Substitution.js';
 
 /**
  * Archive les demandes de substitution ouvertes dont les dates sont passées

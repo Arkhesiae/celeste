@@ -2,12 +2,12 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import express from 'express';
+import { errorHandler } from './middleware/errorHandler.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { renderMail } from './src/mail/mailRenderer.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import ticketRouter from './routes/ticketRoutes.js';
 
 // ─── Import du routeur principal ─────────────────────────────────────────────
 import mainRouter from './routes/index.js';
@@ -28,8 +28,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
-import './cron/processTransactions.js';
-import './cron/processDemands.js';
+import './jobs/transactionJob.js';
+import './jobs/demandJob.js';
 
 // ─── Initialisation de l'admin ────────────────────────────────────────────────
 import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
@@ -40,12 +40,9 @@ import { initializeRules } from './services/rules/initializeRules.js';
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({
   origin: [
-    'http://192.168.1.21:30035',
-    'http://localhost:30035',
-    'http://167.235.244.249',
+    process.env.FRONT_URL,
     'http://celeste-app.fr',
     'https://celeste-app.fr',
-    'https://localhost',
     'capacitor://localhost',
     'capacitor://192.168.1.36:30035',
     'capacitor://localhost:30035',
@@ -84,6 +81,10 @@ app.get('/api', (req, res) => {
 app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
+
+
+// Error handler — must be last
+app.use(errorHandler);
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
 mongoose.connect(process.env.MONGO_URI)

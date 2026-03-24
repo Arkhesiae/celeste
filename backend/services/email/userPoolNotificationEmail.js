@@ -134,7 +134,7 @@ L'équipe Celeste
  * @param {string} shiftDay - Le jour du shift concerné
  * @returns {Object} Résultat de l'envoi
  */
-async function sendAcceptedDemandEmail(demand) {
+async function sendAcceptedDemandEmail (demand) {
   try {
     const accepterName = demand.accepterId?.name;
     const accepterLastName = demand.accepterId?.lastName?.slice(0, 1) + '.';

@@ -1,4 +1,4 @@
-import Transaction from '../models/Transaction.js';
+import Transaction from '../../models/Transaction.js';
 
 /**
  * Crée une transaction différée

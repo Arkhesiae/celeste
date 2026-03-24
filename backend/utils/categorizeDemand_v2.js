@@ -2,77 +2,356 @@ import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSub
 import Shift from '../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
 import { parseShiftUTC } from './parseShiftTime.js';
+import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
+/**
+ * Échantillonne des combinaisons de manière uniforme quand il y en a trop.
+ * Inclut toujours la combo par défaut (index 0) en premier.
+ */
+function sampleCombos(combos, maxCount) {
+    if (combos.length <= maxCount) return combos;
+    const result = [combos[0]];
+    const step = (combos.length - 1) / Math.max(1, maxCount - 1);
+    for (let i = 1; i < maxCount; i++) {
+        const idx = Math.min(Math.floor(i * step), combos.length - 1);
+        result.push(combos[idx]);
+    }
+    return result;
+}
 
+/**
+ * Complexité des calculs par paire de compatibilité :
+ * - demandVariations × fetcherCombos appels à checkCompatibilityForVariation
+ * - fetcherCombos = ∏(1 + variations_per_date) pour chaque date ambigüe du fetcher
+ *   Ex: 7 dates avec 2 variations = 3^7 = 2187 | 5 dates avec 3 variations = 4^5 = 1024
+ * - Sans limite : 3 demandVars × 2187 = 6561 itérations, chacune avec N appels DB (acceptedSwitches)
+ */
+const MAX_COMPATIBILITY_COMBOS = 500;
+
+
+
+/**
+ * Construit une map locale en appliquant éventuellement des overrides de variantes pour les vacations du fetcher.
+ * fetcherVariationOverrides: { [dateStr]: variation } pour les jours ambigus (sans variante choisie).
+ */
+function buildLocalMapWithOverrides(shiftsMap, demandDateStr, demandData, fetcherVariationOverrides = {}) {
+    const localMap = new Map();
+    for (const [dateStr, entry] of shiftsMap) {
+        if (dateStr === demandDateStr) {
+            localMap.set(dateStr, demandData);
+            continue;
+        }
+        const override = fetcherVariationOverrides[dateStr];
+        if (override && entry?.shift) {
+            const effectiveTimes = getEffectiveShiftTimes(entry.shift, override);
+            if (effectiveTimes) {
+                localMap.set(dateStr, {
+                    shift: entry.shift,
+                    team: entry.team,
+                    date: dateStr,
+                    start: parseShiftUTC(dateStr, effectiveTimes.startTime, false),
+                    end: parseShiftUTC(dateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay ?? false),
+                });
+                continue;
+            }
+        }
+        localMap.set(dateStr, { ...entry, start: entry.start, end: entry.end });
+    }
+    // La date de la demande peut être absente de shiftsMap (fetcher en repos ce jour-là)
+    if (!localMap.has(demandDateStr)) {
+        localMap.set(demandDateStr, demandData);
+    }
+    return localMap;
+}
+
+/**
+ * Génère toutes les combinaisons de variantes pour les dates ambigües (produit cartésien).
+ * @param {string[]} ambiguousDates - Dates où le fetcher a un shift avec 2+ variantes sans sélection
+ * @param {Map} shiftsMap - La map des shifts
+ * @returns {Array<{[dateStr]: variation}>}
+ */
+function getFetcherVariationCombinations(ambiguousDates, shiftsMap) {
+    if (ambiguousDates.length === 0) return [{}];
+    const variationsByDate = ambiguousDates.map(d => {
+        const entry = shiftsMap.get(d);
+        const vars = entry?.shift?.variations;
+        // Inclure null (défaut) + chaque variante explicite
+        if (!vars || vars.length === 0) return [null];
+        return [null, ...vars];
+    });
+    const result = [];
+    function backtrack(idx, combo) {
+        if (idx === ambiguousDates.length) {
+            result.push({ ...combo });
+            return;
+        }
+        for (const v of variationsByDate[idx]) {
+            combo[ambiguousDates[idx]] = v;
+            backtrack(idx + 1, combo);
+        }
+    }
+    backtrack(0, {});
+    return result;
+}
+
+/**
+ * Pré-charge les shifts des acceptedSwitches une seule fois pour éviter N×M appels DB.
+ * Utilise les shifts déjà populés si disponibles.
+ * @returns {Promise<Map<string, Object>>} Map shiftId -> shift
+ */
+async function buildPreFetchedAcceptedShifts(demand) {
+    const map = new Map();
+    if (!demand?.acceptedSwitches?.length) return map;
+    const isPopulated = (s) => s?.shift && typeof s.shift === 'object' && '_id' in s.shift && 'name' in s.shift;
+    const populated = demand.acceptedSwitches.filter(isPopulated);
+    const unpopulatedIds = demand.acceptedSwitches
+        .filter(s => !isPopulated(s) && s.shift)
+        .map(s => s.shift?._id ?? s.shift)
+        .filter(Boolean);
+    for (const s of populated) {
+        map.set(s.shift._id.toString(), s.shift);
+    }
+    if (unpopulatedIds.length > 0) {
+        const shifts = await Shift.find({ _id: { $in: unpopulatedIds } }).select('_id name').lean();
+        for (const sh of shifts) {
+            map.set(sh._id.toString(), sh);
+        }
+    }
+    return map;
+}
+
+/**
+ * Vérifie la compatibilité pour une variation de la demande et optionnellement des overrides pour les vacations du fetcher.
+ * Retourne { limit: string[], canSwitch: boolean }.
+ * @param {Map<string, Object>} [preFetchedAcceptedShifts] - Map shiftId -> shift pour éviter les appels DB répétés
+ */
+function checkCompatibilityForVariation(demand, shiftsMap, demandVariationOrNull, fetcherVariationOverrides = {}, preFetchedAcceptedShifts = null) {
+    if (!demand?.posterShift?.shift) {
+        return { limit: ['invalidDemand'], canSwitch: false };
+    }
+    const demandDate = new Date(demand.posterShift.date);
+    const limit = [];
+    let canSwitch = false;
+
+    const demandDateStr = demandDate.toISOString().split('T')[0];
+    const vacationOfFetcher = shiftsMap.get(demandDateStr);
+
+    const effectiveTimes = getEffectiveShiftTimes(demand.posterShift.shift, demandVariationOrNull);
+    if (!effectiveTimes) return { limit: ['invalidShift'], canSwitch: false };
+
+    const demandData = {
+        shift: demand.posterShift.shift,
+        team: demand.posterShift.shift.teamObject,
+        date: demandDateStr,
+        start: parseShiftUTC(demandDateStr, effectiveTimes.startTime, false),
+        end: parseShiftUTC(demandDateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
+    };
+
+    const localMap = buildLocalMapWithOverrides(shiftsMap, demandDateStr, demandData, fetcherVariationOverrides);
+    const shiftsSorted = shiftMapToArray(localMap);
+    const index = shiftsSorted.findIndex(s => s.date === demandDateStr);
+
+    if (vacationOfFetcher?.shift && vacationOfFetcher.shift.type !== "rest") {
+        limit.push('alreadyWorking');
+        if (demand.acceptedSwitches?.length > 0) {
+            for (const switchItem of demand.acceptedSwitches) {
+                const shiftId = switchItem.shift?._id?.toString?.() ?? switchItem.shift?.toString?.();
+                const shift = preFetchedAcceptedShifts?.get(shiftId) ?? (switchItem.shift && typeof switchItem.shift === 'object' ? switchItem.shift : null);
+                if (shift && ((shift._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name))) {
+                    canSwitch = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    const computeRest = checkMinimumRestTime(shiftsSorted, index);
+    const { restOk } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
+    const { workOk } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
+
+    if (!computeRest.ok) limit.push('insufficientRest');
+    if (!restOk) limit.push('35limit');
+    if (!workOk) limit.push('48hLimit');
+
+    return { limit, canSwitch };
+}
 
 const categorize = async (demand, shiftsMap = null) => {
     try {
         const demandDate = new Date(demand.posterShift.date);
         let demandWithLimit = demand.toObject();
         demandWithLimit.limit = [];
+        demandWithLimit.compatibleVariations = [];
+        demandWithLimit.compatibleFetcherVariationsByDate = [];
+        demandWithLimit.compatiblePairsByFetcherDate = [];
+        demandWithLimit.potentiallyCompatible = false;
 
         if (!shiftsMap) {
             throw new Error("Shifts map not found");
         }
 
-        const vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
+        const shift = demand.posterShift?.shift;
+        const hasVariations = shift?.variations?.length >= 2;
+        const noSelectedVariation = !demand.posterShift?.selectedVariation;
+
+        const preFetchedAcceptedShifts = await buildPreFetchedAcceptedShifts(demand);
+        const result = checkCompatibilityForVariation(demand, shiftsMap, demand.posterShift?.selectedVariation, {}, preFetchedAcceptedShifts);
+        demandWithLimit.limit = result.limit;
+        demandWithLimit.canSwitch = result.canSwitch;
+
+        demandWithLimit.rest = { before: 0, after: 0 };
         const localMap = new Map(shiftsMap);
+        const effectiveTimes = getEffectiveShiftTimes(shift, demand.posterShift?.selectedVariation);
+        if (effectiveTimes) {
+            const dateStr = demandDate.toISOString().split('T')[0];
+            const demandData = {
+                shift,
+                team: shift?.teamObject,
+                date: dateStr,
+                start: parseShiftUTC(dateStr, effectiveTimes.startTime, false),
+                end: parseShiftUTC(dateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
+            };
+            localMap.set(dateStr, demandData);
+            const shiftsSorted = shiftMapToArray(localMap);
+            const index = shiftsSorted.findIndex(s => s.date === dateStr);
+            const computeRest = checkMinimumRestTime(shiftsSorted, index);
+            demandWithLimit.rest = { before: computeRest.restBefore, after: computeRest.restAfter };
+        }
+        const { invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftMapToArray(localMap), true);
+        const { invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftMapToArray(localMap), true);
+        demandWithLimit.invalidRest35 = invalidWindows35;
+        demandWithLimit.invalidWork48 = invalidWindows48;
 
-        const demandData = {
-            shift: demand.posterShift.shift,
-            team: demand.posterShift.shift.teamObject,
-            date: demandDate.toISOString().split('T')[0],
-            start: parseShiftUTC(demandDate.toISOString().split('T')[0], demand.posterShift.shift.default.startTime),
-            end: parseShiftUTC(demandDate.toISOString().split('T')[0], demand.posterShift.shift.default.endTime, demand.posterShift.shift.default.endsNextDay),
-        };
+        // Jours ambigus du fetcher : vacations avec 2+ variantes (avec ou sans choix, pour calculer les alternatives compatibles)
+        const ambiguousFetcherDates = [];
+        for (const [dateStr, entry] of shiftsMap) {
+            if (entry?.shift?.variations?.length >= 2) {
+                ambiguousFetcherDates.push(dateStr);
+            }
+        }
 
-        localMap.set(demandDate.toISOString().split('T')[0], demandData);
-        const shiftsSorted = shiftMapToArray(localMap);
-        const index = shiftsSorted.findIndex(s => s.date === demandDate.toISOString().split('T')[0]);
+        const demandVariationsToTry = (hasVariations && noSelectedVariation)
+            ? (shift.variations || [])
+            : [demand.posterShift?.selectedVariation ?? null];
 
-        if (vacationOfFetcher?.shift && vacationOfFetcher.shift.type !== "rest") {
-            demandWithLimit.limit.push('alreadyWorking');
-            if (demand.acceptedSwitches?.length > 0) {
-                let canSwitch = false;
-                for (const switchItem of demand.acceptedSwitches) {
-                    const shift = await Shift.findById(switchItem.shift);
-                    if ((shift?._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name)) {
-                        canSwitch = true;
-                        break;
+        let anyPass = false;
+        let anyFail = false;
+        const compatibleDemandVariationIds = new Set();
+        /** Pour chaque date ambigüe du fetcher, les variantes qui font passer au moins une combo */
+        const compatibleFetcherByDate = new Map();
+        /** Quand poster ET fetcher sont ambigus : date -> fetcherVarKey -> Set(demandVarIds) */
+        const compatiblePairsByFetcherDate = new Map();
+
+        const fetcherCombos = getFetcherVariationCombinations(ambiguousFetcherDates, shiftsMap);
+        const totalCombos = demandVariationsToTry.length * fetcherCombos.length;
+        const useFullPairs = totalCombos <= MAX_COMPATIBILITY_COMBOS;
+        const combosToIterate = useFullPairs
+            ? fetcherCombos
+            : sampleCombos(fetcherCombos, Math.max(1, Math.floor(MAX_COMPATIBILITY_COMBOS / demandVariationsToTry.length)));
+
+        for (const demandVar of demandVariationsToTry) {
+            for (const fetcherCombo of combosToIterate) {
+                const vr = checkCompatibilityForVariation(demand, shiftsMap, demandVar, fetcherCombo, preFetchedAcceptedShifts);
+                if (vr.limit.length === 0) {
+                    anyPass = true;
+                    if (hasVariations && noSelectedVariation && demandVar) {
+                        compatibleDemandVariationIds.add((demandVar._id || demandVar)?.toString?.());
+                        if (ambiguousFetcherDates.length > 0) {
+                            for (const d of ambiguousFetcherDates) {
+                                const v = fetcherCombo[d];
+                                const fetcherKey = (v?._id || v)?.toString?.() ?? 'default';
+                                if (!compatiblePairsByFetcherDate.has(d)) compatiblePairsByFetcherDate.set(d, new Map());
+                                if (!compatiblePairsByFetcherDate.get(d).has(fetcherKey)) compatiblePairsByFetcherDate.get(d).set(fetcherKey, new Set());
+                                compatiblePairsByFetcherDate.get(d).get(fetcherKey).add((demandVar._id || demandVar)?.toString?.());
+                            }
+                        }
                     }
-                }
-                if (canSwitch) {
-                    demandWithLimit.canSwitch = true;
+                    if (!noSelectedVariation && ambiguousFetcherDates.length > 0) {
+                        for (const d of ambiguousFetcherDates) {
+                            const v = fetcherCombo[d];
+                            if (!compatibleFetcherByDate.has(d)) compatibleFetcherByDate.set(d, new Set());
+                            const key = (v?._id || v)?.toString?.() ?? 'default';
+                            compatibleFetcherByDate.get(d).add(key);
+                        }
+                    }
+                } else {
+                    anyFail = true;
                 }
             }
         }
 
-        const computeRest = checkMinimumRestTime(shiftsSorted, index);
-        const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
-        const { workOk, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
-
-        // Additional Legal Checks
-        // const consecutiveDays = checkConsecutiveWorkDays(demand.posterShift.shift, demandDate, shiftsSorted);
-        // const nightControlRest = checkRestAfterNightControl(demand.posterShift.shift, demandDate, shiftsSorted);
-        // const consecutiveNight = checkConsecutiveNightControls(demand.posterShift.shift, demandDate, shiftsSorted);
-
-        demandWithLimit.rest = {
-            before: computeRest.restBefore,
-            after: computeRest.restAfter
-
-        };
-
-        demandWithLimit.invalidRest35 = invalidWindows35;
-        demandWithLimit.invalidWork48 = invalidWindows48;
-
-        if (!computeRest.ok) demandWithLimit.limit.push('insufficientRest');
-        if (!restOk) demandWithLimit.limit.push('35limit');
-        if (!workOk) demandWithLimit.limit.push('48hLimit');
-        // if (!consecutiveDays.ok) demandWithLimit.limit.push('consecutiveDaysLimit');
-        // if (!nightControlRest.ok) demandWithLimit.limit.push('nightControlRestLimit');
-        // if (!consecutiveNight.ok) demandWithLimit.limit.push('consecutiveNightLimit');
+        if (hasVariations && noSelectedVariation) {
+            const variations = shift.variations || [];
+            demandWithLimit.compatibleVariations = variations
+                .filter(v => compatibleDemandVariationIds.has((v._id || v)?.toString?.()))
+                .map(v => ({ _id: v._id || v, name: v?.name, startTime: v?.startTime, endTime: v?.endTime }));
+            if (compatiblePairsByFetcherDate.size > 0) {
+                const baseShiftName = shift?.name || '';
+                demandWithLimit.compatiblePairsByFetcherDate = ambiguousFetcherDates.map(dateStr => {
+                    const entry = shiftsMap.get(dateStr);
+                    const pairsMap = compatiblePairsByFetcherDate.get(dateStr);
+                    if (!entry?.shift || !pairsMap) return null;
+                    const fetcherShiftName = entry.shift?.name || '';
+                    const pairs = [];
+                    if (pairsMap.has('default')) {
+                        const demandIds = pairsMap.get('default');
+                        const demandVars = variations.filter(v => demandIds.has((v._id || v)?.toString?.()));
+                        if (demandVars.length > 0) {
+                            pairs.push({
+                                fetcherVariation: { name: '', isDefault: true },
+                                demandVariations: demandVars.map(v => ({ _id: v._id || v, name: v?.name })),
+                            });
+                        }
+                    }
+                    for (const fv of entry.shift?.variations || []) {
+                        const key = (fv._id || fv)?.toString?.();
+                        if (!pairsMap.has(key)) continue;
+                        const demandIds = pairsMap.get(key);
+                        const demandVars = variations.filter(v => demandIds.has((v._id || v)?.toString?.()));
+                        if (demandVars.length > 0) {
+                            pairs.push({
+                                fetcherVariation: { _id: fv._id || fv, name: fv?.name, isDefault: false },
+                                demandVariations: demandVars.map(v => ({ _id: v._id || v, name: v?.name })),
+                            });
+                        }
+                    }
+                    if (pairs.length === 0) return null;
+                    const totalFetcherOptions = 1 + (entry.shift?.variations?.length || 0);
+                    const totalDemandVariations = variations.length;
+                    const allDemandPass = pairs.every(p => p.demandVariations.length >= totalDemandVariations);
+                    if (pairs.length >= totalFetcherOptions && allDemandPass) return null;
+                    return { date: dateStr, shiftName: fetcherShiftName, baseShiftName, totalDemandVariations, totalFetcherVariations: totalFetcherOptions, pairs };
+                }).filter(Boolean);
+            }
+        }
+        if (!noSelectedVariation && compatibleFetcherByDate.size > 0) {
+            const totalOptionsByDate = new Map();
+            for (const d of ambiguousFetcherDates) {
+                const entry = shiftsMap.get(d);
+                const total = 1 + (entry?.shift?.variations?.length || 0);
+                totalOptionsByDate.set(d, total);
+            }
+            demandWithLimit.compatibleFetcherVariationsByDate = ambiguousFetcherDates.map(dateStr => {
+                const entry = shiftsMap.get(dateStr);
+                const passingIds = compatibleFetcherByDate.get(dateStr);
+                const totalOptions = totalOptionsByDate.get(dateStr) || 1;
+                if (!entry?.shift || !passingIds || passingIds.size >= totalOptions) return null;
+                const shiftName = entry.shift?.name || '';
+                const variations = [];
+                if (passingIds.has('default')) {
+                    variations.push({ name: '', isDefault: true });
+                }
+                for (const v of entry.shift?.variations || []) {
+                    if (passingIds.has((v._id || v)?.toString?.())) {
+                        variations.push({ _id: v._id || v, name: v?.name, isDefault: false });
+                    }
+                }
+                return { date: dateStr, shiftName, variations };
+            }).filter(Boolean);
+        }
+        demandWithLimit.potentiallyCompatible = anyPass && anyFail;
 
         return demandWithLimit;
     } catch (err) {
@@ -177,23 +456,35 @@ function checkMinimumRestTime (shiftsSorted, index) {
 
 
 function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
-    let restOk
+    let restOk;
     const invalidWindows35 = [];
 
-    for (let i = 0; i < 7; i++) {
+    const targetDateNorm = new Date(Date.UTC(
+        targetDate.getUTCFullYear(),
+        targetDate.getUTCMonth(),
+        targetDate.getUTCDate()
+    ));
+
+    for (let i = 0; i < 13; i++) {
         restOk = false;
         let longestRest = 0;
         let longestRestStart = null;
         let longestRestEnd = null;
 
-        const windowStart = new Date(targetDate);
+        const windowStart = new Date(targetDateNorm);
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        const windowEnd = new Date(targetDate);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
-        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        windowStart.setUTCHours(0, 0, 0, 0);
+        const windowEnd = new Date(windowStart);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
+        const windowShifts = shiftsSorted
+            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd)
+            .sort((a, b) => new Date(a.start) - new Date(b.start));
 
         let lastEnd = new Date(windowStart);
 
+        if (windowShifts.length === 0) {
+            restOk = true;
+        }
         for (let j = 0; j < windowShifts.length; j++) {
             const s = windowShifts[j];
             const restMinutes = (s.start - lastEnd) / (60 * 1000);
@@ -206,11 +497,10 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
 
             if (restMinutes >= 35 * 60) {
                 restOk = true;
-                break
+                break;
             }
-            if (s.end > lastEnd) lastEnd = s.end;
+            lastEnd = s.end > lastEnd ? s.end : lastEnd;
 
-            // Vérifier s'il y a une période de repos de 35h entre le dernier shift et la fin de la fenêtre
             if (j === windowShifts.length - 1) {
                 const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
                 if (restMinutesToEnd > longestRest) {
@@ -235,7 +525,7 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
             if (!fullScan) break;
         }
     }
-    return { restOk, invalidWindows35 };
+    return { restOk: invalidWindows35.length === 0, invalidWindows35 };
 }
 
 function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {

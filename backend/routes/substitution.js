@@ -5,23 +5,27 @@ import * as substitutionController from '../controllers/substitutionController.j
 
 // Routes protégées par token
 router.post('/center', verifyToken, substitutionController.getCenterDemands);
+
 router.get('/center/:centerId/all', verifyToken, isAdmin, substitutionController.getAllCenterDemands);
+
 router.get('/user', verifyToken, substitutionController.getUserDemands);
+
 router.post('/', verifyToken, substitutionController.createDemand);
-router.put('/:id/status', verifyToken, substitutionController.updateDemandStatus);
+
+// router.put('/:id/status', verifyToken, substitutionController.updateDemandStatus);
 
 
 router.post('/:id/consult', verifyToken, substitutionController.consultDemand);
 
 router.post('/:id/interest', verifyToken, substitutionController.markInterest);
 
-router.post('/:id/accept', verifyToken, substitutionController.acceptRequest);
+router.post('/:id/accept', verifyToken, substitutionController.acceptDemand);
 
 router.post('/:id/swap', verifyToken, substitutionController.swapShifts);
 
 router.post('/:id/cancel', verifyToken, substitutionController.cancelDemand);
 
-router.post('/:id/unaccept', verifyToken, substitutionController.unacceptRequest);
+router.post('/:id/withdraw', verifyToken, substitutionController.withdrawFromDemand);
 
 router.delete('/:id/delete', verifyToken, substitutionController.deleteDemand);
 

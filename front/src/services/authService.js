@@ -2,9 +2,7 @@
  * Service pour gérer les appels API liés à l'authentification.
  * @module authService
  */
-import { API_URL } from '../config/api';
 import { apiFetch } from '../config/api';
-import { handleResponse } from '../config/api';
 
 export const authService = {
   /**
@@ -16,10 +14,11 @@ export const authService = {
   async login(credentials) {
     const response = await apiFetch(`/auth/login`, {
       method: 'POST',
-      credentials: 'include', // Important pour recevoir les cookies HTTP-only
+      credentials: 'include',
       body: JSON.stringify(credentials),
       allowRetry: false
     });
+    console.log('response', response);
     return response;
   },
 
@@ -30,7 +29,7 @@ export const authService = {
   async logout() {
     const response = await apiFetch(`/auth/logout`, {
       method: 'POST',
-      credentials: 'include', // Important pour envoyer les cookies
+      credentials: 'include',
       allowRetry: false
     });
     return response;
@@ -44,23 +43,10 @@ export const authService = {
   async refreshToken() {
       const response = await apiFetch(`/auth/refresh`, {
         method: 'POST',
-        credentials: 'include', // Important pour envoyer les cookies
+        credentials: 'include',
         allowRetry: false
       });
       return response;
-  },
-
-  /**
-   * Vérifie si l'utilisateur est authentifié.
-   * @returns {Promise<boolean>} True si l'utilisateur est authentifié.
-   */
-  async checkAuth() {
-    const response = await apiFetch(`/auth/check`, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    return response;
   },
 
   /**

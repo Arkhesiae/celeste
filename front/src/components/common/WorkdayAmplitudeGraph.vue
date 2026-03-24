@@ -781,7 +781,7 @@ const processedData = computed(() => {
         const shiftId = shift.id !== undefined ? shift.id : idx; // Ensure unique ID
         const shiftName = shift.name || 'Shift';
 
-        console.log(s, e)
+        // console.log(s, e)
         // Determine days spanned
         const sIdx = getColIndex(new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate()));
 

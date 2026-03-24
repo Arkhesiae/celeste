@@ -20,31 +20,6 @@
 
     <template #append>
       <!-- Boutons de notifications -->
-      <v-tooltip
-        v-if="false"
-        location="bottom"
-        text="Notifications"
-      >
-        <template #activator="{ props }">
-          <v-btn
-            v-if="isLoggedIn"
-            v-bind="props"
-            icon
-            class="mr-2"
-            @click="toggleNotifications"
-          >
-            <v-badge
-              color="tertiary"
-              :content="'COMMING SOON'"
-              :model-value="'COMMING SOON'"
-            >
-              <v-icon icon="mdi-bell-outline" />
-            </v-badge>
-          </v-btn>
-        </template>
-      </v-tooltip>
-
-
       <ThemeSwitch
         v-model="isDarkTheme"
         class="mr-2"

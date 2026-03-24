@@ -4,16 +4,17 @@
     content-class="adjustedMarginSnackbar "
     color="onBackground"
     :timeout="30000"
-    location="top"
-    height="48px"
-    rounded="xl"
+    rounded="lg"
+    :location="smAndDown ? 'top center' : 'bottom left'"
+    :height="smAndDown ? '32px' : '48px'"
+
   >
     <template #text="{item}">
-      <div class="d-flex align-center ga-1">
+      <div class="d-flex align-center ga-1 rounded-xl">
         <!-- <v-icon :icon="item.icon" :color="item.iconColor" class="" /> -->
         <span
           class="text-subtitle-2 small-text "
-          style="font-size: 0.70rem !important;"
+          style="font-size: 12px !important;"
         >{{ item.message }}</span>
       </div>
     </template>
@@ -22,8 +23,10 @@
 
 <script setup>
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import { useDisplay } from 'vuetify';
 
 const snackbarStore = useSnackbarStore();
+const { smAndDown } = useDisplay();
 
 // const safeAreaTop = computed(() => {
 //   return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top').replace('px', '')

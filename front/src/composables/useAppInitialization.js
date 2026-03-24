@@ -29,11 +29,8 @@ export function useAppInitialization() {
 
 
   const initializeAuth = async () => {
-
     if (authStore.isAuthReady) return;
-    console.log('==> checkAuth in useAppInitialization')
     await authStore.initializeAuth();
-
   };
 
   const initializeTheme = async () => {
@@ -129,12 +126,11 @@ export function useAppInitialization() {
 
 
 
-  const initializeApp = async (onStatusChange) => {
+  const initializeApp = async () => {
     try {
       initializationStore.setLoading(true);
   
       await initializeAuth();
-      const router = useRouter();
       const parallelTasks = [];
   
 

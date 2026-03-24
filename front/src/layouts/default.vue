@@ -10,15 +10,10 @@
 
     <LoginButtons v-if="isDev" />
 
-
-
-
     <v-main>
-      <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
-
-      <router-view v-slot="{ Component, route }">
-        <transition :name="'fade-one'" mode="out-in">
-          <!-- <transition 
+        <router-view v-slot="{ Component, route }">
+          <transition :name="'fade-one'" mode="out-in">
+            <!-- <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
             @enter="onEnter"
@@ -28,9 +23,12 @@
             :name="route.meta.transition || ''"
             > -->
 
-          <component :is="Component" :key="route.fullPath" />
-        </transition>
-      </router-view>
+            <component :is="Component" :key="route.fullPath" />
+          </transition>
+        </router-view>  
+     
+     
+      <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
     </v-main>
 
     <BottomNavigation />

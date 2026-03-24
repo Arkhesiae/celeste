@@ -3,7 +3,7 @@ import { computeShiftOfTeam } from "./computeShiftOfTeam.js";
 import { getTeamAtGivenDate } from "./getTeamAtGivenDate.js";
 import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
-import PlanningModification from '../models/PlanningModification.js';
+import PlanningModification from '../models/CalendarEntry.js';
 import Shift from '../models/Shift.js';
 
 
@@ -75,162 +75,170 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 const planningModifications = await PlanningModification.find({
                     userId: user._id,
                     date: date,
-                }).sort({ createdAt: 1 });
+                }).sort({ createdAt: -1 })
+                    .populate({
+                        path: 'shiftData',
+                        populate: 'shift'
+                    }).populate({
+                        path: 'shiftData.shift',
+                        populate: 'variations'
+                    })
+                    .populate({
+                        path: 'shiftData',
+                        populate: 'selectedVariation'
+                    });
 
                 // Vérifier si le shift initial est optionnel et pas de modifications
                 if (initialShift && initialShift.optional && planningModifications.length === 0) {
                     return {
                         date: dateStr,
                         isOff: true,
-                        shift: null,
+                        shift: initialShift,
                         initialShift,
                         teamObject,
                         selectedVariation
                     };
                 }
 
-                // Si l'utilisateur a des modifications de planning approuvées pour cette date
+                // Prends en compte la dernière modification de planning
                 if (planningModifications?.length > 0) {
                     const modification = planningModifications[0];
-                    selectedVariation = modification.selectedVariation;
-
-                    if (modification.isOff) {
-                        return {
-                            date: dateStr,
-                            isOff: modification.isOff,
-                            shift: null,
-                            initialShift,
-                            selectedVariation,
-                            teamObject
-                        };
-                    }
-                }
-
-                // Vérifier les substitutions où l'utilisateur est impliqué (priorité inférieure aux modifications de planning)
-                const substitutions = await Substitution.find({
-                    $and: [
-                        {
-                            $or: [
-                                { posterId: userId },
-                                { accepterId: userId }
-                            ]
-                        },
-                        {
-                            $or: [
-                                { 'posterShift.date': date },
-                                { 'accepterShift.date': date }
-                            ]
-                        },
-                        { status: 'accepted' },
-                        { deleted: false }
-                    ]
-                }).sort({ createdAt: 1 });
-
-                // Si l'utilisateur a des substitutions acceptées pour cette date
-                if (substitutions.length > 0) {
-                    let currentShift = initialShift;
-                    let currentTeam = teamObject;
-                    let substitutionHistory = [];
-
-                    // Traiter chaque substitution dans l'ordre chronologique
-                    for (const substitution of substitutions) {
-
-                        // Vérifier la cohérence de la substitution
-                        if (substitution.posterId.toString() === userId) {
-                            if (currentShift && substitution.posterShift) {
-                                if (currentShift._id.toString() !== substitution.posterShift?._id?.toString() && currentShift._id.toString() !== substitution.posterShift?.shift?._id?.toString()) {
-                                    console.warn(`Incohérence détectée pour l'utilisateur ${userId} à la date ${dateStr}:
-                                        Shift actuel: ${currentShift._id}
-                                        Shift dans la substitution: ${substitution.posterShift._id}`);
-                                }
-                            }
-                        }
-
-                        // Si c'est un échange (les deux shifts sont présents)
-                        if (substitution.posterShift && substitution.accepterShift) {
-                            if (substitution.posterId.toString() === userId) {
-                                // L'utilisateur est le poster, il prend le shift de l'accepter
-                                if (substitution.posterShift.shift) {
-                                    currentShift = await Shift.findById(substitution.accepterShift.shift).populate('variations');
-                                }
-                                else {
-                                    currentShift = substitution.accepterShift;
-                                }
-
-
-                                currentTeam = await Team.findById(substitution.accepterShift.teamId);
-                                substitutionHistory.push({
-                                    type: 'exchange',
-                                    role: 'poster',
-                                    substitutionId: substitution._id
-                                });
-                            } else {
-                                // L'utilisateur est l'accepter, il prend le shift du poster
-                                if (substitution.posterShift.shift) {
-                                    currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
-                                }
-                                else {
-                                    currentShift = substitution.posterShift;
-                                }
-
-                                currentTeam = await Team.findById(substitution.posterShift.teamId);
-                                substitutionHistory.push({
-                                    type: 'exchange',
-                                    role: 'accepter',
-                                    substitutionId: substitution._id
-                                });
-                            }
-                        } else {
-                            // C'est un simple remplacement
-                            if (substitution.posterId.toString() === userId) {
-                                // L'utilisateur est remplacé, il n'a pas de shift
-                                currentShift = null;
-                                substitutionHistory.push({
-                                    type: 'replacement',
-                                    role: 'poster',
-                                    substitutionId: substitution._id
-                                });
-                            } else {
-                                // L'utilisateur est le remplaçant, il prend le shift du poster
-                                if (substitution.posterShift.shift) {
-                                    currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
-                                }
-                                else {
-                                    currentShift = substitution.posterShift;
-                                }
-
-                                currentTeam = await Team.findById(substitution.posterShift.teamId);
-                                substitutionHistory.push({
-                                    type: 'replacement',
-                                    role: 'accepter',
-                                    substitutionId: substitution._id
-                                });
-                            }
-                        }
-                    }
-
-                    // Retourner le résultat final après avoir traité toutes les substitutions
-                    if (!currentShift) {
-                        return {
-                            date: dateStr,
-                            status: "Remplacé",
-                            isSubstitution: true,
-                            substitutionType: substitutionHistory[substitutionHistory.length - 1].type,
-                            initialShift,
-                            substitutionHistory
-                        };
-                    }
-
                     return {
                         date: dateStr,
-                        teamObject: currentTeam,
-                        shift: currentShift,
-                        isSubstitution: true,
-                        substitutionType: substitutionHistory[substitutionHistory.length - 1].type,
+                        isOff: modification.isOff,
+                        shift: modification.shiftData.shift,
                         initialShift,
-                        substitutionHistory
+                        selectedVariation: modification.shiftData.selectedVariation,
+                        teamObject
                     };
+
                 }
+
+                // // Vérifier les substitutions où l'utilisateur est impliqué (priorité inférieure aux modifications de planning)
+                // const substitutions = await Substitution.find({
+                //     $and: [
+                //         {
+                //             $or: [
+                //                 { posterId: userId },
+                //                 { accepterId: userId }
+                //             ]
+                //         },
+                //         {
+                //             $or: [
+                //                 { 'posterShift.date': date },
+                //                 { 'accepterShift.date': date }
+                //             ]
+                //         },
+                //         { status: 'accepted' },
+                //         { deleted: false }
+                //     ]
+                // }).sort({ createdAt: 1 });
+
+                // // Si l'utilisateur a des substitutions acceptées pour cette date
+                // if (substitutions.length > 0) {
+                //     let currentShift = initialShift;
+                //     let currentTeam = teamObject;
+                //     let substitutionHistory = [];
+
+                //     // Traiter chaque substitution dans l'ordre chronologique
+                //     for (const substitution of substitutions) {
+
+                //         // Vérifier la cohérence de la substitution
+                //         if (substitution.posterId.toString() === userId) {
+                //             if (currentShift && substitution.posterShift) {
+                //                 if (currentShift._id.toString() !== substitution.posterShift?._id?.toString() && currentShift._id.toString() !== substitution.posterShift?.shift?._id?.toString()) {
+                //                     console.warn(`Incohérence détectée pour l'utilisateur ${userId} à la date ${dateStr}:
+                //                         Shift actuel: ${currentShift._id}
+                //                         Shift dans la substitution: ${substitution.posterShift._id}`);
+                //                 }
+                //             }
+                //         }
+
+                //         // Si c'est un échange (les deux shifts sont présents)
+                //         if (substitution.posterShift && substitution.accepterShift) {
+                //             if (substitution.posterId.toString() === userId) {
+                //                 // L'utilisateur est le poster, il prend le shift de l'accepter
+                //                 if (substitution.posterShift.shift) {
+                //                     currentShift = await Shift.findById(substitution.accepterShift.shift).populate('variations');
+                //                 }
+                //                 else {
+                //                     currentShift = substitution.accepterShift;
+                //                 }
+
+
+                //                 currentTeam = await Team.findById(substitution.accepterShift.teamId);
+                //                 substitutionHistory.push({
+                //                     type: 'exchange',
+                //                     role: 'poster',
+                //                     substitutionId: substitution._id
+                //                 });
+                //             } else {
+                //                 // L'utilisateur est l'accepter, il prend le shift du poster
+                //                 if (substitution.posterShift.shift) {
+                //                     currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
+                //                 }
+                //                 else {
+                //                     currentShift = substitution.posterShift;
+                //                 }
+
+                //                 currentTeam = await Team.findById(substitution.posterShift.teamId);
+                //                 substitutionHistory.push({
+                //                     type: 'exchange',
+                //                     role: 'accepter',
+                //                     substitutionId: substitution._id
+                //                 });
+                //             }
+                //         } else {
+                //             // C'est un simple remplacement
+                //             if (substitution.posterId.toString() === userId) {
+                //                 // L'utilisateur est remplacé, il n'a pas de shift
+                //                 currentShift = null;
+                //                 substitutionHistory.push({
+                //                     type: 'replacement',
+                //                     role: 'poster',
+                //                     substitutionId: substitution._id
+                //                 });
+                //             } else {
+                //                 // L'utilisateur est le remplaçant, il prend le shift du poster
+                //                 if (substitution.posterShift.shift) {
+                //                     currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
+                //                 }
+                //                 else {
+                //                     currentShift = substitution.posterShift;
+                //                 }
+
+                //                 currentTeam = await Team.findById(substitution.posterShift.teamId);
+                //                 substitutionHistory.push({
+                //                     type: 'replacement',
+                //                     role: 'accepter',
+                //                     substitutionId: substitution._id
+                //                 });
+                //             }
+                //         }
+                //     }
+
+                //     // Retourner le résultat final après avoir traité toutes les substitutions
+                //     if (!currentShift) {
+                //         return {
+                //             date: dateStr,
+                //             status: "Remplacé",
+                //             isSubstitution: true,
+                //             substitutionType: substitutionHistory[substitutionHistory.length - 1].type,
+                //             initialShift,
+                //             substitutionHistory
+                //         };
+                //     }
+
+                //     return {
+                //         date: dateStr,
+                //         teamObject: currentTeam,
+                //         shift: currentShift,
+                //         isSubstitution: true,
+                //         substitutionType: substitutionHistory[substitutionHistory.length - 1].type,
+                //         initialShift,
+                //         substitutionHistory
+                //     };
+                // }
 
 
                 // Si pas de substitution ni de modification, on retourne le shift normal

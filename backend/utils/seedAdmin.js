@@ -26,13 +26,14 @@ async function createAdmin() {
     // Mettre à jour l'administrateur existant
     Object.assign(existingAdmin, adminData);
     await existingAdmin.save();
-    console.log('🔄 Admin account updated:', existingAdmin.email);
+    
   } else {
     // Créer un nouvel administrateur
     const admin = new User(adminData);
     await admin.save();
-    console.log('🚀 Admin account created:', admin.email);
+    
   }
+  console.log('🔄 Admin account updated');
 }
 
 async function createLocalAdmin() {
@@ -61,14 +62,17 @@ async function createLocalAdmin() {
       // Mettre à jour l'administrateur existant
       Object.assign(existingAdmin, adminData);
       await existingAdmin.save();
-      console.log('🔄 Local admin account updated:', existingAdmin.email);
+      
     } else {
       // Créer un nouvel administrateur
       const admin = new User(adminData);
       await admin.save();
       console.log('🚀 Local Admin account created:', admin.email);
     }
+
+
   }
+  console.log('🔄 Local admin accounts updated');
 }
 
 

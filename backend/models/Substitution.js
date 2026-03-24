@@ -1,36 +1,5 @@
 import mongoose from 'mongoose';
 
-const ShiftSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    startTime: {
-        type: String,
-        validate: {
-            validator: function (v) {
-                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
-            },
-            message: props => `${props.value} n'est pas un format d'heure valide (HH:MM)`
-        }
-    },
-    endTime: {
-        type: String,
-        validate: {
-            validator: function (v) {
-                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v);
-            },
-            message: props => `${props.value} n'est pas un format d'heure valide (HH:MM)`
-        }
-    },
-    endsNextDay: { type: Boolean, default: false },
-    date: { type: Date, required: true },
-    defaultPoints: {
-        type: Number,
-        required: true,
-        min: [0, 'Les points doivent être positifs']
-    },
-    teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
-    type: { type: String },
-});
-
 const NewShiftSchema = new mongoose.Schema({
     shift: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
     date: { type: Date, required: false },
@@ -113,6 +82,10 @@ const SubstitutionSchema = new mongoose.Schema({
     interested: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    }],
+    dependsOn: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Substitution'
     }],
     createdAt: {
         type: Date,

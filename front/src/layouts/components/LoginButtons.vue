@@ -101,7 +101,6 @@ const adminPassword = import.meta.env.VITE_ADMIN_PASS;
 
 const localAdminEmail = import.meta.env.VITE_LOCAL_ADMIN_MAIL;
 const localAdminPassword = import.meta.env.VITE_LOCAL_ADMIN_PASS;
-console.log(import.meta.env)
 
 const handleLogout = async () => {
   authStore.logOut();
@@ -115,27 +114,23 @@ const selectedRole = computed(() => {
 const autoLogin = async (role) => {
   try {
     await authStore.logOut(); // Déconnexion de l'utilisateur actuel
-  
+
+    let credentials = {};
     
     if (role === 'admin') {
-      await authStore.logIn({
+      credentials = {
         email: localAdminEmail,
         password: localAdminPassword,
-      });
-    } else if (role === 'user') {
-      await authStore.logIn({
-        email: 'user@example.com',
-        password: 'userpassword',
-      });
+      }
+    
     } else if (role === 'master') {
-      await authStore.logIn({
+      credentials = {
         email: adminEmail,
         password: adminPassword,
-      });
+      }
     }
 
-        // Initialiser l'application avec le callback de progression
-    // await initializeApp();
+    await authStore.logIn(credentials);
     router.push({ path: "/dashboard", replace: true });
  
   } catch (error) {
@@ -144,73 +139,6 @@ const autoLogin = async (role) => {
   }
 };
 
-// const generateTeamUsers = async () => {
-//   try {
-//     generatingUsers.value = true;
-//     const response = await fetch(`${API_URL}/dev/populate-users`, {
-//       method: 'POST',
-//       headers: {
-//           'Authorization': `Bearer ${authStore.accessToken}`,
-//           'Content-Type': 'application/json'
-//       },
-
-//     });
-
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-
-//     const data = await response.json();
-//     if (data.success) {
-//       await fetchTeamUsers();
-//     } else {
-//       throw new Error(data.message || 'Erreur lors de la génération des utilisateurs');
-//     }
-//   } catch (error) {
-//     console.error('Erreur lors de la génération des utilisateurs:', error);
-//   } finally {
-//     generatingUsers.value = false;
-//   }
-// };
-
-// const fetchTeamUsers = async () => {
-//   try {
-//     const response = await fetch(`${API_URL}/users/devlist?role=team`, {
-//       headers: {
-//         'Authorization': `Bearer ${authStore.accessToken}`,
-//         'Content-Type': 'application/json'
-//       }
-//     });
-//     const data = await response.json();
-//     teamUsers.value = data;
-//   } catch (error) {
-//     console.error('Erreur lors de la récupération des utilisateurs:', error);
-//     teamUsers.value = [];
-//   }
-// };
-
-// const autoLoginTeamUser = async (user) => {
-//   try {
-
-//     await authStore.logOut();
-//     await authStore.logIn({
-//       email: user.email,
-//       password: 'user',
-//     });
-
-//     // Initialiser l'application avec le callback de progression
-//     await initializeApp();
-//     router.push({ path: "/dashboard", replace: true });
-//     showTeamUsers.value = false;
-//   } catch (error) {
-//     console.error('Échec de la connexion:', error);
- 
-//   }
-// };
-
-// onMounted(() => {
-//   fetchTeamUsers();
-// });
 </script> 
 
 

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-const ACCESS_TOKEN_EXPIRY = '15m';
+const ACCESS_TOKEN_EXPIRY = '15s';
 const REFRESH_TOKEN_EXPIRY = '180d';
 
 /**
@@ -35,7 +35,6 @@ export const generateRefreshToken = (userId) => {
 
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET);
     const expiresAt = new Date(decoded.exp * 1000);
-    console.log("expiresAt", expiresAt);
 
     return {
         token,
@@ -87,12 +86,14 @@ export async function loginUser(email, password) {
     const { token: refreshToken, expiresAt } = generateRefreshToken(user._id);
 
     const now = new Date();
-    user.refreshTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
 
+    // Filtrer les tokens expirés
+    user.refreshTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
+    // Ajouter le nouveau token
     user.refreshTokens.push({ token: refreshToken, createdAt: new Date(), expiresAt });
-    
 
     user.lastLogin = new Date();
+
     await user.save();
 
     // Préparer les données utilisateur à retourner
@@ -131,18 +132,16 @@ export async function refreshAccessToken(refreshToken) {
     if (!user) {
         throwAuthError('USER_NOT_FOUND', 'Utilisateur non trouvé');
     }
-
   
     const now = new Date();
     const validTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
 
 
     const tokenIndex = validTokens.findIndex(rt => rt.token === refreshToken);
+
     if (tokenIndex === -1) {
         throwAuthError('TOKEN_INVALID', 'Token invalide');
     }   
-
-  
 
     const newAccessToken = generateAccessToken({
         userId: user._id,

@@ -64,10 +64,9 @@ router.beforeEach(async (to, from, next) => {
 
   const authStore = useAuthStore();
   const initializationStore = useInitializationStore();
-  // const { initializeApp } = useAppInitialization();
 
   if (!authStore.isAuthReady) {
-    console.log('==> initializeAuth in beforeEach')
+    console.log('==> Initizlisation de l\'authentification')
     await authStore.initializeAuth();
   }
 
@@ -116,13 +115,6 @@ router.beforeEach(async (to, from, next) => {
 
 });
 
-router.afterEach(() => {
-  
-  // const toDepth = to.path.split('/').length
-  // const fromDepth = from.path.split('/').length
-  // to.meta.transition = toDepth < fromDepth ? 'slide-right' : 'slide-left'
-})
-
 
 
 
@@ -138,13 +130,14 @@ if (import.meta.hot) {
 
 // Gestion des erreurs de chargement dynamique
 router.onError((err) => {
+  console.log('==> Router error:', err);
   if (err?.message?.includes?.('Failed to fetch dynamically imported module')) {
-    const hasReloaded = localStorage.getItem('vuetify:dynamic-reload');
+    const hasReloaded = localStorage.getItem('app:dynamic-reload');
 
     if (!hasReloaded) {
-      console.warn('⚡ Dynamic import error, please force reload');
-      localStorage.setItem('vuetify:dynamic-reload', 'true');
-      // window.location.reload(); // Hard reload
+      console.warn('⚡ Dynamic import error, reloading...');
+      localStorage.setItem('app:dynamic-reload', 'true');
+      window.location.reload();
     } else {
       console.error('❌ Reload did not fix dynamic import error:', err);
     }
@@ -154,7 +147,7 @@ router.onError((err) => {
 });
 
 router.isReady().then(() => {
-  localStorage.removeItem('vuetify:dynamic-reload');
+  localStorage.removeItem('app:dynamic-reload');
 });
 
 export default router;

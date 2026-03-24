@@ -80,11 +80,11 @@ export const substitutionService = {
 
   /**
    * Supprime une substitution.
-   * @param {string} id - L'ID de la substitution à supprimer.
+   * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<void>}
    */
-  async cancelDemand(id) {
-    const response = await apiFetch(`/substitution/${id}/cancel`, {
+  async cancelDemand(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/cancel`, {
       method: 'POST',
     });
     return response;
@@ -92,11 +92,11 @@ export const substitutionService = {
 
   /**
    * Accepte une demande de substitution.
-   * @param {string} id - L'ID de la substitution.
+   * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} La substitution acceptée.
    */
-  async acceptDemand(id) {
-    const response = await apiFetch(`/substitution/${id}/accept`, {
+  async acceptDemand(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/accept`, {
       method: 'POST',
     });
     return response;
@@ -104,11 +104,11 @@ export const substitutionService = {
 
   /**
    * Refuse une substitution.
-   * @param {string} id - L'ID de la substitution.
+   * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} La substitution refusée.
    */
-  async rejectSubstitution(id) {
-    const response = await apiFetch(`/substitution/${id}/reject`, {
+  async rejectSubstitution(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/reject`, {
       method: 'POST',
     });
     return response;
@@ -164,11 +164,11 @@ export const substitutionService = {
 
   /**
    * Annule l'acceptation d'une demande de substitution.
-   * @param {string} id - L'ID de la substitution.
+   * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} La substitution mise à jour.
    */
-  async unacceptDemand(id) {
-    const response = await apiFetch(`/substitution/${id}/unaccept`, {
+  async unacceptDemand(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/withdraw`, {
       method: 'POST',
     });
     return response;
@@ -230,11 +230,11 @@ export const substitutionService = {
 
   /**
    * Marque une demande comme consultée.
-   * @param {string} id - L'ID de la substitution.
+   * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} La substitution mise à jour.
    */
-  async consultDemand (id) {
-    const response = await apiFetch(`/substitution/${id}/consult`, {
+  async consultDemand (demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/consult`, {
       method: 'POST',
     });
     return response;

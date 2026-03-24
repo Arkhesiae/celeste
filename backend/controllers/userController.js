@@ -1,85 +1,30 @@
-import { v4 as uuidv4 } from 'uuid';
 import User from '../models/User.js';
 import { LegacyUser } from '../models/User.js';
 import Center from '../models/Center.js';
-import { hash } from "bcrypt";
 import Team from '../models/Team.js';
 import { getTeamAtGivenDate } from "../utils/getTeamAtGivenDate.js";
 import { computeShiftOfUser } from "../utils/computeShiftOfUser.js";
 import Transaction from '../models/Transaction.js';
-import { createDelayedTransaction, processPendingTransactions } from '../services/transactionService.js';
+import { createDelayedTransaction } from '../services/transaction/scheduledTransactionService.js';
 import path from 'path';
 import fs from 'fs';
-import { isValidDateRange, isValidDate, isValidId } from '../utils/validation.js';
+import { isValidDateRange, isValidId } from '../utils/validation.js';
 import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
-import { sendAdminNotificationEmail } from '../services/email/adminNotificationEmail.js';
-import * as userShiftsService from '../services/userService/userShiftsService.js'
-import { generateDateArray } from '../utils/generateDateArray.js';
-import ruleService from '../services/rules/ruleService.js';
-import { getUsersByCenter as getUsersByCenterService } from '../services/userService/getUsersByCenter.js';
+import * as userShiftsService from '../services/userService/userShiftsService.js';
+import { createUserService } from '../services/userService/createUserService.js';
+import * as userService from '../services/userService/getUsersService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Créer un nouvel utilisateur
 const createUser = async (req, res) => {
-    const { name, lastName, password, email, centerId, team, zone, points, approved } = req.body;
-
     try {
-        const hashedPassword = await hash(password, 10);
-        const user = new User({
-
-            name,
-            lastName,
-            email,
-            id: uuidv4(),
-            password: hashedPassword,
-            centerId,
-            points: points || 0,
-            registrationStatus: approved ? 'verified' : 'pending',
-        });
-
-
-        const firstTeam = await Team.findOne({ _id: team, center: centerId });
-        if (!firstTeam) {
-            return res.status(404).json({ message: 'Equipe non trouvée' });
-        }
-        const today = new Date();
-
-        today.setUTCHours(0, 0, 0, 0);
-        user.teams.push({ teamId: firstTeam._id, fromDate: today, toDate: null });
-
-        await user.save();
-
-        // Si l'utilisateur n'est pas approuvé, envoyer une notification aux administrateurs du centre
-        if (!approved) {
-            try {
-                // Récupérer le centre et les administrateurs
-                const center = await Center.findById(centerId);
-                if (center) {
-                    const admins = await User.find({
-                        centerId: centerId,
-                        isAdmin: true
-                    }).select('email');
-
-                    const adminEmails = admins
-                        .filter(admin => admin.email && admin.email.trim())
-                        .map(admin => admin.email);
-
-                    if (adminEmails.length > 0) {
-                        await sendAdminNotificationEmail(adminEmails, user, center);
-                    }
-                }
-            } catch (emailError) {
-                // Ne pas faire échouer la création d'utilisateur si l'email échoue
-                console.error('❌ Erreur lors de l\'envoi de la notification aux administrateurs:', emailError);
-            }
-        }
-
+        const user = await createUserService(req.body);
         res.json({ status: 'Utilisateur créé avec succès.', user: user });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        next(err)
     }
 };
 
@@ -154,15 +99,8 @@ const approveUser = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'Utilisateur non trouvé' });
         }
-        // En mode développement, afficher le code dans la console
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('\n=== MODE DÉVELOPPEMENT ===');
-            console.log(`📧 Email: ${user.email}`);
-            console.log('========================\n');
-        } else {
-            // En production, envoyer l'email
-            await sendEmailApproval(user.email);
-        }
+
+        await sendEmailApproval(user.email)
 
         res.status(200).json({ message: 'Utilisateur approuvé avec succès', user });
     } catch (error) {
@@ -183,15 +121,8 @@ const deletePendingUser = async (req, res) => {
             return res.status(400).json({ message: 'L\'utilisateur n\'est pas en attente d\'approbation' });
         }
         await User.findByIdAndDelete(id);
-        // En mode développement, afficher le code dans la console
-        if (process.env.NODE_ENV !== 'production') {
-            console.log('\n=== MODE DÉVELOPPEMENT ===');
-            console.log(`📧 Email: ${user.email}`);
-            console.log('========================\n');
-        } else {
-            // En production, envoyer l'email
-            await sendEmailRejection(user.email);
-        }
+        await sendEmailRejection(user.email);
+
         res.status(200).json({ message: 'Candidature rejetée', user });
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur:', error);
@@ -290,15 +221,14 @@ const assignUserToCenter = async (req, res) => {
 // Obtenir les utilisateurs d'un centre spécifique
 const getUsersByCenter = async (req, res) => {
     const { centerId } = req.params;
-   
+
     console.log("centerId", centerId);
     if (!centerId) {
         return res.status(400).json({ message: 'ID du centre manquant' });
     }
 
     try {
-        console.log(centerId);
-        const usersWithCurrentTeam = await getUsersByCenterService(centerId, req.user);
+        const usersWithCurrentTeam = await userService.getUsersByCenter(centerId, req.user);
         res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs pour un centre:', error);

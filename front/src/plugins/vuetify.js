@@ -9,12 +9,24 @@
 import 'vuetify/styles'
 import { md3 } from 'vuetify/blueprints'
 
+import substitution_accepted_accepter from '@/assets/customIcons/demands/substitution_accepted_accepter.svg?component'
+import substitution_accepted_poster from '@/assets/customIcons/demands/substitution_accepted_poster.svg?component'
+import substitution_pending from '@/assets/customIcons/demands/substitution_pending.svg?component'
+import switch_accepted_accepter from '@/assets/customIcons/demands/switch_accepted_accepter.svg?component'
+import switch_accepted_poster from '@/assets/customIcons/demands/switch_accepted_poster.svg?component'
+import switch_pending from '@/assets/customIcons/demands/switch_pending.svg?component'
+import hybrid_accepted_as_substitution_accepter from '@/assets/customIcons/demands/hybrid_accepted_as_substitution_accepter.svg?component'
+import hybrid_accepted_as_substitution_poster from '@/assets/customIcons/demands/hybrid_accepted_as_substitution_poster.svg?component'
+import hybrid_accepted_as_switch_accepter from '@/assets/customIcons/demands/hybrid_accepted_as_switch_accepter.svg?component'
+import hybrid_accepted_as_switch_poster from '@/assets/customIcons/demands/hybrid_accepted_as_switch_poster.svg?component'
+import hybrid_pending from '@/assets/customIcons/demands/hybrid_pending.svg?component'
+
 
 import '@mdi/font/css/materialdesignicons.css' 
 // import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
 
-// import { aliases, md } from 'vuetify/iconsets/md'
+import { aliases, mdi } from 'vuetify/iconsets/mdi'
 // Composables
 import { createVuetify } from 'vuetify'
 import {fr} from "vuetify/locale";
@@ -23,13 +35,26 @@ import {VDateInput} from "vuetify/labs/components";
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
   blueprint: md3,
-  // icons: {
-  //   defaultSet: 'md',
-  //   aliases,
-  //   sets: {
-  //     md,
-  //   },
-  // },
+  icons: {
+    defaultSet: 'mdi',
+    aliases: {
+      ...aliases,
+      substitutionAcceptedAccepter: substitution_accepted_accepter,
+      substitutionAcceptedPoster: substitution_accepted_poster,
+      substitutionPending: substitution_pending,
+      switchAcceptedAccepter: switch_accepted_accepter,
+      switchAcceptedPoster: switch_accepted_poster,
+      switchPending: switch_pending,
+      hybridAcceptedAsSubstitutionAccepter: hybrid_accepted_as_substitution_accepter,
+      hybridAcceptedAsSubstitutionPoster: hybrid_accepted_as_substitution_poster,
+      hybridAcceptedAsSwitchAccepter: hybrid_accepted_as_switch_accepter,
+      hybridAcceptedAsSwitchPoster: hybrid_accepted_as_switch_poster,
+      hybridPending: hybrid_pending,
+    },
+    sets: {
+      mdi,
+    },
+  },
   date: {
     locale: {
       fr: 'fr-FR',
@@ -127,9 +152,9 @@ export default createVuetify({
           "onError": "#FFB4AB",
           "errorContainer": "#FFDAD6",
           "onErrorContainer": "#410002",
-          "background": "#fafcff",
+          "background": "#f0f3f6f6",
           "onBackground": "#171C1F",
-          "surface": "#f0f4f6",
+          "surface": "#f0f4f6f6",
           "onSurface": "#171D1E",
           "surfaceVariant": "#DCE4E8",
           "onSurfaceVariant": "#40484C",
@@ -154,11 +179,11 @@ export default createVuetify({
           "onTertiaryFixedVariant": "#414465",
           "surfaceDim": "#D5DBDC",
           "surfaceBright": "#F5FAFC",
-          "surfaceContainerLowest": "#FFFFFF",
-          "surfaceContainerLow": "#EFF5F6",
-          "surfaceContainer": "#E9EFF0",
-          "surfaceContainerHigh": "#E3E9EA",
-          "surfaceContainerHighest": "#DEE3E5",
+          "surfaceContainerLowest":  "#DEE3E5",
+          "surfaceContainerLow": "#E3E9EA",
+          "surfaceContainer": "#f7fbfb",
+          "surfaceContainerHigh": "#ffffffff",
+          "surfaceContainerHighest": "#FFFFFF",
           "remplacement": "#4e3e64",
           "onRemplacement": "#f6ccfd",
           "permutation": "#9777a0",

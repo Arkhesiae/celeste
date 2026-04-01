@@ -127,19 +127,10 @@
             </div>
           </div>
           <div class="d-flex align-start flex-column justify-space-between">
-            <div>
-              <span class="text-caption font-weight-bold text-medium-emphasis">{{ getShiftHours.startTime }} - {{
-                getShiftHours.endTime
-              }}</span>
-              <span
-                v-if="getShiftEndsNextDay"
-                class="text-caption font-weight-bold opacity-50 ml-1"
-                style="font-size: 10px !important; top: -2px; position: relative;"
-              >+1</span>
-            </div>
+            <HourRange :hours="getShiftHours" :endsNextDay="getShiftEndsNextDay" />
             <div
               class="py-0 text-caption text-disabled"
-              style="margin-top: -8px; font-size: 11px !important;"
+              style="margin-top: -5px; font-size: 11px !important;"
             >
               Dans
               équipe {{ teamName }}

@@ -42,7 +42,7 @@ const VALID_TYPES = ['absence', 'custom', 'selectedVariation'];
 const registerEntry = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { type, date, comment, selectedVariation, shift, isOff, confirmCreation } = req.body;
+        const { entryType, type, date, comment, selectedVariation, shift, isOff, confirmCreation, cancel } = req.body;
 
         if (!type || !date) {
             return res.status(400).json({ error: 'Les champs type et date sont requis' });
@@ -53,11 +53,13 @@ const registerEntry = async (req, res) => {
         }
 
         const result = await calendarEntryService.registerEntry(userId, date, {
+            entryType,
             type,
             selectedVariation,
             shift,
             isOff,
-            confirmCreation
+            confirmCreation,
+            cancel
         });
 
         res.status(201).json({

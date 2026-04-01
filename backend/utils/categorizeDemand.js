@@ -18,6 +18,7 @@ const categorize = async (demand, shiftsMap = null) => {
         }
 
         const vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
+        console.log(vacationOfFetcher);
         const localMap = new Map(shiftsMap);
 
         const demandData = {

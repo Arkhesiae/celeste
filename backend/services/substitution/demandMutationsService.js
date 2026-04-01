@@ -10,29 +10,9 @@ import { AppError } from '../../error/appError.js';
 
 
 
+// ── Utilitaires ────────────────────────────────────────────────────────
 
-/**
- * Annule une demande de substitution
- * @param {string} demandId - ID de la demande à annuler
- * @returns {Promise<Object>} Demande annulée
- */
-export async function cancelDemand (demandId) {
-    // Mise à jour du statut de la demande
-    const demand = await Substitution.findByIdAndUpdate(
-        demandId,
-        { status: 'canceled' },
-        { new: true }
-    );
-
-    if (!demand) {
-        throw new AppError('Demande non trouvée', 404);
-    }
-
-    const childDemands = await Substitution.find({ dependsOn: demandId });
-    await Promise.all(childDemands.map(childDemand => cancelDemand(childDemand._id)));
-
-    // Annuler toutes les transactions associées à la demande
-
+const cancelPendingTransactions = async (demandId) => {
     const transactions = await Transaction.find({ request: demandId, status: 'pending' });
     if (transactions.length > 0) {
         await Promise.all(transactions.map(async (transaction) => {
@@ -44,12 +24,51 @@ export async function cancelDemand (demandId) {
             }
         }));
     }
+}
 
-    await calendarEntryService.restoreBeforeSubstitution(demandId);
 
-    const shift = await computeShiftOfUserWithSubstitutions(new Date(demand.posterShift.date), demand.posterId);
+/**
+ * Annule une demande de substitution
+ * @param {string} demandId - ID de la demande à annuler
+ * @returns {Promise<Object>} Demande annulée
+ */
+export async function cancelDemand (demandId, visited = new Set()) {
+    // Mise à jour du statut de la demande
+    if (visited.has(demandId.toString())) return;
+    visited.add(demandId.toString());
 
-    return { demand: demand, shift: shift[0] };
+    const demand = await Substitution.findById(
+        demandId,
+    );
+
+    if (!demand) {
+        throw new AppError('Demande non trouvée', 404);
+    }
+
+    try {
+        const childDemands = await Substitution.find({ dependsOn: demandId });
+        await Promise.all(childDemands.map(childDemand => cancelDemand(childDemand._id, visited)));
+
+        // Annuler toutes les transactions associées à la demande
+
+        await cancelPendingTransactions(demandId);
+
+        let shift = null;
+
+        if (demand.status === 'accepted') {
+            const { posterShift, accepterShift } = await calendarEntryService.cancelSubstitutionEntries(demandId, { posterId: demand.posterId, accepterId: demand.accepterId, date: demand.posterShift.date });
+            shift = posterShift;
+        }
+
+        demand.status = 'cancelled';
+        await demand.save();
+
+        return { demand: demand, shift: shift };
+
+    } catch (error) {
+        console.error("❌ Erreur lors de l'annulation de la demande:", error);
+        throw new AppError("Erreur lors de l'annulation de la demande", 500);
+    }
 }
 
 
@@ -65,20 +84,7 @@ export async function deleteDemand (demandId) {
         throw new AppError('Demande non trouvée', 404);
     }
 
-    // Annuler toutes les transactions associées à la demande
-
-    const transactions = await Transaction.find({ request: demandId, status: 'pending' });
-    if (transactions.length > 0) {
-        await Promise.all(transactions.map(async (transaction) => {
-            try {
-                await scheduledTransactionService.cancelDelayedTransaction(transaction._id);
-            } catch (error) {
-                console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
-                // On continue même si une transaction échoue à être annulée
-            }
-        }));
-    }
-
+    await cancelPendingTransactions(demandId);
 
     return demand;
 }
@@ -91,87 +97,78 @@ export async function deleteDemand (demandId) {
  * @returns {Promise<Object>} Demande avec acceptation annulée
  */
 export async function withdrawFromDemand (demandId, userId) {
-    // Récupération de la demande
-    const request = await Substitution.findById(demandId);
-    if (!request) {
-        throw new AppError('Demande non trouvée', 404);
-    }
-
-    // Vérification que la demande est acceptée
-    if (request.status !== 'accepted') {
-        throw new AppError('Cette demande n\'est pas acceptée', 400);
-    }
-
-    // Vérification que l'utilisateur est bien celui qui a accepté
-    if (request.accepterId.toString() !== userId) {
-        throw new AppError('Vous n\'êtes pas autorisé à annuler cette acceptation', 403);
-    }
-
-    // Annuler toutes les transactions associées à la demande
-
-    const transactions = await Transaction.find({ request: demandId, status: 'pending' });
-    if (transactions.length > 0) {
-        await Promise.all(transactions.map(async (transaction) => {
-            try {
-                await scheduledTransactionService.cancelDelayedTransaction(transaction._id);
-            } catch (error) {
-                console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
-                // On continue même si une transaction échoue à être annulée
-            }
-        }));
-    }
-
-    await calendarEntryService.restoreBeforeSubstitution(demandId);
-
-    // Mise à jour de la demande
-    const updatedRequest = await Substitution.findByIdAndUpdate(
-        demandId,
-        {
-            accepterShift: null,
-            accepterId: null,
-            status: 'open',
-            updatedAt: new Date()
-        },
-        { new: true }
+    const existingRequest = await Substitution.findOne(
+        { _id: demandId, accepterId: userId, status: 'accepted' }
     ).populate([
         { path: 'posterShift.shift', populate: { path: 'variations' } },
-        { path: 'posterShift.selectedVariation' }
+        { path: 'posterShift.selectedVariation' },
     ]);
 
-
-    const shift = await computeShiftOfUserWithSubstitutions(new Date(updatedRequest.posterShift.date), userId);
-    const categorizedRequest = await categorizeDemands([updatedRequest], userId);
-
-    try {
-        const populatedDemand = await Substitution.findById(categorizedRequest[0]._id).populate([
-            { path: 'posterId', select: 'name lastName email' },
-            { path: 'posterShift.shift', select: 'name' }
-        ]);
-        const originalAccepter = await User.findById(userId);
-        sendCancelledAcceptanceEmail(populatedDemand, originalAccepter)
-            .then(results => {
-                console.log(`📧 Notifications envoyées avec succès:`, {
-                    demandId: categorizedRequest[0]._id,
-                    totalSent: results.sent,
-                    totalFailed: results.failed
-                });
-            })
-            .catch(error => {
-                console.error('❌ Erreur lors de l\'envoi des notifications:', error);
-            });
-    } catch (emailError) {
-        console.error('❌ Erreur lors de la préparation des notifications:', emailError);
+    if (!existingRequest) {
+        throw new AppError('Demande non trouvée ou non modifiable', 404);
     }
 
-    return { categorizedRequest: categorizedRequest[0], shift: shift[0] };
-}
+    const accepterShiftSnapshot = existingRequest.accepterShift;
 
+    try {
+        const updatedRequest = await Substitution.findByIdAndUpdate(
+            demandId,
+            {
+                $set: { status: 'open' },
+                $unset: { accepterShift: '', accepterId: '' },
+            },
+            { new: true }
+        ).populate([
+            { path: 'posterShift.shift', populate: { path: 'variations' } },
+            { path: 'posterShift.selectedVariation' },
+            { path: 'posterShift.teamId', select: 'name' },
+        ]);
+
+       
+        const { posterShift, accepterShift } = await calendarEntryService.cancelSubstitutionEntries(demandId, { posterId: existingRequest.posterId, accepterId: userId, date: existingRequest.posterShift.date });
+
+        const [categorizedRequests, originalAccepter] = await Promise.all([
+            categorizeDemands([updatedRequest], userId),
+            User.findById(userId),
+        ]);
+
+        await cancelPendingTransactions(demandId);
+
+
+        const result = categorizedRequests[0]
+        // Populate only for email — not exposed in the return value
+        await updatedRequest.populate([
+            { path: 'posterId', select: 'name lastName email' },
+            { path: 'accepterId', select: 'name lastName email' },
+        ]);
+
+        sendCancelledAcceptanceEmail(updatedRequest, originalAccepter)
+            .then(({ sent, failed }) =>
+                console.log('📧 Notifications envoyées:', { demandId: updatedRequest._id, sent, failed })
+            )
+            .catch(err => console.error('❌ Erreur notification:', err));
+
+        return { shift: accepterShift, categorizedRequest: result };
+
+    } catch (error) {
+        await Substitution.findByIdAndUpdate(demandId, {
+            $set: {
+                status: 'accepted',
+                accepterShift: accepterShiftSnapshot,
+                accepterId: userId,
+            },
+        });
+
+        console.error("❌ Erreur lors de l'annulation de l'acceptation:", error);
+        throw new AppError("Erreur lors de l'annulation de l'acceptation", 500);
+    }
+}
 
 export async function acceptDemand (demandId, userId) {
     const updatedDemand = await Substitution.findOneAndUpdate(
         { _id: demandId, status: 'open' },
         { accepterId: userId, status: 'accepted' },
-        { new: true, timestamps: true }
+        { returnDocument: 'after' }
     ).populate([
         { path: 'posterShift.shift', populate: { path: 'variations' } },
         { path: 'posterShift.selectedVariation' },
@@ -180,6 +177,12 @@ export async function acceptDemand (demandId, userId) {
 
     if (!updatedDemand) {
         throw new AppError('Cette demande n\'est plus disponible', 400);
+    }
+
+    const openDemands = await Substitution.find({ posterId: userId, status: 'open', 'posterShift.date': updatedDemand.posterShift.date });
+    if (openDemands.length > 0) {
+        await Substitution.findByIdAndUpdate(demandId, { status: 'open', accepterId: null });
+        throw new AppError('Vous avez déjà une demande ouverte ce jour', 400);
     }
 
     if (updatedDemand.posterId.toString() === userId) {
@@ -200,12 +203,7 @@ export async function acceptDemand (demandId, userId) {
             });
         }
 
-        await calendarEntryService.addSubstitutionEntries(updatedDemand);
-
-        const shift = await computeShiftOfUserWithSubstitutions(
-            new Date(updatedDemand.posterShift.date),
-            userId
-        );
+        const { posterShift, accepterShift } = await calendarEntryService.addSubstitutionEntries(updatedDemand);
 
         const result = updatedDemand.toObject();
 
@@ -225,7 +223,7 @@ export async function acceptDemand (demandId, userId) {
                 console.error('❌ Erreur notification:', err)
             );
 
-        return { request: result, shift: shift[0] };
+        return { request: result, shift: accepterShift };
 
     } catch (err) {
         console.log(err);

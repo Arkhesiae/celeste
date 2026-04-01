@@ -1,8 +1,10 @@
-import PlanningModification from '../../models/CalendarEntry.js';
+import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
 import { AppError } from '../../error/appError.js';
+import { cancelDemand, withdrawFromDemand } from '../substitution/demandMutationsService.js';
+import overlap from '../../utils/overlapTest.js';
 
 /**
  * Met à jour posterShift.selectedVariation des demandes ouvertes du user pour la date donnée.
@@ -46,41 +48,77 @@ export async function syncDemandSelectedVariation (userId, date, selectedVariati
         .lean();
 }
 
+async function cancelModifications (userId, date) {
+    const modifications = await Modification.find({ userId, date, active: true });
+    modifications.forEach((modification) => {
+        modification.active = false;
+        modification.save();
+    });
+}
 
+async function cancelAssignments (userId, date) {
+    const assignments = await Assignment.find({ userId, date, active: true });
+    assignments.forEach((assignment) => {
+        cancelSingleAssignment(assignment);
+    });
+}
 
-/**
- * Crée ou met à jour une modification de planning pour un utilisateur à une date donnée.
- */
-export async function upsertModification (userId, date, data) {
-    const user = await User.findById(userId);
-    if (!user) {
-        const err = new Error('Utilisateur non trouvé');
-        err.status = 404;
-        throw err;
+async function cancelSingleAssignment (assignment) {
+    if (assignment.subType !== "substitution") {
+        assignment.active = false;
+        await assignment.save();
+        //cancelSubstitutionAssignment(assignment);
     }
 
-    let modification = await PlanningModification.findOne({ userId, date });
 
-    if (modification) {
-        Object.assign(modification, data);
-        modification.updatedAt = new Date();
+}
+
+async function cancelSubstitutionAssignment (assignment) {
+    const demand = await Substitution.findById(assignment.substitution.id);
+    const isPoster = demand?.posterId.toString() === assignment?.userId.toString();
+    if (isPoster) {
+        cancelDemand(demand._id);
     } else {
-        modification = new PlanningModification({
-            ...data,
-            userId,
-            date: date,
-            centerId: user.centerId,
+        withdrawFromDemand(demand._id, assignment.userId.toString());
+    }
+}
 
-        });
+async function cancelHourPatches (userId, date) {
+    const hourPatches = await HourPatch.find({ userId, date, active: true });
+    hourPatches.forEach((hourPatch) => {
+        hourPatch.active = false;
+        hourPatch.save();
+    });
+}
+
+const checkOverlap = (latestAssignment, userShift, data) => {
+    let overlapResult = false;
+    let hasShift = false;
+    if (latestAssignment) {
+        if (latestAssignment.shiftData?.shift && latestAssignment.shiftData?.shift?.type === "work") {
+            hasShift = true;
+        }
+
+        if (!latestAssignment.startTime || !latestAssignment.endTime) {
+            overlapResult = false;
+        } else {
+            overlapResult = overlap(latestAssignment, { startTime: data.startTime, endTime: data.endTime, date: data.date })
+        }
+
+    } else {
+        if (userShift[0].shiftData?.shift && userShift[0].shiftData?.shift?.type === "work") {
+            hasShift = true;
+        }
+        if (!userShift[0].startTime || !userShift[0].endTime) {
+            overlapResult = false;
+        } else {
+            overlapResult = overlap(userShift[0], { startTime: data.startTime, endTime: data.endTime, date: data.date })
+        }
+
     }
 
-    await modification.save();
+    return { hasShift, overlapResult };
 
-    const updatedDemands = await syncDemandSelectedVariation(userId, date, data.selectedVariation);
-
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
-
-    return { userShift, updatedDemands };
 }
 
 export async function registerEntry (userId, date, data) {
@@ -91,40 +129,88 @@ export async function registerEntry (userId, date, data) {
         throw err;
     }
 
-    const latestEntry = await PlanningModification.findOne({ userId, date }).sort({ createdAt: -1 });
-    // if (data.type === "shiftVariation" || data.type === "absence") {
-    //     // If the user is modifying the same shift, just update the latest entry
-    //     if (latestEntry?.shiftData?.shift && data.shift && latestEntry.shiftData.shift.toString() === data.shift.toString()) {
-    //         latestEntry.shiftData.selectedVariation = data.selectedVariation;
-    //         latestEntry.type = data.type;
-    //         latestEntry.isOff = data.isOff;
-    //         latestEntry.updatedAt = new Date();
-    //         await latestEntry.save();
-    //         const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
-    //         return { userShift, updatedDemands: null, type: "modification" };
-    //     }
+    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const latestAssignment = await Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
+    const latestModification = await Modification.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
+    const latestHourPatch = await HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
 
-    // } else
-    // if (!data.confirmCreation ) {
-    //     // Ask if user wants to overwrite with a new entry
-    //     const err = new Error('Une entrée existe déjà pour cette date. Cela va créer une toute nouvelle entrée.');
-    //     err.status = 409;
-    //     throw err;
-    // }
+    let overlapPrevious
+
+    switch (data.type) {
+        case "assignment":
+            data.startTime = "09:00";
+            data.endTime = "17:00";
+            data.date = date;
+            overlapPrevious = checkOverlap(latestAssignment, userShift, data);
+
+            if (data.cancel && data.entryType === "absence") {
+                cancelAssignment(latestAssignment)
+                cancelModifications(userId, date);
+                const userShiftPostModification = await computeShiftOfUserWithSubstitutions([date], userId);
+                return { userShift: userShiftPostModification, updatedDemands: null, type: "assignment" };
+            }
+
+            if (latestAssignment) {
+                if (latestAssignment.subType === "substitution" && !overlapPrevious.hasShift) {
+
+                } else {
+                    cancelSingleAssignment(latestAssignment);
+                }
+            }
+
+            cancelModifications(userId, date);
+            cancelHourPatches(userId, date)
+
+            break;
+        case "modification":
+            if (latestModification) {
+                latestModification.active = false;
+                await latestModification.save();
+            }
+            cancelHourPatches(userId, date)
+            break;
+        case "hourPatch":
+            if (latestHourPatch) {
+                latestHourPatch.active = false;
+                await latestHourPatch.save();
+            }
+            break;
+    }
 
 
-    const entry = new PlanningModification({
+
+
+    if (data.type === "hourPatch") {
+        const hourPatch = new HourPatch({
+            userId,
+            date: date,
+            centerId: user.centerId,
+            adjustedTime: {
+                adjustedStart: 1,
+                adjustedEnd: 2,
+            }
+        });
+        await hourPatch.save();
+        const userShiftPostModification = await computeShiftOfUserWithSubstitutions([date], userId);
+        return { userShift: userShiftPostModification, updatedDemands: null, type: "hourPatch" };
+    }
+
+
+    console.log("overlapPrevious", overlapPrevious)
+
+    const entry = new CalendarEntry({
         type: data.type,
+        subType: data.entryType,
         shiftData: {
             shift: data.shift,
             selectedVariation: data.selectedVariation,
+            team: data.team,
         },
-        isOff: data.isOff,
         userId,
         date: date,
         centerId: user.centerId,
-        startTime: "09:00",
-        endTime: "17:00",
+        startTime: data.startTime,
+        endTime: data.endTime,
 
     });
 
@@ -132,9 +218,9 @@ export async function registerEntry (userId, date, data) {
 
     // const updatedDemands = await syncDemandSelectedVariation(userId, date, data.selectedVariation);
 
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const userShiftPostModification = await computeShiftOfUserWithSubstitutions([date], userId);
 
-    return { userShift, updatedDemands: null, type: "creation" };
+    return { userShift: userShiftPostModification, updatedDemands: null, type: "creation" };
 }
 
 export async function restoreInitialShift (userId, date) {
@@ -145,24 +231,11 @@ export async function restoreInitialShift (userId, date) {
         throw err;
     }
 
-    // Get the initial shift for the user on the given date
     const initialShift = await computeShiftOfUserWithSubstitutions([date], userId);
 
-
-    const entry = new PlanningModification({
-        type: "restoration",
-        shiftData: {
-            shift: initialShift[0].initialShift,
-            selectedVariation: null
-        },
-        isOff: false,
-        userId,
-        date: date,
-        centerId: user.centerId,
-
-    });
-
-    await entry.save();
+    cancelModifications(userId, date);
+    cancelAssignments(userId, date);
+    cancelHourPatches(userId, date);
 
     const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
 
@@ -170,109 +243,138 @@ export async function restoreInitialShift (userId, date) {
 }
 
 export async function addSubstitutionEntries (demand) {
+    if (!demand) {
+        throw new AppError('Demande invalide', 400);
+    }
+
     try {
-        if (!demand) {
-            throw new AppError('Demande invalide', 400);
-        }
+        const dateStr = demand.posterShift.date.toISOString().split('T')[0];
 
-        const entry = new PlanningModification({
-            type: "substitution",
+        const [latestAccepterAssignment, latestPosterAssignment] = await Promise.all([
+            Assignment.findOne({ userId: demand.accepterId, date: dateStr, active: true }).sort({ createdAt: -1 }),
+            Assignment.findOne({ userId: demand.posterId, date: dateStr, active: true }).sort({ createdAt: -1 }),
+        ]);
+
+        // 2. Deactivate in parallel with a single updateOne each (no need to fetch then save)
+        await Promise.all([
+            latestAccepterAssignment && Assignment.updateOne({ _id: latestAccepterAssignment._id }, { active: false }),
+            latestPosterAssignment && Assignment.updateOne({ _id: latestPosterAssignment._id }, { active: false }),
+        ].filter(Boolean));
+
+        // 3. Build both entries
+        const accepterEntry = new Assignment({
             shiftData: {
+                team: demand.posterShift.teamId,
                 shift: demand.posterShift.shift,
                 selectedVariation: demand.posterShift.selectedVariation,
             },
-            substitutionId : demand._id,
+            subType: 'substitution',
+            substitution: {
+                id: demand._id,
+                savedEntry: latestAccepterAssignment?._id,
+            },
             userId: demand.accepterId,
-            date: demand.posterShift.date,
+            date: dateStr,
             centerId: demand.centerId,
-
         });
 
-        // Add entry for the poster
-
-        const entry2 = new PlanningModification({
-            type: "substitution",
-            shiftData: {
-                shift: demand.posterShift.shift,
-                selectedVariation: demand.posterShift.selectedVariation,
+        const posterEntry = new Assignment({
+            shiftData: null,
+            subType: 'substitution',
+            substitution: {
+                id: demand._id,
+                savedEntry: latestPosterAssignment?._id,
             },
-            isOff: true,
-            substitutionId : demand._id,
             userId: demand.posterId,
-            date: demand.posterShift.date,
+            date: dateStr,
             centerId: demand.centerId,
-
         });
 
-        await Promise.all([entry.save(), entry2.save()]);
-        const posterShift = await computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.posterId);
-        const accepterShift = await computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.accepterId);
 
-        return { posterShift: posterShift[0], accepterShift: accepterShift[0], updatedDemands: null, type: "substitution" };
+        await accepterEntry.save();
+        await posterEntry.save();
+
+        const [posterShifts, accepterShifts] = await Promise.all([
+            computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.posterId),
+            computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.accepterId),
+        ]);
+
+        console.log("posterShifts", posterShifts[0]?.shiftData);
+        console.log("accepterShifts", accepterShifts[0]?.shiftData);
+
+        return {
+            posterShift: posterShifts[0],
+            accepterShift: accepterShifts[0],
+            updatedDemands: null,
+            type: 'substitution',
+        };
+
     } catch (error) {
-        console.log(error);
-        throw new AppError('Erreur lors de l\'ajout des entrées de substitution', 500);
+        // 5. Preserve original error for logging, throw operational error for the caller
+        console.error("❌ Erreur lors de l'ajout des entrées de substitution:", error);
+        throw new AppError("Erreur lors de l'ajout des entrées de substitution", 500);
     }
 }
 
 
 
-export async function restoreBeforeSubstitution (demandId) {
-    const demand = await Substitution.findById(demandId);
-    if (!demand) {
-        throw new AppError('Demande non trouvée', 404);
+// calendarEntryService.js
+export async function cancelSubstitutionEntries (demandId, { posterId, accepterId, date }) {
+    const dateStr = date.toISOString().split('T')[0];
+
+    try {
+
+        const findSubEntry = (userId) => Assignment.findOne({
+            userId,
+            date: dateStr,
+            active: true,
+            subType: 'substitution',
+            'substitution.id': demandId,
+        }, null, { sort: { createdAt: -1 } });
+
+        const [posterSubEntry, accepterSubEntry] = await Promise.all([
+            findSubEntry(posterId),
+            findSubEntry(accepterId),
+        ]);
+
+        const cancelAfter = async (userId, subEntry) => {
+            if (!subEntry) return;
+            await Promise.all([
+                Assignment.updateMany(
+                    { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
+                    { active: false }
+                ),
+                Modification.updateMany(
+                    { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
+                    { active: false }
+                ),
+                HourPatch.updateMany(
+                    { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
+                    { active: false }
+                ),
+            ]);
+        };
+
+        await Promise.all([
+            cancelAfter(posterId, posterSubEntry),
+            cancelAfter(accepterId, accepterSubEntry),
+        ]);
+
+        const [posterShift, accepterShift] = await Promise.all([
+            computeShiftOfUserWithSubstitutions([date], posterId),
+            computeShiftOfUserWithSubstitutions([date], accepterId),
+        ]);
+
+        return {
+            posterShift: posterShift[0],
+            accepterShift: accepterShift[0],
+            updatedDemands: null,
+            type: 'restoration',
+        };
+    } catch (error) {
+        console.error("❌ Erreur lors de l'annulation des entrées de substitution:", error);
+        throw new AppError("Erreur lors de l'annulation des entrées de substitution", 500);
     }
-
-    async function getLastNonSubstitutionEntry (userId, date) {
-        const entries = await PlanningModification
-            .find({ userId, date })
-            .sort({ createdAt: -1 });
-        return entries.find(e => e.substitutionId?.toString() !== demand._id.toString()) ?? null;
-    }
-
-    const [accepterEntry, posterEntry] = await Promise.all([
-        getLastNonSubstitutionEntry(demand.accepterId, demand.posterShift.date),
-        getLastNonSubstitutionEntry(demand.posterId, demand.posterShift.date)
-    ]);
-
-    if (accepterEntry) {
-        const entry = new PlanningModification({
-            type: "restoration",
-            shiftData: {
-                shift: accepterEntry.shiftData.shift,
-                selectedVariation: accepterEntry.shiftData.selectedVariation,
-            },
-            userId: accepterEntry.userId,
-            date: accepterEntry.date,
-            centerId: accepterEntry.centerId,
-        });
-        await entry.save();
-    } else {
-        await restoreInitialShift(demand.accepterId, demand.posterShift.date);
-    }
-
-    if (posterEntry) {
-        const entry = new PlanningModification({
-            type: "restoration",
-            shiftData: {
-                shift: posterEntry.shiftData.shift,
-                selectedVariation: posterEntry.shiftData.selectedVariation,
-            },
-            userId: posterEntry.userId,
-            date: posterEntry.date,
-            centerId: posterEntry.centerId,
-        });
-        await entry.save();
-    } else {
-        await restoreInitialShift(demand.posterId, demand.posterShift.date);
-    }
-
-    const [posterShift, accepterShift] = await Promise.all([
-        computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.posterId),
-        computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.accepterId)
-    ]);
-
-    return { posterShift: posterShift[0], accepterShift: accepterShift[0], updatedDemands: null, type: "restoration" };
 }
 
 /**
@@ -285,7 +387,7 @@ export async function getUserEntries (userId, date) {
         query.date = new Date(date);
     }
 
-    return PlanningModification.find(query)
+    return CalendarEntry.find(query)
         .populate('userId', 'name lastName email')
         .populate('centerId', 'name')
         .populate({ path: 'shiftData.shift' })
@@ -297,7 +399,7 @@ export async function getUserEntries (userId, date) {
  * Récupère une modification spécifique par son id, en vérifiant les droits d'accès.
  */
 export async function getModificationById (id, requestingUserId) {
-    const modification = await PlanningModification.findById(id)
+    const modification = await CalendarEntry.findById(id)
         .populate('userId', 'name lastName email')
         .populate('centerId', 'name')
 
@@ -319,79 +421,4 @@ export async function getModificationById (id, requestingUserId) {
     return modification;
 }
 
-/**
- * Supprime une modification de planning (uniquement par son propriétaire, et seulement pour une date future).
- */
-export async function removeModification (id, userId) {
-    const modification = await PlanningModification.findById(id);
-    if (!modification) {
-        const err = new Error('Modification non trouvée');
-        err.status = 404;
-        throw err;
-    }
 
-    if (modification.userId.toString() !== userId) {
-        const err = new Error('Vous n\'avez pas les droits pour supprimer cette modification');
-        err.status = 403;
-        throw err;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (modification.date < today) {
-        const err = new Error('Impossible de supprimer une modification pour une date passée');
-        err.status = 400;
-        throw err;
-    }
-
-    const modDate = modification.date;
-    await PlanningModification.findByIdAndDelete(id);
-
-    const updatedDemand = await syncDemandSelectedVariation(userId, modDate, null);
-    return { updatedDemand };
-}
-
-/**
- * Met à jour une modification existante (uniquement par son propriétaire, et seulement pour une date future).
- */
-export async function patchModification (id, userId, { selectedVariation, shift, comment, isOff, type }) {
-    const modification = await PlanningModification.findById(id);
-    if (!modification) {
-        const err = new Error('Modification non trouvée');
-        err.status = 404;
-        throw err;
-    }
-
-    if (modification.userId.toString() !== userId) {
-        const err = new Error('Vous n\'avez pas les droits pour modifier cette demande');
-        err.status = 403;
-        throw err;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (modification.date < today) {
-        const err = new Error('Impossible de modifier une modification pour une date passée');
-        err.status = 400;
-        throw err;
-    }
-
-    if (selectedVariation !== undefined) modification.selectedVariation = selectedVariation;
-    if (shift !== undefined) modification.shift = shift;
-    if (comment !== undefined) modification.comment = comment;
-    if (isOff !== undefined) modification.isOff = isOff;
-    if (type !== undefined) modification.type = type;
-
-    modification.updatedAt = new Date();
-    await modification.save();
-
-    const updatedDemand = await syncDemandSelectedVariation(userId, modification.date, modification.selectedVariation);
-
-    await modification.populate('userId', 'name lastName email');
-    await modification.populate('centerId', 'name');
-    await modification.populate('teamId', 'name');
-    await modification.populate('selectedVariation');
-    await modification.populate('shift');
-
-    return { modification, updatedDemand };
-}

@@ -5,6 +5,8 @@ import VueRouter from 'unplugin-vue-router/vite'
 import Layouts from 'vite-plugin-vue-layouts-next'
 import Vue from "@vitejs/plugin-vue";
 import Vuetify from "vite-plugin-vuetify";
+
+import svgLoader from 'vite-svg-loader'
 import Components from "unplugin-vue-components/vite";
 import Fonts from "unplugin-fonts/vite";
 import AutoImport from "unplugin-auto-import/vite";
@@ -36,6 +38,7 @@ export default defineConfig({
         }],
       },
     }),
+    svgLoader(),
     AutoImport({
       imports: [
         'vue',

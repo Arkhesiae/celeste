@@ -103,6 +103,19 @@ const SubstitutionSchema = new mongoose.Schema({
 SubstitutionSchema.index({ status: 1 });
 SubstitutionSchema.index({ centerId: 1 });
 
+SubstitutionSchema.pre('save', async function () {
+    if (this.dependsOn) {
+        let current = await Substitution.findById(this.dependsOn);
+        const seen = new Set([this._id.toString()]);
+        while (current?.dependsOn) {
+            if (seen.has(current.dependsOn.toString()))
+                throw new AppError('Cycle détecté dans dependsOn', 400);
+            seen.add(current.dependsOn.toString());
+            current = await Substitution.findById(current.dependsOn);
+        }
+    }
+});
+
 const Substitution = mongoose.model('Substitution', SubstitutionSchema);
 
 export default Substitution;

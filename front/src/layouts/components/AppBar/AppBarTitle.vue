@@ -1,31 +1,37 @@
 <template>
   <v-app-bar-title style="margin-left: 10px;" class="d-flex align-center" @click="$emit('title-click')">
     <div class="d-flex align-center ">
-      <v-btn v-if="smAndDown" flat size="small" icon color="primary" :active="isHomepage || isDashboard">
-        <Logo style="left: 1px; top: -2px; position: relative;" />
+      <v-btn v-if="smAndDown" flat size="small" icon :color="isDev ? 'error' : 'primary'"
+        :active="isHomepage || isDashboard">
+        <v-icon :color="isDev ? 'error' : 'primary'">
+          <template v-if="isDev">
+            mdi-dev-to
+          </template>
+          <template v-else>
+            <Logo style="left: 1px; top: -2px; position: relative;" />
+          </template>
+        </v-icon>
       </v-btn>
       <div v-else class="d-flex align-center">
-        <Logo />
+        <v-icon :color="isDev ? 'error' : 'primary'">
+          <template v-if="isDev">
+            mdi-dev-to
+          </template>
+          <template v-else>
+            <Logo style="left: 1px; top: -2px; position: relative;" />
+          </template>
+        </v-icon>
 
-        <v-btn flat color="primary" class="text-overline" style="font-weight: 900 !important;"
+        <v-btn flat :color="isDev ? 'error' : 'primary'" class="text-overline" style="font-weight: 900 !important;"
           :active="isHomepage || isDashboard">
           {{ APP_TITLE }}
         </v-btn>
+
+
       </div>
-      <v-hover v-slot="{ isHovering, props }">
-        <v-slide-y-transition mode="out-in">
-          <div v-if="!isHovering" class="d-flex align-center">
-            <span v-bind="props" class="text-overline version-text text-medium-emphasis ml-2">
-              {{ APP_VERSION }}
-            </span>
-          </div>
-          <div v-else>
-            <span v-bind="props" class="text-overline version-text text-medium-emphasis ml-2">
-              {{ RELEASE_DATE }}
-            </span>
-          </div>
-        </v-slide-y-transition>
-      </v-hover>
+      <span v-if="isDev" class="text-overline version-text text-medium-emphasis ml-2">
+        {{ userName }}
+      </span>
     </div>
   </v-app-bar-title>
 </template>
@@ -33,15 +39,18 @@
 <script setup>
 
 import { useDisplay } from 'vuetify';
+import { useAuthStore } from '@/stores/authStore.js';
 
 // Constants
 const APP_TITLE = "Céleste";
-const APP_VERSION = "alpha-202601";
-const RELEASE_DATE = "24/01/2026";
 
+const isDev = ref(import.meta.env.DEV);
 // Reactive data
 const currentDate = ref('');
 const { smAndDown } = useDisplay();
+
+const authStore = useAuthStore();
+const userName = computed(() => authStore.userData?.name);
 
 // Props
 defineProps({

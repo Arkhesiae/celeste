@@ -68,6 +68,9 @@ export async function getOpenDemands (userId, startDate, endDate) {
         { $addToSet: { seenBy: userId } }
     );
 
+    console.log('demands', demands)
+    console.log('myDemands', myDemands)
+
     const categorizedDemands = await categorizeDemands(demands, userId);
 
     const mapIsNew = (demand) => {

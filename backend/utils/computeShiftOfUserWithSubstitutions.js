@@ -3,7 +3,7 @@ import { computeShiftOfTeam } from "./computeShiftOfTeam.js";
 import { getTeamAtGivenDate } from "./getTeamAtGivenDate.js";
 import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
-import PlanningModification from '../models/CalendarEntry.js';
+import { CalendarEntry, Assignment, Modification, HourPatch } from '../models/CalendarEntry.js';
 import Shift from '../models/Shift.js';
 
 
@@ -16,8 +16,7 @@ import Shift from '../models/Shift.js';
  */
 const getBaseShift = async (date, user) => {
     let team = null;
-    let teamObject = null;
-    let initialShift = null;
+    let baseShift = null;
 
     if (user.teams?.length === 0) {
         team = null;
@@ -25,16 +24,161 @@ const getBaseShift = async (date, user) => {
         team = getTeamAtGivenDate(user.teams, date);
     }
 
-    teamObject = team ? team.teamId : null;
     if (team) {
-        initialShift = await computeShiftOfTeam(date, team.teamId);
+        baseShift = await computeShiftOfTeam(date, team.teamId);
     } else {
-        initialShift = null;
+        baseShift = null;
     }
 
-    return { initialShift, teamObject };
+    return { baseShift, team: team?.teamId };
 }
 
+
+// ── Utilitaires temps ─────────────────────────────────────────────────
+
+const toMinutes = (time) => {
+    const [h, m] = time.split(':').map(Number)
+    return h * 60 + m
+}
+
+const toTime = (minutes) => {
+    const total = ((minutes % 1440) + 1440) % 1440
+    const h = Math.floor(total / 60).toString().padStart(2, '0')
+    const m = (total % 60).toString().padStart(2, '0')
+    return `${h}:${m}`
+}
+
+const addHours = (time, hours) => toTime(toMinutes(time) + Math.round(hours * 60))
+
+// ── Cohérence ─────────────────────────────────────────────────────────
+
+const checkHourPatchCoherence = (latestModification) => {
+    if (latestModification?.subType === 'absence') {
+        throw new Error('hourPatch incohérent : le shift est annulé (absence)')
+    }
+}
+
+const checkModificationCoherence = (latestModification, resolvedShift) => {
+    const needsShift = ['variation', 'vic'].includes(latestModification?.subType)
+    if (needsShift && !resolvedShift?.shiftData) {
+        console.error('variation/vic impossible : aucun shift de base résolu')
+    }
+}
+
+
+// ── Résolution ────────────────────────────────────────────────────────
+
+const resolveAssignment = (baseShift, latestAssignment) => {
+    if (!latestAssignment) {
+        return buildShiftResult(null, baseShift.shift, baseShift.team)
+
+    }
+
+    if (latestAssignment.shiftData?.shift) {
+        return buildShiftResult(null, latestAssignment.shiftData.shift, latestAssignment.shiftData.team, {
+            isBaseShift: false,
+            isOff: false,
+            shiftData: latestAssignment.shiftData,
+        })
+    }
+
+    return {
+        type: latestAssignment.subType,
+        isBaseShift: false,
+        isOff: latestAssignment.subType === 'absence',
+        shiftData: null,
+        startTime: latestAssignment.startTime,
+        endTime: latestAssignment.endTime,
+    }
+}
+
+const applyModification = (resolvedShift, latestModification) => {
+    if (!latestModification) return resolvedShift
+
+    const shiftData = latestModification.shiftData
+
+    console.log('shiftData', shiftData)
+  
+
+    switch (latestModification.subType) {
+        case 'variation':
+            return {
+                ...resolvedShift,
+                shiftData,
+                startTime: shiftData.selectedVariation.startTime,
+                endTime: shiftData.selectedVariation.endTime,
+            }
+        case 'vic':
+            return {
+                ...resolvedShift,
+                shiftData: { ...resolvedShift.shiftData, selectedVariation: 'vic' },
+            }
+        default:
+            return resolvedShift
+    }
+}
+
+const applyHourPatch = (resolvedShift, latestHourPatch) => {
+    if (!latestHourPatch || resolvedShift.isOff) return resolvedShift
+    return {
+        ...resolvedShift,
+        startTime: addHours(resolvedShift.startTime, latestHourPatch.adjustedTime.adjustedStart),
+        endTime: addHours(resolvedShift.endTime, latestHourPatch.adjustedTime.adjustedEnd),
+    }
+}
+
+const buildAssignmentHistory = (assignments) =>
+    assignments.map((a) => ({
+        type: a.shiftData?.shift ? 'shift' : a.subType,
+        shiftData: a.shiftData,
+        wasOverride: a.wasOverride,
+    }))
+
+const applyEntries = (baseShift, assignments, modifications, hoursPatches) => {
+    const latestAssignment = assignments.at(-1) ?? null
+    const latestModification = modifications.at(-1) ?? null
+    const latestHourPatch = hoursPatches.at(-1) ?? null
+
+    let resolvedShift = resolveAssignment(baseShift, latestAssignment)
+
+
+    checkModificationCoherence(latestModification, resolvedShift)
+    resolvedShift = applyModification(resolvedShift, latestModification)
+
+    if (!resolvedShift.isOff) checkHourPatchCoherence(latestModification)
+    resolvedShift = applyHourPatch(resolvedShift, latestHourPatch)
+
+    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments) }
+}
+
+const getActiveEntries = async (user, date) => {
+    const populateShiftData = (query) => query
+        .populate({ path: 'shiftData', populate: 'shift' })
+        .populate({ path: 'shiftData.shift', populate: 'variations' })
+        .populate({ path: 'shiftData.selectedVariation' });
+
+    const baseQuery = { userId: user._id, active: true, date, };
+
+    const [assignments, modifications, hoursPatches] = await Promise.all([
+        populateShiftData(Assignment.find({ ...baseQuery })).sort({ createdAt: 1 }),
+        populateShiftData(Modification.find({ ...baseQuery })).sort({ createdAt: 1 }),
+        HourPatch.find({ ...baseQuery }).sort({ createdAt: 1 }),
+    ]);
+
+    return { assignments, modifications, hoursPatches };
+}
+
+const buildShiftResult = (dateStr, baseShift, team, overrides = {}) => ({
+    date: dateStr,
+    type: 'shift',
+    isBaseShift: true,
+    isOff: baseShift?.optional ?? false,
+    shiftData: { shift: baseShift, selectedVariation: null, team: team },
+    startTime: baseShift?.default?.startTime,
+    endTime: baseShift?.default?.endTime,
+    baseShift,
+    ...overrides,
+})
 
 /**
  * Récupère le shift d'un utilisateur à une date donnée en prenant en compte les substitutions et modifications de planning
@@ -60,196 +204,43 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
         const dateArray = Array.isArray(dates) ? dates : [dates];
 
         const results = await Promise.all(
-            dateArray.map(async (dateStr) => {
-                const date = new Date(dateStr);
+            dateArray.map(async (rawDate) => {
+                const date = new Date(rawDate);
 
                 if (isNaN(date.getTime())) {
-                    throw new Error(`Date invalide: ${dateStr}`);
+                    throw new Error(`Date invalide: ${rawDate}`);
                 }
 
                 let selectedVariation = null;
 
-                const { initialShift, teamObject } = await getBaseShift(date, user);
+                const dateStr = date.toISOString().split('T')[0];
 
-                // Vérifier les modifications de planning approuvées pour cette date (priorité maximale)
-                const planningModifications = await PlanningModification.find({
-                    userId: user._id,
-                    date: date,
-                }).sort({ createdAt: -1 })
-                    .populate({
-                        path: 'shiftData',
-                        populate: 'shift'
-                    }).populate({
-                        path: 'shiftData.shift',
-                        populate: 'variations'
-                    })
-                    .populate({
-                        path: 'shiftData',
-                        populate: 'selectedVariation'
-                    });
+                const { baseShift, team } = await getBaseShift(date, user);
 
-                // Vérifier si le shift initial est optionnel et pas de modifications
-                if (initialShift && initialShift.optional && planningModifications.length === 0) {
-                    return {
-                        date: dateStr,
-                        isOff: true,
-                        shift: initialShift,
-                        initialShift,
-                        teamObject,
-                        selectedVariation
-                    };
+                const { assignments, modifications, hoursPatches } = await getActiveEntries(user, dateStr);
+
+                if (!assignments.length && !modifications.length && !hoursPatches.length) {
+                    return buildShiftResult(dateStr, baseShift, team)
                 }
+
 
                 // Prends en compte la dernière modification de planning
-                if (planningModifications?.length > 0) {
-                    const modification = planningModifications[0];
+                else {
+                    const {resolvedShift, assignmentHistory} = applyEntries({ shift : baseShift, team }, assignments, modifications, hoursPatches);
+
                     return {
                         date: dateStr,
-                        isOff: modification.isOff,
-                        shift: modification.shiftData.shift,
-                        initialShift,
-                        selectedVariation: modification.shiftData.selectedVariation,
-                        teamObject
+                        isOff: resolvedShift?.isOff,
+                        vic: resolvedShift?.vic,
+                        type: resolvedShift?.type,
+                        shiftData: resolvedShift?.shiftData,
+                        startTime: resolvedShift?.startTime,
+                        endTime: resolvedShift?.endTime,
+                        history: assignmentHistory,
+                        isBaseShift: resolvedShift?.isBaseShift,
+                        baseShift: baseShift
                     };
-
                 }
-
-                // // Vérifier les substitutions où l'utilisateur est impliqué (priorité inférieure aux modifications de planning)
-                // const substitutions = await Substitution.find({
-                //     $and: [
-                //         {
-                //             $or: [
-                //                 { posterId: userId },
-                //                 { accepterId: userId }
-                //             ]
-                //         },
-                //         {
-                //             $or: [
-                //                 { 'posterShift.date': date },
-                //                 { 'accepterShift.date': date }
-                //             ]
-                //         },
-                //         { status: 'accepted' },
-                //         { deleted: false }
-                //     ]
-                // }).sort({ createdAt: 1 });
-
-                // // Si l'utilisateur a des substitutions acceptées pour cette date
-                // if (substitutions.length > 0) {
-                //     let currentShift = initialShift;
-                //     let currentTeam = teamObject;
-                //     let substitutionHistory = [];
-
-                //     // Traiter chaque substitution dans l'ordre chronologique
-                //     for (const substitution of substitutions) {
-
-                //         // Vérifier la cohérence de la substitution
-                //         if (substitution.posterId.toString() === userId) {
-                //             if (currentShift && substitution.posterShift) {
-                //                 if (currentShift._id.toString() !== substitution.posterShift?._id?.toString() && currentShift._id.toString() !== substitution.posterShift?.shift?._id?.toString()) {
-                //                     console.warn(`Incohérence détectée pour l'utilisateur ${userId} à la date ${dateStr}:
-                //                         Shift actuel: ${currentShift._id}
-                //                         Shift dans la substitution: ${substitution.posterShift._id}`);
-                //                 }
-                //             }
-                //         }
-
-                //         // Si c'est un échange (les deux shifts sont présents)
-                //         if (substitution.posterShift && substitution.accepterShift) {
-                //             if (substitution.posterId.toString() === userId) {
-                //                 // L'utilisateur est le poster, il prend le shift de l'accepter
-                //                 if (substitution.posterShift.shift) {
-                //                     currentShift = await Shift.findById(substitution.accepterShift.shift).populate('variations');
-                //                 }
-                //                 else {
-                //                     currentShift = substitution.accepterShift;
-                //                 }
-
-
-                //                 currentTeam = await Team.findById(substitution.accepterShift.teamId);
-                //                 substitutionHistory.push({
-                //                     type: 'exchange',
-                //                     role: 'poster',
-                //                     substitutionId: substitution._id
-                //                 });
-                //             } else {
-                //                 // L'utilisateur est l'accepter, il prend le shift du poster
-                //                 if (substitution.posterShift.shift) {
-                //                     currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
-                //                 }
-                //                 else {
-                //                     currentShift = substitution.posterShift;
-                //                 }
-
-                //                 currentTeam = await Team.findById(substitution.posterShift.teamId);
-                //                 substitutionHistory.push({
-                //                     type: 'exchange',
-                //                     role: 'accepter',
-                //                     substitutionId: substitution._id
-                //                 });
-                //             }
-                //         } else {
-                //             // C'est un simple remplacement
-                //             if (substitution.posterId.toString() === userId) {
-                //                 // L'utilisateur est remplacé, il n'a pas de shift
-                //                 currentShift = null;
-                //                 substitutionHistory.push({
-                //                     type: 'replacement',
-                //                     role: 'poster',
-                //                     substitutionId: substitution._id
-                //                 });
-                //             } else {
-                //                 // L'utilisateur est le remplaçant, il prend le shift du poster
-                //                 if (substitution.posterShift.shift) {
-                //                     currentShift = await Shift.findById(substitution.posterShift.shift).populate('variations');
-                //                 }
-                //                 else {
-                //                     currentShift = substitution.posterShift;
-                //                 }
-
-                //                 currentTeam = await Team.findById(substitution.posterShift.teamId);
-                //                 substitutionHistory.push({
-                //                     type: 'replacement',
-                //                     role: 'accepter',
-                //                     substitutionId: substitution._id
-                //                 });
-                //             }
-                //         }
-                //     }
-
-                //     // Retourner le résultat final après avoir traité toutes les substitutions
-                //     if (!currentShift) {
-                //         return {
-                //             date: dateStr,
-                //             status: "Remplacé",
-                //             isSubstitution: true,
-                //             substitutionType: substitutionHistory[substitutionHistory.length - 1].type,
-                //             initialShift,
-                //             substitutionHistory
-                //         };
-                //     }
-
-                //     return {
-                //         date: dateStr,
-                //         teamObject: currentTeam,
-                //         shift: currentShift,
-                //         isSubstitution: true,
-                //         substitutionType: substitutionHistory[substitutionHistory.length - 1].type,
-                //         initialShift,
-                //         substitutionHistory
-                //     };
-                // }
-
-
-                // Si pas de substitution ni de modification, on retourne le shift normal
-                return {
-                    date: dateStr,
-                    teamObject,
-                    shift: initialShift,
-                    isSubstitution: false,
-                    initialShift,
-                    selectedVariation
-                };
 
             })
         );

@@ -87,19 +87,34 @@ app.get(/^\/(?!api).*/, (req, res) => {
 app.use(errorHandler);
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
-mongoose.connect(process.env.MONGO_URI)
-  .then(async () => {
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 30_000;
+
+async function connectWithRetry (attempt = 1) {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB connecté via Docker');
-    await initializeRules();  
-    await createAdmin(); // Créer l'admin si nécessaire
-    await createLocalAdmin(); // Créer les admins locaux si nécessaire
-    
+
+    await initializeRules();
+    await createAdmin();
+    await createLocalAdmin();
+
     app.listen(PORT, () => {
       console.log(`🚀 Serveur lancé sur le port ${PORT}`);
     });
-  })
-  .catch((err) => {
-    console.log(process.env.MONGO_URI);
-    console.error('❌ Erreur de connexion à MongoDB :', err.message);
-    process.exit(1);
-  });
+
+  } catch (err) {
+    console.error(`❌ Erreur de connexion à MongoDB (tentative ${attempt}/${MAX_RETRIES}) :`, err.message);
+
+    if (attempt >= MAX_RETRIES) {
+      console.error('🛑 Nombre maximum de tentatives atteint. Arrêt du serveur.');
+      process.exit(1);
+    }
+
+    console.log(`⏳ Nouvelle tentative dans ${RETRY_DELAY_MS / 1000}s...`);
+    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+    await connectWithRetry(attempt + 1);
+  }
+}
+
+connectWithRetry();

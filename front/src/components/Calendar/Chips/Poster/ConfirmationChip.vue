@@ -2,13 +2,17 @@
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useUserStore } from '@/stores/userStore';
 import { API_URL } from '@/config/api';
+import { getDemandIcon } from '@/utils/demandToIcon';
+import { useAuthStore } from '@/stores/authStore';
 
-
+const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const userStore = useUserStore();
 const props = defineProps({
   date: { type: Date, required: true },
   text: { type: String },
+  demand: { type: Object, required: true },
+  order: { type: Number, required: true },
 
 });
 
@@ -25,32 +29,14 @@ const accepterUser = computed(() => {
 </script>
 
 <template>
-  <v-chip
-rounded="lg" color="primary" variant="flat" size="x-small"
-    style="bottom: -10px; opacity: 1; transform: scale(1) ;" class="position-absolute ">
-    <v-icon v-if="acceptedAsPoster.length > 1" size="small" color="error">
+  <div v-if="acceptedAsPoster" :style="`z-index: ${props.order}; transform: translateY(${(props.order-1) * -5}px); box-shadow: 0 2px 1px 0px rgba(0,0,0, 0.4);`" class="d-flex align-center justify-center bg-primary rounded-lg pa-1 position-absolute bottom-0 right-0">
+    <!-- <v-icon v-if="acceptedAsPoster.length > 1" size="small" color="error">
       mdi-alert-circle-outline
+    </v-icon> -->
+    <v-icon size="14px" color="onPrimary">
+      {{ getDemandIcon(props.demand, authStore.userData.userId) }}
     </v-icon>
-    <v-icon v-if="acceptedAsPoster.type === 'switch'" size="small" color="background">
-      mdi-swap-horizontal-hidden
-    </v-icon>
-    <v-icon v-if="acceptedAsPoster.type === 'substitution'" size="small" color="background">
-      mdi-account-arrow-left
-    </v-icon>
-    <div v-if="acceptedAsPoster.type === 'hybrid'">
-      <v-icon v-if="!acceptedAsPoster.accepterShift" size="small" color="background">
-        mdi-account-arrow-left
-      </v-icon>
-      <v-icon v-if="acceptedAsPoster.accepterShift" size="small" color="background">
-        mdi-swap-horizontal
-      </v-icon>
-    </div>
-    <div v-if="acceptedAsPoster" class="d-flex align-center justify-center">
-      <v-avatar size="small" class="" variant="tonal">
-        <v-img v-if="accepterUser?.avatar" :src="`${API_URL}${accepterUser.avatar}`" alt="Avatar" />
-        <span v-else class="text-caption font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ?
-          `${accepterUser.name.charAt(0)}${accepterUser.lastName.charAt(0)}` : '?' }}</span>
-      </v-avatar>
-    </div>
-  </v-chip>
+    
+
+  </div>
 </template>

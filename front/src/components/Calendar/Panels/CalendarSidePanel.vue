@@ -1,9 +1,4 @@
 <template>
-  <v-col
-    :cols="cols"
-    class="mt-2"
-    style="min-width: 200px"
-  >
     <CalendarPanel
       :formatted-date="formattedDate"
       :selected-date="selectedDate"
@@ -13,7 +8,6 @@
       @cancel="emit('cancel', $event)"
       @withdraw="emit('withdraw', $event)"
     />
-  </v-col>
 </template>
 
 <script setup>

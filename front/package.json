@@ -27,6 +27,7 @@
     "latest": "^0.2.0",
     "npm-check-updates": "^19.3.1",
     "roboto-fontface": "*",
+    "vite-svg-loader": "^5.1.1",
     "vue": "^3.5.27",
     "vue-draggable-plus": "^0.6.1",
     "vuetify": "^3.11.7",

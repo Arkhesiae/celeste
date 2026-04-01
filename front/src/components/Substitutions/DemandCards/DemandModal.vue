@@ -2,16 +2,12 @@
   <GenericDialog title="Demande " :model-value="modelValue" max-width="600" :show-actions="false"
     @update:model-value="$emit('update:modelValue', $event)">
     <template #content>
-      <div class="text-center mb-6">
+      <div class="d-flex flex-column align-center mb-6">
         <h1 class="text-h3 font-weight-bold">
           {{ getShiftName }}
         </h1>
         <div>
-          <span class="text-caption font-weight-bold text-medium-emphasis">{{ getShiftHours.startTime }} - {{
-            getShiftHours.endTime
-          }}</span>
-          <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-            style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+          <HourRange :hours="getShiftHours" :endsNextDay="getShiftEndsNextDay" />
         </div>
       </div>
 

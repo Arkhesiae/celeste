@@ -2,14 +2,30 @@
   <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4 position-relative safe-area-bottom"
     color="surfaceContainer">
 
-   
+
 
     <div class="d-flex align-center justify-space-between mb-4 mr-2 ga-2">
       <div class="d-flex align-center ga-1">
         <div v-for="(entry, index) in substitutionsDemands" :key="index" class="position-relative">
-          <v-btn icon size="x-small" variant="flat">
-            <v-icon> {{ typeToIcon(entry?.type) }}</v-icon>
-          </v-btn>
+          <v-menu min-width="200" offset="10">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" color="primary" icon size="x-small" :variant="entry.status === 'open' ? 'tonal' : 'flat'">
+                <v-icon> {{ getDemandIcon(entry, authStore.userData.userId) }}</v-icon>
+              </v-btn>
+            </template>
+
+            <v-list  rounded="xl" class="pa-2">
+              <v-list-subheader>Je remplace dans ...</v-list-subheader>
+
+              <v-list-item  title="Détails"  />
+
+              <v-divider />
+
+              <v-list-item prepend-icon="mdi-close-circle-outline" title="Annuler" class="text-error" base-color="error"
+                 />
+            </v-list>
+          </v-menu>
+         
           <!-- <div class="position-absolute bg-surface text-caption rounded-circle d-flex align-center justify-center" style="top: 0px; right: 0px; width: 16px; height: 16px;">{{ index + 1 }}</div> -->
         </div>
       </div>
@@ -24,93 +40,127 @@
 
           <v-card class="pa-4 rounded-lg">
             <div v-for="(entry, index) in entries" :key="entry._id">
-              <span class="text-caption">{{ entry.createdAt }} : {{ entry.type }}</span>
+              <span class="text-caption">{{ entry.createdAt }} : {{ entry.type }} {{ entry.subType }}</span>
             </div>
           </v-card>
 
         </v-menu>
         <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
       </div>
-     
+
     </div>
 
 
 
     <div class="mt-4 mb-4 rounded-xl bg-background pa-4 px-4 position-relative d-flex flex-column"
-      :class="getVacation?.isOff ? 'offDay' : ''">
-      <div class="d-flex pl-2">
-        <v-scroll-x-transition mode="out-in">
-          <v-icon v-if="getVacation?.isOff" size="20" color="surfaceContainerHigh">
-            mdi-bag-carry-on-off
-          </v-icon>
-          <v-icon v-else-if="isRestDay" size="20" color="surfaceContainerHigh">
-            mdi-sleep
-          </v-icon>
-          <v-icon v-else-if="isShift" size="20" color="surfaceContainerHigh">
-            mdi-airport
-          </v-icon>
-          <v-icon v-else size="20" color="surfaceContainerHigh">
-            mdi-chair-rolling
-          </v-icon>
-        </v-scroll-x-transition>
+      :class="status === 'off' ? 'offDay' : ''">
+      <div class="d-flex pl-2 align-center ga-2">
+        <div v-if="!isBaseShift" class="d-flex align-center ga-1">
+          <span class="text-h6 font-weight-medium text-disabled" style="">{{
+            baseShift?.name }}</span>
+          <div class="d-flex align-center ga-1" v-for="(entry, index) in history" :key="index">
+            <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8;" />
+            <span v-if="entry.type === 'shift'" class="text-h6 font-weight-medium " style="">{{
+              entry.shiftData?.shift?.name }}</span>
+            <v-icon v-else :key="typeToIcon(entry?.type)" size="20" class="text-medium-emphasis">
+              {{ typeIcon(entry?.type) }}
+            </v-icon>
+            <span v-if="entry.wasOverride" class="text-caption text-disabled" style="">Override</span>
+          </div>
+        </div>
+        <!-- <div v-for="(shiftData, index) in shiftHistory" :key="index">
+          <v-icon  size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary"
+            style="opacity: 0.8;" />
+          <span class="text-h4 font-weight-medium" style="position: relative; top: 2px;">{{ shiftData?.shift?.name }}</span>
+        </div> -->
+
+
+
+
+        <v-chip rounded="lg" variant="flat" v-if="status === 'off'" size="small" color="error">
+          Congé
+        </v-chip>
       </div>
 
 
 
 
       <div class="d-flex align-center ga-2" style="position: absolute; top: 12px; right: 12px;">
-        <v-tooltip v-if="!isRemovable" text="Modifier" location="top">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon  size="small"
-            variant="text" @click="openEntryDialog()">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-         
-        </template>
-      
-      </v-tooltip>
-       <v-btn icon size="small" variant="text" @click="restoreInitialShift">
-        <v-icon>mdi-close</v-icon>
-       </v-btn>
+        <v-tooltip text="Modifier" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="openEntryDialog()">
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+
+          </template>
+
+        </v-tooltip>
+        <v-tooltip v-if="!isBaseShift" text="Annuler les modifications" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="restoreInitialShift">
+              <v-icon>mdi-undo-variant</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
       </div>
 
       <div class="d-flex align-center pl-2 ga-3 mt-1">
         <div v-if="isRestDay" class="pb-0 mb-0">
           <span v-if="isRestDay" class="text-h6 font-weight-medium">Repos</span>
         </div>
-        <div v-else-if="isShift" class="d-flex align-start flex-column justify-space-between">
-          <span class="text-h3 font-weight-medium" style="position: relative; top: 2px;">{{ getShiftName }}</span>
+
+        <div  class="d-flex align-start flex-column justify-space-between">
+          <span v-if="isShift && !isRestDay" class="text-h3 font-weight-medium"
+            :style="{ color: 'rgba(var(--v-theme-' + statusColor(status) + '), 0.8)' }"
+            style="position: relative; top: 2px;">{{ getShiftName }}</span>
           <div class="d-flex flex-column ga-1">
             <div class="d-flex align-center ">
-              <span class="text-caption font-weight-bold">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime
-                }}</span>
-              <span v-if="getShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
-                style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+              <!-- <span class="text-caption font-weight-bold">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime -->
+              <!-- }}</span> -->
+              
             </div>
-            <div v-if="getShiftTeam" class="py-0 text-caption opacity-70"
-              style="margin-top: -8px; font-size: 11px !important;">
-              Dans l'équipe {{ getShiftTeam }}
+            <div v-if="!isShift" class="d-flex align-start justify-space-between flex-column bg-primary rounded-xl">
+              <span class="text-h7 font-weight-medium pl-4 pr-4 py-2">{{ dayType }}</span>
             </div>
+            
           </div>
-         
+
         </div>
-        <div v-else class=" mt-3 d-flex flex-column justify-space-between ga-2 ">
-          <div class="d-flex align-start flex-column ga-1">
-            <div class="d-flex align-start justify-space-between flex-column bg-primary rounded-xl">
-              <span class="text-h7 font-weight-medium pl-4 pr-4 py-2">Bureau</span>
-            </div>
-            <div>
-              <span class="text-caption text-primary">J'ai bureau youpi</span>
-            </div>
+
+        <div class="d-flex  flex-column justify-space-between">
+          <HourRange v-if="getHours" :hours="getHours" :endsNextDay="getShiftEndsNextDay" />
+          <div v-if="getShiftTeam" class="py-0 text-caption opacity-70"
+            style="margin-top: -5px; font-size: 11px !important;">
+            Dans l'équipe {{ getShiftTeam }}
           </div>
-      
-          <span class="text-caption font-weight-bold">{{ "09:00 - 17:00" }}</span>
+          <div v-else style="margin-top: -5px; font-size: 11px !important;">
+            <span class="py-0 text-caption opacity-70">Commentaire bureau</span>
+          </div>
         </div>
       </div>
 
+
+
       <!-- Sélecteur de vacation élémentaire -->
-      <div v-if="!isRestDay  && isShift" class="mt-4 d-flex align-center justify-space-between align-self-end">
-        <div class="d-flex align-center ga-2 chips-container">
+      <div v-if="!isRestDay" class="mt-4 d-flex ga-2 align-center justify-space-between align-self-end">
+        <v-tooltip v-if="inPast && isShift" text="MDDA" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="small" variant="flat" :color="'primary'" @click="registerMDDA()"
+              :class="'selected'">
+              <v-icon>mdi-clock-fast</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+
+        <v-tooltip v-if="!isShift && !isOff" text="Modifier l'horaire" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="small" variant="flat" :color="'primary'" @click="patchHours()"
+              :class="'selected'">
+              <v-icon>mdi-clock-edit-outline</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <div v-if="isShift || hasNoDemand" class="d-flex align-center ga-2 chips-container">
           <div class="d-flex align-center chips-container-alt">
             <v-tooltip v-for="v in variations" :key="v._id" :text="v.startTime + ' - ' + v.endTime" location="top">
               <template #activator="{ props: tooltipProps }">
@@ -121,50 +171,52 @@
                 </v-btn>
               </template>
             </v-tooltip>
-            <v-tooltip :text="getVacation?.isOff ? 'Annuler l\'absence' : 'Déclarer une absence'" location="top">
+            <v-tooltip v-if="isShift" text="VIC" location="top">
               <template #activator="{ props: tooltipProps }">
-                <v-btn v-bind="tooltipProps" :disabled="!hasNoDemand"
-                  :color="getVacation?.isOff ? 'error' : 'surfaceContainerHigh'" icon rounded="lg" size="small" flat
-                  @click="registerAbsence" :class="getVacation?.isOff ? 'selected' : ''">
+                <v-btn v-bind="tooltipProps" icon size="small" variant="flat"
+                  :color="status === 'vic' ? 'warning' : 'surfaceContainerHigh'" @click="registerVIC">
+                  VIC
+                </v-btn>
+              </template>
+            </v-tooltip>
+            <v-tooltip v-if="hasNoDemand" :text="isOff ? 'Annuler l\'absence' : 'Déclarer une absence'" location="top">
+              <template #activator="{ props: tooltipProps }">
+                <v-btn v-bind="tooltipProps" :color="isOff ? 'error' : 'surfaceContainerHigh'" icon rounded="lg"
+                  size="small" flat @click="registerAbsence" :class="isOff ? 'selected' : ''">
                   <v-icon>mdi-cancel</v-icon>
                 </v-btn>
               </template>
             </v-tooltip>
           </div>
-          <v-scale-transition>
-            <div v-if="hasCustomEntry">
-              <v-tooltip text="Réinitialiser" location="top">
-                <template #activator="{ props: tooltipProps }">
-                  <v-btn v-bind="tooltipProps" color="transparent" flat @click="selectVariationForDay(null)"
-                    size="small" icon>
-                    <v-icon>mdi-refresh</v-icon>
-                  </v-btn>
-                </template>
-              </v-tooltip>
-            </div>
-          </v-scale-transition>
+
         </div>
       </div>
-<!-- 
-      <div class="d-flex flex-column align-end justify-end position-absolute" style="top: -38px; left: 0px;">
-        <ConfirmationChipExtended v-if="substitutionStore.hasAcceptedAsPoster(selectedDateIso)"
-          :date="new Date(selectedDate)" />
-        <PendingChipExtended v-if="substitutionStore.hasOwnPendingDemand(selectedDateIso)"
-          :date="new Date(selectedDate)" />
-        <AccepterChipExtended v-if="substitutionStore.hasAcceptedAsAccepter(selectedDateIso)"
-          :date="new Date(selectedDate)" />
-      </div> -->
     </div>
 
     <div
-      v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)"
+      
       class="d-flex justify-end ga-2 mt-4 position-relative">
       <v-slide-y-transition>
         <div v-if="isRestDay || isOff" class="text-error" style="position: absolute; top: 32px;">
           <span style="font-size: 10px !important; opacity: 0.6;">Impossible si absent ou repos</span>
         </div>
       </v-slide-y-transition>
-      <v-tooltip text="Proposer un échange" location="bottom">
+
+      <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex">
+        <v-btn color="error" height="36px" variant="tonal" class="flex-grow-1 d-flex flex-column rounded-xl text-none"
+          @click="$emit('cancel', lastOwnDemand)">
+          Annuler ma dernière demande
+        </v-btn>
+      </div>
+
+      <div v-if="acceptedAsAccepter?.length > 0" class="d-flex">
+        <v-btn color="error" height="36px" variant="tonal" :disabled="inPast"
+          class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg" @click="emit('withdraw', lastAccepted)">
+          Se désister
+        </v-btn>
+      </div>
+
+      <v-tooltip v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)" text="Proposer un échange" location="bottom">
         <template #activator="{ props: tooltipProps }">
           <v-btn v-bind="tooltipProps" height="36" color="surfaceContainerHighest"
             style="border-radius: 12px !important;" max-width="50" width="50" size="" :slim="true"
@@ -175,7 +227,7 @@
         </template>
       </v-tooltip>
 
-      <v-tooltip text="Demander un remplacement" location="bottom">
+      <v-tooltip v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)" text="Demander un remplacement" location="bottom">
         <template #activator="{ props: tooltipProps }">
           <v-btn v-bind="tooltipProps" height="36px" color="primary" :disabled="isRestDay || inPast || isOff" flat
             rounded="xl" :class="{ 'opacity-10': isRestDay || inPast || isOff }"
@@ -186,20 +238,7 @@
       </v-tooltip>
     </div>
 
-    <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex align-center justify-center mb-4 mx-4">
-      <v-btn color="error" height="48px" variant="tonal" 
-        class="flex-grow-1 d-flex flex-column rounded-xl text-none" @click="$emit('cancel', lastOwnDemand)">
-        Annuler ma dernière demande
-      </v-btn>
-    </div>
-
-    <div v-if="acceptedAsAccepter?.length > 0" class="d-flex align-center justify-center mb-4 mx-4">
-      <v-btn color="error" height="48px" variant="tonal" :disabled="inPast"
-        class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg"
-        @click="emit('withdraw', lastAccepted)">
-        Se désister
-      </v-btn>
-    </div>
+   
 
     <div class="d-flex ga-1 mb-2">
       <v-tooltip text="Remplacements disponibles" location="top">
@@ -243,12 +282,15 @@
   </v-sheet>
 
   <v-dialog v-model="entryDialog" max-width="500px">
-    <v-card class="rounded-xl pa-4">
-      <v-card-title>Ajouter une entrée</v-card-title>
-      <div class="d-flex ga-2">
-        <v-btn @click="addCustomEntry('office')">Bureau</v-btn>
-        <v-btn @click="addCustomEntry('stage')">Stage</v-btn>
-        <v-btn @click="addCustomEntry('training')">Formation</v-btn>
+    <v-card class="rounded-xl pa-6">
+      <span class="text-h6">Ajouter une entrée</span>
+      <div class="d-flex ga-2 mt-4 flex-wrap">
+        <v-btn v-for="entry in entryTypes" :key="entry.key" size="small" @click="addCustomEntry(entry.key)">
+          <template #prepend>
+            <v-icon>{{ "mdi-" + entry.icon }}</v-icon>
+          </template>
+          {{ entry.label }}
+        </v-btn>
       </div>
     </v-card>
   </v-dialog>
@@ -264,7 +306,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
-
+import { entryTypes } from '@/utils/entryIcons';
+import { getDemandIcon } from '@/utils/demandToIcon.js';
 
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
@@ -326,6 +369,30 @@ const typeToIcon = (type) => {
   }
 };
 
+const typeIcon = (type) => {
+  const entry = entryTypes.find((entry) => entry.key === type);
+  return entry ? "mdi-" + entry.icon : 'mdi-close';
+};
+
+const dayType = computed(() => {
+  const type = getVacation.value?.type;
+  const entryType = entryTypes.find((entry) => entry.key === type);
+  return entryType ? entryType.label : null
+});
+
+
+
+const statusColor = (status) => {
+  switch (status) {
+    case 'off':
+      return 'error';
+    case 'vic':
+      return 'warning';
+    default:
+      return 'onBackground';
+  }
+};
+
 // ─── Core computeds ───────────────────────────────────────────────────────────
 
 const getVacation = computed(() => {
@@ -336,18 +403,44 @@ const getVacation = computed(() => {
 /** ISO string of selectedDate — avoids repeated `new Date(...).toISOString()` calls in the template */
 const selectedDateIso = computed(() => new Date(props.selectedDate).toISOString());
 
-const isRestDay = computed(() => getVacation.value?.shift?.type === 'rest');
+const isRestDay = computed(() => getVacation.value?.shiftData?.shift?.type === 'rest');
 
 const isShift = computed(() => {
-  return !!getVacation.value?.shift
+  return !!getVacation.value?.shiftData?.shift
 });
 
-const isOff = computed(() => getVacation.value?.isOff);
+const history = computed(() => {
+  console.log(getVacation.value?.history)
+  return getVacation.value?.history
+
+});
+
+const status = computed(() => {
+  if (getVacation.value?.shiftData?.selectedVariation === "vic") return "vic";
+  if (getVacation.value?.shiftData?.selectedVariation) return 'variation';
+  return null;
+});
+
+const type = computed(() => {
+  return getVacation.value?.type;
+});
 
 const inPast = computed(() =>
   toDateKey(props.selectedDate) < toDateKey(new Date())
 );
 
+const isOff = computed(() =>
+  getVacation.value?.isOff
+);
+
+const isBaseShift = computed(() => {
+  return getVacation.value?.isBaseShift;
+});
+
+const baseShift = computed(() => {
+  console.log(getVacation.value)
+  return getVacation.value?.baseShift;
+});
 
 const openEntryDialog = () => {
   entryDialog.value = true;
@@ -358,7 +451,8 @@ const addCustomEntry = async (type, data) => {
   if (!dateKey) return;
   entryToRegister.value = {
     userId: authStore.userData.userId,
-    type,
+    type: 'assignment',
+    entryType: type,
     date: dateKey,
   }
   registerEntry(type);
@@ -368,10 +462,24 @@ const selectVariationForDay = async (variation) => {
   const dateKey = toDateKey(props.selectedDate);
   if (!dateKey) return;
   entryToRegister.value = {
-    type: 'shiftVariation',
+    type: 'modification',
+    entryType: 'variation',
     date: dateKey,
     selectedVariation: variation ? variation._id : null,
-    shift: getVacation.value?.shift?._id,
+    shift: getVacation.value?.shiftData?.shift?._id,
+    centerId: authStore.userData?.centerId,
+    confirmCreation: true
+  };
+  registerEntry();
+};
+
+const registerMDDA = async () => {
+  const dateKey = toDateKey(props.selectedDate);
+  if (!dateKey) return;
+  entryToRegister.value = {
+    type: 'hourPatch',
+    date: dateKey,
+    shift: getVacation.value?.shiftData?.shift?._id,
     centerId: authStore.userData?.centerId,
     confirmCreation: true
   };
@@ -386,6 +494,8 @@ const registerEntry = async (type) => {
       confirmationDialogMessage.value = res.message;
       return;
     }
+
+    console.log(res.userShift)
     entryDialog.value = false;
     shiftStore.addEntry(res.userShift[0], entryToRegister.value.date);
 
@@ -424,18 +534,17 @@ const confirmEntry = async () => {
 
 const registerAbsence = async () => {
   try {
-    const isCurrentlyOff = getVacation.value?.isOff;
     const res = await planningModificationService.registerEntry({
-      type: 'absence',
+      entryType: 'absence',
+      type: 'assignment',
       date: toDateKey(props.selectedDate),
-      shift: getVacation.value?.shift?._id,
-      isOff: !isCurrentlyOff,
-      comment: isCurrentlyOff ? 'Retour de congé' : 'Absence enregistrée',
+      cancel: isOff.value,
+      //shift: getVacation.value?.shiftData?.shift?._id,
+      comment: isOff.value ? 'Retour de congé' : 'Absence enregistrée',
       confirmCreation: true
     });
 
-    shiftStore.addEntry(res.userShift[0], entryToRegister.value.date);
-    console.log("res", res);
+    shiftStore.addEntry(res.userShift[0], toDateKey(props.selectedDate));
     entries.value = await fetchEntries();
   } catch (error) {
     console.error('Erreur lors de l\'enregistrement de l\'absence:', error);
@@ -443,44 +552,70 @@ const registerAbsence = async () => {
   };
 }
 
+const registerVIC = async () => {
+  try {
+    const res = await planningModificationService.registerEntry({
+      entryType: 'vic',
+      type: 'modification',
+      date: toDateKey(props.selectedDate),
+      shift: getVacation.value?.shiftData?.shift?._id,
+      confirmCreation: true
+    });
+
+    shiftStore.addEntry(res.userShift[0], toDateKey(props.selectedDate));
+    entries.value = await fetchEntries();
+  } catch (error) {
+    console.error('Erreur lors de l\'enregistrement de la VIC', error);
+
+  };
+}
+
+
 
 
 
 const getShiftName = computed(() => getDisplayShiftName(getVacation.value));
 
 const getShiftHours = computed(() => {
-  const shift = isOff.value ? getVacation.value?.initialShift : getVacation.value?.shift;
-  const selectedVariation = getVacation.value?.selectedVariation;
+  const shift = getVacation.value?.shiftData?.shift;
+  const selectedVariation = getVacation.value?.shiftData?.selectedVariation;
   const effective = shift ? getEffectiveShiftTimes(shift, selectedVariation) : null;
   return effective
     ? { startTime: effective.startTime, endTime: effective.endTime }
     : { startTime: '', endTime: '' };
 });
 
+const getHours = computed(() => {
+  if (getVacation.value?.startTime && getVacation.value?.endTime) {
+    return {startTime: getVacation.value?.startTime, endTime: getVacation.value?.endTime};
+  }
+  return null;
+});
+
 const getShiftEndsNextDay = computed(() => {
-  const shift = getVacation.value?.shift;
-  const selectedVariation = getVacation.value?.selectedVariation;
+  const shift = getVacation.value?.shiftData?.shift;
+  const selectedVariation = getVacation.value?.shiftData?.selectedVariation;
   const effective = shift ? getEffectiveShiftTimes(shift, selectedVariation) : null;
   return effective?.endsNextDay ?? false;
 });
 
-const getShiftTeam = computed(() => getVacation.value?.teamObject?.name || '');
+const getShiftTeam = computed(() => getVacation.value?.shiftData?.team?.name || '');
 
 // ─── Variations ───────────────────────────────────────────────────────────────
 
 const variations = computed(() => {
   if (!getVacation.value) return [];
-  return getVacation.value.shift?.variations ?? getVacation.value.initialShift?.variations ?? [];
+  return getVacation.value.shiftData?.shift?.variations
 });
 
 const isVariationSelected = (variation) => {
-  const current = getVacation.value?.selectedVariation;
+  const current = getVacation.value?.shiftData?.selectedVariation;
   if (!current || !variation) return false;
   return (current._id || current)?.toString?.() === (variation._id || variation)?.toString?.();
 };
 
 const hasCustomEntry = computed(() => {
-  return getVacation.value?.selectedVariation !== null || isOff.value;
+  return getVacation.value?.shiftData?.selectedVariation !== null || status.value === 'off';
 });
 
 const entryToRegister = ref(null);
@@ -550,7 +685,7 @@ const substitutionsDemands = computed(() => {
 
 
 const hasNoDemand = computed(() =>
-  !pendingDemand.value && !acceptedAsPoster.value && !acceptedAsAccepter.value
+  !pendingDemand.value && !acceptedAsPoster.value?.length && !acceptedAsAccepter.value?.length
 );
 
 const availableSubstitutions = computed(() =>
@@ -584,7 +719,7 @@ watch(() => props.selectedDate, async (value) => {
 
 .chips-container {
   transition: all 0.5s ease-in-out;
-  border-radius: 24px !important;
+
   padding: 4px;
   overflow-x: auto;
   overflow-y: hidden;

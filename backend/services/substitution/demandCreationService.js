@@ -2,6 +2,7 @@ import Substitution from "../../models/Substitution.js";
 import User from "../../models/User.js";
 import { computeShiftOfUserWithSubstitutions } from "../../utils/computeShiftOfUserWithSubstitutions.js";
 import { getTeamAtGivenDate } from "../../utils/getTeamAtGivenDate.js";
+import { AppError } from "../../error/appError.js";
 
 const MIN_POINTS_TO_POST_REQUEST = -40;
 
@@ -30,7 +31,7 @@ export async function createDemand(data) {
     // Vérification du shift de l'utilisateur
     const givenDate = new Date(posterShift.date);
     const userShifts = await computeShiftOfUserWithSubstitutions(givenDate, posterId);
-    const userShift = userShifts[0];
+    const userShift = userShifts[0].shiftData;
 
     if (!userShift || !userShift.shift) {
         throw new AppError("L'utilisateur n'a pas de shift défini pour cette date", 400);
@@ -77,8 +78,8 @@ export async function createDemand(data) {
         posterShift: {
             shift: userShift.shift._id,
             selectedVariation: selectedVariationId ? (selectedVariationId._id || selectedVariationId) : null,
-            teamId: userShift.teamObject._id,
-            date: userShift.date
+            teamId: userShift.team._id,
+            date: posterShift.date
         },
         comment: comment || '',
         points,

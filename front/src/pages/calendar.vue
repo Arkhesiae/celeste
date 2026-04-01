@@ -31,7 +31,7 @@
 
       <v-col
         cols="12"
-        lg="8"
+        lg=""
         class=""
       >
         <CalendarHeader
@@ -72,10 +72,15 @@
       </v-col>
 
       <!-- Side Panel (Desktop) -->
+
+      <v-col
+        cols="auto"
+        v-if="!mdAndDown"
+        style="width: 400px !important; max-width: 400px !important;"
+      >
     
       <CalendarSidePanel
-        v-if="selectedDate && !mdAndDown"
-        :cols="4"
+        v-if="selectedDate"
         :formatted-date="formattedDate"
         :selected-date="selectedDate"
         @open-rempla-dialog="openRemplaDialog"
@@ -84,6 +89,7 @@
         @withdraw="handleWithdraw"
       />
  
+      </v-col>
 
       <!-- Bottom Sheet (Mobile) -->
       <CalendarBottomSheet
@@ -212,7 +218,7 @@ const rotationsMap = ref(new Map());
 const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
   const v = vacationsOfUser.value.get(selectedDate.value.split('T')[0]);
-  return v ? { shift: v.shift, teamObject: v.teamObject, selectedVariation: v.selectedVariation } : null;
+  return v ? { shift: v.shiftData?.shift, teamObject: v.shiftData?.team, selectedVariation: v.shiftData?.selectedVariation } : null;
 });
 
 // const accepterName = computed(() => {

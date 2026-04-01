@@ -70,8 +70,6 @@ const consultDemand = async (req, res, next) => {
     const { userId } = req.user;
 
     try {
-
-
         if (!demandId) {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
@@ -195,6 +193,14 @@ const detectTeamChangeConflicts = async (req, res, next) => {
 
 const createDemand = async (req, res, next) => {
     try {
+        if (!req.body.posterShift.date) {
+            throw new AppError('La date est requise', 400);
+        }
+
+        if (!req.body.posterShift || !req.body.posterId || !req.body.points) {
+            throw new AppError('Paramètres manquants', 400);
+        }
+
         const demand = await demandCreationService.createDemand(req.body);
         res.status(201).json(demand);
 

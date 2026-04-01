@@ -73,31 +73,31 @@ export const useShiftStore = defineStore('shift', () => {
       dateKey = entry.date.split('T')[0];
     }
 
-    const { date, shift, teamObject, isSubstitution, substitutionType, initialShift, substitutionHistory, isOff, selectedVariation } = entry;
+    const { date, shiftData, isBaseShift, history, type, baseShift, isOff, startTime, endTime} = entry;
 
     let start = null;
     let end = null;
-    const effectiveTimes = shift ? getEffectiveShiftTimes(shift, selectedVariation) : null;
-    if (shift && shift.type !== 'rest') {
+    const effectiveTimes = shiftData?.shift ? getEffectiveShiftTimes(shiftData.shift, shiftData.selectedVariation) : null;
+    if (shiftData?.shift && shiftData.shift.type !== 'rest') {
       if (!effectiveTimes || !date || !effectiveTimes.startTime || !effectiveTimes.endTime) {
         return;
       }
-      const { startTime, endTime, endsNextDay } = effectiveTimes;
-      start = parseShiftDateTime(date, startTime, false);
-      end = parseShiftDateTime(date, endTime, endsNextDay);
+      const { startTime: effectiveStartTime, endTime: effectiveEndTime, endsNextDay } = effectiveTimes;
+      start = parseShiftDateTime(date, effectiveStartTime, false);
+      end = parseShiftDateTime(date, effectiveEndTime, endsNextDay);
     }
 
     const newValue = {
-      shift,
-      teamObject,
-      selectedVariation: selectedVariation || null,
+      type,
+      baseShift,
+      shiftData,
+      startTime,
+      endTime,
+      isOff,
       start,
       end,
-      isSubstitution: isSubstitution || false,
-      substitutionType: substitutionType || null,
-      initialShift: initialShift || null,
-      isOff: isOff || false,
-      substitutionHistory: substitutionHistory || []
+      isBaseShift,
+      history: history
     };
 
     persistentVacationsMap.value.set(dateKey, newValue);

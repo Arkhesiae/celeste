@@ -14,8 +14,6 @@ export const substitutionService = {
    * @returns {Promise<Array>} Liste des demandes de substitution
    */
   async fetchAndMarkAsSeen (dates, status) {
-
-
     // Vérifier que les dates sont définies
     if (!dates || !dates.startDate || !dates.endDate) {
       throw new Error('Les dates de début et de fin sont requises');
@@ -31,11 +29,14 @@ export const substitutionService = {
     if (status && status !== 'undefined') {
       requestBody.status = status;
     }
+
+   
     
     const response = await apiFetch(`/substitution/center`, {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
+
     return response;
   },
 

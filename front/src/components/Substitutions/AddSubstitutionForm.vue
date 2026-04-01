@@ -470,10 +470,10 @@ watch(() => props.dialogVisible, async (value) => {
     formattedDate.value = props.date ? toDisplayFormat(props.date) : '';
 
     // Pré-remplir la variante si l'agent l'a déjà choisie dans le calendrier
-    const sv = props.selectedShift?.selectedVariation;
-    if (sv) {
-      selectedVariant.value = (sv._id || sv)?.toString?.() || sv;
-    }
+    // const sv = props.selectedShift?.selectedVariation;
+    // if (sv) {
+    //   selectedVariant.value = (sv._id || sv)?.toString?.() || sv;
+    // }
 
     // Recharger les rotations pour avoir les variations à jour
     const centerId = authStore.userData?.centerId;

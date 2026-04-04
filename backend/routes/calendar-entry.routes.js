@@ -9,7 +9,7 @@ import {
     updateModification,
     restoreInitialShift,
     registerEntry
-} from '../controllers/calendarEntryController.js';
+} from '../controllers/calendarEntry.controller.js';
 
 // Routes pour les utilisateurs
 // router.post('/register', verifyToken, registerModification);

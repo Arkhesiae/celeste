@@ -1,52 +1,52 @@
 import express from 'express';
-import {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} from '../middleware/authMiddleware.js';
+import { verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin } from '../middleware/authMiddleware.js';
 import {
-    createUser,
-    getAllUsers,
-    getUserById,
-    deleteUserById,
-    getPointsById,
-    approveUser,
-    makeUserAdmin,
-    assignUserToCenter,
-    getUsersByCenter,
-    getUserTeamAtDate,
-    getUserCurrentTeam, 
-    getUsersAndGroupByTeam,
-    getUserTeamOccurrences,
-    deleteTeamOccurrence,
-    assignTeamToUser,
-    getUserShifts,
-    deletePendingUser,
-    getUserShiftsWithSubstitutions,
-    updateUserPreferences,
-    getUserPreferences,
-    transferPoints,
-    getTransactionHistory,
-    updateAvatar,
-    checkEmailAvailability,
-    updateEmail,
-    updatePhone,
-    updateBirthDate,
-    getUserInfoByEmail,
-    removeUserAdmin,
-    getDevListUsers,
-    deletePhone,
-  } from '../controllers/userController.js';
+  createUser,
+  getAllUsers,
+  getUserById,
+  deleteUserById,
+  getPointsById,
+  approveUser,
+  makeUserAdmin,
+  assignUserToCenter,
+  getUsersByCenter,
+  getUserTeamAtDate,
+  getUserCurrentTeam,
+  getUsersAndGroupByTeam,
+  getUserTeamOccurrences,
+  deleteTeamOccurrence,
+  assignTeamToUser,
+  getUserShifts,
+  deletePendingUser,
+  getUserShiftsWithSubstitutions,
+  updateUserPreferences,
+  getUserPreferences,
+  transferPoints,
+  getTransactionHistory,
+  updateAvatar,
+  checkEmailAvailability,
+  updateEmail,
+  updatePhone,
+  updateBirthDate,
+  getUserInfoByEmail,
+  removeUserAdmin,
+  getDevListUsers,
+  deletePhone,
+} from '../controllers/user.controller.js';
 import multer from 'multer';
 const router = express.Router();
 
 const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, 'public/avatars/')
-    },
-    filename: function (req, file, cb) {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-      cb(null, file.fieldname + '-' + uniqueSuffix+".png")
-    }
-  })
-  
-const upload = multer({ 
+  destination: function (req, file, cb) {
+    cb(null, 'public/avatars/')
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    cb(null, file.fieldname + '-' + uniqueSuffix + ".png")
+  }
+})
+
+const upload = multer({
   storage: storage,
   limits: {
     fileSize: 10 * 1024 * 1024 // 10MB
@@ -91,8 +91,8 @@ router.post('/update-birthDate', updateBirthDate);
 router.delete('/delete-phone', deletePhone);
 
 // Routes pour la gestion des utilisateurs (admin/master admin)
-router.get('/',  getAllUsers);
-router.get('/:id', isUserOrAdmin, getUserById); 
+router.get('/', getAllUsers);
+router.get('/:id', isUserOrAdmin, getUserById);
 router.post('/pending/:id/approve', isAdmin, approveUser);
 router.delete('/pending/:id', isAdmin, deletePendingUser);
 router.post('/:id/make-admin', isMasterAdmin, makeUserAdmin);

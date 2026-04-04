@@ -2,8 +2,8 @@ import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
-import { AppError } from '../../error/appError.js';
-import { cancelDemand, withdrawFromDemand } from '../substitution/demandMutationsService.js';
+import { AppError } from '../../error/AppError.js';
+import * as demandMutationsService from '../substitution/index.js';
 import overlap from '../../utils/overlapTest.js';
 
 /**
@@ -77,9 +77,9 @@ async function cancelSubstitutionAssignment (assignment) {
     const demand = await Substitution.findById(assignment.substitution.id);
     const isPoster = demand?.posterId.toString() === assignment?.userId.toString();
     if (isPoster) {
-        cancelDemand(demand._id);
+        demandMutationsService.cancelRequest(demand._id);
     } else {
-        withdrawFromDemand(demand._id, assignment.userId.toString());
+        demandMutationsService.withdrawFromRequest(demand._id, assignment.userId.toString());
     }
 }
 

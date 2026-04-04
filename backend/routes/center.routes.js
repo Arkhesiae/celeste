@@ -11,7 +11,7 @@ import {
     getActiveRotationsByCenter,
     getUsersCountByCenter,
     getAdminsByCenter
-} from '../controllers/centerController.js';
+} from '../controllers/center.controller.js';
 
 // Routes pour les centres
 router.get('/', getAllCenters);

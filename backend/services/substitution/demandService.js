@@ -2,91 +2,11 @@ import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { findLatestRotation } from '../../utils/findLatestRotation.js';
 import { generateShiftsMap } from '../../utils/generateShiftsMap.js';
-import { generateMapFromDemands } from '../../utils/generateShiftsMap.js';
 import { parseShiftUTC } from '../../utils/parseShiftTime.js';
 import { shiftMapToArray } from '../../utils/generateShiftsMap.js';
 import { checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../../utils/categorizeDemand.js';
-import { categorize } from '../../utils/categorizeDemand.js';
 import Rotation from '../../models/Rotation.js';
-import { AppError } from '../../error/appError.js';
-
-export async function getOpenDemands (userId, startDate, endDate) {
-    const user = await User.findById(userId).select('centerId');
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-    let parsedStartDate, parsedEndDate;
-
-
-    parsedStartDate = new Date(startDate);
-    parsedEndDate = new Date(endDate);
-    if (isNaN(parsedStartDate.getTime()) || isNaN(parsedEndDate.getTime())) {
-        throw new AppError('Format de date invalide', 400);
-    }
-    if (parsedStartDate > parsedEndDate) {
-        throw new AppError('Ordre des dates invalide', 400);
-    }
-
-    const dateFilter = parsedStartDate && parsedEndDate ? {
-        'posterShift.date': {
-            $gte: parsedStartDate,
-            $lte: parsedEndDate
-        }
-    } : {};
-
-    const baseFilter = {
-        centerId: user.centerId,
-        deleted: false,
-        status: { $in: ['open', 'accepted'] }
-    };
-
-    const options = [
-        { path: 'posterShift.shift', populate: { path: 'variations' } },
-        { path: 'posterShift.selectedVariation' },
-        { path: 'posterShift.teamId' },
-        { path: 'accepterShift.shift', populate: { path: 'variations' } },
-        { path: 'accepterShift.selectedVariation' },
-        { path: 'accepterShift.teamId' },
-        { path: 'acceptedSwitches.shift', select: '_id name' },
-    ];
-
-    const [demands, myDemands] = await Promise.all([
-        Substitution.find({
-            ...baseFilter,
-            posterId: { $ne: user._id },
-            ...dateFilter
-        }).populate(options),
-        Substitution.find({
-            ...baseFilter,
-            posterId: user._id,
-            ...dateFilter
-        }).populate(options),
-    ]);
-
-    await Substitution.updateMany(
-        { _id: { $in: demands.map(d => d._id) }, seenBy: { $ne: userId } },
-        { $addToSet: { seenBy: userId } }
-    );
-
-    console.log('demands', demands)
-    console.log('myDemands', myDemands)
-
-    const categorizedDemands = await categorizeDemands(demands, userId);
-
-    const mapIsNew = (demand) => {
-        const demandObj = demand.toObject ? demand.toObject() : demand;
-        return {
-            ...demandObj,
-            isNew: !demandObj.consultedBy || !demandObj.consultedBy.some(id => id.toString() === userId.toString())
-        };
-    };
-
-    const finalDemands = categorizedDemands.map(mapIsNew);
-    const finalMyDemands = myDemands.map(mapIsNew);
-
-    const result = [...finalDemands, ...finalMyDemands];
-    return result;
-};
+import { AppError } from '../../error/AppError.js';
 
 
 const verifyCompatibilities = async (demands, userId) => {
@@ -236,67 +156,6 @@ export async function getCompatibleSwitchesInRotation (date, userId, rotationId)
 
     return shifts;
 };
-
-/**
- * Catégorise les demandes d'un utilisateur
- * @param {Array<Object>} demands - Liste des demandes
- * @param {string} userId - ID de l'utilisateur à analyser
- * @returns {Promise<Array<Object>>} Liste des demandes catégorisées
- */
-export async function categorizeDemands (demands, userId) {
-    try {
-        // Filtrer uniquement les demandes ouvertes
-        const openDemands = demands.filter(d => d.status === 'open');
-
-        // Pré-calculer la map des shifts uniquement si nécessaire
-        const shiftsMap = openDemands.length > 0
-            ? await generateMapFromDemands(openDemands, userId)
-            : null;
-
-        // Catégoriser toutes les demandes en parallèle
-        const categorized = await Promise.all(
-            demands.map(async (demand) => {
-                if (demand.status === 'open') {
-                    return categorize(demand, shiftsMap);
-                }
-                return demand;
-            })
-        );
-
-        return categorized;
-    } catch (error) {
-        console.error('Erreur dans categorizeDemands:', error);
-        throw error;
-    }
-}
-
-/**
- * Recatégorise les substitutions pour un utilisateur
- * @param {Array<string>} substitutionIds - Liste des IDs des substitutions à recatégoriser
- * @param {string} userId - ID de l'utilisateur
- * @returns {Promise<Array<Object>>} Liste des substitutions recatégorisées
- */
-export async function recategorizeSubstitutions (substitutionIds, userId) {
-    if (!userId || !substitutionIds) {
-        throw new AppError('Paramètres manquants', 400);
-    }
-
-    // Récupérer les substitutions avec leurs shifts populés
-    const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate([
-        { path: 'posterShift.shift', populate: { path: 'variations' } },
-        { path: 'posterShift.selectedVariation' },
-        { path: 'acceptedSwitches.shift', select: '_id name' }
-    ]);
-
-    if (substitutions.length === 0) {
-        throw new AppError('Aucune substitution trouvée', 404);
-    }
-
-    // Recatégoriser les substitutions
-    const categorizedSubstitutions = await categorizeDemands(substitutions, userId);
-
-    return categorizedSubstitutions;
-}
 
 
 /**

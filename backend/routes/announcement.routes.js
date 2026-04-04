@@ -7,7 +7,7 @@ import {
   getHistory, 
   getStats, 
   deleteAnnouncement 
-} from '../controllers/announcementController.js';
+} from '../controllers/announcement.controller.js';
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();

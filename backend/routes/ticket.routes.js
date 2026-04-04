@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTickets, createTicket, markAsRead, deleteTicket, updateTicketStatus, markReplySent, sendReply, archiveTicket, restoreTicket } from '../controllers/ticketController.js';
+import { getTickets, createTicket, markAsRead, deleteTicket, updateTicketStatus, markReplySent, sendReply, archiveTicket, restoreTicket } from '../controllers/ticket.controller.js';
 import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
 import { handleInboundEmail } from '../services/emailIncomingService.js';
 

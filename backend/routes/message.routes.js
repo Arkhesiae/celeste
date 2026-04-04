@@ -1,5 +1,5 @@
 import express from 'express';
-import messageController from '../controllers/messageController.js';
+import messageController from '../controllers/message.controller.js';
 import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
 
 const router = express.Router();

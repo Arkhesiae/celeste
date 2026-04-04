@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import ruleController from '../controllers/ruleController.js';
+import ruleController from '../controllers/rule.controller.js';
 import { verifyToken, isMasterAdmin } from '../middleware/authMiddleware.js';
 
 // Récupérer toutes les règles (Public or Protected? Leaving as is based on existing file, but note it is before verifyToken)

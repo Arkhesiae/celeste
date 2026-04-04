@@ -2,7 +2,7 @@ import Substitution from "../../models/Substitution.js";
 import User from "../../models/User.js";
 import { shiftMapFromSingleDemand, shiftMapToArray } from "../../utils/generateShiftsMap.js";
 import { categorize } from "../../utils/categorizeDemand.js";
-import { AppError } from "../../error/appError.js";
+import { AppError } from "../../error/AppError.js";
 
 const getCompatibility = async (demandId, userId) => {
     const demand = await Substitution.findById(demandId).populate([

@@ -16,13 +16,4 @@ router.delete('/:id', verifyToken, isAdmin, workshiftController.deleteWorkshift)
 router.post('/:id/activate', verifyToken, isAdmin, workshiftController.addActivationDate);
 router.delete('/:id/activation-date', verifyToken, isAdmin, workshiftController.removeActivationDate);
 
-// Gestion erreur globale
-router.use((err, req, res, next) => {
-    console.error(err);
-    res.status(err.statusCode || 500).json({
-        message: err.message,
-        type: err.type || 'GeneralError',
-    });
-});
-
 export default router;

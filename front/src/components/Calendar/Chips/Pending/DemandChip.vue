@@ -28,12 +28,12 @@ const accepterUser = computed(() => {
 <template>
   <div
  
-    :style="`z-index: ${props.order}; transform: translateY(${(props.order - 1) * -5}px); box-shadow: 0 2px 1px 0px rgba(0,0,0, 0.4);`"
+    :style="`z-index: ${props.order}; transform: translateY(${(props.order - 1) * -5}px); box-shadow: 0 2px 1px 0px rgba(0,0,0, 0.2);`"
     class="clip d-flex align-center justify-center bg-primary rounded-lg pa-1 position-absolute bottom-0 right-0"
   >
     <v-icon
       size="16px"
-      color="primary"
+      color="onPrimary"
     >
      {{ getDemandIcon(props.demand, authStore.userData.userId) }}
     </v-icon>

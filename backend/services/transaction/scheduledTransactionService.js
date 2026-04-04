@@ -74,8 +74,8 @@ const processPendingTransactions = async () => {
  * @param {string} transactionId - ID de la transaction
  * @returns {Promise<Object>} La transaction annulée
  */
-const cancelDelayedTransaction = async (transactionId) => {
-    const transaction = await Transaction.findById(transactionId);
+const cancelDelayedTransaction = async (transactionId, { session }) => {
+    const transaction = await Transaction.findById(transactionId).session(session);
     if (!transaction) {
         throw new Error('Transaction non trouvée');
     }
@@ -85,7 +85,7 @@ const cancelDelayedTransaction = async (transactionId) => {
     }
 
     transaction.status = 'cancelled';
-    await transaction.save();
+    await transaction.save({ session });
     return transaction;
 };
 

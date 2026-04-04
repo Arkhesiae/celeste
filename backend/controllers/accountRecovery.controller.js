@@ -1,5 +1,6 @@
 import AccountRecoveryRequest from '../models/AccountRecoveryRequest.js';
 
+
 export const createRequest = async (req, res) => {
   try {
     const request = new AccountRecoveryRequest(req.body);
@@ -37,4 +38,3 @@ export const updateRequestStatus = async (req, res) => {
   }
 };
 
-export default accountRecoveryController; 

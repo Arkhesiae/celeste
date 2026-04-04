@@ -28,8 +28,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
-import './jobs/transactionJob.js';
-import './jobs/demandJob.js';
+import './jobs/index.js';
 
 // ─── Initialisation de l'admin ────────────────────────────────────────────────
 import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
@@ -82,13 +81,12 @@ app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-
 // Error handler — must be last
 app.use(errorHandler);
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
 const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 30_000;
+const RETRY_DELAY_MS = 5_000;
 
 async function connectWithRetry (attempt = 1) {
   try {

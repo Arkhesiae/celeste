@@ -1,10 +1,10 @@
 import express from 'express';
 const router = express.Router();
-import { verifyToken, isUserOrAdmin, isAdmin } from '../middleware/authMiddleware.js';
-import * as substitutionController from '../controllers/substitutionController.js';
+import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
+import * as substitutionController from '../controllers/substitution.controller.js';
 
 // Routes protégées par token
-router.post('/center', verifyToken, substitutionController.getCenterDemands);
+router.post('/center', verifyToken, substitutionController.getCenterRequests);
 
 router.get('/center/:centerId/all', verifyToken, isAdmin, substitutionController.getAllCenterDemands);
 

@@ -2,7 +2,6 @@ import { LegacyUser, User } from '../models/User.js';
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
 
-// Recherche d'utilisateur(s) LegacyUser par nom ou email
 export const fetchLegacyUser = async (req, res) => {
     try {
         const { login, center } = req.query;

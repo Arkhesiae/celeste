@@ -1,5 +1,5 @@
 import express from 'express';
-import rotationController from '../controllers/rotationController.js';
+import rotationController from '../controllers/rotation.controller.js';
 import {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} from '../middleware/authMiddleware.js';
 
 const router = express.Router();

@@ -4,7 +4,7 @@ import Substitution from '../../models/Substitution.js';
  * Archive les demandes de substitution ouvertes dont les dates sont passées
  * @returns {Promise<number>} Nombre de demandes archivées
  */
-const processPastDemands = async () => {
+export const processPastDemands = async () => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
@@ -33,7 +33,7 @@ const processPastDemands = async () => {
     return pastDemands.length;
 };
 
-const processAndCompleteDemands = async () => {
+export const processAndCompleteDemands = async () => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const completedDemands = await Substitution.find({
@@ -52,4 +52,4 @@ const processAndCompleteDemands = async () => {
     return completedDemands.length;
 };
 
-export { processPastDemands, processAndCompleteDemands };
+

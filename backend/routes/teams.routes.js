@@ -9,7 +9,7 @@ import {
     updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder
-} from '../controllers/teamController.js';
+} from '../controllers/team.controller.js';
 
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
 

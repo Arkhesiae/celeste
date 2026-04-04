@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import statController from '../controllers/statController.js';
+import statController from '../controllers/stat.controller.js';
 
 
 /**

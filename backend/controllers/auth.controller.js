@@ -2,6 +2,8 @@ import * as authService from '../services/auth/authService.js';
 import * as resetPasswordService from '../services/auth/resetPasswordService.js';
 import User from '../models/User.js';
 
+
+
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -37,8 +39,6 @@ const loginUser = async (req, res) => {
 const refreshAccessToken = async (req, res) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
-
-        console.log("refreshToken", refreshToken);
 
         if (!refreshToken) {
             return res.status(401).json({ code : 'AUTH_TOKEN_MISSING', error: 'Token manquant' });

@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { processPastDemands, processAndCompleteDemands } from '../services/substitution/demandProcessingService.js';
+import { processPastDemands, processAndCompleteDemands } from '../services/substitution/request.internal.js';
 
 // Exécuter toutes les 30 minutes
 cron.schedule('*/30 * * * *', async () => {

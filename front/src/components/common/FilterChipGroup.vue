@@ -3,7 +3,7 @@
     wrap
     :model-value="modelValue" 
     variant="flat"
-    color="onBackground"
+
     mandatory 
     class="" 
     :class="smAndDown ? ' ' : ' '"
@@ -57,7 +57,7 @@ const { smAndDown } = useDisplay();
 
 <style scoped>
 .chip-custom {
-    background-color: rgba(var(--v-theme-surfaceContainer), 0.1) !important;
+    background-color: rgba(var(--v-theme-surfaceContainerHigh), 1) !important;
     color: rgba(var(--v-theme-onBackground), 0.7) !important;
     font-size:.75rem !important;
 }
@@ -70,5 +70,10 @@ const { smAndDown } = useDisplay();
 .chip-custom.v-chip--selected.chip-error {
     background-color: rgba(var(--v-theme-error), 0.1) !important;
     color: rgba(var(--v-theme-error), 0.8) !important;
+}
+
+.chip-custom.v-chip--selected{
+   
+    border-radius: 12px !important;
 }
 </style>

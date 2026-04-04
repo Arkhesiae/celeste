@@ -316,7 +316,7 @@ const handleSubmit = async (demand) => {
         points: demand.points,
         status: 'open',
         acceptedSwitches: demand.acceptedSwitches,
-        isTrueSwitch: demand.isTrueSwitch
+
       };
 
       await substitutionStore.createSubstitutionDemand(requestData);

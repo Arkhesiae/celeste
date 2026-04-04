@@ -3,42 +3,7 @@ import { isValidDate } from '../utils/validation.js';
 
 const VALID_TYPES = ['absence', 'custom', 'selectedVariation'];
 
-// // Créer ou mettre à jour une modification de planning
-// const registerModification = async (req, res) => {
-//     try {
-//         const userId = req.user.userId;
-//         const { type, date, comment, selectedVariation, shift, isOff } = req.body;
 
-//         if (!type || !date) {
-//             return res.status(400).json({ error: 'Les champs type et date sont requis' });
-//         }
-
-//         if (!isValidDate(date)) {
-//             return res.status(400).json({ error: 'La date est invalide' });
-//         }
-
-//         const result = await calendarEntryService.upsertModification(userId, date, {
-//             type,
-//             comment,
-//             selectedVariation,
-//             shift,
-//             isOff
-//         });
-
-//         res.status(201).json({
-//             message: 'Entrée créée avec succès',
-//             ...result
-//         });
-
-//     } catch (error) {
-//         console.error('Erreur lors de la création de l\'entrée:', error);
-//         res.status(error.status ?? 500).json({
-//             error: error.status ? error.message : 'Une erreur est survenue lors de la création de l\'entrée'
-//         });
-//     }
-// };
-
-// Créer ou mettre à jour une entrée de planning
 const registerEntry = async (req, res) => {
     try {
         const userId = req.user.userId;

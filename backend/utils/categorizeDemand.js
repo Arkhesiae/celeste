@@ -5,8 +5,12 @@ import { parseShiftUTC } from './parseShiftTime.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
-
-
+/**
+ * Catégorise une demande de substitution
+ * @param {Object} demand - Demande de substitution avec posterShift et accepterShift et teamObject
+ * @param {Object} shiftsMap - Carte des shifts
+ * @returns {Object} Demande catégorisée
+ */
 const categorize = async (demand, shiftsMap = null) => {
     try {
         const demandDate = new Date(demand.posterShift.date);
@@ -18,7 +22,6 @@ const categorize = async (demand, shiftsMap = null) => {
         }
 
         const vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
-        console.log(vacationOfFetcher);
         const localMap = new Map(shiftsMap);
 
         const demandData = {

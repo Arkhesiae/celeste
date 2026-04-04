@@ -1,7 +1,7 @@
 import express from 'express';
 
-import { fetchLegacyUser, initiateAccountRecovery } from '../controllers/recoveryController.js';
-import { createUser } from '../controllers/userController.js';
+import { fetchLegacyUser, initiateAccountRecovery } from '../controllers/recovery.controller.js';
+import { createUser } from '../controllers/user.controller.js';
 
 const router = express.Router();
 

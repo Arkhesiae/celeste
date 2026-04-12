@@ -32,7 +32,7 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ code : error.code, error: error.message });
         }
 
-        res.status(500).json({ error: 'Une erreur est survenue lors de la connexion' });
+        next(error);
     }
 }
 
@@ -65,7 +65,7 @@ const refreshAccessToken = async (req, res) => {
             return res.status(401).json({ code : error.code, error: error.message });
         }
 
-        res.status(500).json({ error: 'Une erreur est survenue lors du rafraîchissement du token' });
+        next(error);
     }
 }
 
@@ -108,30 +108,7 @@ const requestPasswordReset = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Erreur lors de la demande de réinitialisation:', error);
-
-        if (error.message === 'Aucun utilisateur trouvé avec cet email') {
-            return res.status(404).json({ message: error.message });
-        }
-
-        // En cas d'erreur d'envoi d'email, nettoyer le token
-        if (error.message.includes('email')) {
-            try {
-                const user = await User.findOne({ email: req.body.email });
-                if (user) {
-                    user.resetPasswordToken = undefined;
-                    user.resetPasswordExpires = undefined;
-                    await user.save();
-                }
-            } catch (cleanupError) {
-                console.error('Erreur lors du nettoyage du token:', cleanupError);
-            }
-
-            return res.status(500).json({
-                message: 'Erreur lors de l\'envoi de l\'email de réinitialisation. Veuillez réessayer.'
-            });
-        }
-
-        res.status(500).json({ message: 'Une erreur est survenue' });
+        next(error);
     }
 }
 
@@ -144,12 +121,7 @@ const resetPassword = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Erreur lors de la réinitialisation du mot de passe:', error);
-
-        if (error.message === 'Token invalide ou expiré') {
-            return res.status(400).json({ message: error.message });
-        }
-
-        res.status(500).json({ message: 'Une erreur est survenue' });
+        next(error);
     }
 }
 
@@ -162,16 +134,7 @@ const verifyPassword = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Erreur lors de la vérification du mot de passe:', error);
-
-        if (error.message === 'Utilisateur non trouvé') {
-            return res.status(404).json({ message: error.message });
-        }
-
-        if (error.message === 'Mot de passe actuel incorrect') {
-            return res.status(401).json({ message: error.message });
-        }
-
-        res.status(500).json({ message: 'Une erreur est survenue' });
+        next(error);
     }
 }
 
@@ -184,12 +147,7 @@ const updatePassword = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Erreur lors de la mise à jour du mot de passe:', error);
-
-        if (error.message === 'Utilisateur non trouvé') {
-            return res.status(404).json({ message: error.message });
-        }
-
-        res.status(500).json({ message: 'Une erreur est survenue' });
+        next(error);
     }
 }
 

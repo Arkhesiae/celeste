@@ -169,7 +169,7 @@ const Assignment = CalendarEntry.discriminator('assignment', AssignmentSchema)
 const ModificationSchema = new mongoose.Schema({
     subType: {
         type: String,
-        enum: ['absence', 'vic', 'variation'],
+        enum: ['disp', 'vic', 'variation', 'pres'],
         required: true
     },
     shiftData: ShiftDataSchema

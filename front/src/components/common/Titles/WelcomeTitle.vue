@@ -1,55 +1,32 @@
 <template>
-  <div
-    class="position-relative mx-n4 d-flex flex-column"
-    :style="{ height: `${headerHeight}px` }"
-  >
-    <div
-      ref="placeholder"
-      :style="{ height: `${headerHeight}px`, width: '100%' }"
-      class="position-absolute "
-    />
-    <div
-      ref="titleRef"
-      :class="['main-title px-4  py-16']"
-      :style="headerStyle"
-      class=""
-    >
-      <div class="d-flex justify-space-between align-center mb-2">
-        <div class="d-flex flex-column">
-          <div class="d-flex align-center">
-            <span
-              :style="{ fontSize: titleFontSize + 'px !important' }"
-              class="text-h4 d-inline-block font-weight-medium font-weight-bold"
-            >Bienvenue </span>
-            <span
-              :style="{ fontSize: titleFontSize + 'px !important' }"
-              class="text-h4 d-inline-block font-weight-medium ml-2 gradient font-weight-bold"
-            >{{ userName }}</span>
-          </div>
-          <span
-            :style="{ fontSize: subtitleFontSize + 'px !important' }"
-            style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;"
-            class="opacity-50"
-          > Tableau de bord </span>
-        </div>
-
-        <div
-          ref="actionsRef"
-          class="flex-shrink-0"
-        >
-          <slot name="actions" />
-        </div>
+ <div class="d-flex ga-6 align-center my-16" :class="smAndDown ? 'justify-center' : 'justify-start'">
+    <v-avatar :size="avatarSize" color="primary">
+      <v-img src="https://cdn.vuetifyjs.com/images/john.png"></v-img>
+    </v-avatar>
+    <div class="d-flex flex-column" :class="smAndDown ? 'align-center' : 'align-start'">
+      <div class="d-flex align-center">
+        <span :style="{ fontSize: titleFontSize + 'px !important' }"
+          class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
+        <span :style="{ fontSize: titleFontSize + 'px !important' }"
+          class="text-h4 d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold">{{ userName }}</span>
       </div>
+      <span :style="{ fontSize: subtitleFontSize + 'px !important' }"
+        style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50">
+        Tableau de bord </span>
     </div>
+
+
   </div>
 </template>
 
 <script setup>
 import { useDisplay } from 'vuetify'
 
-
 const { smAndDown } = useDisplay()
 
+const avatarSize = computed(() => {
+  return smAndDown.value ? 32 : 48
+})
 
 defineProps({
   userName: {
@@ -278,4 +255,6 @@ img.logo-xs {
   transform-origin: bottom right;
   transform: scale(0.8) translateX(20px);
 }
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
 </style>

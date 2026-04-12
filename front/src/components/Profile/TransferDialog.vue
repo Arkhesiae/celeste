@@ -2,30 +2,35 @@
   <v-dialog v-model="localDialogVisible" max-width="500">
     <v-card rounded="xl" class="pa-6">
       <v-card-title class="pa-0">
-        Faire un Virement
+        Faire un virement
       </v-card-title>
       <v-card-text class="pa-0 py-6 ">
         <v-form @submit.prevent="confirmTransfer">
-          <v-number-input
-v-model="transferAmount" class="text-primary" reverse control-variant="split" label=""
-            rounded="xl" bg-color="surfaceContainer" color="blue" glow :hide-input="false" inset
-            base-color="transparent" variant="outlined" :min="0"
-            :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']" />
+          <div class="d-flex align-center w-100 flex-column ga-6">
+            <div class="d-flex align-center w-100">
+              <v-number-input v-model="transferAmount" variant="underlined" elevation="0" reverse control-variant="split" label=""
+                rounded="xl"  :hide-input="false" 
+                :min="0"
+                :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']" />
+            </div>
+            <div class="d-flex align-center w-100">
+           <v-autocomplete v-model="transferRecipient" :items="availableUsers" :item-title="getUserFullName"
+              item-value="_id" label="Destinataire" elevation="0" color="surfaceContainerHighest" rounded="xl"
+              :loading="isLoadingUsers" :rules="[v => !!v || 'Le destinataire est requis']" class="mb-4">
+              <template #item="{ props, item }">
+                <v-list-item v-bind="props" :title="getUserFullName(item.raw)" :subtitle="getUserSubtitle(item.raw)">
+                  <template #prepend>
+                    <v-avatar size="32" color="primary">
+                      {{ getUserFullName(item.raw).charAt(0) }}
+                    </v-avatar>
+                  </template>
+                </v-list-item>
+              </template>
+            </v-autocomplete>
+            </div>
+          </div>
 
-          <v-autocomplete
-v-model="transferRecipient" :items="availableUsers" :item-title="getUserFullName"
-            item-value="_id" label="Destinataire" variant="solo" elevation="0" bg-color="onBackground" rounded="xl"
-            :loading="isLoadingUsers" :rules="[v => !!v || 'Le destinataire est requis']" class="mb-4">
-            <template #item="{ props, item }">
-              <v-list-item v-bind="props" :title="getUserFullName(item.raw)" :subtitle="getUserSubtitle(item.raw)">
-                <template #prepend>
-                  <v-avatar size="32" color="primary">
-                    {{ getUserFullName(item.raw).charAt(0) }}
-                  </v-avatar>
-                </template>
-              </v-list-item>
-            </template>
-          </v-autocomplete>
+   
 
           <!-- <v-checkbox
             v-model="isDelayedTransfer"
@@ -34,8 +39,7 @@ v-model="transferRecipient" :items="availableUsers" :item-title="getUserFullName
             class="mb-4"
           ></v-checkbox> -->
 
-          <v-text-field
-v-if="isDelayedTransfer" v-model="transferDate" type="date" label="Date du virement"
+          <v-text-field v-if="isDelayedTransfer" v-model="transferDate" type="date" label="Date du virement"
             variant="solo" elevation="0"
             :rules="[v => !!v || 'La date est requise', v => isFutureDate(v) || 'La date doit être dans le futur']"
             :min="minDate" />
@@ -197,12 +201,12 @@ const getUserFullName = (user) => {
 
 <style scoped>
 :deep(.v-number-input .v-field__field input) {
-  color: rgb(var(--v-theme-remplacement)) !important;
-  font-size: 1.5rem;
+
+  font-size: 50px;
   font-weight: 600;
 }
 
-:deep(.v-number-input.secondary .v-field__field input) {
+/* :deep(.v-number-input.secondary .v-field__field input) {
   color: rgb(var(--v-theme-secondary)) !important;
   font-size: 1rem;
   font-weight: 600;
@@ -213,5 +217,5 @@ const getUserFullName = (user) => {
   background-color: rgb(var(--v-theme-surface-container)) !important;
 
 
-}
+} */
 </style>

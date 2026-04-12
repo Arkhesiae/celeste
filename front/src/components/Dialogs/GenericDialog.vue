@@ -134,7 +134,6 @@ const { smAndDown } = useDisplay();
 const isScrolled = ref(false)
 const sentinel = ref(null)
 
-// Methods
 const handleClose = () => {
   emit('close')
   emit('update:modelValue', false)
@@ -151,20 +150,6 @@ const handleAfterLeave = () => {
     observer.unobserve(sentinel.value)
   }
 }
-
-// watch(() => props.modelValue, (newValue) => {
-//   if (newValue && props.persistent) {
-//     document.addEventListener('keydown', handleEscapeKey)
-//   } else {
-//     document.removeEventListener('keydown', handleEscapeKey)
-//   }
-// })
-
-// const handleEscapeKey = (event) => {
-//   if (event.key === 'Escape' && props.persistent) {
-//     event.preventDefault()
-//   }
-// }
 
 let observer = null
 
@@ -183,9 +168,6 @@ onMounted(() => {
 onUnmounted(() => {
   observer?.disconnect()
 })
-// onUnmounted(() => {
-//   document.removeEventListener('keydown', handleEscapeKey)
-// })
 </script>
 
 <style scoped>

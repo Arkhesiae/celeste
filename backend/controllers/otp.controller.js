@@ -1,6 +1,7 @@
 import Otp from '../models/Otp.js';
 import { sendEmailOtp } from '../services/email/otpEmail.js';
 import crypto from 'crypto';
+import { AppError } from '../error/AppError.js';
 
 const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
@@ -11,7 +12,7 @@ export const sendOtp = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ message: 'L\'email est requis' });
+      throw new AppError('L\'email est requis', 400);
     }
     
 
@@ -23,7 +24,7 @@ export const sendOtp = async (req, res) => {
       const nextTryMinutes = Math.floor((10 * 60 - timeSinceLastOtp) / 60);
       const nextTrySeconds = (10 * 60 - timeSinceLastOtp) % 60;
       
-      return res.status(400).json({ message: 'Le code envoyé précédemment est toujours valide. Prochaine tentative dans ' + nextTryMinutes + 'm' + nextTrySeconds + 's'  });
+      throw new AppError('Le code envoyé précédemment est toujours valide. Prochaine tentative dans ' + nextTryMinutes + 'm' + nextTrySeconds + 's', 400);
     }
 
     // Générer un nouveau code OTP
@@ -51,8 +52,7 @@ export const sendOtp = async (req, res) => {
 
     res.json({ message: 'Code OTP envoyé avec succès' });
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'OTP:', error);
-    res.status(500).json({ message: 'Erreur lors de l\'envoi du code' });
+    next(error);
   }
 };
 
@@ -61,7 +61,7 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     if (!email || !otp) {
-      return res.status(400).json({ message: 'L\'email et le code OTP sont requis' });
+      throw new AppError('L\'email et le code OTP sont requis', 400);
     }
 
     // Rechercher l'OTP valide
@@ -73,7 +73,7 @@ export const verifyOtp = async (req, res) => {
     });
 
     if (!otpRecord) {
-      return res.status(400).json({ message: 'Code OTP invalide ou expiré' });
+      throw new AppError('Code OTP invalide ou expiré', 400);
     }
 
     // Marquer l'OTP comme utilisé
@@ -82,8 +82,7 @@ export const verifyOtp = async (req, res) => {
 
     res.json({ verified: true, message: 'Code OTP vérifié avec succès' });
   } catch (error) {
-    console.error('Erreur lors de la vérification de l\'OTP:', error);
-    res.status(500).json({ message: 'Erreur lors de la vérification de l\'OTP' });
+    next(error);
   }
 };
 

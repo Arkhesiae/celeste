@@ -3,6 +3,7 @@
     <div
       class="dot-big"
       :class="dotClass"
+      v-if="dot"
     />
     <v-card
       :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'"
@@ -271,6 +272,11 @@ const props = defineProps({
     type: Boolean,
     required: false,
     default: false
+  },
+  dot: {
+    type: Boolean,
+    required: false,
+    default: true
   }
 });
 

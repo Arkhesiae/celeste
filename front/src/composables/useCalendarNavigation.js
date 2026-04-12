@@ -1,59 +1,36 @@
-;
-import { useDate } from 'vuetify';
-
 export function useCalendarNavigation () {
-  const date = useDate();
-  const selectedDate = ref(null);
-  const currentLocalDate = ref(new Date());
-  const selectedMonth = ref(currentLocalDate.value.getMonth());
-  const selectedYear = ref(currentLocalDate.value.getFullYear());
+  const today = Temporal.Now.plainDateISO();
 
-  const formattedDate = computed(() =>
-    selectedDate.value ? date.format(selectedDate.value, "fullDate") : ''
-  );
-
-  const handleMonthUpdate = (month) => {
-    selectedMonth.value = month;
-  };
-
-  const handleYearUpdate = (year) => {
-    selectedYear.value = year;
-  };
+  const currentMonth = ref(today.month); // 1-based
+  const currentYear = ref(today.year);
+  const selectedMonth = ref(today.month);
+  const selectedYear = ref(today.year);
 
   const navigateMonth = (direction) => {
-    let newMonth = selectedMonth.value + direction;
-    let newYear = selectedYear.value;
+    const current = Temporal.PlainDate.from({
+      year: selectedYear.value,
+      month: selectedMonth.value,
+      day: 1,
+    });
 
-    if (newMonth > 11) {
-      newMonth = 0;
-      newYear++;
-    } else if (newMonth < 0) {
-      newMonth = 11;
-      newYear--;
-    }
+    const next = current.add({ months: direction });
 
-    selectedMonth.value = newMonth;
-    selectedYear.value = newYear;
+    selectedMonth.value = next.month;
+    selectedYear.value = next.year;
   };
 
-  const handleSwipeLeft = () => {
-    navigateMonth(1);
+  const goToToday = () => {
+    selectedMonth.value = currentMonth.value;
+    selectedYear.value = currentYear.value;
   };
 
-  const handleSwipeRight = () => {
-    navigateMonth(-1);
-  };
+
+  
 
   return {
-    selectedDate,
-    formattedDate,
-    currentLocalDate,
     selectedMonth,
     selectedYear,
-    handleMonthUpdate,
-    handleYearUpdate,
     navigateMonth,
-    handleSwipeLeft,
-    handleSwipeRight
+    goToToday,
   };
-} 
+}

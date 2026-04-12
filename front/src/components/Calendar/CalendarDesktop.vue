@@ -1,72 +1,31 @@
 <template>
   <v-sheet rounded="xl" elevation="0" color="transparent">
     <!-- En-têtes des jours de la semaine -->
-    <v-row class="mt-1">
+    <v-row class=" mb-4 px-2">
       <v-col v-for="day in daysOfWeek" :key="day" class="text-center">
-        <strong>{{ day }}</strong>
+        <span class="week-day">{{ day }}</span>
       </v-col>
     </v-row>
 
     <!-- Jours du calendrier -->
-    <v-row v-for="(week, index) in calendarDays" :key="index" class="calendar-row" dense>
-      <v-col v-for="day in week" :key="day.date">
-        <v-card width="100%" min-width="100%" flat :color="getColor(day.date)"
-          class="d-flex flex-column calendar-day pa-0 overflow-visible" :style="{
-            'opacity': getOpacity(day)
-          }" :class="{
-            'isWorkDay': isWorkDay(day.date),
-            'today-center-highlight': isToday(day.date),
+    <v-row v-for="(week, index) in calendarDays" :key="index" dense>
+      <v-col v-for="day in week" :key="day.date" >
+        <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
+          :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"
+          :demands="demandsForDate(plainDateToDateStr(day))"
+          :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
+          :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
+          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))"
+          @select="selectDate"
+          class="pa-3"
+          :height="86"
+          :class="{
             'top-left-corner': index === 0 && week.indexOf(day) === 0,
             'top-right-corner': index === 0 && week.indexOf(day) === week.length - 1,
             'bottom-left-corner': index === calendarDays.length - 1 && week.indexOf(day) === 0,
             'bottom-right-corner': index === calendarDays.length - 1 && week.indexOf(day) === week.length - 1,
-
-
-          }" @click="$emit('select-day', day.date)">
-          <!-- Contenu principal de la carte -->
-
-          <div class="d-flex justify-space-between px-4 pt-2 align-center  w-100">
-            <span :style="isWorkDay(day.date) ? 'font-weight : 900 !important' : 'font-weight : 500'">
-              {{ day.date.getUTCDate() }}
-            </span>
-
-            <div v-if="isWorkDay(day.date)" class="pa-0 shift-name" :class="isOff(day.date) ? 'offDay' : ''">
-              {{ getShiftName(day.date) }}
-            </div>
-            <div v-else-if="getIcon(day.date)" class="d-flex shift-name align-center">
-              <v-icon size="16px">{{ getIcon(day.date) }}</v-icon>
-
-            </div>
-          </div>
-
-
-
-          <div class="d-flex justify-center position-absolute mb-2 mr-2" style="bottom: 0; right: 0;">
-            <div v-for="(demand, index) in demandsForDate(day.date)" :key="demand.id">    
-              <DemandChip :order="index + 1" :demand="demand"  :date="day.date"  />
-            </div>
-            <!-- <div v-if="demandsForDate(day.date).length > 1" class="chipe position-absolute " style="top: 50%; left: -5px;">
-              <v-icon size="14px" color="onPrimary"> mdi-plus</v-icon>
-              <!-- <span class="text-caption" v-if="demandsForDate(day.date).length > 1"> + {{ demandsForDate(day.date).length - 1 }}</span> -->
-            <!-- </div> -->
-          </div>
-
-          <!-- <StatusChip v-if="getStatus(day.date.toISOString()) !== ''" style="bottom:8px !important; right: 8px !important" :date="day.date.toISOString()" :status="getStatus(day.date.toISOString())"/> -->
-
-
-
-          <div class="d-flex justify-center position-absolute mb-4 ml-4" style="bottom: 0; left: 0;">
-            <div v-if="substitutionStore.hasAvailableSubstitutions(day.date.toISOString())"
-              class="indicator-dot remplacement " style="background: rgb(var(--v-theme-primary)) !important" />
-            <div v-if="substitutionStore.hasAvailableSwitches(day.date.toISOString())"
-              class="indicator-dot permutation ml-1" style="background: rgb(var(--v-theme-primary)) !important" />
-            <div v-if="substitutionStore.hasOtherDemands(day.date.toISOString())"
-              class="indicator-dot other-demand ml-1"
-              style="background: rgba(var(--v-theme-error), .3) !important; border: 1px solid rgba(var(--v-theme-onBackground), 0.05) !important" />
-          </div>
-
-
-        </v-card>
+          }"
+          />
       </v-col>
     </v-row>
   </v-sheet>
@@ -77,140 +36,99 @@ import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
-import { useAuthStore } from '@/stores/authStore';
 
-
-const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
 
 const props = defineProps({
-  daysOfWeek: Array,
   calendarDays: Array,
   isSelected: Function,
-  isToday: Function,
   rotationsMap: Map,
 });
 
 
-// Normalize once for consistent comparison
-const toDateStr = (date) => new Date(date).toISOString().split('T')[0];
+const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-// Single flat array of all relevant demands, computed once
-const allDemands = computed(() => [
-  ...substitutionStore.ownPendingHybridSubstitutions,
-  ...substitutionStore.ownPendingTrueSubstitutions,
-  ...substitutionStore.ownPendingTrueSwitches,
-  ...substitutionStore.acceptedAsAccepter,
-  ...substitutionStore.acceptedAsPoster,
-].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)));
+const emit = defineEmits(['update:selectedDate', 'swipe-left', 'swipe-right']);
 
-// Simple filter function — no computed wrapper needed
-const demandsForDate = (date) => {
-  if (!date) return [];
-  const dateStr = toDateStr(date);
-  return allDemands.value.filter(d => toDateStr(d.posterShift.date) === dateStr);
+const selectDate = (date) => {
+  emit('update:selectedDate', date.toString());
 };
 
-const isPending = (demand) =>
-  demand.status === 'open' || demand.status === 'pending';
-
-const isAcceptedAsPoster = (demand) =>
-  demand.status === 'accepted' &&
-  demand.posterId === authStore.userData.userId;
-
-const isAcceptedAsAccepter = (demand) =>
-  demand.status === 'accepted' &&
-  demand.accepterId === authStore.userData.userId;
-
-
-const getColor = (date) => {
-  if (props.isSelected(date)) {
-    return 'onBackground';
-    // } else if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date.toISOString())) {
-    //   return 'remplacement';
-  } else if (isWorkDay(date) && !inPast(date)) {
-    return 'surfaceContainerHigh';
-  } else {
-    return 'surface';
-  }
-};
-
-const getIcon = (date) => {
-  const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0]);
-  const entry = entryTypes.find((entry) => entry.key === shift?.type);
-  return entry ? "mdi-" + entry.icon : null;
+const plainDateToDateStr = (plainDate) => {
+  return plainDate?.date?.toString();
 }
 
-const getOpacity = (day) => {
-  if (props.isSelected(day.date)) {
-    return 0.9;
-  } else if (isWorkDay(day.date) && !inPast(day.date) && (day?.isInMonth)) {
-    return 1;
-  } else if (isWorkDay(day.date) && !inPast(day.date) && (!day?.isInMonth)) {
-    return 0.60;
-  } else if (!day?.isInMonth) {
-    return 0.21;
-  } else {
-    return 0.8;
+const toDateStr = (date) => {
+  return date?.slice(0, 10);
+}
+
+const isSelected = (dateStr) => {
+  return props.selectedDate === dateStr;
+};
+
+const isToday = (dateStr) => {
+  const now = Temporal.Now.plainDateISO();
+  const todayStr = now.toString();
+  return dateStr === todayStr;
+};
+
+// ── Shift maps ────────────────────────────────────────────────────────────────
+
+const shiftDataMap = computed(() => {
+  const map = new Map();
+  for (const [key, value] of shiftStore.persistentVacationsMap) {
+    map.set(key, {
+      isWorkDay: !!value?.shiftData?.shift && value.shiftData.shift.type !== 'rest',
+      isOff: value?.isOff ?? false,
+      shiftName: getDisplayShiftName(value),
+      selectedVariation: value?.shiftData?.selectedVariation ?? null,
+      variationName: value?.shiftData?.selectedVariation?.name ?? null,
+      icon: (() => {
+        const entry = entryTypes.find((e) => e.key === value?.type);
+        return entry ? `mdi-${entry.icon}` : null;
+      })(),
+    });
   }
-};
-
-const inPast = (date) => {
-  return date <= new Date().setHours(0, 0, 0, 0);
-};
-
-
-
-
-const vacationsOfUser = computed(() => {
-  return shiftStore.persistentVacationsMap;
+  return map;
 });
 
-const isWorkDay = (date) => {
-  const shift = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shiftData?.shift;
-  return shift ? shift.type !== 'rest' : false;
-};
+const getShiftData = (dateStr) => shiftDataMap.value.get(dateStr) ?? {};
 
+const hasAvailableSubstitutions = (dateStr) => dateStr ? substitutionStore.availableSubstitutions.some(substitution =>
+  substitution.posterShift.date.slice(0, 10) === dateStr
+) : [];
+const hasAvailableSwitches = (dateStr) => dateStr ? substitutionStore.availableSwitches.some(substitution =>
+  substitution.posterShift.date.slice(0, 10) === dateStr
+) : [];
+const hasOtherDemands = (dateStr) => dateStr ? substitutionStore.otherDemands.some(substitution =>
+  substitution.posterShift.date.slice(0, 10) === dateStr
+) : [];
 
+const demandsMap = computed(() => {
+  const map = new Map();
+  const all = [
+    ...substitutionStore.ownPendingHybridSubstitutions,
+    ...substitutionStore.ownPendingTrueSubstitutions,
+    ...substitutionStore.ownPendingTrueSwitches,
+    ...substitutionStore.acceptedAsAccepter,
+    ...substitutionStore.acceptedAsPoster,
+  ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-const icon = (date) => {
-  const type = vacationsOfUser.value.get(date.toISOString().split('T')[0])?.type;
-  return getTypeIcon(type);
-};
+  for (const demand of all) {
+    const key = toDateStr(demand.posterShift.date);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(demand);
+  }
+  return map;
+});
 
-const isOff = (date) => {
-
-  return vacationsOfUser.value.get(date.toISOString().split('T')[0])?.isOff;
-};
-
-const getShiftName = (date) => {
-  const dateKey = date.toISOString().split('T')[0];
-  return getDisplayShiftName(vacationsOfUser.value.get(dateKey));
-}
-
-const getShiftType = (date) => vacationsOfUser.value.get(date.toISOString().split('T')[0])?.shift?.type;
-
-// const getStatus = (date) => {
-//   if (substitutionStore.hasAcceptedSubstitutionsAsAccepter(date)) {
-//     return 'accepted-accepter';
-//   }
-//   if (substitutionStore.hasAcceptedSubstitutionsAsPoster(date)) {
-//     return 'accepted-poster';
-//   }
-//   if (substitutionStore.hasOwnOpenSubstitutions(date)) {
-//     return 'pending';
-//   }
-//   return '';
-// };
-
-
-const emit = defineEmits(['select-day']);
-
+const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? []) : [];
 
 </script>
 
 <style scoped>
+
 .calendar-day {
   position: relative;
   min-height: 70px;
@@ -244,7 +162,7 @@ const emit = defineEmits(['select-day']);
 
 .offDay {
   color: rgb(var(--v-theme-error)) !important;
-  opacity: 0.5 !important;
+  opacity: 0.8 !important;
 }
 
 .chipe {
@@ -274,18 +192,36 @@ const emit = defineEmits(['select-day']);
   border-bottom-right-radius: 24px !important;
 }
 
+.day-number {
+  font-weight: 700 !important;
+  opacity: 0.9;
+  font-size: 14px !important;
+}
+
 .shift-name {
   font-weight: 700 !important;
   opacity: 0.6;
   font-size: 14px !important;
 }
 
-
-.remplacement {
-  background: rgb(var(--v-theme-remplacement)) !important;
+.variation-name {
+  font-weight: 400 !important;
+  opacity: 0.6;
+  font-size: 14px !important;
 }
 
-.permutation {
-  background: rgb(var(--v-theme-permutation)) !important;
+.mod-dot {
+  height: 4px;
+  width: 4px;
+  border-radius: 6px;
+  background-color: rgba(var(--v-theme-onSurfaceVariant), 0.5);
+ 
 }
+
+.week-day {
+  font-size: .675rem !important;
+  font-weight: 500 !important;
+  opacity: .5;
+}
+
 </style>

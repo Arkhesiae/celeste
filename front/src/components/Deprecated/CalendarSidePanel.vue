@@ -12,7 +12,6 @@
 
 <script setup>
 
-import CalendarPanel from './common/CalendarPanel.vue';
 
 const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancel', 'withdraw']);
 

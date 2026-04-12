@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 
 import { useTeamStore } from '@/stores/teamStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
@@ -93,4 +93,4 @@ v-if="status === 'pending' && isHybridSubstitution" class="d-flex justify-center
       <span v-if="status === 'pending'">{{ '?' }}</span>
     </div>
   </v-chip>
-</template>
+</template> -->

@@ -129,47 +129,50 @@ export async function registerEntry (userId, date, data) {
         throw err;
     }
 
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
-    const latestAssignment = await Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
-    const latestModification = await Modification.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
-    const latestHourPatch = await HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
+    const [userShift, substitution, latestAssignment, latestModification, latestHourPatch] = await Promise.all([
+        computeShiftOfUserWithSubstitutions([date], userId),
+        Substitution.findOne({ $or: [{ posterId: userId }, { accepterId: userId }], "posterShift.date": date, status: { $in: ['open', 'accepted'] } }).sort({ createdAt: -1 }),
+        Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
+        Modification.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
+        HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
+    ]);
 
-    let overlapPrevious
+    const recomputeShift = () => computeShiftOfUserWithSubstitutions([date], userId);
+    const buildResult = async (type) => ({ userShift: await recomputeShift(), updatedDemands: null, type });
 
     switch (data.type) {
-        case "assignment":
-            data.startTime = "09:00";
-            data.endTime = "17:00";
+        case 'assignment': {
+            data.startTime = '09:00';
+            data.endTime = '17:00';
             data.date = date;
-            overlapPrevious = checkOverlap(latestAssignment, userShift, data);
 
-            if (data.cancel && data.entryType === "absence") {
-                cancelAssignment(latestAssignment)
+            if (data.cancel && data.entryType === 'absence') {
+                cancelAssignment(latestAssignment);
                 cancelModifications(userId, date);
-                const userShiftPostModification = await computeShiftOfUserWithSubstitutions([date], userId);
-                return { userShift: userShiftPostModification, updatedDemands: null, type: "assignment" };
+                return buildResult('assignment');
             }
 
-            if (latestAssignment) {
-                if (latestAssignment.subType === "substitution" && !overlapPrevious.hasShift) {
+            if (latestAssignment && latestAssignment.subType === 'substitution') {
+               throw new AppError('Impossible de créer une entrée sur un remplacement actif', 422);
+            }
 
-                } else {
-                    cancelSingleAssignment(latestAssignment);
-                }
+            if (substitution) {
+                throw new AppError('Impossible de créer une entrée si une demande est en cours ce jour', 409);
             }
 
             cancelModifications(userId, date);
-            cancelHourPatches(userId, date)
-
+            cancelHourPatches(userId, date);
             break;
-        case "modification":
+        }
+        case 'modification':
             if (latestModification) {
                 latestModification.active = false;
                 await latestModification.save();
             }
-            cancelHourPatches(userId, date)
+            cancelHourPatches(userId, date);
             break;
-        case "hourPatch":
+
+        case 'hourPatch':
             if (latestHourPatch) {
                 latestHourPatch.active = false;
                 await latestHourPatch.save();
@@ -177,26 +180,35 @@ export async function registerEntry (userId, date, data) {
             break;
     }
 
-
-
-
-    if (data.type === "hourPatch") {
+    if (data.type === 'hourPatch') {
         const hourPatch = new HourPatch({
             userId,
-            date: date,
+            date,
             centerId: user.centerId,
-            adjustedTime: {
-                adjustedStart: 1,
-                adjustedEnd: 2,
-            }
+            adjustedTime: { adjustedStart: 1, adjustedEnd: 2 },
         });
         await hourPatch.save();
-        const userShiftPostModification = await computeShiftOfUserWithSubstitutions([date], userId);
-        return { userShift: userShiftPostModification, updatedDemands: null, type: "hourPatch" };
+        return buildResult('hourPatch');
     }
 
-
-    console.log("overlapPrevious", overlapPrevious)
+    if (data.entryType === 'disp' && data.cancel) {
+        const entry = new CalendarEntry({
+            type: data.type,
+            subType: 'pres',
+            shiftData: {
+                shift: data.shift,
+                selectedVariation: data.selectedVariation,
+                team: data.team,
+            },
+            userId,
+            date,
+            centerId: user.centerId,
+            startTime: data.startTime,
+            endTime: data.endTime,
+        });
+        await entry.save();
+        return buildResult('disp');
+    }
 
     const entry = new CalendarEntry({
         type: data.type,
@@ -207,20 +219,16 @@ export async function registerEntry (userId, date, data) {
             team: data.team,
         },
         userId,
-        date: date,
+        date,
         centerId: user.centerId,
         startTime: data.startTime,
         endTime: data.endTime,
-
     });
-
     await entry.save();
 
     // const updatedDemands = await syncDemandSelectedVariation(userId, date, data.selectedVariation);
 
-    const userShiftPostModification = await computeShiftOfUserWithSubstitutions([date], userId);
-
-    return { userShift: userShiftPostModification, updatedDemands: null, type: "creation" };
+    return buildResult('creation');
 }
 
 export async function restoreInitialShift (userId, date) {
@@ -251,17 +259,15 @@ export async function addSubstitutionEntries (demand) {
         const dateStr = demand.posterShift.date.toISOString().split('T')[0];
 
         const [latestAccepterAssignment, latestPosterAssignment] = await Promise.all([
-            Assignment.findOne({ userId: demand.accepterId, date: dateStr, active: true }).sort({ createdAt: -1 }),
-            Assignment.findOne({ userId: demand.posterId, date: dateStr, active: true }).sort({ createdAt: -1 }),
+            Assignment.findOne({ userId: demand.accepterId, date: dateStr, active: true, subType: { $ne: 'substitution' } }).sort({ createdAt: -1 }),
+            Assignment.findOne({ userId: demand.posterId, date: dateStr, active: true, subType: { $ne: 'substitution' } }).sort({ createdAt: -1 }),
         ]);
 
-        // 2. Deactivate in parallel with a single updateOne each (no need to fetch then save)
         await Promise.all([
             latestAccepterAssignment && Assignment.updateOne({ _id: latestAccepterAssignment._id }, { active: false }),
             latestPosterAssignment && Assignment.updateOne({ _id: latestPosterAssignment._id }, { active: false }),
         ].filter(Boolean));
 
-        // 3. Build both entries
         const accepterEntry = new Assignment({
             shiftData: {
                 team: demand.posterShift.teamId,
@@ -298,9 +304,6 @@ export async function addSubstitutionEntries (demand) {
             computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.posterId),
             computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.accepterId),
         ]);
-
-        console.log("posterShifts", posterShifts[0]?.shiftData);
-        console.log("accepterShifts", accepterShifts[0]?.shiftData);
 
         return {
             posterShift: posterShifts[0],

@@ -68,7 +68,7 @@ export default createVuetify({
         colors: {
           "permutation": "#dcffbc",
           "onPermutation": "#5c2a65",
-          "primary": "#a7c1E0",
+          "primary": "#b4b3f5ff",
           "surfaceTint": "#87D1EA",
           "onPrimary": "#003542",
           "primaryContainer": "#004E5F",

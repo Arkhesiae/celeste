@@ -56,7 +56,16 @@ export async function getRequests (userId, startDateStr, endDateStr) {
         { $addToSet: { seenBy: userId } }
     ).catch((err) => console.error('❌ Erreur seenBy update:', err));
 
-    const categorizedOtherRequests = await categorizeRequests(otherRequests, userId);
+    let result;
+    let success = true;
+
+    try {
+        result = await categorizeRequests(otherRequests, userId);
+    } catch (error) {
+        result = otherRequests;
+        success = false;
+        console.error('❌ Erreur categorization:', error);
+    }
 
     const withIsNew = (request) => {
         const obj = request.toObject ? request.toObject() : request;
@@ -67,7 +76,7 @@ export async function getRequests (userId, startDateStr, endDateStr) {
     };
 
     return [
-        ...categorizedOtherRequests.map(withIsNew),
+        ...result.map(withIsNew),
         ...myRequests.map(withIsNew),
     ];
 };
@@ -101,10 +110,10 @@ export async function categorizeRequests (requests, userId) {
  * @returns {Promise<Array<Object>>} Liste des substitutions recatégorisées
  */
 export async function recategorizeSubstitutions (substitutionIds, userId) {
-    if (!userId || !substitutionIds) {
+    if (!userId || !substitutionIds?.length) {
         throw new AppError('Paramètres manquants', 400);
     }
-
+    
     // Récupérer les substitutions avec leurs shifts populés
     const substitutions = await Substitution.find({ _id: { $in: substitutionIds } }).populate([
         { path: 'posterShift.shift', populate: { path: 'variations' } },
@@ -117,7 +126,17 @@ export async function recategorizeSubstitutions (substitutionIds, userId) {
     }
 
     // Recatégoriser les substitutions
-    const categorizedSubstitutions = await categorizeRequests(substitutions, userId);
+    let result;
+    let success = true;
 
-    return categorizedSubstitutions;
+    try {
+        result = await categorizeRequests(substitutions, userId);
+    } catch (error) {
+        result = substitutions;
+        success = false;
+        console.error('❌ Erreur categorization:', error);
+    }
+
+
+    return result;
 }

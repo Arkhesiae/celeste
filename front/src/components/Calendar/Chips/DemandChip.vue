@@ -32,7 +32,7 @@ const accepterUser = computed(() => {
     class="clip d-flex align-center justify-center bg-primary rounded-lg pa-1 position-absolute bottom-0 right-0"
   >
     <v-icon
-      size="16px"
+      size="14px"
       color="onPrimary"
     >
      {{ getDemandIcon(props.demand, authStore.userData.userId) }}

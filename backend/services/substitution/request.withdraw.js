@@ -37,17 +37,31 @@ export async function withdrawFromRequest (requestId, userId) {
 
     console.log("Withdraw from demand | cancelledRequests : ", cancelledRequests.length);
 
-    const [shifts, categorizedRequests, originalAccepter] = await Promise.all([
+    const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([
         computeShiftOfUserWithSubstitutions([updatedRequest.posterShift.date], userId),
         categorizeRequests([updatedRequest], userId),
         User.findById(userId).select('name lastName email'),
-    ]).catch((error) => {
-        console.error("❌ Erreur lors de la catégorisation de la demande:", error);
-        if (error instanceof AppError) throw error;
-        throw new AppError("Erreur lors de la catégorisation de la demande", 500);
-    });
+    ]);
 
+    if (shiftsResult.status === 'rejected') {
+        console.error('❌ Erreur calcul shift:', shiftsResult.reason);
+        throw new AppError('Erreur lors du calcul du shift', 500);
+    }
+
+    if (accepterResult.status === 'rejected') {
+        console.error('❌ Erreur récupération utilisateur:', accepterResult.reason);
+        throw new AppError('Erreur lors de la récupération de l\'utilisateur', 500);
+    }
+
+    const shifts = shiftsResult.value;
+    const originalAccepter = accepterResult.value;
+    const categorizedRequests = categorizedResult.status === 'fulfilled'
+        ? categorizedResult.value
+        : [updatedRequest];
+    
+    
     console.log("Withdraw from demand", originalAccepter?.name, "  | cancelledRequests : ", cancelledRequests.length);
+    
     await updatedRequest.populate([
         { path: 'posterId', select: 'name lastName email' },
     ]);

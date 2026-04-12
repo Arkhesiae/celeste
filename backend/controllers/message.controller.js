@@ -1,5 +1,6 @@
 import Message from '../models/Message.js';
 import User from '../models/User.js';
+import { AppError } from '../error/AppError.js';
 
 // Récupérer tous les messages
 const getMessages = async (req, res) => {
@@ -11,8 +12,7 @@ const getMessages = async (req, res) => {
 
     res.json(messages);
   } catch (error) {
-    console.error('Erreur lors de la récupération des messages:', error);
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
@@ -28,7 +28,7 @@ const createMessage = async (req, res) => {
     });
 
     if (!receiver) {
-      return res.status(404).json({ message: 'Administrateur non trouvé' });
+      throw new AppError('Administrateur non trouvé', 404);
     }
 
     const newMessage = new Message({
@@ -49,8 +49,7 @@ const createMessage = async (req, res) => {
 
     res.status(201).json(populatedMessage);
   } catch (error) {
-    console.error('Erreur lors de la création du message:', error);
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
@@ -60,7 +59,7 @@ const markAsRead = async (req, res) => {
     const message = await Message.findById(req.params.id);
     
     if (!message) {
-      return res.status(404).json({ message: 'Message non trouvé' });
+      throw new AppError('Message non trouvé', 404);
     }
 
     message.isRead = true;
@@ -72,8 +71,7 @@ const markAsRead = async (req, res) => {
 
     res.json(updatedMessage);
   } catch (error) {
-    console.error('Erreur lors du marquage du message comme lu:', error);
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
@@ -83,14 +81,13 @@ const deleteMessage = async (req, res) => {
     const message = await Message.findById(req.params.id);
     
     if (!message) {
-      return res.status(404).json({ message: 'Message non trouvé' });
+      throw new AppError('Message non trouvé', 404);
     }
 
     await message.deleteOne();
     res.json({ message: 'Message supprimé avec succès' });
   } catch (error) {
-    console.error('Erreur lors de la suppression du message:', error);
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 

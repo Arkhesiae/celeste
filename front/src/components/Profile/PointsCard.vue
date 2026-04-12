@@ -8,10 +8,7 @@
       class="pa-0 height-transition"
       style="height: 100%"
     >
-      <Logo
-        color="remplacement"
-        style="width: 100%; height: 100%; position: absolute; bottom: -60; left: 0; opacity: 0.05; filter: blur(10px);"
-      />
+ 
       <div
         class="d-flex flex-column justify-space-between height-transition"
         style=" height: 100% "

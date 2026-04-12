@@ -1,12 +1,13 @@
 import { LegacyUser, User } from '../models/User.js';
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
+import { AppError } from '../error/AppError.js';
 
 export const fetchLegacyUser = async (req, res) => {
     try {
         const { login, center } = req.query;
         if (!login || !center) {
-            return res.status(400).json({ message: 'Veuillez fournir un login et un centre.' });
+            throw new AppError('Veuillez fournir un login et un centre.', 400);
         }
 
 
@@ -19,10 +20,10 @@ export const fetchLegacyUser = async (req, res) => {
 
        
         if (!user) {
-            return res.status(404).json({ message: 'Aucun utilisateur trouvé.' });
+            throw new AppError('Aucun utilisateur trouvé.', 404);
         }
         if (user.recovered) {
-            return res.status(400).json({ message: 'Ce compte a déjà été récupéré.' });
+            throw new AppError('Ce compte a déjà été récupéré.', 400);
         }
 
   
@@ -30,7 +31,7 @@ export const fetchLegacyUser = async (req, res) => {
         const newCenter = await checkCenter(user.centre, user.equipe, center)
 
         if (!newCenter) {
-            return res.status(404).json({ message: 'Le centre renseigné n\'est pas valide' });
+            throw new AppError('Le centre renseigné n\'est pas valide', 404);
         }
 
 
@@ -40,7 +41,7 @@ export const fetchLegacyUser = async (req, res) => {
             newCenter: newCenter
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
@@ -56,7 +57,7 @@ export const initiateAccountRecovery = async (req, res, next) => {
             ],
         });
         if (!user) {
-            return res.status(400).json({ message: 'Aucun utilisateur trouvé.' });
+            throw new AppError('Aucun utilisateur trouvé.', 404);
         }
 
         const conflict = await User.findOne({
@@ -67,7 +68,7 @@ export const initiateAccountRecovery = async (req, res, next) => {
         });
         
         if (conflict) {
-            return res.status(400).json({ message: 'Un compte avec cet email existe déjà.' });
+            throw new AppError('Un compte avec cet email existe déjà.', 400);
         }
 
         const team = await Team.findOne({
@@ -76,7 +77,7 @@ export const initiateAccountRecovery = async (req, res, next) => {
         });
 
         if (!team) {
-            return res.status(400).json({ message: 'L\'équipe renseignée n\'est pas valide.' });
+            throw new AppError('L\'équipe renseignée n\'est pas valide.', 400);
         }
 
   
@@ -97,7 +98,7 @@ export const initiateAccountRecovery = async (req, res, next) => {
 
         
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 }
 

@@ -2,7 +2,7 @@ import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
-import * as calendarEntryService from '../calendarEntry/calendarEntryService.js';
+import * as calendarEntryService from '../calendarEntry/calendar-entry.js';
 import * as scheduledTransactionService from '../transaction/scheduledTransactionService.js';
 
 
@@ -184,7 +184,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 export const processPastDemands = async () => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     // Trouve toutes les demandes ouvertes avec des dates passées (excluant aujourd'hui)
     const pastDemands = await Substitution.find({
         status: 'open',
@@ -193,11 +193,11 @@ export const processPastDemands = async () => {
     });
 
     // Archive les demandes trouvées
-    const updatePromises = pastDemands.map(demand => 
+    const updatePromises = pastDemands.map(demand =>
         Substitution.findByIdAndUpdate(
             demand._id,
-            { 
-                $set: { 
+            {
+                $set: {
                     deleted: true,
                     status: 'expired',
                     updatedAt: now
@@ -219,7 +219,7 @@ export const processAndCompleteDemands = async () => {
         deleted: false
     });
 
-    const updatePromises = completedDemands.map(demand => 
+    const updatePromises = completedDemands.map(demand =>
         Substitution.findByIdAndUpdate(
             demand._id,
             { $set: { deleted: true, status: 'completed', updatedAt: now } }

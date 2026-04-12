@@ -1,20 +1,21 @@
-import * as calendarEntryService from '../services/calendarEntry/calendarEntryService.js';
+import * as calendarEntryService from '../services/calendarEntry/calendar-entry.js';
 import { isValidDate } from '../utils/validation.js';
+import { AppError } from '../error/AppError.js';
 
 const VALID_TYPES = ['absence', 'custom', 'selectedVariation'];
 
 
-const registerEntry = async (req, res) => {
+const registerEntry = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { entryType, type, date, comment, selectedVariation, shift, isOff, confirmCreation, cancel } = req.body;
 
         if (!type || !date) {
-            return res.status(400).json({ error: 'Les champs type et date sont requis' });
+            throw new AppError('Les champs type et date sont requis', 400);
         }
 
         if (!isValidDate(date)) {
-            return res.status(400).json({ error: 'La date est invalide' });
+            throw new AppError('La date est invalide', 400);
         }
 
         const result = await calendarEntryService.registerEntry(userId, date, {
@@ -39,25 +40,22 @@ const registerEntry = async (req, res) => {
                 message: error.message
             });
         }
-        console.error('Erreur lors de la création de l\'entrée:', error);
-        res.status(500).json({
-            error: 'Une erreur est survenue lors de la création de l\'entrée'
-        });
+        next(error);
     }
 };
 
 // Restorer le initial shift
-const restoreInitialShift = async (req, res) => {
+const restoreInitialShift = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { date } = req.body;
 
         if (!userId || !date) {
-            return res.status(400).json({ error: 'Les champs userId et date sont requis' });
+            throw new AppError('Les champs userId et date sont requis', 400);
         }
 
         if (!isValidDate(date)) {
-            return res.status(400).json({ error: 'La date est invalide' });
+            throw new AppError('La date est invalide', 400);
         }
 
         const result = await calendarEntryService.restoreInitialShift(userId, date);
@@ -68,10 +66,7 @@ const restoreInitialShift = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erreur lors de la restauration du initial shift:', error);
-        res.status(error.status ?? 500).json({
-            error: error.status ? error.message : 'Une erreur est survenue lors de la restauration du initial shift'
-        });
+        next(error);
     }
 };
 
@@ -82,11 +77,11 @@ const getUserEntries = async (req, res) => {
         const { date } = req.body;
 
         if (!userId || !date) {
-            return res.status(400).json({ error: 'Les champs userId et date sont requis' });
+            throw new AppError('Les champs userId et date sont requis', 400);
         }
 
         if (!isValidDate(date)) {
-            return res.status(400).json({ error: 'La date est invalide' });
+            throw new AppError('La date est invalide', 400);
         }
 
         const modifications = await calendarEntryService.getUserEntries(userId, date);
@@ -94,10 +89,7 @@ const getUserEntries = async (req, res) => {
         res.json(modifications);
 
     } catch (error) {
-        console.error('Erreur lors de la récupération des entrées:', error);
-        res.status(error.status ?? 500).json({
-            error: error.status ? error.message : 'Une erreur est survenue lors de la récupération des entrées'
-        });
+        next(error);
     }
 };
 
@@ -115,10 +107,7 @@ const deleteModification = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Erreur lors de la suppression de l\'entrée:', error);
-        res.status(error.status ?? 500).json({
-            error: error.status ? error.message : 'Une erreur est survenue lors de la suppression de l\'entrée'
-        });
+        next(error);
     }
 };
 
@@ -133,10 +122,7 @@ const getModification = async (req, res) => {
         res.json(modification);
 
     } catch (error) {
-        console.error('Erreur lors de la récupération de l\'entrée:', error);
-        res.status(error.status ?? 500).json({
-            error: error.status ? error.message : 'Une erreur est survenue lors de la récupération de l\'entrée'
-        });
+        next(error);
     }
 };
 
@@ -148,9 +134,7 @@ const updateModification = async (req, res) => {
         const { selectedVariation, shift, comment, isOff, type } = req.body;
 
         if (type && !VALID_TYPES.includes(type)) {
-            return res.status(400).json({
-                error: 'Le type doit être "absence", "custom" ou "selectedVariation"'
-            });
+            throw new AppError('Le type doit être "absence", "custom" ou "selectedVariation"', 400);
         }
 
         const result = await calendarEntryService.patchModification(id, userId, {
@@ -161,17 +145,14 @@ const updateModification = async (req, res) => {
             type
         });
 
-        
+
         res.json({
             message: 'Modification mise à jour avec succès',
             ...result
         });
 
     } catch (error) {
-        console.error('Erreur lors de la mise à jour de la modification:', error);
-        res.status(error.status ?? 500).json({
-            error: error.status ? error.message : 'Une erreur est survenue lors de la mise à jour de la modification'
-        });
+        next(error);
     }
 };
 

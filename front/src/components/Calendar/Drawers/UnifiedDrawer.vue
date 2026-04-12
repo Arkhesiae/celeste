@@ -1,7 +1,7 @@
 <template>
   <v-overlay
     :model-value="modelValue"
-    :z-index="2449"
+    :z-index="2449 "
     :style="{zIndex: 2449 }"
     class=""
     @update:model-value="handleClose"

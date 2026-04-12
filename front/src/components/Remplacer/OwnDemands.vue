@@ -109,7 +109,7 @@ const upcomingDemands = computed(() => {
   return [
     ...asPoster,
     ...acceptedAsAccepter.value
-  ].sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
+  ]
 });
 
 // Demandes "Je me fais remplacer"
@@ -159,7 +159,8 @@ const sectionDefinitions = [
 const demandList = computed(() => {
   return sectionDefinitions
     .filter(s => s.isVisible())
-    .flatMap(s => s.demands.value);
+    .flatMap(s => s.demands.value)
+    .sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
 });
 
 const emptyMessage = computed(() => {

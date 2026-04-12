@@ -70,11 +70,7 @@ const getUserCount = async (req, res) => {
       res.json({ success: true, count: userCount });
     }
   } catch (error) {
-    console.error('Erreur lors du comptage des utilisateurs:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors du comptage des utilisateurs'
-    });
+    next(error);
   }
 };
 
@@ -107,8 +103,7 @@ const getMailList = async (testMode, isGlobal, centerId) => {
     }
 
   } catch (error) {
-    console.error('Erreur lors de la récupération des emails:', error);
-    return [];
+    next(error);
   }
 };
 /**
@@ -120,19 +115,13 @@ const sendAnnouncement = async (req, res) => {
 
     // Validation des données
     if (!title || !message) {
-      return res.status(400).json({
-        success: false,
-        message: 'Le titre et le message sont requis'
-      });
+      throw new AppError('Le titre et le message sont requis', 400);
     }
 
     const userEmails = await getMailList(testMode, isGlobal, centerId);
 
     if (userEmails.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Aucun utilisateur trouvé pour l\'envoi'
-      });
+      throw new AppError('Aucun utilisateur trouvé pour l\'envoi', 404);
     }
 
     const center = await Center.findById(centerId);
@@ -186,12 +175,7 @@ const sendAnnouncement = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'annonce:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de l\'envoi de l\'annonce',
-      error: error.message
-    });
+    next(error);
   }
 };
 
@@ -225,11 +209,7 @@ const getHistory = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération de l\'historique:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la récupération de l\'historique'
-    });
+    next(error);
   }
 };
 
@@ -282,11 +262,7 @@ const getStats = async (req, res) => {
       recentActivity
     });
   } catch (error) {
-    console.error('Erreur lors de la récupération des statistiques:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la récupération des statistiques'
-    });
+    next(error);
   }
 };
 
@@ -299,18 +275,12 @@ const deleteAnnouncement = async (req, res) => {
 
     const announcement = await Announcement.findById(id);
     if (!announcement) {
-      return res.status(404).json({
-        success: false,
-        message: 'Annonce non trouvée'
-      });
+      throw new AppError('Annonce non trouvée', 404);
     }
 
     // Vérifier que l'utilisateur peut supprimer cette annonce
     if (announcement.sentBy.toString() !== req.user._id.toString() && !req.user.isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: 'Vous n\'êtes pas autorisé à supprimer cette annonce'
-      });
+      throw new AppError('Vous n\'êtes pas autorisé à supprimer cette annonce', 403);
     }
 
     await Announcement.findByIdAndDelete(id);
@@ -320,11 +290,7 @@ const deleteAnnouncement = async (req, res) => {
       message: 'Annonce supprimée avec succès'
     });
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'annonce:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erreur lors de la suppression de l\'annonce'
-    });
+    next(error);
   }
 };
 

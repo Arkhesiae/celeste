@@ -8,11 +8,11 @@ import { sendPasswordResetEmail } from '../email/resetPassword.js';
  * @param {string} email - Email de l'utilisateur
  * @returns {Promise<Object>} Message de confirmation
  */
-export async function requestPasswordReset(email) {
+export async function requestPasswordReset (email) {
     // Vérifier si l'utilisateur existe
     const user = await User.findOne({ email });
     if (!user) {
-        throw new Error('Aucun utilisateur trouvé avec cet email');
+        throw new AppError('Aucun utilisateur trouvé avec cet email', 404);
     }
 
     // Générer un token de réinitialisation
@@ -36,7 +36,7 @@ export async function requestPasswordReset(email) {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;
         await user.save();
-        throw new Error('Erreur lors de l\'envoi de l\'email de réinitialisation');
+        throw new AppError('Erreur lors de l\'envoi de l\'email de réinitialisation', 500);
     }
 
     return {
@@ -50,7 +50,7 @@ export async function requestPasswordReset(email) {
  * @param {string} newPassword - Nouveau mot de passe
  * @returns {Promise<Object>} Message de confirmation
  */
-export async function resetPassword(token, newPassword) {
+export async function resetPassword (token, newPassword) {
     // Trouver l'utilisateur avec un token valide et non expiré
     const user = await User.findOne({
         resetPasswordToken: token,
@@ -58,7 +58,7 @@ export async function resetPassword(token, newPassword) {
     });
 
     if (!user) {
-        throw new Error('Token invalide ou expiré');
+        throw new AppError('Token invalide ou expiré', 400);
     }
 
     // Hasher le nouveau mot de passe
@@ -81,15 +81,15 @@ export async function resetPassword(token, newPassword) {
  * @param {string} currentPassword - Mot de passe actuel
  * @returns {Promise<Object>} Résultat de la vérification
  */
-export async function verifyPassword(userId, currentPassword) {
+export async function verifyPassword (userId, currentPassword) {
     const user = await User.findById(userId);
     if (!user) {
-        throw new Error('Utilisateur non trouvé');
+        throw new AppError('Utilisateur non trouvé', 404);
     }
 
     const passwordMatches = await bcrypt.compare(currentPassword, user.password);
     if (!passwordMatches) {
-        throw new Error('Mot de passe actuel incorrect');
+        throw new AppError('Mot de passe actuel incorrect', 401);
     }
 
     return {
@@ -103,10 +103,10 @@ export async function verifyPassword(userId, currentPassword) {
  * @param {string} newPassword - Nouveau mot de passe
  * @returns {Promise<Object>} Message de confirmation
  */
-export async function updatePassword(userId, newPassword) {
+export async function updatePassword (userId, newPassword) {
     const user = await User.findById(userId);
     if (!user) {
-        throw new Error('Utilisateur non trouvé');
+        throw new AppError('Utilisateur non trouvé', 404);
     }
 
     // Hasher le nouveau mot de passe

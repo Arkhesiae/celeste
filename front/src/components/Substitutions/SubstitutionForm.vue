@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog v-model="isDialogVisible" :title="dialogTitle" max-width="600px" @close="close">
+  <GenericDialog :model-value="dialogVisible" :title="dialogTitle" max-width="600px" @close="closeDialog">
     <template #actions>
 
       <v-btn v-if="currentWindow === 1" variant="flat" rounded="xl"
@@ -239,7 +239,6 @@ import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
 import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
 import PointsDialog from '@/components/Dialogs/PointsDialog.vue';
 import { substitutionService } from '@/services/substitutionService';
-import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 import { useAuthStore } from '@/stores/authStore';
 
 const authStore = useAuthStore();
@@ -254,9 +253,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits([
-  'onClose',
   'onSubmit',
-  'update:dialogModeValue',
   'update:dialogVisible',
   'update:date'
 ]);
@@ -276,7 +273,6 @@ const acceptedSwitchesWithPoints = computed(() => {
   }));
 });
 
-
 const demand = ref({
   comment: '',
   acceptedSwitches: []
@@ -285,7 +281,6 @@ const demand = ref({
 const compatibleSwitches = ref([]);
 const loadingRotations = ref(false);
 const rotationError = ref(null);
-const formattedDate = ref('');
 const localDate = ref('');
 const currentWindow = ref(0);
 const formValid = ref(false);
@@ -295,6 +290,21 @@ const showConfirmationDialog = ref(false);
 const showPointsDialog = ref(false);
 const switchToEdit = ref(null);
 
+
+const displayShiftHours = computed(() => {
+  if (!props.selectedShift) return '';
+  const variation = props.selectedShift.selectedVariation;
+  if (!variation) return '';
+  return `${variation.startTime} - ${variation.endTime}`;
+});
+
+const displayShiftEndsNextDay = computed(() => {
+  if (!props.selectedShift) return '';
+  const variation = props.selectedShift.selectedVariation;
+  if (!variation) return '';
+  return variation.endsNextDay;
+});
+
 // Règles de validation
 const rules = {
   required: v => !!v || 'Ce champ est requis',
@@ -303,19 +313,12 @@ const rules = {
   rotations: v => v.length > 0 || 'Au moins un jour de rotation doit être sélectionné'
 };
 
-// Computed properties
-const dialogModeValue = computed({
-  get: () => props.dialogMode,
-  set: (value) => emit('update:dialogModeValue', value),
-});
-
-const isDialogVisible = computed({
-  get: () => props.dialogVisible,
-  set: (value) => emit('update:dialogVisible', value),
-});
+const closeDialog = () => {
+  emit('update:dialogVisible', false);
+};
 
 const dialogTitle = computed(() =>
-  dialogModeValue.value === 'substitution' ? 'Demander un remplacement' : 'Demande de permutation'
+  props.dialogMode === 'substitution' ? 'Demander un remplacement' : 'Demande de permutation'
 );
 
 const activeRotation = computed(() => {
@@ -341,7 +344,7 @@ const rotationDays = computed(() => {
   }));
 });
 
-// Watcher pour mettre à jour formValid
+
 watch(
   [
     () => demand.value.points,
@@ -352,8 +355,8 @@ watch(
     formValid.value =
       demand.value.points >= 0 &&
       localDate.value !== '' &&
-      ((dialogModeValue.value === 'switch' && acceptedSwitchesWithPoints.value.length > 0) ||
-        (dialogModeValue.value !== 'switch' && demand.value.points >= 0));
+      ((props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length > 0) ||
+        (props.dialogMode !== 'switch' && demand.value.points >= 0));
   },
   { immediate: true }
 );
@@ -370,7 +373,7 @@ watch(acceptedSwitches, (newSwitches, oldSwitches) => {
 });
 
 
-const toDisplayFormat = (input) => (input ? dateUtil.format(input, 'fullDate') : '');
+const formattedDate = computed(() => (props.date ? dateUtil.format(props.date, 'fullDate') : ''));
 
 const editPoints = (switchDay) => {
   switchToEdit.value = { id: switchDay, name: switchName.value(switchDay) };
@@ -387,18 +390,6 @@ const shiftName = computed(() => {
   return props.selectedShift?.shift?.name || 'Aucun shift sélectionné';
 });
 
-// // Source prioritaire pour les variations : rotation (days peuplés) > selectedShift.shift (vacations API)
-// const shiftWithVariations = computed(() => {
-//   const shift = props.selectedShift?.shift;
-//   if (!shift || !activeRotation.value?.days?.length) return shift;
-//   const shiftId = shift._id || shift.id;
-//   const shiftName = shift.name;
-//   const dayFromRotation = activeRotation.value.days.find(
-//     d => (d._id || d)?.toString?.() === shiftId?.toString?.() || d?.name === shiftName
-//   );
-//   return dayFromRotation ?? shift;
-// });
-
 const isVariationSelected = (variation) => {
   return selectedVariant.value === variation._id;
 };
@@ -409,24 +400,6 @@ const selectVariation = (variation) => {
 
 const hasVariations = computed(() => {
   return props.selectedShift?.shift?.variations?.length > 0;
-});
-
-const displayShiftHours = computed(() => {
-  const shift = props.selectedShift.shift;
-  const variant = selectedVariant.value && shift?.variations?.length
-    ? shift.variations.find(v => (v._id || v)?.toString?.() === selectedVariant.value?.toString?.())
-    : null;
-  const effective = shift ? getEffectiveShiftTimes(shift, variant || null) : null;
-  return effective ? { startTime: effective.startTime, endTime: effective.endTime } : { startTime: '', endTime: '' };
-});
-
-const displayShiftEndsNextDay = computed(() => {
-  const shift = props.selectedShift.shift;
-  const variant = selectedVariant.value && shift?.variations?.length
-    ? shift.variations.find(v => (v._id || v)?.toString?.() === selectedVariant.value?.toString?.())
-    : null;
-  const effective = shift ? getEffectiveShiftTimes(shift, variant || null) : null;
-  return effective?.endsNextDay ?? false;
 });
 
 const switchName = computed(() => (dayId) => {
@@ -467,21 +440,12 @@ const preselectedVariantHint = computed(() =>
 watch(() => props.dialogVisible, async (value) => {
   if (value) {
     localDate.value = props.date;
-    formattedDate.value = props.date ? toDisplayFormat(props.date) : '';
-
-    // Pré-remplir la variante si l'agent l'a déjà choisie dans le calendrier
-    // const sv = props.selectedShift?.selectedVariation;
-    // if (sv) {
-    //   selectedVariant.value = (sv._id || sv)?.toString?.() || sv;
-    // }
-
-    // Recharger les rotations pour avoir les variations à jour
     const centerId = authStore.userData?.centerId;
     if (centerId) {
       await rotationStore.fetchRotations(centerId);
     }
 
-    demand.value.points = dialogModeValue.value === 'substitution' ? defaultPoints.value : 0;
+    demand.value.points = props.dialogMode === 'substitution' ? defaultPoints.value : 0;
 
     // Charger les données compatibles quand le dialogue s'ouvre
     try {
@@ -502,7 +466,6 @@ watch(() => props.dialogVisible, async (value) => {
 watch(() => props.date, (newDate) => {
   if (newDate) {
     localDate.value = newDate;
-    formattedDate.value = toDisplayFormat(newDate);
   }
 });
 
@@ -518,7 +481,6 @@ const resetForm = () => {
 
   selectedVariant.value = '';
   localDate.value = '';
-  formattedDate.value = '';
 };
 
 const buildSubmitPayload = () => ({
@@ -529,11 +491,11 @@ const buildSubmitPayload = () => ({
     selectedVariation: selectedVariant.value || null
   },
   acceptedSwitches: acceptedSwitchesWithPoints.value,
-  isTrueSwitch: dialogModeValue.value === 'switch'
+  isTrueSwitch: props.dialogMode === 'switch'
 });
 
 const isZeroPoints = () =>
-  dialogModeValue.value === 'switch'
+  props.dialogMode === 'switch'
     ? acceptedSwitchesWithPoints.value.every(s => s.points === 0)
     : demand.value.points === 0;
 
@@ -550,13 +512,8 @@ const confirmSubmit = () => {
   emit('onSubmit', buildSubmitPayload());
 };
 
-const close = () => {
-  resetForm();
-  isDialogVisible.value = false;
-};
-
 const isNextButtonDisabled = computed(() => {
-  return !localDate.value || !props.selectedShift || (dialogModeValue.value === 'switch' && acceptedSwitchesWithPoints.value.length === 0);
+  return !localDate.value || !props.selectedShift || (props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length === 0);
 });
 
 

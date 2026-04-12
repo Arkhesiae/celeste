@@ -3,37 +3,36 @@ import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
 import { findLatestRotation } from '../utils/findLatestRotation.js';
-import mongoose from 'mongoose';
+import { AppError } from '../error/AppError.js';
 
 // GET ALL CENTERS
-const getAllCenters = async (req, res) => {
+const getAllCenters = async (req, res, next) => {
     try {
         const centers = await Center.find({deleted: false});
         res.json(centers);
     } catch (error) {
-        console.error('Erreur lors de la récupération des centres :', error);
-        res.status(500).json({message: 'Échec de la récupération des centres'});
+        next(error);
     }
 };
 
 // ADD A NEW CENTER
-const addCenter = async (req, res) => {
+const addCenter = async (req, res, next) => {
     const {name, adminId, OACI, type, numberOfTeams = 12, zones} = req.body;
 
     if (!name) {
-        return res.status(400).json({message: 'Le nom du centre est requis'});
+        throw new AppError('Le nom du centre est requis', 400);
     }
 
     if (!OACI) {
-        return res.status(400).json({message: 'L\'indicateur OACI du centre est requis'});
+        throw new AppError('L\'indicateur OACI du centre est requis', 400);
     }
 
     if (!type) {
-        return res.status(400).json({message: 'Le type du centre est requis'});
+        throw new AppError('Le type du centre est requis', 400);
     }
 
     if (numberOfTeams < 1 || numberOfTeams > 50) {
-        return res.status(400).json({message: 'Le nombre d\'équipes doit être compris entre 1 et 50'});
+        throw new AppError('Le nombre d\'équipes doit être compris entre 1 et 50', 400);
     }
 
     try {
@@ -101,13 +100,12 @@ const addCenter = async (req, res) => {
 
         res.status(201).json(centers);
     } catch (error) {
-        console.error('Erreur lors de la création du centre :', error);
-        res.status(500).json({message: 'Échec de la création du centre'});
+        next(error);
     }
 };
 
 // UPDATE A CENTER
-const updateCenter = async (req, res) => {
+const updateCenter = async (req, res, next) => {
     const {id} = req.params;
     const {name, adminId} = req.body;
 
@@ -119,25 +117,24 @@ const updateCenter = async (req, res) => {
         );
 
         if (!updatedCenter) {
-            return res.status(404).json({message: 'Centre non trouvé'});
+            throw new AppError('Centre non trouvé', 404);
         }
 
         res.json(updatedCenter);
     } catch (error) {
-        console.error('Erreur lors de la mise à jour du centre :', error);
-        res.status(500).json({message: 'Échec de la mise à jour du centre'});
+        next(error);
     }
 };
 
 // DELETE A CENTER
-const deleteCenter = async (req, res) => {
+const deleteCenter = async (req, res, next) => {
     const {id} = req.params;
 
     try {
         const deletedCenter = await Center.findById(id);
 
         if (!deletedCenter) {
-            return res.status(404).json({message: 'Centre non trouvé'});
+            throw new AppError('Centre non trouvé', 404);
         }
 
         deletedCenter.deleted = true;
@@ -156,13 +153,12 @@ const deleteCenter = async (req, res) => {
 
         res.json({message: 'Centre supprimé avec succès'});
     } catch (error) {
-        console.error('Erreur lors de la suppression du centre :', error);
-        res.status(500).json({message: 'Échec de la suppression du centre'});
+        next(error);
     }
 };
 
 // GET USER COUNT BY CENTER
-const getUsersCountByCenter = async (req, res) => {
+const getUsersCountByCenter = async (req, res, next) => {
     try {
         const centers = await Center.find();
         const usersCountByCenter = {};
@@ -174,13 +170,12 @@ const getUsersCountByCenter = async (req, res) => {
 
         res.json(usersCountByCenter);
     } catch (error) {
-        console.error('Erreur lors de la récupération du nombre d\'utilisateurs par centre :', error);
-        res.status(500).json({ message: 'Échec de la récupération du nombre d\'utilisateurs par centre' });
+        next(error);
     }
 };
 
 // GET ADMINS BY CENTER
-const getAdminsByCenter = async (req, res) => {
+const getAdminsByCenter = async (req, res, next) => {
     try {
         const centers = await Center.find();
         const adminsByCenter = {};
@@ -196,30 +191,28 @@ const getAdminsByCenter = async (req, res) => {
 
         res.json(adminsByCenter);
     } catch (error) {
-        console.error('Erreur lors de la récupération des administrateurs par centre :', error);
-        res.status(500).json({ message: 'Échec de la récupération des administrateurs par centre' });
+        next(error);
     }
 };
 
 // GET ACTIVE ROTATION OF CENTER
-const getActiveRotationOfCenter = async (req, res) => {
+const getActiveRotationOfCenter = async (req, res, next) => {
     const {id} = req.params;
     try {
         const center = await Center.findById(id);
         if (!center) {
-            return res.status(404).json({ message: 'Centre non trouvé' });
+            throw new AppError('Centre non trouvé', 404);
         }
 
         const activeRotation = await findLatestRotation(center._id, new Date());
         res.json(activeRotation);
     } catch (error) {
-        console.error('Erreur lors de la récupération des rotations actives par centre :', error);
-        res.status(500).json({ message: 'Échec de la récupération des rotations actives par centre' });
+        next(error);
     }
 }
 
 // GET ACTIVE ROTATIONS BY CENTER
-const getActiveRotationsByCenter = async (req, res) => {
+const getActiveRotationsByCenter = async (req, res, next) => {
     try {
         const centers = await Center.find();
         const activeRotationsByCenter = {};
@@ -231,8 +224,7 @@ const getActiveRotationsByCenter = async (req, res) => {
 
         res.json(activeRotationsByCenter);
     } catch (error) {
-        console.error('Erreur lors de la récupération des rotations actives par centre :', error);
-        res.status(500).json({ message: 'Échec de la récupération des rotations actives par centre' });
+        next(error);
     }
 };
 

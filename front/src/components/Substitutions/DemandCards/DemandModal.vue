@@ -204,7 +204,7 @@
       </div>
 
 
-      <v-card v-if="isOwner || isAccepter" v-ripple rounded="xl" elevation="0" class="mb-4" color="error"
+      <v-card v-if="isOwner || isAccepter" v-ripple rounded="xl" elevation="0" class="mb-4 mt-4" color="error"
         @click="cancelOrWithdraw">
         <v-list bg-color="error">
           <v-list-item v-if="isAccepter" color="error" append-icon="mdi-chevron-right">
@@ -307,7 +307,7 @@ const showAccepterDetails = ref(false)
 
 const getShiftName = computed(() => {
   const ps = props.demand?.posterShift;
-  return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
+  return ps?.shift?.name + (ps?.selectedVariation?.name ? ' - ' + ps?.selectedVariation?.name : '')
 })
 
 const getShiftHours = computed(() => {

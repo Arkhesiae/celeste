@@ -11,9 +11,6 @@
 }</route>
 
 <script setup>
-
-// import { ticketService } from '@/services/ticketService';
-import TicketList from '@/components/Tickets/TicketList.vue';
 import { useTicketStore } from '@/stores/ticketStore';
 
 const ticketStore = useTicketStore();

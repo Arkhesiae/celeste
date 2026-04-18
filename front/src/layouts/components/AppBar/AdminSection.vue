@@ -1,88 +1,53 @@
 <template>
   <!-- Badge d'admin -->
   <div class="d-flex align-center ga-2 mx-2">
-    <v-badge
-      color="pending"
-      :model-value="messageCount > 0 || pendingUsersCount > 0"
-      offset-x="60"
-      offset-y="30"
-      rounded="lg"
-    >
+    <v-badge color="primary" location="bottom center" :offset-y="smAndDown ? 0 : -0" :model-value="messageCount > 0 || pendingUsersCount > 0"
+      rounded="lg">
       <template #badge>
         <div class="d-flex align-center ga-3">
           <div v-if="messageCount > 0">
-            <v-icon
-              size="x-small"
-              class="mr-1"
-            >
+            <v-icon size="x-small" class="mr-1">
               mdi-account-question-outline
             </v-icon>
             <span class="text-badge">{{ messageCount }}</span>
           </div>
           <div v-if="pendingUsersCount > 0">
-            <v-icon
-              size="x-small"
-              class="mr-1"
-            >
+            <v-icon size="x-small" class="mr-1">
               mdi-account-clock-outline
             </v-icon>
             <span class="text-badge">{{ pendingUsersCount }}</span>
           </div>
         </div>
       </template>
-      <v-chip
-        v-if="isAdmin"
-        :color="isAdminPanel ? 'surfaceContainerHighest' : 'onBackground'"
-        :variant="isAdminPanel ? 'flat' : 'outlined'"
-        rounded="lg"
-        size="small"
-        class="cursor-pointer"
-        @click="navigateToAdminPanel"
-      >
-        <v-icon
-          class="mr-2"
-          :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'"
-        >
-          {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
-        </v-icon>
-        {{ authStore.userData.adminType === 'master' ? 'Master' : 'Admin' }}
-      </v-chip>
+      <v-btn  icon color="onBackground" class="text-body-2"
+        @click="navigateToAdminPanel">
+        <div class="d-flex align-center btn-admin">
+          <v-icon size="x-small" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
+            {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
+          </v-icon>
+        </div>
+      </v-btn>
+
     </v-badge>
     <div v-if="!smAndDown">
       <!-- Bouton règles -->
-     
-      <v-btn
-        v-if="isAdmin"
-        icon
-        variant="text"
-        color="onBackground"
-        class="text-body-2"
-        @click="$emit('navigate-rules')"
-      >
+
+      <v-btn v-if="isAdmin" icon variant="text" color="onBackground" class="text-body-2"
+        @click="$emit('navigate-rules')">
         <v-icon size="small">
           mdi-server-security
         </v-icon>
       </v-btn>
 
       <!-- Lien vers les tickets pour admin master -->
-      <v-btn
-        v-if="isAdmin"
-        icon
-        @click="$emit('navigate-tickets')"
-      >
-        <v-badge
-          rounded="lg"
-          offset-x="10"
-          offset-y="28"
-          :content="messageCount"
-          :model-value="messageCount > 0"
-          color="pending"
-        >
+      <!-- <v-btn v-if="isAdmin" icon @click="$emit('navigate-tickets')">
+        <v-badge rounded="lg" offset-x="10" offset-y="28" :content="messageCount" :model-value="messageCount > 0"
+          color="pending">
           <v-icon size="small">
             mdi-account-question-outline
           </v-icon>
         </v-badge>
-      </v-btn>
+      </v-btn> -->
     </div>
   </div>
 </template>
@@ -132,6 +97,12 @@ const navigateToAdminPanel = () => {
   font-size: 0.6rem !important;
   font-weight: 600 !important;
 
+}
+
+.btn-admin {
+  padding: 0.5rem;
+  border-radius: 10px;
+  background-color: rgba(var(--v-theme-surfaceContainerHighest), 0.4);
 }
 
 :deep(.v-chip.v-chip--variant-outlined) {

@@ -1,120 +1,42 @@
 <template>
   <div class="d-flex align-start ga-2">
-    <div
-      class="dot-big"
-      :class="dotClass"
-      v-if="dot"
-    />
-    <v-card
-      :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'"
-      variant="flat"
-      rounded="lg"
-      class="demand-card pa-3 flex-1-1"
-      @click="openDetails"
-    >
+    <div class="dot-big" :class="dotClass" v-if="dot" />
+    <v-card :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'" variant="flat" rounded="lg"
+      class="demand-card pa-3 flex-1-1" @click="openDetails">
       <div class="d-flex align-center justify-space-between">
         <div class="d-flex align-center mr-3 ga-2">
-          <v-icon
-            v-if="isOwner"
-            size="12"
-            color="primary"
-          >
+          <v-icon v-if="isOwner" size="12" color="primary">
             mdi-account-star-outline
           </v-icon>
-          <span
-            style="font-weight: 800; font-size: .75rem;"
-            :class="{ 'text-primary': isOwner }"
-          >{{ posterName
+          <span style="font-weight: 800; font-size: .75rem;" :class="{ 'text-primary': isOwner }">{{ posterName
           }}</span>
-          <div
-            v-if="!isOwner"
+          <div v-if="!isOwner"
             style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
-            class="d-flex align-center justify-center"
-          >
-            <span
-              class="text-truncate"
-              style="font-size: .6250rem; font-weight: 700; opacity: .8;"
-            >{{
+            class="d-flex align-center justify-center">
+            <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
               posterTeamName }}</span>
           </div>
           <div class="small-dot" />
           <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
           }}</span>
 
-          <v-icon
-            v-if="demand?.comment"
-            size="x-small"
-            color="onBackground"
-            style="opacity: 0.8;"
-          >
+          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
             mdi-comment-text-outline
           </v-icon>
 
-          <v-chip
-            variant="outlined"
-            size="x-small"
-            rounded="lg"
-            class="font-weight-bold point-chip mr-2"
-          >
-            <LogoCopy
-              color="onBackground"
-              style="top:-2px; position: relative; transform: scale(0.87);"
-            />
-            <span
-              :class="pointClass"
-              style="font-size: .875rem; font-weight: 600;"
-            >{{ totalPoints }}</span>
-            <v-icon
-              v-if="hasVariablePoints && !demand.accepterId"
-              color="primary"
-              style="position: relative; top: 0px;"
-              icon="mdi-tune"
-            />
+          <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2">
+            <LogoCopy color="onBackground" style="top:-2px; position: relative; transform: scale(0.87);" />
+            <span :class="pointClass" style="font-size: .875rem; font-weight: 600;">{{ totalPoints }}</span>
+            <v-icon v-if="hasVariablePoints && !demand.accepterId" color="primary" style="position: relative; top: 0px;"
+              icon="mdi-tune" />
           </v-chip>
         </div>
 
 
 
         <div class="d-flex align-center">
-          <div
-            class="d-flex align-center "
-            style="position: relative; width: 20px;"
-          >
-            <div
-              v-if="demand?.type === 'switch'"
-              class="d-flex align-center ga-2"
-            >
-              <v-icon
-                class=""
-                style="top: 1px; font-size: 14px;"
-                icon="mdi-swap-horizontal"
-              />
-            </div>
-            <div
-              v-if="demand?.type === 'substitution'"
-              class="d-flex align-center ga-2"
-            >
-              <v-icon
-                class=""
-                style="top: 1px; font-size: 14px;"
-                icon="mdi-account-arrow-left-outline "
-              />
-            </div>
-            <div
-              v-if="demand?.type === 'hybrid'"
-              class="d-flex align-center ga-2 position-relative"
-            >
-              <v-icon
-                class="ml-n1"
-                style="top: 1px; font-size: 14px;"
-                icon="mdi-account-arrow-left-outline "
-              />
-              <v-icon
-                class="ml-n2"
-                style="top: 2px; font-size: 14px; position: absolute; left: 10px;"
-                icon="mdi-swap-horizontal"
-              />
-            </div>
+          <div class="d-flex align-center " style="position: relative; width: 20px;">
+            <v-icon size="x-small"> {{ getDemandIcon(demand, authStore.userData.userId) }}</v-icon>
           </div>
         </div>
       </div>
@@ -123,115 +45,60 @@
 
       <div class="d-flex align-center  ga-2 my-1">
         <div class="d-flex align-center ga-1 flex-wrap">
-          <div
-            v-if="firstShift"
-            class="d-flex align-center ga-2"
-          >
-            <span
-              :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }"
-              style="font-size: .875rem; opacity: 0.7;"
-            >{{ firstShift }}</span>
-            <span
-              v-if="firstShiftHours"
-              class="text-caption font-weight-medium text-medium-emphasis"
-              style="font-size: .70rem;"
-            >{{ firstShiftHours.startTime }} - {{ firstShiftHours.endTime }}</span>
+          <div v-if="firstShift" class="d-flex align-center ga-2">
+            <span :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }" style="font-size: .875rem; opacity: 0.7;">{{
+              firstShift }}</span>
+            <!-- <span v-if="firstShiftHours" class="text-caption font-weight-medium text-medium-emphasis"
+              style="font-size: .70rem;">{{ firstShiftHours.startTime }} - {{ firstShiftHours.endTime }}</span> -->
           </div>
-          <v-icon
-            v-if="isAccepted"
-            size="x-small"
-            icon="mdi-arrow-right-drop-circle-outline"
-            color="primary"
-            style="opacity: 0.8;"
-          />
-          <div
-            v-if="secondShift"
-            class="d-flex align-center ga-2"
-          >
-            <span
-              :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
-              style="font-size: .875rem; opacity: 0.7"
-            >{{ secondShift }}</span>
-            <span
-              v-if="secondShiftHours"
-              class="text-caption font-weight-medium text-medium-emphasis"
-              style="font-size: .70rem;"
-            >{{ secondShiftHours.startTime }} - {{ secondShiftHours.endTime }}</span>
+          <v-icon v-if="isAccepted" size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary"
+            style="opacity: 0.8;" />
+          <div v-if="secondShift" class="d-flex align-center ga-2">
+            <span :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }" style="font-size: .875rem; opacity: 0.7">{{
+              secondShift }}</span>
+            <!-- <span v-if="secondShiftHours" class="text-caption font-weight-medium text-medium-emphasis"
+              style="font-size: .70rem;">{{ secondShiftHours.startTime }} - {{ secondShiftHours.endTime }}</span> -->
           </div>
         </div>
         <div class="mt-0">
           <div class="custom-small-chip">
-            <span
-              class="text-medium-emphasis"
-              style="font-size: .690rem; font-weight: 500;"
-            >{{ labelOption
-            }}</span>
+            <span class="text-medium-emphasis" >{{ labelOption}}</span>
           </div>
         </div>
       </div>
 
       <div class="d-flex align-center flex-shrink-0 justify-space-between">
         <div class="d-flex align-center ga-1">
-          <v-icon
-            size="x-small"
-            icon="mdi-eye-outline"
-            color="onBackground"
-            style="opacity: 0.8;"
-          />
-          <span
-            class="text-medium-emphasis"
-            style="font-size: .70rem; font-weight: 600;"
-          >{{ demand?.seenBy?.length || 0
+          <v-icon size="x-small" icon="mdi-eye-outline" color="onBackground" style="opacity: 0.8;" />
+          <span class="text-medium-emphasis" style="font-size: .70rem; font-weight: 600;">{{ demand?.seenBy?.length || 0
           }}</span>
         </div>
 
 
         <div class="d-flex align-center ml-4">
           <template v-if="accepter">
-            <v-avatar
-              size="20"
-              color="surfaceContainer"
-              class="mr-1"
-            >
-              <v-img
-                v-if="accepter?.avatar"
-                :src="`${API_URL}${accepter?.avatar}`"
-                alt="Avatar"
-              />
-              <v-icon
-                v-else
-                size="16"
-              >
+            <v-avatar size="20" color="surfaceContainer" class="mr-1">
+              <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
+              <v-icon v-else size="16">
                 mdi-account-check-outline
               </v-icon>
             </v-avatar>
             <div class="d-flex align-center text-left ga-1">
-              <span
-                class="font-weight-bold text-truncate"
-                :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: .75rem;"
-              >
+              <span class="font-weight-bold text-truncate" :class="isAccepter ? 'text-primary' : ''"
+                style="max-width: 100px; font-size: .75rem;">
                 {{ accepterName }}
               </span>
-              <div
-                v-if="!isAccepter"
+              <div v-if="!isAccepter"
                 style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
-                class="d-flex align-center justify-center"
-              >
-                <span
-                  class="text-truncate"
-                  style="font-size: .6250rem; font-weight: 700; opacity: .8;"
-                >{{
+                class="d-flex align-center justify-center">
+                <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
                   accepterTeamName }}</span>
               </div>
             </div>
           </template>
           <template v-else>
             <div class="empty-accepter-avatar mr-1">
-              <v-icon
-                size="12"
-                color="text-medium-emphasis"
-              >
+              <v-icon size="12" color="text-medium-emphasis">
                 mdi-account-question-outline
               </v-icon>
             </div>
@@ -243,10 +110,9 @@
 </template>
 
 <script setup>
-
+import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
-// import { useRotationStore } from '@/stores/rotationStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api'
@@ -254,7 +120,6 @@ import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiv
 
 
 const teamStore = useTeamStore();
-// const rotationStore = useRotationStore();
 const userStore = useUserStore();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
@@ -298,7 +163,6 @@ const accepter = computed(() => {
   // Sinon, c'est un ID, chercher l'utilisateur
   return getUserById(props.demand.accepterId);
 });
-
 
 const poster = computed(() => {
   if (!props.demand?.posterId) return null;
@@ -376,10 +240,10 @@ const destinationTeamName = computed(() => {
 const firstShift = computed(() => {
   if (isOwner.value) {
     const ps = props.demand?.posterShift;
-    return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
+    return ps?.shift?.name
   } else if (isAccepter.value && props.demand?.accepterShift) {
     const as = props.demand?.accepterShift;
-    return getDisplayShiftName(as ? { shift: as.shift, selectedVariation: as.selectedVariation } : null) || ''
+    return as?.shift?.name
   }
   return ''
 });
@@ -387,10 +251,10 @@ const firstShift = computed(() => {
 const secondShift = computed(() => {
   if (isOwner.value && props.demand?.accepterShift) {
     const as = props.demand?.accepterShift;
-    return getDisplayShiftName(as ? { shift: as.shift, selectedVariation: as.selectedVariation } : null) || ''
+    return as?.shift?.name
   } else if (isAccepter.value) {
     const ps = props.demand?.posterShift;
-    return getDisplayShiftName(ps ? { shift: ps.shift, selectedVariation: ps.selectedVariation } : null) || ''
+    return ps?.shift?.name
   }
   return ''
 });
@@ -426,18 +290,6 @@ const isFirstShiftBold = computed(() => {
 const isSecondShiftBold = computed(() => {
   return true
 });
-
-// const statusIconColor = computed(() => {
-//   switch (props.demand?.status) {
-//     case 'open':
-//       return 'pendingDemand';
-//     case 'accepted':
-//       return 'acceptedDemand';
-//     default:
-//       return 'default';
-//   }
-// });
-
 
 const isSwitch = (demand) => demand?.type === 'switch'
 const isHybrid = (demand) => demand?.type === 'hybrid'
@@ -607,11 +459,13 @@ const openDetails = () => {
 }
 
 .custom-small-chip {
-  border: 1px solid rgba(var(--v-theme-onBackground), 0.05) !important;
+  border: 1px solid rgba(var(--v-theme-onBackground), 0.005) !important;
+  color: rgba(var(--v-theme-onBackground), 0.87) !important;
   border-radius: 16px !important;
-  opacity: 0.8 !important;
-  padding: 1px 6px !important;
+  font-weight: 500 !important;
+  opacity: 0.9 !important;
+  /* padding: 1px 6px !important; */
   background: rgba(var(--v-theme-surfaceContainer), 0.0005) !important;
-  font-size: .690rem !important;
+  font-size: .650rem !important;
 }
 </style>

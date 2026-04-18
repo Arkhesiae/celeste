@@ -14,6 +14,8 @@ import { sendEmailApproval, sendEmailRejection } from '../services/email/approva
 import * as userShiftsService from '../services/userService/userShiftsService.js';
 import { createUserService } from '../services/userService/createUserService.js';
 import * as userService from '../services/userService/getUsersService.js';
+import * as userTeamService from '../services/userService/user.team.js';
+import { AppError } from '../error/AppError.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -450,59 +452,27 @@ const getUsersAndGroupByTeam = async (req, res) => {
 
 
 // Supprimer une occurrence d'équipe
-const deleteTeamOccurrence = async (req, res) => {
+const deleteTeamOccurrence = async (req, res, next) => {
+    const { id, occurrenceId } = req.params;
     try {
-        const { id, occurrenceId } = req.params;
-        const user = await User.findOneAndUpdate(
-            { _id: id },
-            { $pull: { teams: { _id: occurrenceId } } },
-            { new: true }
-        );
-
-        if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
-        }
-
-        res.status(200).json({ message: 'Occurrence supprimée avec succès' });
-    } catch (error) {
-        console.error("Error deleting team occurrence:", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
+        const { changes } = await userTeamService.deleteTeamOccurrence(id, occurrenceId);
+        res.status(200).json({ message: "Occurrence supprimée avec succès", changes });
+    } catch (err) {
+        next(err);
     }
 };
 
 // Assigner une équipe à un utilisateur
-const assignTeamToUser = async (req, res) => {
+const assignTeamToUser = async (req, res, next) => {
     const { id } = req.params;
-    const newTeam = req.body;
-
-    if (!newTeam.teamId || !newTeam.fromDate) {
-        return res.status(400).json({ error: "teamId and fromDate are required" });
-    }
-
     try {
-
-        const user = await User.findById(id);
-        if (!user) return res.status(404).json({ message: "User not found" });
-
-        const teamExists = await Team.findById(newTeam.teamId);
-
-        if (teamExists.center.toString() !== user.centerId.toString()) {
-            return res.status(400).json({ error: "Erreur dans la correspondance entre l'équipe et le centre" });
-        }
-
-        if (!teamExists) {
-            return res.status(404).json({ error: "Team not found" });
-        }
-
-
-
-        user.teams.push({ teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate });
-        await user.save();
-        res.send(user.teams);
-    } catch (error) {
-        res.status(500).send(error.message);
+        const { changes } = await userTeamService.assignTeamToUser(id, req.body);
+        res.status(200).json({ message: "Équipe assignée avec succès", changes });
+    } catch (err) {
+        next(err);
     }
 };
+
 
 // Obtenir les vacances d'un utilisateur
 const getUserShifts = async (req, res) => {

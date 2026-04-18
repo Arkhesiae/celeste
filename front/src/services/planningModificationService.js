@@ -32,4 +32,21 @@ export const planningModificationService = {
     });
     return response;
   },
+
+  async deleteAssignment(userId, date) {
+    console.log(userId, date);
+    const response = await apiFetch(`/planning-modifications/delete-assignment`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, date })
+    });
+    return response;
+  },
+
+  async undoMods(userId, date) {
+    const response = await apiFetch(`/planning-modifications/undo-mods`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, date })
+    });
+    return response;
+  },
 }

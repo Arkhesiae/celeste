@@ -40,9 +40,9 @@ const emit = defineEmits(['status-updated']);
 const getStatusColor = (status) => {
   switch (status) {
     case 'new':
-      return 'rgba(var(--v-theme-new),1)';
+      return 'rgba(var(--v-theme-primary),1)';
     case 'in_progress':
-      return 'rgba(var(--v-theme-pending),1)';
+      return 'rgba(var(--v-theme-secondary),1)';
     case 'done':
       return 'rgba(var(--v-theme-done),1)';
     case 'closed':

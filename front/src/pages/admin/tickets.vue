@@ -4,21 +4,18 @@
       <template #actions>
         <div class="d-flex ga-2 align-center ">
           <div class="d-flex align-center ga-2 btn-group">
-            <v-btn
-value="active" size="small" color="surfaceContainer"
+            <v-btn value="active" size="small" color="surfaceContainer"
               :class="activeView === 'active' ? 'btn-active' : ''" variant="flat" rounded="lg"
               @click="activeView = 'active'">
               Actifs
             </v-btn>
-            <v-btn
-value="archived" size="small" :class="activeView === 'archived' ? 'btn-active' : ''" variant="flat"
+            <v-btn value="archived" size="small" :class="activeView === 'archived' ? 'btn-active' : ''" variant="flat"
               color="surfaceContainer" rounded="lg" @click="activeView = 'archived'">
               Archivés
             </v-btn>
           </div>
 
-          <v-btn
-prepend-icon="mdi-filter-variant" color="onBackground" rounded="lg" flat size="small" height="32"
+          <v-btn prepend-icon="mdi-filter-variant" color="onBackground" rounded="lg" flat size="small" height="32"
             @click="showFilters = !showFilters">
             Filtres
           </v-btn>
@@ -34,13 +31,11 @@ prepend-icon="mdi-filter-variant" color="onBackground" rounded="lg" flat size="s
             <div v-if="showFilters" class="mb-4">
               <v-row>
                 <v-col cols="12" sm="4" class="py-0">
-                  <v-select
-v-model="filters.type" :items="ticketTypes" label="Type de ticket" clearable
+                  <v-select v-model="filters.type" :items="ticketTypes" label="Type de ticket" clearable
                     variant="solo-filled" flat height="32" rounded="xl" density="comfortable" />
                 </v-col>
                 <v-col cols="12" sm="4" class="py-0">
-                  <v-select
-v-model="filters.status" :items="[
+                  <v-select v-model="filters.status" :items="[
                     { title: 'Tous', value: 'all' },
                     { title: 'En cours', value: 'in_progress' },
                     { title: 'Traité', value: 'done' },
@@ -48,8 +43,7 @@ v-model="filters.status" :items="[
                   ]" label="Statut" variant="solo-filled" flat rounded="xl" density="comfortable" />
                 </v-col>
                 <v-col cols="12" sm="4" class="py-0">
-                  <v-text-field
-v-model="filters.search" label="Rechercher" prepend-inner-icon="mdi-magnify"
+                  <v-text-field v-model="filters.search" label="Rechercher" prepend-inner-icon="mdi-magnify"
                     variant="solo-filled" flat rounded="xl" density="comfortable" clearable />
                 </v-col>
               </v-row>
@@ -59,8 +53,7 @@ v-model="filters.search" label="Rechercher" prepend-inner-icon="mdi-magnify"
           <!-- Router view pour les sous-pages avec transition -->
           <router-view v-slot="{ Component, route }">
             <transition :name="route.meta.transition || 'fade'" mode="out-in">
-              <component
-:is="Component" :key="route.path" :filters="filters" :loading="ticketStore.loading"
+              <component :is="Component" :key="route.path" :filters="filters" :loading="ticketStore.loading"
                 @open-ticket="openTicketDetails" />
             </transition>
           </router-view>
@@ -69,8 +62,7 @@ v-model="filters.search" label="Rechercher" prepend-inner-icon="mdi-magnify"
     </v-row>
 
     <!-- Dialog de détails du ticket -->
-    <TicketDetails
-v-model="ticketDialog" :ticket-id="selectedTicket?._id" @close="ticketDialog = false"
+    <TicketDetails v-model="ticketDialog" :ticket-id="selectedTicket?._id" @close="ticketDialog = false"
       @delete-ticket="confirmDelete" @archive-ticket="handleArchive" @restore-ticket="handleRestore" />
 
     <!-- Dialog de confirmation de suppression -->

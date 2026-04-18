@@ -1,26 +1,5 @@
 <template>
   <v-container>
-    
-
-    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
-      icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
-      <div class="d-flex align-center justify-space-between">
-        <div>
-          <v-card-title class="text-h6 font-weight-medium">
-            Aucun tour de service actif
-          </v-card-title>
-          <v-card-text>
-            <div class="text-medium-emphasis">
-              Aucun tour de service n'est actuellement actif.
-            </div>
-            <div>
-              Sans tour de service actif, vous ne pourrez pas effectuer de remplacements ou de permutations. Veuillez
-              contacter un administrateur pour activer un tour de service.
-            </div>
-          </v-card-text>
-        </div>
-      </div>
-    </v-alert>
     <v-row class="mt-16">
       <v-col cols="12" md="">
         <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" @navigate-month="navigateMonth" @go-to-today="goToToday" />
@@ -176,19 +155,19 @@ const handleSubmit = async (demand) => {
       points: demand.points,
       status: 'open',
       acceptedSwitches: demand.acceptedSwitches,
-
+      isTrueSwitch: demand.isTrueSwitch
     };
 
     await substitutionStore.createSubstitutionDemand(requestData);
     snackbarStore.showNotification('Demande créée !', 'onPrimary', 'mdi-check');
     subInProgress.value = false;
-    closeRemplaDialog();
+    showSubstitutionForm.value = false;
     showBottomSheet.value = false
     return true;
   } catch (error) {
     console.error('Erreur lors de la création de la demande:', error);
     snackbarStore.showNotification('Erreur lors de la création de la demande : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-    closeRemplaDialog();
+    showSubstitutionForm.value = false;
     showBottomSheet.value = false
     return false;
   }

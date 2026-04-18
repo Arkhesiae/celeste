@@ -1,17 +1,16 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-6 bite" color="" height="100%">
+  <v-card rounded="xl" elevation="0" class="pa-6 bite" color="surfaceContainer" height="100%">
     <!-- En-tête avec l'icône et le menu -->
     <div class="d-flex justify-space-between align-center pa-0">
       <div class="d-flex align-center">
         <span class="text-h6">Mon équipe</span>
-        <v-btn
-icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasis"
+        <v-btn icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasis"
           @click="showInfo = true">
           <v-icon>mdi-information-outline</v-icon>
         </v-btn>
       </div>
 
-      <v-menu location="bottom end" @click.stop>
+      <!-- <v-menu location="bottom end" @click.stop>
         <template #activator="{ props }">
           <v-btn icon v-bind="props" variant="text" color="default">
             <v-icon>mdi-dots-vertical</v-icon>
@@ -25,7 +24,7 @@ icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasi
             <v-list-item-title>Changer d'équipe</v-list-item-title>
           </v-list-item>
         </v-list>
-      </v-menu>
+      </v-menu> -->
     </div>
 
     <v-card-title class="text-h4 d-flex flex-column align-center  ">
@@ -33,10 +32,10 @@ icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasi
         <p class="text-overline text-medium-emphasis  ">
           équipe
         </p>
-        <p class="text-h1 font-weight-medium text-remplacement">
+        <p class="text-h2 font-weight-medium text-primary">
           {{ permanentTeam ? permanentTeam.teamName : 'Aucune équipe' }}
         </p>
-        <p class="text-subtitle-2 text-medium-emphasis ">
+        <p class="team-subtitle ">
           depuis le {{ formattedPermanentTeamDate }}
         </p>
       </div>
@@ -52,12 +51,11 @@ icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasi
             <v-icon class="mr-2">
               mdi-handshake-outline
             </v-icon>
-            Renforce l'équipe {{ temporaryTeam?.teamName }} jusqu'au {{ formattedTemporaryTeamDate }}
+            Renforce l'équipe {{ temporaryTeam?.teamName }} jusqu'au {{ formattedTemporaryTeamDate }} inclus
           </v-chip>
         </template>
         <v-list rounded="xl" class="pa-4" bg-color="onBackground">
-          <v-list-item
-rounded="xl" prepend-icon="mdi-delete-outline"
+          <v-list-item rounded="xl" prepend-icon="mdi-delete-outline"
             @click="handleDeleteOccurrence(temporaryTeam?._id)">
             <v-list-item-title>Annuler le renfort</v-list-item-title>
           </v-list-item>
@@ -65,20 +63,18 @@ rounded="xl" prepend-icon="mdi-delete-outline"
       </v-menu>
     </v-card-title>
 
-    <div class="d-flex align-center justify-center ">
-      <div style="max-width: 600px" class="flex-1-1 d-flex align-center justify-center mb-4 pa-6">
-        <v-btn
-value="option2" variant="flat" height="60px" color="background"
-          class="flex-1-1 d-flex flex-column rounded-ts-xl rounded-bs-xl mr-1 text-none" rounded="lg"
+    <div class="d-flex align-center justify-center mb-4">
+      <div style="max-width: 600px" class="d-flex ga-2">
+        <v-btn value="option2" variant="flat" height="52px" color="primary"
+          class="team-change-btn d-flex flex-column " rounded="xl"
           @click="promptDialog('Changement')">
           <template #prepend>
             <v-icon>mdi-account-switch-outline</v-icon>
           </template>
           Changement d'équipe
         </v-btn>
-        <v-btn
-color="background" value="option2" height="60px" variant="flat"
-          class="flex-1-1 d-flex flex-column rounded-te-xl rounded-be-xl text-none " rounded="lg"
+        <v-btn color="surfaceContainer" value="option2" height="52px" variant="flat"
+          class="team-reinforcement-btn d-flex flex-column " rounded="lg"
           @click="promptDialog('Renfort')">
           <template #prepend>
             <v-icon>mdi-handshake-outline</v-icon>
@@ -94,15 +90,13 @@ color="background" value="option2" height="60px" variant="flat"
       </div>
       <div>
         <v-scroll-x-transition mode="out-in">
-          <v-btn
-v-if="isHistoryRevealed === false" color="background" variant="flat" class="elevated-shadow"
+          <v-btn v-if="isHistoryRevealed === false" color="background" variant="flat" class="elevated-shadow"
             rounded="lg" append-icon="mdi-history"
             @click="$router.push('/profile/' + authStore.userData.userId + '/change-history')">
             Historique
           </v-btn>
 
-          <v-btn
-v-else color="background" class="elevated-shadow" rounded="lg" append-icon="mdi-chevron-right"
+          <v-btn v-else color="background" class="elevated-shadow" rounded="lg" append-icon="mdi-chevron-right"
             @click="isHistoryRevealed = false">
             A venir
           </v-btn>
@@ -113,27 +107,13 @@ v-else color="background" class="elevated-shadow" rounded="lg" append-icon="mdi-
 
 
     <v-card-text class="pa-0">
-      <v-card color="transparent" class="pa-0" elevation="0" rounded="xl">
+      <v-card color="transparent" class="pa-0" elevation="0" rounded=".">
         <v-scroll-x-transition mode="out-in">
           <div>
-            <TeamOccurence
-v-for="nextOccurrence in nextOccurrences" :key="nextOccurrence._id"
+            <TeamOccurence v-for="nextOccurrence in nextOccurrences" :key="nextOccurrence._id"
               :occurrence="nextOccurrence" @delete-occurrence="handleDeleteOccurrence" />
           </div>
         </v-scroll-x-transition>
-        <!-- <v-card-actions class="justify-end">
-          <v-btn color="primary" outlined class="mt-3" rounded="xl" @click="promptDialog('Renfort')">Renfort</v-btn>
-          <v-btn
-            prepend-icon="mdi-account-switch-outline"
-            color="secondary"
-            variant="tonal"
-            class="mt-3"
-            rounded="lg"
-            @click="promptDialog('Changement')"
-          >
-            Changement d'équipe
-          </v-btn>
-        </v-card-actions> -->
       </v-card>
     </v-card-text>
   </v-card>
@@ -167,8 +147,7 @@ v-for="nextOccurrence in nextOccurrences" :key="nextOccurrence._id"
 
   <!-- Panneau latéral pour desktop -->
   <teleport to="body">
-    <v-navigation-drawer
-v-model="showInfo" style="z-index: 3500 !important;" location="right" temporary="" order="-4"
+    <v-navigation-drawer v-model="showInfo" style="z-index: 3500 !important;" location="right" temporary="" order="-4"
       width="500" class="d-none d-md-block">
       <v-card class="pa-6" flat>
         <v-card-text class="pa-6">
@@ -197,8 +176,7 @@ v-model="showInfo" style="z-index: 3500 !important;" location="right" temporary=
         <div v-if="substitutionConflicts.length">
           <p>Les demandes suivantes sont impactées par le changement d'équipe / annulation et seront annulées :</p>
           <v-list class="pa-0 ga-3 my-2 d-flex flex-column">
-            <v-card
-v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl"
+            <v-card v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl"
               elevation="0">
               <v-list-item-title>
                 Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
@@ -222,26 +200,22 @@ v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class
     </v-card>
   </v-dialog>
 
-  <ConfirmationDialog
-v-model="showConfirmationDialog" title="Suppression du changement"
+  <ConfirmationDialog v-model="showConfirmationDialog" title="Suppression du changement"
     text="Êtes-vous sûr de vouloir supprimer ce changement ? Cette action est irréversible." icon="mdi-delete-outline"
     icon-color="error" confirm-text="Supprimer" @confirm="confirmDelete"
     @update:is-dialog-visible="showConfirmationDialog = $event" />
 </template>
 
 <script setup>
-;
-import OccurrencesList from "@/components/Profile/TeamOccurence.vue";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
-
-import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
-
 
 const emit = defineEmits(['show-team-change-dialog']);
 
 const isHistoryRevealed = ref(false);
-
+const showInfo = ref(false);
+const showConfirmationDialog = ref(false);
+const occurrenceToDelete = ref(null);
 
 const promptDialog = (mode) => {
   emit('show-team-change-dialog', mode);
@@ -275,54 +249,13 @@ const formattedTemporaryTeamDate = computed(() => {
 });
 
 const showTemporaryTeamChip = computed(() =>
-
   temporaryTeam.value
 );
 
-const showConfirmationDialog = ref(false);
-const occurrenceToDelete = ref(null);
-
 const handleDeleteOccurrence = (occurrenceId) => {
-  const conflicts = detectSubstitutionConflicts(occurrenceId);
-  console.log("conflicts", conflicts);
   occurrenceToDelete.value = occurrenceId;
   showConfirmationDialog.value = true;
 };
-
-
-async function detectSubstitutionConflicts () {
-  // Appel à l'API backend pour détecter les conflits
-  const fromDate = toUTCNormalized(selectedDates.value.startDate);
-  const newTeamId = selectedTeam.value;
-  const params = {
-    userId: userId.value,
-    newTeamId,
-    fromDate
-  };
-  try {
-    const result = await substitutionService.detectTeamChangeConflicts(params);
-    // On récupère les IDs des substitutions conflictuelles
-    const conflicts = result.conflicts || [];
-
-    // On filtre les substitutions locales pour afficher les infos dans la modale
-    const allSubs = [
-      ...ownDemands.value,
-      ...acceptedAsAccepter.value
-    ];
-
-    conflicts.forEach(conflict => {
-      const sub = allSubs.find(sub => sub._id === conflict.id);
-      conflict.sub = sub;
-    });
-
-
-    substitutionConflicts.value = conflicts;
-    return conflicts;
-  } catch (e) {
-    substitutionConflicts.value = [];
-    return [];
-  }
-}
 
 const confirmDelete = async () => {
   try {
@@ -336,12 +269,22 @@ const confirmDelete = async () => {
   }
 };
 
-const showInfo = ref(false);
-const isMounted = ref(false);
-
-
 </script>
+
 <style>
+.team-substitution-title {
+  color: rgb(var(--v-theme-primary));
+}
+
+.team-subtitle {
+  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 12px;
+}
+
+.team-reinforcement-btn {
+  border-radius: 12px !important;
+}
+
 .elevated-shadow {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.048);
 }

@@ -2,8 +2,7 @@
   <v-container>
     <MainTitle title="Nouvelles inscriptions" subtitle="Gérer les nouvelles inscriptions">
       <template #actions>
-        <v-select
-v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
+        <v-select v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
           :item-props="center => ({
             title: center.name,
             subtitle: center.oaci
@@ -11,55 +10,6 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
           max-width="300px" @update:model-value="handleCenterChange" />
       </template>
     </MainTitle>
-
-
-
-    <!-- <v-row class="justify-space-between align-center mb-4">
-      <v-col cols="12" md="6" >
-      
-      </v-col>
-      
-      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
-        <v-text-field
-          v-model="searchQuery"
-          label="Rechercher"
-          variant="solo"
-          flat
-          rounded="xl"
-          single-line
-          hide-details
-          density="compact"
-          class="search-field"
-          style="max-width: 300px"
-          clearable
-        />
-        <v-menu color="onBackground" rounded="lg">
-          <template v-slot:activator="{ props }">
-            <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par'}}</span>
-              <v-icon>mdi-chevron-down</v-icon>
-            </v-btn>
-          </template>
-          <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-            <v-list-item rounded="lg" @click="sortBy = 'name'">
-              <v-list-item-title>Prénom</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'lastName'">
-              <v-list-item-title>Nom</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'email'">
-              <v-list-item-title>Email</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'status'">
-              <v-list-item-title>Statut</v-list-item-title>
-            </v-list-item>
-            <v-list-item rounded="lg" @click="sortBy = 'createdAt'">
-              <v-list-item-title>Date d'inscription</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
-      </v-col>
-    </v-row> -->
 
     <v-row>
       <v-col v-for="user in pendingUsers" :key="user._id" cols="12">
@@ -70,11 +20,11 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
                 <v-avatar color="primary" variant="tonal" size="40" class="mr-2">
                   {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
                 </v-avatar>
-                <div>
-                  <div class="text-subtitle-1">
+                <div class="d-flex flex-column">
+                  <div style="line-height: 1.2;" class="text-subtitle-1">
                     {{ user.name }} {{ user.lastName.toUpperCase() }}
                   </div>
-                  <div class="text-caption text-medium-emphasis">
+                  <div style="line-height: 1.2;" class="text-caption text-medium-emphasis">
                     {{ user.email }}
                   </div>
                 </div>
@@ -82,21 +32,24 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
             </v-card-title>
           </v-card-item>
           <v-card-text class="pt-0">
-            <v-list>
-              <v-list-item>
-                <v-list-item-title>Equipe</v-list-item-title>
-                <v-list-item-subtitle>{{ userCurrentTeam(user) }}</v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
+            <div class="d-flex flex-column ga-2">
+              <div>
+                <span class="">{{ userCenter(user) }}</span>
+              </div>
+              <div>
+                <span class="text-primary font-weight-bold">{{ userCurrentTeam(user) }}</span>
+              </div>
+            </div>
           </v-card-text>
-          <v-card-actions class="pt-0 flex-wrap justify-end">
+          <v-card-actions class="pt-0 ga-4  d-flex flex-wrap justify-end">
             <v-spacer />
-            <v-btn color="success" variant="tonal" rounded="lg" prepend-icon="mdi-check" @click="approveUser(user)">
+            <v-btn  variant="text" @click="rejectUser(user)">
+              Supprimer
+            </v-btn>
+            <v-btn color="primary" variant="tonal" rounded="lg" prepend-icon="mdi-check" @click="approveUser(user)">
               Approuver l'inscription
             </v-btn>
-            <v-btn color="error" variant="text" @click="rejectUser(user)">
-              Rejeter
-            </v-btn>
+            
           </v-card-actions>
         </v-card>
       </v-col>
@@ -116,8 +69,7 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
           <v-btn color="onSurface" variant="text" @click="confirmDialog = false">
             Annuler
           </v-btn>
-          <v-btn
-:color="confirmAction === 'approve' ? 'success' : 'error'" variant="tonal"
+          <v-btn :color="confirmAction === 'approve' ? 'success' : 'error'" variant="tonal"
             @click="handleConfirmAction">
             Confirmer
           </v-btn>
@@ -141,13 +93,13 @@ const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const centerStore = useCenterStore();
 
+const centers = ref([]);
+const teams = ref([]);  
 const confirmDialog = ref(false);
 const confirmMessage = ref('');
 const confirmAction = ref('');
 const selectedUser = ref(null);
 const selectedCenterId = ref(null);
-
-const centers = computed(() => centerStore.centers);
 
 const pendingUsers = computed(() => {
   let users = userStore.users.filter(user => user.registrationStatus === 'pending');
@@ -164,16 +116,23 @@ const pendingUsers = computed(() => {
   return users;
 });
 
-const centerTeams = computed(() => {
-  return teamStore.centerTeams;
-});
+
 
 const userCurrentTeam = computed(() => (user) => {
   if (user.currentTeam) {
-    const team = centerTeams.value.find(team => team._id === user.currentTeam?._id);
-    return team ? team.name : 'Équipe inconnue';
+    const team = teams.value?.find(team => team._id === user.currentTeam.teamId);
+    return team ? "Équipe " + team.name : 'Équipe inconnue';
   } else {
     return 'Aucune équipe';
+  }
+});
+
+const userCenter = computed(() => (user) => {
+  if (user.centerId) {
+    const center = centers.value?.find(center => center._id === user.centerId);
+    return center ? center.name : 'Centre inconnu';
+  } else {
+    return 'Aucun centre';
   }
 });
 
@@ -231,19 +190,24 @@ const handleCenterChange = async (centerId) => {
 
 onMounted(async () => {
   try {
-    await Promise.all([
-      centerStore.fetchCenters(),
-      teamStore.fetchCenterTeams(authStore.userData.centerId)
-    ]);
-
-    // Charger les utilisateurs en fonction du type d'admin
     if (authStore.userData.adminType === 'master') {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
+      [centers.value, teams.value] = await Promise.all([
+        centerStore.fetchCenters(),
+        teamStore.fetchAllTeams()
+      ]);
     } else {
+      [centers.value, teams.value] = await Promise.all([
+        centerStore.fetchCenters(),
+        teamStore.fetchCenterTeams(authStore.userData.centerId)
+      ]);
       await userStore.fetchUsersByCenter(authStore.userData.centerId);
       selectedCenterId.value = authStore.userData.centerId;
     }
+
+    console.log(centers.value);
+    console.log(teams.value);
 
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
   } catch (error) {

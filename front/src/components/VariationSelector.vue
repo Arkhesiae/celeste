@@ -18,7 +18,7 @@
             </template>
         </v-tooltip>
 
-        <div v-if="isShift || hasNoDemand" class="d-flex align-center ga-2 chips-container">
+        <div v-if="isShift" class="d-flex align-center ga-2 chips-container">
             <div class="d-flex align-center chips-container-alt">
                 <v-tooltip v-for="v in variations" :key="v._id" :text="`${v.startTime} - ${v.endTime}`" location="top">
                     <template #activator="{ props: tooltipProps }">
@@ -40,7 +40,7 @@
                     </template>
                 </v-tooltip>
 
-                <v-tooltip v-if="hasNoDemand" :text="isOff ? 'Annuler l\'absence' : 'Déclarer une absence'"
+                <v-tooltip v-if="isShift" :text="isOff ? 'Annuler l\'absence' : 'Déclarer une absence'"
                     location="top">
                     <template #activator="{ props: tooltipProps }">
                         <v-btn v-bind="tooltipProps" :color="isOff ? 'error' : 'surfaceContainerHigh'"

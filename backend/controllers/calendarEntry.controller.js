@@ -8,25 +8,17 @@ const VALID_TYPES = ['absence', 'custom', 'selectedVariation'];
 const registerEntry = async (req, res, next) => {
     try {
         const userId = req.user.userId;
-        const { entryType, type, date, comment, selectedVariation, shift, isOff, confirmCreation, cancel } = req.body;
+        const data = req.body;
 
-        if (!type || !date) {
+        if (!data.type || !data.date) {
             throw new AppError('Les champs type et date sont requis', 400);
         }
 
-        if (!isValidDate(date)) {
+        if (!isValidDate(data.date)) {
             throw new AppError('La date est invalide', 400);
         }
 
-        const result = await calendarEntryService.registerEntry(userId, date, {
-            entryType,
-            type,
-            selectedVariation,
-            shift,
-            isOff,
-            confirmCreation,
-            cancel
-        });
+        const result = await calendarEntryService.registerEntry(userId, data.date, data);
 
         res.status(201).json({
             message: 'Entrée ' + (result.type === "creation" ? "créée" : "modifiée") + ' avec succès',
@@ -93,6 +85,61 @@ const getUserEntries = async (req, res) => {
     }
 };
 
+const undoMods = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;
+        const { date } = req.body;
+
+        if (!userId || !date) {
+            throw new AppError('Les champs userId et date sont requis', 400);
+        }
+
+        if (!isValidDate(date)) {
+            throw new AppError('La date est invalide', 400);
+        }
+
+        const result = await calendarEntryService.undoMods(userId, date);
+
+        res.json({
+            message: 'Modifications annulées avec succès',
+            ...result
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
+
+const remove = async (req, res, next) => {
+    console.log("deleteAssignment")
+    try {
+        const userId = req.user.userId;
+        const { date } = req.body;
+
+        if (!userId || !date) {
+            throw new AppError('Les champs userId et date sont requis', 400);
+        }
+
+        if (!isValidDate(date)) {
+            throw new AppError('La date est invalide', 400);
+        }
+
+        console.log(userId, date);
+
+        const result = await calendarEntryService.deleteAssignment(userId, date);
+
+        console.log(result);
+        res.json({
+            message: 'Entrée supprimée avec succès',
+            ...result
+        });
+
+    } catch (error) {
+        console.log(error);
+        next(error);
+    }
+};
+
 // Supprimer une modification
 const deleteModification = async (req, res) => {
     try {
@@ -101,6 +148,7 @@ const deleteModification = async (req, res) => {
 
         const result = await calendarEntryService.removeModification(id, userId);
 
+        console.log(result);
         res.json({
             message: 'Modification supprimée avec succès',
             ...result
@@ -126,42 +174,12 @@ const getModification = async (req, res) => {
     }
 };
 
-// Mettre à jour une modification
-const updateModification = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.userId;
-        const { selectedVariation, shift, comment, isOff, type } = req.body;
-
-        if (type && !VALID_TYPES.includes(type)) {
-            throw new AppError('Le type doit être "absence", "custom" ou "selectedVariation"', 400);
-        }
-
-        const result = await calendarEntryService.patchModification(id, userId, {
-            selectedVariation,
-            shift,
-            comment,
-            isOff,
-            type
-        });
-
-
-        res.json({
-            message: 'Modification mise à jour avec succès',
-            ...result
-        });
-
-    } catch (error) {
-        next(error);
-    }
-};
-
 export {
     registerEntry,
-    // registerModification,
     restoreInitialShift,
     getUserEntries,
     deleteModification,
     getModification,
-    updateModification
+    undoMods,
+    remove
 };

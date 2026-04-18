@@ -21,7 +21,8 @@
     </v-row>
     <!-- Grille principale -->
     <v-row :class="smAndDown ? 'mx-n4' : ''">
-      <v-col cols="12" md="auto" lg="auto" xl="auto" class="flex-grow-1 ga-4 d-flex flex-column">
+      <v-col cols="12" md="auto" lg="auto" xl="auto" style="min-width: 0; width: 0;"
+        class="flex-grow-1 ga-4 d-flex flex-column">
         <VacationCards />
         <DemandCards @open-details="openDemand"/>
       </v-col>
@@ -39,7 +40,7 @@
 
        
 
-        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-32 mx-n3' : ''" color="surfaceContainer">
+        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16 mx-n3' : ''" color="surfaceContainer">
           <div class="d-flex ga-10 flex-column">
             <PointsCard v-if="!smAndDown" color="transparent" class="pa-0" :points="stats.points" :transactions="[]"
               @transfer="transferDialog = true" />
@@ -47,7 +48,7 @@
             <DashboardCalendarSection/>
           </div>
 
-          <TeamCard />
+          <DashboardTeamCard />
         </v-card>
       </v-col>
 
@@ -119,6 +120,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
+.right-col {
+  max-width: 500px;
+}
+
 .highlight-shadow {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148);
 }

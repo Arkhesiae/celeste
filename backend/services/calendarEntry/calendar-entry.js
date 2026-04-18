@@ -6,48 +6,6 @@ import { AppError } from '../../error/AppError.js';
 import * as demandMutationsService from '../substitution/index.js';
 import overlap from '../../utils/overlapTest.js';
 
-/**
- * Met à jour posterShift.selectedVariation des demandes ouvertes du user pour la date donnée.
- * Retourne la demande mise à jour ou null.
- */
-
-export async function syncDemandSelectedVariation (userId, date, selectedVariationId) {
-    const demands = await Substitution.find({
-        $or: [
-            { posterId: userId },
-            { accepterId: userId }
-        ],
-        'posterShift.date': date,
-        deleted: false,
-        status: { $in: ['open', 'accepted'] }
-    }).lean();
-
-    if (!demands.length) return null;
-
-    const bulkOps = demands.map((demand) => {
-        const isOpen = demand.status === 'open';
-        const isPoster = demand.posterId.toString() === userId.toString();
-
-        const field = isOpen || isPoster
-            ? 'posterShift.selectedVariation'
-            : 'accepterShift.selectedVariation';
-
-        return {
-            updateOne: {
-                filter: { _id: demand._id },
-                update: { $set: { [field]: selectedVariationId, updatedAt: new Date() } }
-            }
-        };
-    });
-
-    await Substitution.bulkWrite(bulkOps);
-
-    return Substitution.find({ _id: { $in: demands.map(d => d._id) } })
-        .populate({ path: 'posterShift.shift', populate: { path: 'variations' } })
-        .populate({ path: 'accepterShift.shift', populate: { path: 'variations' } })
-        .lean();
-}
-
 async function cancelModifications (userId, date) {
     const modifications = await Modification.find({ userId, date, active: true });
     modifications.forEach((modification) => {
@@ -122,6 +80,8 @@ const checkOverlap = (latestAssignment, userShift, data) => {
 }
 
 export async function registerEntry (userId, date, data) {
+
+    console.log(data);
     const user = await User.findById(userId);
     if (!user) {
         const err = new Error('Utilisateur non trouvé');
@@ -137,27 +97,24 @@ export async function registerEntry (userId, date, data) {
         HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
     ]);
 
+
+    const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
     const recomputeShift = () => computeShiftOfUserWithSubstitutions([date], userId);
     const buildResult = async (type) => ({ userShift: await recomputeShift(), updatedDemands: null, type });
 
     switch (data.type) {
         case 'assignment': {
-            data.startTime = '09:00';
-            data.endTime = '17:00';
-            data.date = date;
-
-            if (data.cancel && data.entryType === 'absence') {
-                cancelAssignment(latestAssignment);
-                cancelModifications(userId, date);
-                return buildResult('assignment');
-            }
-
             if (latestAssignment && latestAssignment.subType === 'substitution') {
-               throw new AppError('Impossible de créer une entrée sur un remplacement actif', 422);
+                throw new AppError('Impossible de créer une entrée sur un remplacement actif, annulez d\'abord le remplacement', 422);
             }
 
             if (substitution) {
                 throw new AppError('Impossible de créer une entrée si une demande est en cours ce jour', 409);
+            }
+
+            if (latestAssignment) {
+                latestAssignment.active = false;
+                await latestAssignment.save();
             }
 
             cancelModifications(userId, date);
@@ -169,6 +126,10 @@ export async function registerEntry (userId, date, data) {
                 latestModification.active = false;
                 await latestModification.save();
             }
+            if (!isSameShift(userShift, data)) {
+                throw new AppError('Impossible de créer une modification car le shift ne correspond pas', 422);
+            }
+
             cancelHourPatches(userId, date);
             break;
 
@@ -177,44 +138,18 @@ export async function registerEntry (userId, date, data) {
                 latestHourPatch.active = false;
                 await latestHourPatch.save();
             }
+            if (data.shiftId) {
+                await registerMDDA(userId, date, data);
+                return buildResult('hourPatch');
+            }
             break;
-    }
-
-    if (data.type === 'hourPatch') {
-        const hourPatch = new HourPatch({
-            userId,
-            date,
-            centerId: user.centerId,
-            adjustedTime: { adjustedStart: 1, adjustedEnd: 2 },
-        });
-        await hourPatch.save();
-        return buildResult('hourPatch');
-    }
-
-    if (data.entryType === 'disp' && data.cancel) {
-        const entry = new CalendarEntry({
-            type: data.type,
-            subType: 'pres',
-            shiftData: {
-                shift: data.shift,
-                selectedVariation: data.selectedVariation,
-                team: data.team,
-            },
-            userId,
-            date,
-            centerId: user.centerId,
-            startTime: data.startTime,
-            endTime: data.endTime,
-        });
-        await entry.save();
-        return buildResult('disp');
     }
 
     const entry = new CalendarEntry({
         type: data.type,
         subType: data.entryType,
         shiftData: {
-            shift: data.shift,
+            shift: data.shiftId,
             selectedVariation: data.selectedVariation,
             team: data.team,
         },
@@ -225,10 +160,38 @@ export async function registerEntry (userId, date, data) {
         endTime: data.endTime,
     });
     await entry.save();
-
-    // const updatedDemands = await syncDemandSelectedVariation(userId, date, data.selectedVariation);
-
     return buildResult('creation');
+}
+
+async function registerMDDA (userId, date, data) {
+    const user = await User.findById(userId);
+    if (!user) {
+        throw new AppError('Utilisateur non trouvé', 404);
+    }
+
+    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
+
+    if (!isSameShift(userShift, data)) {
+        throw new AppError('Impossible de créer une MDDA car le shift ne correspond pas', 422);
+    }
+
+    const mdda = new HourPatch({
+        userId,
+        subType: 'mdda',
+        date,
+        adjustedTime: {
+            adjustedStart:  1,
+            adjustedEnd: 2,
+        },
+        centerId: user.centerId,
+        shiftData: {
+            shift: data.shiftId,
+            selectedVariation: data.selectedVariation,
+            team: data.team,
+        },
+    });
+    await mdda.save();
 }
 
 export async function restoreInitialShift (userId, date) {
@@ -398,30 +361,62 @@ export async function getUserEntries (userId, date) {
         .sort({ date: 1, createdAt: -1 });
 }
 
-/**
- * Récupère une modification spécifique par son id, en vérifiant les droits d'accès.
- */
-export async function getModificationById (id, requestingUserId) {
-    const modification = await CalendarEntry.findById(id)
-        .populate('userId', 'name lastName email')
-        .populate('centerId', 'name')
 
-        .populate('shift');
 
-    if (!modification) {
-        const err = new Error('Modification non trouvée');
+export async function undoMods (userId, date) {
+    const user = await User.findById(userId);
+    if (!user) {
+        const err = new Error('Utilisateur non trouvé');
         err.status = 404;
         throw err;
     }
 
-    const user = await User.findById(requestingUserId);
-    if (!user.isAdmin && modification.userId.toString() !== requestingUserId) {
-        const err = new Error('Vous n\'avez pas les droits pour voir cette modification');
-        err.status = 403;
+    const initialShift = await computeShiftOfUserWithSubstitutions([date], userId);
+
+    cancelModifications(userId, date);
+    cancelAssignments(userId, date);
+    cancelHourPatches(userId, date);
+
+    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+
+    return { userShift, updatedDemands: null, type: "restoration" };
+}
+
+
+
+export async function deleteAssignment (userId, date) {
+    const user = await User.findById(userId);
+    if (!user) {
+        const err = new Error('Utilisateur non trouvé');
+        err.status = 404;
         throw err;
     }
 
-    return modification;
-}
+    const latestAssignment = await Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
+    if (!latestAssignment) {
+        throw new AppError('Aucune entrée trouvée', 404);
+    }
 
+    if (latestAssignment.subType === "substitution") {
+        throw new AppError('Vous ne pouvez pas directement supprimer une vacation qui est un remplacement, annulez d\'abord la demande', 400);
+    }
+
+    latestAssignment.active = false;
+    await latestAssignment.save();
+
+    await Promise.all([
+        Modification.updateMany(
+            { userId, date, active: true, createdAt: { $gte: latestAssignment.createdAt } },
+            { active: false }
+        ),
+        HourPatch.updateMany(
+            { userId, date, active: true, createdAt: { $gte: latestAssignment.createdAt } },
+            { active: false }
+        ),
+    ]);
+
+    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+
+    return { userShift, updatedDemands: null, type: "restoration" };
+}
 

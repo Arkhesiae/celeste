@@ -5,13 +5,11 @@
         <FilterChipGroup
           v-model="selectedFilter"
           :filters="filters"
-        />
-        <ListHeaderV2
-          v-model:filter="selectedFilter"
-          v-model:sort="sortBy"
           :sort-options="sortOptions"
+          @update:sort="sortBy = $event"
           :initial-sort="sortOptions[1]"
         />
+  
       </div>
     </v-col>
   </v-row>
@@ -55,7 +53,6 @@ const filters = [
   { label: 'Toutes', value: 'all', count: computed(() => filteredSubstitutions.value.length + filteredSwitches.value.length + filteredOthers.value.length) },
   { label: 'Remplaçables', value: 'remplacables', count: computed(() => filteredSubstitutions.value.length) },
   { label: 'Permutables', value: 'permutables', count: computed(() => filteredSwitches.value.length) },
-  // { label: 'Potentiellement compatibles', value: 'potentially', count: computed(() => filteredPotentiallyCompatible.value.length) },
   { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: computed(() => filteredOthers.value.length) }
 ];
 
@@ -63,9 +60,10 @@ const selectedFilter = ref('all');
 
 // Options de tri
 const sortOptions = [
-  { text: 'Type', value: 'type' },
-  { text: 'Date', value: 'date' },
-  { text: 'Vacation', value: 'shift.name' },
+  { text: 'Type', tag: 'type' },
+  { text: 'Date', tag: 'date' },
+  { text: 'Vacation', tag: 'shift.name' },
+  { text: 'Points', tag: 'shift.points' },
 ];
 const sortBy = ref(sortOptions[1]);
 
@@ -84,57 +82,50 @@ const handleSwitch = (demand) => {
   emits('handle-switch', demand)
 }
 
-
-// Fonction utilitaire pour le filtrage et le tri
-const filterAndSortDemands = (demands) => {
-  let filteredDemands = [...demands] || [];
-
-  if (props.selectedDate) {
-    filteredDemands = filteredDemands.filter(demand => demand.posterShift.date === props.selectedDate);
-  }
-
-  // Tri
-  if (sortBy.value.value) {
-    filteredDemands.sort((a, b) => {
-      if (sortBy.value.value === 'date') {
-        return new Date(a.posterShift.date) - new Date(b.posterShift.date);
-      }
-      if (sortBy.value.value === 'shift.name') {
-        return a.posterShift?.name?.localeCompare(b.posterShift?.name);
-      }
-      if (sortBy.value.value === 'status') {
-        return a.status.localeCompare(b.status);
-      }
-      return 0;
-    });
-  }
-
-  return filteredDemands;
-};
-
 const filteredSubstitutions = computed(() =>
-  filterAndSortDemands(substitutionStore.availableSubstitutions)
+  filterByDate(substitutionStore.availableSubstitutions)
 );
 
 const filteredSwitches = computed(() =>
-  filterAndSortDemands(substitutionStore.availableSwitches)
+  filterByDate(substitutionStore.availableSwitches)
 );
-
-// const filteredPotentiallyCompatible = computed(() =>
-//   filterAndSortDemands(substitutionStore.potentiallyCompatibleDemands)
-// );
 
 const filteredOthers = computed(() =>
-  filterAndSortDemands(substitutionStore.otherDemands.filter(d => !d.potentiallyCompatible))
+  filterByDate(substitutionStore.otherDemands.filter(d => !d.potentiallyCompatible))
 );
 
+const filterByDate = (demands) => {
+  if (!props.selectedDate) return [...demands];
+  return demands.filter(d => d.posterShift.date === props.selectedDate);
+};
+
+const sortDemands = (demands) => {
+  if (!sortBy.value) return demands;
+  return [...demands].sort((a, b) => {
+    switch (sortBy.value.tag) {
+      case 'date':
+        return new Date(a.posterShift.date) - new Date(b.posterShift.date);
+      case 'shift.name':
+        return a.posterShift.shift.name?.localeCompare(b.posterShift.shift.name);
+      case 'shift.points':
+        return a.points - b.points;
+      case 'status':
+        return a.status.localeCompare(b.status);
+      default:
+        return 0;
+    }
+  });
+};
+
 const demands = computed(() => {
-  if (selectedFilter.value === 'all') return [...filteredSubstitutions.value, ...filteredSwitches.value, ...filteredOthers.value];
-  if (selectedFilter.value === 'remplacables') return filteredSubstitutions.value;
-  if (selectedFilter.value === 'permutables') return filteredSwitches.value;
-  // if (selectedFilter.value === 'potentially') return filteredPotentiallyCompatible.value;
-  if (selectedFilter.value === 'incompatibles') return filteredOthers.value;
-  return [];
+  let result;
+  switch (selectedFilter.value) {
+    case 'remplacables': result = filteredSubstitutions.value; break;
+    case 'permutables': result = filteredSwitches.value; break;
+    case 'incompatibles': result = filteredOthers.value; break;
+    default: result = [...filteredSubstitutions.value, ...filteredSwitches.value, ...filteredOthers.value];
+  }
+  return sortDemands(result);
 });
 
 const visible = ref(false)

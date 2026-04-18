@@ -1,9 +1,6 @@
 <script setup>
-
-import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
-
 const props = defineProps({
-  isDialogVisible: {
+  modelValue: {
     type: Boolean,
     required: true
   },
@@ -22,18 +19,11 @@ const props = defineProps({
 });
 
 const emit = defineEmits([
-  'update:isDialogVisible',
+  'update:modelValue',
   'update:points'
 ]);
 
 const localPoints = ref(props.points || 0);
-
-
-const isDialogVisible = computed({
-  get: () => props.isDialogVisible,
-  set: (value) => emit('update:isDialogVisible', value)
-});
-
 
 
 watch(() => props.points, (newValue) => {
@@ -65,17 +55,17 @@ const savePoints = () => {
     points: localPoints.value,
   });
   localPoints.value = 0;
-  isDialogVisible.value = false;
+  emit('update:modelValue', false);
 };
 
 const cancel = () => {
   localPoints.value = props.points || 0;
-  isDialogVisible.value = false;
+  emit('update:modelValue', false);
 };
 </script>
 
 <template>
-  <GenericDialog v-model="isDialogVisible" :title="title" max-width="400px" @close="cancel">
+  <GenericDialog :modelValue="modelValue" :title="title" max-width="400px" @close="cancel">
     <template #content>
       <div>
         <div class="mb-4 d-flex align-center ga-2">
@@ -86,8 +76,7 @@ const cancel = () => {
         </div>
 
         <v-form>
-          <v-text-field
-v-model="localPoints" :min="0" :rules="[rules.points]" variant="underlined"
+          <v-text-field v-model="localPoints" :min="0" :rules="[rules.points]" variant="underlined"
             bg-color="transparent" class="big-number-input">
             <template #default />
           </v-text-field>
@@ -97,10 +86,10 @@ v-model="localPoints" :min="0" :rules="[rules.points]" variant="underlined"
 
     <template #footer>
       <div class="d-flex justify-space-between ">
-        <v-btn variant="text" color="secondary" size="small" rounded="xl" @click="cancel">
+        <v-btn variant="text" rounded="xl" @click="cancel">
           Annuler
         </v-btn>
-        <v-btn variant="flat" color="onSurface" size="small" rounded="xl" :disabled="!formValid" @click="savePoints">
+        <v-btn variant="flat" rounded="xl" :disabled="!formValid" @click="savePoints">
           Sauvegarder
         </v-btn>
       </div>

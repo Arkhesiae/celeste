@@ -1,57 +1,40 @@
 <template>
-  <v-card class="pa-1 my-1 occurrence-card" flat :color="occurrence.type === 'Renfort' ? 'background' : 'background'">
-    <v-card-item :prepend-icon="occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline'">
-      <div class="d-flex align-start justify-space-between">
-        <div class="d-flex align-start flex-column">
-          <span :class="smAndDown ? 'text-body-1' : 'text-h6'">Equipe {{ occurrence?.teamName }}</span>
-          <v-card-subtitle v-if="occurrence.type === 'Renfort'">
-            Du
-            <v-chip
-:class="smAndDown ? 'px-0 ' : 'px-4'" :size="smAndDown ? 'small' : 'default'"
-              :variant="smAndDown ? 'text' : 'tonal'" rounded="lg">
-              {{ formattedOccurenceDate(occurrence.fromDate) }}
-            </v-chip>
-            au
-            <v-chip
-:class="smAndDown ? 'px-0 ' : 'px-4 '" :size="smAndDown ? 'small' : 'default'"
-              :variant="smAndDown ? 'text' : 'tonal'" rounded="lg">
-              {{ formattedOccurenceDate(occurrence.toDate) }}
-            </v-chip>
-          </v-card-subtitle>
-          <v-card-subtitle v-else>
-            A partir du
-            <span class="">{{ formattedOccurenceDate(occurrence.fromDate) }}</span>
-          </v-card-subtitle>
-        </div>
-        <div>
-          <v-chip v-if="!smAndDown" class="" color="onBackground" size="small" rounded="lg">
-            {{ "Dans " + relativeDays + " jours" }}
-          </v-chip>
-        </div>
-      </div>
-      <template #append>
-        <v-scroll-x-transition mode="out-in">
-          <div v-if="activeCardId !== occurrence._id" key="not-active">
-            <v-btn rounded="xl" variant="text" color="onBackground" icon @click.stop="handleDelete(occurrence._id)">
-              <v-icon>mdi-delete-outline</v-icon>
-            </v-btn>
-          </div>
+  <div class="occurrence-card" :class="{ 'is-confirming': isConfirming }">
+    <!-- Leading icon -->
+    <div class="occurrence-icon" :class="occurrence.type === 'Renfort' ? 'icon--renfort' : 'icon--affectation'">
+      <v-icon size="18"
+        :icon="occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline'" />
+    </div>
 
-          <div v-else key="not-subscribed" class="text-caption">
-            <v-btn rounded="lg" prepend-icon="mdi-delete" color="error " @click.stop="handleDelete(occurrence._id)">
-              CONFIRMER
-            </v-btn>
-          </div>
-        </v-scroll-x-transition>
-      </template>
-    </v-card-item>
-  </v-card>
+    <!-- Body -->
+    <div class="occurrence-body">
+      <span class="occurrence-title">
+        <span class="occurrence-type-badge">{{ occurrence.type }}</span>
+        Équipe {{ occurrence.teamName }}
+        <span class="days-chip" :class="chipVariant">
+          · Dans {{ relativeDays }} jours
+        </span>
+      </span>
+      <span class="occurrence-sub" v-if="occurrence.type === 'Renfort'">
+        Du <strong>{{ formattedOccurenceDate(occurrence.fromDate) }}</strong>
+        au <strong>{{ formattedOccurenceDate(occurrence.toDate) }}</strong> inclus
+      </span>
+      <span class="occurrence-sub" v-else>
+        À partir du <strong>{{ formattedOccurenceDate(occurrence.fromDate) }}</strong>
+      </span>
+ 
+    </div>
+
+    <div class="occurrence-right">
+      <v-btn rounded="xl" variant="text" color="onBackground" size="small" icon
+        @click.stop="handleDelete(occurrence._id)">
+        <v-icon>mdi-delete-outline</v-icon>
+      </v-btn>
+    </div>
+  </div>
 </template>
 
 <script setup>
-
-import { useAuthStore } from "@/stores/authStore.js";
-import { useTeamStore } from "@/stores/teamStore.js";
 import { useDisplay } from "vuetify";
 
 const props = defineProps({
@@ -65,9 +48,6 @@ const emit = defineEmits(['delete-occurrence']);
 
 const activeCardId = ref(null);
 const { smAndDown } = useDisplay();
-const authStore = useAuthStore();
-const teamStore = useTeamStore();
-const userId = computed(() => authStore.userData.userId);
 
 const relativeDays = computed(() => {
   const today = new Date();
@@ -95,22 +75,199 @@ const handleDelete = (occurrenceId) => {
 
 
 <style scoped>
-.card-border {
-  border-radius: 18px !important;
-}
-
-.card-border-top {
-  border-top-left-radius: 18px !important;
-  border-top-right-radius: 18px !important;
-}
-
-.card-border-bottom {
-  border-bottom-left-radius: 18px !important;
-  border-bottom-right-radius: 18px !important;
-}
-</style>
-<style>
 .occurrence-card {
-  border-radius: 18px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 0.5px solid rgba(var(--v-border-color), .01);
+  background: rgb(var(--v-theme-surfaceContainerHigh));
+  transition: border-color 0.15s ease;
+  margin-bottom: 6px;
+}
+
+.occurrence-card:hover {
+  border-color: rgba(var(--v-border-color), 0.3);
+}
+
+/* ── Icon badge ── */
+.occurrence-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.icon--renfort {
+  background: rgba(var(--v-theme-primary), 0.012);
+  color: rgb(var(--v-theme-primary));
+}
+
+.icon--affectation {
+  background: rgba(var(--v-theme-primary), 0.012);
+  color: rgb(var(--v-theme-primary));
+}
+
+/* ── Body ── */
+.occurrence-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.occurrence-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgb(var(--v-theme-on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.occurrence-type-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(var(--v-theme-primary), 0.1);
+  color: rgb(var(--v-theme-primary));
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.occurrence-sub {
+  font-size: 12px;
+  opacity: 0.8;
+  color: rgb(var(--v-theme-on-surface));
+  line-height: 1.4;
+}
+
+.occurrence-sub strong {
+  font-weight: 500;
+  color: rgb(var(--v-theme-primary));
+}
+
+/* ── Right side ── */
+.occurrence-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* ── Days chip ── */
+.days-chip {
+  font-size: 12px;
+  font-weight: 400;
+  
+  border-radius: 999px;
+  /* border: 0.5px solid rgba(var(--v-border-color), var(--v-border-opacity)); */
+  color: rgba(var(--v-theme-on-surface), 0.6);
+  white-space: nowrap;
+  line-height: 1.6;
+}
+
+.chip--soon {
+  background: rgba(var(--v-theme-warning), 0.1);
+  border-color: rgba(var(--v-theme-warning), 0.35);
+  color: rgb(var(--v-theme-warning));
+}
+
+.chip--today {
+  background: rgba(var(--v-theme-success), 0.1);
+  border-color: rgba(var(--v-theme-success), 0.35);
+  color: rgb(var(--v-theme-success));
+}
+
+.chip--past {
+  opacity: 0.55;
+}
+
+/* ── Delete button ── */
+.del-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(var(--v-theme-error));
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.del-btn:hover {
+  background: rgba(var(--v-theme-error), 0.08);
+  border-color: rgba(var(--v-theme-error), 0.35);
+  color: rgb(var(--v-theme-error));
+}
+
+/* ── Confirm group ── */
+.confirm-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-cancel {
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  background: transparent;
+  color: rgb(var(--v-theme-on-surface-variant));
+  cursor: pointer;
+  transition: background 0.1s;
+  line-height: 1.5;
+}
+
+.btn-cancel:hover {
+  background: rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.btn-confirm {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 0.5px solid rgba(var(--v-theme-error), 0.4);
+  background: rgba(var(--v-theme-error), 0.1);
+  color: rgb(var(--v-theme-error));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.1s;
+  line-height: 1.5;
+}
+
+.btn-confirm:hover {
+  opacity: 0.75;
+}
+
+/* ── Transition ── */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  transform: translateX(6px);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-6px);
 }
 </style>

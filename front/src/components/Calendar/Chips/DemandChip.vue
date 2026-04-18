@@ -9,7 +9,7 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 const props = defineProps({
   demand: { type: Object, required: true },
-  date : { type: Date, required: true },
+  date: { type: String, required: true },
   text: { type: String },
 
   order: { type: Number, required: true },
@@ -27,15 +27,10 @@ const accepterUser = computed(() => {
 
 <template>
   <div
- 
     :style="`z-index: ${props.order}; transform: translateY(${(props.order - 1) * -5}px); box-shadow: 0 2px 1px 0px rgba(0,0,0, 0.2);`"
-    class="clip d-flex align-center justify-center bg-primary rounded-lg pa-1 position-absolute bottom-0 right-0"
-  >
-    <v-icon
-      size="14px"
-      color="onPrimary"
-    >
-     {{ getDemandIcon(props.demand, authStore.userData.userId) }}
+    class="clip d-flex align-center justify-center bg-primary rounded-lg pa-1 position-absolute bottom-0 right-0">
+    <v-icon size="14px" color="onPrimary">
+      {{ getDemandIcon(props.demand, authStore.userData.userId) }}
     </v-icon>
     <div v-if="acceptedAsPoster" class="d-flex align-center justify-center">
       <v-avatar size="16px" class="" variant="tonal">
@@ -48,11 +43,6 @@ const accepterUser = computed(() => {
 </template>
 
 <style scoped>
-/* 
-.clip {
-  clip-path: path('M 8 0 L 312 0 Q 320 0 320 8 L 320 24 Q 320 32 312 32 L 8 32 Q 0 32 0 24 L 0 22 A 16 16 0 0 0 0 10 L 0 8 Q 0 0 8 0 Z ');
-} */
-
 .chip {
   width: 20px;
   height: 20px;

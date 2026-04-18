@@ -28,6 +28,7 @@ export const useCenterStore = defineStore('center', () => {
       loading.value = true;
       error.value = null;
       centers.value = await centerService.fetchCenters();
+      return centers.value;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des centres';
       throw err;

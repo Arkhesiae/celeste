@@ -126,6 +126,7 @@
       </div>
 
     </v-fade-transition>
+
     <v-btn
       :class="{ 'opacity-10': availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0 }"
       :disabled="availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0"
@@ -236,19 +237,21 @@ const fetchEntries = async () => {
   entries.value = res;
 }
 
-const addCustomEntry = async (type, data) => {
+const addCustomEntry = async (type) => {
   const dateKey = toDateKey(props.selectedDate);
   if (!dateKey) return;
   entryToRegister.value = {
     userId: authStore.userData.userId,
     type: 'assignment',
     entryType: type,
+    startTime: "09:00",
+    endTime: "17:00",
     date: dateKey,
   }
-  registerEntry(type);
+  registerEntry();
 }
 
-const registerEntry = async (type) => {
+const registerEntry = async () => {
   try {
     const res = await planningModificationService.registerEntry(entryToRegister.value);
     if (res.needsApproval) {
@@ -257,12 +260,11 @@ const registerEntry = async (type) => {
       return;
     }
 
-    console.log(res.userShift)
     entryDialog.value = false;
     shiftStore.addEntry(res.userShift[0], entryToRegister.value.date);
-
     entries.value = await fetchEntries();
   } catch (error) {
+    snackbarStore.showNotification(error.message, 'onError', 'mdi-alert-circle-outline');
     console.log(error);
   }
 }

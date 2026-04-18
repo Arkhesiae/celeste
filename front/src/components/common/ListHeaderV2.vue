@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="d-flex  justify-space-between"
-    :class="smAndDown ? 'flex-column ga-2 align-end' : ' align-center'"
-  >
+ 
     <v-menu
       color="onBackground"
       rounded="lg"
@@ -34,7 +31,7 @@
         </v-list-item>
       </v-list>
     </v-menu>
-  </div>
+
   <!-- <div ref="header" :class="['header-placeholder']" class="mb-16 position-relative"  :style="{ height: `${headerHeight}px`, width: `${headerWidth}px` }">
         <div :class="[
             'list-header justify-space-between  flex-wrap align-center',

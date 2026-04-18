@@ -41,7 +41,7 @@
         <!-- Demand chips (bottom-right) -->
         <div class="d-flex justify-center position-absolute mb-1 mr-1" style="bottom: 0; right: 0;">
             <div v-for="(demand, index) in demands" :key="demand.id">
-                <DemandChip :order="index + 1" :demand="demand" :date="date" />
+                <DemandChip :order="index + 1" :demand="demand" :date="date.toString()" />
             </div>
             <div v-if="demands.length > 1" class="chipe position-absolute" style="top: 50%; left: -5px;">
                 <v-icon size="14px" color="onPrimary">mdi-plus</v-icon>

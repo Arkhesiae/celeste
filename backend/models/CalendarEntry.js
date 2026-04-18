@@ -163,9 +163,6 @@ const Assignment = CalendarEntry.discriminator('assignment', AssignmentSchema)
 
 // ── Modification ──────────────────────────────────────────────────────
 
-
-
-
 const ModificationSchema = new mongoose.Schema({
     subType: {
         type: String,
@@ -188,15 +185,18 @@ const Modification = CalendarEntry.discriminator('modification', ModificationSch
 
 // ── HourPatch ─────────────────────────────────────────────────────────
 
-
-
-
 const HourPatchSchema = new mongoose.Schema({
     adjustedTime: {
         adjustedStart: { type: Number, required: true },
         adjustedEnd: { type: Number, required: true },
-    }
-})
+    },
+    subType: {
+        type: String,
+        enum: ['mdda', "assignment_patch"],
+        required: true
+    },
+    shiftData: ShiftDataSchema
+}, { discriminatorKey: 'subType' })
 
 HourPatchSchema.pre('save', async function () {
     const { adjustedStart, adjustedEnd } = this.adjustedTime
@@ -206,8 +206,5 @@ HourPatchSchema.pre('save', async function () {
 })
 
 const HourPatch = CalendarEntry.discriminator('hour_patch', HourPatchSchema)
-
-
-
 
 export { CalendarEntry, Assignment, Modification, HourPatch }

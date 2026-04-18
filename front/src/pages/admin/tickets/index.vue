@@ -6,10 +6,8 @@
 
 
 <script setup>
-
-;
 import { useTicketStore } from '@/stores/ticketStore';
-import TicketList from '@/components/Tickets/TicketList.vue';
+
 
 
 const ticketStore = useTicketStore();

@@ -30,6 +30,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       centerTeams.value = await teamService.getTeams(centerId);
       currentCenter.value = centerId;
+      return centerTeams.value
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des équipes du centre';
       throw err;
@@ -46,6 +47,7 @@ export const useTeamStore = defineStore('team', () => {
       loading.value = true;
       error.value = null;
       teams.value = await teamService.getAllTeams();
+      return teams.value
     } catch (err) {
       console.error('Erreur lors de la récupération des équipes:', err);
       throw err;

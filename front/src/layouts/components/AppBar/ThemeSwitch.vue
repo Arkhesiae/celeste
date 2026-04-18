@@ -31,6 +31,8 @@ defineEmits(['update:modelValue']);
 }
 
 :deep(.v-switch__thumb) {
+  background-color: rgba(var(--v-theme-primary), 1) !important;
+  color: rgba(var(--v-theme-onPrimary), 1) !important;
   height: 20px !important;
   width: 20px !important;
 }

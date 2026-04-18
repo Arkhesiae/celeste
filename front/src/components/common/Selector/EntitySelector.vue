@@ -2,16 +2,13 @@
   <v-card
     rounded="xl"
     elevation="0"
-    class="pa-4 overflow-hidden d-flex flex-column"
+    class="pa-2 overflow-hidden d-flex flex-column"
     color="surfaceContainer"
     style="max-height: 100%;"
   >
-    <v-card-title
-      v-if="title"
-      class="text-h6 font-weight-medium mb-4 flex-grow-0"
-    >
-      {{ title }}
-    </v-card-title>
+    <div class="title-container mb-4 pl-2 pt-2">
+      <span class="global-title">{{ title }}</span>
+    </div>
     <div class="version-list-container flex-grow-1 overflow-hidden">
       <div
         ref="scrollContainer"
@@ -31,8 +28,8 @@
         >
           <div class="d-flex align-center justify-space-between">
             <div class="d-flex flex-column">
-              <span class="text-h6 font-weight-bold">{{ prefix ? prefix + ' ' + item[itemTitle] : item[itemTitle] }}</span>
-              <span class="text-caption text-medium-emphasis">{{ itemSubtitle ? item[itemSubtitle] : '' }}</span>
+              <span class="title">{{ prefix ? prefix + ' ' + item[itemTitle] : item[itemTitle] }}</span>
+              <span class="subtitle">{{ itemSubtitle ? item[itemSubtitle] : '' }}</span>
             </div>
             <div class="d-flex align-center">
               <slot
@@ -168,6 +165,25 @@ onMounted(() => {
   transition: opacity 0.3s ease;
 }
 
+.global-title {
+  font-size: 16px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.title {
+  font-size: 14px;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+.subtitle {
+  font-size: 12px;
+  opacity: 0.5;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
 .scroll-indicator-top.hidden,
 .scroll-indicator-bottom.hidden {
   opacity: 0;
@@ -175,18 +191,23 @@ onMounted(() => {
 
 /* Items */
 .version-item {
+  border-radius: 16px !important;
+  background-color: rgba(var(--v-theme-surfaceContainer), 0.5);
   border: 1px solid transparent;
   transition: all 0.2s ease-in-out;
 }
 
 .version-hover:hover {
-  background-color: rgba(var(--v-theme-remplacement), 0.05);
-  border-color: rgba(var(--v-theme-remplacement), 0.1);
+  background-color: rgba(var(--v-theme-primary), 0.05);
+  border-color: rgba(var(--v-theme-primary), 0.1);
+  /* color: rgba(var(--v-theme-onPrimary), 1); */
 }
 
 .selected-version {
-  background-color: rgba(var(--v-theme-surfaceContainerHighest), 0.8);
-  border-color: rgba(var(--v-theme-surfaceContainerHighest), 0.3);
+  background-color: rgba(var(--v-theme-primary), 0.9);
+  border-radius: 20px !important;
+  color: rgba(var(--v-theme-onPrimary), 1);
+  border-color: rgba(var(--v-theme-primary), 0.3);
 }
 
 .cursor-pointer {

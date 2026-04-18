@@ -5,28 +5,36 @@
       <span class="text-h7 font-weight-medium text-disabled">{{ baseShift?.name }}</span>
       <div v-for="(entry, index) in history" :key="index" class="d-flex align-center ga-1">
         <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8;" />
-        <span v-if="entry.type === 'shift'" class="text-h7 font-weight-medium">
+        <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-h7 font-weight-medium" :class="index === history.length - 1 ? '' : 'text-disabled'">
           {{ entry.shiftData?.shift?.name }}
         </span>
-        <v-icon v-else :key="entry?.type" size="16" class="text-medium-emphasis">
+        <v-icon v-else :key="entry?.type" size="16" :class="index === history.length - 1 ? '' : 'text-disabled'">
           {{ typeIcon(entry?.type) }}
         </v-icon>
         <span v-if="entry.wasOverride" class="text-caption text-disabled">Override</span>
       </div>
     </div>
 
-    <div v-if="canRegisterEntry" class="d-flex align-center ga-2" style="position: absolute; top: 12px; right: 12px;">
-      <v-tooltip text="Modifier" location="top">
+    <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2"
+      style="position: absolute; top: 12px; right: 12px;">
+      <v-tooltip v-if="enableAssign && canRegisterEntry" text="Modifier" location="top">
         <template #activator="{ props: tooltipProps }">
           <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="emit('open-entry-dialog')">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
         </template>
       </v-tooltip>
-      <v-tooltip v-if="!isBaseShift" text="Annuler les modifications" location="top">
+      <v-tooltip v-if="showUndoMods" text="Annuler les modifications" location="top">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="restoreInitialShift">
+          <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="undoMods">
             <v-icon>mdi-undo-variant</v-icon>
+          </v-btn>
+        </template>
+      </v-tooltip>
+      <v-tooltip v-if="showDelete" text="Supprimer l'entrée" location="top">
+        <template #activator="{ props: tooltipProps }">
+          <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="deleteAssignment">
+            <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>
       </v-tooltip>
@@ -46,9 +54,9 @@
       </div>
 
       <div class="d-flex flex-column justify-space-between">
-        <HourRange v-if="hours" :hours="hours" :endsNextDay="shiftEndsNextDay" />
+        <HourRange v-if="hours" :hours="hours" :endsNextDay="shiftEndsNextDay" :wasPatched="wasPatched" />
         <div v-if="shiftTeam" class="py-0 text-caption opacity-70"
-          style="margin-top: -5px; font-size: 11px !important;">
+          style="line-height: 1.2; font-size: 11px !important;">
           Dans l'équipe {{ shiftTeam }}
         </div>
         <!-- <div v-if="comment" style="margin-top: -5px; font-size: 11px !important;">
@@ -77,7 +85,8 @@ import { entryTypes } from '@/utils/entryIcons';
 
 const props = defineProps({
   date: { type: [Date, String], required: true },
-  canRegisterEntry: { type: Boolean, default: true },
+  enableModifications: { type: Boolean, default: true },
+  enableAssign: { type: Boolean, default: true },
 });
 
 const emit = defineEmits(['open-entry-dialog', 'entry-registered']);
@@ -105,6 +114,7 @@ const vacation = computed(() =>
 
 const isRestDay = computed(() => vacation.value?.shiftData?.shift?.type === 'rest');
 const isShift = computed(() => !!vacation.value?.shiftData?.shift);
+const wasPatched = computed(() => vacation.value?.wasPatched);
 const isOff = computed(() => vacation.value?.isOff);
 const isBaseShift = computed(() => vacation.value?.isBaseShift);
 const baseShift = computed(() => vacation.value?.baseShift);
@@ -117,6 +127,22 @@ const shiftEndsNextDay = computed(() => {
   const shift = vacation.value?.shiftData?.shift;
   const variation = vacation.value?.shiftData?.selectedVariation;
   return shift ? (getEffectiveShiftTimes(shift, variation)?.endsNextDay ?? false) : false;
+});
+
+const canRegisterEntry = computed(() => {
+  const lastEntry = history.value?.[history.value?.length - 1];
+  if (lastEntry && lastEntry.type === 'substitution') return false;
+  return true;
+});
+
+const showUndoMods = computed(() => {
+  return vacation.value?.shiftData?.selectedVariation;
+});
+
+const showDelete = computed(() => {
+  const lastEntry = history?.value?.[history.value?.length - 1];
+  if (lastEntry && lastEntry.type !== 'substitution') return true;
+  return false
 });
 
 const hours = computed(() => {
@@ -135,14 +161,6 @@ const status = computed(() => {
   if (vacation.value?.shiftData?.selectedVariation === 'vic') return 'vic';
   if (vacation.value?.shiftData?.selectedVariation) return 'variation';
   return null;
-});
-
-const statusColor = computed(() => {
-  switch (status.value) {
-    case 'off': return 'error';
-    case 'vic': return 'warning';
-    default: return 'onBackground';
-  }
 });
 
 const dayType = computed(() => {
@@ -174,9 +192,35 @@ const registerEntry = async (payload) => {
   try {
     const res = await planningModificationService.registerEntry(payload);
     shiftStore.addEntry(res.userShift[0], dateKey.value);
-    emit('entry-registered');
   } catch (error) {
     console.error(error);
+    snackbarStore.showNotification('Erreur : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
+const deleteAssignment = async () => {
+  try {
+    const res = await planningModificationService.deleteAssignment(
+      authStore.userData.userId,
+      dateKey.value
+    );
+    shiftStore.addEntry(res.userShift[0], dateKey.value);
+  } catch (err) {
+    console.error(err);
+    snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
+
+const undoMods = async () => {
+  try {
+    const res = await planningModificationService.undoMods(
+      authStore.userData.userId,
+      dateKey.value
+    );
+    shiftStore.addEntry(res.userShift[0], dateKey.value);
+  } catch (err) {
+    console.error(err);
+    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
   }
 };
 
@@ -187,8 +231,8 @@ const restoreInitialShift = async () => {
       dateKey.value
     );
     shiftStore.addEntry(res.userShift[0], dateKey.value);
-    emit('entry-registered');
   } catch (err) {
+    console.error(err);
     snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
   }
 };
@@ -198,7 +242,7 @@ const selectVariationForDay = (variation) => registerEntry({
   entryType: 'variation',
   date: dateKey.value,
   selectedVariation: variation?._id ?? null,
-  shift: vacation.value?.shiftData?.shift?._id,
+  shiftId: vacation.value?.shiftData?.shift?._id,
   centerId: authStore.userData?.centerId,
   confirmCreation: true,
 });
@@ -206,7 +250,7 @@ const selectVariationForDay = (variation) => registerEntry({
 const registerMDDA = () => registerEntry({
   type: 'hourPatch',
   date: dateKey.value,
-  shift: vacation.value?.shiftData?.shift?._id,
+  shiftId: vacation.value?.shiftData?.shift?._id,
   centerId: authStore.userData?.centerId,
   confirmCreation: true,
 });
@@ -215,20 +259,30 @@ const patchHours = () => {
   // implement as needed
 };
 
-const registerAbsence = () => registerEntry({
-  entryType: 'disp',
-  type: 'modification',
-  date: dateKey.value,
-  cancel: isOff.value,
-  comment: isOff.value ? 'Retour de congé' : 'Absence enregistrée',
-  confirmCreation: true,
-});
+const registerAbsence = () => {
+  if (isOff.value) {
+    return registerEntry({
+      entryType: 'pres',
+      type: 'modification',
+      date: dateKey.value,
+      shiftId: vacation.value?.shiftData?.shift?._id,
+      confirmCreation: true,
+    });
+  }
+  return registerEntry({
+    entryType: 'disp',
+    type: 'modification',
+    date: dateKey.value,
+    shiftId: vacation.value?.shiftData?.shift?._id,
+    confirmCreation: true,
+  });
+}
 
 const registerVIC = () => registerEntry({
   entryType: 'vic',
   type: 'modification',
   date: dateKey.value,
-  shift: vacation.value?.shiftData?.shift?._id,
+  shiftId: vacation.value?.shiftData?.shift?._id,
   confirmCreation: true,
 });
 </script>

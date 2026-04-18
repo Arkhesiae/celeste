@@ -1,32 +1,17 @@
 <template>
   <v-menu>
     <template #activator="{ props }">
-      <v-chip
-        v-bind="props"
-        size="x-small"
-        :variant="isDarkTheme ? 'outlined' : 'tonal'"
-        rounded="lg"
-        :color="getStatusColor(status)"
-        
-        class="cursor-pointer"
-        @click.stop
-      >
-        <v-icon
-          v-if="prependIcon"
-          size="small"
-          class="mr-1"
-        >
+      <v-chip v-bind="props" size="x-small" :variant="isDarkTheme ? 'outlined' : 'tonal'" rounded="lg"
+        :color="getStatusColor(status)" class="cursor-pointer" @click.stop>
+        <v-icon v-if="prependIcon" size="small" class="mr-1">
           mdi-chevron-down
         </v-icon>
         {{ getStatusLabel(status) }}
       </v-chip>
     </template>
     <v-list>
-      <v-list-item
-        v-for="statusOption in statusOptions"
-        :key="statusOption.value"
-        @click="updateStatus(statusOption.value)"
-      >
+      <v-list-item v-for="statusOption in statusOptions" :key="statusOption.value"
+        @click="updateStatus(statusOption.value)">
         <v-list-item-title>{{ statusOption.label }}</v-list-item-title>
       </v-list-item>
     </v-list>
@@ -74,9 +59,9 @@ const statusOptions = [
 const getStatusColor = (status) => {
   switch (status) {
     case 'new':
-      return 'rgba(var(--v-theme-new),1)';
+      return 'rgba(var(--v-theme-primary),1)';
     case 'in_progress':
-      return 'rgba(var(--v-theme-pending),1)';
+      return 'rgba(var(--v-theme-secondary),1)';
     case 'closed':
       return 'rgba(100,100,100,1)';
     default:
@@ -92,14 +77,14 @@ const getStatusLabel = (status) => {
       return 'En cours';
     case 'closed':
       return 'Fermé';
-  
+
   }
 };
 
 const updateStatus = async (newStatus) => {
   try {
     await ticketStore.updateTicketStatus(props.ticketId, newStatus);
- 
+
     emit('status-updated', newStatus);
   } catch (error) {
     snackbarStore.showError('Erreur lors de la mise à jour du statut : ' + error, 'onError', 'mdi-alert-circle');

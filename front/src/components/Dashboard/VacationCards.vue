@@ -8,18 +8,18 @@
         <Swiper :modules="[Pagination]" :pagination="{ clickable: true }" :slides-per-view="1" :space-between="16"
             class="vacation-swiper">
             <SwiperSlide>
-                <ShiftCard class="bg-surfaceContainer" :canRegisterEntry="false" :date="todayISO" label="Aujourd'hui" />
+                <ShiftCard class="bg-surfaceContainer" :enableAssign="false" :date="todayISO" label="Aujourd'hui" />
             </SwiperSlide>
             <SwiperSlide>
-                <ShiftCard class="bg-surfaceContainer" :canRegisterEntry="false" :date="tomorrowISO" label="Demain" />
+                <ShiftCard class="bg-surfaceContainer" :enableAssign="false" :date="tomorrowISO" label="Demain" />
             </SwiperSlide>
         </Swiper>
     </div>
 
     <!-- Desktop: side by side -->
-    <div v-else class="d-flex ga-4 w-100">
-        <ShiftCard class="bg-surfaceContainer flex-1-1" :canRegisterEntry="false" :date="todayISO" label="Aujourd'hui" />
-        <ShiftCard class="bg-surfaceContainer " :canRegisterEntry="false" :date="tomorrowISO" label="Demain" />
+    <div v-else class="d-flex ga-4 w-100  flex-wrap">
+        <ShiftCard class="bg-surfaceContainer flex-1-1" :enableAssign="false" :date="todayISO" label="Aujourd'hui" />
+        <ShiftCard class="bg-surfaceContainer flex-1-1" :enableAssign="false" :date="tomorrowISO" label="Demain" />
     </div>
     </div>
 </template>

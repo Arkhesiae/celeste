@@ -73,7 +73,7 @@ export const useShiftStore = defineStore('shift', () => {
       dateKey = entry.date.split('T')[0];
     }
 
-    const { date, shiftData, isBaseShift, history, type, baseShift, isOff, startTime, endTime} = entry;
+    const { date, shiftData, isBaseShift, history, type, baseShift, isOff, startTime, endTime, wasPatched} = entry;
 
     let start = null;
     let end = null;
@@ -97,7 +97,8 @@ export const useShiftStore = defineStore('shift', () => {
       start,
       end,
       isBaseShift,
-      history: history
+      history: history,
+      wasPatched
     };
 
     persistentVacationsMap.value.set(dateKey, newValue);

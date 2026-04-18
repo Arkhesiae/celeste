@@ -7,8 +7,6 @@ export const entryTypes = [
     { key: 'simulation', icon: 'desktop-classic', label: 'Simu' },
     { key: 'vis_med', icon: 'needle', label: 'Visite médicale' },
     { key: 'manager', icon: 'crown-outline', label: 'Chef' },
-    { key: 'sick_leave', icon: 'medication-outline', label: 'Congé maladie' },
-    { key: 'maternity_leave', icon: 'cradle-outline', label: 'Congé maternité' },
     { key: 'test', icon: 'school-outline', label: 'Test' },
 ]
 

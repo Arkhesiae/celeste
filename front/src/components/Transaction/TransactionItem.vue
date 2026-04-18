@@ -1,7 +1,8 @@
 <template>
   <v-card
-    color="surfaceContainer "
+    color="surfaceContainer"
     flat
+    :style="{ opacity: opacity }"
    
     class="transaction-item pa-2 px-3  d-flex align-center justify-space-between"
   >
@@ -147,6 +148,10 @@ const props = defineProps({
   transaction: {
     type: Object,
     required: true,
+  },
+  opacity: {
+    type: String,
+    default: '1',
   }
 });
 

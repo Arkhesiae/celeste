@@ -16,8 +16,8 @@
         </div>
 
         <!-- Desktop: side by side -->
-        <div v-else class="w-100 ga-4 " style="width: 100%; max-width: 100%;">
-            <OwnDemandCard v-for="(demand, index) in demandList" :key="index" :demand="demand" :dot="false" @open-details="emit('openDetails', $event)" />
+        <div v-else class="w-100 ga-4 d-flex flex-wrap" style="width: 100%; max-width: 100%;">
+            <OwnDemandCard class="flex-1-1" style="max-width: 400px;" v-for="(demand, index) in demandList" :key="index" :demand="demand" :dot="false" @open-details="emit('openDetails', $event)" />
         </div>
     </div>
 </template>

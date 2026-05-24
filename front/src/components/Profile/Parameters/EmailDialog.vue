@@ -1,7 +1,5 @@
 <template>
-  <v-dialog
-v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
-    :fullscreen="smAndDown">
+  <v-dialog v-model="modelValue" transition="scroll-x-reverse-transition" max-width="500px" :fullscreen="smAndDown">
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
@@ -26,8 +24,7 @@ v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width=
           <!-- Étape 1: Email -->
           <v-window-item :value="1">
             <v-form ref="emailForm" v-model="emailValid" @submit.prevent="handleNext">
-              <v-text-field
-v-model="email" flat :rules="emailRules" label="Nouvelle adresse email" required
+              <v-text-field v-model="email" flat :rules="emailRules" label="Nouvelle adresse email" required
                 type="email" prepend-inner-icon="mdi-email-outline" variant="solo-filled" color="primary" rounded="xl"
                 bg-color="surface" hide-details="auto" />
             </v-form>
@@ -35,8 +32,7 @@ v-model="email" flat :rules="emailRules" label="Nouvelle adresse email" required
 
           <!-- Étape 2: OTP -->
           <v-window-item :value="2">
-            <OTPVerification
-:email="email" title="Vérification de votre email" @verified="onOtpVerified"
+            <OTPVerification :email="email" title="Vérification de votre email" @verified="onOtpVerified"
               @error="onOtpError" />
           </v-window-item>
         </v-window>
@@ -47,8 +43,7 @@ v-model="email" flat :rules="emailRules" label="Nouvelle adresse email" required
           {{ currentStep === 1 ? 'Annuler' : 'Retour' }}
         </v-btn>
         <v-spacer />
-        <v-btn
-v-if="currentStep === 1" color="primary" variant="tonal" rounded="xl" :loading="loading"
+        <v-btn v-if="currentStep === 1" color="primary" variant="tonal" rounded="xl" :loading="loading"
           :disabled="!emailValid" @click="handleNext">
           Continuer
         </v-btn>
@@ -67,14 +62,12 @@ import { profileService } from '@/services/profileService'
 const STORAGE_KEY = 'authData';
 
 const authStore = useAuthStore()
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
+const modelValue = defineModel({
+  type: Boolean,
+  default: false
 })
 
-const emit = defineEmits(['update:modelValue', 'success', 'error'])
+const emit = defineEmits(['success', 'error'])
 
 const { smAndDown } = useDisplay()
 const emailForm = ref(null)
@@ -88,13 +81,9 @@ const emailRules = [
   v => /.+@.+\..+/.test(v) || 'L\'email doit être valide'
 ]
 
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => {
-    emit('update:modelValue', value)
-    if (!value) {
-      resetForm()
-    }
+watch(modelValue, (value) => {
+  if (!value) {
+    resetForm()
   }
 })
 
@@ -105,7 +94,7 @@ const resetForm = () => {
 }
 
 const close = () => {
-  localDialogVisible.value = false
+  modelValue.value = false
 }
 
 const handleBack = () => {

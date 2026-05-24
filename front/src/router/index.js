@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { routes } from 'vue-router/auto-routes'
 import { useAuthStore } from '@/stores/authStore.js';
 import { useInitializationStore } from '@/stores/initializationStore';
-// import { useAppInitialization } from '@/composables/useAppInitialization';
 import { setupLayouts } from 'virtual:generated-layouts'
 
 
@@ -56,63 +55,51 @@ const both = ['/contact-admin', '/loading']
 //   }
 // };
 
-
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
-    return next();
+    return;
   }
 
   const authStore = useAuthStore();
   const initializationStore = useInitializationStore();
 
   if (!authStore.isAuthReady) {
-    console.log('==> Initizlisation de l\'authentification')
+    console.log('==> Initialisation de l\'authentification')
     await authStore.initializeAuth();
   }
 
   if (to.path === '/') {
     if (authStore.isLoggedIn) {
-      return next({ path: '/dashboard' });
+      return "/dashboard";
     } else {
-      return next({ path: '/landing' });
+      return "/landing";
     }
   }
-
-  // Navigation guard pour les routes d'administration
 
   if (authStore.isLoggedIn) {
     if (!initializationStore.isAppReady && to.path !== '/loading') {
       initializationStore.setPendingRoute(to.path);
-      return next({ path: '/loading' });
-    } 
-
-
-    if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
-      return next({ path: '/pending-approval' });
+      return "/loading";
     }
 
-    if ((noAuth.includes(to.name) && !both.includes(to.name))) {
-      return next({ path: '/' });
+    if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
+      return "/pending-approval";
+    }
+
+    if (noAuth.includes(to.name) && !both.includes(to.name)) {
+      return "/";
     }
 
     if (to.path.startsWith('/admin') || to.path === '/admin-panel') {
       if (!authStore.userData.isAdmin) {
-        return next({ path: '/' });
+        return "/";
       }
     }
-  }
-
-
-  else {  
+  } else {
     if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
-      return next({ path: '/login' });
+      return "/login";
     }
-  } 
-
-  next();
-
-
-
+  }
 });
 
 

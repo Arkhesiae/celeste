@@ -1,7 +1,5 @@
 <template>
-  <v-dialog
-v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
-    :fullscreen="smAndDown">
+  <v-dialog v-model="modelValue" transition="scroll-x-reverse-transition" max-width="500px" :fullscreen="smAndDown">
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
@@ -27,8 +25,7 @@ v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width=
         </div>
 
         <v-form ref="phoneForm" v-model="phoneValid" @submit.prevent="handleSubmit">
-          <v-text-field
-v-model="phone" flat :rules="phoneRules" label="Nouveau numéro de téléphone" required type="tel"
+          <v-text-field v-model="phone" flat :rules="phoneRules" label="Nouveau numéro de téléphone" required type="tel"
             prepend-inner-icon="mdi-phone-outline" variant="solo-filled" color="primary" rounded="xl" bg-color="surface"
             hide-details="auto" placeholder="06 12 34 56 78" />
         </v-form>
@@ -40,8 +37,7 @@ v-model="phone" flat :rules="phoneRules" label="Nouveau numéro de téléphone" 
         </v-btn>
 
         <v-spacer />
-        <v-btn
-color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!phoneValid"
+        <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!phoneValid"
           @click="handleSubmit">
           Enregistrer
         </v-btn>
@@ -58,14 +54,12 @@ import { profileService } from '@/services/profileService'
 const STORAGE_KEY = 'authData';
 
 const authStore = useAuthStore()
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
+const modelValue = defineModel({
+  type: Boolean,
+  default: false
 })
 
-const emit = defineEmits(['update:modelValue', 'success', 'error'])
+const emit = defineEmits(['success', 'error'])
 
 const { smAndDown } = useDisplay()
 const phoneForm = ref(null)
@@ -78,13 +72,9 @@ const phoneRules = [
   v => /^(\+33|0)[1-9](\d{8})$/.test(v.replace(/\s/g, '')) || 'Le numéro de téléphone doit être valide (format français)'
 ]
 
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => {
-    emit('update:modelValue', value)
-    if (!value) {
-      resetForm()
-    }
+watch(modelValue, (value) => {
+  if (!value) {
+    resetForm()
   }
 })
 
@@ -94,7 +84,7 @@ const resetForm = () => {
 }
 
 const close = () => {
-  localDialogVisible.value = false
+  modelValue.value = false
 }
 
 const handleSubmit = async () => {

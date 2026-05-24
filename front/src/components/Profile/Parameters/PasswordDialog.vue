@@ -1,7 +1,5 @@
 <template>
-  <v-dialog
-v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
-    :fullscreen="smAndDown">
+  <v-dialog v-model="modelValue" transition="scroll-x-reverse-transition" max-width="500px" :fullscreen="smAndDown">
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
         <v-card-title class="d-flex justify-space-between align-center">
@@ -19,21 +17,18 @@ v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width=
         <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
           <!-- Étape 1 : Vérification du mot de passe actuel -->
           <template v-if="step === 1">
-            <v-text-field
-v-model="currentPassword" :rules="[v => !!v || 'Le mot de passe actuel est requis']"
+            <v-text-field v-model="currentPassword" :rules="[v => !!v || 'Le mot de passe actuel est requis']"
               label="Mot de passe actuel" type="password" autocomplete="current-password" variant="outlined"
               color="primary" rounded="xl" bg-color="surface" hide-details="auto" />
           </template>
 
           <!-- Étape 2 : Nouveau mot de passe -->
           <template v-else>
-            <v-text-field
-v-model="newPassword" :rules="passwordRules" label="Nouveau mot de passe" type="password"
+            <v-text-field v-model="newPassword" :rules="passwordRules" label="Nouveau mot de passe" type="password"
               autocomplete="new-password" variant="solo-filled" flat color="primary" rounded="xl" bg-color="surface"
               hide-details="auto" />
 
-            <v-text-field
-v-model="confirmPassword" :rules="confirmPasswordRules"
+            <v-text-field v-model="confirmPassword" :rules="confirmPasswordRules"
               label="Confirmer le nouveau mot de passe" type="password" variant="solo-filled"
               autocomplete="new-password" flat color="primary" rounded="xl" bg-color="surface" hide-details="auto"
               class="mt-4" />
@@ -46,8 +41,7 @@ v-model="confirmPassword" :rules="confirmPasswordRules"
         <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
-        <v-btn
-color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid"
+        <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid"
           @click="handleStepAction">
           {{ step === 1 ? 'Vérifier' : 'Modifier' }}
         </v-btn>
@@ -61,14 +55,12 @@ color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!vali
 import { useDisplay } from 'vuetify'
 import { authService } from '@/services/authService'
 
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
+const modelValue = defineModel({
+  type: Boolean,
+  default: false
 })
 
-const emit = defineEmits(['update:modelValue', 'success', 'error'])
+const emit = defineEmits(['success', 'error'])
 
 const { smAndDown } = useDisplay()
 const form = ref(null)
@@ -89,13 +81,9 @@ const confirmPasswordRules = [
   v => v === newPassword.value || 'Les mots de passe ne correspondent pas'
 ]
 
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => {
-    emit('update:modelValue', value)
-    if (!value) {
-      resetForm()
-    }
+watch(modelValue, (value) => {
+  if (!value) {
+    resetForm()
   }
 })
 
@@ -108,7 +96,7 @@ const resetForm = () => {
 }
 
 const close = () => {
-  localDialogVisible.value = false
+  modelValue.value = false
 }
 
 const verifyCurrentPassword = async () => {

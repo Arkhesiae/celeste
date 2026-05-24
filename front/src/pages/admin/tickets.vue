@@ -88,7 +88,19 @@
   </v-container>
 </template>
 
+
+
 <script setup>
+
+definePage({
+  name: 'tickets',
+  path: '/admin/tickets',
+  meta: {
+    layout: 'alternative'
+  }
+})
+
+
 
 
 import { useTicketStore } from '@/stores/ticketStore';
@@ -101,6 +113,8 @@ const authStore = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const snackbarStore = useSnackbarStore();
+
+console.log(route.meta)
 
 // États
 const ticketDialog = ref(false);

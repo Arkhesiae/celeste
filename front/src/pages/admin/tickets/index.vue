@@ -5,6 +5,8 @@
 </template>
 
 
+
+
 <script setup>
 import { useTicketStore } from '@/stores/ticketStore';
 

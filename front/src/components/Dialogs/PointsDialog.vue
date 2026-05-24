@@ -1,9 +1,10 @@
 <script setup>
+const modelValue = defineModel({
+  type: Boolean,
+  required: true
+});
+
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true
-  },
   title: {
     type: String,
     default: 'Modifier les points'
@@ -19,7 +20,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits([
-  'update:modelValue',
   'update:points'
 ]);
 
@@ -55,17 +55,17 @@ const savePoints = () => {
     points: localPoints.value,
   });
   localPoints.value = 0;
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 
 const cancel = () => {
   localPoints.value = props.points || 0;
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 </script>
 
 <template>
-  <GenericDialog :modelValue="modelValue" :title="title" max-width="400px" @close="cancel">
+  <GenericDialog v-model="modelValue" :title="title" max-width="400px" @close="cancel">
     <template #content>
       <div>
         <div class="mb-4 d-flex align-center ga-2">

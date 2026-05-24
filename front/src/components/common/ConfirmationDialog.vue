@@ -1,9 +1,5 @@
 <script setup>
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
   title: {
     type: String,
     required: true,
@@ -38,22 +34,23 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
+const modelValue = defineModel({ default: false, required: true });
+
+const emit = defineEmits(['confirm', 'cancel']);
 
 const handleConfirm = () => {
   emit('confirm');
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 
 const handleCancel = () => {
   emit('cancel');
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 </script>
 
 <template>
-  <v-dialog :model-value="modelValue" max-width="400" :z-index="2600" :style="{ zIndex: 2600 }"
-    @update:model-value="$emit('update:modelValue', $event)">
+  <v-dialog v-model="modelValue" max-width="400" :z-index="2600" :style="{ zIndex: 2600 }">
     <v-card class="pa-6 rounded-xxl">
       <v-card-item class="text-start ma-0 pa-0">
         <v-icon v-if="icon" :icon="icon" size="36" :color="iconColor" class="mb-4" />

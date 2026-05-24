@@ -220,8 +220,10 @@ export default createVuetify({
       class: 'pa-6',
       rounded: 'xl',
       VCardActions: {
+        class: "pa-0 ma-0",
         VBtn: {
-      
+          size: 'default',
+          variant: 'flat',
           rounded: 'xl',
         },
       },

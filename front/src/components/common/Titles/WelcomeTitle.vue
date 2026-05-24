@@ -1,5 +1,5 @@
 <template>
- <div class="d-flex ga-6 align-center my-16" :class="smAndDown ? 'justify-center' : 'justify-start'">
+  <div class="d-flex ga-6 align-center my-16" :class="smAndDown ? 'justify-center' : 'justify-start'">
     <v-avatar :size="avatarSize" color="primary">
       <v-img src="https://cdn.vuetifyjs.com/images/john.png"></v-img>
     </v-avatar>
@@ -8,7 +8,8 @@
         <span :style="{ fontSize: titleFontSize + 'px !important' }"
           class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
         <span :style="{ fontSize: titleFontSize + 'px !important' }"
-          class="text-h4 d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold">{{ userName }}</span>
+          class="text-h4 d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold">{{ userName
+          }}</span>
       </div>
       <span :style="{ fontSize: subtitleFontSize + 'px !important' }"
         style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50">
@@ -70,14 +71,14 @@ const subtitleFontSize = computed(() => {
   return scaledSize
 })
 // Update width when window resizes
-function updateHeaderWidth() {
+function updateHeaderWidth () {
   if (placeholder.value) {
     headerWidth.value = `${placeholder.value.offsetWidth}px`
   }
 
 }
 
-function updateTitleMaxWidth() {
+function updateTitleMaxWidth () {
   nextTick(() => {
     if (titleRef.value && actionsRef.value && placeholder.value) {
       const totalWidth = placeholder.value.offsetWidth
@@ -107,21 +108,21 @@ onMounted(() => {
   // Observe intersection to toggle sticky state
   observer.value = new IntersectionObserver(
     entries => {
-      entries.forEach(entry => {  
+      entries.forEach(entry => {
         console.log(entry.intersectionRatio)
-      const titlePadding = 60
-      const initialTop = safeMarginTop.value
-      const threshold = (initialTop - titlePadding) * -1
-      const threshold2 = (initialTop - headerHeight.value) * -1
-      
-      const maxScrolledValue = 1
-      const minScrolledValue = 0.6
+        const titlePadding = 60
+        const initialTop = safeMarginTop.value
+        const threshold = (initialTop - titlePadding) * -1
+        const threshold2 = (initialTop - headerHeight.value) * -1
 
-      const A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
-      const B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
+        const maxScrolledValue = 1
+        const minScrolledValue = 0.6
 
-      scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top)*A + B))
-      isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0
+        const A = (minScrolledValue - maxScrolledValue) / (threshold2 - threshold)
+        const B = (maxScrolledValue + minScrolledValue - A * (threshold2 + threshold)) / 2
+
+        scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top) * A + B))
+        isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0
       })
     },
     {
@@ -162,7 +163,7 @@ onUnmounted(() => {
 const headerStyle = reactive({
   position: computed(() => (isSticky.value ? 'fixed' : 'relative')),
   background: 'rgba(var(--v-theme-background), 1)',
-  top: computed(() => (isSticky.value ? safeMarginTop.value+'px' : '0px')),
+  top: computed(() => (isSticky.value ? safeMarginTop.value + 'px' : '0px')),
   padding: computed(() => (isSticky.value ? '4px 16px !important' : '64px 16px !important')),
   width: computed(() => headerWidth.value),
   zIndex: '10',
@@ -186,13 +187,13 @@ const headerStyle = reactive({
 
 
 
- 
+
 .gradient {
 
   fill: transparent;
   color: #000;
   font-weight: 900 !important;
-  background: linear-gradient(to right, rgb(var(--v-theme-primary)) 20%,  rgb(var(--v-theme-background))80%);
+  background: linear-gradient(to right, rgb(var(--v-theme-primary)) 20%, rgb(var(--v-theme-background))80%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;

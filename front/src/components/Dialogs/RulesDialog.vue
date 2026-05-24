@@ -1,10 +1,9 @@
 <template>
   <v-dialog
-    :model-value="modelValue"
+    v-model="modelValue"
     max-width="1200px"
     persistent
     :fullscreen="smAndDown"
-    @update:model-value="$emit('update:modelValue', $event)"
   >
     <v-card
       :rounded="smAndDown ? '0' : 'xl'"
@@ -172,7 +171,7 @@
           </p>
 
           <p class="mb text-body-2 text-medium-emphasis">
-            La durée maximale d'une vacation de contrôle de nuit est de 11 heures (durée augmentée d'une heure les nuits d'automne de changement d'heure).
+            La durée maximale d'une vacation de contrôle de nuit is de 11 heures (durée augmentée d'une heure les nuits d'automne de changement d'heure).
           </p>
 
           <p class="mb-4 text-body-2 text-medium-emphasis">
@@ -215,17 +214,13 @@ import { useDisplay } from 'vuetify'
 
 const { smAndDown } = useDisplay()
 
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
+const modelValue = defineModel({
+  type: Boolean,
+  default: false
 })
 
-const emit = defineEmits(['update:modelValue'])
-
 const closeDialog = () => {
-  emit('update:modelValue', false)
+  modelValue.value = false
 }
 
 // Règles de base avec propriété computed

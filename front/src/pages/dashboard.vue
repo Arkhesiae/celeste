@@ -14,6 +14,8 @@
 
     <SetupAlerts />
 
+    <AnnouncementBanner />
+
     <v-row>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
         <PointsCardMobile v-if="smAndDown" :points="stats.points" class="my-8" @click="openPointSection"/>
@@ -48,7 +50,7 @@
             <DashboardCalendarSection/>
           </div>
 
-          <DashboardTeamCard />
+          <!-- <DashboardTeamCard /> -->
         </v-card>
       </v-col>
 
@@ -64,6 +66,8 @@
     <DemandDependencies ref="demandDeps" />
   </v-container>
 </template>
+
+
 
 <script setup>
 import { useAuthStore } from "@/stores/authStore.js";

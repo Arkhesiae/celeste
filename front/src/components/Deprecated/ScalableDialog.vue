@@ -1,12 +1,12 @@
 <script setup>
-;
 import { useDisplay } from 'vuetify';
 
+const modelValue = defineModel({
+  type: Boolean,
+  required: true,
+});
+
 const props = defineProps({
-  isDialogVisible: {
-    type: Boolean,
-    required: true,
-  },
   title: {
     type: String,
   },
@@ -48,25 +48,23 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue', 'submit', 'cancel']);
+const emit = defineEmits(['submit', 'cancel']);
 
 const { smAndDown } = useDisplay();
 
 const submit = () => {
   emit('submit');
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 
 const close = () => {
   emit('cancel');
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 </script>
 
 <template>
-  <v-dialog
-:model-value="isDialogVisible" :max-width="maxWidth" :fullscreen="fullscreen || smAndDown"
-    @update:model-value="$emit('update:modelValue', $event)">
+  <v-dialog v-model="modelValue" :max-width="maxWidth" :fullscreen="fullscreen || smAndDown">
     <v-card :class="smAndDown ? '' : 'rounded-xxl'" elevation="0" class="pa-0 pt-0 ">
       <div class="bar py-2 px-2 d-flex align-center justify-space-between">
         <div class="d-flex align-center">
@@ -91,8 +89,7 @@ const close = () => {
           {{ secondaryActionText }}
         </v-btn>
         <v-spacer />
-        <v-btn
-color="primary" variant="tonal" :slim="true" rounded="xl" :disabled="isPrimaryActionDisabled"
+        <v-btn color="primary" variant="tonal" :slim="true" rounded="xl" :disabled="isPrimaryActionDisabled"
           @click="submit">
           {{ primaryActionText }}
         </v-btn>

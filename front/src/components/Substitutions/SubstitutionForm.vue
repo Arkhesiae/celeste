@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog :model-value="dialogVisible" :title="dialogTitle" max-width="600px" @close="closeDialog">
+  <GenericDialog v-model="dialogVisible" :title="dialogTitle" max-width="600px" @close="closeDialog">
     <template #actions>
       <v-btn v-if="currentWindow === 1" variant="flat" rounded="xl"
         :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-right-outline'"
@@ -65,13 +65,13 @@
           </div>
 
           <div>
-              <v-card-title class="pa-0 pl-2 mb-0">
-                <h2 class="text-h6 font-weight-medium">Permutations acceptées</h2>
-              </v-card-title>
-              <v-card-subtitle class="pa-0 pl-2 text-caption">
-                Sélectionnez les vacations acceptées
-              </v-card-subtitle>
-       
+            <v-card-title class="pa-0 pl-2 mb-0">
+              <h2 class="text-h6 font-weight-medium">Permutations acceptées</h2>
+            </v-card-title>
+            <v-card-subtitle class="pa-0 pl-2 text-caption">
+              Sélectionnez les vacations acceptées
+            </v-card-subtitle>
+
             <div>
               <div v-if="loadingRotations" class="d-flex flex-wrap ga-2">
                 <v-skeleton-loader v-for="n in 6" :key="n" elevation="0" flat width="40" height="32" />
@@ -80,8 +80,9 @@
 
               <v-chip-group v-else v-model="acceptedSwitches" multiple color="surface" :rules="[rules.rotations]">
                 <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center ">
-                  <v-chip :value="day._id" class="ma-1 switch-chip" rounded="lg" selected-class="selected" variant="flat" base-color="surfaceContainer"
-                    color="primary" :class="isSwitchAvailable(day._id) ? '' : 'text-error'">
+                  <v-chip :value="day._id" class="ma-1 switch-chip" rounded="lg" selected-class="selected"
+                    variant="flat" base-color="surfaceContainer" color="primary"
+                    :class="isSwitchAvailable(day._id) ? '' : 'text-error'">
                     <template v-if="day.type === 'rest'">
                       <v-icon start icon="mdi-bed-outline" />
                     </template>
@@ -182,8 +183,7 @@
       <div class="d-flex justify-space-between pa-0">
         <template v-if="currentWindow === 0">
           <v-spacer />
-          <v-btn variant="text" rounded="xl"  :disabled="isNextButtonDisabled"
-            @click="currentWindow = 1">
+          <v-btn variant="text" rounded="xl" :disabled="isNextButtonDisabled" @click="currentWindow = 1">
             Suivant
           </v-btn>
         </template>
@@ -201,28 +201,25 @@
     </template>
   </GenericDialog>
 
-  <PointsDialog :model-value="showPointsDialog" :points="switchPoints" :switch="switchToEdit"
+  <PointsDialog v-model="showPointsDialog" :points="switchPoints" :switch="switchToEdit"
     @update:points="updatePoints" @update:model-value="showPointsDialog = $event" />
 
   <ConfirmationDialog v-model="showConfirmationDialog" :title="'Nombre de points'"
-    :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'"
-    :confirm-text="'Poster quand même'" @confirm="confirmSubmit"
-    @update:is-dialog-visible="showConfirmationDialog = $event" />
+    :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirm-text="'Poster quand même'"
+    @confirm="confirmSubmit" @update:is-dialog-visible="showConfirmationDialog = $event" />
 </template>
 
 <script setup>
 import { useDate } from 'vuetify';
 import { useRotationStore } from '@/stores/rotationStore';
-import ConfirmationDialog from '@/components/Dialogs/ConfirmationDialog.vue';
-import GenericDialog from '@/components/Dialogs/GenericDialog.vue';
-import PointsDialog from '@/components/Dialogs/PointsDialog.vue';
 import { substitutionService } from '@/services/substitutionService';
 import { useAuthStore } from '@/stores/authStore';
+
+const dialogVisible = defineModel('dialogVisible', { type: Boolean, required: true });
 
 const authStore = useAuthStore();
 const props = defineProps({
   dialogMode: { type: String, required: true },
-  dialogVisible: { type: Boolean, required: true },
   date: { type: String },
   submitting: { type: Boolean, required: true },
   selectedShift: { type: Object }
@@ -402,7 +399,7 @@ const submit = () => {
     showConfirmationDialog.value = true;
     return;
   }
-  
+
   emit('onSubmit', buildSubmitPayload());
 };
 

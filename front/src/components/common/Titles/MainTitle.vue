@@ -1,58 +1,26 @@
 <template>
-  <div
-    class="position-relative mx-n2 d-flex flex-column"
-    :style="{ height: `${headerHeight}px` }"
-  >
-    <div
-      ref="placeholder"
-      :style="{ height: `${headerHeight}px`, width: '100%' }"
-      class="position-absolute "
-    />
-    <div
-      ref="titleRef"
-      :class="['main-title px-4  py-16']"
-      :style="headerStyle"
-      class=""
-    >
-      <div class="d-flex justify-space-between align-center flex-shrink-0 ">
-        <div class="d-flex align-center ga-4 ">
-          <v-btn
-            v-if="backButton"
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="router.back()"
-          />
-          <div
-            class="d-flex flex-column"
-            :style="{ transformOrigin: 'left', maxWidth: titleMaxWidth + 'px' }"
-          >
-            <div class="d-flex align-center">
-              <span
-                :style="{ fontSize: titleFontSize + 'px !important' }"
-                class="font-weight-bold"
-                style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
-              >{{ title }} </span>
-            </div>
-            <span
-              :style="{ fontSize: subtitleFontSize + 'px !important' }"
-              style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;"
-              class="opacity-50"
-            >{{ subtitle }} </span>
+  <div ref="titleRef" class="main-title px-4 py-16 mx-n2">
+    <div class="d-flex justify-space-between align-center flex-shrink-0">
+      <div class="d-flex align-center ga-4">
+        <v-btn v-if="backButton" icon="mdi-arrow-left" variant="text" @click="router.back()" />
+        <div class="d-flex flex-column" :style="{ maxWidth: titleMaxWidth + 'px' }">
+          <div class="d-flex align-center">
+            <span :style="{ fontSize: smAndDown ? '20px' : '32px' }" class="font-weight-bold"
+              style="text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">{{ title }}</span>
           </div>
+          <span :style="{ fontSize: smAndDown ? '10px' : '12px' }"
+            style="font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;"
+            class="opacity-50">{{ subtitle }}</span>
         </div>
-        <div
-          ref="actionsRef"
-          class="flex-shrink-0"
-        >
-          <slot name="actions" />
-        </div>
+      </div>
+      <div ref="actionsRef" class="flex-shrink-0">
+        <slot name="actions" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-
 import { useRouter } from 'vue-router'
 import { useDisplay } from 'vuetify'
 
@@ -74,151 +42,83 @@ defineProps({
   },
 })
 
+const emit = defineEmits(['exit-top', 'scrolled'])
+
 const titleRef = ref(null)
-const placeholder = ref(null)
 const actionsRef = ref(null)
-const isSticky = ref(false)
-const headerHeight = ref(0)
-const headerWidth = ref('100%')
 const titleMaxWidth = ref(0)
-const scrolledValue = ref(1) 
-
+const isExiting = ref(false)
 const safeMarginTop = ref(0)
-const titleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-h5/text-h4
-  const minSize = smAndDown.value ? 10 : 10
-  const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value )
-  
-  return scaledSize
-})
-
-const subtitleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 10 : 12
-  const minSize = smAndDown.value ? 8 : 8
-  const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value )
-  return scaledSize
-})
-
-
 
 const safeAreaTop = computed(() => {
   return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top') || '0px'
 })
 
-// Update width when window resizes
-function updateHeaderWidth() {
-  if (placeholder.value) {
-    headerWidth.value = `${placeholder.value.offsetWidth}px`
-  }
-
-}
-
-function updateTitleMaxWidth() {
+function updateTitleMaxWidth () {
   nextTick(() => {
-    if (titleRef.value && actionsRef.value && placeholder.value) {
-      const totalWidth = placeholder.value.offsetWidth
+    if (titleRef.value && actionsRef.value) {
+      const totalWidth = titleRef.value.offsetWidth
       const actionsWidth = actionsRef.value.offsetWidth
-      // 32px de padding horizontal (px-4) de chaque côté + 8px de gap
+      // 32px of horizontal padding (px-4) on each side + 8px gap
       const padding = 32 * 2 + 8
-      // On laisse au moins 16px de marge de sécurité
-      titleMaxWidth.value = Math.max(0, totalWidth - actionsWidth - padding )
+      // Keep at least 16px safety margin
+      titleMaxWidth.value = Math.max(0, totalWidth - actionsWidth - padding)
     }
   })
 }
-
 
 const resizeObserver = ref(null)
 const observer = ref(null)
 
 onMounted(() => {
-  // Set initial height and width
-  headerHeight.value = titleRef.value?.offsetHeight || 0
-  updateHeaderWidth()
   updateTitleMaxWidth()
- 
-  safeMarginTop.value = 64 + parseInt(safeAreaTop.value?.replace('px', ''))
-  console.log(safeMarginTop.value)
 
-  // Observe intersection to toggle sticky state
+  const val = safeAreaTop.value?.replace('px', '')
+  safeMarginTop.value = 64 + (val ? parseInt(val) || 0 : 0)
+
+  // Observe intersection to emit when title is about to exit the screen via the top
   observer.value = new IntersectionObserver(
     entries => {
-      entries.forEach(entry => {  
-    
-      const titlePadding = 60
-      const initialTop = safeMarginTop.value
-      const threshold = (initialTop - titlePadding) * -1
-      const threshold2 = (initialTop - headerHeight.value) * -1
-      
-      const maxScrolledValue = 1
-      const minScrolledValue = 0.6
-
-      const A = (minScrolledValue - maxScrolledValue)/(threshold2 - threshold)
-      const B = (maxScrolledValue + minScrolledValue - A*(threshold2 + threshold))/2
-
-      scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top)*A + B))
-      isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0
+      entries.forEach(entry => {
+        const isExited = entry.boundingClientRect.top <= safeMarginTop.value
+        if (isExiting.value !== isExited) {
+          isExiting.value = isExited
+          emit('exit-top', isExited)
+          emit('scrolled', isExited)
+        }
       })
     },
     {
-      threshold: Array.from({ length: 101 }, (_, i) => i * 0.01),
-      rootMargin: `-${safeMarginTop.value}px 0px 0px 0px `,
+      threshold: Array.from({ length: 21 }, (_, i) => i * 0.05),
+      rootMargin: `-${safeMarginTop.value}px 0px 0px 0px`,
       root: null
     }
   )
 
-  if (placeholder.value) {
-    observer.value.observe(placeholder.value)
+  if (titleRef.value) {
+    observer.value.observe(titleRef.value)
   }
 
-  // Ajoute le ResizeObserver
-  if (placeholder.value) {
+  // Setup ResizeObserver for responsive width calculations
+  if (titleRef.value) {
     resizeObserver.value = new ResizeObserver(() => {
-      updateHeaderWidth()
       updateTitleMaxWidth()
     })
-    resizeObserver.value.observe(placeholder.value)
+    resizeObserver.value.observe(titleRef.value)
   }
-
-
-  headerHeight.value = titleRef.value?.offsetHeight || 0
-
-
 })
 
 onUnmounted(() => {
-    if (resizeObserver.value) {
-      resizeObserver.value.disconnect()
-    }
+  if (resizeObserver.value) {
+    resizeObserver.value.disconnect()
+  }
+  if (observer.value) {
     observer.value.disconnect()
-
-
-  })
-
-const headerStyle = reactive({
-  position: computed(() => (isSticky.value ? 'fixed' : 'relative')),
-  background: 'rgba(var(--v-theme-background), 0.99)',
-  top: computed(() => (isSticky.value ? safeMarginTop.value+'px' : '0px')),
-  padding: computed(() => (isSticky.value ? '4px 16px !important' : '64px 16px !important')),
-  width: computed(() => headerWidth.value),
-  zIndex: '10',
-
-  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-on-surface), 0.05)' : 'none')),
-
+  }
 })
-
-
 </script>
 
 <style scoped>
-/* .main-title.scrolled {
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
-  position:fixed;
-  margin-top: 64px;
-  padding: 0 !important;
-  background: rgba(var(--v-theme-background), 0.99);
-
-} */
-
 .debug {
   border: 1px solid red !important;
 }

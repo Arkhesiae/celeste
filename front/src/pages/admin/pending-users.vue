@@ -56,26 +56,8 @@
     </v-row>
 
     <!-- Confirmation Dialog -->
-    <v-dialog v-model="confirmDialog" max-width="400">
-      <v-card rounded="xl" variant="flat" class="pa-6">
-        <v-card-title class="text-h6 pa-0">
-          Confirmer l'action
-        </v-card-title>
-        <v-card-text class="pa-0 py-4">
-          {{ confirmMessage }}
-        </v-card-text>
-        <v-card-actions class="pa-0 ">
-          <v-spacer />
-          <v-btn color="onSurface" variant="text" @click="confirmDialog = false">
-            Annuler
-          </v-btn>
-          <v-btn :color="confirmAction === 'approve' ? 'success' : 'error'" variant="tonal"
-            @click="handleConfirmAction">
-            Confirmer
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmationDialog v-model="confirmDialog" :title="'Confirmation d\'action'" :text="confirmMessage" 
+      @confirm="handleConfirmAction" @cancel="confirmDialog = false"  />
   </v-container>
 </template>
 

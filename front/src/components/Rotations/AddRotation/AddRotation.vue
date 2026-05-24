@@ -2,7 +2,7 @@
 
 import { useDisplay } from 'vuetify';
 import WorkshiftSummary from './WorkshiftSummary.vue';
-import GenericDialog from '../../Dialogs/GenericDialog.vue';
+import GenericDialog from '../../common/GenericDialog.vue';
 
 const props = defineProps({
   modelValue: {
@@ -194,7 +194,8 @@ const close = () => {
                   </div>
                 </v-card-title>
                 <v-card-subtitle class="text-medium-emphasis">
-                  {{ props.rotation ? 'Modifiez les vacations et les périodes de repos' : 'Ajoutez les vacations et les périodes de repos pour votre tour de service' }}
+                  {{ props.rotation ? 'Modifiez les vacations et les périodes de repos' : 'Ajoutez les vacations et les
+                  périodes de repos pour votre tour de service' }}
                 </v-card-subtitle>
               </v-card-item>
             </v-col>

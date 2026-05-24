@@ -148,6 +148,15 @@
 </template>
 
 <script setup>
+
+definePage({
+  name: 'admin-panel',
+  path: '/admin/admin-panel',
+  meta: {
+    layout: 'default'
+  }
+})
+
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/authStore'
 import { useUserStore } from '@/stores/userStore'
@@ -162,6 +171,11 @@ const userStore = useUserStore()
 const centerStore = useCenterStore()
 const ticketStore = useTicketStore()
 const { smAndDown } = useDisplay()
+
+const route = useRoute();
+
+console.log(route.meta)
+
 
 // Navigation guard - vérifier les droits d'admin
 if (!authStore.userData.isAdmin) {
@@ -340,6 +354,15 @@ const mainSections = computed(() => [
         icon: 'mdi-server-security',
         iconColor: 'error',
         path: '/admin/rules',
+        requiresMaster: false
+      },
+      {
+        id: 'announcements',
+        title: 'Annonces publiques',
+        subtitle: 'Gérer les bannières du tableau de bord',
+        icon: 'mdi-bullhorn',
+        iconColor: 'primary',
+        path: '/admin/announcements',
         requiresMaster: false
       },
       //   {

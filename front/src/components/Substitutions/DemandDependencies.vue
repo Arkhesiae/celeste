@@ -25,7 +25,7 @@
       <!-- Cancel/Withdraw flow -->
       <v-btn v-else-if="dialogOption === 'cancel' || dialogOption === 'withdraw'" color="primary" variant="flat"
         rounded="xl" :loading="loading.confirm" @click="handleConfirmAction">
-        {{ dialogOption === 'cancel' ? 'Supprimer' : 'Se désister' }}
+        {{ dialogOption === 'ca ncel' ? 'Supprimer' : 'Se désister' }}
       </v-btn>
     </template>
   </ConfirmationDialog>

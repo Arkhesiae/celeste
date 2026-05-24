@@ -1,6 +1,5 @@
 <template>
-  <v-dialog
-v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
+  <v-dialog v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
     :fullscreen="smAndDown">
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
@@ -17,13 +16,11 @@ v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width=
 
       <v-card-text class="px-6">
         <v-form ref="form" v-model="valid">
-          <v-select
-v-model="selectedCenter" :items="centers" label="Centre de destination"
+          <v-select v-model="selectedCenter" :items="centers" label="Centre de destination"
             prepend-inner-icon="mdi-office-building-outline" variant="outlined" color="primary" rounded="xl"
             bg-color="surface" hide-details="auto" :rules="[v => !!v || 'Le centre de destination est requis']" />
 
-          <v-textarea
-v-model="reason" label="Motif de la demande" prepend-inner-icon="mdi-text-box-outline"
+          <v-textarea v-model="reason" label="Motif de la demande" prepend-inner-icon="mdi-text-box-outline"
             variant="outlined" color="primary" rounded="xl" bg-color="surface" hide-details="auto" class="mt-4"
             :rules="[v => !!v || 'Le motif est requis']" />
         </v-form>

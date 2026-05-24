@@ -1,6 +1,5 @@
 <template>
-  <v-dialog
-v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
+  <v-dialog v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
     :fullscreen="smAndDown">
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
@@ -19,13 +18,11 @@ v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width=
       <v-card-text class="px-6">
         <v-form ref="form" v-model="valid">
           <div class="d-flex flex-column py-6">
-            <v-file-input
-v-model="selectedFile" accept="image/*" label="Choisir une image" prepend-icon="mdi-camera"
+            <v-file-input v-model="selectedFile" accept="image/*" label="Choisir une image" prepend-icon="mdi-camera"
               variant="solo-filled" flat color="primary" rounded="xl" bg-color="surface"
               @update:model-value="handleFileSelect" />
 
-            <v-btn
-v-if="previewUrl" color="error" height="48px" variant="tonal" rounded="xl" class="mt-4"
+            <v-btn v-if="previewUrl" color="error" height="48px" variant="tonal" rounded="xl" class="mt-4"
               @click="removeImage">
               Supprimer l'image
             </v-btn>
@@ -38,8 +35,7 @@ v-if="previewUrl" color="error" height="48px" variant="tonal" rounded="xl" class
         <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
-        <v-btn
-color="primary" variant="tonal" rounded="xl" :loading="loading"
+        <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading"
           :disabled="!valid || (!selectedFile && !previewUrl)" @click="submit">
           Enregistrer
         </v-btn>

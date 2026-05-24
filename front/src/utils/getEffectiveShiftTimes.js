@@ -5,9 +5,7 @@
  */
 export function getDisplayShiftName(vacation) {
   if (!vacation) return '';
-  console.log(vacation);
   const shiftData = vacation.shiftData;
-  //console.log(shiftData);
   return shiftData?.shift?.name || '';
 //   if (vacation.isOff && vacation.initialShift) return vacation.initialShift.name || '';
 //   const { shift, selectedVariation } = vacation;

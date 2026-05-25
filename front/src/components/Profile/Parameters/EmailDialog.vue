@@ -1,75 +1,56 @@
 <template>
-  <v-dialog v-model="modelValue" transition="scroll-x-reverse-transition" max-width="500px" :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
-      <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">
-          {{ currentStep === 1 ? 'Modifier l\'adresse email' : 'Vérification OTP' }}
-        </v-card-title>
-        <template v-if="!smAndDown" #append>
-          <v-btn icon="mdi-close" variant="text" @click="close" />
-        </template>
-        <template v-else #prepend>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
-        </template>
-      </v-card-item>
+  <GenericDialog :title="currentStep === 1 ? 'Modifier l\'adresse email' : 'Vérification OTP'" v-model="modelValue"
+    :fullscreen="smAndDown">
+    <template #content>
+      <div class="d-flex align-center justify-space-between mb-4">
+        <div>
+          <span>Adresse email actuelle</span>
+          <v-list-item-subtitle>{{ authStore.userData.email }}</v-list-item-subtitle>
+        </div>
+      </div>
 
-      <v-card-text class="px-6">
-        <v-window v-model="currentStep">
-          <div class="d-flex align-center justify-space-between mb-4">
-            <div>
-              <span>Addresse email actuelle </span>
-              <v-list-item-subtitle>{{ authStore.userData.email }}</v-list-item-subtitle>
-            </div>
-          </div>
-          <!-- Étape 1: Email -->
-          <v-window-item :value="1">
-            <v-form ref="emailForm" v-model="emailValid" @submit.prevent="handleNext">
-              <v-text-field v-model="email" flat :rules="emailRules" label="Nouvelle adresse email" required
-                type="email" prepend-inner-icon="mdi-email-outline" variant="solo-filled" color="primary" rounded="xl"
-                bg-color="surface" hide-details="auto" />
-            </v-form>
-          </v-window-item>
+      <v-window v-model="currentStep">
+        <v-window-item :value="1">
+          <v-form ref="emailForm" v-model="emailValid" @submit.prevent="handleNext">
+            <v-text-field v-model="email" flat :rules="emailRules" label="Nouvelle adresse email" required type="email"
+              prepend-inner-icon="mdi-email-outline" variant="solo-filled" color="primary" rounded="xl"
+              bg-color="surface" hide-details="auto" />
+          </v-form>
+        </v-window-item>
 
-          <!-- Étape 2: OTP -->
-          <v-window-item :value="2">
-            <OTPVerification :email="email" title="Vérification de votre email" @verified="onOtpVerified"
-              @error="onOtpError" />
-          </v-window-item>
-        </v-window>
-      </v-card-text>
+        <v-window-item :value="2">
+          <OTPVerification :email="email" title="Vérification de votre email" @verified="onOtpVerified"
+            @error="onOtpError" />
+        </v-window-item>
+      </v-window>
+    </template>
 
-      <v-card-actions class="pa-6">
+    <template #footer>
+      <div class="d-flex justify-space-between align-center">
         <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="handleBack">
           {{ currentStep === 1 ? 'Annuler' : 'Retour' }}
         </v-btn>
-        <v-spacer />
         <v-btn v-if="currentStep === 1" color="primary" variant="tonal" rounded="xl" :loading="loading"
           :disabled="!emailValid" @click="handleNext">
           Continuer
         </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
-
-import { useAuthStore } from '@/stores/authStore'
 import { useDisplay } from 'vuetify'
-import OTPVerification from '@/components/OTPVerification.vue'
+import { useAuthStore } from '@/stores/authStore'
 import { profileService } from '@/services/profileService'
-
-const STORAGE_KEY = 'authData';
+import OTPVerification from '@/components/OTPVerification.vue'
 
 const authStore = useAuthStore()
-const modelValue = defineModel({
-  type: Boolean,
-  default: false
-})
+const { smAndDown } = useDisplay()
 
+const modelValue = defineModel({ type: Boolean, default: false })
 const emit = defineEmits(['success', 'error'])
 
-const { smAndDown } = useDisplay()
 const emailForm = ref(null)
 const emailValid = ref(false)
 const loading = ref(false)
@@ -78,13 +59,11 @@ const currentStep = ref(1)
 
 const emailRules = [
   v => !!v || 'L\'email est requis',
-  v => /.+@.+\..+/.test(v) || 'L\'email doit être valide'
+  v => /.+@.+\..+/.test(v) || 'L\'email doit être valide',
 ]
 
 watch(modelValue, (value) => {
-  if (!value) {
-    resetForm()
-  }
+  if (!value) resetForm()
 })
 
 const resetForm = () => {
@@ -98,22 +77,15 @@ const close = () => {
 }
 
 const handleBack = () => {
-  if (currentStep.value === 1) {
-    close()
-  } else {
-    currentStep.value--
-  }
+  if (currentStep.value === 1) close()
+  else currentStep.value--
 }
 
 const handleNext = async () => {
   if (currentStep.value === 1) {
-    // Valider le formulaire email avant de passer à l'étape suivante
     const { valid } = await emailForm.value.validate()
-    if (!valid) {
-      return
-    }
+    if (!valid) return
   }
-
   currentStep.value++
 }
 
@@ -123,9 +95,6 @@ const onOtpVerified = async () => {
     await profileService.updateEmail(email.value)
     authStore.userData.email = email.value
 
-    const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    existingData.userData = { ...existingData.userData, email: email.value };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
 
     emit('success', 'L\'email a été mis à jour avec succès')
     close()
@@ -140,10 +109,3 @@ const onOtpError = (error) => {
   emit('error', error.message || 'Une erreur est survenue lors de la vérification')
 }
 </script>
-
-<style scoped>
-.v-btn {
-  text-transform: none;
-  letter-spacing: 0;
-}
-</style>

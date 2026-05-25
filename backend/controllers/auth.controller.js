@@ -4,7 +4,7 @@ import User from '../models/User.js';
 
 
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
 
@@ -36,7 +36,7 @@ const loginUser = async (req, res) => {
     }
 }
 
-const refreshAccessToken = async (req, res) => {
+const refreshAccessToken = async (req, res, next) => {
     try {
         const refreshToken = req.cookies?.refreshToken;
 
@@ -99,7 +99,7 @@ const logout = async (req, res) => {
     }
 };
 
-const requestPasswordReset = async (req, res) => {
+const requestPasswordReset = async (req, res, next) => {
     try {
         const { email } = req.body;
 
@@ -112,7 +112,7 @@ const requestPasswordReset = async (req, res) => {
     }
 }
 
-const resetPassword = async (req, res) => {
+const resetPassword = async (req, res, next) => {
     try {
         const { token, newPassword } = req.body;
 
@@ -125,9 +125,13 @@ const resetPassword = async (req, res) => {
     }
 }
 
-const verifyPassword = async (req, res) => {
+const verifyPassword = async (req, res, next) => {
     try {
         const { currentPassword } = req.body;
+
+        if (!currentPassword) {
+            throw new AppError('Mot de passe manquant', 400);
+        }
 
         const result = await resetPasswordService.verifyPassword(req.user.userId, currentPassword);
 
@@ -138,7 +142,7 @@ const verifyPassword = async (req, res) => {
     }
 }
 
-const updatePassword = async (req, res) => {
+const updatePassword = async (req, res, next) => {
     try {
         const { newPassword } = req.body;
 

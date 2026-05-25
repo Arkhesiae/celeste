@@ -21,12 +21,8 @@
     <template #append>
       <!-- Boutons de notifications -->
       <ThemeSwitch
-        v-model="isDarkTheme"
         class="mr-2"
       />
-
-
-
 
       <template v-if="isLoggedIn && isAdmin">
         <AdminSection
@@ -145,7 +141,6 @@ const emit = defineEmits(["toggle-mobile-drawer", "toggle-drawer"]);
 
 // Composables
 const { smAndDown } = useDisplay();
-const theme = useTheme();
 const router = useRouter();
 const route = useRoute();
 
@@ -168,15 +163,6 @@ const isDashboard = computed(() => route.name === "/dashboard");
 const username = computed(() => authStore.userData.name);
 const currentTeam = computed(() => teamStore.currentTeam);
 const points = computed(() => pointStore.points);
-
-// Theme synchronization
-const isDarkTheme = computed({
-  get: () => theme.global.current.value.dark,
-  set: (value) => {
-    authStore.updateUserPreferences({ theme: value });
-    theme.global.name.value = value ? 'darkTheme' : 'lightTheme';
-  }
-});
 
 // Methods
 const handleTitleClick = () => {

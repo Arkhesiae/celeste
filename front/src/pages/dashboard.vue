@@ -14,7 +14,7 @@
 
     <SetupAlerts />
 
-    <AnnouncementBanner />
+    <!-- <AnnouncementBanner /> -->
 
     <v-row>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">

@@ -133,10 +133,6 @@ export const useAuthStore = defineStore('auth', () => {
 
       console.log('data', data);
 
-      // const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-      // existingData.userData = { ...existingData.userData, preferences: updatedPreferences };
-      // localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
-
     } catch (error) {
       console.error('Erreur lors de la mise à jour des préférences:', error);
       throw error;

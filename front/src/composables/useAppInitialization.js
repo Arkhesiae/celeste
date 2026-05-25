@@ -18,6 +18,7 @@ export function useAppInitialization() {
   const authStore = useAuthStore();
   const userStore = useUserStore();
   const centerStore = useCenterStore();
+  const theme = useTheme();
   const teamStore = useTeamStore();
   const pointStore = usePointStore();
   const ticketStore = useTicketStore();
@@ -35,14 +36,12 @@ export function useAppInitialization() {
 
   const initializeTheme = async () => {
     if (authStore.isLoggedIn) {
-      if (authStore.userData.preferences.theme === 'darkTheme') {
+      if (authStore.userData.preferences.theme) {
         theme.change('darkTheme');
       } else {
         theme.change('lightTheme');
       }
- 
     }
-   
   };
 
   const initializeCenters = async () => {
@@ -136,6 +135,7 @@ export function useAppInitialization() {
 
       if (authStore.isLoggedIn) {
         parallelTasks.push(
+          initializeTheme(),
           initializeUserList(),
           initializeTeam(),
           initializeShiftsAndSubstitutions(),

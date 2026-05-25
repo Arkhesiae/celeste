@@ -1,30 +1,24 @@
 <template>
-  <v-dialog v-model="modelValue" :z-index="2500" :style="{ zIndex: 2500 }"
-    :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'" :fullscreen="smAndDown"
-    :max-width="maxWidth" :persistent="persistent" :retain-focus="false" @after-enter="handleAfterEnter"
-    @after-leave="handleAfterLeave">
+  <v-dialog v-model="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
+    :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent" :retain-focus="false"
+    @after-enter="handleAfterEnter" @after-leave="handleAfterLeave">
     <v-card height="100vh" :class="smAndDown ? '' : 'rounded-xxl'" class="pt-0 pb-6 px-0 overflow-y-hidden">
-      <!-- Header avec titre et boutons -->
+      <!-- Header -->
       <div ref="headerRef" :style="{
-        paddingTop: 'calc(var(--safe-area-top,0px) + 8px) !important',
+        paddingTop: 'calc(var(--safe-area-top, 0px) + 8px) !important',
         paddingLeft: smAndDown ? '4px !important' : '24px !important',
       }" :class="[
-          'pb-2 pr-2  d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
-          isScrolled ? 'bg-surfaceContainerHigh' : ''
+          'pb-2 pr-2 d-flex align-center justify-space-between pa-0 ma-0 transition-all',
+          isScrolled ? 'bg-surfaceContainerHigh' : '',
         ]">
         <div class="d-flex align-center justify-space-between flex-grow-1">
           <div class="d-flex align-center">
             <v-btn v-if="smAndDown && showCloseButton" icon="mdi-arrow-left" variant="text" class="mr-1"
               @click="handleClose" />
-
-            <span :class="{
-              'text-h6': !smAndDown,
-              'text-h7': smAndDown
-            }" class=" font-weight-medium"> 
+            <span :class="smAndDown ? 'text-h7' : 'text-h6'" class="font-weight-medium">
               {{ title }}
             </span>
           </div>
-
 
           <v-btn v-if="!smAndDown && showCloseButton" icon="mdi-close" variant="text" @click="handleClose" />
         </div>
@@ -34,103 +28,85 @@
         </div>
       </div>
 
-
-
-      <!-- Contenu principal -->
+      <!-- Content -->
       <v-card-text ref="contentRef" class="px-6 pb-0 ma-0 overflow-y-auto flex-column d-flex justify-space-between">
         <div ref="sentinel" class="flex-grow-0 flex-shrink-0" />
-        <div ref="content" class="flex-grow-1 flex-shrink-0">
+        <div class="flex-grow-1 flex-shrink-0">
           <slot name="content" />
         </div>
-
         <div class="pa-0 ma-0 mt-6 flex-shrink-0">
           <slot name="footer" />
         </div>
       </v-card-text>
-
-      <!-- Footer optionnel -->
     </v-card>
   </v-dialog>
 </template>
 
-<script setup>
-import { useDisplay } from 'vuetify';
+<script setup
+        lang="ts">
+        import { ref, onMounted, onUnmounted } from 'vue'
+        import { useDisplay } from 'vuetify'
 
-// Model definition
-const modelValue = defineModel({
-  type: Boolean,
-  default: false
-})
+        const modelValue = defineModel<boolean>({ default: false })
 
-// Props
-const props = defineProps({
-  title: {
-    type: String,
-    required: true
-  },
-  maxWidth: {
-    type: [String, Number],
-    default: '600px'
-  },
-  persistent: {
-    type: Boolean,
-    default: false
-  },
-  showCloseButton: {
-    type: Boolean,
-    default: true
-  }
-})
+        const props = withDefaults(defineProps<{
+          title: string
+          maxWidth?: string | number
+          persistent?: boolean
+          showCloseButton?: boolean
+        }>(), {
+          maxWidth: '600px',
+          persistent: false,
+          showCloseButton: true,
+        })
 
-// Emits
-const emit = defineEmits(['close'])
-const { smAndDown } = useDisplay();
+        const emit = defineEmits<{
+          close: []
+        }>()
 
-const isScrolled = ref(false)
-const sentinel = ref(null)
+        const { smAndDown } = useDisplay()
 
-const handleClose = () => {
-  emit('close')
-  modelValue.value = false
-}
+        const isScrolled = ref(false)
+        const sentinel = ref<HTMLElement | null>(null)
+        const headerRef = ref<HTMLElement | null>(null)
+        const contentRef = ref<HTMLElement | null>(null)
 
-const handleAfterEnter = () => {
-  if (sentinel.value) {
-    observer.observe(sentinel.value)
-  }
-}
+        let observer: IntersectionObserver | null = null
 
-const handleAfterLeave = () => {
-  if (sentinel.value) {
-    observer.unobserve(sentinel.value)
-  }
-}
+        const handleClose = (): void => {
+          emit('close')
+          modelValue.value = false
+        }
 
-let observer = null
+        const handleAfterEnter = (): void => {
+          if (sentinel.value) {
+            observer?.observe(sentinel.value)
+          }
+        }
 
-// Lifecycle hooks
-onMounted(() => {
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(entry => {
-        isScrolled.value = !entry.isIntersecting
-      })
-    },
-    { root: null, threshold: [0.0, 1.0] }
-  )
-})
+        const handleAfterLeave = (): void => {
+          if (sentinel.value) {
+            observer?.unobserve(sentinel.value)
+          }
+        }
 
-onUnmounted(() => {
-  observer?.disconnect()
-})
+        onMounted(() => {
+          observer = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                isScrolled.value = !entry.isIntersecting
+              })
+            },
+            { root: contentRef.value, threshold: [0.0, 1.0] },
+          )
+        })
+
+        onUnmounted(() => {
+          observer?.disconnect()
+        })
 </script>
 
 <style scoped>
-.bg-surfaceContainerHigh-elevated {
-  background-color: rgb(var(--v-theme-surfaceContainerHigh));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
 .transition-all {
   transition: all 0.3s ease;
 }

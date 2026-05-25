@@ -1,89 +1,43 @@
-
-
 <template>
   <v-container>
-    <MainTitle
-      title="Paramètres"
-      subtitle="Gérez vos paramètres"
-      :back-button="true"
-    />
+    <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" :back-button="true" />
 
     <v-row>
-      <v-col
-        cols="12"
-        md="6"
-      >
-        <v-card
-          rounded="xl"
-          elevation="0"
-          class="pa-0"
-          color="transparent"
-        >
+      <v-col cols="12" md="6">
+        <v-card rounded="xl" elevation="0" class="pa-0" color="transparent">
           <v-card-title class="text-h5">
             Profil
           </v-card-title>
           <v-card-text class="d-flex flex-column ga-4">
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showEmailDialog = true"
-            >
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
+              @click="showEmailDialog = true">
               <span class="text-h7">Modifier l'adresse email</span>
-              <v-icon>mdi-chevron-right</v-icon>
+              <!-- <v-icon>mdi-chevron-right</v-icon> -->
             </v-btn>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showAvatarDialog = true"
-            >
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
+              @click="showAvatarDialog = true">
               <span class="text-h7">Modifier l'avatar</span>
-              <v-icon>mdi-chevron-right</v-icon>
+              <!-- <v-icon>mdi-chevron-right</v-icon> -->
             </v-btn>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showPhoneDialog = true"
-            > 
-              <v-chip
-                :color="authStore.userData.phone ? 'remplacement' : 'error'"
-                variant="flat"
-                class="rounded-pill py-0 position-absolute"
-                size="small"
-                style="right: 16px; top: 50%; transform: translateY(-50%);"
-              >
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
+              @click="showPhoneDialog = true">
+              <v-chip :color="authStore.userData.phone ? 'primary' : 'error'"
+                :variant="authStore.userData.phone ? 'flat' : 'text'" class="rounded-pill py-0 position-absolute"
+                size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-phone</v-icon>
               </v-chip>
               <span class="text-h7">Numéro de téléphone</span>
-            </v-btn>  
+            </v-btn>
 
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showBirthDateDialog = true"
-            >
-              <v-chip
-                :color="authStore.userData.birthDate ? 'remplacement' : 'error'"
-                variant="flat"
-                class="rounded-pill py-0 position-absolute"
-                size="small"
-                style="right: 16px; top: 50%; transform: translateY(-50%);"
-              >
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
+              @click="showBirthDateDialog = true">
+              <v-chip :color="authStore.userData.birthDate ? 'primary' : 'surface'"
+                :variant="authStore.userData.birthDate ? 'flat' : 'text'" class="rounded-pill py-0 position-absolute"
+                size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-baby</v-icon>
               </v-chip>
               <span class="text-h7">Date de naissance</span>
-            </v-btn>  
+            </v-btn>
             <!-- <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
               <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-account-key</v-icon>
@@ -93,105 +47,38 @@
             </v-btn> -->
           </v-card-text>
         </v-card>
-        <v-card
-          rounded="xl"
-          elevation="0"
-          class="pa-0"
-          color="background"
-        >
+        <v-card rounded="xl" elevation="0" class="pa-0" color="background">
           <v-card-title class="text-h5">
             Apparence
           </v-card-title>
           <v-card-text>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-            >
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0">
               <template #prepend>
-                <v-switch
-                  v-model="isDarkTheme"
-                  inset
-                  class="ml-2"
-                  hide-details
-                  false-icon="mdi-weather-sunny"
-                  true-icon="mdi-weather-night"
-                />
+                 <ThemeSwitch />
               </template>
               <span class="text-h7">Changer le thème</span>
             </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col
-        cols="12"
-        md="6"
-      >
-        <v-card
-          rounded="xl"
-          elevation="0"
-          color="background"
-          class="pa-0"
-        >
+      <v-col cols="12" md="6">
+        <v-card rounded="xl" elevation="0" color="background" class="pa-0">
           <v-card-title class="text-h5">
             Sécurité
           </v-card-title>
           <v-card-text>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showPasswordDialog = true"
-            >
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
+              @click="showPasswordDialog = true">
               <span class="text-h7">Modifier le mot de passe</span>
-              <v-icon>mdi-chevron-right</v-icon>
             </v-btn>
           </v-card-text>
         </v-card>
-        <v-card
-          rounded="xl"
-          elevation="0"
-          color="background"
-          class="pa-0"
-        >
-          <v-card-title class="text-h5">
-            Changement de centre
-          </v-card-title>
-          <v-card-text>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showTransferRequestDialog = true"
-            >
-              <span class="text-h7">Demander une mutation</span>
-              <v-icon>mdi-chevron-right</v-icon>
-            </v-btn>
-          </v-card-text>
-        </v-card>
-        <v-card
-          rounded="xl"
-          elevation="0"
-          class="pa-0"
-          color="background"
-        >
+        <v-card rounded="xl" elevation="0" class="pa-0" color="background">
           <div class="d-flex align-center justify-start ga-2">
             <v-card-title class="text-h5">
               Emails
             </v-card-title>
-            <v-chip
-              v-if="noCategoryEnabled"
-              color="error"
-              variant="flat"
-              class="rounded-pill py-0 "
-              size="small"
-            >
+            <v-chip v-if="noCategoryEnabled" color="error" variant="flat" class="rounded-pill py-0 " size="small">
               <v-icon class="mr-2">
                 mdi-email-alert-outline
               </v-icon>
@@ -199,137 +86,51 @@
             </v-chip>
           </div>
           <v-card-text>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4 mb-4 d-flex"
-              variant="flat"
-              color="surface"
-              elevation="0"
-              @click="toggleGlobal"
-            >
+            <v-btn block height="64" class="rounded-lg py-4 mb-4 d-flex" variant="flat" color="surface" elevation="0"
+              @click="toggleGlobal">
               <template #prepend>
-                <v-switch
-                  v-model="emailGlobalEnabled"
-                  inset
-                  class="ml-2"
-                  hide-details
-                  false-icon="mdi-close"
-                  true-icon="mdi-email-multiple"
-                />
+                <v-switch v-model="emailGlobalEnabled" inset class="ml-2" hide-details false-icon="mdi-close"
+                  true-icon="mdi-email-multiple" />
               </template>
               <span class="text-h7">Recevoir les emails</span>
             </v-btn>
 
-      
+
 
             <div class="d-flex flex-column ">
-              <div
-                v-for="(option, index) in emailOptions"
-                :key="option.value"
-              >
+              <div v-for="(option, index) in emailOptions" :key="option.value">
                 <div class="d-flex align-center justify-space-between">
-                  <div
-                    class="d-flex align-center justify-space-between ga-2"
-                    :style="{ opacity: !emailGlobalEnabled ? 0.5 : 1 }"
-                  >
-                    <v-icon
-                      :icon="option.icon"
-                      size="small"
-                    />
+                  <div class="d-flex align-center justify-space-between ga-2"
+                    :style="{ opacity: !emailGlobalEnabled ? 0.5 : 1 }">
+                    <v-icon :icon="option.icon" size="small" />
                     <span style="font-size: 12px; font-weight: 500;">{{ option.label }}</span>
                   </div>
-                  <v-switch
-                    v-model="emailCategories[option.value]"
-                    :disabled="!emailGlobalEnabled"
-                    density="compact"
-                    inset
-                    class="ml-2"
-                    hide-details
-                    false-icon="mdi-close"
-                    true-icon="mdi-email-multiple"
-                  />
+                  <v-switch v-model="emailCategories[option.value]" :disabled="!emailGlobalEnabled" density="compact"
+                    inset class="ml-2" hide-details false-icon="mdi-close" true-icon="mdi-email-multiple" />
                 </div>
                 <v-divider v-if="index !== emailOptions.length - 1" />
-              </div>  
+              </div>
             </div>
           </v-card-text>
         </v-card>
-        <!-- <v-card rounded="xl" elevation="0" class="pa-0" color="background">
-          <v-card-title class="text-h5">Notifications</v-card-title>
-          <v-card-text>
-            <v-btn block height="64" class="rounded-lg py-4 mb-4 d-flex " color="surface" elevation="0">
-              <div class="d-flex align-center justify-space-between">
-                <span class="text-h7">Notifications par email</span>
-                <v-switch hide-details v-model="notificationsByEmail"  class="ml-16"></v-switch>
-              </div>
-            </v-btn>
-            <v-btn block height="64" class="rounded-lg py-4 " color="surface" elevation="0">
-              <div class="d-flex align-center justify-space-between">
-                <span class="text-h7">Notifications application</span>
-                <v-switch hide-details v-model="notificationsByApp"  class="ml-16"></v-switch>
-              </div>
-            </v-btn>
-          </v-card-text>
-        </v-card> -->
       </v-col>
     </v-row>
 
     <!-- Dialogues -->
-    <EmailDialog
-      v-model="showEmailDialog"
-      @success="handleEmailSuccess"
-      @error="handleEmailError"
-    />
-    <PasswordDialog
-      v-model="showPasswordDialog"
-      @success="handlePasswordSuccess"
-      @error="handlePasswordError"
-    />
-    <AvatarDialog
-      v-model="showAvatarDialog"
-      @success="handleAvatarSuccess"
-      @error="handleAvatarError"
-    />
-    <PhoneDialog
-      v-model="showPhoneDialog"
-      @success="handlePhoneSuccess"
-      @error="handlePhoneError"
-    />
-    <BirthDateDialog
-      v-model="showBirthDateDialog"
-      @success="handleBirthDateSuccess"
-      @error="handleBirthDateError"
-    />
-    <TransferRequestDialog
-      v-model="showTransferRequestDialog"
-    />
+    <EmailDialog v-model="showEmailDialog" @success="handleEmailSuccess" @error="handleEmailError" />
+    <PasswordDialog v-model="showPasswordDialog" @success="handlePasswordSuccess" @error="handlePasswordError" />
+    <AvatarDialog v-model="showAvatarDialog" @success="handleAvatarSuccess" @error="handleAvatarError" />
+    <PhoneDialog v-model="showPhoneDialog" @success="handlePhoneSuccess" @error="handlePhoneError" />
+    <BirthDateDialog v-model="showBirthDateDialog" @success="handleBirthDateSuccess" @error="handleBirthDateError" />
+    <TransferRequestDialog v-model="showTransferRequestDialog" />
   </v-container>
 </template>
 
 <script setup>
-
-
-import { useTheme } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
-import { ref, computed, watch } from 'vue'
-
-
 import { useSnackbarStore } from '@/stores/snackbarStore';
 
-
-
-
 const snackbarStore = useSnackbarStore();
-
-// Theme synchronization
-const isDarkTheme = computed({
-  get: () => theme.global.current.value.dark,
-  set: (value) => {
-    authStore.updateUserPreferences({ theme: value })
-    theme.global.name.value = value ? 'darkTheme' : 'lightTheme'
-  }
-})
 
 const emailOptions = ref([
   {
@@ -349,7 +150,6 @@ const emailOptions = ref([
   },
 ])
 
-const theme = useTheme()
 const authStore = useAuthStore()
 
 // États des dialogues
@@ -371,8 +171,7 @@ const emailCategories = ref({
 const emailGlobalEnabled = ref(authStore.userData.preferences.emails.all !== undefined ? authStore.userData.preferences.emails.all : true)
 
 
-const noCategoryEnabled = computed( () => {
-  
+const noCategoryEnabled = computed(() => {
   return emailGlobalEnabled.value && !emailCategories.value.emailDemandReplacement && !emailCategories.value.emailDemandSwitch && !emailCategories.value.emailAnnouncements
 })
 
@@ -388,7 +187,7 @@ const updateEmailPreferences = async () => {
         announcements: emailCategories.value.emailAnnouncements,
       }
     }
-    
+
     await authStore.updateUserPreferences({
       ...currentPreferences,
       emails: emailPrefs
@@ -402,9 +201,6 @@ const updateEmailPreferences = async () => {
     )
   }
 }
-
-
-
 
 // Sync global with individual switches et mise à jour backend
 watch(emailGlobalEnabled, async (enabled) => {
@@ -473,8 +269,6 @@ const handleBirthDateSuccess = (message) => {
 const handleBirthDateError = (message) => {
   snackbarStore.showNotification(message, 'onError', 'mdi-close-circle')
 }
-
-
 
 // Actions de bascule
 const toggleGlobal = async () => {

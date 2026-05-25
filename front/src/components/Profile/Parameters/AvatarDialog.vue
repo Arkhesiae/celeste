@@ -1,37 +1,24 @@
 <template>
-  <v-dialog v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
-    :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
-      <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">
-          Modifier l'avatar
-        </v-card-title>
-        <template v-if="!smAndDown" #append>
-          <v-btn icon="mdi-close" variant="text" @click="close" />
-        </template>
-        <template v-else #prepend>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
-        </template>
-        <span class="text-subtitle-2">Taille max : 10MB (une erreur ne permet pas la persistance pour le moment)</span>
-      </v-card-item>
+  <GenericDialog title="Modifier l'avatar" v-model="modelValue" :fullscreen="smAndDown">
+    <template #content>
+      <span class="text-subtitle-2">
+        Taille max : 10MB (une erreur ne permet pas la persistance pour le moment)
+      </span>
 
-      <v-card-text class="px-6">
-        <v-form ref="form" v-model="valid">
-          <div class="d-flex flex-column py-6">
-            <v-file-input v-model="selectedFile" accept="image/*" label="Choisir une image" prepend-icon="mdi-camera"
-              variant="solo-filled" flat color="primary" rounded="xl" bg-color="surface"
-              @update:model-value="handleFileSelect" />
+      <v-form ref="form" v-model="valid" class="d-flex flex-column py-6">
+        <v-file-input v-model="selectedFile" accept="image/*" label="Choisir une image" prepend-icon="mdi-camera"
+          variant="solo-filled" flat color="primary" rounded="xl" bg-color="surface"
+          @update:model-value="handleFileSelect" />
 
-            <v-btn v-if="previewUrl" color="error" height="48px" variant="tonal" rounded="xl" class="mt-4"
-              @click="removeImage">
-              Supprimer l'image
-            </v-btn>
-          </div>
-        </v-form>
-      </v-card-text>
+        <v-btn v-if="previewUrl" color="error" height="48px" variant="tonal" rounded="xl" class="mt-4"
+          @click="removeImage">
+          Supprimer l'image
+        </v-btn>
+      </v-form>
+    </template>
 
-      <v-card-actions class="pa-6">
-        <v-spacer />
+    <template #footer>
+      <div class="d-flex justify-space-between align-center">
         <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
           Annuler
         </v-btn>
@@ -39,48 +26,41 @@
           :disabled="!valid || (!selectedFile && !previewUrl)" @click="submit">
           Enregistrer
         </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
-
 import { useDisplay } from 'vuetify'
 import { useAuthStore } from '@/stores/authStore'
 import { useSnackbarStore } from '@/stores/snackbarStore'
 
-const STORAGE_KEY = 'authData';
-
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
-})
-
-const emit = defineEmits(['update:modelValue', 'success', 'error'])
-
 const { smAndDown } = useDisplay()
 const authStore = useAuthStore()
 const snackbarStore = useSnackbarStore()
+
+const modelValue = defineModel({ type: Boolean, default: false })
+const emit = defineEmits(['success', 'error'])
+
 const form = ref(null)
 const valid = ref(false)
 const loading = ref(false)
 const selectedFile = ref(null)
 const previewUrl = ref(null)
 
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+watch(modelValue, (value) => {
+  if (!value) resetForm()
 })
 
+const resetForm = () => {
+  selectedFile.value = null
+  previewUrl.value = null
+  form.value?.reset()
+}
+
 const handleFileSelect = (file) => {
-  if (file) {
-    previewUrl.value = URL.createObjectURL(file)
-  } else {
-    previewUrl.value = null
-  }
+  previewUrl.value = file ? URL.createObjectURL(file) : null
 }
 
 const removeImage = () => {
@@ -89,22 +69,20 @@ const removeImage = () => {
 }
 
 const close = () => {
-  selectedFile.value = null
-  previewUrl.value = null
-  localDialogVisible.value = false
+  modelValue.value = false
 }
 
 const submit = async () => {
+  loading.value = true
   try {
-    loading.value = true
     const formData = new FormData()
     formData.append('avatar', selectedFile.value)
     await authStore.updateAvatar(formData)
     snackbarStore.showNotification('Avatar mis à jour avec succès', 'success')
     close()
   } catch (error) {
-    const errorMessage = error.message || "Erreur lors de la mise à jour de l'avatar"
-    snackbarStore.showNotification(errorMessage, 'error')
+    const message = error.message || "Erreur lors de la mise à jour de l'avatar"
+    snackbarStore.showNotification(message, 'error')
     emit('error', error)
   } finally {
     loading.value = false

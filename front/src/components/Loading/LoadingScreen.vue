@@ -20,16 +20,16 @@
           </p> -->
 
 
-            <span class="text-caption text-medium-emphasis mb-4">{{ progressPercentage }}%</span>
+            <!-- <span class="text-caption text-medium-emphasis mb-4">{{ progressPercentage }}%</span> -->
 
             <v-progress-linear
               indeterminate
               :model-value="progressPercentage"
-              color="remplacement"
+              color="primary"
               height="4"
               class="mt-4 rounded-xl "
             />
-            <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded || 'Chargement en cours' }}</span>
+            <!-- <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded || 'Chargement en cours' }}</span> -->
           </div>
         </div>
       </v-col>

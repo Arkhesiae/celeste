@@ -1,16 +1,8 @@
-// middleware/auth.middleware.js
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { AppError } from '../error/appError.js';
 
-/**
- * Middleware pour vérifier le token JWT d'authentification
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- * @param {Function} next - Fonction next d'Express
- */
 const verifyToken = (req, res, next) => {
-    // Récupération du token depuis l'en-tête Authorization
-
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -28,120 +20,49 @@ const verifyToken = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (err) {
-        return res.status(401).json({ code: 'INVALID_ACCESS_TOKEN', message: "Non autorisé, token expiré ou invalide" });
+        throw new AppError('Non autorisé, token expiré ou invalide.', 401, 'INVALID_ACCESS_TOKEN');
     }
 };
 
-/**
- * Middleware pour vérifier si l'utilisateur est un administrateur local
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- * @param {Function} next - Fonction next d'Express
- */
 const isAdmin = (req, res, next) => {
-    if (req.user && (req.user.isAdmin)) {
-        next();
-    } else {
-        return res.status(403).json({
-            success: false,
-            message: 'Accès refusé. Droits d\'administrateur local requis.'
-        });
-    }
+    if (req.user?.isAdmin) return next();
+    throw new AppError("Accès refusé. Droits d'administrateur local requis.", 403);
 };
 
-/**
- * Middleware pour vérifier si l'utilisateur est un administrateur principal
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- * @param {Function} next - Fonction next d'Express
- */
 const isMasterAdmin = (req, res, next) => {
-    console.log(req.user, req.user.isAdmin, req.user.adminType)
-    if (req.user && req.user.isAdmin && req.user.adminType === 'master') {
-        next();
-    } else {
-        return res.status(403).json({
-            success: false,
-            message: 'Accès refusé. Droits d\'administrateur princapal requis.'
-        });
-    }
+    if (req.user?.isAdmin && req.user.adminType === 'master') return next();
+    throw new AppError("Accès refusé. Droits d'administrateur principal requis.", 403);
 };
 
-/**
- * Middleware pour vérifier le centre de l'utilisateur (pour les admin locaux)
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- * @param {Function} next - Fonction next d'Express
- */
+const resolveCenterId = async (req, res, next) => {
+    if (req.user.adminType === 'master') return next();
+
+    const user = await User.findById(req.user.userId).select('centerId').lean();
+    if (!user) throw new AppError('Utilisateur non trouvé.', 404);
+
+    req.user.centerId = user.centerId;
+    next();
+};
+
 const checkUserCenter = async (req, res, next) => {
-    try {
-        // Si c'est un master admin, on le laisse passer
-        if (req.user.role === 'masterAdmin') {
-            return next();
-        }
+    if (req.user.adminType === 'master') return next();
 
-        // Récupération de l'utilisateur cible
-        const targetUserId = req.params.userId || req.body.userId;
+    const targetUserId = req.params.userId || req.body.userId;
+    if (!targetUserId) return next();
 
-        if (!targetUserId) {
-            return next();
-        }
+    const targetUser = await User.findById(targetUserId).lean();
+    if (!targetUser) throw new AppError('Utilisateur cible non trouvé.', 404);
 
-        // Récupération des informations de l'utilisateur cible
-        const targetUser = await User.findById(targetUserId);
-
-        if (!targetUser) {
-            return res.status(404).json({
-                success: false,
-                message: 'Utilisateur cible non trouvé.'
-            });
-        }
-
-        // Vérification que l'admin local est du même centre que l'utilisateur cible
-        if (req.user.role === 'localAdmin' && req.user.centerId !== targetUser.centerId) {
-            return res.status(403).json({
-                success: false,
-                message: 'Vous ne pouvez gérer que les utilisateurs de votre centre.'
-            });
-        }
-
-        next();
-    } catch (error) {
-        console.log('Erreur lors de la vérification du centre:', error.message);
-        return res.status(500).json({
-            success: false,
-            message: 'Erreur du serveur lors de la vérification des droits.'
-        });
+    if (!targetUser.centerId.equals(req.user.centerId)) {
+        throw new AppError('Vous ne pouvez gérer que les utilisateurs de votre centre.', 403);
     }
+
+    next();
 };
 
-/**
- * Middleware pour vérifier si l'utilisateur est soit l'utilisateur cible, soit un administrateur
- * @param {Object} req - Requête Express
- * @param {Object} res - Réponse Express
- * @param {Function} next - Fonction next d'Express
- */
 const isUserOrAdmin = (req, res, next) => {
-    const targetUserId = req.params.id;
-
-    const currentUserId = req.user.userId;
-    const isAdmin = req.user.isAdmin;
-
-    if (currentUserId === targetUserId || isAdmin) {
-        next();
-    } else {
-        console.log(req);
-        return res.status(403).json({
-            success: false,
-            message: 'Accès refusé. Vous devez être l\'utilisateur concerné ou un administrateur.'
-        });
-    }
+    if (req.user.userId === req.params.id || req.user.isAdmin) return next();
+    next(new AppError("Accès refusé. Vous devez être l'utilisateur concerné ou un administrateur.", 403));
 };
 
-export {
-    verifyToken,
-    isAdmin,
-    isMasterAdmin,
-    checkUserCenter,
-    isUserOrAdmin
-};
+export { verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin, resolveCenterId };

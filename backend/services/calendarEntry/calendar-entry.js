@@ -27,8 +27,6 @@ async function cancelSingleAssignment (assignment) {
         await assignment.save();
         //cancelSubstitutionAssignment(assignment);
     }
-
-
 }
 
 async function cancelSubstitutionAssignment (assignment) {
@@ -80,7 +78,6 @@ const checkOverlap = (latestAssignment, userShift, data) => {
 }
 
 export async function registerEntry (userId, date, data) {
-
     console.log(data);
     const user = await User.findById(userId);
     if (!user) {
@@ -275,9 +272,7 @@ export async function addSubstitutionEntries (demand) {
             type: 'substitution',
         };
 
-    } catch (error) {
-        // 5. Preserve original error for logging, throw operational error for the caller
-        console.error("❌ Erreur lors de l'ajout des entrées de substitution:", error);
+    } catch (err) {
         throw new AppError("Erreur lors de l'ajout des entrées de substitution", 500);
     }
 }
@@ -338,7 +333,6 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
             type: 'restoration',
         };
     } catch (error) {
-        console.error("❌ Erreur lors de l'annulation des entrées de substitution:", error);
         throw new AppError("Erreur lors de l'annulation des entrées de substitution", 500);
     }
 }

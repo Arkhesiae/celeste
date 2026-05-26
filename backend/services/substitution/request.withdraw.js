@@ -16,26 +16,16 @@ import { withdrawFromRequestWithSession } from './request.internal.js';
 export async function withdrawFromRequest (requestId, userId) {
     const session = await mongoose.startSession();
 
-    let updatedRequest, accepterShift, cancelledRequests = [];
-
     try {
-        await session.withTransaction(async () => {
-            ({ updatedRequest, accepterShift, cancelledRequests } = await withdrawFromRequestWithSession(
-                requestId,
-                userId,
-                { visited: new Set(), session, cancelledRequests }
-            ));
-        });
-    } catch (error) {
-        console.error("❌ Erreur lors de l'annulation de l'acceptation:", error);
-        if (error instanceof AppError) throw error;
-        throw new AppError("Erreur lors de l'annulation de l'acceptation", 500);
+        const { updatedRequest, cancelledRequests } = await session.withTransaction(() =>
+            withdrawFromRequestWithSession(requestId, userId, { session })
+        );
+    } catch (err) {
+        if (err instanceof AppError) throw err;
+        throw new AppError("Erreur lors du désistement", 500);
     } finally {
         session.endSession();
     }
-
-
-    console.log("Withdraw from demand | cancelledRequests : ", cancelledRequests.length);
 
     const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([
         computeShiftOfUserWithSubstitutions([updatedRequest.posterShift.date], userId),
@@ -44,12 +34,10 @@ export async function withdrawFromRequest (requestId, userId) {
     ]);
 
     if (shiftsResult.status === 'rejected') {
-        console.error('❌ Erreur calcul shift:', shiftsResult.reason);
         throw new AppError('Erreur lors du calcul du shift', 500);
     }
 
     if (accepterResult.status === 'rejected') {
-        console.error('❌ Erreur récupération utilisateur:', accepterResult.reason);
         throw new AppError('Erreur lors de la récupération de l\'utilisateur', 500);
     }
 

@@ -46,7 +46,6 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   const acknowledge = async (id) => {
     try {
       await publicAnnouncementService.acknowledge(id);
-      // Remove from local list immediately for instant UX
       nonPermanentAnnouncements.value = nonPermanentAnnouncements.value.filter(a => a._id !== id);
     } catch (error) {
       console.error('[PublicAnnouncement] Erreur lors de l\'acquittement:', error);

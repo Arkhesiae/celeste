@@ -1,11 +1,5 @@
 <template>
   <div class="d-flex justify-center align-center">
-    <!-- <ThemeSwitch 
-      :model-value="isDarkTheme" 
-      @update:model-value="$emit('update-theme', $event)" 
-      class="mr-2" 
-    /> -->
-    
     <v-btn 
       variant="text" 
       class="text-body-2 nav-link" 
@@ -75,16 +69,11 @@ defineProps({
   showButtons: {
     type: Boolean,
     default: false
-  },
-  isDarkTheme: {
-    type: Boolean,
-    required: true
   }
 });
 
 // Emits
 defineEmits([
-  'update-theme',
   'navigate-contact',
   'navigate-get-started',
   'navigate-login',

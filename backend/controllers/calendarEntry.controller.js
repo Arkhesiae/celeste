@@ -1,8 +1,6 @@
 import * as calendarEntryService from '../services/calendarEntry/calendar-entry.js';
 import { isValidDate } from '../utils/validation.js';
-import { AppError } from '../error/AppError.js';
-
-const VALID_TYPES = ['absence', 'custom', 'selectedVariation'];
+import { AppError } from '../error/appError.js';
 
 
 const registerEntry = async (req, res, next) => {

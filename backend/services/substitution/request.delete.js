@@ -2,6 +2,12 @@ import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
 
+
+// ---------------------------- WIP ----------------------------
+// ❌ Ce code n'est pas encore opérationnel ❌
+
+
+
 /**
  * Supprime définitivement une demande de substitution
  * @param {string} demandId - ID de la demande à supprimer

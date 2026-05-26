@@ -1,6 +1,7 @@
 import User from '../../models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { AppError } from '../../error/appError.js';
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
@@ -52,7 +53,7 @@ export function verifyRefreshToken(refreshToken) {
     try {
       return jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     } catch {
-      throwAuthError('INVALID_REFRESH_TOKEN', 'Session invalide ou expirée');
+      throw new AppError('Session invalide ou expirée', 401, 'INVALID_REFRESH_TOKEN');
     }
   }
   
@@ -67,13 +68,13 @@ export async function loginUser(email, password) {
     // Vérification si l'utilisateur existe
     const user = await User.findOne({ email });
     if (!user) {
-        throwAuthError('USER_NOT_FOUND', 'E-mail invalide, aucun utilisateur trouvé');
+        throw new AppError('E-mail invalide, aucun utilisateur trouvé', 404, 'USER_NOT_FOUND');
     }
 
     // Vérification du mot de passe
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
-        throwAuthError('INVALID_PASSWORD', 'Mot de passe invalide');
+        throw new AppError('Mot de passe invalide', 401, 'INVALID_PASSWORD');
     }
 
     // Génération des tokens
@@ -130,17 +131,15 @@ export async function refreshAccessToken(refreshToken) {
 
     const user = await User.findById(payload.userId);
     if (!user) {
-        throwAuthError('USER_NOT_FOUND', 'Utilisateur non trouvé');
+        throw new AppError('Utilisateur non trouvé', 404, 'USER_NOT_FOUND');
     }
   
     const now = new Date();
     const validTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
-
-
     const tokenIndex = validTokens.findIndex(rt => rt.token === refreshToken);
 
     if (tokenIndex === -1) {
-        throwAuthError('TOKEN_INVALID', 'Token invalide');
+        throw new AppError('Token invalide', 401, 'TOKEN_INVALID');
     }   
 
     const newAccessToken = generateAccessToken({
@@ -174,9 +173,3 @@ export async function refreshAccessToken(refreshToken) {
 }
 
 
-function throwAuthError(code, message) {
-    const error = new Error(message);
-    error.code = code;
-    error.status = 401;
-    throw error;
-}

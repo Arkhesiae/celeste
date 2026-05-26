@@ -1,5 +1,5 @@
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
-import { AppError } from '../../error/AppError.js'; 
+import { AppError } from '../../error/AppError.js';
 import mongoose from 'mongoose';
 import { cancelRequestWithSession } from './request.internal.js';
 
@@ -15,10 +15,7 @@ export async function cancelRequest (requestId) {
     try {
         let cancelledRequests;
         await session.withTransaction(async () => {
-            cancelledRequests = await cancelRequestWithSession(requestId, {
-                visited: new Set(),
-                session,
-            });
+            cancelledRequests = await cancelRequestWithSession(requestId, { session });
         });
 
         const initialCancel = cancelledRequests[cancelledRequests.length - 1];
@@ -29,7 +26,6 @@ export async function cancelRequest (requestId) {
         return { initialCancel, cancelledRequests, shift: shifts[0] };
 
     } catch (error) {
-        console.error("❌ Erreur lors de l'annulation de la demande:", error);
         if (error instanceof AppError) throw error;
         throw new AppError("Erreur lors de l'annulation de la demande", 500);
     } finally {

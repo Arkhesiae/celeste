@@ -11,9 +11,10 @@ import * as scheduledTransactionService from '../transaction/scheduledTransactio
  * @param {string} requestId
  * @returns {Promise<Object>}
  */
-export async function withdrawFromRequestWithSession (requestId, userId, { visited, session, cancelledRequests = [] }) {
-    if (visited.has(requestId.toString())) return;
-    visited.add(requestId.toString());
+export async function withdrawFromRequestWithSession (requestId, userId, { visited = new Set(), session, cancelledRequests = [] }) {
+    const key = requestId.toString();
+    if (visited.has(key)) return { updatedRequest: null, accepterShift: null, cancelledRequests };
+    visited.add(key);
 
     const request = await Substitution.findOne(
         { _id: requestId, accepterId: userId, status: 'accepted' }
@@ -31,11 +32,9 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
 
     // Cascade-cancel child demands within the same transaction
     const childRequests = await Substitution.find({ dependsOn: requestId }).session(session);
-    await Promise.all(
-        childRequests.map((child) =>
-            cancelRequestWithSession(child._id, { visited, session, cancelledRequests })
-        )
-    );
+    for (const child of childRequests) {
+        await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });
+    }
 
     // Reset demand to open
     request.status = 'open';
@@ -62,23 +61,21 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
  * @param {Set} opts.visited
  * @param {ClientSession} [opts.session] - session Mongoose existante (appels récursifs)
  */
-export async function cancelRequestWithSession (requestId, { visited, session, cancelledRequests = [] }) {
-    if (visited.has(requestId.toString())) return;
-    visited.add(requestId.toString());
+export async function cancelRequestWithSession (requestId, { visited = new Set(), session, cancelledRequests = [] }) {
+    const key = requestId.toString();
+    if (visited.has(key)) return cancelledRequests;
+    visited.add(key);
 
     const request = await Substitution.findById(requestId).session(session);
     if (!request) throw new AppError('Demande non trouvée', 404);
 
     const childRequests = await Substitution.find({ dependsOn: requestId }).session(session);
-    await Promise.all(
-        childRequests.map((child) =>
-            cancelRequestWithSession(child._id, { visited, session, cancelledRequests })
-        )
-    );
-
-    await cancelPendingTransactions(requestId, { session });
-
+    for (const child of childRequests) {
+        await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });
+    }
+   
     if (request.status === 'accepted') {
+        await cancelPendingTransactions(requestId, { session });
         await calendarEntryService.cancelSubstitutionEntries(
             requestId,
             { posterId: request.posterId, accepterId: request.accepterId, date: request.posterShift.date },

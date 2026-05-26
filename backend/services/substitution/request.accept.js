@@ -21,7 +21,6 @@ export async function acceptRequest (requestId, userId, { isSwitch = false } = {
                 await acceptRequestWithSession(requestId, userId, { session, isSwitch }));
         });
     } catch (error) {
-        console.error(`❌ Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}:`, error);
         if (error instanceof AppError) throw error;
         throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}`, 500);
     } finally {

@@ -47,8 +47,6 @@
         <template v-if="!isLoggedIn">
           <HomeNavigation
             :show-buttons="showButtons"
-            :is-dark-theme="isDarkTheme"
-            @update-theme="isDarkTheme = $event"
             @navigate-contact="navigateToContact"
             @navigate-get-started="router.push({ path: '/get-started' })"
             @navigate-login="router.push({ path: '/login' })"

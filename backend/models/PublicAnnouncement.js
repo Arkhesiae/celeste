@@ -28,32 +28,21 @@ const publicAnnouncementSchema = new mongoose.Schema({
     enum: ['info', 'warning', 'maintenance', 'update'],
     default: 'info'
   },
-  /**
-   * If true, the announcement is always displayed and cannot be dismissed by users.
-   */
   isPermanent: {
     type: Boolean,
     default: false
   },
-  /**
-   * Admin can deactivate an announcement without deleting it.
-   */
   isActive: {
     type: Boolean,
     default: true
   },
-  /**
-   * If true, visible to all users regardless of center.
-   */
   isGlobal: {
     type: Boolean,
     default: true
   },
-  /**
-   * Required when isGlobal is false.
-   */
   centerId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Center',
     default: null
   },
   createdBy: {
@@ -61,17 +50,10 @@ const publicAnnouncementSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  /**
-   * Tracks which users have acknowledged (dismissed) this announcement.
-   * Only relevant for non-permanent announcements.
-   */
   acknowledgedBy: {
     type: [acknowledgedBySchema],
     default: []
   },
-  /**
-   * Optional expiry date — announcement auto-hides after this date.
-   */
   expiresAt: {
     type: Date,
     default: null

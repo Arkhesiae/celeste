@@ -2,7 +2,7 @@ import User from '../../models/User.js';
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
 import { sendCancelledAcceptanceEmail } from '../email/userPoolNotificationEmail.js';
 import { categorizeRequests } from './request.getAndCat.js';
-import { AppError } from '../../error/AppError.js';
+import { AppError } from '../../error/appError.js';
 import mongoose from 'mongoose';
 import { withdrawFromRequestWithSession } from './request.internal.js';
 
@@ -16,10 +16,11 @@ import { withdrawFromRequestWithSession } from './request.internal.js';
 export async function withdrawFromRequest (requestId, userId) {
     const session = await mongoose.startSession();
 
+    let updatedRequest, cancelledRequests;
     try {
-        const { updatedRequest, cancelledRequests } = await session.withTransaction(() =>
+        ({ updatedRequest, cancelledRequests } = await session.withTransaction(() =>
             withdrawFromRequestWithSession(requestId, userId, { session })
-        );
+        ));
     } catch (err) {
         if (err instanceof AppError) throw err;
         throw new AppError("Erreur lors du désistement", 500);

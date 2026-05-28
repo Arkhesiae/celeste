@@ -57,8 +57,8 @@
         <v-progress-circular v-if="centerStore.loading" indeterminate color="primary" class="d-flex justify-center" />
       </v-col>
       <v-col v-for="center in filteredAndSortedCenters" :key="center._id" cols="12" md="6" lg="4" height="100%">
-        <v-card class="px-2 ma-0" rounded="xl" variant="flat" height="100%" @click="navigateToTeams(center._id)">
-          <v-card-item>
+        <v-card class="pa-0 ma-0" rounded="xl" variant="flat" height="100%" @click="navigateToTeams(center._id)">
+          <v-card-item class="pa-0 ma-0 pr-2 pl-4 mt-2 d-flex justify-space-between align-start">
             <v-card-title>
               <span class="text-h6">{{ center.name }}</span>
             </v-card-title>

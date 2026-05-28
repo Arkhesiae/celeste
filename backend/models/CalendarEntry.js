@@ -4,6 +4,7 @@ const ShiftDataSchema = new mongoose.Schema({
     shift: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Shift',
+        required: true,
         default: null
     },
     selectedVariation: {
@@ -14,6 +15,7 @@ const ShiftDataSchema = new mongoose.Schema({
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team',
+        required: true,
         default: null
     },
 
@@ -51,40 +53,34 @@ const CalendarEntrySchema = new mongoose.Schema({
     },
 }, baseOptions)
 
-CalendarEntrySchema.virtual('effectiveHours').get(function () {
-    const shift = this.shiftData?.shift;
+// CalendarEntrySchema.virtual('effectiveHours').get(function () {
+//     const shift = this.shiftData?.shift;
 
-    if (this.startTime && this.endTime) {
-        return { startTime: this.startTime, endTime: this.endTime };
-    }
+//     if (this.startTime && this.endTime) {
+//         return { startTime: this.startTime, endTime: this.endTime };
+//     }
 
-    if (shift && typeof shift === 'object' && shift.default) {
-        const variation = this.shiftData.selectedVariation;
-        if (variation && typeof variation === 'object' && variation.startTime) {
-            return { startTime: variation.startTime, endTime: variation.endTime };
-        }
-        return { startTime: shift.default.startTime, endTime: shift.default.endTime };
-    }
+//     if (shift && typeof shift === 'object' && shift.default) {
+//         const variation = this.shiftData.selectedVariation;
+//         if (variation && typeof variation === 'object' && variation.startTime) {
+//             return { startTime: variation.startTime, endTime: variation.endTime };
+//         }
+//         return { startTime: shift.default.startTime, endTime: shift.default.endTime };
+//     }
 
-});
+// });
 
-CalendarEntrySchema.virtual('isOff').get(function () {
-    const hasShift = this.shiftData?.shift != null || this.shiftData?.shift?.type !== "rest";
-    if (!hasShift && !this.startTime && !this.endTime) {
-        return true;
-    }
-    return false;
-});
+// CalendarEntrySchema.virtual('isOff').get(function () {
+//     const hasShift = this.shiftData?.shift != null || this.shiftData?.shift?.type !== "rest";
+//     if (!hasShift && !this.startTime && !this.endTime) {
+//         return true;
+//     }
+//     return false;
+// });
 
 const CalendarEntry = mongoose.model('CalendarEntry', CalendarEntrySchema)
 
-
-
-
 // ── Assignment ────────────────────────────────────────────────────────
-
-
-
 
 
 const ASSIGNMENT_SUBTYPES = [
@@ -148,7 +144,7 @@ AssignmentSchema.pre('save', async function () {
         )
     }
 
-    if (this.subType === 'substitution' && !this.substitution) {
+    if (this.subType === 'substitution' && !this.substitution?.id) {
         throw new Error('substitution requis pour le subType substitution')
     }
     // if (!this.startTime || !this.endTime) {
@@ -159,9 +155,7 @@ AssignmentSchema.pre('save', async function () {
 const Assignment = CalendarEntry.discriminator('assignment', AssignmentSchema)
 
 
-
-
-// ── Modification ──────────────────────────────────────────────────────
+// ── Modification d'une vacation existante ──────────────────────────────────────────────────────
 
 const ModificationSchema = new mongoose.Schema({
     subType: {
@@ -169,7 +163,10 @@ const ModificationSchema = new mongoose.Schema({
         enum: ['disp', 'vic', 'variation', 'pres'],
         required: true
     },
-    shiftData: ShiftDataSchema
+    shiftData: {
+        type: ShiftDataSchema,
+        required: true
+    }
 })
 
 ModificationSchema.pre('save', async function () {
@@ -183,7 +180,7 @@ const Modification = CalendarEntry.discriminator('modification', ModificationSch
 
 
 
-// ── HourPatch ─────────────────────────────────────────────────────────
+// ── HourPatch (MDDA)─────────────────────────────────────────────────────────
 
 const HourPatchSchema = new mongoose.Schema({
     adjustedTime: {
@@ -192,11 +189,15 @@ const HourPatchSchema = new mongoose.Schema({
     },
     subType: {
         type: String,
+        default: 'mdda',
+        required: true,
         enum: ['mdda', "assignment_patch"],
-        required: true
     },
-    shiftData: ShiftDataSchema
-}, { discriminatorKey: 'subType' })
+    shiftData: {
+        type: ShiftDataSchema,
+        required: true
+    }
+})
 
 HourPatchSchema.pre('save', async function () {
     const { adjustedStart, adjustedEnd } = this.adjustedTime

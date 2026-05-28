@@ -1,5 +1,5 @@
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
-import { AppError } from '../../error/AppError.js';
+import { AppError } from '../../error/appError.js';
 import mongoose from 'mongoose';
 import { cancelRequestWithSession } from './request.internal.js';
 

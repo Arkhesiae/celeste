@@ -2,7 +2,7 @@ import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
-import { AppError } from '../../error/AppError.js';
+import { AppError } from '../../error/appError.js';
 import * as demandMutationsService from '../substitution/index.js';
 import overlap from '../../utils/overlapTest.js';
 
@@ -47,43 +47,54 @@ async function cancelHourPatches (userId, date) {
     });
 }
 
-const checkOverlap = (latestAssignment, userShift, data) => {
-    let overlapResult = false;
-    let hasShift = false;
-    if (latestAssignment) {
-        if (latestAssignment.shiftData?.shift && latestAssignment.shiftData?.shift?.type === "work") {
-            hasShift = true;
-        }
+// const checkOverlap = (latestAssignment, userShift, data) => {
+//     let overlapResult = false;
+//     let hasShift = false;
+//     if (latestAssignment) {
+//         if (latestAssignment.shiftData?.shift && latestAssignment.shiftData?.shift?.type === "work") {
+//             hasShift = true;
+//         }
 
-        if (!latestAssignment.startTime || !latestAssignment.endTime) {
-            overlapResult = false;
-        } else {
-            overlapResult = overlap(latestAssignment, { startTime: data.startTime, endTime: data.endTime, date: data.date })
-        }
+//         if (!latestAssignment.startTime || !latestAssignment.endTime) {
+//             overlapResult = false;
+//         } else {
+//             overlapResult = overlap(latestAssignment, { startTime: data.startTime, endTime: data.endTime, date: data.date })
+//         }
 
-    } else {
-        if (userShift[0].shiftData?.shift && userShift[0].shiftData?.shift?.type === "work") {
-            hasShift = true;
-        }
-        if (!userShift[0].startTime || !userShift[0].endTime) {
-            overlapResult = false;
-        } else {
-            overlapResult = overlap(userShift[0], { startTime: data.startTime, endTime: data.endTime, date: data.date })
-        }
+//     } else {
+//         if (userShift[0].shiftData?.shift && userShift[0].shiftData?.shift?.type === "work") {
+//             hasShift = true;
+//         }
+//         if (!userShift[0].startTime || !userShift[0].endTime) {
+//             overlapResult = false;
+//         } else {
+//             overlapResult = overlap(userShift[0], { startTime: data.startTime, endTime: data.endTime, date: data.date })
+//         }
 
-    }
+//     }
 
-    return { hasShift, overlapResult };
+//     return { hasShift, overlapResult };
+// }
 
-}
+const isSameShift = (userShift, data) =>
+    userShift?.[0]?.shiftData?.shift?._id.toString() === data.shiftId.toString();
+
 
 export async function registerEntry (userId, date, data) {
-    console.log(data);
     const user = await User.findById(userId);
     if (!user) {
-        const err = new Error('Utilisateur non trouvé');
-        err.status = 404;
-        throw err;
+        throw new AppError('Utilisateur non trouvé', 404);
+    }
+
+    const handlers = {
+        assignment: registerAssignment,
+        modification: registerModification,
+        hourPatch: registerHourPatch,
+    };
+
+    const handler = handlers[data.type];
+    if (!handler) {
+        throw new AppError('Type d\'entrée invalide', 400);
     }
 
     const [userShift, substitution, latestAssignment, latestModification, latestHourPatch] = await Promise.all([
@@ -94,52 +105,86 @@ export async function registerEntry (userId, date, data) {
         HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
     ]);
 
-
-    const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
     const recomputeShift = () => computeShiftOfUserWithSubstitutions([date], userId);
-    const buildResult = async (type) => ({ userShift: await recomputeShift(), updatedDemands: null, type });
 
-    switch (data.type) {
-        case 'assignment': {
-            if (latestAssignment && latestAssignment.subType === 'substitution') {
-                throw new AppError('Impossible de créer une entrée sur un remplacement actif, annulez d\'abord le remplacement', 422);
-            }
+    const result = await handler(user, date, data, { userShift, substitution, latestAssignment, latestModification, latestHourPatch, recomputeShift });
+    return result;
+}
 
-            if (substitution) {
-                throw new AppError('Impossible de créer une entrée si une demande est en cours ce jour', 409);
-            }
+async function registerModification (user, date, data, { userShift, latestModification, recomputeShift }) {
+    if (!isSameShift(userShift, data)) {
+        throw new AppError('Impossible de créer une modification car le shift ne correspond pas', 422);
+    }
 
-            if (latestAssignment) {
-                latestAssignment.active = false;
-                await latestAssignment.save();
-            }
+    if (latestModification) {
+        latestModification.active = false;
+        await latestModification.save();
+    }
 
-            cancelModifications(userId, date);
-            cancelHourPatches(userId, date);
-            break;
-        }
-        case 'modification':
-            if (latestModification) {
-                latestModification.active = false;
-                await latestModification.save();
-            }
-            if (!isSameShift(userShift, data)) {
-                throw new AppError('Impossible de créer une modification car le shift ne correspond pas', 422);
-            }
+    await cancelHourPatches(user._id, date);
 
-            cancelHourPatches(userId, date);
-            break;
+    const entry = new CalendarEntry({
+        type: data.type,
+        subType: data.entryType,
+        shiftData: {
+            shift: data.shiftId,
+            selectedVariation: data.selectedVariation,
+            team: data.team,
+        },
+        userId: user._id,
+        date,
+        centerId: user.centerId,
+    });
 
-        case 'hourPatch':
-            if (latestHourPatch) {
-                latestHourPatch.active = false;
-                await latestHourPatch.save();
-            }
-            if (data.shiftId) {
-                await registerMDDA(userId, date, data);
-                return buildResult('hourPatch');
-            }
-            break;
+    await entry.save();
+    return { userShift: await recomputeShift(), updatedDemands: null, type: 'modification' };
+}
+
+async function registerAssignment (user, date, data, { substitution, latestAssignment, recomputeShift }) {
+    if (latestAssignment?.subType === 'substitution') {
+        throw new AppError('Impossible de créer une entrée sur un remplacement actif, annulez d\'abord le remplacement', 422);
+    }
+
+    if (substitution) {
+        throw new AppError('Impossible de créer une entrée si une demande est en cours ce jour', 409);
+    }
+
+    if (latestAssignment) {
+        latestAssignment.active = false;
+        await latestAssignment.save();
+    }
+
+    await cancelModifications(user._id, date);
+    await cancelHourPatches(user._id, date);
+
+    const entry = new CalendarEntry({
+        type: data.type,
+        subType: data.entryType,
+        shiftData: {
+            shift: data.shiftId,
+            selectedVariation: data.selectedVariation,
+            team: data.team,
+        },
+        userId: user._id,
+        date,
+        centerId: user.centerId,
+        startTime: data.startTime,
+        endTime: data.endTime,
+    });
+
+    await entry.save();
+    return { userShift: await recomputeShift(), updatedDemands: null, type: 'creation' };
+}
+
+async function registerHourPatch (user, date, data, { latestHourPatch, recomputeShift }) {
+    if (latestHourPatch) {
+        latestHourPatch.active = false;
+        await latestHourPatch.save();
+    }
+
+    if (data.shiftId) {
+        await registerMDDA(user._id, date, data);
+        return { userShift: await recomputeShift(), updatedDemands: null, type: 'hourPatch' };
     }
 
     const entry = new CalendarEntry({
@@ -150,15 +195,16 @@ export async function registerEntry (userId, date, data) {
             selectedVariation: data.selectedVariation,
             team: data.team,
         },
-        userId,
+        userId: user._id,
         date,
         centerId: user.centerId,
-        startTime: data.startTime,
-        endTime: data.endTime,
     });
+
     await entry.save();
-    return buildResult('creation');
+    return { userShift: await recomputeShift(), updatedDemands: null, type: 'creation' };
 }
+
+
 
 async function registerMDDA (userId, date, data) {
     const user = await User.findById(userId);
@@ -178,7 +224,7 @@ async function registerMDDA (userId, date, data) {
         subType: 'mdda',
         date,
         adjustedTime: {
-            adjustedStart:  1,
+            adjustedStart: 1,
             adjustedEnd: 2,
         },
         centerId: user.centerId,

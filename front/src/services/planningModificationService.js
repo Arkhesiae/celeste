@@ -33,6 +33,15 @@ export const planningModificationService = {
     return response;
   },
 
+  async registerModification(data) {
+    const response = await apiFetch(`/planning-modifications/register-modification`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+    return response;
+  },
+
+
   async deleteAssignment(userId, date) {
     console.log(userId, date);
     const response = await apiFetch(`/planning-modifications/delete-assignment`, {

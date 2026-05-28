@@ -188,15 +188,7 @@ const typeIcon = (type) => {
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
 
-const registerEntry = async (payload) => {
-  try {
-    const res = await planningModificationService.registerEntry(payload);
-    shiftStore.addEntry(res.userShift[0], dateKey.value);
-  } catch (error) {
-    console.error(error);
-    snackbarStore.showNotification('Erreur : ' + error.message, 'onError', 'mdi-alert-circle-outline');
-  }
-};
+
 
 const deleteAssignment = async () => {
   try {
@@ -224,28 +216,46 @@ const undoMods = async () => {
   }
 };
 
-const restoreInitialShift = async () => {
-  try {
-    const res = await planningModificationService.restoreInitialShift(
-      authStore.userData.userId,
-      dateKey.value
-    );
-    shiftStore.addEntry(res.userShift[0], dateKey.value);
-  } catch (err) {
-    console.error(err);
-    snackbarStore.showNotification('Erreur : ' + err.message, 'onError', 'mdi-alert-circle-outline');
-  }
+const ENTRY_SERVICE_MAP = {
+  modification: 'registerModification',
+  assignment: 'registerAssignement',
+  hourPatch: 'registerHourPatch',
 };
 
-const selectVariationForDay = (variation) => registerEntry({
+const basePayload = () => ({
   type: 'modification',
-  entryType: 'variation',
   date: dateKey.value,
-  selectedVariation: variation?._id ?? null,
   shiftId: vacation.value?.shiftData?.shift?._id,
-  centerId: authStore.userData?.centerId,
   confirmCreation: true,
 });
+
+const selectVariationForDay = (variation) => registerEntry({
+  ...basePayload(),
+  entryType: 'variation',
+  selectedVariation: variation?._id ?? null,
+});
+
+const registerAbsence = () => registerEntry({
+  ...basePayload(),
+  entryType: isOff.value ? 'pres' : 'disp',
+});
+
+const registerVIC = () => registerEntry({
+  ...basePayload(),
+  entryType: 'vic',
+});
+
+const registerEntry = async (payload) => {
+  const method = ENTRY_SERVICE_MAP[payload.type];
+  if (!method) throw new Error('Invalid payload type');
+  try {
+    const res = await planningModificationService[method](payload);
+    shiftStore.addEntry(res.userShift[0], dateKey.value);
+  } catch (error) {
+    console.error(error);
+    snackbarStore.showNotification('Erreur : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+  }
+};
 
 const registerMDDA = () => registerEntry({
   type: 'hourPatch',
@@ -259,32 +269,8 @@ const patchHours = () => {
   // implement as needed
 };
 
-const registerAbsence = () => {
-  if (isOff.value) {
-    return registerEntry({
-      entryType: 'pres',
-      type: 'modification',
-      date: dateKey.value,
-      shiftId: vacation.value?.shiftData?.shift?._id,
-      confirmCreation: true,
-    });
-  }
-  return registerEntry({
-    entryType: 'disp',
-    type: 'modification',
-    date: dateKey.value,
-    shiftId: vacation.value?.shiftData?.shift?._id,
-    confirmCreation: true,
-  });
-}
 
-const registerVIC = () => registerEntry({
-  entryType: 'vic',
-  type: 'modification',
-  date: dateKey.value,
-  shiftId: vacation.value?.shiftData?.shift?._id,
-  confirmCreation: true,
-});
+
 </script>
 
 <style scoped>

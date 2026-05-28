@@ -1,5 +1,5 @@
 import { sendAcceptedDemandEmail } from '../email/userPoolNotificationEmail.js';
-import { AppError } from '../../error/AppError.js';
+import { AppError } from '../../error/appError.js';
 import mongoose from 'mongoose';
 import { acceptRequestWithSession } from './request.internal.js';
 

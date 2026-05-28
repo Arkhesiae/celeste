@@ -1,5 +1,5 @@
 import Substitution from '../../models/Substitution.js';
-import { AppError } from '../../error/AppError.js';
+import { AppError } from '../../error/appError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
 import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
 import * as calendarEntryService from '../calendarEntry/calendar-entry.js';
@@ -31,10 +31,7 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
     }
 
     // Cascade-cancel child demands within the same transaction
-    const childRequests = await Substitution.find({ dependsOn: requestId }).session(session);
-    for (const child of childRequests) {
-        await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });
-    }
+    await cancelCascade(requestId, { session, visited, cancelledRequests });
 
     // Reset demand to open
     request.status = 'open';
@@ -69,10 +66,7 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
     const request = await Substitution.findById(requestId).session(session);
     if (!request) throw new AppError('Demande non trouvée', 404);
 
-    const childRequests = await Substitution.find({ dependsOn: requestId }).session(session);
-    for (const child of childRequests) {
-        await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });
-    }
+    await cancelCascade(requestId, { session, visited, cancelledRequests });
    
     if (request.status === 'accepted') {
         await cancelPendingTransactions(requestId, { session });
@@ -91,6 +85,13 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
     return cancelledRequests;
 }
 
+
+async function cancelCascade (parentId, { session, visited, cancelledRequests }) {
+    const childRequests = await Substitution.find({ dependsOn: parentId }).session(session);
+    for (const child of childRequests) {
+        await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });
+    }
+} 
 
 
 // Note: Ensure this constant is available if it was globally defined, otherwise provide fallback:

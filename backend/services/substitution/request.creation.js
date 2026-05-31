@@ -1,6 +1,6 @@
 import Substitution from "../../models/Substitution.js";
 import User from "../../models/User.js";
-import { computeShiftOfUserWithSubstitutions } from "../../utils/computeShiftOfUserWithSubstitutions.js";
+import { computeUserShifts } from "../../utils/computeUserShifts.js";
 import { getTeamAtGivenDate } from "../../utils/getTeamAtGivenDate.js";
 import { AppError } from "../../error/AppError.js";
 
@@ -40,7 +40,7 @@ export async function createDemand (data) {
 
     // Validate shift
     const givenDate = new Date(posterShift.date);
-    const userShifts = await computeShiftOfUserWithSubstitutions([givenDate], posterId);
+    const userShifts = await computeUserShifts([givenDate], posterId);
     const userShift = userShifts[0].shiftData;
 
     if (!userShift?.shift) {
@@ -90,7 +90,7 @@ export async function createDemand (data) {
         status: 'accepted',
         $or: [
             { posterId },
-            { accepterId : posterId }
+            { accepterId: posterId }
         ]
     }).select('_id');
 

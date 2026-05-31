@@ -7,7 +7,7 @@
           {{ getShiftName }}
         </h1>
         <div>
-          <HourRange :hours="getShiftHours" :endsNextDay="getShiftEndsNextDay" />
+          <HourRange :hours="getShiftHours" :ends-next-day="getShiftEndsNextDay" />
         </div>
       </div>
 
@@ -158,6 +158,23 @@
         </div>
       </v-card>
 
+      <v-card v-if="isMailingEnabled && (isOwner || isAccepter)" color="background" rounded="xl" elevation="0"
+        class="mb-4 pa-4">
+        <div class="d-flex align-center justify-space-between">
+          <div class="d-flex align-center ga-2">
+            <v-icon :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
+              :color="demand?.mailStatus === 'sent' ? 'success' : 'medium-emphasis'" size="small" />
+            <span class="text-body-2 text-medium-emphasis">
+              Mail administration : {{ demand?.mailStatus === 'sent' ? 'Envoyé' : 'Non envoyé' }}
+            </span>
+          </div>
+          <v-btn size="small" variant="tonal" color="primary" rounded="xl" :loading="sendingMail"
+            @click="sendAdminMailAction">
+            {{ demand?.mailStatus === 'sent' ? 'Renvoyer' : 'Envoyer' }}
+          </v-btn>
+        </div>
+      </v-card>
+
       <v-card v-if="isOwner && hasVariations" color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
         <span class="text-body-2 font-weight-medium text-medium-emphasis d-block mb-2">Vacation élémentaire</span>
         <div class="d-flex flex-wrap ga-2">
@@ -298,6 +315,26 @@ const isAccepter = computed(() => {
 const isAccepted = computed(() => {
   return props.demand?.accepterId
 })
+
+const isMailingEnabled = computed(() => substitutionStore.isMailingEnabled);
+const sendingMail = ref(false);
+
+const sendAdminMailAction = async () => {
+  if (!props.demand?._id) return;
+  sendingMail.value = true;
+  try {
+    const response = await substitutionStore.sendAdminMail(props.demand._id);
+    if (response?.demand) {
+      emit('update-demand', response.demand);
+    }
+    snackbarStore.showNotification('Mail d\'administration envoyé avec succès', 'success', 'mdi-email');
+  } catch (error) {
+    console.error('Erreur lors de l\'envoi du mail:', error);
+    snackbarStore.showNotification('Erreur d\'envoi : ' + error.message, 'error', 'mdi-alert');
+  } finally {
+    sendingMail.value = false;
+  }
+};
 
 const accepterName = computed(() => {
   return accepter.value?.name + ' ' + accepter.value?.lastName.split(' ').map(word => word[0] + '.') || 'Accepteur';

@@ -1,4 +1,4 @@
-import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from './computeUserShifts.js';
 import Shift from '../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
 import { parseShiftUTC } from './parseShiftTime.js';
@@ -10,7 +10,7 @@ const MIN_REST_MINUTES = 11 * 60;
  * Échantillonne des combinaisons de manière uniforme quand il y en a trop.
  * Inclut toujours la combo par défaut (index 0) en premier.
  */
-function sampleCombos(combos, maxCount) {
+function sampleCombos (combos, maxCount) {
     if (combos.length <= maxCount) return combos;
     const result = [combos[0]];
     const step = (combos.length - 1) / Math.max(1, maxCount - 1);
@@ -36,7 +36,7 @@ const MAX_COMPATIBILITY_COMBOS = 500;
  * Construit une map locale en appliquant éventuellement des overrides de variantes pour les vacations du fetcher.
  * fetcherVariationOverrides: { [dateStr]: variation } pour les jours ambigus (sans variante choisie).
  */
-function buildLocalMapWithOverrides(shiftsMap, demandDateStr, demandData, fetcherVariationOverrides = {}) {
+function buildLocalMapWithOverrides (shiftsMap, demandDateStr, demandData, fetcherVariationOverrides = {}) {
     const localMap = new Map();
     for (const [dateStr, entry] of shiftsMap) {
         if (dateStr === demandDateStr) {
@@ -72,7 +72,7 @@ function buildLocalMapWithOverrides(shiftsMap, demandDateStr, demandData, fetche
  * @param {Map} shiftsMap - La map des shifts
  * @returns {Array<{[dateStr]: variation}>}
  */
-function getFetcherVariationCombinations(ambiguousDates, shiftsMap) {
+function getFetcherVariationCombinations (ambiguousDates, shiftsMap) {
     if (ambiguousDates.length === 0) return [{}];
     const variationsByDate = ambiguousDates.map(d => {
         const entry = shiftsMap.get(d);
@@ -82,7 +82,7 @@ function getFetcherVariationCombinations(ambiguousDates, shiftsMap) {
         return [null, ...vars];
     });
     const result = [];
-    function backtrack(idx, combo) {
+    function backtrack (idx, combo) {
         if (idx === ambiguousDates.length) {
             result.push({ ...combo });
             return;
@@ -101,7 +101,7 @@ function getFetcherVariationCombinations(ambiguousDates, shiftsMap) {
  * Utilise les shifts déjà populés si disponibles.
  * @returns {Promise<Map<string, Object>>} Map shiftId -> shift
  */
-async function buildPreFetchedAcceptedShifts(demand) {
+async function buildPreFetchedAcceptedShifts (demand) {
     const map = new Map();
     if (!demand?.acceptedSwitches?.length) return map;
     const isPopulated = (s) => s?.shift && typeof s.shift === 'object' && '_id' in s.shift && 'name' in s.shift;
@@ -127,7 +127,7 @@ async function buildPreFetchedAcceptedShifts(demand) {
  * Retourne { limit: string[], canSwitch: boolean }.
  * @param {Map<string, Object>} [preFetchedAcceptedShifts] - Map shiftId -> shift pour éviter les appels DB répétés
  */
-function checkCompatibilityForVariation(demand, shiftsMap, demandVariationOrNull, fetcherVariationOverrides = {}, preFetchedAcceptedShifts = null) {
+function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNull, fetcherVariationOverrides = {}, preFetchedAcceptedShifts = null) {
     if (!demand?.posterShift?.shift) {
         return { limit: ['invalidDemand'], canSwitch: false };
     }

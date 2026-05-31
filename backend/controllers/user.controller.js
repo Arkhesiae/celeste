@@ -3,18 +3,17 @@ import { LegacyUser } from '../models/User.js';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
 import { getTeamAtGivenDate } from "../utils/getTeamAtGivenDate.js";
-import { computeShiftOfUser } from "../utils/computeShiftOfUser.js";
 import Transaction from '../models/Transaction.js';
-import { createDelayedTransaction } from '../services/transaction/scheduledTransactionService.js';
+import { createScheduledTransation } from '../services/transaction/transaction.scheduled.js';
 import path from 'path';
 import fs from 'fs';
 import { isValidDateRange, isValidId } from '../utils/validation.js';
 import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
-import * as userShiftsService from '../services/userService/userShiftsService.js';
-import { createUserService } from '../services/userService/createUserService.js';
-import * as userService from '../services/userService/getUsersService.js';
-import * as userTeamService from '../services/userService/user.team.js';
+import * as userShiftsService from '../services/user/user.shifts.js';
+import { createUserService } from '../services/user/user.create.js';
+import * as userService from '../services/user/getUsersService.js';
+import * as userTeamService from '../services/user/user.team.js';
 import { AppError } from '../error/AppError.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -474,23 +473,23 @@ const assignTeamToUser = async (req, res, next) => {
 };
 
 
-// Obtenir les vacances d'un utilisateur
-const getUserShifts = async (req, res) => {
-    try {
-        const { dates } = req.body;
-        const { id: userId } = req.params;
+// // Obtenir les vacances d'un utilisateur
+// const getUserShifts = async (req, res) => {
+//     try {
+//         const { dates } = req.body;
+//         const { id: userId } = req.params;
 
-        if (!dates || !userId) {
-            return res.status(400).json({ message: !dates ? 'No dates provided' : 'No user provided' });
-        }
+//         if (!dates || !userId) {
+//             return res.status(400).json({ message: !dates ? 'No dates provided' : 'No user provided' });
+//         }
 
-        const results = await computeShiftOfUser(dates, userId);
-        res.json(results);
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: error.message });
-    }
-};
+//         const results = await computeShiftOfUser(dates, userId);
+//         res.json(results);
+//     } catch (error) {
+//         console.error(error.message);
+//         res.status(500).json({ error: error.message });
+//     }
+// };
 
 
 // Obtenir les vacations d'un utilisateur
@@ -606,7 +605,7 @@ const transferPoints = async (req, res) => {
         const amountInt = parseInt(amount);
         // Si la date d'effectivité est dans le futur, créer une transaction différée
         if (scheduledDate) {
-            const transaction = await createDelayedTransaction({
+            const transaction = await createScheduledTransation({
                 sender: fromUserId,
                 receiver: toUserId,
                 amount: amountInt,
@@ -905,7 +904,6 @@ export {
     getUserTeamOccurrences,
     deleteTeamOccurrence,
     assignTeamToUser,
-    getUserShifts,
     getUserShiftsWithSubstitutions,
     updateUserPreferences,
     getUserPreferences,

@@ -161,7 +161,8 @@ const close = () => {
 </script>
 
 <template>
-  <GenericDialog v-model="localDialogVisible" :title="props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS'"
+  <GenericDialog
+v-model="localDialogVisible" :title="props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS'"
     max-width="900" @close="close">
     <template #content>
       <v-window v-model="currentWindow" class="pt-1 pa-0">
@@ -176,7 +177,8 @@ const close = () => {
               </v-card-item>
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="newRotation.name" label="Nom du tour de service" variant="outlined" class="mb-8"
+              <v-text-field
+v-model="newRotation.name" label="Nom du tour de service" variant="outlined" class="mb-8"
                 bg-color="surface" rounded="lg" :rules="nameRules" placeholder="Ex: Tour de service principal" />
             </v-col>
           </v-row>
@@ -201,7 +203,8 @@ const close = () => {
             <v-col cols="12" md="6">
               <!-- Résumé schématique -->
               <v-fade-transition>
-                <v-card v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded="xl"
+                <v-card
+v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded="xl"
                   elevation="0">
                   <v-card-item>
                     <div class="d-flex justify-space-between align-center">
@@ -216,19 +219,22 @@ const close = () => {
                       </v-btn>
                     </div>
                   </v-card-item>
-                  <WorkshiftSummary :days="newRotation.days" :is-expanded="isSummaryExpanded"
+                  <WorkshiftSummary
+:days="newRotation.days" :is-expanded="isSummaryExpanded"
                     @on-delete-day="handleRemoveDay" @on-edit-day="handleEditDay" />
                 </v-card>
               </v-fade-transition>
             </v-col>
           </v-row>
           <div class="d-flex" :class="smAndDown ? 'justify-space-between flex-column' : 'justify-end'">
-            <v-btn color="onBackground" prepend-icon="mdi-plus" class="" :rounded="smAndDown ? 'xl' : 'lg'"
+            <v-btn
+color="onBackground" prepend-icon="mdi-plus" class="" :rounded="smAndDown ? 'xl' : 'lg'"
               :height="smAndDown ? 48 : 36" :block="smAndDown" @click="addDay">
               Ajouter une vacation
             </v-btn>
 
-            <v-btn color="secondary" :class="!smAndDown ? 'ml-2' : 'mt-2'" variant="tonal" prepend-icon="mdi-sleep"
+            <v-btn
+color="secondary" :class="!smAndDown ? 'ml-2' : 'mt-2'" variant="tonal" prepend-icon="mdi-sleep"
               :rounded="smAndDown ? 'xl' : 'lg'" :height="smAndDown ? 48 : 36" :block="smAndDown"
               @click="handleAddRestDay">
               Ajouter un repos
@@ -259,7 +265,8 @@ const close = () => {
   </GenericDialog>
 
   <!-- Add Day Dialog -->
-  <AddOrEditDay :model-value="showAddDayDialog"
+  <AddOrEditDay
+:model-value="showAddDayDialog"
     :day-number="newRotation.days.filter(day => day.type === 'work').length + 1" :day="dayToEdit"
     :mode="dayToEdit ? 'edit' : 'add'" @on-submit="handleSubmitDay" @update:model-value="showAddDayDialog = $event" />
 </template>

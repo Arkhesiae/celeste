@@ -9,23 +9,18 @@
 
     <!-- Jours du calendrier -->
     <v-row v-for="(week, index) in calendarDays" :key="index" dense>
-      <v-col v-for="day in week" :key="day.date" >
+      <v-col v-for="day in week" :key="day.date">
         <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
           :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"
           :demands="demandsForDate(plainDateToDateStr(day))"
           :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
           :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
-          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))"
-          @select="selectDate"
-          class="pa-3"
-          :height="86"
-          :class="{
+          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" class="pa-3" :height="86" :class="{
             'top-left-corner': index === 0 && week.indexOf(day) === 0,
             'top-right-corner': index === 0 && week.indexOf(day) === week.length - 1,
             'bottom-left-corner': index === calendarDays.length - 1 && week.indexOf(day) === 0,
             'bottom-right-corner': index === calendarDays.length - 1 && week.indexOf(day) === week.length - 1,
-          }"
-          />
+          }" @select="selectDate" />
       </v-col>
     </v-row>
   </v-sheet>
@@ -128,7 +123,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
 </script>
 
 <style scoped>
-
 .calendar-day {
   position: relative;
   min-height: 70px;
@@ -166,7 +160,7 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
 }
 
 .chipe {
-  height:14px;
+  height: 14px;
   width: 14px;
   transform: translateY(-50%) translateX(-50%);
   display: flex;
@@ -215,7 +209,7 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   width: 4px;
   border-radius: 6px;
   background-color: rgba(var(--v-theme-onSurfaceVariant), 0.5);
- 
+
 }
 
 .week-day {
@@ -223,5 +217,4 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   font-weight: 500 !important;
   opacity: .5;
 }
-
 </style>

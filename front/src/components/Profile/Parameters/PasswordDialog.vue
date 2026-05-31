@@ -1,12 +1,12 @@
 <template>
-  <GenericDialog :title="step === 1 ? 'Vérification du mot de passe' : 'Modifier le mot de passe'" v-model="modelValue"
+  <GenericDialog v-model="modelValue" :title="step === 1 ? 'Vérification du mot de passe' : 'Modifier le mot de passe'"
     :fullscreen="smAndDown">
     <template #content>
-        <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
-          <template v-if="step === 1">
-            <v-text-field v-model="currentPassword" :rules="[v => !!v || 'Le mot de passe actuel est requis']"
-              label="Mot de passe actuel" type="password" autocomplete="current-password" variant="outlined"
-              color="primary" rounded="xl" bg-color="surface" hide-details="auto" />
+      <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
+        <template v-if="step === 1">
+          <v-text-field v-model="currentPassword" :rules="[v => !!v || 'Le mot de passe actuel est requis']"
+            label="Mot de passe actuel" type="password" autocomplete="current-password" variant="outlined"
+            color="primary" rounded="xl" bg-color="surface" hide-details="auto" />
         </template>
 
         <template v-else>

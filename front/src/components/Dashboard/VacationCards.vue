@@ -1,26 +1,28 @@
 <template>
     <!-- Mobile: Swiper -->
-     <div class=" d-flex justify-space-between align-start flex-column  ga-4">
-          <span class="text-h6 font-weight-medium pa-0">
+    <div class=" d-flex justify-space-between align-start flex-column  ga-4">
+        <span class="text-h6 font-weight-medium pa-0">
             A venir
-          </span>
-    <div v-if="smAndDown" class="w-100">
-        <Swiper :modules="[Pagination]" :pagination="{ clickable: true }" :slides-per-view="1" :space-between="16"
-            class="vacation-swiper">
-            <SwiperSlide>
-                <ShiftCard class="bg-surfaceContainer" :enableAssign="false" :date="todayISO" label="Aujourd'hui" />
-            </SwiperSlide>
-            <SwiperSlide>
-                <ShiftCard class="bg-surfaceContainer" :enableAssign="false" :date="tomorrowISO" label="Demain" />
-            </SwiperSlide>
-        </Swiper>
-    </div>
+        </span>
+        <div v-if="smAndDown" class="w-100">
+            <Swiper :modules="[Pagination]" :pagination="{ clickable: true }" :slides-per-view="1" :space-between="16"
+                class="vacation-swiper">
+                <SwiperSlide>
+                    <ShiftCard class="bg-surfaceContainer" :enable-assign="false" :date="todayISO"
+                        label="Aujourd'hui" />
+                </SwiperSlide>
+                <SwiperSlide>
+                    <ShiftCard class="bg-surfaceContainer" :enable-assign="false" :date="tomorrowISO" label="Demain" />
+                </SwiperSlide>
+            </Swiper>
+        </div>
 
-    <!-- Desktop: side by side -->
-    <div v-else class="d-flex ga-4 w-100  flex-wrap">
-        <ShiftCard class="bg-surfaceContainer flex-1-1" :enableAssign="false" :date="todayISO" label="Aujourd'hui" />
-        <ShiftCard class="bg-surfaceContainer flex-1-1" :enableAssign="false" :date="tomorrowISO" label="Demain" />
-    </div>
+        <!-- Desktop: side by side -->
+        <div v-else class="d-flex ga-4 w-100  flex-wrap">
+            <ShiftCard class="bg-surfaceContainer flex-1-1" :enable-assign="false" :date="todayISO"
+                label="Aujourd'hui" />
+            <ShiftCard class="bg-surfaceContainer flex-1-1" :enable-assign="false" :date="tomorrowISO" label="Demain" />
+        </div>
     </div>
 </template>
 

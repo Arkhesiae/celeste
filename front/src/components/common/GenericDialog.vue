@@ -1,10 +1,12 @@
 <template>
-  <v-dialog v-model="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
+  <v-dialog
+v-model="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
     :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent" :retain-focus="false"
     @after-enter="handleAfterEnter" @after-leave="handleAfterLeave">
     <v-card height="100vh" :class="smAndDown ? '' : 'rounded-xxl'" class="pt-0 pb-6 px-0 overflow-y-hidden">
       <!-- Header -->
-      <div ref="headerRef" :style="{
+      <div
+ref="headerRef" :style="{
         paddingTop: 'calc(var(--safe-area-top, 0px) + 8px) !important',
         paddingLeft: smAndDown ? '4px !important' : '24px !important',
       }" :class="[
@@ -13,7 +15,8 @@
         ]">
         <div class="d-flex align-center justify-space-between flex-grow-1">
           <div class="d-flex align-center">
-            <v-btn v-if="smAndDown && showCloseButton" icon="mdi-arrow-left" variant="text" class="mr-1"
+            <v-btn
+v-if="smAndDown && showCloseButton" icon="mdi-arrow-left" variant="text" class="mr-1"
               @click="handleClose" />
             <span :class="smAndDown ? 'text-h7' : 'text-h6'" class="font-weight-medium">
               {{ title }}

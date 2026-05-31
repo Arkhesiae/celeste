@@ -40,8 +40,7 @@
                     </template>
                 </v-tooltip>
 
-                <v-tooltip v-if="isShift" :text="isOff ? 'Annuler l\'absence' : 'Déclarer une absence'"
-                    location="top">
+                <v-tooltip v-if="isShift" :text="isOff ? 'Annuler l\'absence' : 'Déclarer une absence'" location="top">
                     <template #activator="{ props: tooltipProps }">
                         <v-btn v-bind="tooltipProps" :color="isOff ? 'error' : 'surfaceContainerHigh'"
                             :class="isOff ? 'selected' : ''" icon rounded="lg" size="small" flat
@@ -105,60 +104,57 @@
 
 <style scoped>
 .chips-container {
-  transition: all 0.5s ease-in-out;
+    transition: all 0.5s ease-in-out;
 
-  padding: 4px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+    padding: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .chips-container::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .chips-container-alt {
-  display: flex;
-  gap: 2px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  transition: all 0.5s ease-in-out;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    transition: all 0.5s ease-in-out;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
 }
 
 .chips-container-alt::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .chips-container-alt .v-btn {
-  border-radius: 8px !important;
-  transition: border-radius var(--motion-expressive-fast-spatial),
-    background-color var(--motion-expressive-fast-effects);
+    border-radius: 8px !important;
+    transition: border-radius var(--motion-expressive-fast-spatial),
+        background-color var(--motion-expressive-fast-effects);
 }
 
-.chips-container-alt .v-btn:first-child {
-  border-radius: 24px 8px 8px 24px !important;
+.chips-container-alt .v-btn:first-child:not(.selected) {
+    border-radius: 24px 8px 8px 24px !important;
 }
 
-.chips-container-alt .v-btn:nth-child(2) {
-  border-radius: 8px !important;
-}
-
-.chips-container-alt .v-btn:last-child {
-  border-radius: 8px 24px 24px 8px !important;
+.chips-container-alt .v-btn:last-child:not(.selected) {
+    border-radius: 8px 24px 24px 8px !important;
 }
 
 .chips-container-alt .v-btn.selected {
-  border-radius: 24px !important;
+    border-radius: 24px !important;
 }
 
+/* This now clearly overrides .selected for last child */
 .chips-container-alt .v-btn:last-child.selected {
-  border-radius: 8px !important;
+    border-radius: 8px !important;
 }
 </style>

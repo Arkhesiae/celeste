@@ -1,8 +1,9 @@
 <template>
-  <GenericDialog :model-value="modelValue" @update:model-value="emit('update:modelValue', $event)" max-width="900"
+  <GenericDialog :model-value="modelValue" max-width="900"
     :title="dialogMode === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe'"
     :subtitle="dialogMode === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement'"
-    :icon="dialogMode === 'Renfort' ? 'mdi-calendar-plus' : 'mdi-account-outline'" @close="close">
+    :icon="dialogMode === 'Renfort' ? 'mdi-calendar-plus' : 'mdi-account-outline'"
+    @update:model-value="emit('update:modelValue', $event)" @close="close">
     <template #content>
       <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
         <!-- Première fenêtre - Sélection de l'équipe -->
@@ -35,7 +36,7 @@
                   </div>
                 </v-card-title>
                 <v-card-subtitle class="text-medium-emphasis">
-                  {{ dialogMode === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date dechangement' }}
+                  {{ dialogMode === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement' }}
                 </v-card-subtitle>
               </v-card-item>
             </v-col>
@@ -49,7 +50,8 @@
                       </v-card-title>
                       <v-chip v-if="selectedDates.startDate" class="ml-4" color="onBackground" size="small"
                         rounded="lg">
-                        {{ dialogMode === 'Renfort' ? `${numberOfDays} jour${numberOfDays > 1 ? 's' : ''}` :  relativeDaysText }}
+                        {{ dialogMode === 'Renfort' ? `${numberOfDays} jour${numberOfDays > 1 ? 's' : ''}` :
+                          relativeDaysText }}
                       </v-chip>
                     </div>
                   </v-card-item>
@@ -70,7 +72,7 @@
                               </span>
                             </v-fade-transition>
                             <v-fade-transition>
-                              <div v-if=" dialogMode === 'Renfort' && selectedDates.endDate">
+                              <div v-if="dialogMode === 'Renfort' && selectedDates.endDate">
                                 <span class="d-inline-block">au</span>
                                 <span class="d-inline-block "> &nbsp;{{ toDisplayFormat(selectedDates.endDate)
                                 }}</span>

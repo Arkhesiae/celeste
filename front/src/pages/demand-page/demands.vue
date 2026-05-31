@@ -11,7 +11,8 @@
           </v-btn>
         </div>
         <div v-else>
-          <v-btn color="primary" flat style="border-radius: 16px !important;" class="px-6" height="48" rounded="lg" prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
+          <v-btn color="primary" flat style="border-radius: 16px !important;" class="px-6" height="48" rounded="lg"
+            prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
             Règles de travail
           </v-btn>
         </div>

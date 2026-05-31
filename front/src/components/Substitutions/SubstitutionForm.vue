@@ -201,8 +201,8 @@
     </template>
   </GenericDialog>
 
-  <PointsDialog v-model="showPointsDialog" :points="switchPoints" :switch="switchToEdit"
-    @update:points="updatePoints" @update:model-value="showPointsDialog = $event" />
+  <PointsDialog v-model="showPointsDialog" :points="switchPoints" :switch="switchToEdit" @update:points="updatePoints"
+    @update:model-value="showPointsDialog = $event" />
 
   <ConfirmationDialog v-model="showConfirmationDialog" :title="'Nombre de points'"
     :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirm-text="'Poster quand même'"

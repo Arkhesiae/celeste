@@ -1,16 +1,16 @@
 <template>
   <div ref="calendarCard" class="mb-10">
-    <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear"
-      @navigate-month="navigateMonth" @go-to-today="goToToday" />
+    <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" @navigate-month="navigateMonth"
+      @go-to-today="goToToday" />
 
-    <CalendarMobile :calendar-days="calendarDays" :loading="loading" @update:selected-date="handleSelectDate" :selected-date="selectedDate"/>
+    <CalendarMobile :calendar-days="calendarDays" :loading="loading" :selected-date="selectedDate"
+      @update:selected-date="handleSelectDate" />
   </div>
 
   <v-bottom-sheet :model-value="showBottomSheet" inset scrim="true" class="safe-area-bottom"
     @update:model-value="onBottomSheetClose">
-    <CalendarPanel v-if="selectedDate" :selected-date="selectedDate" 
-      @open-rempla-dialog="openSubstitutionForm" @open-drawer="handleOpenDrawer" @cancel="handleCancel"
-      @withdraw="handleWithdraw"  />
+    <CalendarPanel v-if="selectedDate" :selected-date="selectedDate" @open-rempla-dialog="openSubstitutionForm"
+      @open-drawer="handleOpenDrawer" @cancel="handleCancel" @withdraw="handleWithdraw" />
   </v-bottom-sheet>
 
   <SubstitutionForm :submitting="subInProgress" :dialog-mode="dialogMode" :dialog-visible="showSubstitutionForm"
@@ -121,7 +121,7 @@ const handleSwitch = () => {
 };
 
 const openDemand = (demandId) => {
-   emit('open-demand', demandId);
+  emit('open-demand', demandId);
 };
 
 const handleSubmit = async (demand) => {

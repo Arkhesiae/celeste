@@ -3,33 +3,8 @@
     <main-title title="Règles de l'application" />
     <v-row>
       <v-col cols="12">
-        <!-- <v-alert
-              v-if="error"
-              type="error"
-              class="mb-4"
-              closable
-            >
-              {{ error }}
-            </v-alert>
 
-            <v-alert
-              v-if="success"
-              rounded="lg"
-              color="onBackground"
-              
-              prepend-icon="mdi-check"
-              class="mb-4"
-              closable
-            >
-              <v-icon
-                icon="mdi-check"
-                size="small"
-                color="success"
-              />
-              {{ success }}
-            </v-alert> -->
-        <v-card
-:rounded="smAndDown ? '0' : 'xl'" flat
+        <v-card :rounded="smAndDown ? '0' : 'xl'" flat
           :color="smAndDown ? 'transparent' : 'surfaceContainer px-6 py-4'">
           <div class="d-flex flex-column align-start ga-0">
             <div v-for="(rule, index) in rules" :key="index" class="w-100  " @click.stop="startEditing(rule)">
@@ -40,8 +15,7 @@
                       <span style="font-size: 12px; font-weight: bold;" :class="rule.locked ? 'opacity-50' : ''">{{
                         rule.name }}</span>
                       <v-icon v-if="rule.locked" icon="mdi-lock-outline" size="x-small" color="error" />
-                      <v-chip
-v-if="rule.isOverridden" color="primary" size="small" density="compact" rounded="xl"
+                      <v-chip v-if="rule.isOverridden" color="primary" size="small" density="compact" rounded="xl"
                         variant="tonal" inset>
                         Modifiée
                       </v-chip>
@@ -57,17 +31,19 @@ v-if="rule.isOverridden" color="primary" size="small" density="compact" rounded=
 
                 <div class="d-flex align-center ga-3">
                   <div>
-                    <v-switch
-v-if="typeof (rule.value) === 'boolean'" v-model="rule.value"
+                    <v-switch v-if="typeof (rule.value) === 'boolean'" v-model="rule.value"
                       :class="smAndDown ? '' : 'custom-switch'" hide-details :disabled="rule.locked && !isMasterAdmin"
                       :color="rule.locked ? 'primary' : 'primary'" density="compact" inset />
+                    <span v-else-if="rule.name === 'Mailing administration'"
+                      style="font-size: 14px; font-weight: bold;">
+                      {{ rule.value?.enabled ? 'Activé (' + (rule.value?.emails?.length || 0) + ' dest.)' : 'Désactivé'
+                      }}
+                    </span>
                     <span v-else style="font-size: 14px; font-weight: bold;">{{ rule.value }}</span>
                   </div>
-                  <v-btn
-v-if="rule.isOverridden && !isMasterAdmin" icon="mdi-refresh" size="small" variant="text" inset
+                  <v-btn v-if="rule.isOverridden && !isMasterAdmin" icon="mdi-refresh" size="small" variant="text" inset
                     @click.stop="resetRule(rule)" />
-                  <v-btn
-v-if="isMasterAdmin" :color="rule.locked ? 'primary' : 'primary'"
+                  <v-btn v-if="isMasterAdmin" :color="rule.locked ? 'primary' : 'primary'"
                     :icon="rule.locked ? 'mdi-lock-outline' : 'mdi-lock-open-variant-outline'" size="small"
                     variant="text" inset @click.stop="lockRule(rule)" />
                 </div>
@@ -84,8 +60,7 @@ v-if="isMasterAdmin" :color="rule.locked ? 'primary' : 'primary'"
         <span class="text-h6">{{ ruleToEdit.name }}</span>
         <span class="opacity-50">Définir une nouvelle valeur pour cette règle ?</span>
 
-        <v-number-input
-v-model="ruleToEdit.value" class="my-4" type="number" control-variant="split" rounded="xl" flat
+        <v-number-input v-model="ruleToEdit.value" class="my-4" type="number" control-variant="split" rounded="xl" flat
           hide-details color="primary" size="small" variant="underlined" inset />
         <div class="d-flex align-center justify-space-between mt-4">
           <v-spacer />
@@ -99,22 +74,56 @@ v-model="ruleToEdit.value" class="my-4" type="number" control-variant="split" ro
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="confirmLock" width="500">
-      <v-card class="pa-6 rounded-xl">
-        <span class="text-h6">Confirmation</span>
-        <span>{{ ruleToEdit?.locked ? 'Voulez-vous déverrouiller cette règle ?' : 'Voulez-vous verrouiller cette règle?'
-        }}</span>
-        <v-card-actions>
+    <v-dialog v-model="isEditingMailing" width="550">
+      <v-card v-if="mailingRuleToEdit" class="pa-6 rounded-xl">
+        <span class="text-h6">{{ mailingRuleToEdit.name }}</span>
+        <span class="opacity-50 mb-4 d-block">{{ mailingRuleToEdit.description }}</span>
+
+        <v-switch v-model="mailingRuleToEdit.value.enabled" label="Activer l'envoi de mails à l'administration"
+          color="primary" inset hide-details class="mb-4" />
+
+        <v-expand-transition>
+          <div v-if="mailingRuleToEdit.value.enabled">
+            <v-text-field v-model="mailingEmailsInput"
+              label="Adresses e-mail des destinataires (séparées par des virgules)"
+              placeholder="admin1@example.com, admin2@example.com" variant="outlined" density="comfortable" rounded="lg"
+              class="mb-4" hide-details />
+
+            <div class="d-flex justify-start mb-4">
+              <v-btn variant="outlined" color="primary" prepend-icon="mdi-eye-outline" rounded="xl"
+                @click="showTemplatePreview = true">
+                Prévisualiser le modèle
+              </v-btn>
+            </div>
+          </div>
+        </v-expand-transition>
+
+        <div class="d-flex align-center justify-space-between mt-4">
           <v-spacer />
-          <v-btn color="primary" variant="text" @click="confirmLock = false">
+          <v-btn color="primary" variant="text" @click="isEditingMailing = false">
             Annuler
           </v-btn>
-          <v-btn color="primary" variant="text" @click="handleLockAction">
+          <v-btn color="primary" variant="text" :loading="isSaving" @click="updateMailingRule">
             Confirmer
           </v-btn>
-        </v-card-actions>
+        </div>
       </v-card>
     </v-dialog>
+
+    <v-dialog v-model="showTemplatePreview" width="600">
+      <v-card class="pa-6 rounded-xl">
+        <div class="d-flex align-center justify-space-between mb-4">
+          <span class="text-h6">Aperçu du modèle d'email</span>
+          <v-btn icon="mdi-close" variant="text" size="small" @click="showTemplatePreview = false" />
+        </div>
+      </v-card>
+    </v-dialog>
+
+
+    <ConfirmationDialog v-model="confirmLock" title="Confirmation"
+      :text="ruleToEdit?.locked ? 'Voulez-vous déverrouiller cette règle ?' : 'Voulez-vous verrouiller cette règle?'"
+      @close="confirmLock = false" :onConfirm="handleLockAction">
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -150,6 +159,10 @@ const success = ref('');
 // const isInitializing = ref(false);
 const confirmLock = ref(false);
 const isEditing = ref(false);
+const isEditingMailing = ref(false);
+const showTemplatePreview = ref(false);
+const mailingRuleToEdit = ref(null);
+const mailingEmailsInput = ref('');
 const isSaving = ref(false);
 const isResetting = ref(false);
 // const showResetConfirmation = ref(false);
@@ -195,6 +208,13 @@ const startEditing = (rule) => {
     if (!isMasterAdmin.value) {
       snackbarStore.showNotification('Règle verrouillée', 'warning', 'mdi-lock');
     }
+    return;
+  }
+
+  if (rule.name === 'Mailing administration') {
+    mailingRuleToEdit.value = JSON.parse(JSON.stringify(rule)); // deep copy
+    mailingEmailsInput.value = mailingRuleToEdit.value.value?.emails?.join(', ') || '';
+    isEditingMailing.value = true;
     return;
   }
 
@@ -274,6 +294,26 @@ const updateRuleDialog = async () => {
   if (!ruleToEdit.value) return;
   await saveRule(ruleToEdit.value);
   isEditing.value = false;
+};
+
+const updateMailingRule = async () => {
+  if (!mailingRuleToEdit.value) return;
+
+  const emailsArray = mailingEmailsInput.value
+    ? mailingEmailsInput.value.split(',').map(e => e.trim()).filter(Boolean)
+    : [];
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  for (const email of emailsArray) {
+    if (!emailRegex.test(email)) {
+      snackbarStore.showNotification('Adresse e-mail invalide : ' + email, 'error', 'mdi-alert');
+      return;
+    }
+  }
+
+  mailingRuleToEdit.value.value.emails = emailsArray;
+  await saveRule(mailingRuleToEdit.value);
+  isEditingMailing.value = false;
 };
 
 const saveRule = async (ruleData) => {

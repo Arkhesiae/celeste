@@ -16,15 +16,22 @@
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>
-        <v-list rounded="xl" class="pa-4" bg-color="onBackground">
-          <v-list-item rounded="xl" prepend-icon="mdi-handshake-outline" @click="promptDialog('Renfort')">
-            <v-list-item-title>Renforcer une équipe</v-list-item-title>
-          </v-list-item>
-          <v-list-item rounded="xl" prepend-icon="mdi-account-switch-outline" link @click="promptDialog('Changement')">
-            <v-list-item-title>Changer d'équipe</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu> -->
+<v-list rounded="xl"
+        class="pa-4"
+        bg-color="onBackground">
+  <v-list-item rounded="xl"
+               prepend-icon="mdi-handshake-outline"
+               @click="promptDialog('Renfort')">
+    <v-list-item-title>Renforcer une équipe</v-list-item-title>
+  </v-list-item>
+  <v-list-item rounded="xl"
+               prepend-icon="mdi-account-switch-outline"
+               link
+               @click="promptDialog('Changement')">
+    <v-list-item-title>Changer d'équipe</v-list-item-title>
+  </v-list-item>
+</v-list>
+</v-menu> -->
     </div>
 
     <v-card-title class="text-h4 d-flex flex-column align-center  ">
@@ -65,17 +72,15 @@
 
     <div class="d-flex align-center justify-center mb-4">
       <div style="max-width: 600px" class="d-flex ga-2">
-        <v-btn value="option2" variant="flat" height="52px" color="primary"
-          class="team-change-btn d-flex flex-column " rounded="xl"
-          @click="promptDialog('Changement')">
+        <v-btn value="option2" variant="flat" height="52px" color="primary" class="team-change-btn d-flex flex-column "
+          rounded="xl" @click="promptDialog('Changement')">
           <template #prepend>
             <v-icon>mdi-account-switch-outline</v-icon>
           </template>
           Changement d'équipe
         </v-btn>
         <v-btn color="surfaceContainer" value="option2" height="52px" variant="flat"
-          class="team-reinforcement-btn d-flex flex-column " rounded="lg"
-          @click="promptDialog('Renfort')">
+          class="team-reinforcement-btn d-flex flex-column " rounded="lg" @click="promptDialog('Renfort')">
           <template #prepend>
             <v-icon>mdi-handshake-outline</v-icon>
           </template>

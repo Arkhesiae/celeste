@@ -1,12 +1,12 @@
 <template>
   <v-container ref="containerRef" :class="smAndDown ? 'mb-n16' : ''">
-    <Transition name="title-transition" appear> 
+    <Transition name="title-transition" appear>
       <WelcomeTitle :user-name="userName">
-   
+
       </WelcomeTitle>
     </Transition>
 
-<!-- 
+    <!-- 
     <Transition name="donations-transition" appear>
       <Donations></Donations>
     </Transition> -->
@@ -18,7 +18,7 @@
 
     <v-row>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
-        <PointsCardMobile v-if="smAndDown" :points="stats.points" class="my-8" @click="openPointSection"/>
+        <PointsCardMobile v-if="smAndDown" :points="stats.points" class="my-8" @click="openPointSection" />
       </v-col>
     </v-row>
     <!-- Grille principale -->
@@ -26,7 +26,7 @@
       <v-col cols="12" md="auto" lg="auto" xl="auto" style="min-width: 0; width: 0;"
         class="flex-grow-1 ga-4 d-flex flex-column">
         <VacationCards />
-        <DemandCards @open-details="openDemand"/>
+        <DemandCards @open-details="openDemand" />
       </v-col>
 
       <v-col :class="smAndDown ? '' : 'right-col'">
@@ -40,14 +40,15 @@
 
         <ActiveRotationCard />
 
-       
 
-        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16 mx-n3' : ''" color="surfaceContainer">
+
+        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16 mx-n3' : ''"
+          color="surfaceContainer">
           <div class="d-flex ga-10 flex-column">
             <PointsCard v-if="!smAndDown" color="transparent" class="pa-0" :points="stats.points" :transactions="[]"
               @transfer="transferDialog = true" />
 
-            <DashboardCalendarSection/>
+            <DashboardCalendarSection />
           </div>
 
           <!-- <DashboardTeamCard /> -->
@@ -56,7 +57,8 @@
 
     </v-row>
 
-    <v-bottom-sheet v-if="smAndDown" :model-value="pointSectionVisible" @update:model-value="pointSectionVisible = $event">
+    <v-bottom-sheet v-if="smAndDown" :model-value="pointSectionVisible"
+      @update:model-value="pointSectionVisible = $event">
       <PointsCard class="pa-4" :points="stats.points" :transactions="[]" @transfer="transferDialog = true" />
     </v-bottom-sheet>
 
@@ -124,7 +126,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
 .right-col {
   max-width: 500px;
 }
@@ -167,7 +168,7 @@ onUnmounted(() => {
 .donations-transition-enter-from,
 .donations-transition-leave-to {
   opacity: 0;
- 
+
   transform: translateY(20px);
 }
 </style>

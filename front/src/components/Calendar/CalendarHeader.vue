@@ -4,7 +4,7 @@
     <div class="d-flex align-center">
       <div class="d-flex align-center bg-surfaceContainerHighest rounded-lg pa-2 px-4">
         <h2 class="text-body-2 font-weight-medium mb-0">
-          {{ selectedMonthName }}   <span v-if="!isCurrentYear">{{ selectedYear }}</span>
+          {{ selectedMonthName }} <span v-if="!isCurrentYear">{{ selectedYear }}</span>
         </h2>
       </div>
 
@@ -28,7 +28,7 @@
   <div v-else class="calendar-indicators mx-auto mb-8" :style="smAndDown ? 'max-width : 600px' : ''">
     <v-btn icon="mdi-chevron-left" variant="text" size="small" @click="emit('navigateMonth', -1)" />
     <div class="month-indicator">
-      {{ selectedMonthName }}   <span v-if="!isCurrentYear">{{ selectedYear }}</span>
+      {{ selectedMonthName }} <span v-if="!isCurrentYear">{{ selectedYear }}</span>
     </div>
     <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="emit('navigateMonth', 1)" />
   </div>

@@ -1,7 +1,7 @@
 import Rotation from '../../models/Rotation.js';
 import Substitution from '../../models/Substitution.js';
 import Transaction from '../../models/Transaction.js';
-import { cancelDelayedTransaction } from '../../services/transaction/scheduledTransactionService.js';
+import { cancelScheduledTransation } from '../../services/transaction/transaction.scheduled.js';
 
 
 
@@ -31,7 +31,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation) 
 
             if (!populatedDemand) continue;
 
-            let demandModified = false; 
+            let demandModified = false;
             let demandReopened = false;
 
 
@@ -81,20 +81,20 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation) 
                             request: populatedDemand._id,
                             status: 'pending',
                         });
-                
+
                         if (transactions.length > 0) {
                             await Promise.all(
                                 transactions.map(async (transaction) => {
                                     try {
-                                        await cancelDelayedTransaction(transaction._id);
+                                        await cancelScheduledTransation(transaction._id);
                                     } catch (error) {
-                                       console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
+                                        console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
                                     }
                                 })
                             );
                         }
                         demandReopened = true;
-                 
+
                     } else {
                         populatedDemand.accepterShift.shift = newShift._id;
                         demandModified = true;
@@ -354,7 +354,7 @@ const cancelSingleDemand = async (demand) => {
             await Promise.all(
                 transactions.map(async (transaction) => {
                     try {
-                        await cancelDelayedTransaction(transaction._id);
+                        await cancelScheduledTransation(transaction._id);
                     } catch (error) {
                         console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
                     }
@@ -471,18 +471,18 @@ const handleChanges = async (changes, centerId, message) => {
                     return;
                 }
 
-               
+
 
                 const oldRotation = await Rotation.findById(change.oldRule).populate('days');
                 const newRotation = await Rotation.findById(change.newRule).populate('days');
 
                 const demandsToConvert = await getDemandsToConvert(change, centerId);
-       
+
                 const oldRotationDaysCount = oldRotation?.days?.length || 0;
                 const newRotationDaysCount = newRotation?.days?.length || 0;
 
                 if (oldRotationDaysCount !== newRotationDaysCount || !newRotation) {
-                    await systemCancelDemands(demandsToConvert );
+                    await systemCancelDemands(demandsToConvert);
                     message += ' - ' + demandsToConvert.length + ' demandes annulées';
                 } else {
                     const result = await convertCenterDemands(demandsToConvert, oldRotation, newRotation);
@@ -551,7 +551,7 @@ const removeSuccessiveRepetitions = (orderedList) => {
 };
 
 
-function findChangedPeriods(before, after) {
+function findChangedPeriods (before, after) {
     // Convert to sorted timelines
     const allDates = Array.from(
         new Set([...before, ...after].map(a => a.activationDate))

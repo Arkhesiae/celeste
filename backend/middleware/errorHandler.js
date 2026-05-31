@@ -5,8 +5,8 @@ export function errorHandler (err, req, res, next) {
     console.log(" ❌ Erreur : ", message);
 
     if (status === 500) {
+        console.log(err)
         console.log("(Error 500)");
-        // console.error(err); 
     }
 
     res.status(status).json({ error: message, code: err.code });

@@ -1,4 +1,4 @@
-import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import { AppError } from '../../error/appError.js';
 import mongoose from 'mongoose';
 import { cancelRequestWithSession } from './request.internal.js';
@@ -19,7 +19,7 @@ export async function cancelRequest (requestId) {
         });
 
         const initialCancel = cancelledRequests[cancelledRequests.length - 1];
-        const shifts = await computeShiftOfUserWithSubstitutions([initialCancel.posterShift.date], initialCancel.posterId);
+        const shifts = await computeUserShifts([initialCancel.posterShift.date], initialCancel.posterId);
 
         console.log("Demande annulée", "total cancelled : ", cancelledRequests.length)
 

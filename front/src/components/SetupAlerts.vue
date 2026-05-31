@@ -29,7 +29,8 @@
             <AlertContent title="Equipe inactive" chevron>
                 <template #default>
                     <div class="text-medium-emphasis">Votre équipe est inactive.</div>
-                    <div>Vous ne pouvez pas poster de demandes de remplacements ou de permutations mais vous pourrez toujours en recevoir car votre équipe n'a pas
+                    <div>Vous ne pouvez pas poster de demandes de remplacements ou de permutations mais vous pourrez
+                        toujours en recevoir car votre équipe n'a pas
                         encore de début de cycle défini.</div>
                 </template>
             </AlertContent>

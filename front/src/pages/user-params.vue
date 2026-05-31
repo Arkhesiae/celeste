@@ -54,7 +54,7 @@
           <v-card-text>
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0">
               <template #prepend>
-                 <ThemeSwitch />
+                <ThemeSwitch />
               </template>
               <span class="text-h7">Changer le thème</span>
             </v-btn>

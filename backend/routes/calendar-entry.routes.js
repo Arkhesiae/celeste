@@ -7,14 +7,12 @@ import {
     restoreInitialShift,
     registerEntry,
     undoMods,
-    remove,
-    registerModification
+    remove
 } from '../controllers/calendarEntry.controller.js';
 
 // Routes pour les utilisateurs
 router.post('/restore-initial', verifyToken, restoreInitialShift);
 router.post('/register-entry', verifyToken, registerEntry);
-router.post('/register-modification', verifyToken, registerModification);
 router.post('/undo-mods', verifyToken, undoMods);
 router.post('/delete-assignment', verifyToken, remove);
 router.post('/:userId', verifyToken, getUserEntries);

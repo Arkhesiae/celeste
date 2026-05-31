@@ -5,7 +5,8 @@
       <span class="text-h7 font-weight-medium text-disabled">{{ baseShift?.name }}</span>
       <div v-for="(entry, index) in history" :key="index" class="d-flex align-center ga-1">
         <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8;" />
-        <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-h7 font-weight-medium" :class="index === history.length - 1 ? '' : 'text-disabled'">
+        <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-h7 font-weight-medium"
+          :class="index === history.length - 1 ? '' : 'text-disabled'">
           {{ entry.shiftData?.shift?.name }}
         </span>
         <v-icon v-else :key="entry?.type" size="16" :class="index === history.length - 1 ? '' : 'text-disabled'">
@@ -54,7 +55,7 @@
       </div>
 
       <div class="d-flex flex-column justify-space-between">
-        <HourRange v-if="hours" :hours="hours" :endsNextDay="shiftEndsNextDay" :wasPatched="wasPatched" />
+        <HourRange v-if="hours" :hours="hours" :ends-next-day="shiftEndsNextDay" :was-patched="wasPatched" />
         <div v-if="shiftTeam" class="py-0 text-caption opacity-70"
           style="line-height: 1.2; font-size: 11px !important;">
           Dans l'équipe {{ shiftTeam }}
@@ -226,6 +227,7 @@ const basePayload = () => ({
   type: 'modification',
   date: dateKey.value,
   shiftId: vacation.value?.shiftData?.shift?._id,
+  teamId: vacation.value?.shiftData?.team?._id,
   confirmCreation: true,
 });
 
@@ -249,7 +251,8 @@ const registerEntry = async (payload) => {
   const method = ENTRY_SERVICE_MAP[payload.type];
   if (!method) throw new Error('Invalid payload type');
   try {
-    const res = await planningModificationService[method](payload);
+    const res = await planningModificationService.registerEntry(payload);
+    console.log(res);
     shiftStore.addEntry(res.userShift[0], dateKey.value);
   } catch (error) {
     console.error(error);

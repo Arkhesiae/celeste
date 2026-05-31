@@ -1,7 +1,7 @@
 <template>
   <v-list v-if="!loading" bg-color="transparent" class="ticket-list pa-0 ma-0">
-    <v-list-item v-for="ticket in tickets" :key="ticket._id" rounded="lg"
-      :class="{ 'unread': !ticket.isRead }" class="mb-2 py-3 ticket-item" @click="$emit('open-ticket', ticket)">
+    <v-list-item v-for="ticket in tickets" :key="ticket._id" rounded="lg" :class="{ 'unread': !ticket.isRead }"
+      class="mb-2 py-3 ticket-item" @click="$emit('open-ticket', ticket)">
       <div class="d-flex align-center justify-space-between    ga-1">
         <div class="d-flex align-start  ga-1 flex-column min-width-0  ">
           <div class="d-flex align-center  w-100  ga-1">

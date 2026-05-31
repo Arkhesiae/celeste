@@ -1,8 +1,8 @@
 <template>
   <!-- Badge d'admin -->
   <div class="d-flex align-center ga-2 mx-2">
-    <v-badge color="primary" location="bottom center" :offset-y="smAndDown ? 0 : -0" :model-value="messageCount > 0 || pendingUsersCount > 0"
-      rounded="lg">
+    <v-badge color="primary" location="bottom center" :offset-y="smAndDown ? 0 : -0"
+      :model-value="messageCount > 0 || pendingUsersCount > 0" rounded="lg">
       <template #badge>
         <div class="d-flex align-center ga-3">
           <div v-if="messageCount > 0">
@@ -19,8 +19,7 @@
           </div>
         </div>
       </template>
-      <v-btn  icon color="onBackground" class="text-body-2"
-        @click="navigateToAdminPanel">
+      <v-btn icon color="onBackground" class="text-body-2" @click="navigateToAdminPanel">
         <div class="d-flex align-center btn-admin">
           <v-icon size="x-small" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
             {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}

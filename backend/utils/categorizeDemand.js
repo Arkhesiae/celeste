@@ -1,4 +1,4 @@
-import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from './computeUserShifts.js';
 import Shift from '../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
 import { parseShiftUTC } from './parseShiftTime.js';

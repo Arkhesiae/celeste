@@ -1,7 +1,6 @@
-// services/inboundEmailService.js
 import { simpleParser } from "mailparser";
-import Ticket from "../models/Ticket.js";
-import User from "../models/User.js";
+import Ticket from "../../models/Ticket.js";
+import User from "../../models/User.js";
 
 /**
  * Service handling inbound emails received from SES via SNS

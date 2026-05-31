@@ -5,7 +5,7 @@ import Transaction from '../../models/Transaction.js';
  * @param {Object} transactionData - Données de la transaction
  * @returns {Promise<Object>} La transaction créée
  */
-const createDelayedTransaction = async (transactionData) => {
+const createScheduledTransation = async (transactionData) => {
     const transaction = new Transaction({
         ...transactionData,
         status: 'pending',
@@ -74,7 +74,7 @@ const processPendingTransactions = async () => {
  * @param {string} transactionId - ID de la transaction
  * @returns {Promise<Object>} La transaction annulée
  */
-const cancelDelayedTransaction = async (transactionId, { session }) => {
+const cancelScheduledTransation = async (transactionId, { session }) => {
     const transaction = await Transaction.findById(transactionId).session(session);
     if (!transaction) {
         throw new Error('Transaction non trouvée');
@@ -89,4 +89,4 @@ const cancelDelayedTransaction = async (transactionId, { session }) => {
     return transaction;
 };
 
-export { createDelayedTransaction, processPendingTransactions, cancelDelayedTransaction }; 
+export { createScheduledTransation, processPendingTransactions, cancelScheduledTransation }; 

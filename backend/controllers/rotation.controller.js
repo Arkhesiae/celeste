@@ -5,7 +5,7 @@ import Shift from '../models/Shift.js';
 import mongoose from 'mongoose';
 import Variation from '../models/Variation.js';
 import Substitution from '../models/Substitution.js';
-import { computeShiftOfUserWithoutSubstitutions } from '../utils/computeShiftOfUserWithSubstitutions.js';
+import { computeShiftOfUserWithoutSubstitutions } from '../utils/computeUserShifts.js';
 import { getTeamAtGivenDate } from '../utils/getTeamAtGivenDate.js';
 import User from '../models/User.js';
 import { isValidDate, isValidId } from '../utils/validation.js';

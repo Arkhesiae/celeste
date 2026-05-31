@@ -29,6 +29,8 @@ router.post('/:id/withdraw', verifyToken, substitutionController.withdrawFromDem
 
 router.delete('/:id/delete', verifyToken, substitutionController.deleteDemand);
 
+router.post('/:id/send-email', verifyToken, substitutionController.sendAdminEmail);
+
 router.post('/recategorize', verifyToken, substitutionController.recategorizeSubstitutions);
 
 router.get('/check-shift/:date', verifyToken, substitutionController.checkUserShift);

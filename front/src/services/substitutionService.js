@@ -239,5 +239,17 @@ export const substitutionService = {
       method: 'POST',
     });
     return response;
+  },
+
+  /**
+   * Envoie le mail automatique d'administration pour une demande.
+   * @param {string} demandId - L'ID de la demande.
+   * @returns {Promise<Object>} Résultat de l'envoi.
+   */
+  async sendAdminMail(demandId) {
+    const response = await apiFetch(`/substitution/${demandId}/send-email`, {
+      method: 'POST',
+    });
+    return response;
   }
 };

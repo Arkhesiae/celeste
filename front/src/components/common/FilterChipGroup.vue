@@ -4,9 +4,11 @@
 
 
     <!-- Filter chips -->
-    <v-slide-group-item v-for="filter in filters" :key="filter.value" :value="filter.value"
-      v-slot="{ isSelected, toggle }">
-      <v-chip class="justify-center font-weight-medium ga-2 align-center chip-custom"
+    <v-slide-group-item
+v-for="filter in filters" :key="filter.value" v-slot="{ isSelected, toggle }"
+      :value="filter.value">
+      <v-chip
+class="justify-center font-weight-medium ga-2 align-center chip-custom"
         :class="[
         'chip-custom mr-2',
         isSelected && 'chip-selected',

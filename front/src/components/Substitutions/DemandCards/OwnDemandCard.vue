@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-start ga-2">
-    <div class="dot-big" :class="dotClass" v-if="dot" />
+    <div v-if="dot" class="dot-big" :class="dotClass" />
     <v-card :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'" variant="flat" rounded="lg"
       class="demand-card pa-3 flex-1-1" @click="openDetails">
       <div class="d-flex align-center justify-space-between">
@@ -19,6 +19,13 @@
           <div class="small-dot" />
           <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
           }}</span>
+
+          <template v-if="isMailingEnabled">
+            <div class="small-dot" />
+            <v-icon :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
+              :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'" style="opacity: 0.7;"
+              size="x-small" />
+          </template>
 
           <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
             mdi-comment-text-outline
@@ -62,7 +69,7 @@
         </div>
         <div class="mt-0">
           <div class="custom-small-chip">
-            <span class="text-medium-emphasis" >{{ labelOption}}</span>
+            <span class="text-medium-emphasis">{{ labelOption }}</span>
           </div>
         </div>
       </div>
@@ -114,6 +121,7 @@ import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { useAuthStore } from '@/stores/authStore';
+import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api'
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
@@ -121,8 +129,10 @@ import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiv
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
+const substitutionStore = useSubstitutionStore();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
+const isMailingEnabled = computed(() => substitutionStore.isMailingEnabled);
 const props = defineProps({
   demand: {
     type: Object,

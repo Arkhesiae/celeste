@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog title="Modifier le numéro de téléphone" v-model="modelValue" :fullscreen="smAndDown">
+  <GenericDialog v-model="modelValue" title="Modifier le numéro de téléphone" :fullscreen="smAndDown">
     <template #content>
       <div class="d-flex align-center justify-space-between mb-4">
         <div>

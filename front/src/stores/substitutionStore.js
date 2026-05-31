@@ -1,6 +1,7 @@
 ;
 import { defineStore } from 'pinia';
 import { substitutionService } from '@/services/substitutionService';
+import { ruleService } from '@/services/ruleService';
 import { useAuthStore } from '@/stores/authStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { usePointStore } from '@/stores/pointStore';
@@ -18,6 +19,7 @@ import { usePointStore } from '@/stores/pointStore';
 export const useSubstitutionStore = defineStore('substitution', () => {
   // =============== STATE ===============
   const substitutions = ref([]);
+  const isMailingEnabled = ref(false);
 
   const loading = ref(false);
   const error = ref(null);
@@ -298,9 +300,37 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
 
 
+  const checkMailingRule = async () => {
+    try {
+      const centerId = authStore.userData.centerId;
+      if (centerId) {
+        const rules = await ruleService.getAllRules(centerId);
+        const mailingRule = rules.find(r => r.name === 'Mailing administration');
+        isMailingEnabled.value = mailingRule?.value?.enabled || false;
+      }
+    } catch (err) {
+      console.error('Erreur lors de la vérification de la règle de mailing:', err);
+    }
+  };
+
+  const sendAdminMail = async (demandId) => {
+    try {
+      const response = await substitutionService.sendAdminMail(demandId);
+      const index = substitutions.value.findIndex(s => s._id === demandId);
+      if (index !== -1) {
+        substitutions.value[index].mailStatus = 'sent';
+      }
+      return response;
+    } catch (err) {
+      console.error('Erreur lors de l\'envoi du mail administration:', err);
+      throw err;
+    }
+  };
+
   const fetchDemands = async (dates, status) => {
     loading.value = true;
     try {
+      await checkMailingRule();
       const demands = await substitutionService.fetchAndMarkAsSeen(dates, status);
       startDate.value = dates.startDate;
       endDate.value = dates.endDate;
@@ -573,6 +603,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   return {
     // State
     substitutions,
+    isMailingEnabled,
 
     loading,
     error,
@@ -631,6 +662,8 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     fetchSubstitutions,
     recategorizeSubstitutions,
     emptyStore,
-    updateDemandInStore
+    updateDemandInStore,
+    checkMailingRule,
+    sendAdminMail
   };
 });

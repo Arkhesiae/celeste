@@ -1,9 +1,9 @@
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/appError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
-import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import * as calendarEntryService from '../calendarEntry/calendar-entry.js';
-import * as scheduledTransactionService from '../transaction/scheduledTransactionService.js';
+import * as scheduledTransactionService from '../transaction/transaction.scheduled.js';
 
 
 /**
@@ -67,7 +67,7 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
     if (!request) throw new AppError('Demande non trouvée', 404);
 
     await cancelCascade(requestId, { session, visited, cancelledRequests });
-   
+
     if (request.status === 'accepted') {
         await cancelPendingTransactions(requestId, { session });
         await calendarEntryService.cancelSubstitutionEntries(
@@ -91,7 +91,7 @@ async function cancelCascade (parentId, { session, visited, cancelledRequests })
     for (const child of childRequests) {
         await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });
     }
-} 
+}
 
 
 // Note: Ensure this constant is available if it was globally defined, otherwise provide fallback:
@@ -130,7 +130,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
     // Switch-specific: validate accepter shift and points
     if (isSwitch) {
-        const userShifts = await computeShiftOfUserWithSubstitutions(new Date(request.posterShift.date), userId);
+        const userShifts = await computeUserShifts(new Date(request.posterShift.date), userId);
         if (!userShifts?.length) throw new AppError('Vacation utilisateur non trouvée', 404);
 
         userShiftData = userShifts[0];
@@ -158,7 +158,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
     const points = isSwitch ? acceptedShiftPoints : request.points;
     if (points > 0) {
-        await scheduledTransactionService.createDelayedTransaction({
+        await scheduledTransactionService.createScheduledTransation({
             sender: request.posterId,
             receiver: userId,
             amount: points,

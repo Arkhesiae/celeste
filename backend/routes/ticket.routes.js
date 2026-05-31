@@ -1,12 +1,9 @@
 import express from 'express';
 import { getTickets, createTicket, markAsRead, deleteTicket, updateTicketStatus, markReplySent, sendReply, archiveTicket, restoreTicket } from '../controllers/ticket.controller.js';
 import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
-import { handleInboundEmail } from '../services/emailIncomingService.js';
+import { handleInboundEmail } from '../services/email/email.inbound.js';
 
 const router = express.Router();
-
- 
-
 
 
 // Création de ticket (accessible à tous les utilisateurs authentifiés)

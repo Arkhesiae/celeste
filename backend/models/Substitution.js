@@ -87,6 +87,11 @@ const SubstitutionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Substitution'
     }],
+    mailStatus: {
+        type: String,
+        enum: ['sent', 'pending'],
+        default: 'pending'
+    },
     createdAt: {
         type: Date,
         default: Date.now

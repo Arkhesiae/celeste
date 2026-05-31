@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog title="Modifier l'avatar" v-model="modelValue" :fullscreen="smAndDown">
+  <GenericDialog v-model="modelValue" title="Modifier l'avatar" :fullscreen="smAndDown">
     <template #content>
       <span class="text-subtitle-2">
         Taille max : 10MB (une erreur ne permet pas la persistance pour le moment)

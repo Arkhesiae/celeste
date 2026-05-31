@@ -1,4 +1,4 @@
-import { computeShiftOfUserWithSubstitutions } from './computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from './computeUserShifts.js';
 import { parseShiftUTC } from './parseShiftTime.js';
 import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 
@@ -30,7 +30,7 @@ export async function generateShiftsMap (dates, userId) {
 
     await Promise.all(
       dateArray.map(date =>
-        computeShiftOfUserWithSubstitutions(date, userId).then(shifts =>
+        computeUserShifts(date, userId).then(shifts =>
           shifts
             .filter(s => s.shift?.type === 'work')
             .forEach(({ shift, teamObject, date, selectedVariation }) => {
@@ -64,9 +64,9 @@ export async function generateShiftsMap (dates, userId) {
  * @param {string} userId - ID de l'utilisateur à analyser
  * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
  */
-export function generateMapFromDemands(demands, userId) {
+export function generateMapFromDemands (demands, userId) {
   const demandDates = demands.map(d => new Date(d.posterShift.date));
-  return generateShiftsMap(demandDates, userId); 
+  return generateShiftsMap(demandDates, userId);
 }
 
 /**
@@ -85,7 +85,7 @@ export async function shiftMapFromSingleDemand (demand, userId) {
  * @param {Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>} shiftsMap
  * @returns {Array<{ shift: Object, date: string, start: Date, end: Date, team: Object }>}
  */
-export function shiftMapToArray(shiftsMap) {
+export function shiftMapToArray (shiftsMap) {
   return Array.from(shiftsMap.values())
     .map(entry => ({
       shift: entry.shift,

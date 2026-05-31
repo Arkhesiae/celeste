@@ -2,15 +2,17 @@
   <v-container>
     <v-row class="mt-16">
       <v-col cols="12" md="">
-        <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" @navigate-month="navigateMonth" @go-to-today="goToToday" />
+        <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" @navigate-month="navigateMonth"
+          @go-to-today="goToToday" />
 
-        <CalendarDesktop v-if="!smAndDown" :calendar-days="calendarDays" @update:selected-date="handleSelectDate" :selected-date="selectedDate" />
+        <CalendarDesktop v-if="!smAndDown" :calendar-days="calendarDays" :selected-date="selectedDate"
+          @update:selected-date="handleSelectDate" />
 
-        <CalendarMobile v-else :calendar-days="calendarDays" :loading="loading" @update:selected-date="handleSelectDate"
-          :selected-date="selectedDate" />
+        <CalendarMobile v-else :calendar-days="calendarDays" :loading="loading" :selected-date="selectedDate"
+          @update:selected-date="handleSelectDate" />
       </v-col>
 
-      <v-col cols="auto" v-if="!mdAndDown" style="width: 400px !important; max-width: 400px !important;">
+      <v-col v-if="!mdAndDown" cols="auto" style="width: 400px !important; max-width: 400px !important;">
         <CalendarPanel v-if="selectedDate" :selected-date="selectedDate" @open-rempla-dialog="openSubstitutionForm"
           @open-drawer="handleOpenDrawer" @cancel="handleCancel" @withdraw="handleWithdraw" />
       </v-col>
@@ -28,9 +30,8 @@
       @update:dialog-visible="showSubstitutionForm = $event" />
 
     <!-- Drawers -->
-    <UnifiedDrawer :model-value="showDrawer" :selected-date="selectedDate"
-      @update:model-value="showDrawer = $event" @handle-replacement="handleReplacement"
-      @handle-switch="handleSwitch" @open-details="openDemand" />
+    <UnifiedDrawer :model-value="showDrawer" :selected-date="selectedDate" @update:model-value="showDrawer = $event"
+      @handle-replacement="handleReplacement" @handle-switch="handleSwitch" @open-details="openDemand" />
 
     <DemandDependencies ref="demandDeps" />
   </v-container>

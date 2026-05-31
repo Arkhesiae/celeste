@@ -22,7 +22,7 @@ export async function acceptRequest (requestId, userId, { isSwitch = false } = {
         });
     } catch (error) {
         if (error instanceof AppError) throw error;
-        throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}`, 500);
+        throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}` + error, 500);
     } finally {
         session.endSession();
     }

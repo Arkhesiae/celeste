@@ -1,7 +1,7 @@
 import * as authService from '../services/auth/authService.js';
 import * as resetPasswordService from '../services/auth/resetPasswordService.js';
 import User from '../models/User.js';
-
+import { AppError } from '../error/appError.js';
 
 
 const loginUser = async (req, res, next) => {
@@ -16,22 +16,11 @@ const loginUser = async (req, res, next) => {
         };
 
         if (result.refreshToken) {
-            res.cookie("refreshToken", result.refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production', // true en production, false en dev
-                sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-                maxAge: 365 * 24 * 60 * 60 * 1000 // 365 jours
-            });
+            res.cookie("refreshToken", result.refreshToken, { ...COOKIE_OPTIONS, maxAge: 365 * 24 * 60 * 60 * 1000 });
         }
 
         res.json(response);
     } catch (error) {
-        console.error('Erreur lors de la connexion:', error);
-
-        if (error.code === 'USER_NOT_FOUND' || error.code === 'INVALID_PASSWORD') {
-            return res.status(401).json({ code : error.code, error: error.message });
-        }
-
         next(error);
     }
 }
@@ -41,7 +30,7 @@ const refreshAccessToken = async (req, res, next) => {
         const refreshToken = req.cookies?.refreshToken;
 
         if (!refreshToken) {
-            return res.status(401).json({ code : 'AUTH_TOKEN_MISSING', error: 'Token manquant' });
+            throw new AppError('Token manquant', 401, 'AUTH_TOKEN_MISSING');
         }
 
         const result = await authService.refreshAccessToken(refreshToken);
@@ -53,50 +42,38 @@ const refreshAccessToken = async (req, res, next) => {
 
         res.json(response);
     } catch (error) {
-        console.error('Erreur lors du rafraîchissement du token : ', error.message);
-
-        res.clearCookie("refreshToken", {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
-        });
-
-        if (error.code === 'INVALID_REFRESH_TOKEN') {
-            return res.status(401).json({ code : error.code, error: error.message });
-        }
-
+        res.clearCookie("refreshToken", COOKIE_OPTIONS);
         next(error);
     }
 }
 
-const logout = async (req, res) => {
-    try {
-        const refreshToken = req.cookies?.refreshToken;
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+};
 
-        if (refreshToken) {
-            try {
-                const payload = authService.verifyRefreshToken(refreshToken);
+const revokeRefreshToken = async (refreshToken) => {
+    const payload = authService.verifyRefreshToken(refreshToken); // throws if invalid
+    await User.updateOne(
+        { _id: payload.userId },
+        { $pull: { refreshTokens: { token: refreshToken } } }
+    );
+}
 
-                await User.updateOne(
-                    { _id: payload.userId },
-                    { $pull: { refreshTokens: { token: refreshToken } } }
-                );
-            } catch (error) {
-                console.error('Erreur lors de la vérification du token:', error);
-            }
+const logout = async (req, res, next) => {
+    const refreshToken = req.cookies?.refreshToken;
+
+    if (refreshToken) {
+        try {
+            await revokeRefreshToken(refreshToken);
+        } catch (error) {
+            console.error('Logout: token révocation échouée:', error.message);
         }
-
-    } catch (error) {
-        console.error('Erreur lors de la déconnexion:', error);
-       
-    } finally {
-        res.clearCookie('refreshToken', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
-        });
-        return res.status(200).json({ message: 'Déconnexion réussie' });
     }
+
+    res.clearCookie('refreshToken', COOKIE_OPTIONS);
+    return res.status(200).json({ message: 'Déconnexion réussie' });
 };
 
 const requestPasswordReset = async (req, res, next) => {
@@ -107,7 +84,6 @@ const requestPasswordReset = async (req, res, next) => {
 
         res.json(result);
     } catch (error) {
-        console.error('Erreur lors de la demande de réinitialisation:', error);
         next(error);
     }
 }
@@ -120,7 +96,6 @@ const resetPassword = async (req, res, next) => {
 
         res.json(result);
     } catch (error) {
-        console.error('Erreur lors de la réinitialisation du mot de passe:', error);
         next(error);
     }
 }
@@ -137,7 +112,6 @@ const verifyPassword = async (req, res, next) => {
 
         res.json(result);
     } catch (error) {
-        console.error('Erreur lors de la vérification du mot de passe:', error);
         next(error);
     }
 }
@@ -150,7 +124,6 @@ const updatePassword = async (req, res, next) => {
 
         res.json(result);
     } catch (error) {
-        console.error('Erreur lors de la mise à jour du mot de passe:', error);
         next(error);
     }
 }

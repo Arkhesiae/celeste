@@ -15,14 +15,14 @@
           · Dans {{ relativeDays }} jours
         </span>
       </span>
-      <span class="occurrence-sub" v-if="occurrence.type === 'Renfort'">
+      <span v-if="occurrence.type === 'Renfort'" class="occurrence-sub">
         Du <strong>{{ formattedOccurenceDate(occurrence.fromDate) }}</strong>
         au <strong>{{ formattedOccurenceDate(occurrence.toDate) }}</strong> inclus
       </span>
-      <span class="occurrence-sub" v-else>
+      <span v-else class="occurrence-sub">
         À partir du <strong>{{ formattedOccurenceDate(occurrence.fromDate) }}</strong>
       </span>
- 
+
     </div>
 
     <div class="occurrence-right">
@@ -168,7 +168,7 @@ const handleDelete = (occurrenceId) => {
 .days-chip {
   font-size: 12px;
   font-weight: 400;
-  
+
   border-radius: 999px;
   /* border: 0.5px solid rgba(var(--v-border-color), var(--v-border-opacity)); */
   color: rgba(var(--v-theme-on-surface), 0.6);

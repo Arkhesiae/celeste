@@ -1,112 +1,109 @@
 <template>
+    <v-row justify="center">
+        <v-col cols="12" sm="10" md="8" lg="8">
 
+            <div class="campaign-header mb-8">
+                <v-sheet class="icon-badge mx-auto mb-5" rounded="xl" color="primary-lighten-5" width="72" height="72">
+                    <v-icon icon="mdi-fire" size="36" color="primary" />
+                </v-sheet>
 
-        <v-row justify="center">
-            <v-col cols="12" sm="10" md="8" lg="8">
+                <h1 class="campaign-title text-center mb-3">
+                    Ce projet a besoin de vous
+                </h1>
 
-                <div class="campaign-header mb-8">
-                    <v-sheet class="icon-badge mx-auto mb-5" rounded="xl" color="primary-lighten-5" width="72"
-                        height="72">
-                        <v-icon icon="mdi-fire" size="36" color="primary" />
-                    </v-sheet>
+                <p class="campaign-desc text-center text-medium-emphasis text-body-1">
+                    Votre don, quel que soit son montant, permet de financer des actions
+                    concrètes pour les familles dans le besoin de notre région.
+                    Chaque geste compte et transforme des vies.
+                </p>
+            </div>
 
-                    <h1 class="campaign-title text-center mb-3">
-                        Ce projet a besoin de vous
-                    </h1>
+            <v-card class="mb-4 main-card" rounded="xl" variant="outlined">
+                <v-card-text class="pa-5">
 
-                    <p class="campaign-desc text-center text-medium-emphasis text-body-1">
-                        Votre don, quel que soit son montant, permet de financer des actions
-                        concrètes pour les familles dans le besoin de notre région.
-                        Chaque geste compte et transforme des vies.
-                    </p>
-                </div>
-
-                <v-card class="mb-4 main-card" rounded="xl" variant="outlined" >
-                    <v-card-text class="pa-5">
-
-                        <div class="d-flex align-end justify-space-between mb-3">
-                            <div>
-                                <span class="text-h5 font-weight-medium">
-                                    {{ formatCurrency(raised) }}
-                                </span>
-                                <v-chip v-if="isOverGoal" rounded="lg" size="x-small" color="success" variant="tonal"
-                                    class="ml-2 mb-1">
-                                    objectif atteint !
-                                </v-chip>
-                            </div>
-                            <span class="text-caption font-weight-medium"
-                                :class="isOverGoal ? 'text-success' : 'text-primary'">
-                                {{ progressPercent }}%
+                    <div class="d-flex align-end justify-space-between mb-3">
+                        <div>
+                            <span class="text-h5 font-weight-medium">
+                                {{ formatCurrency(raised) }}
                             </span>
+                            <v-chip v-if="isOverGoal" rounded="lg" size="x-small" color="success" variant="tonal"
+                                class="ml-2 mb-1">
+                                objectif atteint !
+                            </v-chip>
+                        </div>
+                        <span class="text-caption font-weight-medium"
+                            :class="isOverGoal ? 'text-success' : 'text-primary'">
+                            {{ progressPercent }}%
+                        </span>
+                    </div>
+
+                    <!-- Custom overflow progress bar -->
+                    <div ref="barWrap" class="progress-wrap mb-1">
+                        <div class="progress-track">
+                            <div class="progress-fill" :class="{ 'progress-fill--over': isOverGoal }"
+                                :style="{ width: barFillWidth }" />
+                            <div v-if="isOverGoal" class="progress-fill progress-fill--overflow"
+                                :style="{ width: overflowFillWidth }" />
                         </div>
 
-                        <!-- Custom overflow progress bar -->
-                        <div class="progress-wrap mb-1" ref="barWrap">
-                            <div class="progress-track">
-                                <div class="progress-fill" :class="{ 'progress-fill--over': isOverGoal }"
-                                    :style="{ width: barFillWidth }" />
-                                <div v-if="isOverGoal" class="progress-fill progress-fill--overflow"
-                                    :style="{ width: overflowFillWidth }" />
-                            </div>
-
-                            <div class="goal-marker" :style="{ left: goalMarkerLeft }">
-                                <div class="goal-marker__line" />
-                                <span class="goal-marker__label">{{ formatCurrency(goal) }}</span>
-                            </div>
+                        <div class="goal-marker" :style="{ left: goalMarkerLeft }">
+                            <div class="goal-marker__line" />
+                            <span class="goal-marker__label">{{ formatCurrency(goal) }}</span>
                         </div>
+                    </div>
 
-                        <div class="d-flex align-center ga-4 flex-wrap mt-3">
-                            <div class="d-flex align-center ga-1">
-                                <v-icon icon="mdi-clock-outline" size="14" color="primary" />
-                                <span class="text-caption text-medium-emphasis">23 jours restants</span>
-                            </div>
-                            <div class="d-flex align-center ga-1">
-                                <v-icon icon="mdi-account-group-outline" size="14" color="primary" />
-                                <span class="text-caption text-medium-emphasis">{{ donors }} donateurs</span>
-                            </div>
+                    <div class="d-flex align-center ga-4 flex-wrap mt-3">
+                        <div class="d-flex align-center ga-1">
+                            <v-icon icon="mdi-clock-outline" size="14" color="primary" />
+                            <span class="text-caption text-medium-emphasis">23 jours restants</span>
                         </div>
+                        <div class="d-flex align-center ga-1">
+                            <v-icon icon="mdi-account-group-outline" size="14" color="primary" />
+                            <span class="text-caption text-medium-emphasis">{{ donors }} donateurs</span>
+                        </div>
+                    </div>
 
+                </v-card-text>
+            </v-card>
+
+            <p class="section-label text-overline text-medium-emphasis mb-2 px-1">
+                Coordonnées
+            </p>
+
+            <div class="d-flex flex-column ga-2 mb-4">
+
+                <v-card v-for="item in paymentItems" :key="item.id" rounded="xl" variant="outlined" class="copy-card"
+                    ripple @click="copyValue(item)">
+                    <v-card-text class="pa-4">
+                        <div class="d-flex align-center ga-3">
+
+                            <v-sheet :color="item.iconBg" rounded="lg" width="40" height="40"
+                                class="d-flex align-center justify-center flex-shrink-0">
+                                <v-icon :icon="item.icon" :color="item.iconColor" size="20" />
+                            </v-sheet>
+
+                            <div class="flex-grow-1 min-width-0">
+                                <p class="text-caption text-medium-emphasis mb-0">
+                                    {{ item.label }}
+                                </p>
+                                <p class="copy-value text-body-2 font-weight-medium mb-0">
+                                    {{ item.value }}
+                                </p>
+                            </div>
+
+                            <v-btn icon variant="tonal" size="small" rounded="lg"
+                                :color="copiedId === item.id ? 'success' : 'default'" @click.stop="copyValue(item)">
+                                <v-icon :icon="copiedId === item.id ? 'mdi-check' : 'mdi-content-copy'" size="16" />
+                            </v-btn>
+
+                        </div>
                     </v-card-text>
                 </v-card>
 
-                <p class="section-label text-overline text-medium-emphasis mb-2 px-1">
-                    Coordonnées 
-                </p>
+            </div>
 
-                <div class="d-flex flex-column ga-2 mb-4">
-
-                    <v-card v-for="item in paymentItems" :key="item.id" rounded="xl" variant="outlined"
-                        class="copy-card" @click="copyValue(item)" ripple>
-                        <v-card-text class="pa-4">
-                            <div class="d-flex align-center ga-3">
-
-                                <v-sheet :color="item.iconBg" rounded="lg" width="40" height="40"
-                                    class="d-flex align-center justify-center flex-shrink-0">
-                                    <v-icon :icon="item.icon" :color="item.iconColor" size="20" />
-                                </v-sheet>
-
-                                <div class="flex-grow-1 min-width-0">
-                                    <p class="text-caption text-medium-emphasis mb-0">
-                                        {{ item.label }}
-                                    </p>
-                                    <p class="copy-value text-body-2 font-weight-medium mb-0">
-                                        {{ item.value }}
-                                    </p>
-                                </div>
-
-                                <v-btn icon variant="tonal" size="small" rounded="lg"
-                                    :color="copiedId === item.id ? 'success' : 'default'" @click.stop="copyValue(item)">
-                                    <v-icon :icon="copiedId === item.id ? 'mdi-check' : 'mdi-content-copy'" size="16" />
-                                </v-btn>
-
-                            </div>
-                        </v-card-text>
-                    </v-card>
-
-                </div>
-
-            </v-col>
-        </v-row>
+        </v-col>
+    </v-row>
 
 </template>
 

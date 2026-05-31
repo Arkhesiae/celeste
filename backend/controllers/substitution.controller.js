@@ -1,4 +1,4 @@
-import { computeShiftOfUserWithSubstitutions } from "../utils/computeShiftOfUserWithSubstitutions.js";
+import { computeUserShifts } from "../utils/computeUserShifts.js";
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 import * as compatibilityService from '../services/substitution/compatibilityService.js';
@@ -6,6 +6,8 @@ import * as demandService from '../services/substitution/index.js';
 import { sendUserPoolNotification } from '../services/email/userPoolNotificationEmail.js';
 import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
+import Rule from '../models/Rule.js';
+import emailService from '../services/email/emailService.js';
 import { AppError } from '../error/AppError.js';
 import { isValidDateRange } from '../utils/validation.js';
 
@@ -151,7 +153,7 @@ const checkUserShift = async (req, res, next) => {
             throw new AppError('La date est requise', 400);
         }
 
-        const userShift = await computeShiftOfUserWithSubstitutions(new Date(date), userId);
+        const userShift = await computeUserShifts(new Date(date), userId);
         const hasShift = userShift[0]?.shift?.type !== 'rest';
         res.status(200).json({ hasShift, shift: userShift });
     } catch (err) {
@@ -358,6 +360,86 @@ const getCompatibleSwitches = async (req, res, next) => {
     }
 };
 
+
+const sendAdminEmail = async (req, res, next) => {
+    const { id: demandId } = req.params;
+    try {
+        if (!demandId) {
+            throw new AppError('Identifiant de la demande requis', 400);
+        }
+
+        const demand = await Substitution.findById(demandId);
+        if (!demand) {
+            throw new AppError('Demande non trouvée', 404);
+        }
+
+        const rule = await Rule.findOne({ name: 'Mailing administration' });
+        if (!rule) {
+            throw new AppError('Règle de mailing non configurée', 404);
+        }
+
+        const centerId = demand.centerId;
+        const ruleValue = rule.getValueForCenter(centerId);
+
+        if (!ruleValue || !ruleValue.enabled) {
+            throw new AppError('Le mailing automatique n\'est pas activé pour ce centre', 400);
+        }
+
+        const emails = ruleValue.emails || [];
+        if (emails.length === 0) {
+            throw new AppError('Aucune adresse e-mail configurée pour le mailing de ce centre', 400);
+        }
+
+        const populatedDemand = await Substitution.findById(demandId)
+            .populate('posterId', 'name lastName email')
+            .populate('posterShift.shift')
+            .populate('posterShift.teamId');
+
+        const posterName = populatedDemand.posterId 
+            ? `${populatedDemand.posterId.name} ${populatedDemand.posterId.lastName}` 
+            : 'Un utilisateur';
+
+        const shiftName = populatedDemand.posterShift?.shift?.name || 'Vacation';
+        const teamName = populatedDemand.posterShift?.teamId?.name || 'Équipe';
+        const dateStr = populatedDemand.posterShift?.date 
+            ? new Date(populatedDemand.posterShift.date).toLocaleDateString('fr-FR') 
+            : '';
+
+        const typeStr = populatedDemand.type === 'switch' ? 'Permutation' : populatedDemand.type === 'substitution' ? 'Remplacement' : 'Remplacement ou permutation';
+
+        const mailSubject = `[Céleste] Demande de ${typeStr} - ${posterName}`;
+        const mailContent = `
+            <h3>Nouvelle demande de changement de planning</h3>
+            <p>Bonjour,</p>
+            <p>Une nouvelle demande a été publiée sur Céleste :</p>
+            <ul>
+                <li><strong>Utilisateur :</strong> ${posterName}</li>
+                <li><strong>Type de demande :</strong> ${typeStr}</li>
+                <li><strong>Date de vacation :</strong> ${dateStr}</li>
+                <li><strong>Vacation :</strong> ${shiftName} (${teamName})</li>
+                <li><strong>Points :</strong> ${populatedDemand.points}</li>
+            </ul>
+            <p>Ce mail est généré automatiquement par le système Céleste.</p>
+        `;
+
+        const result = await emailService.sendEmail({
+            to: emails,
+            subject: mailSubject,
+            html: mailContent
+        });
+
+        if (result && result.sent) {
+            demand.mailStatus = 'sent';
+            await demand.save();
+            res.status(200).json({ message: 'E-mail envoyé aux administrateurs', demand });
+        } else {
+            throw new AppError(`Échec de l'envoi de l'e-mail: ${result?.error || 'Erreur inconnue'}`, 500);
+        }
+    } catch (err) {
+        next(err);
+    }
+};
+
 export {
     getCenterRequests,
     getUserDemands,
@@ -377,4 +459,5 @@ export {
     swapShifts,
     recategorizeSubstitutions,
     getCompatibleSwitches,
+    sendAdminEmail,
 };

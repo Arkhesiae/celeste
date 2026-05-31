@@ -15,7 +15,7 @@
           'md3-menu__item--selected': modelValue === entry.value,
           'md3-menu__item--disabled': entry.disabled,
         }" :disabled="entry.disabled" :ripple="!entry.disabled" rounded="lg" @click="onSelect(entry)">
-        
+
           <template v-if="entry.icon" #prepend>
             <v-icon class="md3-menu__icon" :icon="entry.icon" />
           </template>
@@ -63,7 +63,6 @@ function onSelect (entry) {
 </script>
 
 <style scoped>
-
 .md3-menu {
   min-width: 200px;
   padding: 8px 4px;

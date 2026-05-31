@@ -2,14 +2,9 @@
   <v-row class="0">
     <v-col cols="12">
       <div class="d-flex align-center justify-space-between">
-        <FilterChipGroup
-          v-model="selectedFilter"
-          :filters="filters"
-          :sort-options="sortOptions"
-          @update:sort="sortBy = $event"
-          :initial-sort="sortOptions[1]"
-        />
-  
+        <FilterChipGroup v-model="selectedFilter" :filters="filters" :sort-options="sortOptions"
+          :initial-sort="sortOptions[1]" @update:sort="sortBy = $event" />
+
       </div>
     </v-col>
   </v-row>
@@ -20,19 +15,9 @@
           Aucune demande disponible
         </span>
       </div>
-      <div
-        v-else
-        class="d-flex flex-column ga-2 mt-0"
-      >
-        <DemandCard
-          v-for="demand in demands"
-          :key="demand._id"
-          :demand="demand"
-          class="pa-0 ma-0 "
-          @handle-replacement="handleReplacement"
-          @handle-switch="handleSwitch"
-          @open-details="openDemandDetails"
-        />
+      <div v-else class="d-flex flex-column ga-2 mt-0">
+        <DemandCard v-for="demand in demands" :key="demand._id" :demand="demand" class="pa-0 ma-0 "
+          @handle-replacement="handleReplacement" @handle-switch="handleSwitch" @open-details="openDemandDetails" />
       </div>
     </v-col>
   </v-row>

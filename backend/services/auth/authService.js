@@ -6,7 +6,7 @@ import { AppError } from '../../error/appError.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-const ACCESS_TOKEN_EXPIRY = '15s';
+const ACCESS_TOKEN_EXPIRY = '10s';
 const REFRESH_TOKEN_EXPIRY = '180d';
 
 /**
@@ -39,7 +39,7 @@ export const generateRefreshToken = (userId) => {
 
     return {
         token,
-        expiresAt: new Date(decoded.exp * 1000)
+        expiresAt
     };
   };
 
@@ -57,6 +57,33 @@ export function verifyRefreshToken(refreshToken) {
     }
   }
   
+
+/**
+ * Formats a user document into a clean, serializable payload
+ * @param {Object} user - Mongoose user document
+ * @param {string} accessToken
+ * @returns {Object} User payload
+ */
+function userPayload (user, accessToken) {
+    const { phoneNumber, birthDate } = user.personalData ?? {};
+    return {
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        phone: phoneNumber ?? '',
+        birthDate: birthDate ?? '',
+        isAdmin: user.isAdmin,
+        adminType: user.adminType,
+        centerId: user.centerId,
+        avatar: user.avatar,
+        status: user.registrationStatus,
+        preferences: user.preferences,
+        accessToken,
+    };
+}
+
+
+
 /**
  * Authentifie un utilisateur avec email et mot de passe
  * @param {string} email - Email de l'utilisateur
@@ -98,20 +125,7 @@ export async function loginUser(email, password) {
     await user.save();
 
     // Préparer les données utilisateur à retourner
-    const userData = {
-        name: user.name,
-        email: user.email,
-        phone: user.personalData?.phoneNumber || '',
-        birthDate: user.personalData?.birthDate || '',
-        isAdmin: user.isAdmin,
-        adminType: user.adminType,
-        userId: user._id,
-        preferences: user.preferences,
-        centerId: user.centerId,
-        avatar: user.avatar,
-        status: user.registrationStatus || 'pending',
-        accessToken: accessToken
-    };
+    const userData = userPayload(user, accessToken);
 
     return {
         userData,
@@ -127,7 +141,6 @@ export async function loginUser(email, password) {
  */
 export async function refreshAccessToken(refreshToken) {
     const payload = verifyRefreshToken(refreshToken);
-
 
     const user = await User.findById(payload.userId);
     if (!user) {
@@ -151,20 +164,7 @@ export async function refreshAccessToken(refreshToken) {
     user.refreshTokens = validTokens;
     await user.save();
 
-    const userData = {
-        name: user.name,
-        email: user.email,
-        phone: user.personalData?.phoneNumber || '',
-        birthDate: user.personalData?.birthDate || '',
-        isAdmin: user.isAdmin,
-        adminType: user.adminType,
-        userId: user._id,
-        preferences: user.preferences,
-        centerId: user.centerId,
-        avatar: user.avatar,
-        status: user.registrationStatus || 'pending',
-        accessToken: newAccessToken
-    };
+    const userData = userPayload(user, newAccessToken);
 
     return {
         userData,

@@ -63,7 +63,7 @@
                                 {{ userInfo?.name || email }}
                               </div>
                               <div class="text-caption text-medium-emphasis">
-                                {{ userInfo?.center ? `${userInfo.center}` : 'Bienvenue ! Veuillez entrer votre mot de passe' }}
+                                {{ userInfo?.center ? `${userInfo.center}` : 'Bienvenue ! Veuillez entrer votre  mot  de passe' }}
                               </div>
                             </div>
                             <v-spacer />

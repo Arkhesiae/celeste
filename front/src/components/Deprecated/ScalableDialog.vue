@@ -89,7 +89,8 @@ const close = () => {
           {{ secondaryActionText }}
         </v-btn>
         <v-spacer />
-        <v-btn color="primary" variant="tonal" :slim="true" rounded="xl" :disabled="isPrimaryActionDisabled"
+        <v-btn
+color="primary" variant="tonal" :slim="true" rounded="xl" :disabled="isPrimaryActionDisabled"
           @click="submit">
           {{ primaryActionText }}
         </v-btn>

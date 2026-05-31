@@ -1,25 +1,25 @@
 import mongoose from 'mongoose';
 
-const ShiftDataSchema = new mongoose.Schema({
-    shift: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Shift',
-        required: true,
-        default: null
-    },
-    selectedVariation: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Variation',
-        default: null
-    },
-    team: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Team',
-        required: true,
-        default: null
-    },
-
-});
+const ShiftDataSchema = new mongoose.Schema(
+    {
+        shift: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Shift',
+            required: true,
+            default: null
+        },
+        selectedVariation: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Variation',
+            default: null
+        },
+        team: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Team',
+            required: true,
+            default: null
+        },
+    });
 
 const baseOptions = { discriminatorKey: 'type', timestamps: true }
 
@@ -90,7 +90,10 @@ const ASSIGNMENT_SUBTYPES = [
 ]
 
 const AssignmentSchema = new mongoose.Schema({
-    shiftData: ShiftDataSchema,
+    shiftData: {
+        type: ShiftDataSchema,
+        default: undefined  // ← prevents empty subdoc instantiation
+    },
     wasOverride: {
         type: Boolean,
         default: false

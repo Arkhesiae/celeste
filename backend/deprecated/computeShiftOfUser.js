@@ -1,6 +1,6 @@
 import Team from '../models/Team.js';
-import {computeShiftOfTeam} from "./computeShiftOfTeam.js";
-import {getTeamAtGivenDate} from "./getTeamAtGivenDate.js";
+import {computeShiftOfTeam} from "../utils/computeShiftOfTeam.js";
+import {getTeamAtGivenDate} from "../utils/getTeamAtGivenDate.js";
 import User from "../models/User.js";
 
 

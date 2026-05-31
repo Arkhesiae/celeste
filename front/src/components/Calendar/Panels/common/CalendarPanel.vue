@@ -94,8 +94,8 @@
     </div>
 
     <v-fade-transition mode="out-in">
-      <div class="d-flex ga-1 mb-2"
-        v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0">
+      <div v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0"
+        class="d-flex ga-1 mb-2">
         <v-tooltip text="Remplacements disponibles" location="top">
           <template #activator="{ props: tooltipProps }">
             <div v-bind="tooltipProps" class="category-indicator">
@@ -121,7 +121,7 @@
           </template>
         </v-tooltip>
       </div>
-      <div class="mb-2" v-else>
+      <div v-else class="mb-2">
         <span style="font-size: 12px !important; opacity: 0.6;">Aucune demande disponible</span>
       </div>
 
@@ -327,7 +327,7 @@ const lastOwnDemand = computed(() => {
 const substitutionsDemands = computed(() => {
   if (!props.selectedDate) return [];
 
-  let toReturn = [
+  const toReturn = [
     ...acceptedAsAccepter.value,
     ...acceptedAsPoster.value
   ]

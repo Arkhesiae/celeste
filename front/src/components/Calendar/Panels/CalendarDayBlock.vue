@@ -1,12 +1,10 @@
 <template>
-    <div class="d-flex cursor-pointer overflow-hidden day-block"
-        :style="{ height: height + 'px '  }"
-        :class="{
-            'isWorkDay': isWorkDay,
-            'selected': selected,
-            'today-center-highlight': isToday,
-            'empty-day': !isInMonth,
-        }" @click="handleClick">
+    <div class="d-flex cursor-pointer overflow-hidden day-block" :style="{ height: height + 'px ' }" :class="{
+        'isWorkDay': isWorkDay,
+        'selected': selected,
+        'today-center-highlight': isToday,
+        'empty-day': !isInMonth,
+    }" @click="handleClick">
         <!-- Date number + shift name row -->
         <div class="d-flex justify-space-between align-start px-2" :class="{ 'flex-column': xs }"
             style="min-width: 0; overflow: hidden;">
@@ -23,7 +21,7 @@
             <div class="shift_container align-center" :class="inPast ? 'text-disabled' : ''">
                 <div v-if="isWorkDay" class="d-flex align-center test" :class="isOff ? 'offDay' : ''">
                     <span class="shift-name" :class="{ 'xs': xs }">{{ shiftName }}</span>
-                    <div class="mod-dot" v-if="selectedVariation || isOff" />
+                    <div v-if="selectedVariation || isOff" class="mod-dot" />
                     <span class="variation-name" :class="{ 'xs': xs }">
                         <template v-if="variationName">{{ variationName }}</template>
                         <template v-else-if="selectedVariation === 'vic'">VIC</template>

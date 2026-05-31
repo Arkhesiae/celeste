@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog :title="currentStep === 1 ? 'Modifier l\'adresse email' : 'Vérification OTP'" v-model="modelValue"
+  <GenericDialog v-model="modelValue" :title="currentStep === 1 ? 'Modifier l\'adresse email' : 'Vérification OTP'"
     :fullscreen="smAndDown">
     <template #content>
       <div class="d-flex align-center justify-space-between mb-4">

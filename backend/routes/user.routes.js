@@ -16,7 +16,6 @@ import {
   getUserTeamOccurrences,
   deleteTeamOccurrence,
   assignTeamToUser,
-  getUserShifts,
   deletePendingUser,
   getUserShiftsWithSubstitutions,
   updateUserPreferences,
@@ -73,7 +72,6 @@ router.delete('/:id/team-occurrences/:occurrenceId', isUserOrAdmin, deleteTeamOc
 router.post('/:id/assign-team', isUserOrAdmin, assignTeamToUser);
 
 // Routes pour les shifts
-router.post('/:id/get-shifts', isUserOrAdmin, getUserShifts);
 router.post('/:id/get-shifts-with-substitutions', isUserOrAdmin, getUserShiftsWithSubstitutions);
 
 // Routes pour les points et transactions

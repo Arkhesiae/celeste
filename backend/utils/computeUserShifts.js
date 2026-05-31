@@ -58,14 +58,10 @@ const checkHourPatchCoherence = (latestModification) => {
     }
 }
 
-const checkModificationCoherence = (latestModification, resolvedShift) => {
-    const needsShift = ['variation', 'vic'].includes(latestModification?.subType)
-    if (needsShift && !resolvedShift?.shiftData) {
-        console.error('variation/vic impossible : aucun shift de base résolu')
-        return false
-    }
-    return true
-}
+const isSameShift = (resolvedShift, entry) =>
+    resolvedShift?.shiftData?.shift?._id?.equals(entry?.shiftData?.shift?._id);
+
+const isModificationConsistent = (latestModification, resolvedShift) => isSameShift(resolvedShift, latestModification);
 
 const checkBaseShiftCoherence = (baseShift, latestAssignment) => {
     if (!baseShift) {
@@ -80,8 +76,31 @@ const checkBaseShiftCoherence = (baseShift, latestAssignment) => {
     return true
 }
 
-
 // ── Résolution ────────────────────────────────────────────────────────
+
+const buildAssignmentHistory = (assignments) =>
+    assignments.map((a) => ({
+        type: a.subType,
+        shiftData: a.shiftData,
+        wasOverride: a.wasOverride,
+    }))
+
+const applyEntries = (baseShift, assignments, modifications, hoursPatches) => {
+    const latestAssignment = assignments.at(-1) ?? null
+    const latestModification = modifications.at(-1) ?? null
+    const latestHourPatch = hoursPatches.at(-1) ?? null
+
+    let resolvedShift = resolveAssignment(baseShift, latestAssignment)
+
+    if (isModificationConsistent(latestModification, resolvedShift)) {
+        resolvedShift = applyModification(resolvedShift, latestModification)
+    }
+
+    if (!resolvedShift.isOff) checkHourPatchCoherence(latestModification)
+    resolvedShift = applyHourPatch(resolvedShift, latestHourPatch)
+
+    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments) }
+}
 
 const resolveAssignment = (baseShift, latestAssignment) => {
     if (!latestAssignment) {
@@ -112,9 +131,8 @@ const applyModification = (resolvedShift, latestModification) => {
 
     const modShiftData = latestModification.shiftData
 
-    
     switch (latestModification.subType) {
-        case 'variation': 
+        case 'variation':
             return {
                 ...resolvedShift,
                 shiftData: {
@@ -172,35 +190,12 @@ const applyHourPatch = (resolvedShift, latestHourPatch) => {
     }
 }
 
-const buildAssignmentHistory = (assignments) =>
-    assignments.map((a) => ({
-        type: a.subType,
-        shiftData: a.shiftData,
-        wasOverride: a.wasOverride,
-    }))
-
-const applyEntries = (baseShift, assignments, modifications, hoursPatches) => {
-    const latestAssignment = assignments.at(-1) ?? null
-    const latestModification = modifications.at(-1) ?? null
-    const latestHourPatch = hoursPatches.at(-1) ?? null
-
-    let resolvedShift = resolveAssignment(baseShift, latestAssignment)
-
-    if (checkModificationCoherence(latestModification, resolvedShift)) {
-        resolvedShift = applyModification(resolvedShift, latestModification)
-    }
-
-    if (!resolvedShift.isOff) checkHourPatchCoherence(latestModification)
-    resolvedShift = applyHourPatch(resolvedShift, latestHourPatch)
-
-    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments) }
-}
-
 const getActiveEntries = async (user, date) => {
     const populateShiftData = (query) => query
         .populate({ path: 'shiftData', populate: 'shift' })
         .populate({ path: 'shiftData.shift', populate: 'variations' })
-        .populate({ path: 'shiftData.selectedVariation' });
+        .populate({ path: 'shiftData.selectedVariation' })
+        .populate({ path: 'shiftData.team' });
 
     const baseQuery = { userId: user._id, active: true, date, };
 
@@ -230,7 +225,7 @@ const buildShiftResult = (dateStr, shift, team, baseShift, overrides = {}) => ({
  * @param {string} userId - L'ID de l'utilisateur
  * @returns {Promise<Array>} - Un tableau des shifts de l'utilisateur
  */
-const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
+const computeUserShifts = async (dates, userId) => {
     try {
         const user = await User.findById(userId).populate([
             { path: 'teams.teamId' }
@@ -240,13 +235,9 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
             throw new Error('Utilisateur non trouvé');
         }
 
-        // if (user.teams?.length === 0) {
-        //     console.log('Aucune équipe trouvée pour cet utilisateur');
-        // }
-
         const dateArray = Array.isArray(dates) ? dates : [dates];
 
-        const results = await Promise.all(  
+        const results = await Promise.all(
             dateArray.map(async (rawDate) => {
                 const date = new Date(rawDate);
 
@@ -257,7 +248,7 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 const dateStr = date.toISOString().split('T')[0];
 
                 const { baseShift, team } = await getBaseShift(date, user);
- 
+
                 const { assignments, modifications, hoursPatches } = await getActiveEntries(user, dateStr);
 
                 if (!assignments.length && !modifications.length && !hoursPatches.length) {
@@ -265,11 +256,9 @@ const computeShiftOfUserWithSubstitutions = async (dates, userId) => {
                 }
 
                 else {
-                    const { resolvedShift, assignmentHistory } = applyEntries({ shift : baseShift, team }, assignments, modifications, hoursPatches);
+                    const { resolvedShift, assignmentHistory } = applyEntries({ shift: baseShift, team }, assignments, modifications, hoursPatches);
 
-                    const result = { ...resolvedShift, date: dateStr, history: assignmentHistory, baseShift };
-                    console.log(result)
-                    return result;
+                    return { ...resolvedShift, date: dateStr, history: assignmentHistory, baseShift };
                 }
 
             })
@@ -327,4 +316,4 @@ const computeShiftOfUserWithoutSubstitutions = async (dates, userId) => {
     }
 }
 
-export { computeShiftOfUserWithSubstitutions, computeShiftOfUserWithoutSubstitutions }; 
+export { computeUserShifts, computeShiftOfUserWithoutSubstitutions }; 

@@ -43,21 +43,21 @@
           </v-card-text>
           <v-card-actions class="pt-0 ga-4  d-flex flex-wrap justify-end">
             <v-spacer />
-            <v-btn  variant="text" @click="rejectUser(user)">
+            <v-btn variant="text" @click="rejectUser(user)">
               Supprimer
             </v-btn>
             <v-btn color="primary" variant="tonal" rounded="lg" prepend-icon="mdi-check" @click="approveUser(user)">
               Approuver l'inscription
             </v-btn>
-            
+
           </v-card-actions>
         </v-card>
       </v-col>
     </v-row>
 
     <!-- Confirmation Dialog -->
-    <ConfirmationDialog v-model="confirmDialog" :title="'Confirmation d\'action'" :text="confirmMessage" 
-      @confirm="handleConfirmAction" @cancel="confirmDialog = false"  />
+    <ConfirmationDialog v-model="confirmDialog" :title="'Confirmation d\'action'" :text="confirmMessage"
+      @confirm="handleConfirmAction" @cancel="confirmDialog = false" />
   </v-container>
 </template>
 
@@ -76,7 +76,7 @@ const teamStore = useTeamStore();
 const centerStore = useCenterStore();
 
 const centers = ref([]);
-const teams = ref([]);  
+const teams = ref([]);
 const confirmDialog = ref(false);
 const confirmMessage = ref('');
 const confirmAction = ref('');

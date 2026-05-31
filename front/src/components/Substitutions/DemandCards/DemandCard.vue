@@ -66,7 +66,7 @@
             </div>
           </div>
           <div class="d-flex align-start flex-column justify-space-between">
-            <HourRange :hours="getShiftHours" :endsNextDay="getShiftEndsNextDay" />
+            <HourRange :hours="getShiftHours" :ends-next-day="getShiftEndsNextDay" />
             <div class="py-0 text-caption text-disabled" style="line-height: 1.2; font-size: 11px !important;">
               Dans
               équipe {{ teamName }}

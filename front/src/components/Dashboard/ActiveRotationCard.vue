@@ -1,7 +1,7 @@
 <template>
   <!-- Carte du tour de service actif -->
-  <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-4' : 'mx-0'"
-    color="surfaceContainer" style="cursor: pointer;" @click="$router.push('/rotation')">
+  <v-card rounded="xl" elevation="0" class="mb-4 pa-6" :class="smAndDown ? 'mx-4' : 'mx-0'" color="surfaceContainer"
+    style="cursor: pointer;" @click="$router.push('/rotation')">
     <div class="d-flex align-center justify-space-between">
       <div class="d-flex flex-column  ga-2">
         <span class="text-caption text-uppercase text-disabled pa-0">

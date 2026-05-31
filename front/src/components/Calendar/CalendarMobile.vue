@@ -6,30 +6,29 @@
       </v-col>
     </v-row>
 
-    <v-fade-transition mode="out-in"> 
-    <div v-if="loadingVacations">
-      <v-row v-for="week in 6" :key="`skel-${week}`" class="px-4 d-flex justify-space-between align-center my-1 ga-1">
-        <v-col v-for="day in 7" :key="`skel-day-${day}`" class="ma-0 pa-0 d-flex justify-space-around align-center">
-          <v-skeleton-loader type="list-item-two-line"  :height="64" width="100%" style="border-radius: 12px;" />
-        </v-col>
-      </v-row>
-    </div>
+    <v-fade-transition mode="out-in">
+      <div v-if="loadingVacations">
+        <v-row v-for="week in 6" :key="`skel-${week}`" class="px-4 d-flex justify-space-between align-center my-1 ga-1">
+          <v-col v-for="day in 7" :key="`skel-day-${day}`" class="ma-0 pa-0 d-flex justify-space-around align-center">
+            <v-skeleton-loader type="list-item-two-line" :height="64" width="100%" style="border-radius: 12px;" />
+          </v-col>
+        </v-row>
+      </div>
 
-    <div v-else>
-      <v-row v-for="(week, index) in calendarDays" :key="index"
-        class="px-4 d-flex justify-space-between align-center my-1 ga-1">
-        <v-col v-for="day in week" :key="day.toString()" class="ma-0 pa-0 d-flex justify-space-around align-center">
-          <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
-            :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"
-            :demands="demandsForDate(plainDateToDateStr(day))"
-            :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
-            :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
-            :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" :height="64"
-            @select="selectDate" />
-        </v-col>
-      </v-row>
-    </div>
-  </v-fade-transition>
+      <div v-else>
+        <v-row v-for="(week, index) in calendarDays" :key="index"
+          class="px-4 d-flex justify-space-between align-center my-1 ga-1">
+          <v-col v-for="day in week" :key="day.toString()" class="ma-0 pa-0 d-flex justify-space-around align-center">
+            <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
+              :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"
+              :demands="demandsForDate(plainDateToDateStr(day))"
+              :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
+              :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
+              :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" :height="64" @select="selectDate" />
+          </v-col>
+        </v-row>
+      </div>
+    </v-fade-transition>
   </div>
 </template>
 
@@ -253,9 +252,4 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   font-size: 11px !important;
   font-weight: 500 !important;
 }
-
-
-
-
-
 </style>

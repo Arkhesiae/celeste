@@ -1,5 +1,5 @@
 import User from '../../models/User.js';
-import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import { sendCancelledAcceptanceEmail } from '../email/userPoolNotificationEmail.js';
 import { categorizeRequests } from './request.getAndCat.js';
 import { AppError } from '../../error/appError.js';
@@ -29,7 +29,7 @@ export async function withdrawFromRequest (requestId, userId) {
     }
 
     const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([
-        computeShiftOfUserWithSubstitutions([updatedRequest.posterShift.date], userId),
+        computeUserShifts([updatedRequest.posterShift.date], userId),
         categorizeRequests([updatedRequest], userId),
         User.findById(userId).select('name lastName email'),
     ]);
@@ -47,10 +47,10 @@ export async function withdrawFromRequest (requestId, userId) {
     const categorizedRequests = categorizedResult.status === 'fulfilled'
         ? categorizedResult.value
         : [updatedRequest];
-    
-    
+
+
     console.log("Withdraw from demand", originalAccepter?.name, "  | cancelledRequests : ", cancelledRequests.length);
-    
+
     await updatedRequest.populate([
         { path: 'posterId', select: 'name lastName email' },
     ]);

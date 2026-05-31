@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog title="Modifier la date de naissance" v-model="modelValue">
+  <GenericDialog v-model="modelValue" title="Modifier la date de naissance">
     <template #content>
       <div class="d-flex align-center justify-space-between mb-4">
         <div>

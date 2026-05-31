@@ -1,5 +1,5 @@
 import { generateDateArray } from "../../utils/generateDateArray.js";
-import { computeShiftOfUserWithSubstitutions } from "../../utils/computeShiftOfUserWithSubstitutions.js";
+import { computeUserShifts } from "../../utils/computeUserShifts.js";
 import Shift from "../../models/Shift.js";
 
 /**
@@ -29,7 +29,7 @@ const ensureShiftWithVariations = async (shift) => {
 const getUserShifts = async (dates, userId) => {
     try {
         const dateArray = generateDateArray(dates.startDate, dates.endDate);
-        const results = await computeShiftOfUserWithSubstitutions(dateArray, userId);
+        const results = await computeUserShifts(dateArray, userId);
         return Promise.all(results.map(async (r) => ({
             ...r,
             shift: await ensureShiftWithVariations(r.shift),

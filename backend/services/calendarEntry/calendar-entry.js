@@ -1,7 +1,7 @@
 import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
-import { computeShiftOfUserWithSubstitutions } from '../../utils/computeShiftOfUserWithSubstitutions.js';
+import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import { AppError } from '../../error/appError.js';
 import * as demandMutationsService from '../substitution/index.js';
 import overlap from '../../utils/overlapTest.js';
@@ -47,34 +47,7 @@ async function cancelHourPatches (userId, date) {
     });
 }
 
-// const checkOverlap = (latestAssignment, userShift, data) => {
-//     let overlapResult = false;
-//     let hasShift = false;
-//     if (latestAssignment) {
-//         if (latestAssignment.shiftData?.shift && latestAssignment.shiftData?.shift?.type === "work") {
-//             hasShift = true;
-//         }
 
-//         if (!latestAssignment.startTime || !latestAssignment.endTime) {
-//             overlapResult = false;
-//         } else {
-//             overlapResult = overlap(latestAssignment, { startTime: data.startTime, endTime: data.endTime, date: data.date })
-//         }
-
-//     } else {
-//         if (userShift[0].shiftData?.shift && userShift[0].shiftData?.shift?.type === "work") {
-//             hasShift = true;
-//         }
-//         if (!userShift[0].startTime || !userShift[0].endTime) {
-//             overlapResult = false;
-//         } else {
-//             overlapResult = overlap(userShift[0], { startTime: data.startTime, endTime: data.endTime, date: data.date })
-//         }
-
-//     }
-
-//     return { hasShift, overlapResult };
-// }
 
 const isSameShift = (userShift, data) =>
     userShift?.[0]?.shiftData?.shift?._id.toString() === data.shiftId.toString();
@@ -98,14 +71,14 @@ export async function registerEntry (userId, date, data) {
     }
 
     const [userShift, substitution, latestAssignment, latestModification, latestHourPatch] = await Promise.all([
-        computeShiftOfUserWithSubstitutions([date], userId),
+        computeUserShifts([date], userId),
         Substitution.findOne({ $or: [{ posterId: userId }, { accepterId: userId }], "posterShift.date": date, status: { $in: ['open', 'accepted'] } }).sort({ createdAt: -1 }),
         Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
         Modification.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
         HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
     ]);
 
-    const recomputeShift = () => computeShiftOfUserWithSubstitutions([date], userId);
+    const recomputeShift = () => computeUserShifts([date], userId);
 
     const result = await handler(user, date, data, { userShift, substitution, latestAssignment, latestModification, latestHourPatch, recomputeShift });
     return result;
@@ -129,7 +102,7 @@ async function registerModification (user, date, data, { userShift, latestModifi
         shiftData: {
             shift: data.shiftId,
             selectedVariation: data.selectedVariation,
-            team: data.team,
+            team: data.teamId,
         },
         userId: user._id,
         date,
@@ -157,14 +130,17 @@ async function registerAssignment (user, date, data, { substitution, latestAssig
     await cancelModifications(user._id, date);
     await cancelHourPatches(user._id, date);
 
+
     const entry = new CalendarEntry({
         type: data.type,
         subType: data.entryType,
-        shiftData: {
-            shift: data.shiftId,
-            selectedVariation: data.selectedVariation,
-            team: data.team,
-        },
+        ...(data.shiftId && {
+            shiftData: {
+                shift: data.shiftId,
+                selectedVariation: data.selectedVariation,
+                team: data.team,
+            },
+        }),
         userId: user._id,
         date,
         centerId: user.centerId,
@@ -182,22 +158,27 @@ async function registerHourPatch (user, date, data, { latestHourPatch, recompute
         await latestHourPatch.save();
     }
 
-    if (data.shiftId) {
-        await registerMDDA(user._id, date, data);
-        return { userShift: await recomputeShift(), updatedDemands: null, type: 'hourPatch' };
+    const userShift = await computeUserShifts([date], user._id);
+    const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
+
+    if (!isSameShift(userShift, data)) {
+        throw new AppError('Impossible de créer une MDDA car le shift ne correspond pas', 422);
     }
 
-    const entry = new CalendarEntry({
-        type: data.type,
-        subType: data.entryType,
+    const entry = new HourPatch({
+        userId: user._id,
+        subType: 'mdda',
+        date,
+        adjustedTime: {
+            adjustedStart: 1,
+            adjustedEnd: 2,
+        },
+        centerId: user.centerId,
         shiftData: {
             shift: data.shiftId,
             selectedVariation: data.selectedVariation,
             team: data.team,
         },
-        userId: user._id,
-        date,
-        centerId: user.centerId,
     });
 
     await entry.save();
@@ -212,7 +193,7 @@ async function registerMDDA (userId, date, data) {
         throw new AppError('Utilisateur non trouvé', 404);
     }
 
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const userShift = await computeUserShifts([date], userId);
     const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
 
     if (!isSameShift(userShift, data)) {
@@ -245,13 +226,13 @@ export async function restoreInitialShift (userId, date) {
         throw err;
     }
 
-    const initialShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const initialShift = await computeUserShifts([date], userId);
 
     cancelModifications(userId, date);
     cancelAssignments(userId, date);
     cancelHourPatches(userId, date);
 
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const userShift = await computeUserShifts([date], userId);
 
     return { userShift, updatedDemands: null, type: "restoration" };
 }
@@ -307,8 +288,8 @@ export async function addSubstitutionEntries (demand) {
         await posterEntry.save();
 
         const [posterShifts, accepterShifts] = await Promise.all([
-            computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.posterId),
-            computeShiftOfUserWithSubstitutions([demand.posterShift.date], demand.accepterId),
+            computeUserShifts([demand.posterShift.date], demand.posterId),
+            computeUserShifts([demand.posterShift.date], demand.accepterId),
         ]);
 
         return {
@@ -368,8 +349,8 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
         ]);
 
         const [posterShift, accepterShift] = await Promise.all([
-            computeShiftOfUserWithSubstitutions([date], posterId),
-            computeShiftOfUserWithSubstitutions([date], accepterId),
+            computeUserShifts([date], posterId),
+            computeUserShifts([date], accepterId),
         ]);
 
         return {
@@ -411,13 +392,13 @@ export async function undoMods (userId, date) {
         throw err;
     }
 
-    const initialShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const initialShift = await computeUserShifts([date], userId);
 
     cancelModifications(userId, date);
     cancelAssignments(userId, date);
     cancelHourPatches(userId, date);
 
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const userShift = await computeUserShifts([date], userId);
 
     return { userShift, updatedDemands: null, type: "restoration" };
 }
@@ -455,8 +436,36 @@ export async function deleteAssignment (userId, date) {
         ),
     ]);
 
-    const userShift = await computeShiftOfUserWithSubstitutions([date], userId);
+    const userShift = await computeUserShifts([date], userId);
 
     return { userShift, updatedDemands: null, type: "restoration" };
 }
 
+// const checkOverlap = (latestAssignment, userShift, data) => {
+//     let overlapResult = false;
+//     let hasShift = false;
+//     if (latestAssignment) {
+//         if (latestAssignment.shiftData?.shift && latestAssignment.shiftData?.shift?.type === "work") {
+//             hasShift = true;
+//         }
+
+//         if (!latestAssignment.startTime || !latestAssignment.endTime) {
+//             overlapResult = false;
+//         } else {
+//             overlapResult = overlap(latestAssignment, { startTime: data.startTime, endTime: data.endTime, date: data.date })
+//         }
+
+//     } else {
+//         if (userShift[0].shiftData?.shift && userShift[0].shiftData?.shift?.type === "work") {
+//             hasShift = true;
+//         }
+//         if (!userShift[0].startTime || !userShift[0].endTime) {
+//             overlapResult = false;
+//         } else {
+//             overlapResult = overlap(userShift[0], { startTime: data.startTime, endTime: data.endTime, date: data.date })
+//         }
+
+//     }
+
+//     return { hasShift, overlapResult };
+// }

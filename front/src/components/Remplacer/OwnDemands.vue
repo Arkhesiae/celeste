@@ -18,12 +18,12 @@
 
   <div class="mb-4 d-flex flex-column">
     <v-slide-x-transition mode="out-in">
-      <div v-if="demands.length > 0 || emptyMessage" :key="ownFilter" class="pa-0">
+      <div :key="ownFilter" class="pa-0">
         <div v-if="demands.length > 0" class="d-flex flex-column ga-2">
-          <OwnDemandCard v-for="demand in demands" :key="demand.id" :is-poster="true" :demand="demand" :small="true"
-            @open-details="openDemandDetails" />
+          <OwnDemandCard v-for="(demand, index) in demands" :key="demand.id" :is-poster="true" :demand="demand"
+            :small="true" @open-details="openDemandDetails" />
         </div>
-        <div v-else-if="emptyMessage" class="text-center py-4">
+        <div v-else class="text-center py-4">
           <v-icon icon="mdi-tray-remove" size="small" class="mb-2" />
           <div class="text-body-2 text-disabled">
             {{ emptyMessage }}
@@ -121,10 +121,7 @@ const demands = computed(() => {
   return sortDemands(result);
 });
 
-const emptyMessage = computed(() => {
-  if (demands.value.length > 0) return null;
-  return "C'est vide ici, aucune demande";
-});
+const EMPTY_MESSAGE = "C'est vide ici, aucune demande";
 
 const openDemandDetails = (demand) => {
   emit('openDetails', demand);

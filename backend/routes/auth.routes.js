@@ -1,9 +1,6 @@
 import express from 'express';
-import dotenv from 'dotenv';
 import { verifyToken } from '../middleware/authMiddleware.js';
 import authController from '../controllers/auth.controller.js';
-
-dotenv.config();
 
 const router = express.Router();
 

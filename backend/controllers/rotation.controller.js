@@ -1,5 +1,4 @@
 import Rotation from '../models/Rotation.js';
-import { createNotificationForCenter } from "../utils/notificationFunctions.js";
 import { findLatestRotation } from "../utils/findLatestRotation.js";
 import Shift from '../models/Shift.js';
 import mongoose from 'mongoose';

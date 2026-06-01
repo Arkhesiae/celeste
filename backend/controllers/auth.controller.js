@@ -1,7 +1,12 @@
-import * as authService from '../services/auth/authService.js';
-import * as resetPasswordService from '../services/auth/resetPasswordService.js';
+import * as authService from '../services/auth/index.js';
 import User from '../models/User.js';
 import { AppError } from '../error/appError.js';
+
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+};
 
 
 const loginUser = async (req, res, next) => {
@@ -47,11 +52,6 @@ const refreshAccessToken = async (req, res, next) => {
     }
 }
 
-const COOKIE_OPTIONS = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-};
 
 const revokeRefreshToken = async (refreshToken) => {
     const payload = authService.verifyRefreshToken(refreshToken); // throws if invalid
@@ -80,7 +80,7 @@ const requestPasswordReset = async (req, res, next) => {
     try {
         const { email } = req.body;
 
-        const result = await resetPasswordService.requestPasswordReset(email);
+        const result = await authService.requestPasswordReset(email);
 
         res.json(result);
     } catch (error) {
@@ -92,7 +92,7 @@ const resetPassword = async (req, res, next) => {
     try {
         const { token, newPassword } = req.body;
 
-        const result = await resetPasswordService.resetPassword(token, newPassword);
+        const result = await authService.resetPassword(token, newPassword);
 
         res.json(result);
     } catch (error) {
@@ -108,7 +108,7 @@ const verifyPassword = async (req, res, next) => {
             throw new AppError('Mot de passe manquant', 400);
         }
 
-        const result = await resetPasswordService.verifyPassword(req.user.userId, currentPassword);
+        const result = await authService.verifyPassword(req.user.userId, currentPassword);
 
         res.json(result);
     } catch (error) {
@@ -120,7 +120,7 @@ const updatePassword = async (req, res, next) => {
     try {
         const { newPassword } = req.body;
 
-        const result = await resetPasswordService.updatePassword(req.user.userId, newPassword);
+        const result = await authService.updatePassword(req.user.userId, newPassword);
 
         res.json(result);
     } catch (error) {

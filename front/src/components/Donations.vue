@@ -8,7 +8,7 @@
                 </v-sheet>
 
                 <h1 class="campaign-title text-center mb-3">
-                    Ce projet a besoin de vous
+                    Un an déjà
                 </h1>
 
                 <p class="campaign-desc text-center text-medium-emphasis text-body-1">
@@ -26,13 +26,13 @@
                             <span class="text-h5 font-weight-medium">
                                 {{ formatCurrency(raised) }}
                             </span>
-                            <v-chip v-if="isOverGoal" rounded="lg" size="x-small" color="success" variant="tonal"
+                            <v-chip v-if="isOverGoal" rounded="lg" size="x-small" color="secondary" variant="tonal"
                                 class="ml-2 mb-1">
                                 objectif atteint !
                             </v-chip>
                         </div>
                         <span class="text-caption font-weight-medium"
-                            :class="isOverGoal ? 'text-success' : 'text-primary'">
+                            :class="isOverGoal ? 'text-secondary' : 'text-primary'">
                             {{ progressPercent }}%
                         </span>
                     </div>
@@ -92,7 +92,7 @@
                             </div>
 
                             <v-btn icon variant="tonal" size="small" rounded="lg"
-                                :color="copiedId === item.id ? 'success' : 'default'" @click.stop="copyValue(item)">
+                                :color="copiedId === item.id ? 'secondary' : 'default'" @click.stop="copyValue(item)">
                                 <v-icon :icon="copiedId === item.id ? 'mdi-check' : 'mdi-content-copy'" size="16" />
                             </v-btn>
 
@@ -146,7 +146,7 @@
             icon: string
             iconBg: string
             iconColor: string
-            successMsg: string
+            secondaryMsg: string
         }
 
         const paymentItems: PaymentItem[] = [
@@ -157,7 +157,7 @@
                 icon: 'mdi-credit-card-outline',
                 iconBg: 'blue-lighten-5',
                 iconColor: 'blue-darken-2',
-                successMsg: 'IBAN copié !',
+                secondaryMsg: 'IBAN copié !',
             },
             {
                 id: 'phone',
@@ -166,7 +166,7 @@
                 icon: 'mdi-phone-outline',
                 iconBg: 'green-lighten-5',
                 iconColor: 'green-darken-2',
-                successMsg: 'Numéro copié !',
+                secondaryMsg: 'Numéro copié !',
             },
         ]
 
@@ -191,7 +191,7 @@
             }
 
             copiedId.value = item.id
-            snackText.value = item.successMsg
+            snackText.value = item.secondaryMsg
             snack.value = true
 
             setTimeout(() => { copiedId.value = null }, 2000)
@@ -300,7 +300,7 @@
 }
 
 .progress-fill--overflow {
-    background: rgb(var(--v-theme-success));
+    background: rgb(var(--v-theme-secondary));
     opacity: 1;
 }
 

@@ -8,7 +8,7 @@ import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
 import Rule from '../models/Rule.js';
 import emailService from '../services/email/emailService.js';
-import { AppError } from '../error/AppError.js';
+import { AppError } from '../error/appError.js';
 import { isValidDateRange } from '../utils/validation.js';
 
 const getCenterRequests = async (req, res, next) => {

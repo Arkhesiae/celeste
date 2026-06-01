@@ -4,17 +4,15 @@ import { useCenterStore } from '@/stores/centerStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { usePointStore } from '@/stores/pointStore';
 import { useTicketStore } from '@/stores/ticketStore';
-import { useNotificationStore } from '@/stores/notificationStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useInitializationStore } from '@/stores/initializationStore';
 import { useTheme } from 'vuetify';
-import { useRouter } from 'vue-router';
 
 
 
-export function useAppInitialization() {
+export function useAppInitialization () {
   const authStore = useAuthStore();
   const userStore = useUserStore();
   const centerStore = useCenterStore();
@@ -23,7 +21,6 @@ export function useAppInitialization() {
   const pointStore = usePointStore();
   const ticketStore = useTicketStore();
   const shiftStore = useShiftStore();
-  const notificationStore = useNotificationStore();
   const substitutionStore = useSubstitutionStore();
   const rotationStore = useRotationStore();
   const initializationStore = useInitializationStore();
@@ -61,7 +58,7 @@ export function useAppInitialization() {
     if (!authStore.userData.userId) return;
     if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
       await teamStore.fetchAllTeams();
-    } 
+    }
     await Promise.all([
       teamStore.fetchCurrentTeamOfUser(authStore.userData.userId),
       teamStore.fetchTeamOccurrencesOfUser(authStore.userData.userId),
@@ -84,12 +81,12 @@ export function useAppInitialization() {
     today.setHours(0, 0, 0, 0);
     const oneYearFromNow = new Date();
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
- 
-      substitutionStore.fetchAllDemands({
-        startDate: today.toISOString(),
-        endDate: oneYearFromNow.toISOString()
-      })
-    
+
+    substitutionStore.fetchAllDemands({
+      startDate: today.toISOString(),
+      endDate: oneYearFromNow.toISOString()
+    })
+
     initializationStore.updateInitializationState('substitutions', true);
   };
 
@@ -107,12 +104,6 @@ export function useAppInitialization() {
       pointStore.fetchTransactions(),
     ]);
 
-    try {
-      await notificationStore.fetchNotifications(authStore.userData.userId);
-    } catch (error) {
-      console.error('Erreur lors de la récupération des notifications:', error);
-    }
-
     initializationStore.updateInitializationState('personal', true);
   };
 
@@ -128,10 +119,10 @@ export function useAppInitialization() {
   const initializeApp = async () => {
     try {
       initializationStore.setLoading(true);
-  
+
       await initializeAuth();
       const parallelTasks = [];
-  
+
 
       if (authStore.isLoggedIn) {
         parallelTasks.push(
@@ -144,10 +135,10 @@ export function useAppInitialization() {
           initializeTickets()
         );
       }
-  
+
       await Promise.all(parallelTasks);
       initializationStore.setAppReady(true);
-      
+
     } catch (error) {
       console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
       authStore.logOut();

@@ -6,8 +6,8 @@
       </WelcomeTitle>
     </Transition>
 
-    <!-- 
-    <Transition name="donations-transition" appear>
+    
+    <!-- <Transition name="donations-transition" appear>
       <Donations></Donations>
     </Transition> -->
 

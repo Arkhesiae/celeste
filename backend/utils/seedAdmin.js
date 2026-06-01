@@ -1,9 +1,6 @@
 import User from '../models/User.js';
 import Center from '../models/Center.js';
 import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
-
-dotenv.config();
 
 async function createAdmin() {
   const existingAdmin = await User.findOne({ email: process.env.ADMIN_EMAIL });

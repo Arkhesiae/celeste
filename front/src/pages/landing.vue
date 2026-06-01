@@ -1,97 +1,41 @@
 <template>
-  <v-container
-    fluid
-    class="fill-height"
-  >
-    <v-row
-      justify="center"
-      style="min-height: 800px"
-    >
-      <v-col
-        cols="12"
-        sm="12"
-        md="12"
-        lg="12"
-        class="py-16 mt-16"
-      >
-        <div
-          class="d-flex align-center"
-          :class="mdAndUp ? 'justify-space-between' : 'justify-center'"
-        >
-          <v-card
-            variant="text"
-            class="mt-16"
-            style="z-index: 34 !important;"
-          >
-            <v-card-text
-              class="d-flex align-start flex-column"
-              :class="{ 'align-center': !mdAndUp }"
-            >
+  <v-container fluid class="fill-height">
+    <v-row justify="center" style="min-height: 800px">
+      <v-col cols="12" sm="12" md="12" lg="12" class="py-16 mt-16">
+        <div class="d-flex align-center" :class="mdAndUp ? 'justify-space-between' : 'justify-center'">
+          <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
+            <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
               <div class="text-overline subtitle-animation">
                 Votre site de rempla
               </div>
               <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
 
-              <div
-                class="font-weight-medium d-flex flex-wrap mt-4"
-                :class="[
-                  mdAndUp ? 'text-h1' : 'text-h3',
-                  { 'justify-center': !mdAndUp }
-                ]"
-                :style="mdAndUp ? 'left: -8px; position: relative' : ''"
-              >
-                <span
-                  class="title-animation"
-                  style="margin-right: 1rem ; font-weight: 900 !important;"
-                >Bienvenue</span>
+              <div class="font-weight-medium d-flex flex-wrap mt-4" :class="[
+                mdAndUp ? 'text-h1' : 'text-h3',
+                { 'justify-center': !mdAndUp }
+              ]" :style="mdAndUp ? 'left: -8px; position: relative' : ''">
+                <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">Bienvenue</span>
 
-                <span
-                  class="title-animation"
-                  style="margin-right: 1rem ; font-weight: 900 !important;"
-                >sur</span>
+                <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">sur</span>
                 <span class="gradient font-weight-bold title-animation">Céleste</span>
               </div>
               <div class="text-h6 mt-5 subtitle-animation">
-                Remplacer s'offre un nouveau look !
+                Votre nouvelle plateforme de remplacements
               </div>
             </v-card-text>
 
-            <v-card-actions
-              class="ml-2 pb-5 flex-wrap ga-4"
-              :class="{ 'justify-center': !mdAndUp }"
-            >
-              <div
-                class="block d-flex button-animation"
-                style="animation-delay: 1.1s;"
-              >
-                <v-btn
-                  prepend-icon="mdi-lightning-bolt"
-                  style="border-radius: 12px !important;"
-                  height="48px "
-                  class="px-8"
-                  variant="flat"
-                  rounded="lg"
-                  color="surface"
-                  @click="router.push({ path: '/get-started' })"
-                >
+            <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
+              <div class="block d-flex button-animation " style="animation-delay: 1.1s;">
+                <v-btn prepend-icon="mdi-lightning-bolt" style="border-radius: 16px !important;" height="48px "
+                  class="px-8" variant="flat" color="primary" @click="router.push({ path: '/get-started' })">
                   Get started
                 </v-btn>
               </div>
-              <div
-                class="d-flex button-animation"
-                style="animation-delay: 1.3s; z-index: 34 !important;"
-              >
-                <v-btn
-                  class="px-8 pr-8"
-                  variant="flat"
-                  style="border-radius: 12px !important;"
-                  height="48px"
-                  rounded="lg"
-                  color="onBackground"
-                  @click="router.push({ path: '/login' })"
-                >
+              <div class="d-flex button-animation soft-glow" style="animation-delay: 1.3s; z-index: 34 !important;">
+                <v-btn class="px-8 pr-8" variant="flat" style="border-radius: 200px !important;" height="48px"
+                  color="surfaceContainer" @click="router.push({ path: '/login' })">
                   <template #append>
-                    <v-icon style="left:10px">
+                    <v-icon color="primary">
                       mdi-arrow-right
                     </v-icon>
                   </template>
@@ -100,54 +44,25 @@
               </div>
             </v-card-actions>
           </v-card>
-          <v-img
-            src="@/assets/CRNA.png"
-            alt="landing"
-            :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }"
-          />
+          <v-img src="@/assets/CRNA.png" alt="landing" :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }" />
         </div>
       </v-col>
     </v-row>
 
-    <v-row
-      class="px-4 py-16 mt-16 d-flex align-content-stretch bg-background"
-      width="100%"
-      style="min-height: 200px ; width: 100%;"
-    >
-      <v-col
-        v-for="(card, index) in cards"
-        :key="index"
-        cols="12"
-        md="4"
-      >
-        <div
-          :ref="el => { if (el) cardRefs[index] = el }"
-          style="min-height: 200px;"
-        >
+    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch bg-background" width="100%"
+      style="min-height: 200px ; width: 100%;">
+      <v-col v-for="(card, index) in cards" :key="index" cols="12" md="4">
+        <div :ref="el => { if (el) cardRefs[index] = el }" style="min-height: 200px;">
           <transition name="card">
             <div v-show="card.isVisible">
-              <v-card
-                :class="{ 'card-hover': mdAndUp }"
-                flat
-                height="100%"
-                rounded="xl"
-                class="flex-column d-flex pa-8 bg-surfaceContainer"
-              >
+              <v-card :class="{ 'card-hover': mdAndUp }" flat height="100%" rounded="xl"
+                class="flex-column d-flex pa-8 bg-surfaceContainer">
                 <v-scale-transition>
-                  <v-icon
-                    color="remplacement"
-                    class="mt-4 mb-4 align-self-center"
-                  >
+                  <v-icon color="primary" class="mt-4 mb-4 align-self-center">
                     {{ card.icon }}
                   </v-icon>
                 </v-scale-transition>
-                <v-icon
-                  color="remplacement"
-                  style="filter: blur(10px); transform: scale(8) ; opacity: 0.2"
-                  class="position-absolute"
-                >
-                  {{ card.icon }}
-                </v-icon>
+                
                 <v-slide-y-transition>
                   <span class="text-h7 mt-2 font-weight-bold">{{ card.title }}</span>
                 </v-slide-y-transition>
@@ -162,59 +77,24 @@
     </v-row>
 
     <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
-      <v-fade-transition
-        group
-        appear
-      >
-        <v-col
-          key="center"
-          cols="12"
-          md="4"
-        >
-          <v-card
-            ref="statsRef"
-            color="transparent"
-            flat
-            height="100%"
-            rounded="xl"
-            class="flex-column align-center d-flex pa-4"
-          >
+      <v-fade-transition group appear>
+        <v-col key="center" cols="12" md="4">
+          <v-card ref="statsRef" color="transparent" flat height="100%" rounded="xl"
+            class="flex-column align-center d-flex pa-4">
             <span class="text-h1 mt-2 font-weight-bold text-remplacement">{{ Math.floor(animatedCenters) }}</span>
             <span class="text-h7 text-medium-emphasis">centres</span>
           </v-card>
         </v-col>
-        <v-col
-          key="controllers"
-          cols="12"
-          md="4"
-        >
-          <v-card
-            color="transparent"
-            flat
-            height="100%"
-            rounded="xl"
-            class="flex-column align-center d-flex pa-4"
-          >
+        <v-col key="controllers" cols="12" md="4">
+          <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
             <span class="text-h1 mt-2 font-weight-bold text-onSurface">{{ Math.floor(animatedNumber) }}</span>
             <span class="text-h7 text-medium-emphasis">contrôleurs</span>
           </v-card>
         </v-col>
-        <v-col
-          key="replace"
-          cols="12"
-          md="4"
-        >
-          <v-card
-            color="transparent"
-            flat
-            height="100%"
-            rounded="xl"
-            class="flex-column align-center d-flex pa-4"
-          >
-            <span
-              class="text-h1 mt-2 font-weight-bold"
-              style="opacity: 0.7;"
-            >{{ Math.floor(animatedReplacements) }}</span>
+        <v-col key="replace" cols="12" md="4">
+          <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
+            <span class="text-h1 mt-2 font-weight-bold" style="opacity: 0.7;">{{ Math.floor(animatedReplacements)
+              }}</span>
             <span class="text-h7 text-medium-emphasis">remplacements</span>
           </v-card>
         </v-col>
@@ -282,7 +162,7 @@ const setupIntersectionObserver = async () => {
   observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       const index = cardRefs.value.findIndex(ref => ref === entry.target);
-      
+
       if (index !== -1) {
         // Utiliser le ratio d'intersection le plus élevé
         const isVisible = entry.intersectionRatio > 0.1;
@@ -294,7 +174,7 @@ const setupIntersectionObserver = async () => {
   }, options);
 
   await nextTick();
-  
+
   cardRefs.value.forEach((ref) => {
     if (ref) {
       observer.observe(ref);
@@ -367,7 +247,7 @@ const getStats = async () => {
 
 const setupStatsObserver = async () => {
   await nextTick();
-  
+
   const options = {
     root: null,
     rootMargin: '0px',
@@ -393,7 +273,7 @@ const setupStatsObserver = async () => {
   }, options);
 
   await nextTick();
-  
+
   const element = statsRef.value?.$el || statsRef.value;
   if (element) {
     console.log("Observing stats section", element);
@@ -455,17 +335,14 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 .gradient {
   fill: transparent;
   color: #000;
   font-weight: 900 !important;
   background: linear-gradient(to right,
-  rgb(var(--v-theme-remplacement)) 00%,
-  rgba(var(--v-theme-remplacement),.55) 20%,
-  rgba(var(--v-theme-remplacement),.25) 50%,
-  rgba(var(--v-theme-remplacement),.55) 90%,
-  rgba(var(--v-theme-remplacement),100) 100%);
+      rgb(var(--v-theme-primary)) 00%,
+      rgba(var(--v-theme-primary), .55) 20%,
+      rgba(var(--v-theme-primary), 100) 100%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -483,29 +360,7 @@ onMounted(() => {
   }
 }
 
-.block {
-  position: relative;
- 
-  z-index: 0;
-  overflow: visible !important;
 
-}
-
-.block:after,
-.block:before {
-  content: '';
-  position: absolute;
-  left: -1.5px;
-  top: -1.5px;
-  border-radius: 13px;
-  background: linear-gradient(45deg, #ffffff00, rgba(var(--v-theme-remplacement),.05), rgba(var(--v-theme-remplacement),.4), rgba(250, 152, 248, 0.05),
-      rgba(159, 159, 248, 0.22), #ffffff00);
-  background-size: 400%;
-  width: calc(100% + 3px);
-  height: calc(100% + 3px);
-  z-index: -1;
-  animation: steam 10s linear infinite;
-}
 
 @keyframes steam {
   0% {
@@ -578,6 +433,25 @@ onMounted(() => {
 .title-leave-to {
   opacity: 0 !important;
 
+}
+
+.soft-glow {
+  position: relative;
+  z-index: 1;
+}
+
+.soft-glow::before {
+  content: '';
+  position: absolute; 
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.2) 0%, rgba(var(--v-theme-primary), 0) 100%);
+  transform: translate(-50%, -50%);
+  filter: blur(10px);
+  z-index: -1;
 }
 
 
@@ -668,7 +542,7 @@ onMounted(() => {
   height: 90px;
 }
 
-.celeste-logo .cls-1{
+.celeste-logo .cls-1 {
   fill: rgb(var(--v-theme-remplacement));
-} 
+}
 </style>

@@ -1,9 +1,5 @@
 <template>
-  <v-app-bar
-    class="user-safe-area"
-    scroll-behavior="elevate"
-    color="background"
-  >
+  <v-app-bar class="user-safe-area" scroll-behavior="elevate" color="background">
     <!-- Bouton navigation pour écran large -->
     <template #prepend>
       <template v-if="!smAndDown && isLoggedIn">
@@ -12,107 +8,66 @@
     </template>
 
     <!-- Titre de l'application -->
-    <AppBarTitle
-      :is-homepage="isHomepage"
-      :is-dashboard="isDashboard"
-      @title-click="handleTitleClick"
-    />
+    <AppBarTitle :is-homepage="isHomepage" :is-dashboard="isDashboard" @title-click="handleTitleClick" />
 
     <template #append>
       <!-- Boutons de notifications -->
-      <ThemeSwitch
-        class="mr-2"
-      />
+      <ThemeSwitch class="mr-2" />
 
       <template v-if="isLoggedIn && isAdmin">
-        <AdminSection
-          :is-admin="isAdmin"
-          :admin-type="authStore.userData.adminType"
-          :message-count="ticketCount"
+        <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType" :message-count="ticketCount"
           @navigate-rules="router.push({ path: '/admin/rules' })"
           @navigate-tickets="router.push({ path: '/admin/tickets' })"
-          @navigate-email="router.push({ path: '/admin/emails' })"
-        />
+          @navigate-email="router.push({ path: '/admin/emails' })" />
       </template>
-   
+
       <template v-if="smAndDown">
-        <v-app-bar-nav-icon
-          :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'"
-          @click="toggleMobileDrawer"
-        />
+        <v-app-bar-nav-icon :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'" @click="toggleMobileDrawer" />
       </template>
 
       <template v-else>
         <!-- Navigation accueil -->
         <template v-if="!isLoggedIn">
-          <HomeNavigation
-            :show-buttons="showButtons"
-            @navigate-contact="navigateToContact"
+          <HomeNavigation :show-buttons="showButtons" @navigate-contact="navigateToContact"
             @navigate-get-started="router.push({ path: '/get-started' })"
-            @navigate-login="router.push({ path: '/login' })"
-            @open-icnagenda="openIcnagenda"
-            @open-olafatco="openOlafatco"
-          />
+            @navigate-login="router.push({ path: '/login' })" @open-icnagenda="openIcnagenda"
+            @open-olafatco="openOlafatco" />
         </template>
 
         <v-spacer />
 
         <!-- Menu utilisateur -->
         <div v-if="isLoggedIn">
-          <v-badge
-            :model-value="missingPhone"
-            location="bottom left"
-            color="error"
-            icon="mdi-exclamation-thick"
-          >
-            <UserMenu
-              
-              :username="username"
-              :email="authStore.userData.email"
-              :avatar="authStore.avatar"
-              :points="points"
-              :current-team="currentTeam"
-              @navigate-profile="navigateToProfile"
-              @navigate-parameter="navigateToParameter"
-              @logout="handleLogout"
-              @navigate-contact="navigateToContact"
-            />
+          <v-badge :model-value="missingPhone" location="bottom left" color="error" icon="mdi-exclamation-thick">
+            <UserMenu :username="username" :email="authStore.userData.email" :avatar="authStore.avatar" :points="points"
+              :current-team="currentTeam" @navigate-profile="navigateToProfile"
+              @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
           </v-badge>
         </div>
       </template>
     </template>
   </v-app-bar>
 
-  <NotificationsDialog
-    v-if="isLoggedIn"
-    v-model:is-dialog-open="isDialogOpen"
-    :user-id="authStore.userData.userId"
-    :notifications="notificationStore.notifications"
-    @mark-as-read="handleMarkAsRead"
-    @clear-notifications="handleClearNotifications"
-  />
+  <!-- <NotificationsDialog v-if="isLoggedIn" v-model:is-dialog-open="isDialogOpen" :user-id="authStore.userData.userId"
+    :notifications="notificationStore.notifications" @mark-as-read="handleMarkAsRead"
+    @clear-notifications="handleClearNotifications" /> -->
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useDisplay } from "vuetify";
-import { useTheme } from 'vuetify';
 
 // Stores
 import { useAuthStore } from "@/stores/authStore.js";
 import { useTeamStore } from "@/stores/teamStore.js";
 import { usePointStore } from '@/stores/pointStore.js';
-import { useNotificationStore } from '../../stores/notificationStore';
 import { useTicketStore } from '../../stores/ticketStore';
-
-// Components
-import NotificationsDialog from "@/components/Unused/NotificationsDialog.vue";
-import AppBarTitle from './AppBar/AppBarTitle.vue';
-import ThemeSwitch from './AppBar/ThemeSwitch.vue';
-import AdminSection from './AppBar/AdminSection.vue';
-import HomeNavigation from './AppBar/HomeNavigation.vue';
-import UserMenu from './AppBar/UserMenu.vue';
+import AppBarTitle from "./AppBar/AppBarTitle.vue";
+import AdminSection from "./AppBar/AdminSection.vue";
+import HomeNavigation from "./AppBar/HomeNavigation.vue";
+import UserMenu from "./AppBar/UserMenu.vue";
+import ThemeSwitch from "./AppBar/ThemeSwitch.vue";
 
 // Constants
 const HOME_PATH = "/landing";
@@ -146,12 +101,8 @@ const route = useRoute();
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const pointStore = usePointStore();
-const notificationStore = useNotificationStore();
 const ticketStore = useTicketStore();
 
-// State
-const isDialogOpen = ref(false);
-const notificationInterval = ref(null);
 
 // Computed properties
 const isLoggedIn = computed(() => authStore.isLoggedIn);
@@ -167,13 +118,6 @@ const handleTitleClick = () => {
   router.push({ path: HOME_PATH });
 };
 
-// const navigateToAdminPanel = () => {
-//   router.push({ path: '/admin/admin-panel' });
-// };
-
-const toggleNotifications = () => {
-  isDialogOpen.value = !isDialogOpen.value;
-};
 
 const toggleMobileDrawer = () => {
   emit("toggle-mobile-drawer");
@@ -200,20 +144,6 @@ const handleLogout = async () => {
   router.push({ path: '/login' });
 };
 
-const fetchNotifications = async () => {
-  if (authStore.userData.userId) {
-    await notificationStore.fetchNotifications(authStore.userData.userId);
-  }
-};
-
-const handleMarkAsRead = async (id) => {
-  await notificationStore.markAsRead(id);
-};
-
-const handleClearNotifications = async () => {
-  await notificationStore.clearNotifications(authStore.userData.userId);
-};
-
 const openIcnagenda = () => {
   window.open('https://icnagenda.FR', '_blank');
 };
@@ -222,16 +152,6 @@ const openOlafatco = () => {
   window.open('https://olafatco.dsna.aviation-civile.gouv.fr/gerer-la-licence', '_blank');
 };
 
-// Lifecycle
-onMounted(async () => {
-  notificationInterval.value = setInterval(fetchNotifications, 30000);
-});
-
-onUnmounted(() => {
-  if (notificationInterval.value) {
-    clearInterval(notificationInterval.value);
-  }
-});
 </script>
 
 <style>

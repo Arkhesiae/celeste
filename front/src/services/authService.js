@@ -18,7 +18,6 @@ export const authService = {
       body: JSON.stringify(credentials),
       allowRetry: false
     });
-    console.log('response', response);
     return response;
   },
 

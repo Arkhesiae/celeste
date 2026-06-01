@@ -33,7 +33,7 @@
                 <v-tooltip v-if="isShift" text="VIC" location="top">
                     <template #activator="{ props: tooltipProps }">
                         <v-btn v-bind="tooltipProps" icon size="small" variant="flat"
-                            :color="status === 'vic' ? 'warning' : 'surfaceContainerHigh'"
+                            :color="status === 'vic' ? 'secondary' : 'surfaceContainerHigh'"
                             @click="emit('register-vic')">
                             VIC
                         </v-btn>

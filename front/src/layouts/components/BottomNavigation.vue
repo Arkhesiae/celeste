@@ -1,117 +1,54 @@
 <template>
-  <v-bottom-navigation
-    v-if="smAndDown && isLoggedIn"
-    elevation="0"
-    flat
-    class="bottom-nav"
-    bg-color="background"
-    grow
-    height="64"
-    style="z-index: 2000 !important;"
-    shift
-  >
-    <v-btn
-      :ripple="false"
-      value="home"
-      icon
-      :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
+  <v-bottom-navigation v-if="smAndDown && isLoggedIn" elevation="0" flat class="bottom-nav" bg-color="background" grow
+    height="64" style="z-index: 2000 !important;" shift>
+    <v-btn :ripple="false" value="home" icon :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/dashboard'"
-      @click="router.push({ path: '/dashboard' }); hapticsImpact()"
-    >
+      @click="router.push({ path: '/dashboard' }); hapticsImpact()">
       <v-icon size="20">
         {{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}
       </v-icon>
-      <span
-        class="text-body-2 "
-        style="font-weight: 600; font-size: 10px !important; "
-      >Accueil</span>
+      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Accueil</span>
     </v-btn>
-    <v-btn
-      :ripple="false"
-      value="calendar"
-      icon
-      :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
+    <v-btn :ripple="false" value="calendar" icon :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/calendar'"
-      @click="router.push({ path: '/calendar' }); hapticsImpact()"
-    >
+      @click="router.push({ path: '/calendar' }); hapticsImpact()">
       <v-icon size="20">
         {{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}
       </v-icon>
-      <span
-        class="text-body-2 "
-        style="font-weight: 600; font-size: 10px !important; "
-      >Calendrier</span>
+      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
     </v-btn>
-    <v-btn
-      :ripple="false"
-      value="demandes"
-      icon
+    <v-btn :ripple="false" value="demandes" icon
       :class="isActive('/demand-page/demands') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/demand-page/demands'"
-      @click="router.push({ path: '/demand-page/demands' }); hapticsImpact()"
-    >
-      <v-badge
-        size="x-small"
-        rounded="lg"
-        color="onBackground"
-        class="font-weight-bold text-subtitle-2"
-        offset-x="-12"
-        offset-y="6"
-        :content="demandsCount"
-        :model-value="demandsCount !== 0"
-      >
+      @click="router.push({ path: '/demand-page/demands' }); hapticsImpact()">
+      <v-badge size="x-small" rounded="lg" color="onBackground" class="font-weight-bold text-subtitle-2" offset-x="-12"
+        offset-y="6" :content="demandsCount" :model-value="demandsCount !== 0">
         <v-icon size="20">
           {{ isActive('/demand-page/demands') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'
           }}
         </v-icon>
       </v-badge>
-      <span
-        class="text-body-2 "
-        style="font-weight: 600; font-size: 10px !important; "
-      >Demandes</span>
+      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Demandes</span>
     </v-btn>
     <!-- <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
     </v-btn> -->
 
 
-    <v-btn
-      :ripple="false"
-      value="profile"
-      active-color="onPrimary"
-      active-class="active-item"
-      icon
+    <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon
       :class="isActive('/profile/' + authStore.userData.userId) ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId"
-      @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()"
-    >
+      @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()">
       <!-- <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false"> -->
 
-      <v-badge
-        v-model="missingPhone"
-        color="error"
-        icon="mdi-exclamation-thick"
-        overlap
-        location="top start"
-      >
-        <div
-          class="d-flex align-center justify-center"
+      <v-badge v-model="missingPhone" color="error" icon="mdi-exclamation-thick" overlap location="top start">
+        <div class="d-flex align-center justify-center"
           :class="isActive('/profile/' + authStore.userData.userId) ? 'opacity-100' : 'opacity-50'"
-          style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;"
-        >
+          style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
           <!-- Badge rouge "!" si téléphone manquant -->
 
-          <v-avatar
-            size="28"
-            class=""
-            variant="tonal"
-            style="background-color: rgba(var(--v-theme-background), 1);"
-          >
-            <v-img
-              v-if="authStore.userData.avatar"
-              :src="`${API_URL}${authStore.userData.avatar}`"
-              alt="Avatar"
-            />
+          <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
+            <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
             <v-icon v-else>
               mdi-account
             </v-icon>

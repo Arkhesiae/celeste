@@ -3,33 +3,44 @@ import User from '../models/User.js';
 import { sendTicketReplyEmail } from './email/ticketReplyEmail.js';
 import { sendNewTicketNotificationEmail } from './email/newTicketEmail.js';
 import { isValidEmail } from '../utils/validation.js';
+import { AppError } from '../error/appError.js';
 
-/**
- * Service pour la gestion des tickets
- * Contient toute la logique métier liée aux tickets
- */
+const MASTER_ADMIN_EMAIL = process.env.MASTER_ADMIN_EMAIL;
+
+// --- Helpers ---
+
+const findTicketOrThrow = async (ticketId) => {
+  const ticket = await Ticket.findById(ticketId);
+  if (!ticket) throw new AppError('Ticket non trouvé', 404);
+  return ticket;
+};
+
+const populateTicket = (ticketId) =>
+  Ticket.findById(ticketId)
+    .populate('senderId', 'name lastName email')
+    .populate('centerId', 'name OACI');
 
 /**
  * Récupère tous les tickets selon les permissions de l'utilisateur
- * @param {Object} user - Utilisateur connecté
- * @param {boolean} archived - Si true, récupère les tickets archivés, sinon les tickets non archivés
+ * @param {string} userId - ID de l'utilisateur connecté
+ * @param {boolean} archived - Si true, récupère les tickets archivés
  * @returns {Promise<Array>} Liste des tickets
  */
 export const getAllTickets = async (userId, archived = false) => {
-  let query = { deleted: false };
-  
-  let user = await User.findById(userId);
+  const user = await User.findById(userId);
+  if (!user) throw new AppError('Utilisateur non trouvé', 404);
 
-  // Si l'utilisateur est master, récupérer les tickets master et local
+  let query = { deleted: false, archived };
+
   if (user.isAdmin && user.adminType === 'master') {
     query.adminType = { $in: ['master', 'local'] };
   } else {
     query.adminType = 'local';
     query.centerId = user.centerId;
   }
-  
-  return await Ticket.find(query)
-    .populate('senderId', 'firstName lastName email')
+
+  return Ticket.find(query)
+    .populate('senderId', 'name lastName email')
     .populate('centerId', 'name OACI')
     .sort({ createdAt: -1 });
 };
@@ -41,67 +52,46 @@ export const getAllTickets = async (userId, archived = false) => {
  */
 export const createNewTicket = async (ticketData) => {
   const { adminType, type, subject, email, message, centerId } = ticketData;
-  
-  // Trouver l'administrateur approprié
-  let admin;
-  if (adminType === 'master') {
-    admin = await User.findOne({ isAdmin: true, adminType: 'master' });
-  } else {
-    admin = await User.findOne({ isAdmin: true, adminType: 'local', centerId: centerId });
+
+  const masterAdmin = await User.findOne({ isAdmin: true, adminType: 'master' });
+  if (!masterAdmin) throw new AppError('Aucun admin master trouvé', 404);
+
+  let localAdmins = [];
+  if (adminType === 'local') {
+    localAdmins = await User.find({ isAdmin: true, adminType: 'local', centerId }).select('email');
+    if (!localAdmins.length) throw new AppError('Aucun admin local trouvé pour ce centre', 404);
   }
 
-  if (!admin) {
-    throw new Error('Administrateur non trouvé');
-  }
+  const sender = await User.findOne({ email });
 
-  // Trouver l'expéditeur s'il existe
-  const sender = await User.findOne({ email: email });
-   
-  const newTicket = new Ticket({
+  const newTicket = await Ticket.create({
     title: subject,
     content: message,
-    type: type,
+    type,
     senderEmail: email,
-    centerId: centerId,
-    adminType: adminType,
-    senderId: sender?.id || null
+    centerId,
+    adminType,
+    senderId: sender?._id || null,
   });
 
-  await newTicket.save();
+  const populatedTicket = await populateTicket(newTicket._id);
 
-  // Récupérer le ticket avec les données populées
-  const populatedTicket = await Ticket.findById(newTicket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
-
-  // Préparer les données utilisateur pour l'email
   const userData = {
-    email: email,
+    email,
     name: sender?.name || 'Utilisateur',
-    lastName: sender?.lastName || ''
+    lastName: sender?.lastName || '',
   };
 
-  // Récupérer la liste des admins à notifier
-  const masterAdmins = await User.find({ isAdmin: true, adminType: 'master' }).select('email');
-  const masterEmails = masterAdmins.map(admin => admin.email).filter(email => email);
-  
-  let adminEmails = masterEmails;
+  let adminEmails = [MASTER_ADMIN_EMAIL];
   if (adminType === 'local') {
-    const localAdmins = await User.find({ isAdmin: true, adminType: 'local', centerId: centerId }).select('email');
-    const localEmails = localAdmins.map(admin => admin.email).filter(email => email);
-    adminEmails = [...localEmails, ...masterEmails];
+    const localEmails = localAdmins.map(a => a.email).filter(e => e);
+    adminEmails = [...localEmails, ...adminEmails];
   }
 
-  // Envoyer l'email de notification (ne pas bloquer la création si l'envoi échoue)
   try {
-    await sendNewTicketNotificationEmail(
-      adminEmails,
-      populatedTicket,
-      userData,
-    );
+    await sendNewTicketNotificationEmail(adminEmails, populatedTicket, userData);
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email de notification de ticket:', error);
-    // Ne pas bloquer la création du ticket si l'email échoue
+    console.error('Erreur envoi email notification ticket:', error);
   }
 
   return populatedTicket;
@@ -113,18 +103,10 @@ export const createNewTicket = async (ticketData) => {
  * @returns {Promise<Object>} Ticket mis à jour avec population
  */
 export const markTicketAsRead = async (ticketId) => {
-  const ticket = await Ticket.findById(ticketId);
-  
-  if (!ticket) {
-    throw new Error('Ticket non trouvé');
-  }
-
+  const ticket = await findTicketOrThrow(ticketId);
   ticket.isRead = true;
   await ticket.save();
-
-  return await Ticket.findById(ticket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
+  return populateTicket(ticket._id);
 };
 
 /**
@@ -133,12 +115,7 @@ export const markTicketAsRead = async (ticketId) => {
  * @returns {Promise<void>}
  */
 export const removeTicket = async (ticketId) => {
-  const ticket = await Ticket.findById(ticketId);
-  
-  if (!ticket) {
-    throw new Error('Ticket non trouvé');
-  }
-
+  const ticket = await findTicketOrThrow(ticketId);
   await ticket.deleteOne();
 };
 
@@ -146,25 +123,14 @@ export const removeTicket = async (ticketId) => {
  * Met à jour le statut d'un ticket
  * @param {string} ticketId - ID du ticket
  * @param {string} status - Nouveau statut
- * @returns {Promise<Object>} Ticket mis à jour
+ * @returns {Promise<Object>} Ticket mis à jour avec population
  */
 export const updateTicketStatus = async (ticketId, status) => {
-  const ticket = await Ticket.findById(ticketId);
-
-  if (!ticket) {
-    throw new Error('Ticket non trouvé');
-  }
-
-  if (ticket.archived) {
-    throw new Error('Vous ne pouvez pas modifier le statut d\'un ticket archivé');
-  }
-
+  const ticket = await findTicketOrThrow(ticketId);
+  if (ticket.archived) throw new AppError('Impossible de modifier le statut d\'un ticket archivé', 400);
   ticket.status = status;
   await ticket.save();
-  
-  return await Ticket.findById(ticket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
+  return populateTicket(ticket._id);
 };
 
 /**
@@ -173,24 +139,12 @@ export const updateTicketStatus = async (ticketId, status) => {
  * @returns {Promise<Object>} Ticket mis à jour avec population
  */
 export const archiveTicket = async (ticketId) => {
-  const ticket = await Ticket.findById(ticketId);
-  
-  if (!ticket) {
-    throw new Error('Ticket non trouvé');
-  }
-
-  // Vérifier que le ticket est fermé
-  if (ticket.status !== 'closed') {
-    throw new Error('Seuls les tickets fermés peuvent être archivés');
-  }
-
+  const ticket = await findTicketOrThrow(ticketId);
+  if (ticket.status !== 'closed') throw new AppError('Seuls les tickets fermés peuvent être archivés', 400);
   ticket.archived = true;
   ticket.archivedAt = new Date();
   await ticket.save();
-
-  return await Ticket.findById(ticket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
+  return populateTicket(ticket._id);
 };
 
 /**
@@ -199,19 +153,11 @@ export const archiveTicket = async (ticketId) => {
  * @returns {Promise<Object>} Ticket mis à jour avec population
  */
 export const restoreTicket = async (ticketId) => {
-  const ticket = await Ticket.findById(ticketId);
-
-  if (!ticket) {
-    throw new Error('Ticket non trouvé');
-  }
-
+  const ticket = await findTicketOrThrow(ticketId);
   ticket.archived = false;
   ticket.archivedAt = null;
   await ticket.save();
-
-  return await Ticket.findById(ticket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
+  return populateTicket(ticket._id);
 };
 
 /**
@@ -220,18 +166,10 @@ export const restoreTicket = async (ticketId) => {
  * @returns {Promise<Object>} Ticket mis à jour avec population
  */
 export const markReplyAsSent = async (ticketId) => {
-  const ticket = await Ticket.findById(ticketId);
-  
-  if (!ticket) {
-    throw new Error('Ticket non trouvé');
-  }
-
+  const ticket = await findTicketOrThrow(ticketId);
   ticket.replySent = true;
   await ticket.save();
-
-  return await Ticket.findById(ticket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
+  return populateTicket(ticket._id);
 };
 
 /**
@@ -242,47 +180,31 @@ export const markReplyAsSent = async (ticketId) => {
  * @returns {Promise<Object>} Ticket mis à jour avec population
  */
 export const sendTicketReply = async (ticketId, content, adminUser) => {
-  const ticket = await Ticket.findById(ticketId);
-  
-  if (!ticket) {
-    throw new Error("Ticket non trouvé");
-  }
+  const ticket = await findTicketOrThrow(ticketId);
+  if (!isValidEmail(ticket.senderEmail)) throw new AppError('Email invalide', 400);
 
-  if (!isValidEmail(ticket.senderEmail)) {
-    throw new Error("Email invalide");
-  }
-
-  // Récupérer les informations de l'admin qui répond
-  const adminName = adminUser.firstName && adminUser.lastName 
-    ? `${adminUser.firstName} ${adminUser.lastName}` 
+  const adminName = adminUser.name && adminUser.lastName
+    ? `${adminUser.name} ${adminUser.lastName}`
     : 'Support';
 
-  // Envoyer l'email de réponse
   ticket.shortId = ticket._id.toString().slice(-6);
   await sendTicketReplyEmail(ticket, content, adminName);
 
-  // Ajouter la réponse au ticket
-  const reply = {
+  ticket.replies.push({
     content: content.trim(),
     senderEmail: adminUser.email,
     senderName: adminName,
     isFromAdmin: true,
-    createdAt: new Date()
-  
-  };
+    createdAt: new Date(),
+  });
 
-  ticket.replies.push(reply);
   ticket.replySent = true;
-
   await ticket.save();
-
-  return await Ticket.findById(ticket._id)
-    .populate('senderId', 'firstName lastName email')
-    .populate('centerId', 'name OACI');
+  return populateTicket(ticket._id);
 };
 
 /**
- * Ajoute une réponse reçue par email (pour le traitement des emails entrants)
+ * Ajoute une réponse reçue par email
  * @param {string} ticketId - ID du ticket
  * @param {string} emailContent - Contenu de l'email
  * @param {string} senderEmail - Email de l'expéditeur
@@ -291,28 +213,21 @@ export const sendTicketReply = async (ticketId, content, adminUser) => {
  */
 export const addEmailReplyToTicket = async (ticketId, emailContent, senderEmail, senderName = '') => {
   try {
-    const ticket = await Ticket.findById(ticketId);
-    
-    if (!ticket) {
-      console.error(`Ticket ${ticketId} non trouvé pour ajouter la réponse email`);
-      return false;
-    }
+    const ticket = await findTicketOrThrow(ticketId);
 
-    const reply = {
+    ticket.replies.push({
       content: emailContent.trim(),
-      senderEmail: senderEmail,
-      senderName: senderName,
+      senderEmail,
+      senderName,
       isFromAdmin: false,
-      createdAt: new Date()
-    };
+      createdAt: new Date(),
+    });
 
-    ticket.replies.push(reply);
     await ticket.save();
-
     console.log(`Réponse email ajoutée au ticket ${ticketId} de ${senderEmail}`);
     return true;
   } catch (error) {
-    console.error('Erreur lors de l\'ajout de la réponse email:', error);
+    console.error('Erreur ajout réponse email:', error);
     return false;
   }
 };

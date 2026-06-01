@@ -1,7 +1,8 @@
 <template>
   <v-list v-if="!loading" bg-color="transparent" class="ticket-list pa-0 ma-0">
-    <v-list-item v-for="ticket in tickets" :key="ticket._id" rounded="lg" :class="{ 'unread': !ticket.isRead }"
-      class="mb-2 py-3 ticket-item" @click="$emit('open-ticket', ticket)">
+    <div v-for="(ticket, index) in tickets">
+    <v-list-item  rounded="lg" 
+      class="py-3 ticket-item" @click="$emit('open-ticket', ticket)">
       <div class="d-flex align-center justify-space-between    ga-1">
         <div class="d-flex align-start  ga-1 flex-column min-width-0  ">
           <div class="d-flex align-center  w-100  ga-1">
@@ -63,6 +64,8 @@
         </div>
       </div>
     </v-list-item>
+    <v-divider v-if="index < tickets.length - 1" opacity="0.1"></v-divider>
+    </div>
     <v-list-item v-if="tickets.length === 0" class="text-center py-4">
       <v-list-item-title class="text-grey">
         Aucun ticket trouvé

@@ -1,32 +1,12 @@
 <template>
-  <v-menu
-    color="primary"
-    :close-on-content-click="false"
-    location="bottom end"
-    offset="10"
-  >
+  <v-menu color="primary" :close-on-content-click="false" location="bottom end" offset="10">
     <template #activator="{ props }">
-      <v-tooltip
-        location="bottom"
-        text="Profil"
-      >
+      <v-tooltip location="bottom" text="Profil">
         <template #activator="{ props: tooltipProps }">
-          <v-btn 
-            icon="mdi-account-outline" 
-            color="primary" 
-            variant="tonal" 
-            class="mr-2" 
-            v-bind="{ ...props, ...tooltipProps }"
-          >
-            <v-avatar
-              size="40"
-              variant="tonal"
-            >
-              <v-img
-                v-if="avatar"
-                :src="`${API_URL}${avatar}`"
-                alt="Avatar"
-              />
+          <v-btn icon color="primary" variant="tonal" class="mr-2"
+            v-bind="{ ...props, ...tooltipProps }">
+            <v-avatar size="40" class="" variant="tonal" color="primary">
+              <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
               <v-icon v-else>
                 mdi-account
               </v-icon>
@@ -36,32 +16,12 @@
       </v-tooltip>
     </template>
 
-    <v-card
-      min-width="300"
-      class="pa-4"
-      color="onBackground"
-      rounded="xl"
-    >
-      <!-- Alerte numéro de tél manquant 
-        <v-card bg-color="#f2dfe2" rounded="xl" @click="$emit('navigate-parameter')" class="hover-effect" color="#ba1a1a" >
-                <v-icon>mdi-alert-octagon</v-icon>
-            Numéro de téléphone manquant
-        </v-card>
-
-        <v-divider />-->
-      <!-- Informations utilisateur -->
+    <v-card min-width="300" class="pa-4" color="onBackground" rounded="xl">
       <v-list class="bg-onBackground">
         <v-list-item>
           <template #prepend>
-            <v-avatar
-              size="40"
-              variant="tonal"
-            >
-              <v-img
-                v-if="avatar"
-                :src="`${API_URL}${avatar}`"
-                alt="Avatar"
-              />
+            <v-avatar size="32" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
+              <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
               <v-icon v-else>
                 mdi-account
               </v-icon>
@@ -73,34 +33,22 @@
           <v-list-item-subtitle>{{ email }}</v-list-item-subtitle>
         </v-list-item>
       </v-list>
-      
+
       <v-divider />
-      
+
       <!-- Points et équipe -->
       <v-list class="bg-onBackground">
         <v-list-item>
           <div class="d-flex justify-space-between align-center">
             <div class="d-flex align-center pa-2">
-              <LogoCopy
-                color="background"
-                style="height:30px ; width:30px"
-              />
+              <LogoCopy color="background" style="height:30px ; width:30px" />
               <div class="d-flex justify-space-between flex-column align-center ml-3">
-                <div
-                  v-if="points > 99999"
-                  class="text-center text-h7 "
-                >
-                  <v-icon
-                    class="mb-1"
-                    size="x-large"
-                  >
+                <div v-if="points > 99999" class="text-center text-h7 ">
+                  <v-icon class="mb-1" size="x-large">
                     mdi-infinity
                   </v-icon>
                 </div>
-                <v-list-item-title
-                  v-else
-                  class="text-h5 font-weight-bold mb-0 pa-0"
-                >
+                <v-list-item-title v-else class="text-h5 font-weight-bold mb-0 pa-0">
                   {{ points }}
                 </v-list-item-title>
                 <v-list-item-subtitle class="text-caption font-weight-bold mt-n2 pa-0">
@@ -109,10 +57,7 @@
               </div>
             </div>
             <div class="d-flex align-center">
-              <v-icon
-                color="onPrimary"
-                icon="mdi-crowd"
-              />
+              <v-icon color="onPrimary" icon="mdi-crowd" />
               <v-list-item-title class="text-subtitle-1 font-weight-bold ml-2">
                 Équipe
               </v-list-item-title>
@@ -124,57 +69,29 @@
           </div>
         </v-list-item>
       </v-list>
-      
+
       <v-divider />
-      
+
       <!-- Actions -->
       <v-list class="bg-onBackground pa-2">
-        <v-list-item
-          class="hover-effect"
-          rounded="lg"
-          prepend-icon="mdi-account-cog"
-          @click="$emit('navigate-profile')"
-        >
+        <v-list-item class="hover-effect" rounded="lg" prepend-icon="mdi-account-cog"
+          @click="$emit('navigate-profile')">
           <v-list-item-title>Profil</v-list-item-title>
         </v-list-item>
-        <v-list-item
-          class="hover-effect"
-          rounded="lg"
-          prepend-icon="mdi-cog"
-          @click="router.push('/user-params')"
-        >
+        <v-list-item class="hover-effect" rounded="lg" prepend-icon="mdi-cog" @click="router.push('/user-params')">
           <v-list-item-title>Paramètres</v-list-item-title>
-
-          <!-- Floating badge -->
-          <template
-            v-if="!hasPhone"
-            #append
-          >
-            <v-badge
-              color="error"
-              icon="mdi-exclamation-thick"
-            />
+          <template v-if="!hasPhone" #append>
+            <v-badge color="error" icon="mdi-exclamation-thick" />
           </template>
         </v-list-item>
-        <v-list-item
-          class="hover-effect"
-          rounded="lg"
-          prepend-icon="mdi-logout"
-          color="error"
-          @click="$emit('logout')"
-        >
+        <v-list-item class="hover-effect" rounded="lg" prepend-icon="mdi-logout" color="error" @click="$emit('logout')">
           <v-list-item-title>Se déconnecter</v-list-item-title>
         </v-list-item>
       </v-list>
-      
+
       <div class="d-flex justify-end">
-        <v-btn 
-          prepend-icon="mdi-information-outline" 
-          variant="text" 
-          color="background" 
-          class="text-body-2" 
-          @click="$emit('navigate-contact')"
-        >
+        <v-btn prepend-icon="mdi-information-outline" variant="text" color="background" class="text-body-2"
+          @click="$emit('navigate-contact')">
           Assistance
         </v-btn>
       </div>
@@ -185,11 +102,13 @@
 <script setup>
 import { API_URL } from '@/config/api';
 import { usePointStore } from '@/stores/pointStore';
+import { useAuthStore } from "@/stores/authStore.js";
 import { useRouter } from 'vue-router';
 
+const authStore = useAuthStore();
 const router = useRouter();
 const pointStore = usePointStore();
-  
+
 // Props
 defineProps({
   username: {
@@ -219,9 +138,6 @@ defineEmits([
 ]);
 
 const points = computed(() => pointStore.points);
-
-import { useAuthStore } from "@/stores/authStore.js";
-const authStore = useAuthStore();
 const hasPhone = computed(() => authStore.userData.phone);
 
 
@@ -235,9 +151,10 @@ const hasPhone = computed(() => authStore.userData.phone);
 .hover-effect {
   transition: all 0.4s ease-in-out;
 }
+
 .hover-effect:hover {
   transform: scale(1.02);
   transition: all 0.2s ease-in-out;
   background-color: rgba(255, 255, 255, 0.1);
 }
-</style> 
+</style>

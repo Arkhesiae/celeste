@@ -135,8 +135,8 @@ v-if="currentChange.demandsToConvert?.length > 0"
         <v-card class="pa-0 my-4" flat elevation="0" color="transparent">
           <div
 class="d-flex align-center justify-center rounded-xl pa-4 "
-            style="font-size: 12px !important;  background-color: rgba(var(--v-theme-remplacement), 0.1);">
-            <span class="text-remplacement"> Des erreurs de compatibilités peuvent parfois apparaitre si les demandes ne
+            style="font-size: 12px !important;  background-color: rgba(var(--v-theme-primary), 0.1);">
+            <span class="text-primary"> Des erreurs de compatibilités peuvent parfois apparaitre si les demandes ne
               sont
               pas compatibles avec le nouveau tour de service au regard de l'arrêté 2024, il est donc conseillé de
               vérifier les
@@ -167,7 +167,7 @@ v-if="changeIndex < totalChangesCount - 1" color="primary" variant="elevated"
 
 
           <v-btn
-v-if="changeIndex === totalChangesCount - 1" color="remplacement" variant="tonal"
+v-if="changeIndex === totalChangesCount - 1" color="primary" variant="tonal"
             @click="handleConfirm">
             <v-icon start>
               mdi-check

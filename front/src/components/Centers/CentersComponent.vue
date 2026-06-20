@@ -111,59 +111,83 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="addDialog" max-width="500">
-      <v-card rounded="xl" variant="flat" class="pa-6">
-        <v-card-title class="pa-0">
-          Ajouter un centre
-        </v-card-title>
-        <v-form ref="form" v-model="isFormValid" @submit.prevent="saveCenter">
-          <v-card-text class="pa-0 my-6">
-            <v-text-field v-model="newCenter.name" variant="outlined" rounded="xl" label="Nom du centre" :rules="[
+
+    <BaseDialog icon="mdi-airport" v-model="addDialog" title="Ajouter un centre" >
+      <v-form ref="form" v-model="isFormValid" @submit.prevent="saveCenter">
+        <v-card-text class="pa-0 my-6">
+          <v-text-field
+            v-model="newCenter.name"
+            variant="outlined"
+            rounded="xl"
+            label="Nom du centre"
+            :rules="[
               v => !!v || 'Le nom du centre est requis',
               v => v.length >= 2 || 'Le nom doit contenir au moins 2 caractères',
               v => v.length <= 50 || 'Le nom ne doit pas dépasser 50 caractères',
-              () => !centerNameError.value || centerNameError.value
-            ]" :error-messages="centerNameError" required @blur="checkCenterNameExists(newCenter.name)" />
-            <v-text-field v-model="newCenter.OACI" variant="underlined" :rules="[
+              v => !centers.some(c => c.name.toLowerCase() === v.toLowerCase()) || 'Un centre avec ce nom existe déjà'
+            ]"
+            required
+          />
+
+          <v-text-field
+            v-model="oaciModel"
+            variant="underlined"
+            :rules="[
               v => !!v || 'L\'indicateur OACI est requis',
               v => v.length <= 4 || 'Maximum 4 caractères',
-              v => /^[A-Z0-9]*$/.test(v) || 'Uniquement lettres majuscules et chiffres'
-            ]" counter="4" maxlength="4" label="Indicateur OACI" required :error-messages="ICAONameError"
-              @blur="checkICAONameExists(newCenter.OACI)" @input="newCenter.OACI = $event.target.value.toUpperCase()" />
-            <v-select v-model="newCenter.type" :items="centerTypes" item-title="name" item-value="value"
-              label="Type de centre" variant="underlined" :rules="[v => !!v || 'Le type de centre est requis']"
-              required />
-            <v-select v-model="newCenter.adminId" rounded="xl" :items="users" item-text="name" item-value="_id"
-              label="Assigner un admin" return-object dense required />
-            <v-text-field v-model="newCenter.numberOfTeams" variant="underlined" type="number" :rules="[
+              v => /^[A-Z0-9]*$/.test(v) || 'Uniquement lettres majuscules et chiffres',
+              v => !centers.some(c => c.OACI?.toLowerCase() === v.toLowerCase()) || 'Un centre avec ce code OACI existe déjà'
+            ]"
+            counter="4"
+            maxlength="4"
+            label="Indicateur OACI"
+            required
+          />
+
+          <v-select
+            v-model="newCenter.type"
+            :items="centerTypes"
+            item-title="name"
+            item-value="value"
+            label="Type de centre"
+            variant="underlined"
+            :rules="[v => !!v || 'Le type de centre est requis']"
+            required
+          />
+
+          <v-text-field
+            v-model.number="newCenter.numberOfTeams"
+            variant="underlined"
+            type="number"
+            :rules="[
               v => !!v || 'Le nombre d\'équipes est requis',
               v => v > 0 || 'Le nombre d\'équipes doit être supérieur à 0',
               v => v <= 50 || 'Le nombre d\'équipes ne doit pas dépasser 50'
-            ]" label="Nombre d'équipes" required />
-          </v-card-text>
-          <div class="d-flex">
-            <v-btn text color="primary" @click="addDialog = false">
-              Annuler
-            </v-btn>
-            <v-spacer />
-            <v-btn text color="primary" type="submit" :disabled="!isFormValid">
-              Enregistrer
-            </v-btn>
-          </div>
-        </v-form>
-      </v-card>
-    </v-dialog>
+            ]"
+            label="Nombre d'équipes"
+            required
+          />
+        </v-card-text>
+      </v-form>
+
+      <template #actions>
+        <v-btn variant="text" color="primary" @click="addDialog = false">
+          Annuler
+        </v-btn>
+        <v-spacer />
+        <v-btn variant="text" color="primary" :disabled="!isFormValid" @click="saveCenter">
+          Enregistrer
+        </v-btn>
+      </template>
+    </BaseDialog>
   </v-container>
 </template>
 
 <script setup>
-
-// import { useAuthStore } from "@/stores/authStore.js";
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useRouter } from 'vue-router';
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
 
-// const authStore = useAuthStore();
 const router = useRouter();
 const centerStore = useCenterStore();
 const snackbarStore = useSnackbarStore();
@@ -172,15 +196,11 @@ const centers = computed(() => centerStore.centers);
 const adminsByCenter = computed(() => centerStore.adminsByCenter);
 const usersCountByCenter = computed(() => centerStore.usersCountByCenter);
 
-// const isAdmin = computed(() => authStore.userData.isAdmin);
 const sortBy = ref('');
-// const sortDirection = ref('asc');
-
 const selectedFilter = ref('all');
-
-const users = ref([]);
 const searchQuery = ref('');
 const addDialog = ref(false);
+
 const newCenter = ref({
   name: "",
   OACI: "",
@@ -188,22 +208,17 @@ const newCenter = ref({
   adminId: null,
   numberOfTeams: 12,
 });
+
 const centerTypes = ref([
-  {
-    name: 'Approche',
-    value: 'app'
-  },
-  {
-    name: 'CRNA',
-    value: 'crna'
-  },
-  {
-    name: 'Autre',
-    value: 'other'
-  }
-])
-const centerNameError = ref('');
-const ICAONameError = ref('');
+  { name: 'Approche', value: 'app' },
+  { name: 'CRNA', value: 'crna' },
+  { name: 'Autre', value: 'other' }
+]);
+
+const oaciModel = computed({
+  get: () => newCenter.value.OACI,
+  set: (val) => { newCenter.value.OACI = (val || '').toUpperCase(); }
+});
 
 const activeRotationOfCenter = computed(() => (centerId) => centerStore.activeRotationsByCenter[centerId]);
 
@@ -218,8 +233,6 @@ const filteredAndSortedCenters = computed(() => {
     filtered = filtered.filter((center) => center.type === 'other');
   }
 
-
-  // Filtrage par recherche
   if (searchQuery.value) {
     const searchLower = searchQuery.value.toLowerCase();
     filtered = filtered.filter(center =>
@@ -228,38 +241,11 @@ const filteredAndSortedCenters = computed(() => {
     );
   }
 
-  // Tri par nom
   return filtered.sort((a, b) => a.name.localeCompare(b.name));
 });
 
 const isFormValid = ref(false);
 const form = ref(null);
-
-const checkCenterNameExists = async (name) => {
-  if (!name) return;
-  const exists = centers.value.some(center =>
-    center.name.toLowerCase() === name.toLowerCase()
-  );
-  if (exists) {
-    centerNameError.value = 'Un centre avec ce nom existe déjà';
-    isFormValid.value = false;
-  } else {
-    centerNameError.value = '';
-  }
-};
-
-const checkICAONameExists = async (OACI) => {
-  if (!OACI) return;
-  const exists = centers.value.some(center =>
-    center.OACI?.toLowerCase() === OACI.toLowerCase()
-  );
-  if (exists) {
-    ICAONameError.value = 'Un centre avec ce code OACI existe déjà';
-    isFormValid.value = false;
-  } else {
-    ICAONameError.value = '';
-  }
-};
 
 const saveCenter = async () => {
   const { valid } = await form.value.validate();
@@ -289,11 +275,9 @@ const removeCenter = async (centerId) => {
 };
 
 const openAddCenterDialog = () => {
-  newCenter.value = { name: "", adminId: null };
+  newCenter.value = { name: "", OACI: "", type: "", adminId: null, numberOfTeams: 12 };
   addDialog.value = true;
-  if (form.value) {
-    form.value.reset();
-  }
+  form.value?.reset();
 };
 
 const navigateToTeams = (centerId) => {
@@ -312,9 +296,7 @@ onMounted(async () => {
   } catch (error) {
     snackbarStore.showNotification('Erreur lors du chargement des données', 'onError', 'mdi-alert-circle');
   }
-
 });
-
 </script>
 
 <style scoped>

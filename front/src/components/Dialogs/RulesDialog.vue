@@ -13,7 +13,7 @@
         <div class="d-flex align-center">
           <v-icon
             icon="mdi-book-open-variant"
-            color="remplacement"
+            color="primary"
             class="mr-6"
             size="16"
           />

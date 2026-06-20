@@ -35,7 +35,7 @@
         <!-- Barre de progression avec indicateur de budget utilisé -->
         <div class="position-relative mb-2">
           <v-progress-linear :model-value="progressPercentage"
-            :bg-color="remainingBudget < 0 ? 'error' : 'remplacement'" color="remplacement" height="12" rounded
+            :bg-color="remainingBudget < 0 ? 'error' : 'remplacement'" color="primary" height="12" rounded
             class="mb-2 animated-progress" />
           <!-- Indicateur de budget utilisé -->
           <div v-if="previousCampaignsRemainder > 0" class="budget-used-indicator"
@@ -74,7 +74,7 @@
         <div class="d-flex justify-space-between align-center">
           <span class="text-onSurface text-body-2 font-weight-medium">Dépenses de la campagne {{ currentCampaignIndex
           }}</span>
-          <span class="text-body-2 font-weight-bold text-remplacement">-{{ campaignExpenses }}€</span>
+          <span class="text-body-2 font-weight-bold text-primary">-{{ campaignExpenses }}€</span>
         </div>
       </div>
     </div>
@@ -138,7 +138,7 @@ const progressPercentage = computed(() => {
 
 .indicator-label {
   background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-remplacement), 0.02);
+  border: 1px solid rgba(var(--v-theme-primary), 0.02);
   border-radius: 8px;
   padding: 6px 10px;
   text-align: center;
@@ -157,9 +157,9 @@ const progressPercentage = computed(() => {
 .animated-progress :deep(.v-progress-linear__determinate) {
   background: linear-gradient(90deg,
       transparent 0%,
-      rgba(var(--v-theme-remplacement), 0.3) 15%,
+      rgba(var(--v-theme-primary), 0.3) 15%,
       rgba(255, 255, 255, 0.4) 50%,
-      rgba(var(--v-theme-remplacement), 0.3) 85%,
+      rgba(var(--v-theme-primary), 0.3) 85%,
       transparent 100%);
   background-size: 300px 100%;
   animation: gradient-shift 6s ease-in-out infinite;

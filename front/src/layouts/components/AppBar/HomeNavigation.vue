@@ -122,7 +122,7 @@ defineEmits([
 }
 
 .nav-link:hover {
-  color: #84d0ff !important;
+  color: rgba(var(--v-theme-primary), 1) !important;
   transition: color 0.3s ease;
 }
 

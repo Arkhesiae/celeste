@@ -97,7 +97,7 @@
                         Vous ne trouvez pas votre organisme dans la liste ?
                       </span>
                       <a
-                        class="text-caption d-flex align-center text-remplacement"
+                        class="text-caption d-flex align-center text-primary"
                         style="color: #85cde8; text-decoration: none; cursor: pointer"
                         @click="router.push('/contact-admin')"
                       >
@@ -229,7 +229,7 @@
                         Toutes les données collectées ne sont utilisées qu'à des fins de statistiques pour le bon fonctionnement du site.
                       </span>
                       <a
-                        class="text-caption d-flex align-center text-remplacement"
+                        class="text-caption d-flex align-center text-primary"
                         style="text-decoration: none; cursor: pointer"
                         @click="showSidePanel('privacy')"
                       >
@@ -305,7 +305,7 @@
 
                     <v-btn
                       v-if="step < 7"
-                      color="remplacement"
+                      color="primary"
                       variant="flat"
                       rounded="xl"
                       class="px-6 text-background"

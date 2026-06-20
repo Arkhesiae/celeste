@@ -12,7 +12,7 @@ import { useTheme } from 'vuetify';
 
 
 
-export function useAppInitialization () {
+export function useAppInitialization() {
   const authStore = useAuthStore();
   const userStore = useUserStore();
   const centerStore = useCenterStore();
@@ -55,15 +55,22 @@ export function useAppInitialization () {
   };
 
   const initializeTeam = async () => {
-    if (!authStore.userData.userId) return;
-    if (authStore.userData.isAdmin && authStore.userData.adminType === 'master') {
+    const { userId, centerId, isAdmin, adminType } = authStore.userData;
+
+    if (!userId) {
+      return;
+    }
+
+    if (isAdmin && adminType === 'master') {
       await teamStore.fetchAllTeams();
     }
+
     await Promise.all([
-      teamStore.fetchCurrentTeamOfUser(authStore.userData.userId),
-      teamStore.fetchTeamOccurrencesOfUser(authStore.userData.userId),
-      teamStore.fetchCenterTeams(authStore.userData.centerId)
+      teamStore.fetchCurrentTeamOfUser(userId),
+      teamStore.fetchTeamOccurrencesOfUser(userId),
+      teamStore.fetchCenterTeams(centerId)
     ]);
+
     initializationStore.updateInitializationState('team', true);
   };
 

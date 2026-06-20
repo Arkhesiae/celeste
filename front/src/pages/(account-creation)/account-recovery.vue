@@ -258,7 +258,7 @@ style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
 
 
                   <v-radio-group v-model="useOldEmail" class="mt-4">
-                    <v-radio color="remplacement" :value="true" label="Garder l'adresse email actuelle" />
+                    <v-radio color="primary" :value="true" label="Garder l'adresse email actuelle" />
                     <v-radio
 color="permutation" class="text-subtitle-1" :value="false"
                       label="Utiliser une nouvelle adresse email" />
@@ -319,7 +319,7 @@ v-if="step4Error" type="error" class="mb-2" color="error" variant="tonal" rounde
                     Confirmation
                   </v-card-title>
                   <div class="my-6 text-center">
-                    <v-icon color="remplacement" size="48">
+                    <v-icon color="primary" size="48">
                       mdi-check
                     </v-icon>
                     <div class="mt-4">

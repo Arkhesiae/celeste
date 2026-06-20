@@ -63,7 +63,7 @@ const hasMultiplePending = computed(() => {
   <v-chip
 v-if="status !== ''" rounded="lg" :color="status === 'pending' ? 'surfaceContainer' : 'remplacement'"
     :variant="status !== 'pending' ? 'flat' : 'flat'" size="x-small"
-    style="bottom: -10px; opacity: 1; transform: scale(0.9) ; border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    style="bottom: -10px; opacity: 1; transform: scale(0.9) ; border-color: rgba(var(--v-theme-primary), 0.4);"
     class="text-caption font-weight-bold position-absolute px-2 overflow-visible">
     <v-icon v-if="hasMultiplePending" :color="status === 'pending' ? 'remplacement' : 'background'">
       mdi-alert-circle-outline

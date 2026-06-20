@@ -48,7 +48,7 @@
           </td>
           <td
             align="end"
-            class="font-weight-bold text-remplacement"
+            class="font-weight-bold text-primary"
           >
             -{{ depense.montant }}€
           </td>

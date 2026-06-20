@@ -92,7 +92,7 @@ const openDemand = (demand) => {
 }
 
 .category-indicator.todo {
-  background-color: rgb(var(--v-theme-remplacement));
+  background-color: rgb(var(--v-theme-primary));
   color: rgb(var(--v-theme-background));
 }
 

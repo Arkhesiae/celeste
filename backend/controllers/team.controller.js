@@ -52,6 +52,12 @@ const deleteTeam = async (req, res) => {
 const getTeamsByCenter = async (req, res) => {
     const { id } = req.params;
 
+    console.log(id)
+
+    if (!id) {
+        throw new AppError('Les centre est requis', 400);
+    }
+
     try {
         const teams = await Team.find({ center: id, deleted: false });
         res.json(teams || { message: 'No teams for this center' });

@@ -435,7 +435,7 @@ const handleReplace = () => {
 }
 
 .hybrid-chip {
-  background: linear-gradient(to right, rgba(var(--v-theme-permutation), 1), rgba(var(--v-theme-remplacement), 1) 50%);
+  background: linear-gradient(to right, rgba(var(--v-theme-permutation), 1), rgba(var(--v-theme-primary), 1) 50%);
 }
 
 .main-btn {

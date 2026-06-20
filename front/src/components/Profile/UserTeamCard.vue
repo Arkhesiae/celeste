@@ -310,7 +310,7 @@ const confirmDelete = async () => {
   fill: transparent;
   color: #000;
   font-weight: 700 !important;
-  background: linear-gradient(to right, rgb(var(--v-theme-remplacement))00%, #a779cd 40%, rgb(var(--v-theme-permutation)) 90%, #dc8474 80%);
+  background: linear-gradient(to right, rgb(var(--v-theme-primary))00%, #a779cd 40%, rgb(var(--v-theme-permutation)) 90%, #dc8474 80%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;

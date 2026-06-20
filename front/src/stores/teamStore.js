@@ -25,6 +25,11 @@ export const useTeamStore = defineStore('team', () => {
    * @param {string} centerId - L'ID du centre.
    */
   const fetchCenterTeams = async (centerId) => {
+    if (!centerId) {
+      console.warn('[teamStore] fetchCenterTeams skipped: missing centerId');
+      return [];
+    }
+
     try {
       loading.value = true;
       error.value = null;

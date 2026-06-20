@@ -6,13 +6,13 @@
       <template #actions>
         <v-btn
 v-if="!smAndDown" height="48px"
-          class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow" flat
+          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow" flat
           style="border-radius: 16px !important" prepend-icon="mdi-github" @click="openGitHub">
           Voir sur GitHub
         </v-btn>
         <v-btn
 v-else size="small" height="32px"
-          class="px-6 bg-surfaceContainerHighest text-remplacement highlight-shadow" flat
+          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow" flat
           style="border-radius: 16px !important" prepend-icon="mdi-github" @click="openGitHub">
           Voir sur GitHub
         </v-btn>
@@ -130,7 +130,7 @@ v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" 
                 Sortie le {{ selectedVersion.releaseDate }}
               </div>
             </div>
-            <v-btn icon="mdi-share-variant" variant="tonal" rounded="lg" color="remplacement" @click="shareVersion" />
+            <v-btn icon="mdi-share-variant" variant="tonal" rounded="lg" color="primary" @click="shareVersion" />
           </div>
 
           <!-- Description -->
@@ -223,7 +223,7 @@ v-for="(note, index) in selectedVersion.technicalNotes" :key="index"
             <div class="d-flex flex-wrap gap-2">
               <v-btn
 v-for="link in selectedVersion.links" :key="link.url" :href="link.url" target="_blank"
-                variant="tonal" color="remplacement" prepend-icon="mdi-open-in-new">
+                variant="tonal" color="primary" prepend-icon="mdi-open-in-new">
                 {{ link.label }}
               </v-btn>
             </div>
@@ -370,13 +370,13 @@ onMounted(() => {
 }
 
 .version-hover:hover {
-  background-color: rgba(var(--v-theme-remplacement), 0.05);
-  border-color: rgba(var(--v-theme-remplacement), 0.1);
+  background-color: rgba(var(--v-theme-primary), 0.05);
+  border-color: rgba(var(--v-theme-primary), 0.1);
 }
 
 .selected-version {
-  background-color: rgba(var(--v-theme-remplacement), 0.1);
-  border-color: rgba(var(--v-theme-remplacement), 0.3);
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.3);
 }
 
 .future-version {
@@ -421,12 +421,12 @@ onMounted(() => {
 }
 
 .version-list::-webkit-scrollbar-thumb {
-  background: rgba(var(--v-theme-remplacement), 0.3);
+  background: rgba(var(--v-theme-primary), 0.3);
   border-radius: 3px;
 }
 
 .version-list::-webkit-scrollbar-thumb:hover {
-  background: rgba(var(--v-theme-remplacement), 0.5);
+  background: rgba(var(--v-theme-primary), 0.5);
 }
 
 /* Responsive */

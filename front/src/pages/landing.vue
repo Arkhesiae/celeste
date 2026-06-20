@@ -81,7 +81,7 @@
         <v-col key="center" cols="12" md="4">
           <v-card ref="statsRef" color="transparent" flat height="100%" rounded="xl"
             class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold text-remplacement">{{ Math.floor(animatedCenters) }}</span>
+            <span class="text-h1 mt-2 font-weight-bold text-primary">{{ Math.floor(animatedCenters) }}</span>
             <span class="text-h7 text-medium-emphasis">centres</span>
           </v-card>
         </v-col>
@@ -105,7 +105,7 @@
       <v-col cols="12" md="12">
         <v-card flat height="100%" rounded="xl" class="flex-column d-flex pa-8">
           <v-card-title class="text-h6 mt-2 font-weight-bold">
-            <v-icon color="remplacement">mdi-rocket-launch</v-icon>
+            <v-icon color="primary">mdi-rocket-launch</v-icon>
           </v-card-title>
           <span class="text-caption text-medium-emphasis"></span>
         </v-card>
@@ -543,6 +543,6 @@ onMounted(() => {
 }
 
 .celeste-logo .cls-1 {
-  fill: rgb(var(--v-theme-remplacement));
+  fill: rgb(var(--v-theme-primary));
 }
 </style>

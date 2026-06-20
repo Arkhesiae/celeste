@@ -55,7 +55,7 @@ const hasMultiplePending = computed(() => {
     color="background"
     variant="flat"
  
-    style="border-color: rgba(var(--v-theme-remplacement), 0.4);"
+    style="border-color: rgba(var(--v-theme-primary), 0.4);"
     class="text-caption font-weight-bold px-2 overflow-visible"
     @click="router.push(`/exchange/replace`)"
   >

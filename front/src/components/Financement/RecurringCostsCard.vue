@@ -29,7 +29,7 @@
         <div class="d-flex align-center ga-5">
           <v-icon
             :icon="cout.icon"
-            :color="`rgba(var(--v-theme-remplacement), ${costPercentage(cout, totalAnnualCosts)})`"
+            :color="`rgba(var(--v-theme-primary), ${costPercentage(cout, totalAnnualCosts)})`"
             size="20"
           />
           <div class="d-flex flex-column">

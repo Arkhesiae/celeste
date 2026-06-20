@@ -406,8 +406,8 @@ const openDetails = () => {
 }
 
 .to-do-demand-card {
-  background-color: rgba(var(--v-theme-remplacement), 0.20) !important;
-  color: rgba(var(--v-theme-remplacement), 1) !important;
+  background-color: rgba(var(--v-theme-primary), 0.20) !important;
+  color: rgba(var(--v-theme-primary), 1) !important;
 }
 
 /* Original chip styles (adapted to new chip structure) */

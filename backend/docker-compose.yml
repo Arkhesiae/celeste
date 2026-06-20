@@ -1,17 +1,15 @@
-version: '3.8'
-
 services:
 
   mongo:
     image: mongo:7
     container_name: mongo_db
-    command: ["--replSet", "rs0"]
+    command: [ "--replSet", "rs0" ]
     ports:
       - '27017:27017'
     volumes:
       - mongo_data:/data/db
     healthcheck:
-      test: mongosh --eval "rs.status().ok" --quiet
+      test: mongosh --eval "db.adminCommand('ping').ok" --quiet
       interval: 10s
       retries: 5
       start_period: 10s

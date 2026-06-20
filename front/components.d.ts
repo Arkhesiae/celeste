@@ -25,6 +25,7 @@ declare module 'vue' {
     AssignCenterDialog: typeof import('./src/components/Users/AssignCenterDialog.vue')['default']
     AvailableDemands: typeof import('./src/components/Remplacer/AvailableDemands.vue')['default']
     AvatarDialog: typeof import('./src/components/Profile/Parameters/AvatarDialog.vue')['default']
+    BaseDialog: typeof import('./src/components/common/BaseDialog.vue')['default']
     BirthDateDialog: typeof import('./src/components/Profile/Parameters/BirthDateDialog.vue')['default']
     CalendarBottomSheet: typeof import('./src/components/Deprecated/CalendarBottomSheet.vue')['default']
     CalendarDayBlock: typeof import('./src/components/Calendar/Panels/CalendarDayBlock.vue')['default']

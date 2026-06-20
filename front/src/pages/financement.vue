@@ -18,7 +18,7 @@
                 :model-value="campaigns.find(c => c.index === selectedCampaign?.index)"
                 @update:model-value="c => selectCampaign(c.index)">
                 <template #statusChip="{ item }">
-                  <v-chip v-if="item.status === 'a_venir'" color="remplacement" size="x-small" class="ml-2" rounded="lg"
+                  <v-chip v-if="item.status === 'a_venir'" color="primary" size="x-small" class="ml-2" rounded="lg"
                     label>
                     À
                     venir
@@ -409,7 +409,7 @@ const previousCampaignsRemainder = computed(() => {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: rgba(var(--v-theme-remplacement), 0.3);
+  background: rgba(var(--v-theme-primary), 0.3);
 }
 
 .timeline-point {
@@ -425,26 +425,26 @@ const previousCampaignsRemainder = computed(() => {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: rgba(var(--v-theme-remplacement), 0.3);
+  background: rgba(var(--v-theme-primary), 0.3);
   border: 3px solid rgb(var(--v-theme-surface));
   transition: all 0.3s ease;
 }
 
 .timeline-dot.active {
-  background: rgb(var(--v-theme-remplacement));
+  background: rgb(var(--v-theme-primary));
   transform: scale(1.2);
 }
 
 .timeline-content {
-  background: rgba(var(--v-theme-remplacement), 0.05);
+  background: rgba(var(--v-theme-primary), 0.05);
   padding: 16px;
   border-radius: 12px;
-  border-left: 4px solid rgb(var(--v-theme-remplacement));
+  border-left: 4px solid rgb(var(--v-theme-primary));
 }
 
 .timeline-date {
   font-weight: bold;
-  color: rgb(var(--v-theme-remplacement));
+  color: rgb(var(--v-theme-primary));
   margin-bottom: 4px;
 }
 
@@ -485,7 +485,7 @@ const previousCampaignsRemainder = computed(() => {
 
 .indicator-label {
   background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-theme-remplacement), 0.02);
+  border: 1px solid rgba(var(--v-theme-primary), 0.02);
   border-radius: 8px;
   padding: 6px 10px;
   text-align: center;
@@ -496,7 +496,7 @@ const previousCampaignsRemainder = computed(() => {
 .label-text {
   font-weight: bold;
   font-size: 0.875rem;
-  color: rgb(var(--v-theme-remplacement));
+  color: rgb(var(--v-theme-primary));
   line-height: 1;
 }
 
@@ -560,8 +560,8 @@ const previousCampaignsRemainder = computed(() => {
   position: relative;
   overflow: hidden;
   min-width: 80px;
-  background: rgba(var(--v-theme-remplacement), 0.1);
-  border: 2px solid rgba(var(--v-theme-remplacement), 0.002);
+  background: rgba(var(--v-theme-primary), 0.1);
+  border: 2px solid rgba(var(--v-theme-primary), 0.002);
   border-radius: 12px;
 }
 
@@ -576,59 +576,59 @@ const previousCampaignsRemainder = computed(() => {
   left: 0;
   height: 100%;
   background: linear-gradient(135deg,
-      rgba(var(--v-theme-remplacement), 0.0) 0%,
-      rgba(var(--v-theme-remplacement), 0.6) 100%);
+      rgba(var(--v-theme-primary), 0.0) 0%,
+      rgba(var(--v-theme-primary), 0.6) 100%);
   transition: width 0.5s ease;
   z-index: 1;
 }
 
 /* Continuous gradient across all rectangles */
 .month-rectangle:nth-child(1) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0)
+  background: rgba(var(--v-theme-primary), 0)
 }
 
 .month-rectangle:nth-child(2) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.1)
+  background: rgba(var(--v-theme-primary), 0.1)
 }
 
 .month-rectangle:nth-child(3) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.2)
+  background: rgba(var(--v-theme-primary), 0.2)
 }
 
 .month-rectangle:nth-child(4) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.3)
+  background: rgba(var(--v-theme-primary), 0.3)
 }
 
 .month-rectangle:nth-child(5) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.4)
+  background: rgba(var(--v-theme-primary), 0.4)
 }
 
 .month-rectangle:nth-child(6) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.5)
+  background: rgba(var(--v-theme-primary), 0.5)
 }
 
 .month-rectangle:nth-child(7) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.6)
+  background: rgba(var(--v-theme-primary), 0.6)
 }
 
 .month-rectangle:nth-child(8) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.7)
+  background: rgba(var(--v-theme-primary), 0.7)
 }
 
 .month-rectangle:nth-child(9) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.8)
+  background: rgba(var(--v-theme-primary), 0.8)
 }
 
 .month-rectangle:nth-child(10) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 0.9)
+  background: rgba(var(--v-theme-primary), 0.9)
 }
 
 .month-rectangle:nth-child(11) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 1.0)
+  background: rgba(var(--v-theme-primary), 1.0)
 }
 
 .month-rectangle:nth-child(12) .month-fill {
-  background: rgba(var(--v-theme-remplacement), 1.0)
+  background: rgba(var(--v-theme-primary), 1.0)
 }
 
 /* .month-rectangle.exhausted .month-fill {
@@ -654,7 +654,7 @@ const previousCampaignsRemainder = computed(() => {
   right: 8px;
   font-size: 0.7rem;
   font-weight: bold;
-  color: rgb(var(--v-theme-remplacement));
+  color: rgb(var(--v-theme-primary));
   background: rgba(var(--v-theme-surface), 0.9);
   padding: 2px 6px;
   border-radius: 6px;
@@ -742,13 +742,13 @@ const previousCampaignsRemainder = computed(() => {
 }
 
 .campaign-hover:hover {
-  background-color: rgba(var(--v-theme-remplacement), 0.05);
-  border-color: rgba(var(--v-theme-remplacement), 0.1);
+  background-color: rgba(var(--v-theme-primary), 0.05);
+  border-color: rgba(var(--v-theme-primary), 0.1);
 }
 
 .selected-campaign {
-  background-color: rgba(var(--v-theme-remplacement), 0.1);
-  border-color: rgba(var(--v-theme-remplacement), 0.03);
+  background-color: rgba(var(--v-theme-primary), 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.03);
 }
 
 

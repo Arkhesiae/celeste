@@ -79,7 +79,7 @@
               <div
                 v-if="substitutionStore?.hasAvailableSubstitutions(day.date.toISOString())"
                 class="indicator-dot remplacement "
-                style="background: rgb(var(--v-theme-remplacement)) !important"
+                style="background: rgb(var(--v-theme-primary)) !important"
               />
               <div
                 v-if="substitutionStore?.hasAvailableSwitches(day.date.toISOString())"

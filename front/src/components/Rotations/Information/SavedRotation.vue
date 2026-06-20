@@ -44,7 +44,7 @@
         <v-chip
           v-if="isActive"
           class="ml-3"
-          color="remplacement"
+          color="primary"
           rounded="lg"
         >
           Actif
@@ -283,7 +283,7 @@ const handleNameEdit = async (updatedRotation) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(var(--v-theme-remplacement), 0.15) 0%, rgba(var(--v-theme-surfaceContainerHighest), 0.25) 80%);
+  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15) 0%, rgba(var(--v-theme-surfaceContainerHighest), 0.25) 80%);
   pointer-events: none;
   z-index: 0;
 }

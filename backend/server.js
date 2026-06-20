@@ -43,6 +43,7 @@ app.use(cors({
     'capacitor://celeste-app.fr',
     'capacitor://https://celeste-app.fr',
   ],
+
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -56,7 +57,7 @@ app.use(cookieParser());
 // ─── Fichiers statiques ───────────────────────────────────────────────────────
 app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
 app.get("/preview/:template", (req, res) => {
-    const html = renderMail(req.params.template, {});
+  const html = renderMail(req.params.template, {});
   res.send(html);
 });
 
@@ -82,7 +83,7 @@ app.use(errorHandler);
 const MAX_RETRIES = 5;
 const RETRY_DELAY_MS = 5_000;
 
-async function connectWithRetry (attempt = 1) {
+async function connectWithRetry(attempt = 1) {
   try {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB connecté via Docker');

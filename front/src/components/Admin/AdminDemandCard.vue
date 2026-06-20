@@ -145,14 +145,14 @@
       <div class="d-flex align-center justify-space-between">
         <span class="text-caption font-weight-bold opacity-70">Points</span>
         <v-chip 
-          color="remplacement" 
+          color="primary" 
           variant="tonal" 
           size="small" 
           rounded="lg"
           class="font-weight-bold"
         >
           <LogoCopy
-            color="remplacement"
+            color="primary"
             style="top:-2px; position: relative;"
           />
           {{ demand?.points }}

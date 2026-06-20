@@ -230,7 +230,7 @@ const formatDateExtraShort = (date) => {
 
 .unread {
   background-color: rgba(var(--v-theme-surfaceContainerHighest), 0.5);
-  border-color: rgba(var(--v-theme-remplacement), 0.1);
+  border-color: rgba(var(--v-theme-primary), 0.1);
 }
 
 .icon-container {

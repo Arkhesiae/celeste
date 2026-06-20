@@ -3,7 +3,8 @@
     "ssh:connect": "powershell -ExecutionPolicy Bypass -File scripts/connect_ssh.ps1"
   },
   "dependencies": {
-    "git-filter-repo": "^0.0.30"
+    "git-filter-repo": "^0.0.30",
+    "mongosh": "^2.8.3"
   },
   "devDependencies": {
     "prettier": "^3.8.1"

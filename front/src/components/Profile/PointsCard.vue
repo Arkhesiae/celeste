@@ -6,7 +6,7 @@
         <!-- En-tête avec l'icône et le menu -->
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="points-icon d-flex justify-center align-center">
-            <Logo color="remplacement" style="margin-top: -2px; margin-left: 2px; " />
+            <Logo color="primary" style="margin-top: -2px; margin-left: 2px; " />
           </div>
           <!-- <v-btn icon variant="text">
             <v-icon>mdi-dots-horizontal</v-icon>
@@ -32,7 +32,7 @@
 
         <!-- Boutons d'action -->
         <div class="d-flex justify-center align-center">
-          <v-btn prepend-icon="mdi-transfer" color="background" variant="flat" rounded="lg" height="40"
+          <v-btn prepend-icon="mdi-transfer" color="secondary" variant="flat" rounded="lg" height="40"
             class="transaction-button" @click="$emit('transfer')">
             Transférer
           </v-btn>

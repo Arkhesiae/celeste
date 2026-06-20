@@ -42,7 +42,7 @@
       v-if="hasData"
       icon="mdi-chevron-right"
       size="32"
-      color="remplacement"
+      color="primary"
     />
     <v-icon
       v-else

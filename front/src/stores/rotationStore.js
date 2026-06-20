@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-
 import { rotationService } from '@/services/rotationService';
 
 /**
@@ -11,13 +10,18 @@ export const useRotationStore = defineStore('rotation', () => {
   const rotations = ref([]); // Liste des tours de service
   const sortedRotations = ref([]); // Liste des tours de service triés
   const activeRotation = ref(null); // Tour de service actif
-  const loading = ref(false);
+  const loading = ref(true);
 
   /**
    * Récupère les tours de service pour un centre spécifique.
    * @param {string} centerId - L'ID du centre.
    */
   const fetchRotations = async (centerId) => {
+    if (!centerId) {
+      console.warn('[teamStore] fetchRotations skipped: missing centerId');
+      return [];
+    }
+
     try {
       loading.value = true;
       const data = await rotationService.fetchRotations(centerId);
@@ -25,6 +29,8 @@ export const useRotationStore = defineStore('rotation', () => {
       sortedRotations.value = data.sortedRotations;
     } catch (error) {
       console.error('Erreur lors de la récupération des tours de service :', error);
+    } finally {
+      loading.value = false
     }
   };
 

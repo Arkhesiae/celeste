@@ -147,8 +147,8 @@ export async function assignTeamToUser (userId, newTeam) {
     const after = [...user.teams, newTeam];
     const changes = findChangedPeriods(before, after);
     if (changes.length) {
-        cancelModification(changes)
-        cancelSubstitution(changes)
+        // cancelModification(changes)
+        // cancelSubstitution(changes)
     }
 
     user.teams.push({ teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate });

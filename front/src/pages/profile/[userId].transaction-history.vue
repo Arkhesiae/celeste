@@ -3,10 +3,10 @@
     <!-- <div class="d-flex justify-space-between my-16 flex-column">
       <div class="d-flex align-center"> 
         
-        <span class="text-h4 font-weight-medium">Historique des transactions</span>
+        <span class="text-headline-large font-weight-medium">Historique des transactions</span>
 
       </div>
-      <span class="text-h4 text-overline text-medium-emphasis">
+      <span class="text-headline-large text-label-medium text-medium-emphasis">
         Voir toutes les transactions
       </span>
     </div> -->
@@ -17,17 +17,17 @@
       <div class="d-flex justify-center chip-container pa-2">
         <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 ga-2 d-flex justify-center">
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="all" size="large" rounded="lg" color="primary"
+class="pa-0 ma-0 mr-2 px-4 text-body-medium " value="all" size="large" rounded="lg" color="primary"
             variant="text">
             Toutes
           </v-chip>
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-2 " value="received" size="large" rounded="lg" color="primary"
+class="pa-0 ma-0 mr-2 px-4 text-body-medium " value="received" size="large" rounded="lg" color="primary"
             variant="text">
             Reçues
           </v-chip>
           <v-chip
-class="pa-0 ma-0 px-4 text-body-2 " value="sent" size="large" rounded="lg" color="primary"
+class="pa-0 ma-0 px-4 text-body-medium " value="sent" size="large" rounded="lg" color="primary"
             variant="text">
             Envoyées
           </v-chip>
@@ -48,7 +48,7 @@ class="pa-0 ma-0 px-4 text-body-2 " value="sent" size="large" rounded="lg" color
 v-for="(transaction, index) in filteredTransactions" :key="index"
                   :transaction="transaction" />
               </div>
-              <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
+              <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
                 Aucune transaction trouvée
               </div>
             </v-card-text>
@@ -60,7 +60,7 @@ v-for="(transaction, index) in filteredTransactions" :key="index"
       <v-col cols="12" md="4">
         <v-card rounded="xl" elevation="0" color="background">
           <v-card-text class="pa-1">
-            <h2 class="text-h5 mb-6">
+            <h2 class="text-headline-small mb-6">
               Transactions en attente
             </h2>
 
@@ -71,7 +71,7 @@ v-for="(transaction, index) in filteredTransactions" :key="index"
 v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="'pending-' + index"
                 :transaction="transaction" />
             </div>
-            <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
+            <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
               Aucune transaction en attente
             </div>
           </v-card-text>

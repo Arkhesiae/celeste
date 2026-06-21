@@ -7,7 +7,7 @@
   >
     <div class="d-flex align-center justify-space-between mb-4"> 
       <span
-        class="text-body-2 font-weight-medium mb-4"
+        class="text-body-medium font-weight-medium mb-4"
         style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;"
       >
         <v-icon
@@ -45,8 +45,8 @@
     </v-list>
     <v-divider class="my-4" />
     <div class="d-flex justify-space-between align-center">
-      <span class="text-h6 font-weight-medium">Total Fixes</span>
-      <span class="text-h6 font-weight-bold">{{ fundingStore.totalFixedCosts }}€</span>
+      <span class="text-title-large font-weight-medium">Total Fixes</span>
+      <span class="text-title-large font-weight-bold">{{ fundingStore.totalFixedCosts }}€</span>
     </div>
   </v-card>
 </template>

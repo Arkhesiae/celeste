@@ -58,7 +58,7 @@
             <div class="d-flex justify-space-between flex-column align-center">
               <div
                 v-if="points > 99999"
-                class="text-center text-h6 "
+                class="text-center text-title-large "
               >
                 <v-icon
                   class="mb-1"
@@ -70,11 +70,11 @@
               <div
                 v-else
                 :key="points"
-                class="text-h5 font-weight-bold text-center"
+                class="text-headline-small font-weight-bold text-center"
               >
                 {{ points }}
               </div>
-              <div class="text-body-2 text-medium-emphasis mt-n3">
+              <div class="text-body-medium text-medium-emphasis mt-n3">
                 Points
               </div>
             </div>
@@ -92,7 +92,7 @@
         >
           <div
             v-if="isLoggedIn"
-            class="text-h7 d-flex flex-column"
+            class="text-body-large d-flex flex-column"
           >
             <v-fade-transition
               group
@@ -168,7 +168,7 @@
 
           <div
             v-else
-            class="text-h7 d-flex flex-column"
+            class="text-body-large d-flex flex-column"
           >
             <v-btn
               v-if="!isLoggedIn"
@@ -190,7 +190,7 @@
           <!-- Footer Links Section -->
           <v-list
             nav
-            class="d-flex justify-space-around align-center pt-8 text-caption"
+            class="d-flex justify-space-around align-center pt-8 text-body-small"
             bg-color="background"
           >
             <span
@@ -213,7 +213,7 @@
           <v-list
             v-if="!isLoggedIn"
             nav
-            class="d-flex justify-space-around align-center pt-8 text-caption"
+            class="d-flex justify-space-around align-center pt-8 text-body-small"
             bg-color="background"
           >
             <div

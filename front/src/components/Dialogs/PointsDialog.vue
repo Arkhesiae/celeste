@@ -70,7 +70,7 @@ const cancel = () => {
       <div>
         <div class="mb-4 d-flex align-center ga-2">
           <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70" />
-          <p class="text-body-2 font-weight-medium">
+          <p class="text-body-medium font-weight-medium">
             Permutation avec {{ props.switch.name }}
           </p>
         </div>

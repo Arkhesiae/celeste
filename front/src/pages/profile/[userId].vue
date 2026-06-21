@@ -5,7 +5,7 @@
       <v-card ref="header" flat class="debug2 " :style="headerStyle">
         <div class="d-flex align-start justify-space-between pa-6">
           <div class="d-flex align-start flex-column justify-space-between">
-            <v-card-title v-if="!isSticky" class="text-h5 pa-0 mb-4">
+            <v-card-title v-if="!isSticky" class="text-headline-small pa-0 mb-4">
               Profil
             </v-card-title>
 
@@ -20,10 +20,10 @@
                   </v-icon>
                 </v-avatar>
                 <div>
-                  <div class="text-subtitle-1">
+                  <div class="text-body-large">
                     {{ authStore.userData.name }}
                   </div>
-                  <div class="text-caption text-medium-emphasis">
+                  <div class="text-body-small text-medium-emphasis">
                     {{ authStore.userData.email }}
                   </div>
                 </div>
@@ -74,7 +74,7 @@
               <v-icon size="16" class="" color="onSurface">
                 {{ item.icon }}
               </v-icon>
-              <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
+              <span class="text-onSurface text-body-medium font-weight-medium">{{ item.title }}</span>
             </div>
             <v-icon color="onSurface">
               mdi-chevron-right
@@ -85,7 +85,7 @@
           <div class="d-flex align-center ga-2 justify-space-between mb-6">
             <div class="d-flex align-center ga-2">
               <!-- <v-icon size="16" color="onSurface">{{ item.icon }}</v-icon> -->
-              <span class="text-onSurface text-body-2 font-weight-medium">{{ item.title }}</span>
+              <span class="text-onSurface text-body-medium font-weight-medium">{{ item.title }}</span>
             </div>
             <v-icon color="onSurface">
               mdi-chevron-right
@@ -100,7 +100,7 @@
         <v-card v-if="authStore.userData.centerId" color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer"
           height="64" link flat @click="router.push('/patchnotes')">
           <div class="d-flex align-center justify-space-between h-100">
-            <span class="text-onSurface text-caption">Patchnotes</span>
+            <span class="text-onSurface text-body-small">Patchnotes</span>
             <v-icon size="16" color="onSurface">
               mdi-update
             </v-icon>
@@ -111,7 +111,7 @@
         <v-card color="surfaceContainer" rounded="xl" class="pa-6 cursor-pointer" height="64" link flat
           @click="router.push('/financement')">
           <div class="d-flex align-center justify-space-between h-100">
-            <span class="text-onSurface text-caption">Financement</span>
+            <span class="text-onSurface text-body-small">Financement</span>
             <v-icon size="16" color="onSurface">
               mdi-currency-eur
             </v-icon>
@@ -126,7 +126,7 @@
         <v-card color="surfaceContainerLow" rounded="xl" width="200px" class="pa-6 cursor-pointer" height="48" flat
           @click="logout">
           <div class="d-flex align-center justify-center h-100">
-            <span class="text-h7 font-weight-medium text-error">Se déconnecter</span>
+            <span class="text-body-large font-weight-medium text-error">Se déconnecter</span>
           </div>
         </v-card>
       </v-col>

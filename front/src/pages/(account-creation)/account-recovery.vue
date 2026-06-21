@@ -170,21 +170,21 @@ async function handleRecovery () {
         <v-card
 flat rounded="xl" class="pa-6 smooth-height" max-width="1200px"
           :class="smAndDown ? 'bg-transparent px-0' : ''" style="transition: all 0.3s ease-in-out;">
-          <v-card-title class="pl-0 text-overline font-weight-bold">
+          <v-card-title class="pl-0 text-label-medium font-weight-bold">
             CéLESTE
           </v-card-title>
           <v-row style="transition: all 0.3s ease-in-out;">
             <v-col cols="12" md="6">
               <v-scroll-y-transition appear hide-on-leave>
                 <div class="d-flex flex-column justify-center align-start mt-8">
-                  <span class="pl-0 text-h4" style="font-weight: 500;">Récupérer mon compte</span>
-                  <span class="text-body-2 text-medium-emphasis pl-0">
+                  <span class="pl-0 text-headline-large" style="font-weight: 500;">Récupérer mon compte</span>
+                  <span class="text-body-medium text-medium-emphasis pl-0">
                     Remplissez les champs pour récupérer votre compte.
                   </span>
                 </div>
               </v-scroll-y-transition>
               <v-alert class="mt-4" color="pendingDemand" variant="tonal" rounded="xl" icon="mdi-mail">
-                <span class="text-body-2 pl-0">
+                <span class="text-body-medium pl-0">
                   Nous vous rappelons qu'il est préférable de ne pas utiliser l'adresse aviation-civile.gouv.fr.
                   <br>
                   <b> Si vous ne recevez pas l'email, veuillez patienter quelques instants et réessayer </b>
@@ -195,10 +195,10 @@ flat rounded="xl" class="pa-6 smooth-height" max-width="1200px"
               <v-window v-model="step" class="mt-8" style="transition: all 0.3s ease-in-out;">
                 <!-- Étape 1 : Identification -->
                 <v-window-item :value="1">
-                  <v-card-title class="pl-0 text-h6 ">
+                  <v-card-title class="pl-0 text-title-large ">
                     Mes identifiants
                   </v-card-title>
-                  <span class="text-body-2 text-medium-emphasis pl-0 mb-4 d-block">
+                  <span class="text-body-medium text-medium-emphasis pl-0 mb-4 d-block">
                     Entrez l'email et le centre de votre ancien compte.
                   </span>
                   <v-form>
@@ -222,37 +222,37 @@ v-if="step1Error" color="error" rounded="xl" variant="tonal"
 
                 <!-- Étape 2 : Affichage infos + choix email -->
                 <v-window-item :value="2">
-                  <!-- <v-card-title class="pl-0 text-h5">Informations du compte</v-card-title> -->
+                  <!-- <v-card-title class="pl-0 text-headline-small">Informations du compte</v-card-title> -->
                   <v-card
 style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
                     class="pa-4 d-flex justify-space-between">
                     <div class="d-flex flex-column">
-                      <div class="text-h7">
+                      <div class="text-body-large">
                         {{ oldAccount.firstName.charAt(0).toUpperCase() + oldAccount.firstName.slice(1) }}
                       </div>
-                      <div class="text-h7">
+                      <div class="text-body-large">
                         <b>{{ oldAccount.lastName.toUpperCase() }}</b>
                       </div>
                     </div>
                     <div class="d-flex justify-space-between flex-column">
-                      <div class="text-h5 font-weight-bold">
+                      <div class="text-headline-small font-weight-bold">
                         {{ oldAccount.points }}
                       </div>
-                      <div class="text-body-2 text-medium-emphasis mt-n3">
+                      <div class="text-body-medium text-medium-emphasis mt-n3">
                         Points
                       </div>
                     </div>
                   </v-card>
                   <div class="d-flex justify-space-between">
-                    <div class="text-body-2 text-medium-emphasis mt-1">
+                    <div class="text-body-medium text-medium-emphasis mt-1">
                       Equipe : <b>{{ oldAccount.equipe }}</b>
                     </div>
-                    <div class="text-body-2 text-medium-emphasis mt-1">
+                    <div class="text-body-medium text-medium-emphasis mt-1">
                       Centre : <b>{{ getCenterName(oldAccount.center) }}</b>
                     </div>
                   </div>
 
-                  <div class="text-body-2 text-medium-emphasis mt-8">
+                  <div class="text-body-medium text-medium-emphasis mt-8">
                     Email actuel : <b>{{ oldAccount.email }}</b>
                   </div>
 
@@ -260,7 +260,7 @@ style="border-radius: 16px !important;" color="surfaceContainerHigh" flat
                   <v-radio-group v-model="useOldEmail" class="mt-4">
                     <v-radio color="primary" :value="true" label="Garder l'adresse email actuelle" />
                     <v-radio
-color="permutation" class="text-subtitle-1" :value="false"
+color="permutation" class="text-body-large" :value="false"
                       label="Utiliser une nouvelle adresse email" />
                   </v-radio-group>
                   <div class="mt-4" style="transition: all 0.3s ease-in-out;">
@@ -286,14 +286,14 @@ v-if="step2Error" type="error" class="mb-2" color="error" variant="tonal" rounde
 v-if="!otpVerified" :email="useOldEmail ? oldAccount.email : newEmail"
                       @verified="handleOtpVerified" @error="handleOtpError" />
                     <div v-else>
-                      <span class="text-h5 text-medium-emphasis mt-1">Addresse email vérifiée</span>
+                      <span class="text-headline-small text-medium-emphasis mt-1">Addresse email vérifiée</span>
                     </div>
                   </v-slide-y-transition>
                 </v-window-item>
 
                 <!-- Étape 4 : Nouveau mot de passe -->
                 <v-window-item :value="4">
-                  <v-card-title class="pl-0 text-h5">
+                  <v-card-title class="pl-0 text-headline-small">
                     Définir un nouveau mot de passe
                   </v-card-title>
                   <v-form>
@@ -315,7 +315,7 @@ v-if="step4Error" type="error" class="mb-2" color="error" variant="tonal" rounde
 
                 <!-- Étape 5 : Confirmation -->
                 <v-window-item :value="5">
-                  <v-card-title class="pl-0 text-h5">
+                  <v-card-title class="pl-0 text-headline-small">
                     Confirmation
                   </v-card-title>
                   <div class="my-6 text-center">

@@ -3,7 +3,7 @@
     <v-row justify="center" align-content="center">
       <v-col cols="12" sm="8" md="6" lg="4" align-self="center">
         <v-card class="rounded-xl pa-6" flat>
-          <v-card-title class="text-h5 mb-4 pa-0">
+          <v-card-title class="text-headline-small mb-4 pa-0">
             Réinitialisation du mot de passe
           </v-card-title>
 
@@ -28,10 +28,10 @@ v-model="confirmPassword" :rules="confirmPasswordRules"
                   <v-icon color="primary" size="24" class="mb-4">
                     mdi-check-circle-outline
                   </v-icon>
-                  <h3 class="text-h6 mb-2">
+                  <h3 class="text-title-large mb-2">
                     Mot de passe réinitialisé avec succès !
                   </h3>
-                  <span class="text-body-1 mb-4 text-medium-emphasis">Vous pouvez maintenant vous connecter avec votre
+                  <span class="text-body-large mb-4 text-medium-emphasis">Vous pouvez maintenant vous connecter avec votre
                     nouveau mot de passe.</span>
                 </div>
               </v-window-item>

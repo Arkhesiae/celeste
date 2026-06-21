@@ -3,14 +3,14 @@
     <v-card-item>
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center ga-2">
-          <div class="text-h6 font-weight-medium">
+          <div class="text-title-large font-weight-medium">
             {{ day?.name }}
           </div>
 
 
           <v-chip v-if="day.optional" color="surfaceContainerHighest" size="x-small" variant="flat" rounded="lg" flat>
             <div class="d-flex align-center ga-2">
-              <span class="text-caption text-onSurface">Option</span>
+              <span class="text-body-small text-onSurface">Option</span>
               <v-icon size="small" icon="mdi-plus-box-outline" class="text-onSurface" />
             </div>
           </v-chip>
@@ -28,19 +28,19 @@
         <template v-if="day?.variations?.length === 0">
           <div class="d-flex justify-space-between align-center">
             <div>
-              <div class="text-caption text-medium-emphasis">
+              <div class="text-body-small text-medium-emphasis">
                 Début
               </div>
-              <div class="text-h6">
+              <div class="text-title-large">
                 {{ day?.default?.startTime || '--:--' }}
               </div>
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis">
+              <div class="text-body-small text-medium-emphasis">
                 Fin
               </div>
               <div class="d-flex align-center">
-                <div class="text-h6">
+                <div class="text-title-large">
                   {{ day?.default?.endTime || '--:--' }}
                 </div>
                 <span
@@ -61,11 +61,11 @@ v-for="(variant, index) in day?.variations" :key="index" :value="index" color="o
             </v-chip>
           </v-chip-group>
 
-          <div class="text-caption text-medium-emphasis" style="height: 40px">
+          <div class="text-body-small text-medium-emphasis" style="height: 40px">
             <v-slide-y-transition>
               <div
 v-show="!selectedVariant && selectedVariant !== 0"
-                class="text-caption text-error text-medium-emphasis">
+                class="text-body-small text-error text-medium-emphasis">
                 Veuillez
                 sélectionner une vacation élémentaire
               </div>
@@ -75,11 +75,11 @@ v-show="!selectedVariant && selectedVariant !== 0"
 
           <div class="d-flex justify-space-between align-center">
             <div>
-              <div class="text-caption text-medium-emphasis">
+              <div class="text-body-small text-medium-emphasis">
                 Début
               </div>
 
-              <div :key="selectedVariant" class="text-h6">
+              <div :key="selectedVariant" class="text-title-large">
                 {{ !selectedVariant && selectedVariant !== 0 ?
                   (day?.default?.startTime ||
                     '--:--') :
@@ -87,11 +87,11 @@ v-show="!selectedVariant && selectedVariant !== 0"
               </div>
             </div>
             <div>
-              <div class="text-caption text-medium-emphasis">
+              <div class="text-body-small text-medium-emphasis">
                 Fin
               </div>
               <div class="d-flex align-center">
-                <div :key="selectedVariant" class="text-h6">
+                <div :key="selectedVariant" class="text-title-large">
                   {{ selectedVariant === undefined ? (day?.default?.endTime ||
                     '--:--')
                     :
@@ -107,11 +107,11 @@ v-if="(selectedVariant !== undefined && day?.variations[selectedVariant]?.endsNe
               </div>
             </div>
           </div>
-          <div class="text-caption text-medium-emphasis" style="height: 40px">
+          <div class="text-body-small text-medium-emphasis" style="height: 40px">
             <v-fade-transition>
               <div
 v-show="!selectedVariant && selectedVariant !== 0"
-                class="text-caption font-weight-bold text-medium-emphasis">
+                class="text-body-small font-weight-bold text-medium-emphasis">
                 Amplitude maximale
               </div>
             </v-fade-transition>
@@ -119,8 +119,8 @@ v-show="!selectedVariant && selectedVariant !== 0"
         </template>
       </template>
       <!-- <div class="d-flex justify-start align-center">
-        <div class="text-caption text-medium-emphasis">Nombre de points par défaut</div>
-        <div class="text-caption font-weight-bold ml-2">{{ !selectedVariant && selectedVariant !== 0 ? day?.defaultPoints :
+        <div class="text-body-small text-medium-emphasis">Nombre de points par défaut</div>
+        <div class="text-body-small font-weight-bold ml-2">{{ !selectedVariant && selectedVariant !== 0 ? day?.defaultPoints :
           variations(day)[selectedVariant]?.defaultPoints }}</div>
 
       </div> -->

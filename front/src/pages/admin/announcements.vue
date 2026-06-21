@@ -26,8 +26,8 @@
               <v-icon :icon="stat.icon" size="18" />
             </v-avatar>
             <div>
-              <div class="text-h5 font-weight-bold">{{ stat.value }}</div>
-              <div class="text-caption text-medium-emphasis">{{ stat.label }}</div>
+              <div class="text-headline-small font-weight-bold">{{ stat.value }}</div>
+              <div class="text-body-small text-medium-emphasis">{{ stat.label }}</div>
             </div>
           </div>
         </v-card>
@@ -37,7 +37,7 @@
     <!-- ── Active announcements list ───────────────────────────────────────── -->
     <v-card rounded="xl" color="surfaceContainerLow" flat class="mb-6">
       <v-card-title class="pa-6 pb-2 d-flex align-center justify-space-between">
-        <span class="text-body-1 font-weight-semibold">Annonces actives</span>
+        <span class="text-body-large font-weight-semibold">Annonces actives</span>
         <v-chip size="small" color="primary" label>{{ activeAnnouncements.length }}</v-chip>
       </v-card-title>
       <v-card-text class="pa-4">
@@ -47,7 +47,7 @@
 
         <div v-else-if="activeAnnouncements.length === 0" class="empty-state">
           <v-icon size="40" color="medium-emphasis">mdi-bullhorn-outline</v-icon>
-          <p class="text-body-2 text-medium-emphasis mt-2 mb-0">Aucune annonce active</p>
+          <p class="text-body-medium text-medium-emphasis mt-2 mb-0">Aucune annonce active</p>
         </div>
 
         <div v-else class="announcements-list">
@@ -65,7 +65,7 @@
               <div class="row-header">
                 <div class="d-flex align-center ga-2">
                   <v-icon :icon="typeConfig[ann.type]?.icon" size="16" :color="typeConfig[ann.type]?.color" />
-                  <span class="text-body-2 font-weight-semibold">{{ ann.title }}</span>
+                  <span class="text-body-medium font-weight-semibold">{{ ann.title }}</span>
                 </div>
                 <div class="d-flex align-center ga-2">
                   <v-chip v-if="ann.isPermanent" size="x-small" color="secondary" label>
@@ -81,17 +81,17 @@
                   </v-chip>
                 </div>
               </div>
-              <p class="text-caption text-medium-emphasis message-preview mb-0">{{ ann.message }}</p>
+              <p class="text-body-small text-medium-emphasis message-preview mb-0">{{ ann.message }}</p>
               <div class="row-footer">
-                <span class="text-caption text-disabled">
+                <span class="text-body-small text-disabled">
                   Par {{ ann.createdBy?.name }} {{ ann.createdBy?.lastName }} ·
                   {{ formatDate(ann.createdAt) }}
                 </span>
-                <span v-if="ann.expiresAt" class="text-caption text-warning">
+                <span v-if="ann.expiresAt" class="text-body-small text-warning">
                   <v-icon size="12">mdi-clock-outline</v-icon>
                   Expire le {{ formatDate(ann.expiresAt) }}
                 </span>
-                <span class="text-caption text-medium-emphasis">
+                <span class="text-body-small text-medium-emphasis">
                   <v-icon size="12">mdi-account-check</v-icon>
                   {{ ann.acknowledgedBy?.length ?? 0 }} acquittements
                 </span>
@@ -123,12 +123,12 @@
     <!-- ── Inactive / archived ──────────────────────────────────────────────── -->
     <v-card rounded="xl" color="surfaceContainerLow" flat>
       <v-card-title class="pa-6 pb-2 d-flex align-center justify-space-between">
-        <span class="text-body-1 font-weight-semibold">Archivées / Inactives</span>
+        <span class="text-body-large font-weight-semibold">Archivées / Inactives</span>
         <v-chip size="small" label>{{ inactiveAnnouncements.length }}</v-chip>
       </v-card-title>
       <v-card-text class="pa-4">
         <div v-if="inactiveAnnouncements.length === 0" class="empty-state">
-          <p class="text-caption text-disabled mb-0">Aucune annonce archivée</p>
+          <p class="text-body-small text-disabled mb-0">Aucune annonce archivée</p>
         </div>
         <div v-else class="announcements-list">
           <div
@@ -139,10 +139,10 @@
             <div class="row-accent" />
             <div class="row-body">
               <div class="row-header">
-                <span class="text-body-2 text-medium-emphasis">{{ ann.title }}</span>
+                <span class="text-body-medium text-medium-emphasis">{{ ann.title }}</span>
                 <v-chip size="x-small" label>{{ typeConfig[ann.type]?.label }}</v-chip>
               </div>
-              <p class="text-caption text-disabled message-preview mb-0">{{ ann.message }}</p>
+              <p class="text-body-small text-disabled message-preview mb-0">{{ ann.message }}</p>
             </div>
             <div class="row-actions">
               <v-switch
@@ -173,11 +173,11 @@
             <v-avatar color="primary" variant="tonal" size="32">
               <v-icon size="16">mdi-bullhorn</v-icon>
             </v-avatar>
-            <span class="text-h6 font-weight-bold">
+            <span class="text-title-large font-weight-bold">
               {{ editingId ? 'Modifier l\'annonce' : 'Nouvelle annonce' }}
             </span>
           </div>
-          <p class="text-caption text-medium-emphasis mb-0 ml-11">
+          <p class="text-body-small text-medium-emphasis mb-0 ml-11">
             {{ editingId ? 'Modifiez les champs ci-dessous.' : 'L\'annonce sera visible immédiatement sur le tableau de bord.' }}
           </p>
         </div>
@@ -202,7 +202,7 @@
 
           <!-- Type selector -->
           <div class="mb-4">
-            <div class="text-caption text-medium-emphasis mb-2">Type</div>
+            <div class="text-body-small text-medium-emphasis mb-2">Type</div>
             <div class="d-flex ga-2 flex-wrap">
               <v-btn
                 v-for="t in typeOptions"
@@ -255,8 +255,8 @@
               <v-card rounded="xl" color="surfaceContainer" flat class="pa-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
-                    <div class="text-body-2 font-weight-medium">Permanent</div>
-                    <div class="text-caption text-medium-emphasis">Non dismissible par les utilisateurs</div>
+                    <div class="text-body-medium font-weight-medium">Permanent</div>
+                    <div class="text-body-small text-medium-emphasis">Non dismissible par les utilisateurs</div>
                   </div>
                   <v-switch v-model="form.isPermanent" hide-details density="compact" color="primary" />
                 </div>
@@ -268,8 +268,8 @@
               <v-card rounded="xl" color="surfaceContainer" flat class="pa-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
-                    <div class="text-body-2 font-weight-medium">Portée globale</div>
-                    <div class="text-caption text-medium-emphasis">Visible par tous les centres</div>
+                    <div class="text-body-medium font-weight-medium">Portée globale</div>
+                    <div class="text-body-small text-medium-emphasis">Visible par tous les centres</div>
                   </div>
                   <v-switch v-model="form.isGlobal" hide-details density="compact" color="primary" />
                 </div>

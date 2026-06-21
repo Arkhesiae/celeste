@@ -13,7 +13,7 @@ v-model="localDialogVisible" :fullscreen="smAndDown" max-width="900px"
       </v-card-item>
 
       <v-card-text class="pa-0 my-4 ma-0">
-        <span class="text-caption">Les changements suivants seront appliqués au tour de service. En conséquence, les
+        <span class="text-body-small">Les changements suivants seront appliqués au tour de service. En conséquence, les
           vacations pendant cette période seront converties de la façon suivante :</span>
 
         <v-alert
@@ -23,21 +23,21 @@ v-if="pendingActivation.changes?.length > 1" type="info" variant="tonal" class="
 :model-value="(changeIndex / totalChangesCount) * 100" color="primary" height="8"
             rounded />
           <div class="d-flex justify-space-between mt-2">
-            <span class="text-caption">Approuvé: {{ changeIndex }} / {{ totalChangesCount }}</span>
-            <span class="text-caption">Restants: {{ totalChangesCount - changeIndex }}</span>
+            <span class="text-body-small">Approuvé: {{ changeIndex }} / {{ totalChangesCount }}</span>
+            <span class="text-body-small">Restants: {{ totalChangesCount - changeIndex }}</span>
           </div>
         </v-alert>
 
         <template v-if="currentChange">
           <v-card class="pa-4 my-8" rounded="xl" elevation="0" color="surfaceContainer">
             <div class="d-flex align-center ga-1">
-              <span v-if="currentChange.to" class="text-caption">Du </span>
-              <span v-else class="text-caption">À partir du </span>
+              <span v-if="currentChange.to" class="text-body-small">Du </span>
+              <span v-else class="text-body-small">À partir du </span>
               <v-chip color="primary" variant="tonal" size="x-small" rounded="xl">
                 {{ formatDate(currentChange.from) }}
               </v-chip>
 
-              <span v-if="currentChange.to" class="text-caption">au </span>
+              <span v-if="currentChange.to" class="text-body-small">au </span>
               <v-chip v-if="currentChange.to" color="primary" variant="tonal" size="x-small" rounded="xl">
                 {{ formatDate(currentChange.to) }}
               </v-chip>
@@ -117,7 +117,7 @@ v-if="currentChange.demandsToConvert?.length > 0"
                   <v-icon
 :icon="differentLength(currentChange) ? 'mdi-alert-outline' : 'mdi-swap-horizontal'"
                     size="small" :color="differentLength(currentChange) ? 'error' : 'remplacement'" />
-                  <span class="text-caption font-weight-bold">{{ currentChange.demandsToConvert.length }} demandes de
+                  <span class="text-body-small font-weight-bold">{{ currentChange.demandsToConvert.length }} demandes de
                     remplacement
                     et permutations seront {{ differentLength(currentChange) ? 'annulées' : 'converties' }}</span>
                 </div>
@@ -125,7 +125,7 @@ v-if="currentChange.demandsToConvert?.length > 0"
               <v-chip v-else color="surfaceContainerHigh" variant="flat" rounded="xl">
                 <div class="d-flex align-center ga-1 font-weight-bold">
                   <v-icon icon="mdi-swap-horizontal" size="small" color="onBackground" />
-                  <span class="text-caption font-weight-bold text-onBackground">Aucune demande concernée</span>
+                  <span class="text-body-small font-weight-bold text-onBackground">Aucune demande concernée</span>
                 </div>
               </v-chip>
             </div>

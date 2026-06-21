@@ -12,7 +12,7 @@
       <!-- Titre principal -->
 
       <v-card-title class="d-flex justify-space-between align-center">
-        <div class="text-h5 ">
+        <div class="text-headline-small ">
           {{ dialogTitle }}
         </div>
 
@@ -49,7 +49,7 @@
             />
             <div
               v-if="dialogModeValue === 'Renfort'"
-              class="text-h4 ma-3"
+              class="text-headline-large ma-3"
             >
               -
             </div>
@@ -88,7 +88,7 @@
             <input
               v-model="demand.points"
               type="number"
-              class="rounded-xl text-h2 font-weight-bold  pa-4"
+              class="rounded-xl text-display-large font-weight-bold  pa-4"
               style="  width: 150px; color: #85cde6"
             >
           </div>

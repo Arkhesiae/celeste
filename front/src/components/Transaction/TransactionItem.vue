@@ -22,15 +22,15 @@
             />
           </template>
           <template v-else>
-            <span class="avatar-fallback text-body-2">{{ getInitials(transaction.userName) }}</span>
+            <span class="avatar-fallback text-body-medium">{{ getInitials(transaction.userName) }}</span>
           </template>
         </v-avatar>
       </div>
       <div class="d-flex flex-column">
         <div class="d-flex align-center">
-          <span class="font-weight-bold text-body-2 text-truncate">{{ transaction.userName }}</span>
+          <span class="font-weight-bold text-body-medium text-truncate">{{ transaction.userName }}</span>
         </div>
-        <div class="text-caption text-medium-emphasis text-truncate">
+        <div class="text-body-small text-medium-emphasis text-truncate">
           {{ transaction.description }}
         </div>
       </div>
@@ -52,15 +52,15 @@
           </template>
           <template v-else>
             <span
-              class="avatar-fallback text-subtitle-2"
+              class="avatar-fallback text-title-small"
               style="font-size: 8px !important;"
             >{{ getInitials(transaction.userName) }}</span>
           </template>
         </v-avatar>
-        <span class="font-weight-bold text-subtitle-2 ">{{ transaction.userName }}</span>
+        <span class="font-weight-bold text-title-small ">{{ transaction.userName }}</span>
       </div>
      
-      <div class="text-caption text-medium-emphasis">
+      <div class="text-body-small text-medium-emphasis">
         {{ transaction.description }}
       </div>
     </div>
@@ -97,13 +97,13 @@
           Annulée
         </v-chip>
         <span
-          class="text-body-1"
+          class="text-body-large"
           style="font-weight: 900;"
         >
           {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
         </span>
       </div>
-      <span class="text-caption text-medium-emphasis mt-1">{{ transaction.effectiveDate }}</span>
+      <span class="text-body-small text-medium-emphasis mt-1">{{ transaction.effectiveDate }}</span>
     </div>
   </v-card>
 </template>

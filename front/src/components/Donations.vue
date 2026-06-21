@@ -11,7 +11,7 @@
                     Un an déjà
                 </h1>
 
-                <p class="campaign-desc text-center text-medium-emphasis text-body-1">
+                <p class="campaign-desc text-center text-medium-emphasis text-body-large">
                     Votre don, quel que soit son montant, permet de financer des actions
                     concrètes pour les familles dans le besoin de notre région.
                     Chaque geste compte et transforme des vies.
@@ -23,7 +23,7 @@
 
                     <div class="d-flex align-end justify-space-between mb-3">
                         <div>
-                            <span class="text-h5 font-weight-medium">
+                            <span class="text-headline-small font-weight-medium">
                                 {{ formatCurrency(raised) }}
                             </span>
                             <v-chip v-if="isOverGoal" rounded="lg" size="x-small" color="secondary" variant="tonal"
@@ -31,7 +31,7 @@
                                 objectif atteint !
                             </v-chip>
                         </div>
-                        <span class="text-caption font-weight-medium"
+                        <span class="text-body-small font-weight-medium"
                             :class="isOverGoal ? 'text-secondary' : 'text-primary'">
                             {{ progressPercent }}%
                         </span>
@@ -55,18 +55,18 @@
                     <div class="d-flex align-center ga-4 flex-wrap mt-3">
                         <div class="d-flex align-center ga-1">
                             <v-icon icon="mdi-clock-outline" size="14" color="primary" />
-                            <span class="text-caption text-medium-emphasis">23 jours restants</span>
+                            <span class="text-body-small text-medium-emphasis">23 jours restants</span>
                         </div>
                         <div class="d-flex align-center ga-1">
                             <v-icon icon="mdi-account-group-outline" size="14" color="primary" />
-                            <span class="text-caption text-medium-emphasis">{{ donors }} donateurs</span>
+                            <span class="text-body-small text-medium-emphasis">{{ donors }} donateurs</span>
                         </div>
                     </div>
 
                 </v-card-text>
             </v-card>
 
-            <p class="section-label text-overline text-medium-emphasis mb-2 px-1">
+            <p class="section-label text-label-medium text-medium-emphasis mb-2 px-1">
                 Coordonnées
             </p>
 
@@ -83,10 +83,10 @@
                             </v-sheet>
 
                             <div class="flex-grow-1 min-width-0">
-                                <p class="text-caption text-medium-emphasis mb-0">
+                                <p class="text-body-small text-medium-emphasis mb-0">
                                     {{ item.label }}
                                 </p>
-                                <p class="copy-value text-body-2 font-weight-medium mb-0">
+                                <p class="copy-value text-body-medium font-weight-medium mb-0">
                                     {{ item.value }}
                                 </p>
                             </div>

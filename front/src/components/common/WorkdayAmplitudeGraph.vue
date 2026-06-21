@@ -104,7 +104,7 @@
               class="window-highlight"
               :style="highlightStyle"
             >
-              <div class="window-label text-overline text-error font-weight-bold" />
+              <div class="window-label text-label-medium text-error font-weight-bold" />
             </div>
 
             <!-- Dynamic Info Bubble (Moving Div) -->
@@ -117,12 +117,12 @@
                     :style="{ left: hoverInfo.leftPos }"
                   >
                     <div class="d-flex flex-column align-center">
-                      <span class="text-caption font-weight-bold text-primary">{{
+                      <span class="text-body-small font-weight-bold text-primary">{{
                         hoverInfo.mainLabel
                       }}</span>
                       <span
                         v-if="hoverInfo.subLabel"
-                        class="text-caption text-medium-emphasis mt-n1"
+                        class="text-body-small text-medium-emphasis mt-n1"
                       >{{
                         hoverInfo.subLabel }}</span>
                     </div>
@@ -136,9 +136,9 @@
             </div>
             <!-- <div v-if="hoverInfo.visible" class="moving-info-bubble" :style="{ left: hoverInfo.leftPos }">
                             <div class="d-flex flex-column align-center">
-                                <span class="text-caption font-weight-bold text-primary">{{ hoverInfo.mainLabel
+                                <span class="text-body-small font-weight-bold text-primary">{{ hoverInfo.mainLabel
                                     }}</span>
-                                <span class="text-caption text-medium-emphasis" v-if="hoverInfo.subLabel">{{
+                                <span class="text-body-small text-medium-emphasis" v-if="hoverInfo.subLabel">{{
                                     hoverInfo.subLabel }}</span>
                             </div>
                             <div class="info-stem"></div>
@@ -260,7 +260,7 @@
                 @click="windowStartIndex--"
               />
 
-              <span class="text-caption font-weight-bold">
+              <span class="text-body-small font-weight-bold">
                 {{ getWindowDateLabel(windowStartIndex) }} - {{ getWindowDateLabel(windowStartIndex + 6)
                 }}
               </span>
@@ -280,13 +280,13 @@
       <!-- Placeholder Windows
             <v-window-item :value="1">
                 <div class="d-flex align-center justify-center fill-height" style="height: 300px;">
-                    <div class="text-h6 text-medium-emphasis">Window 2 Placeholder</div>
+                    <div class="text-title-large text-medium-emphasis">Window 2 Placeholder</div>
                 </div>
             </v-window-item>
 
             <v-window-item :value="2">
                 <div class="d-flex align-center justify-center fill-height" style="height: 300px;">
-                    <div class="text-h6 text-medium-emphasis">Window 3 Placeholder</div>
+                    <div class="text-title-large text-medium-emphasis">Window 3 Placeholder</div>
                 </div>
             </v-window-item> -->
     </v-window>
@@ -302,7 +302,7 @@
     v-if="filteredLimits.length > 0 || deduplicatedInvalidRest35.length > 0 || deduplicatedInvalidWork48.length > 0"
     class="pb-4 pl-2"
   >
-    <div class="text-caption mb-2 text-disabled px-2">
+    <div class="text-body-small mb-2 text-disabled px-2">
       Anomalies détectées
     </div>
     <div class="d-flex flex-wrap ga-2 px-2">

@@ -1,32 +1,32 @@
 <template>
-  <v-container fluid class="fill-height">
+  <v-container fluid >
     <v-row justify="center" style="min-height: 800px">
-      <v-col cols="12" sm="12" md="12" lg="12" class="py-16 mt-16">
+      <v-col cols="12" sm="12" md="12" lg="12" class="py-16">
         <div class="d-flex align-center" :class="mdAndUp ? 'justify-space-between' : 'justify-center'">
           <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
             <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
-              <div class="text-overline subtitle-animation">
+              <div class="text-label-medium subtitle-animation">
                 Votre site de rempla
               </div>
               <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
 
-              <div class="font-weight-medium d-flex flex-wrap mt-4" :class="[
-                mdAndUp ? 'text-h1' : 'text-h3',
+              <div class="font-weight-medium d-flex flex-wrap mt-4 text-display-large" :class="[
+                mdAndUp ? 'text-display-large' : 'text-display-medium ',
                 { 'justify-center': !mdAndUp }
-              ]" :style="mdAndUp ? 'left: -8px; position: relative' : ''">
+              ]">
                 <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">Bienvenue</span>
 
                 <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">sur</span>
                 <span class="gradient font-weight-bold title-animation">Céleste</span>
               </div>
-              <div class="text-h6 mt-5 subtitle-animation">
+              <div class="text-title-large mt-5 subtitle-animation">
                 Votre nouvelle plateforme de remplacements
               </div>
             </v-card-text>
 
             <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
               <div class="block d-flex button-animation " style="animation-delay: 1.1s;">
-                <v-btn prepend-icon="mdi-lightning-bolt" style="border-radius: 16px !important;" height="48px "
+                <v-btn prepend-icon="mdi-lightning-bolt" elevation="1" style="border-radius: 16px !important;" height="48px "
                   class="px-8" variant="flat" color="primary" @click="router.push({ path: '/get-started' })">
                   Get started
                 </v-btn>
@@ -49,13 +49,13 @@
       </v-col>
     </v-row>
 
-    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch bg-background" width="100%"
+    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch" width="100%"
       style="min-height: 200px ; width: 100%;">
       <v-col v-for="(card, index) in cards" :key="index" cols="12" md="4">
         <div :ref="el => { if (el) cardRefs[index] = el }" style="min-height: 200px;">
           <transition name="card">
             <div v-show="card.isVisible">
-              <v-card :class="{ 'card-hover': mdAndUp }" flat height="100%" rounded="xl"
+              <v-card height="100%" rounded="xl" flat
                 class="flex-column d-flex pa-8 bg-surfaceContainer">
                 <v-scale-transition>
                   <v-icon color="primary" class="mt-4 mb-4 align-self-center">
@@ -64,10 +64,10 @@
                 </v-scale-transition>
                 
                 <v-slide-y-transition>
-                  <span class="text-h7 mt-2 font-weight-bold">{{ card.title }}</span>
+                  <span class="text-body-large mt-2 font-weight-bold">{{ card.title }}</span>
                 </v-slide-y-transition>
                 <v-slide-y-transition>
-                  <span class="text-caption text-medium-emphasis">{{ card.description }}</span>
+                  <span class="text-body-small text-medium-emphasis">{{ card.description }}</span>
                 </v-slide-y-transition>
               </v-card>
             </div>
@@ -81,21 +81,21 @@
         <v-col key="center" cols="12" md="4">
           <v-card ref="statsRef" color="transparent" flat height="100%" rounded="xl"
             class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold text-primary">{{ Math.floor(animatedCenters) }}</span>
-            <span class="text-h7 text-medium-emphasis">centres</span>
+            <span class="text-display-large mt-2 font-weight-bold text-primary">{{ Math.floor(animatedCenters) }}</span>
+            <span class="text-body-large text-medium-emphasis">centres</span>
           </v-card>
         </v-col>
         <v-col key="controllers" cols="12" md="4">
           <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold text-onSurface">{{ Math.floor(animatedNumber) }}</span>
-            <span class="text-h7 text-medium-emphasis">contrôleurs</span>
+            <span class="text-display-large mt-2 font-weight-bold text-onSurface">{{ Math.floor(animatedNumber) }}</span>
+            <span class="text-body-large text-medium-emphasis">contrôleurs</span>
           </v-card>
         </v-col>
         <v-col key="replace" cols="12" md="4">
           <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-h1 mt-2 font-weight-bold" style="opacity: 0.7;">{{ Math.floor(animatedReplacements)
+            <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7;">{{ Math.floor(animatedReplacements)
               }}</span>
-            <span class="text-h7 text-medium-emphasis">remplacements</span>
+            <span class="text-body-large text-medium-emphasis">remplacements</span>
           </v-card>
         </v-col>
       </v-fade-transition>
@@ -104,10 +104,10 @@
     <v-row class="px-4 mt-16 d-flex align-content-stretch">
       <v-col cols="12" md="12">
         <v-card flat height="100%" rounded="xl" class="flex-column d-flex pa-8">
-          <v-card-title class="text-h6 mt-2 font-weight-bold">
+          <v-card-title class="text-title-large mt-2 font-weight-bold">
             <v-icon color="primary">mdi-rocket-launch</v-icon>
           </v-card-title>
-          <span class="text-caption text-medium-emphasis"></span>
+          <span class="text-body-small text-medium-emphasis"></span>
         </v-card>
       </v-col>
     </v-row> -->
@@ -340,9 +340,10 @@ onMounted(() => {
   color: #000;
   font-weight: 900 !important;
   background: linear-gradient(to right,
-      rgb(var(--v-theme-primary)) 00%,
-      rgba(var(--v-theme-primary), .55) 20%,
-      rgba(var(--v-theme-primary), 100) 100%);
+      color-mix(in srgb, rgb(var(--v-theme-primary)) 00%, transparent),
+      color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent),
+      color-mix(in srgb, rgb(var(--v-theme-primary)) 100%, transparent),
+      color-mix(in srgb, rgb(var(--v-theme-primary)) 00%, transparent));
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -448,7 +449,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(var(--v-theme-primary), 0.2) 0%, rgba(var(--v-theme-primary), 0) 100%);
+  background: radial-gradient(circle, color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent) 0%, transparent 100%);
   transform: translate(-50%, -50%);
   filter: blur(10px);
   z-index: -1;

@@ -7,7 +7,7 @@
       <v-icon size="20">
         {{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}
       </v-icon>
-      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Accueil</span>
+      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Accueil</span>
     </v-btn>
     <v-btn :ripple="false" value="calendar" icon :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/calendar'"
@@ -15,20 +15,20 @@
       <v-icon size="20">
         {{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}
       </v-icon>
-      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
+      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
     </v-btn>
     <v-btn :ripple="false" value="demandes" icon
       :class="isActive('/demand-page/demands') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/demand-page/demands'"
       @click="router.push({ path: '/demand-page/demands' }); hapticsImpact()">
-      <v-badge size="x-small" rounded="lg" color="onBackground" class="font-weight-bold text-subtitle-2" offset-x="-12"
+      <v-badge size="x-small" rounded="lg" color="onBackground" class="font-weight-bold text-title-small" offset-x="-12"
         offset-y="6" :content="demandsCount" :model-value="demandsCount !== 0">
         <v-icon size="20">
           {{ isActive('/demand-page/demands') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'
           }}
         </v-icon>
       </v-badge>
-      <span class="text-body-2 " style="font-weight: 600; font-size: 10px !important; ">Demandes</span>
+      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Demandes</span>
     </v-btn>
     <!-- <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>

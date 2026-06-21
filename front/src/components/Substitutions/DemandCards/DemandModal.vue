@@ -3,7 +3,7 @@
     @update:model-value="$emit('update:modelValue', $event)">
     <template #content>
       <div class="d-flex flex-column align-center mb-6">
-        <h1 class="text-h3 font-weight-bold">
+        <h1 class="text-display-medium font-weight-bold">
           {{ getShiftName }}
         </h1>
         <div>
@@ -14,7 +14,7 @@
       <v-card v-ripple="false" :hover="false" rounded="xl" color="background" elevation="0" class="mb-4 pa-4"
         @click="showUserDetails = !showUserDetails">
         <div class="d-flex justify-space-between align-center">
-          <h3 class="text-subtitle-1 font-weight-medium mb-0" :class="isOwner ? 'text-primary' : ''">
+          <h3 class="text-body-large font-weight-medium mb-0" :class="isOwner ? 'text-primary' : ''">
             {{ poster?.name }} {{ poster?.lastName }}
           </h3>
           <div class="d-flex ga-2 align-center">
@@ -40,7 +40,7 @@
                 </v-icon>
               </div>
 
-              <span class="text-caption opacity-70 font-weight-medium">
+              <span class="text-body-small opacity-70 font-weight-medium">
                 {{ poster?.personalData?.phoneNumber }}
               </span>
             </div>
@@ -63,14 +63,14 @@
                 icon="mdi-swap-horizontal" />
             </div>
           </div>
-          <span class="text-disabled text-body-2 font-weight-medium">{{ formatType(demand.type) }}</span>
+          <span class="text-disabled text-body-medium font-weight-medium">{{ formatType(demand.type) }}</span>
         </div>
       </v-card>
 
       <v-card v-if="demand.accepterId" v-ripple="false" :hover="false" color="background" rounded="xl" elevation="0"
         class="mb-4 pa-4" @click="showAccepterDetails = !showAccepterDetails">
         <div class="d-flex justify-space-between align-center ">
-          <span class="text-body-2 font-weight-medium text-medium-emphasis">Acceptée par </span>
+          <span class="text-body-medium font-weight-medium text-medium-emphasis">Acceptée par </span>
           <div class="d-flex align-center ga-1">
             <v-avatar size="20" color="surfaceContainer" class="mr-1">
               <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
@@ -99,7 +99,7 @@
                 </v-icon>
               </div>
 
-              <span class="text-caption opacity-70 font-weight-medium">
+              <span class="text-body-small opacity-70 font-weight-medium">
                 {{ accepter?.personalData?.phoneNumber }}
               </span>
             </div>
@@ -110,16 +110,16 @@
       <v-card rounded="xl" elevation="0" class="mb-4 px-4 py-2" color="background">
         <div v-if="demand.type !== 'switch'" class="d-flex justify-space-between py-2 align-center"
           style="height: 48px;">
-          <span class="text-body-2 font-weight-medium text-medium-emphasis">Points</span>
+          <span class="text-body-medium font-weight-medium text-medium-emphasis">Points</span>
           <div class="d-flex ga-1 align-end">
-            <span class="text-body-2 font-weight-medium text-disabled">{{ demand.points }}</span>
+            <span class="text-body-medium font-weight-medium text-disabled">{{ demand.points }}</span>
             <LogoCopy />
           </div>
         </div>
         <v-divider v-if="demand.acceptedSwitches.length > 0 && demand.type === 'hybrid'" />
         <div v-if="demand.acceptedSwitches.length > 0" class="d-flex justify-space-between py-2 align-center"
           style="height: 48px;">
-          <span class="text-body-2 font-weight-medium text-medium-emphasis">Permutations</span>
+          <span class="text-body-medium font-weight-medium text-medium-emphasis">Permutations</span>
           <div class="d-flex ga-2">
             <v-chip v-for="s in demand.acceptedSwitches" :key="s.shift" rounded="lg" size="small" variant="text">
               <div class="d-flex ga-2 align-center">
@@ -127,9 +127,9 @@
                   <v-icon start size="small">
                     mdi-swap-horizontal
                   </v-icon>
-                  <span class="text-caption font-weight-medium ">{{ getShiftNameById(s.shift) }}</span>
+                  <span class="text-body-small font-weight-medium ">{{ getShiftNameById(s.shift) }}</span>
                 </div>
-                <span class="text-body-2 font-weight-medium text-disabled">{{ s.points }}</span>
+                <span class="text-body-medium font-weight-medium text-disabled">{{ s.points }}</span>
               </div>
             </v-chip>
             <LogoCopy />
@@ -140,19 +140,19 @@
 
       <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
         <div class="d-flex justify-space-between align-center text-disabled">
-          <span class="text-body-2 font-weight-medium text-medium-emphasis">Date</span>
-          <span class="text-body-2 text-disabled">{{ formatDate(demand.posterShift?.date) }}</span>
+          <span class="text-body-medium font-weight-medium text-medium-emphasis">Date</span>
+          <span class="text-body-medium text-disabled">{{ formatDate(demand.posterShift?.date) }}</span>
         </div>
       </v-card>
 
       <v-card v-if="demand.comment" color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
-        <span class="text-disabled text-body-2 font-weight-medium">{{ demand.comment }}</span>
+        <span class="text-disabled text-body-medium font-weight-medium">{{ demand.comment }}</span>
       </v-card>
 
       <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
         <div class="d-flex align-center ga-2">
           <v-icon size="12" icon="mdi-eye-outline" />
-          <span class="text-body-2 text-medium-emphasis">
+          <span class="text-body-medium text-medium-emphasis">
             Vue par {{ demand.seenBy?.length }} personnes
           </span>
         </div>
@@ -164,7 +164,7 @@
           <div class="d-flex align-center ga-2">
             <v-icon :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
               :color="demand?.mailStatus === 'sent' ? 'success' : 'medium-emphasis'" size="small" />
-            <span class="text-body-2 text-medium-emphasis">
+            <span class="text-body-medium text-medium-emphasis">
               Mail administration : {{ demand?.mailStatus === 'sent' ? 'Envoyé' : 'Non envoyé' }}
             </span>
           </div>
@@ -176,7 +176,7 @@
       </v-card>
 
       <v-card v-if="isOwner && hasVariations" color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
-        <span class="text-body-2 font-weight-medium text-medium-emphasis d-block mb-2">Vacation élémentaire</span>
+        <span class="text-body-medium font-weight-medium text-medium-emphasis d-block mb-2">Vacation élémentaire</span>
         <div class="d-flex flex-wrap ga-2">
           <v-chip size="small" rounded="lg" variant="flat" :color="!hasSelectedVariation ? 'primary' : 'surface'"
             class="cursor-pointer" :loading="loadingVariation" @click="selectVariationForDemand(null)">
@@ -197,7 +197,7 @@
         <GraphWrapper :demand="demand" />
       </v-card>
 
-      <div v-if="!isAccepted && !isOwner" class="mx-n6 d-flex flex-column my-4 text-body-2 font-weight-medium">
+      <div v-if="!isAccepted && !isOwner" class="mx-n6 d-flex flex-column my-4 text-body-medium font-weight-medium">
         <div v-if="demand.type !== 'switch'" v-ripple class="px-6 d-flex align-center justify-space-between py-3 ga-2"
           @click="handleReplacement">
           <span>Remplacer</span>
@@ -225,19 +225,19 @@
         @click="cancelOrWithdraw">
         <v-list bg-color="error">
           <v-list-item v-if="isAccepter" color="error" append-icon="mdi-chevron-right">
-            <v-list-item-title class="text-body-2 font-weight-medium">
+            <v-list-item-title class="text-body-medium font-weight-medium">
               Se désister
             </v-list-item-title>
           </v-list-item>
           <v-list-item v-if="isOwner" color="error" append-icon="mdi-chevron-right">
-            <v-list-item-title class="text-body-2 font-weight-medium">
+            <v-list-item-title class="text-body-medium font-weight-medium">
               Annuler
             </v-list-item-title>
           </v-list-item>
         </v-list>
       </v-card>
 
-      <div class="text-center mt-4 text-disabled text-caption">
+      <div class="text-center mt-4 text-disabled text-body-small">
         <span> Créée il y a {{ timeSinceCreation }}
 
         </span>

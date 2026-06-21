@@ -9,9 +9,9 @@
     <div class="d-flex flex-column" :class="smAndDown ? 'align-center' : 'align-start'">
       <div class="d-flex align-center">
         <span :style="{ fontSize: titleFontSize + 'px !important' }"
-          class="text-h4 d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
+          class="text-headline-large d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
         <span :style="{ fontSize: titleFontSize + 'px !important' }"
-          class="text-h4 d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold">{{ userName
+          class="text-headline-large d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold">{{ userName
           }}</span>
       </div>
       <span :style="{ fontSize: subtitleFontSize + 'px !important' }"
@@ -63,7 +63,7 @@ const safeAreaTop = computed(() => {
 
 
 const titleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-h5/text-h4
+  const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-headline-small/text-headline-large
   const minSize = smAndDown.value ? 10 : 10
   const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value)
 

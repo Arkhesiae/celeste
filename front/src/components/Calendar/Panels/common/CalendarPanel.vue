@@ -36,12 +36,12 @@
 
           <v-card class="pa-4 rounded-lg">
             <div v-for="(entry, index) in entries" :key="entry._id">
-              <span class="text-caption">{{ entry.createdAt }} : {{ entry.type }} {{ entry.subType }}</span>
+              <span class="text-body-small">{{ entry.createdAt }} : {{ entry.type }} {{ entry.subType }}</span>
             </div>
           </v-card>
 
         </v-menu>
-        <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
+        <span class="text-body-medium font-weight-bold">{{ formattedDate }}</span>
       </div>
     </div>
 
@@ -131,7 +131,7 @@
       :class="{ 'opacity-10': availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0 }"
       :disabled="availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0"
       width="100%" flat rounded="xl" height="64px" color="background" append-icon="mdi-chevron-right"
-      class="justify-space-between d-flex align-center text-subtitle-2" @click="$emit('openDrawer', 'substitutions')">
+      class="justify-space-between d-flex align-center text-title-small" @click="$emit('openDrawer', 'substitutions')">
       <span v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0">
         Voir les demandes disponibles
       </span>
@@ -141,7 +141,7 @@
 
   <v-dialog v-model="entryDialog" max-width="500px">
     <v-card class="rounded-xl pa-6">
-      <span class="text-h6">Ajouter une entrée</span>
+      <span class="text-title-large">Ajouter une entrée</span>
       <div class="d-flex ga-2 mt-4 flex-wrap">
         <v-btn v-for="entry in entryTypes" :key="entry.key" size="small" @click="addCustomEntry(entry.key)">
           <template #prepend>

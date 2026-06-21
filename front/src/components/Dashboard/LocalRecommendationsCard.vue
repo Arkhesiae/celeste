@@ -1,9 +1,9 @@
 <template>
   <v-card v-if="getCenterName?.includes('CRNA Nord')" rounded="xl" elevation="0" class="mb-4 pa-6" color="surfaceContainer">
-    <v-card-title class="text-h6 font-weight-medium pa-0 ma-0">
+    <v-card-title class="text-title-large font-weight-medium pa-0 ma-0">
       Recommandations locales
     </v-card-title>
-    <span class="text-caption text-disabled">
+    <span class="text-body-small text-disabled">
       <v-icon icon="mdi-information-outline " color="primary" size="16" class="mr-2" />
       Ces recommandations ne prennent pas en compte les différences d'horaires et sont fournies à titre indicatif.
     </span>

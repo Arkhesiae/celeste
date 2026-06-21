@@ -4,7 +4,7 @@
       <v-slide-y-reverse-transition hide-on-leave appear>
         <v-card width="100%" class="mt-n16 pa-6 pt-10" :color="smAndDown ? 'transparent' : ''" rounded="xl"
           elevation="0" style="max-width: 900px; z-index: 34 !important;">
-          <v-card-title class="pl-0 text-overline font-weight-bold">
+          <v-card-title class="pl-0 text-label-medium text-uppercase font-weight-bold">
             CéLESTE
           </v-card-title>
 
@@ -14,7 +14,7 @@
                 <v-btn v-if="currentStep === 2 && smAndDown" variant="text" color="onBackground"
                   prepend-icon="mdi-arrow-left" rounded="xl" class="back-button me-2" @click="currentStep = 1" />
                 <div>
-                  <v-card-title class="pa-0 text-h5 text-md-h4">
+                  <v-card-title class="pa-0 text-headline-small text-md-headline-large font-weight-medium">
                     Se connecter
                   </v-card-title>
                   <v-card-subtitle class="pa-0">
@@ -59,10 +59,10 @@
                               </template>
                             </v-avatar>
                             <div class="d-flex flex-column align-start ml-3">
-                              <div class="text-subtitle-1 font-weight-medium mb-1">
+                              <div class="text-body-large font-weight-medium mb-1">
                                 {{ userInfo?.name || email }}
                               </div>
-                              <div class="text-caption text-medium-emphasis">
+                              <div class="text-body-small text-medium-emphasis">
                                 {{ userInfo?.center ? `${userInfo.center}` : 'Bienvenue ! Veuillez entrer votre  mot  de passe' }}
                               </div>
                             </div>
@@ -94,8 +94,8 @@
                         </v-slide-x-reverse-transition>
                       </div>
                       <div class="d-flex align-center ga-3 overflow-hidden cursor-pointer position-relative">
-                        <span class="text-body-2 position-relative" style="transition: all 0.3s ease;">Se souvenir de
-                          moi</span><span class="text-body-2 position-relative"
+                        <span class="text-body-medium position-relative" style="transition: all 0.3s ease;">Se souvenir de
+                          moi</span><span class="text-body-medium position-relative"
                           :style="{ 'opacity': stayConnected ? 0 : 1 }">?</span>
                       </div>
                     </div>
@@ -108,26 +108,26 @@
                 </v-window-item>
               </v-window>
 
-              <v-card-actions class="pa-0 mt-4" :class="smAndDown ? 'd-flex flex-column ' : ' justify-end'">
+              <v-card-actions class="pa-0 mt-4 align-end" :class="smAndDown ? 'd-flex flex-column ' : ' justify-end'">
                 <v-btn v-if="currentStep === 1" variant="text" color="onBackground" append-icon="mdi-chevron-right"
                   rounded="xl" class="create-account-button" @click="router.push({ path: '/creation' })">
                   Créer un compte
                 </v-btn>
 
-                <div class="d-flex align-center">
+                <div class="d-flex align-end">
                   <v-btn v-if="currentStep === 2 && !smAndDown" variant="text" color="onBackground"
                     prepend-icon="mdi-arrow-left" rounded="xl" class="back-button me-2" @click="currentStep = 1">
                     Retour
                   </v-btn>
                   <v-spacer />
 
-                  <v-btn v-if="currentStep === 1" class="my-2 px-4" variant="flat" rounded="lg" color="onBackground"
+                  <v-btn v-if="currentStep === 1" class=" px-4" variant="flat" rounded="lg" color="onBackground"
                     append-icon="mdi-arrow-right" :class="smAndDown ? 'login-button-mobile' : 'login-button'"
                     :loading="loggingIn" type="button" @click="tryGoToStep2">
                     Continuer
                   </v-btn>
 
-                  <v-btn v-if="currentStep === 2" class="my-2 px-4" variant="flat" rounded="lg" color="onBackground"
+                  <v-btn v-if="currentStep === 2" class=" px-4" variant="flat" rounded="lg" color="onBackground"
                     append-icon="mdi-login" :class="smAndDown ? 'login-button-mobile' : 'login-button'"
                     :disabled="!validStep2 || loggingIn" :loading="loggingIn" type="button" @click="handleLogin">
                     Se connecter
@@ -145,6 +145,7 @@
         </v-card>
       </v-slide-y-reverse-transition>
     </v-row>
+    
     <ForgotPasswordDialog v-model="showForgotPasswordDialog" @success="handlePasswordResetSuccess"
       @error="handlePasswordResetError" />
     <div class="position-absolute top-0 d-flex justify-end align-center w-100" style="height: 70vh;">

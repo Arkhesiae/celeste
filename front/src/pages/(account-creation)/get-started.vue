@@ -37,15 +37,15 @@ const handleExistingAccount = () => {
             <div class="options-container">
               <Transition name="slide-up" appear>
                 <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
-                  <span class="text-h6 font-weight-bold">Compte Remplacer</span>
-                  <span class="text-body-2 text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite
+                  <span class="text-title-large font-weight-bold">Compte Remplacer</span>
+                  <span class="text-body-medium text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite
                     le récupérer</span>
                 </div>
               </Transition>
               <Transition name="slide-up" appear>
                 <div class="option-card ga-4 pa-6" @click="handleNewAccount">
-                  <span class="text-h6 font-weight-bold">Nouveau compte</span>
-                  <span class="text-body-2 text-medium-emphasis">Je souhaite créer un nouveau compte</span>
+                  <span class="text-title-large font-weight-bold">Nouveau compte</span>
+                  <span class="text-body-medium text-medium-emphasis">Je souhaite créer un nouveau compte</span>
                 </div>
               </Transition>
             </div>

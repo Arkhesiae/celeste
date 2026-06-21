@@ -47,11 +47,11 @@ v-else-if="item.status === 'current'" size="x-small" color="onBackground" varian
                 <div v-if="item.id === selectedVersion?.id">
                   <div class="d-flex align-center mb-1">
                     <v-icon icon="mdi-plus" size="16" color="success" class="mr-2" />
-                    <span class="text-caption">{{ item.improvements?.length || 0 }} améliorations</span>
+                    <span class="text-body-small">{{ item.improvements?.length || 0 }} améliorations</span>
                   </div>
                   <div class="d-flex align-center">
                     <v-icon icon="mdi-bug" size="16" color="error" class="mr-2" />
-                    <span class="text-caption">{{ item.bugFixes?.length || 0 }} corrections</span>
+                    <span class="text-body-small">{{ item.bugFixes?.length || 0 }} corrections</span>
                   </div>
                 </div>
               </v-expand-transition>
@@ -100,11 +100,11 @@ v-else-if="item.status === 'current'" size="x-small" color="onBackground" varian
                     <div v-if="item.id === selectedVersion?.id">
                       <div class="d-flex align-center mb-1">
                         <v-icon icon="mdi-plus" size="16" color="success" class="mr-2" />
-                        <span class="text-caption">{{ item.improvements?.length || 0 }} améliorations</span>
+                        <span class="text-body-small">{{ item.improvements?.length || 0 }} améliorations</span>
                       </div>
                       <div class="d-flex align-center">
                         <v-icon icon="mdi-bug" size="16" color="error" class="mr-2" />
-                        <span class="text-caption">{{ item.bugFixes?.length || 0 }} corrections</span>
+                        <span class="text-body-small">{{ item.bugFixes?.length || 0 }} corrections</span>
                       </div>
                     </div>
                   </v-expand-transition>
@@ -124,7 +124,7 @@ v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" 
           <div class="d-flex align-center justify-space-between mb-6">
             <div>
               <div class="d-flex align-center mb-2">
-                <span class="text-h4 font-weight-bold">{{ selectedVersion.version }}</span>
+                <span class="text-headline-large font-weight-bold">{{ selectedVersion.version }}</span>
               </div>
               <div class="text-medium-emphasis">
                 Sortie le {{ selectedVersion.releaseDate }}
@@ -135,7 +135,7 @@ v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" 
 
           <!-- Description -->
           <div v-if="selectedVersion.description" class="mb-6">
-            <p class="text-body-1 opacity-70">
+            <p class="text-body-large opacity-70">
               {{ selectedVersion.description }}
             </p>
           </div>
@@ -144,7 +144,7 @@ v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" 
           <div v-if="selectedVersion.improvements?.length > 0" class="mb-6">
             <div class="d-flex align-center mb-4">
               <v-icon icon="mdi-plus-circle" color="success" size="16" class="mr-3" />
-              <h3 class="text-h6 font-weight-medium">
+              <h3 class="text-title-large font-weight-medium">
                 Améliorations
               </h3>
             </div>
@@ -169,7 +169,7 @@ v-for="(improvement, index) in selectedVersion.improvements" :key="index"
           <div v-if="selectedVersion.bugFixes?.length > 0" class="mb-6">
             <div class="d-flex align-center mb-4">
               <v-icon icon="mdi-bug-check" color="pendingDemand" size="16" class="mr-3" />
-              <h3 class="text-h6 font-weight-medium">
+              <h3 class="text-title-large font-weight-medium">
                 Corrections de bugs
               </h3>
             </div>
@@ -194,7 +194,7 @@ v-for="(bugFix, index) in selectedVersion.bugFixes" :key="index"
           <div v-if="selectedVersion.technicalNotes?.length > 0" class="mb-6">
             <div class="d-flex align-center mb-4">
               <v-icon icon="mdi-cog" color="info" size="16" class="mr-3" />
-              <h3 class="text-h6 font-weight-medium">
+              <h3 class="text-title-large font-weight-medium">
                 Notes techniques
               </h3>
             </div>
@@ -217,7 +217,7 @@ v-for="(note, index) in selectedVersion.technicalNotes" :key="index"
 
           <!-- Liens -->
           <div v-if="selectedVersion.links?.length > 0" class="mb-6">
-            <h3 class="text-h6 font-weight-medium mb-3">
+            <h3 class="text-title-large font-weight-medium mb-3">
               Liens utiles
             </h3>
             <div class="d-flex flex-wrap gap-2">
@@ -234,7 +234,7 @@ v-for="link in selectedVersion.links" :key="link.url" :href="link.url" target="_
         <v-card v-else rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-file-document-outline" size="64" color="medium-emphasis" class="mb-4" />
-            <h3 class="text-h6 font-weight-medium mb-2">
+            <h3 class="text-title-large font-weight-medium mb-2">
               Sélectionnez une version
             </h3>
             <p class="text-medium-emphasis">

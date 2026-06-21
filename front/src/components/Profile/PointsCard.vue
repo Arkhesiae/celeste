@@ -16,16 +16,16 @@
         <!-- Section des points -->
         <div class="points-section justify-center align-center flex-column mb-6">
           <transition v-if="points || points === 0" name="slide-points" mode="out-in">
-            <div v-if="points > 99999" class="text-center text-h6 ">
+            <div v-if="points > 99999" class="text-center text-title-large ">
               <v-icon class="mb-1" size="x-large">
                 mdi-infinity
               </v-icon>
             </div>
-            <div v-else :key="points" class="text-h3 font-weight-bold text-center">
+            <div v-else :key="points" class="text-display-medium font-weight-bold text-center">
               {{ points }}
             </div>
           </transition>
-          <div class="text-subtitle-1 text-center mb-1 mt-n1" style="opacity: 0.5;">
+          <div class="text-body-large text-center mb-1 mt-n1" style="opacity: 0.5;">
             points
           </div>
         </div>
@@ -41,7 +41,7 @@
         <!-- Historique des transactions -->
         <div class="mt-6 pa-0">
           <div class="d-flex justify-space-between align-center mb-3">
-            <div class="text-h6">
+            <div class="text-title-large">
               Dernière activité
             </div>
             <v-btn variant="text" density="compact" color="auto"
@@ -57,13 +57,13 @@
             <TransactionItem v-for="(transaction, index) in processedTransactions.slice(0, 2)" :key="index"
               color="surfaceContainerHigh" :transaction="transaction" />
           </div>
-          <div v-else class="text-center opacity-50 text-body-2 mt-4">
+          <div v-else class="text-center opacity-50 text-body-medium mt-4">
             Aucune transaction récente
           </div>
 
           <!-- Transactions en attente -->
           <div v-if="pendingTransactions.length > 0" class="mt-4 ga-2 d-flex flex-column">
-            <div class="text-subtitle-2 opacity-50 mb-2">
+            <div class="text-title-small opacity-50 mb-2">
               Prochaines transactions en attente
             </div>
             <TransactionItem v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="index" opacity="0.7"

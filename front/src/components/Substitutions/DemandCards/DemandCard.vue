@@ -19,7 +19,7 @@
           }}</span>
         </div>
         <div class="small-dot" />
-        <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
+        <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
         }}</span>
 
         <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
@@ -67,11 +67,11 @@
           </div>
           <div class="d-flex align-start flex-column justify-space-between">
             <HourRange :hours="getShiftHours" :ends-next-day="getShiftEndsNextDay" />
-            <div class="py-0 text-caption text-disabled" style="line-height: 1.2; font-size: 11px !important;">
+            <div class="py-0 text-body-small text-disabled" style="line-height: 1.2; font-size: 11px !important;">
               Dans
               équipe {{ teamName }}
             </div>
-            <div v-if="compatibleInfoText" class="text-caption font-weight-medium"
+            <div v-if="compatibleInfoText" class="text-body-small font-weight-medium"
               style="line-height: 1.2; font-size: 10px !important; color: rgb(var(--v-theme-primary));">
               {{ compatibleInfoText }}
             </div>
@@ -117,7 +117,7 @@
       <v-icon size="12" color="onBackground" class="text-disabled" style="opacity: 0.5;">
         mdi-eye-outline
       </v-icon>
-      <span class="text-caption font-weight-medium text-disabled">{{ demand?.seenBy?.length || 0 }}</span>
+      <span class="text-body-small font-weight-medium text-disabled">{{ demand?.seenBy?.length || 0 }}</span>
     </div>
   </div>
 </template>

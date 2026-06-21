@@ -27,12 +27,12 @@
                 class="mb-4"
               />
               
-              <p class="text-body-1  mb-4">
+              <p class="text-body-large  mb-4">
                 Votre compte est en attente d'approbation par un administrateur.
                 Vous recevrez une notification dès que votre compte sera approuvé.
               </p>
               
-              <p class="text-body-2 text-center text-medium-emphasis">
+              <p class="text-body-medium text-center text-medium-emphasis">
                 Si vous avez des questions, n'hésitez pas à contacter votre administrateur.
               </p>
             </div>

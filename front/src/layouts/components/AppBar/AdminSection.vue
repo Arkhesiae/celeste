@@ -19,7 +19,7 @@
           </div>
         </div>
       </template>
-      <v-btn icon color="onBackground" class="text-body-2" @click="navigateToAdminPanel">
+      <v-btn icon color="onBackground" class="text-body-medium" @click="navigateToAdminPanel">
         <div class="d-flex align-center btn-admin">
           <v-icon size="x-small" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
             {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}
@@ -31,7 +31,7 @@
     <div v-if="!smAndDown">
       <!-- Bouton règles -->
 
-      <v-btn v-if="isAdmin" icon variant="text" color="onBackground" class="text-body-2"
+      <v-btn v-if="isAdmin" icon variant="text" color="onBackground" class="text-body-medium"
         @click="$emit('navigate-rules')">
         <v-icon size="small">
           mdi-server-security

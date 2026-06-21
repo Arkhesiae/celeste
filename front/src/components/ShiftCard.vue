@@ -1,23 +1,56 @@
 <template>
   <div class="shift-card  rounded-xl  pa-4 px-4 position-relative d-flex flex-column justify-space-between"
     :class="status === 'off' ? 'offDay' : ''">
-    <div v-if="!isBaseShift" class="d-flex align-center ga-1 pa-0">
-      <span class="text-h7 font-weight-medium text-disabled">{{ baseShift?.name }}</span>
+   
+    <div  class="d-flex justify-space-between align-start">
+      <div class="d-flex flex-column ga-2"> 
+
+         <div v-if="!isBaseShift" class="d-flex align-center ga-1 pa-0">
+      <span class="text-body-large font-weight-medium text-disabled">{{ baseShift?.name }}</span>
       <div v-for="(entry, index) in history" :key="index" class="d-flex align-center ga-1">
         <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8;" />
-        <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-h7 font-weight-medium"
+        <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-body-large font-weight-medium"
           :class="index === history.length - 1 ? '' : 'text-disabled'">
           {{ entry.shiftData?.shift?.name }}
         </span>
         <v-icon v-else :key="entry?.type" size="16" :class="index === history.length - 1 ? '' : 'text-disabled'">
           {{ typeIcon(entry?.type) }}
         </v-icon>
-        <span v-if="entry.wasOverride" class="text-caption text-disabled">Override</span>
+        <span v-if="entry.wasOverride" class="text-body-small text-disabled">Override</span>
       </div>
     </div>
 
-    <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2"
-      style="position: absolute; top: 12px; right: 12px;">
+    <div v-if="vacation.type === 'empty'">
+      <span class="text-disabled">C'est vide</span>  </div>
+    <div v-else class="d-flex align-center ga-4">
+      <span v-if="isShift && !isRestDay" class="text-headline-large font-weight-medium">
+        {{ shiftName }}
+      </span>
+
+      <div v-else-if="isRestDay" class="pb-0 mb-0">
+        <span class="text-title-large font-weight-medium">Repos</span>
+      </div>
+
+      <div v-else-if="!isShift">
+        <span class="text-body-large font-weight-medium ">{{ dayType }}</span>
+      </div>
+
+      <div class="d-flex flex-column justify-space-between">
+        <HourRange v-if="hours" :hours="hours" :ends-next-day="shiftEndsNextDay" :was-patched="wasPatched" />
+        <div v-if="shiftTeam" class="py-0 text-body-small opacity-70"
+          style="line-height: 1.2; font-size: 11px !important;">
+          Dans l'équipe {{ shiftTeam }}
+        </div>
+        <!-- <div v-if="comment" style="margin-top: -5px; font-size: 11px !important;">
+          <span class="py-0 text-body-small opacity-70">{{ comment }}</span>
+        </div> -->
+      </div>
+    </div>
+
+      </div>
+        
+
+       <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2 mr-n2 mt-n2">
       <v-tooltip v-if="enableAssign && canRegisterEntry" text="Modifier" location="top">
         <template #activator="{ props: tooltipProps }">
           <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="emit('open-entry-dialog')">
@@ -41,30 +74,14 @@
       </v-tooltip>
     </div>
 
-    <div class="d-flex align-center ga-4">
-      <span v-if="isShift && !isRestDay" class="text-h4 font-weight-medium">
-        {{ shiftName }}
-      </span>
-
-      <div v-else-if="isRestDay" class="pb-0 mb-0">
-        <span class="text-h6 font-weight-medium">Repos</span>
-      </div>
-
-      <div v-else-if="!isShift">
-        <span class="text-h7 font-weight-medium ">{{ dayType }}</span>
-      </div>
-
-      <div class="d-flex flex-column justify-space-between">
-        <HourRange v-if="hours" :hours="hours" :ends-next-day="shiftEndsNextDay" :was-patched="wasPatched" />
-        <div v-if="shiftTeam" class="py-0 text-caption opacity-70"
-          style="line-height: 1.2; font-size: 11px !important;">
-          Dans l'équipe {{ shiftTeam }}
-        </div>
-        <!-- <div v-if="comment" style="margin-top: -5px; font-size: 11px !important;">
-          <span class="py-0 text-caption opacity-70">{{ comment }}</span>
-        </div> -->
-      </div>
     </div>
+ 
+
+
+   
+    
+
+    
 
     <Transition name="fade-expand">
       <VariationSelector :is-rest-day="isRestDay" :in-past="inPast" :is-shift="isShift" :is-off="isOff"
@@ -110,6 +127,8 @@ const dateKey = computed(() => {
 const vacation = computed(() =>
   dateKey.value ? shiftStore.persistentVacationsMap.get(dateKey.value) : null
 );
+
+console.log(vacation.value)
 
 // ─── Derived state ────────────────────────────────────────────────────────────
 

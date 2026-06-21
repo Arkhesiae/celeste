@@ -1,6 +1,6 @@
 <template>
   <div class="pa-0 rounded-xl">
-    <h3 class="text-h6 font-weight-medium mb-4">
+    <h3 class="text-title-large font-weight-medium mb-4">
       Historique des dépenses
     </h3>
     <v-table class="pa-4 ma-0 rounded-xl bg-surfaceContainerLow">
@@ -40,10 +40,10 @@
           <td v-if="!smAndDown">
             {{ depense.categorie }}
           </td>
-          <td :class="smAndDown ? 'text-caption text-medium-emphasis' : ''">
+          <td :class="smAndDown ? 'text-body-small text-medium-emphasis' : ''">
             {{ depense.description }}
           </td>
-          <td class="text-caption text-medium-emphasis">
+          <td class="text-body-small text-medium-emphasis">
             {{ depense.date }}
           </td>
           <td

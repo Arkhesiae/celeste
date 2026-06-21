@@ -32,8 +32,6 @@ const getUserShifts = async (dates, userId) => {
         const results = await computeUserShifts(dateArray, userId);
         return Promise.all(results.map(async (r) => ({
             ...r,
-            shift: await ensureShiftWithVariations(r.shift),
-            initialShift: r.initialShift?.toObject ? r.initialShift.toObject() : r.initialShift
         })));
     } catch (error) {
         console.error('Erreur lors de la récupération des vacations de l\'utilisateur : ', error.message);

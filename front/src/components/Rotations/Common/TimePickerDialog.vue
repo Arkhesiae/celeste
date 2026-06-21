@@ -43,10 +43,10 @@ const saveTimePicker = () => {
       <v-card-item class="pa-6">
         <div class="d-flex align-center justify-space-between ">
           <div>
-            <div class="text-h6 font-weight-medium">
+            <div class="text-title-large font-weight-medium">
               {{ type === 'startTime' ? 'Heure de début' : 'Heure de fin' }}
             </div>
-            <div class="text-medium-emphasis text-body-2 mt-1">
+            <div class="text-medium-emphasis text-body-medium mt-1">
               Sélectionnez l'heure pour cette vacation
             </div>
           </div>

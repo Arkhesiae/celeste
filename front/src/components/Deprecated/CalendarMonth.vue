@@ -60,14 +60,14 @@
           />
 
           <span
-            class="text-body-2"
+            class="text-body-medium"
             :style="isWorkDay(day.date) && !inPast(day.date) ? 'font-weight : 900 !important' : 'font-weight : 300'"
           >
             {{ day.date.getUTCDate() }}
           </span>
           <span
             v-if="isWorkDay(day.date)"
-            class="text-caption position-absolute opacity-50"
+            class="text-body-small position-absolute opacity-50"
             style="top: 0; right: 0;"
           >{{ getShiftName(day.date) }}</span>
 

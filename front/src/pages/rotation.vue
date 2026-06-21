@@ -5,41 +5,13 @@
       subtitle="Créer, modifier et activer un tour de service"
     >
       <template #actions> 
-        <v-select
-          v-if="authStore.userData.adminType === 'master'"
-          v-model="selectedCenterId"
-          :items="centers"
-          :item-props="center => ({
-            title: center.name,
-            subtitle: center.oaci
-          })"
-          item-value="_id"
-          label="Sélectionner un centre"
-          variant="solo-filled"
-          rounded="xl"
-          class="mt-4"
-          flat
-          min-width="200px"
-          max-width="300px"
-          @update:model-value="handleCenterChange"
-        />
-
-        <v-btn
-          v-else-if="isAdmin"
-          icon
-          color="onBackground"
-          variant="text"
-          size=""
-          @click="showAddDialog = true"
-        >
-          <v-icon size="32">
-            mdi-plus
-          </v-icon>
-        </v-btn>
+        
       </template>
     </MainTitle>
 
-      
+ 
+
+     
       
 
     <v-row class="position-relative">
@@ -102,6 +74,24 @@
           v-if="!smAndDown"
           style="top:150px; position: sticky !important;"
         >
+           <v-select
+          v-if="authStore.userData.adminType === 'master'"
+          v-model="selectedCenterId"
+          :items="centers"
+          :item-props="center => ({
+            title: center.name,
+            subtitle: center.oaci
+          })"
+          item-value="_id"
+          label="Sélectionner un centre"
+          variant="solo-filled"
+          rounded="xl"
+          class="mt-4"
+          flat
+          min-width="200px"
+          max-width="300px"
+          @update:model-value="handleCenterChange"
+        />
           <v-btn
             v-if="isAdmin"
             class="mb-8"
@@ -115,8 +105,8 @@
             Ajouter un tour de service
           </v-btn>
           <div class="d-flex flex-column mb-6">
-            <span class="text-h5 font-weight-medium">Timeline</span>
-            <span class="text-subtitle-2 text-medium-emphasis">
+            <span class="text-headline-small font-weight-medium">Timeline</span>
+            <span class="text-title-small text-medium-emphasis">
               Timeline d'activation des tours de service
             </span>
           </div>
@@ -143,8 +133,8 @@
       >
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="d-flex flex-column">
-            <span class="text-h5 font-weight-medium">Timeline</span>
-            <span class="text-subtitle-2 text-medium-emphasis">
+            <span class="text-headline-small font-weight-medium">Timeline</span>
+            <span class="text-title-small text-medium-emphasis">
               Timeline d'activation des tours de service
             </span>
           </div>
@@ -220,14 +210,13 @@
 </template>
 
 <script setup>
-
+import { useCenterRotations } from '@/composables/useCenterRotation.js';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore";
 
 import { useDisplay } from "vuetify";
-// import { useRouter } from 'vue-router';
 import { toUTCNormalized } from '@/utils';
 import SavedRotation from '@/components/Rotations/Information/SavedRotation.vue';
 
@@ -237,12 +226,24 @@ const authStore = useAuthStore()
 const rotationStore = useRotationStore();
 
 const snackbarStore = useSnackbarStore();
-// const selectedCenter = computed(() => authStore.userData.centerId);
+
 const centers = computed(() => centerStore.centers);
 const isAdmin = computed(() => authStore.userData.isAdmin);
+const isMaster = computed(() => authStore.userData.adminType === 'master');
 
-const rotations = computed(() => rotationStore.rotations);
+const myRotations = computed(() => rotationStore.rotations);
+const rotations = computed(() => (isMaster.value ? browsedRotations.value : myRotations.value));
 const sortedRotations = computed(() => rotationStore.sortedRotations);
+
+
+const {
+  rotations: browsedRotations,
+  selectedCenterId,
+  loadingCenterId,
+  fetchForCenter: fetchRotationsForCenter,
+} = useCenterRotations();
+
+
 const currentActive = computed(() => {
   if (!sortedRotations.value) return null;
   return sortedRotations.value.find(rotation => rotation.status === 'active') || null;
@@ -268,41 +269,9 @@ const showDateConfirmationDialog = ref(false);
 const showConfirmChangeDialog = ref(false);
 const pendingActivation = ref({ rotation: null, date: null, changes: [] });
 
-// const router = useRouter();
 
 const rotationToEdit = ref(null);
 
-const selectedCenterId = ref(null);
-
-// const getDayStyle = (startTime, endTime) => {
-//   if (!startTime || !endTime) {
-//     return {
-//       overflow: 'visible',
-//       position: 'absolute',
-//     };
-//   }
-//   const containerHeight = 300;
-//   const totalMinutesInDay = 1440;
-
-//   const convertToMinutes = (time) => {
-//     const [hours, minutes] = time.split(':').map(Number);
-//     return hours * 60 + minutes;
-//   };
-
-//   const startMinutes = convertToMinutes(startTime);
-//   const endMinutes = convertToMinutes(endTime);
-
-//   const minuteHeight = containerHeight / totalMinutesInDay;
-//   const top = startMinutes * minuteHeight;
-//   const height = (endMinutes - startMinutes) * minuteHeight;
-
-//   return {
-//     top: `${top}px`,
-//     overflow: 'visible',
-//     height: `${height}px`,
-//     position: 'absolute',
-//   };
-// }
 
 
 const saveRotation = async (newRotation) => {
@@ -337,11 +306,9 @@ const handleSetActivationDate = (rotation) => {
 };
 
 const handleRemoveActivationDate = (shiftId, date, centerId) => {
-  console.log('handleRemoveActivationDate', shiftId, date, centerId);
   removeParams.value = {shiftId, date, centerId};
   showDateConfirmationDialog.value = true;
 };
-
 
 
 const deleteRotation = async (rotationId) => {
@@ -383,8 +350,6 @@ const setActivationDate = async (startDate) => {
 };
 
 
-
-
 const removeActivationDate = async () => {
   const { date } = removeParams.value;
   if (!date) {
@@ -395,9 +360,6 @@ const removeActivationDate = async () => {
       const inputDate = UTCDate.split('T')[0];
       const rotation = await rotationStore.rotations.find(rotation => rotation._id === removeParams.value.shiftId);
       const result = await rotationStore.removeActivationDate(rotation, inputDate, removeParams.value.centerId);
-
-      console.log(rotation);
-
      
       if (result.needsApproval) {
         showConfirmChangeDialog.value = true;
@@ -426,11 +388,6 @@ const confirmChange = async () => {
 }
 
 
-
-
-
-
-
 const cancelActivation = () => {
   showConfirmChangeDialog.value = false;
   pendingActivation.value = { rotation: null, date: null, changes: [] };
@@ -452,27 +409,16 @@ const buildChangeMessage = (change) => {
   } else {
     dateInterval = "à partir du " + new Date(change.from).toLocaleDateString();
   }
-
   
-
   return "Changement " + dateInterval + " : " + (change.oldRule ? change.oldRule : 'aucun tour de service actif') + " -> " + (change.newRule ? change.newRule : 'aucun tour de service actif');
 }
 
-// const closeErrorDialog = () => {
-//   showErrorDialog.value = false;
-// };
 
 const closeAddDialog = () => {
   showAddDialog.value = false;
   rotationToEdit.value = null;
 };
 
-// const handleCalendarTransition = () => {
-//   router.push({
-//     path: '/parameter',
-//     meta: { transition: 'slide' }
-//   });
-// };
 
 const handleEdit = (rotation) => {
   rotationToEdit.value = rotation;
@@ -481,27 +427,20 @@ const handleEdit = (rotation) => {
 
 const handleCenterChange = async (centerId) => {
   try {
-    if (centerId) {
-      await rotationStore.fetchRotations(centerId);
-    }
+    await fetchRotationsForCenter(centerId);
     snackbarStore.showNotification('Tours de service chargés', 'onPrimary', 'mdi-check');
   } catch (error) {
-    console.error('Erreur lors du chargement des tours de service:', error);
-    snackbarStore.showNotification('Erreur lors du chargement des tours de service', 'onError', 'mdi-alert-circle-outline');
+    snackbarStore.showNotification('Erreur lors du chargement des tours de service :', error, 'onError', 'mdi-alert-circle-outline');
   }
-};
+}
 
 onMounted(async () => {
   try {
+    
     await centerStore.fetchCenters();
 
-    // Charger les rotations en fonction du type d'admin
-    if (authStore.userData.adminType === 'master') {
-      selectedCenterId.value = null;
-    } else {
-      await rotationStore.fetchRotations(authStore.userData.centerId);
-      selectedCenterId.value = authStore.userData.centerId;
-    }
+    rotationStore.fetchRotations(authStore.userData.centerId);
+    
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la récupération des tours de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');
   }

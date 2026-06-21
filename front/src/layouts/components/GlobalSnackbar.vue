@@ -13,7 +13,7 @@
       <div class="d-flex align-center ga-1 rounded-xl">
         <!-- <v-icon :icon="item.icon" :color="item.iconColor" class="" /> -->
         <span
-          class="text-subtitle-2 small-text "
+          class="text-title-small small-text "
           style="font-size: 12px !important;"
         >{{ item.message }}</span>
       </div>

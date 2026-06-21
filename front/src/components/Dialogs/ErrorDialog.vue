@@ -38,13 +38,13 @@
           <v-icon :size="mobile ? 'x-large' : 'large'" :class="{ 'mb-4': mobile }" :icon="errorIcon"></v-icon>
         </template>
 
-        <v-card-title class="text-h6 text-onBackground text-wrap" :class="{ 'text-center': mobile, 'ml-4': !mobile }">
+        <v-card-title class="text-title-large text-onBackground text-wrap" :class="{ 'text-center': mobile, 'ml-4': !mobile }">
           {{ errorTitle }}
         </v-card-title>
       </v-card-item>
 
       <v-card-text class="ml-0 mt-4 align-center d-flex" :class="{ 'justify-center': mobile }">
-        <p class="text-subtitle-2 text-medium-emphasis">{{ errorMessage }}</p>
+        <p class="text-title-small text-medium-emphasis">{{ errorMessage }}</p>
       </v-card-text>
       <v-card-actions>
         <v-btn color="primary" @click="closeDialog">Fermer</v-btn>

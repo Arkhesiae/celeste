@@ -2,7 +2,7 @@
   <div class="d-flex justify-center align-center">
     <v-btn 
       variant="text" 
-      class="text-body-2 nav-link" 
+      class="text-body-medium nav-link" 
       @click="$emit('navigate-contact')"
     >
       Assistance
@@ -10,7 +10,7 @@
     
     <v-btn 
       variant="text" 
-      class="text-body-2 nav-link" 
+      class="text-body-medium nav-link" 
       @click="$emit('open-icnagenda')"
     >
       Icnagenda
@@ -21,7 +21,7 @@
     
     <v-btn 
       variant="text" 
-      class="text-body-2 nav-link" 
+      class="text-body-medium nav-link" 
       @click="$emit('open-olafatco')"
     >
       Olafatco

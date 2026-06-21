@@ -29,9 +29,9 @@
           <v-row>
             <v-col cols="12" md="6">
               <v-card-item class="pa-0 mb-6">
-                <span class="text-overline font-weight-medium">Equipe {{ selectedTeamName }}</span>
+                <span class="text-label-medium font-weight-medium">Equipe {{ selectedTeamName }}</span>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <div class="text-h5 font-weight-medium">
+                  <div class="text-headline-small font-weight-medium">
                     Configuration des dates
                   </div>
                 </v-card-title>
@@ -45,7 +45,7 @@
                 <v-card color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
                   <v-card-item>
                     <div class="d-flex justify-space-between align-center">
-                      <v-card-title class="text-subtitle-1 font-weight-medium">
+                      <v-card-title class="text-body-large font-weight-medium">
                         {{ dialogMode === 'Renfort' ? 'Période de renfort' : 'Date de changement' }}
                       </v-card-title>
                       <v-chip v-if="selectedDates.startDate" class="ml-4" color="onBackground" size="small"
@@ -57,7 +57,7 @@
                   </v-card-item>
 
                   <v-card-text>
-                    <div class="text-body-2">
+                    <div class="text-body-medium">
                       <v-slide-y-transition mode="out-in">
                         <template v-if="!selectedDates.startDate">
                           <span v-if="dialogMode === 'Renfort'">Sélectionnez la période de renfort</span>

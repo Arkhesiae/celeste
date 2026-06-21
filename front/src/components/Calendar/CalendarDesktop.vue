@@ -8,7 +8,7 @@
     </v-row>
 
     <!-- Jours du calendrier -->
-    <v-row v-for="(week, index) in calendarDays" :key="index" dense>
+    <v-row v-for="(week, index) in calendarDays" :key="index" density="compact">
       <v-col v-for="day in week" :key="day.date">
         <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
           :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"

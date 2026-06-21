@@ -37,10 +37,10 @@ const submit = () => {
       <v-card-item class="pa-6">
         <div class="d-flex align-center justify-space-between">
           <div>
-            <div class="text-h6 font-weight-medium">
+            <div class="text-title-large font-weight-medium">
               Modifier le nom
             </div>
-            <div class="text-medium-emphasis text-body-2 mt-1">
+            <div class="text-medium-emphasis text-body-medium mt-1">
               Modifiez le nom du tour de service
             </div>
           </div>

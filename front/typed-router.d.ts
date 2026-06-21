@@ -14,11 +14,15 @@ import type {
   ParamValueZeroOrMore,
   ParamValueZeroOrOne,
 } from 'vue-router'
+import type {
+  _ExtractParamParserType,
+} from 'vue-router/experimental'
 
 declare module 'vue-router' {
   interface TypesConfig {
-    ParamParsers:
-      | never
+    _ParamParsers: {}
+    RouteNamedMap: import('vue-router/auto-routes').RouteNamedMap
+    _RouteFileInfoMap: import('vue-router/auto-routes')._RouteFileInfoMap
   }
 }
 
@@ -331,11 +335,15 @@ declare module 'vue-router/auto-routes' {
         | '/(account-creation)/account-recovery'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/(account-creation)/creation.vue': {
       routes:
         | '/(account-creation)/creation'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/(account-creation)/get-started.vue': {
@@ -343,17 +351,23 @@ declare module 'vue-router/auto-routes' {
         | '/(account-creation)/get-started'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/index.vue': {
       routes:
         | '/'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/admin/admin-panel.vue': {
       routes:
         | 'admin-panel'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/admin/tickets.vue': {
@@ -363,11 +377,15 @@ declare module 'vue-router/auto-routes' {
         | 'tickets'
       views:
         | 'default'
+      pathParamNames:
+        | never
     }
     'src/pages/admin/tickets/index.vue': {
       routes:
         | '/admin/tickets/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/admin/tickets/archived.vue': {
@@ -375,11 +393,15 @@ declare module 'vue-router/auto-routes' {
         | '/admin/tickets/archived'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/admin/announcements.vue': {
       routes:
         | '/admin/announcements'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/admin/demands.vue': {
@@ -387,11 +409,15 @@ declare module 'vue-router/auto-routes' {
         | '/admin/demands'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/admin/emails.vue': {
       routes:
         | '/admin/emails'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/admin/pending-users.vue': {
@@ -399,11 +425,15 @@ declare module 'vue-router/auto-routes' {
         | '/admin/pending-users'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/admin/rules.vue': {
       routes:
         | '/admin/rules'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/calendar.vue': {
@@ -411,11 +441,15 @@ declare module 'vue-router/auto-routes' {
         | '/calendar'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/center/[centerId]/teams.vue': {
       routes:
         | '/center/[centerId]/teams'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/center/centers.vue': {
@@ -423,17 +457,23 @@ declare module 'vue-router/auto-routes' {
         | '/center/centers'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/contact-admin.vue': {
       routes:
         | '/contact-admin'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/dashboard.vue': {
       routes:
         | '/dashboard'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/demand-page.vue': {
@@ -446,6 +486,8 @@ declare module 'vue-router/auto-routes' {
         | '/demand-page/standalone/own'
       views:
         | 'default'
+      pathParamNames:
+        | never
     }
     'src/pages/demand-page/demands.vue': {
       routes:
@@ -453,11 +495,15 @@ declare module 'vue-router/auto-routes' {
         | '/demand-page/demands/'
       views:
         | 'default'
+      pathParamNames:
+        | never
     }
     'src/pages/demand-page/demands/index.vue': {
       routes:
         | '/demand-page/demands/'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/demand-page/standalone.vue': {
@@ -467,11 +513,15 @@ declare module 'vue-router/auto-routes' {
         | '/demand-page/standalone/own'
       views:
         | 'default'
+      pathParamNames:
+        | never
     }
     'src/pages/demand-page/standalone/available.vue': {
       routes:
         | '/demand-page/standalone/available'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/demand-page/standalone/own.vue': {
@@ -479,11 +529,15 @@ declare module 'vue-router/auto-routes' {
         | '/demand-page/standalone/own'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/financement.vue': {
       routes:
         | '/financement'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/haptic.vue': {
@@ -491,11 +545,15 @@ declare module 'vue-router/auto-routes' {
         | '/haptic'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/landing.vue': {
       routes:
         | '/landing'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/loading.vue': {
@@ -503,11 +561,15 @@ declare module 'vue-router/auto-routes' {
         | '/loading'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/login.vue': {
       routes:
         | '/login'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/messages.vue': {
@@ -515,11 +577,15 @@ declare module 'vue-router/auto-routes' {
         | '/messages'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/patchnotes.vue': {
       routes:
         | '/patchnotes'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/pending-approval.vue': {
@@ -527,29 +593,39 @@ declare module 'vue-router/auto-routes' {
         | '/pending-approval'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/profile/[userId].vue': {
       routes:
         | '/profile/[userId]'
       views:
         | never
+      pathParamNames:
+        | 'userId'
     }
     'src/pages/profile/[userId].change-history.vue': {
       routes:
         | '/profile/[userId].change-history'
       views:
         | never
+      pathParamNames:
+        | 'userId'
     }
     'src/pages/profile/[userId].transaction-history.vue': {
       routes:
         | '/profile/[userId].transaction-history'
       views:
         | never
+      pathParamNames:
+        | 'userId'
     }
     'src/pages/reset-password.vue': {
       routes:
         | '/reset-password'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/rotation.vue': {
@@ -557,11 +633,15 @@ declare module 'vue-router/auto-routes' {
         | '/rotation'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/test-graph.vue': {
       routes:
         | '/test-graph'
       views:
+        | never
+      pathParamNames:
         | never
     }
     'src/pages/user-params.vue': {
@@ -569,11 +649,15 @@ declare module 'vue-router/auto-routes' {
         | '/user-params'
       views:
         | never
+      pathParamNames:
+        | never
     }
     'src/pages/users.vue': {
       routes:
         | '/users'
       views:
+        | never
+      pathParamNames:
         | never
     }
   }

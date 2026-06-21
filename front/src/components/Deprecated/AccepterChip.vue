@@ -17,10 +17,10 @@
     </v-icon>
 
     <!-- <div v-if="findAcceptedAsAccepter" class="d-flex align-center justify-center">
-      <span class="text-caption">{{ teamName }}</span>
+      <span class="text-body-small">{{ teamName }}</span>
     </div>
     <div v-else>
-      <span class="text-caption">?</span>
+      <span class="text-body-small">?</span>
     </div> -->
   </div>
 </template>

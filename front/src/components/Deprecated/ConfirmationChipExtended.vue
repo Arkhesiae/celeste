@@ -42,7 +42,7 @@ onMounted(async () => {
     variant="flat"
     size="x-small"
     style=" opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-primary), 0.4);"
-    class="text-caption font-weight-bold  px-2 overflow-visible"
+    class="text-body-small font-weight-bold  px-2 overflow-visible"
   >
     <div class="mr-1">
       <v-icon
@@ -99,7 +99,7 @@ onMounted(async () => {
         >Permute avec</span>
         <!-- <v-avatar size="x-small" class="" variant="tonal">
           <v-img v-if="accepterUser?.avatar" :src="`${API_URL}${accepterUser.avatar}`" alt="Avatar" />
-          <span v-else class="text-caption font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ? `${accepterUser.name.charAt(0)}${accepterUser.lastName.charAt(0)}` : '?' }}</span>
+          <span v-else class="text-body-small font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ? `${accepterUser.name.charAt(0)}${accepterUser.lastName.charAt(0)}` : '?' }}</span>
         </v-avatar> -->
         <span> {{ accepterUser ? `${accepterUser.name} ${accepterUser.lastName.charAt(0)}` : '?' }}</span>
       </div>

@@ -18,7 +18,7 @@ ref="headerRef" :style="{
             <v-btn
 v-if="smAndDown && showCloseButton" icon="mdi-arrow-left" variant="text" class="mr-1"
               @click="handleClose" />
-            <span :class="smAndDown ? 'text-h7' : 'text-h6'" class="font-weight-medium">
+            <span :class="smAndDown ? 'text-body-large' : 'text-title-large'" class="font-weight-medium">
               {{ title }}
             </span>
           </div>

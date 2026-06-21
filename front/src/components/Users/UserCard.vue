@@ -18,10 +18,10 @@
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-subtitle-1">
+            <div class="text-body-large">
               {{ user.name }} {{ user.lastName.toUpperCase() }}
             </div>
-            <div class="text-caption text-medium-emphasis">
+            <div class="text-body-small text-medium-emphasis">
               {{ user.email }}
             </div>
           </div>
@@ -121,14 +121,14 @@
         </div>
         <div
           v-else
-          class="text-h6 font-weight-bold"
+          class="text-title-large font-weight-bold"
           :class="user.points || user.points === 0 ? '' : 'blurred'"
         >
           {{
             user.points || user.points === 0 ? user.points :
             "XX" }}
         </div>
-        <div class="text-body-2 text-medium-emphasis mt-n2">
+        <div class="text-body-medium text-medium-emphasis mt-n2">
           Points
         </div>
       </div>

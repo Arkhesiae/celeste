@@ -128,7 +128,7 @@ const updateCenter = async (req, res, next) => {
 
 // DELETE A CENTER
 const deleteCenter = async (req, res, next) => {
-    const {id} = req.params;
+    const { id } = req.params;
 
     try {
         const deletedCenter = await Center.findById(id);
@@ -141,17 +141,23 @@ const deleteCenter = async (req, res, next) => {
         await deletedCenter.save();
 
         await User.updateMany(
-            {centerId: id},
-            {$unset: {centerId: ""}}
+            { centerId: id },
+            { $unset: { centerId: "", teams: "" } }
         );
- 
+
         // Suppression des rotations
-        await Rotation.deleteMany({centerId: id});
+        await Rotation.updateMany(
+            { center: id },
+            { $set: { deleted: true } }
+        );
 
         // Suppression des équipes
-        await Team.deleteMany({center: id});
+        await Team.updateMany(
+            { center: id },
+            { $set: { deleted: true } }
+        );
 
-        res.json({message: 'Centre supprimé avec succès'});
+        res.json({ message: 'Centre supprimé avec succès' });
     } catch (error) {
         next(error);
     }

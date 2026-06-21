@@ -5,7 +5,7 @@
         <v-row>
           <v-col cols="12" md="6">
             <div class="mb-4">
-              <!-- <div class="text-subtitle-2 mb-2">Administrateur à contacter</div> -->
+              <!-- <div class="text-title-small mb-2">Administrateur à contacter</div> -->
               <v-chip-group v-model="formData.adminType" mandatory color="surface" base-color="surface" class="mb-2">
                 <v-chip
 v-for="admin in adminsChip" :key="admin.type" :value="admin.type" variant="flat" rounded="lg"
@@ -25,7 +25,7 @@ v-for="admin in adminsChip" :key="admin.type" :value="admin.type" variant="flat"
                   </v-tooltip>
                 </v-chip>
               </v-chip-group>
-              <div v-if="!formData.adminType" class="text-caption text-error">
+              <div v-if="!formData.adminType" class="text-body-small text-error">
                 Veuillez sélectionner un administrateur
               </div>
             </div>
@@ -44,7 +44,7 @@ title="" :model-value="formData.center" :items="centers" item-title="name"
               </VersionSelector>
               <div
 v-if="formData.adminType && formData.adminType !== 'master' && !formData.center"
-                class="text-caption text-error mt-4">
+                class="text-body-small text-error mt-4">
                 Le centre est obligatoire pour un administrateur local
               </div>
             </div>

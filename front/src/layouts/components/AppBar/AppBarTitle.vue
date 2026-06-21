@@ -22,14 +22,14 @@
           </template>
         </v-icon>
 
-        <v-btn flat :color="isDev ? 'error' : 'primary'" class="text-overline" style="font-weight: 900 !important;"
+        <v-btn flat :color="isDev ? 'error' : 'primary'" class="text-label-medium" style="font-weight: 900 !important;"
           :active="isHomepage || isDashboard">
           {{ APP_TITLE }}
         </v-btn>
 
 
       </div>
-      <span v-if="isDev" class="text-overline version-text text-medium-emphasis ml-2">
+      <span v-if="isDev" class="text-label-medium version-text text-medium-emphasis ml-2">
         {{ userName }}
       </span>
     </div>

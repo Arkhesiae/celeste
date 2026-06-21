@@ -1,13 +1,13 @@
 <template>
   <v-dialog v-model="isOpen" :fullscreen="smAndDown" max-width="600px" persistent>
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-6 ">
-      <div class="d-flex align-center text-h6">
+      <div class="d-flex align-center text-title-large">
         Envoyer une réponse
       </div>
 
       <div class="pt-4 ">
         <div class="mb-4 d-flex align-center ga-3 ml-2">
-          <div class="text-subtitle-2">
+          <div class="text-title-small">
             Destinataire
           </div>
           <v-chip size="small" rounded="lg" color="surfaceContainerHigh" class="bg-surfaceContainerHigh" variant="flat">
@@ -19,7 +19,7 @@
         </div>
 
         <div class="mb-4 d-flex align-center ga-3 ml-2">
-          <div class="text-subtitle-2 ">
+          <div class="text-title-small ">
             Sujet
           </div>
           <v-chip size="small" rounded="xl" color="secondary" variant="outlined">

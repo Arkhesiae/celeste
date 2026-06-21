@@ -4,12 +4,12 @@
 
   <div class="d-flex align-start flex-column justify-space-between mb-4 mt-4">
     <v-fade-transition mode="out-in">
-      <v-card-title :key="currentTitle" class="text-h7 font-weight-medium  text-medium-emphasis pa-0 mb-0">
+      <v-card-title :key="currentTitle" class="text-body-large font-weight-medium  text-medium-emphasis pa-0 mb-0">
         {{ currentTitle }}
       </v-card-title>
     </v-fade-transition>
     <v-slide-x-transition mode="out-in">
-      <span :key="currentSubtitle" class="text-subtitle-2 text-disabled">
+      <span :key="currentSubtitle" class="text-title-small text-disabled">
         <v-icon icon="mdi-information-outline" color="primary" size="16" class="mr-2" />
         {{ currentSubtitle }}
       </span>
@@ -25,7 +25,7 @@
         </div>
         <div v-else class="text-center py-4">
           <v-icon icon="mdi-tray-remove" size="small" class="mb-2" />
-          <div class="text-body-2 text-disabled">
+          <div class="text-body-medium text-disabled">
             {{ emptyMessage }}
           </div>
         </div>

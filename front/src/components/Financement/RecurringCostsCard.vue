@@ -7,7 +7,7 @@
   >
     <div class="d-flex align-center justify-space-between mb-8"> 
       <span
-        class="text-body-2 font-weight-medium "
+        class="text-body-medium font-weight-medium "
         style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;"
       >
         <v-icon
@@ -46,7 +46,7 @@
             <div class="font-weight-bold">
               {{ cout.cout }}€
             </div>
-            <div class="text-caption text-medium-emphasis">
+            <div class="text-body-small text-medium-emphasis">
               {{ cout.periodicite }}
             </div>
           </div>
@@ -55,8 +55,8 @@
     </v-list>
     <v-divider class="my-4" />
     <div class="d-flex justify-space-between align-center">
-      <span class="text-h6 font-weight-medium">Total Annuel</span>
-      <span class="text-h6 font-weight-bold">{{ totalAnnualCosts }}€</span>
+      <span class="text-title-large font-weight-medium">Total Annuel</span>
+      <span class="text-title-large font-weight-bold">{{ totalAnnualCosts }}€</span>
     </div>
     <!-- Métriques importantes -->
   </v-card>
@@ -71,10 +71,10 @@
           size="32"
           class="mb-2"
         />
-        <div class="text-h6 font-weight-bold">
+        <div class="text-title-large font-weight-bold">
           {{ userCount }}
         </div>
-        <div class="text-caption">
+        <div class="text-body-small">
           Utilisateurs actifs
         </div>
       </div>
@@ -89,10 +89,10 @@
           size="32"
           class="mb-2"
         />
-        <div class="text-h6 font-weight-bold">
+        <div class="text-title-large font-weight-bold">
           {{ costPerUser }}€
         </div>
-        <div class="text-caption">
+        <div class="text-body-small">
           Coût par utilisateur/an
         </div>
       </div>

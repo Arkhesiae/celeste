@@ -17,7 +17,7 @@
             class="mr-6"
             size="16"
           />
-          <span class="text-h5 font-weight-medium">Règles de travail</span>
+          <span class="text-headline-small font-weight-medium">Règles de travail</span>
         </div>
         <v-btn
           icon="mdi-close"
@@ -35,7 +35,7 @@
             class="mr-3"
             size="20"
           />
-          <span class="text-body-2 text-medium-emphasis">
+          <span class="text-body-medium text-medium-emphasis">
             Source : 
             <a 
               href="https://www.legifrance.gouv.fr/jorf/article_jo/JORFARTI000049926084" 
@@ -49,7 +49,7 @@
         </div>
       </div>
       <v-card-text class="pa-0  article">
-        <div class="text-body-1">
+        <div class="text-body-large">
           <p class="mb-4">
             Pour chaque agent, en complément des obligations qui s'appliquent aux cycles de travail en équipe, sont garanties :
           </p>
@@ -121,7 +121,7 @@
                     size="16"
                   />
                   <span
-                    class="text-body-2 text-wrap"
+                    class="text-body-medium text-wrap"
                     :class="rule.computed ? 'text-onSurface' : 'text-error'"
                     style="font-size: 12px !important"
                   >
@@ -154,35 +154,35 @@
             </v-card>
           </div>
           
-          <p class="mb-4 text-body-2 text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             Les 7 jours glissants mentionnés aux alinéas précédents s'entendent du 1er jour de la période considérée à 0 heure au 7e jour à 23 h 59.
           </p>
 
-          <p class="mb text-body-2 text-medium-emphasis">
+          <p class="mb text-body-medium text-medium-emphasis">
             Une vacation de jour ne peut débuter avant 6 heures ni se terminer après 1 heure le lendemain du début de la vacation. Durant la période comprise entre 5 heures et 24 heures un agent ne peut commencer qu'une seule vacation de contrôle.
           </p>
 
-          <p class="mb-4 text-body-2 text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             Une vacation de contrôle ne peut être programmée pour une durée inférieure à 5 heures.
           </p>
 
-          <p class="mb text-body-2 text-medium-emphasis ">
+          <p class="mb text-body-medium text-medium-emphasis ">
             La durée maximale d'une vacation de contrôle de jour est de 10 heures.
           </p>
 
-          <p class="mb text-body-2 text-medium-emphasis">
+          <p class="mb text-body-medium text-medium-emphasis">
             La durée maximale d'une vacation de contrôle de nuit is de 11 heures (durée augmentée d'une heure les nuits d'automne de changement d'heure).
           </p>
 
-          <p class="mb-4 text-body-2 text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             Le décalage entre la première et la dernière heure de début ainsi qu'entre la première et la dernière heure de fin des vacations élémentaires, hors vacation de nuit, au sein d'une même vacation générique est de 5 heures maximum. Cette durée est portée à 3 heures pour les CRNA.
           </p>
 
-          <p class="mb text-body-2 text-medium-emphasis">
+          <p class="mb text-body-medium text-medium-emphasis">
             La durée maximale d'une plage de tenue de poste de contrôle est de 2,5 heures pour les organismes des listes 1 à 3 et de 4 heures pour les organismes des listes 4 et 5.
           </p>
 
-          <p class="mb-4 text-body-2 text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             La durée minimale d'une pause entre deux plages de tenue de poste est de 30 minutes. Une pause pour le déjeuner est obligatoire pour une vacation de contrôle d'une durée de 6 heures ou plus et incluant la plage 11 heures-13 heures. La pause pour le repas est d'une durée minimale de 45 minutes, et peut être portée à 1 heure dans la mesure du possible.
           </p>
 

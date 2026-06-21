@@ -24,7 +24,7 @@
       icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
       <div class="d-flex align-center justify-space-between">
         <div>
-          <v-card-title class="text-h6 font-weight-medium">Aucun tour de service actif</v-card-title>
+          <v-card-title class="text-title-large font-weight-medium">Aucun tour de service actif</v-card-title>
           <v-card-text>
             <div class="text-medium-emphasis">
               Aucun tour de service n'est actuellement actif.

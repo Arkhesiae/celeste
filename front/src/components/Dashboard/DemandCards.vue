@@ -1,7 +1,7 @@
 <template>
     <!-- Mobile: Swiper -->
     <div class="d-flex justify-space-between align-start w-100 flex-column ga-4" style="width: 100%; max-width: 100%;">
-        <span class="text-h6 font-weight-medium pa-0">
+        <span class="text-title-large font-weight-medium pa-0">
             Mes demandes à venir
         </span>
 

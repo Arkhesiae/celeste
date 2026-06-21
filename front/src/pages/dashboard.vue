@@ -22,7 +22,7 @@
       </v-col>
     </v-row>
     <!-- Grille principale -->
-    <v-row :class="smAndDown ? 'mx-n4' : ''">
+    <v-row >
       <v-col cols="12" md="auto" lg="auto" xl="auto" style="min-width: 0; width: 0;"
         class="flex-grow-1 ga-4 d-flex flex-column">
         <VacationCards />
@@ -31,7 +31,7 @@
 
       <v-col :class="smAndDown ? '' : 'right-col'">
         <div class="d-flex justify-space-between align-start flex-column mb-4 flex-grow-1 ga-4">
-          <span class="text-h6 font-weight-medium pa-0">
+          <span class="text-title-large font-weight-medium pa-0">
             Mon centre
           </span>
         </div>

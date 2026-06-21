@@ -15,7 +15,7 @@
               :color="typeColor"
               size="20"
             />
-            <span class="text-h6 font-weight-bold">{{ getTypeName(demand?.type) }}</span>
+            <span class="text-title-large font-weight-bold">{{ getTypeName(demand?.type) }}</span>
           </div>
           <div
             class="d-flex align-center ga-2"
@@ -38,7 +38,7 @@
                 mdi-account
               </v-icon>
             </v-avatar>
-            <span class="text-body-2 font-weight-bold">{{ posterData?.name }} {{ posterData?.lastName }}</span>
+            <span class="text-body-medium font-weight-bold">{{ posterData?.name }} {{ posterData?.lastName }}</span>
           </div>
         </div>
  
@@ -93,8 +93,8 @@
             size="16"
             color="onSurface"
           />
-          <span class="text-body-2">{{ getShiftName }}</span>
-          <span class="text-body-2">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}</span>
+          <span class="text-body-medium">{{ getShiftName }}</span>
+          <span class="text-body-medium">{{ getShiftHours.startTime }} - {{ getShiftHours.endTime }}</span>
         </div>
       </div>
 
@@ -112,7 +112,7 @@
             size="20"
             color="success"
           />
-          <span class="text-caption font-weight-bold opacity-70">Accepteur</span>
+          <span class="text-body-small font-weight-bold opacity-70">Accepteur</span>
         </div>
         <div
           class="d-flex align-center ga-2"
@@ -135,7 +135,7 @@
               mdi-account
             </v-icon>
           </v-avatar>
-          <span class="text-body-2 font-weight-bold">{{ accepterData?.name }} {{ accepterData?.lastName }}</span>
+          <span class="text-body-medium font-weight-bold">{{ accepterData?.name }} {{ accepterData?.lastName }}</span>
         </div>
       </div>
 
@@ -143,7 +143,7 @@
       <v-divider class="my-3" />
       
       <div class="d-flex align-center justify-space-between">
-        <span class="text-caption font-weight-bold opacity-70">Points</span>
+        <span class="text-body-small font-weight-bold opacity-70">Points</span>
         <v-chip 
           color="primary" 
           variant="tonal" 
@@ -186,16 +186,16 @@
               </v-icon>
             </v-avatar>
             <div>
-              <div class="text-h7 font-weight-bold">
+              <div class="text-body-large font-weight-bold">
                 {{ selectedUserData?.name }} {{ selectedUserData?.lastName }}
               </div>
-              <div class="text-caption opacity-70">
+              <div class="text-body-small opacity-70">
                 {{ selectedUserData?.email }}
               </div>
             </div>
           </div>
           <v-divider class="my-2" />
-          <div class="text-caption">
+          <div class="text-body-small">
             <strong>Téléphone:</strong> {{ selectedUserData?.personalData?.phoneNumber || 'N/A' }}
           </div>
         </div>

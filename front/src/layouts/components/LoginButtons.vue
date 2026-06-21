@@ -51,7 +51,7 @@
           <div v-bind="props" />
         </template>
         <v-card min-width="300">
-          <v-card-title class="text-h6">
+          <v-card-title class="text-title-large">
             Utilisateurs d'équipe
             <v-btn
               icon="mdi-refresh"

@@ -2,7 +2,7 @@
   <!-- Carte de l'équipe -->
   <v-card ref="teamCard" rounded="xl" elevation="0" class="pa-2 team-card">
     <div class="d-flex align-start justify-space-between">
-      <v-card-title class="text-body-1 font-weight-bold">
+      <v-card-title class="text-body-large font-weight-bold">
         Mon équipe
       </v-card-title>
       <v-icon icon="mdi-crowd" size="16" color="onBackground"
@@ -13,7 +13,7 @@
           <v-avatar color="background" size="48" class=" smooth-shadow">
             <v-icon icon="mdi-crowd" size="24" />
           </v-avatar>
-          <div class="text-h7 font-weight-bold ">
+          <div class="text-body-large font-weight-bold ">
             Equipe {{ teamStore.currentTeam.name }}
           </div>
         </div>

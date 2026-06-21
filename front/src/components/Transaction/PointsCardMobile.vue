@@ -24,13 +24,13 @@ const props = defineProps({
 
             <div class="d-flex align-center justify-space-between flex-grow-1">
                 <div>
-                    <p class="text-body-2 font-weight-bold mb-0">Mes points</p>
-                    <p class="text-caption text-disabled mt-n1">Membre</p>
+                    <p class="text-body-medium font-weight-bold mb-0">Mes points</p>
+                    <p class="text-body-small text-disabled mt-n1">Membre</p>
                 </div>
 
                 <div class="text-right">
-                    <p class="text-body-2 font-weight-bold mb-0">{{ points.toLocaleString() }}</p>
-                    <p class="text-caption text-medium-emphasis mt-n1">{{ pendingTransactions.length }} transactions en
+                    <p class="text-body-medium font-weight-bold mb-0">{{ points.toLocaleString() }}</p>
+                    <p class="text-body-small text-medium-emphasis mt-n1">{{ pendingTransactions.length }} transactions en
                         attente</p>
                 </div>
             </div>

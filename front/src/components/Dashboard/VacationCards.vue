@@ -1,7 +1,7 @@
 <template>
     <!-- Mobile: Swiper -->
     <div class=" d-flex justify-space-between align-start flex-column  ga-4">
-        <span class="text-h6 font-weight-medium pa-0">
+        <span class="text-title-large font-weight-medium pa-0">
             A venir
         </span>
         <div v-if="smAndDown" class="w-100">

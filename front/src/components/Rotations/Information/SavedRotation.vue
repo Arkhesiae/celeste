@@ -21,7 +21,7 @@
         <template v-else>
           <v-card-title
             class="flex-shrink-1"
-            :class="smAndDown ? 'text-h6' : 'text-h4'"
+            :class="smAndDown ? 'text-title-large' : 'text-headline-large'"
           >
             {{ rotation.name
             }}

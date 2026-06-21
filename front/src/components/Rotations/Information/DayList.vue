@@ -21,9 +21,9 @@
             >
               <v-icon>mdi-plus-box-outline</v-icon>
             </div>
-            <div class="text-subtitle-1 font-weight-bold text-medium-emphasis d-flex align-center justify-center">
+            <div class="text-body-large font-weight-bold text-medium-emphasis d-flex align-center justify-center">
               <div class="d-flex align-center ga-2">
-                <div class="text-subtitle-1 font-weight-bold text-medium-emphasis ">
+                <div class="text-body-large font-weight-bold text-medium-emphasis ">
                   {{ day?.name === 'Rest Day' ? 'R' : day?.name?.slice(0, 2) }}
                 </div>
               </div>

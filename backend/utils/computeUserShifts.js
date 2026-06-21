@@ -210,7 +210,7 @@ const getActiveEntries = async (user, date) => {
 
 const buildShiftResult = (dateStr, shift, team, baseShift, overrides = {}) => ({
     date: dateStr,
-    type: 'shift',
+    type: shift ? 'shift' : "empty",
     isBaseShift: true,
     shiftData: { shift, selectedVariation: null, team: team },
     startTime: shift?.default?.startTime,

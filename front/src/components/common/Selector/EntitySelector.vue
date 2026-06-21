@@ -6,8 +6,8 @@
     color="surfaceContainer"
     style="max-height: 100%;"
   >
-    <div class="title-container mb-4 pl-2 pt-2">
-      <span class="global-title">{{ title }}</span>
+    <div v-if="title" class="title-container mb-4 pl-2 pt-2">
+      <span  class="global-title">{{ title }}</span>
     </div>
     <div class="version-list-container flex-grow-1 overflow-hidden">
       <div
@@ -102,8 +102,6 @@ const isScrolledToTop = ref(false);
 function selectItem(item) {
   item[props.itemKey] = item[props.itemKey];
   modelValue.value = item;
-  console.log(modelValue.value?.[props.itemKey] );
-  console.log(item);
   emit('update:modelValue', item);
 }
 
@@ -198,16 +196,15 @@ onMounted(() => {
 }
 
 .version-hover:hover {
-  background-color: rgba(var(--v-theme-primary), 0.05);
-  border-color: rgba(var(--v-theme-primary), 0.1);
+  border-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 10%, transparent);
   /* color: rgba(var(--v-theme-onPrimary), 1); */
 }
 
 .selected-version {
-  background-color: rgba(var(--v-theme-primary), 0.9);
+  background-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 80%, transparent);
   border-radius: 20px !important;
-  color: rgba(var(--v-theme-onPrimary), 1);
-  border-color: rgba(var(--v-theme-primary), 0.3);
+  color: color-mix(in srgb, rgb(var(--v-theme-onPrimary)) 80%, transparent);
+
 }
 
 .cursor-pointer {

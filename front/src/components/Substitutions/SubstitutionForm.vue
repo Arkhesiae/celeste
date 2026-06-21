@@ -12,23 +12,23 @@
       <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
         <v-window-item :value="0">
           <div class="d-flex align-center text-primary justify-end mb-2 mx-2">
-            <span class="text-body-2 font-weight-bold">{{ formattedDate }}</span>
+            <span class="text-body-medium font-weight-bold">{{ formattedDate }}</span>
           </div>
 
           <div class="my-10 mt-3 rounded-xl bg-background pa-4 px-4 position-relative d-flex flex-column ga-4">
             <div class="d-flex align-center pl-2 ga-3">
               <div class="pb-0 mb-0">
-                <span class="text-h3 font-weight-medium" style="position: relative; top: 2px;">{{ shiftName }}</span>
+                <span class="text-display-medium font-weight-medium" style="position: relative; top: 2px;">{{ shiftName }}</span>
               </div>
               <div class="d-flex align-start flex-column justify-space-between">
                 <div>
-                  <span class="text-caption font-weight-bold">
+                  <span class="text-body-small font-weight-bold">
                     {{ displayShiftHours.startTime }} - {{ displayShiftHours.endTime }}
                   </span>
-                  <span v-if="displayShiftEndsNextDay" class="text-caption font-weight-bold opacity-50 ml-1"
+                  <span v-if="displayShiftEndsNextDay" class="text-body-small font-weight-bold opacity-50 ml-1"
                     style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
                 </div>
-                <div v-if="selectedShift?.teamObject?.name" class="py-0 text-caption opacity-70"
+                <div v-if="selectedShift?.teamObject?.name" class="py-0 text-body-small opacity-70"
                   style="margin-top: -8px; font-size: 11px !important;">
                   Dans l'équipe {{ selectedShift?.teamObject?.name }}
                 </div>
@@ -36,7 +36,7 @@
             </div>
 
             <div v-if="hasVariations" class="flex-shrink-1 pl-2 text-medium-emphasis">
-              <span class="text-caption mb-2">
+              <span class="text-body-small mb-2">
                 <v-icon start icon="mdi-information-outline" size="small" />
                 Choisissez une variante pour préciser l'horaire (optionnel, peut rendre plus de permutations
                 compatibles). {{ preselectedVariantHint }}
@@ -66,9 +66,9 @@
 
           <div>
             <v-card-title class="pa-0 pl-2 mb-0">
-              <h2 class="text-h6 font-weight-medium">Permutations acceptées</h2>
+              <h2 class="text-title-large font-weight-medium">Permutations acceptées</h2>
             </v-card-title>
-            <v-card-subtitle class="pa-0 pl-2 text-caption">
+            <v-card-subtitle class="pa-0 pl-2 text-body-small">
               Sélectionnez les vacations acceptées
             </v-card-subtitle>
 
@@ -91,7 +91,7 @@
                         {{ getUnavailabilityReason(day._id) }}
                       </v-tooltip>
                     </template>
-                    <span class="text-body-2 font-weight-bold">{{ day.name }}</span>
+                    <span class="text-body-medium font-weight-bold">{{ day.name }}</span>
                   </v-chip>
                 </div>
               </v-chip-group>
@@ -102,7 +102,7 @@
                     style="background-color: rgba(var(--v-theme-error), 0.05); border-radius: 10px;">
                     <v-icon icon="mdi-swap-horizontal" color="error" size="16" class="opacity-70" />
                     <div class="text-error d-flex align-center ga-2">
-                      <span class="text-body-2 font-weight-bold">{{ getSwitchName(switchDay) }}</span>
+                      <span class="text-body-medium font-weight-bold">{{ getSwitchName(switchDay) }}</span>
                       <span style="font-size: 12px !important;">{{ getUnavailabilityReason(switchDay) }}</span>
                     </div>
                   </div>
@@ -126,14 +126,14 @@
 
               <div class="mt-8">
                 <template v-if="acceptedSwitchesWithPoints.length > 0">
-                  <v-card-title class="text-h6 font-weight-medium pa-0 mb-2">Points par vacation</v-card-title>
-                  <v-card-subtitle class="text-caption pa-0 mb-4">
+                  <v-card-title class="text-title-large font-weight-medium pa-0 mb-2">Points par vacation</v-card-title>
+                  <v-card-subtitle class="text-body-small pa-0 mb-4">
                     Définissez le nombre de points pour chaque permutation sélectionnée
                   </v-card-subtitle>
                 </template>
                 <template v-else>
-                  <v-card-title class="text-h6 font-weight-medium pa-0 mb-2">Points proposés</v-card-title>
-                  <v-card-subtitle class="text-caption pa-0 mb-4">
+                  <v-card-title class="text-title-large font-weight-medium pa-0 mb-2">Points proposés</v-card-title>
+                  <v-card-subtitle class="text-body-small pa-0 mb-4">
                     Définissez le nombre de points pour le remplacement
                   </v-card-subtitle>
                 </template>
@@ -145,10 +145,10 @@
                   <div class="d-flex align-center justify-space-between ga-2">
                     <div class="d-flex align-center ga-2">
                       <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70" />
-                      <span class="text-body-2 font-weight-bold">{{ getSwitchName(switchDay) }}</span>
+                      <span class="text-body-medium font-weight-bold">{{ getSwitchName(switchDay) }}</span>
                     </div>
                     <div class="d-flex align-center ga-2">
-                      <span class="text-body-2 font-weight-bold">{{ pointsPerSwitch[switchDay] }}</span>
+                      <span class="text-body-medium font-weight-bold">{{ pointsPerSwitch[switchDay] }}</span>
                       <v-icon icon="mdi-pencil" size="12" color="onSurface" class="opacity-50" />
                     </div>
                   </div>
@@ -158,7 +158,7 @@
 
               <div v-if="dialogMode !== 'switch'" class="d-flex justify-start flex-column align-start mt-4">
                 <div v-if="acceptedSwitchesWithPoints.length > 0" class="mb-4 pl-4">
-                  <span class="text-caption opacity-50">Remplacement</span>
+                  <span class="text-body-small opacity-50">Remplacement</span>
                 </div>
                 <v-number-input v-model="demand.points" class="text-primary flex-grow-1" width="100%" :class="{
                   'excess': demand.points > defaultPoints + 3,
@@ -168,7 +168,7 @@
                 <div style="height: 20px;">
                   <v-slide-y-transition>
                     <div v-if="demand.points !== defaultPoints">
-                      <span class="text-caption opacity-50">Points par défaut : {{ defaultPoints }}</span>
+                      <span class="text-body-small opacity-50">Points par défaut : {{ defaultPoints }}</span>
                     </div>
                   </v-slide-y-transition>
                 </div>

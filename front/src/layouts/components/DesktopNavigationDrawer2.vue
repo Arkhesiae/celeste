@@ -30,7 +30,7 @@
         @click="router.push({ path: navItem?.path })"
       >
         <template #item>
-          <span class="text-body-2">{{ navItem?.title }}</span>
+          <span class="text-body-medium">{{ navItem?.title }}</span>
         </template>
 
         <template #prepend>

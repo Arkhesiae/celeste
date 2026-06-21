@@ -33,7 +33,7 @@
         <v-menu color="onBackground" rounded="lg">
           <template #activator="{ props }">
             <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
-              <span class="text-overline">{{ sortBy ? sortBy : 'Trier par' }}</span>
+              <span class="text-label-medium">{{ sortBy ? sortBy : 'Trier par' }}</span>
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>
@@ -60,10 +60,10 @@
         <v-card class="pa-0 ma-0" rounded="xl" variant="flat" height="100%" @click="navigateToTeams(center._id)">
           <v-card-item class="pa-0 ma-0 pr-2 pl-4 mt-2 d-flex justify-space-between align-start">
             <v-card-title>
-              <span class="text-h6">{{ center.name }}</span>
+              <span class="text-title-large">{{ center.name }}</span>
             </v-card-title>
             <v-card-subtitle>
-              <span class="text-h7">{{ center.OACI }}</span>
+              <span class="text-body-large">{{ center.OACI }}</span>
             </v-card-subtitle>
             <template #append>
               <v-menu color="onBackground" rounded="lg">

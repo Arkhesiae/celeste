@@ -5,7 +5,7 @@
     <v-row>
       <v-col cols="12">
         <v-card rounded="xl" elevation="0" class="pa-6" color="surfaceContainer">
-          <v-card-title class="text-h5 mb-4">
+          <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2">
               mdi-vibrate
             </v-icon>
@@ -18,7 +18,7 @@
               <v-icon class="mr-3">
                 mdi-hand-front
               </v-icon>
-              <span class="text-h7">Impact Léger</span>
+              <span class="text-body-large">Impact Léger</span>
               <v-chip color="info" variant="flat" class="ml-auto" size="small">
                 Light
               </v-chip>
@@ -29,7 +29,7 @@
               <v-icon class="mr-3">
                 mdi-hand-front
               </v-icon>
-              <span class="text-h7">Impact Moyen</span>
+              <span class="text-body-large">Impact Moyen</span>
               <v-chip color="warning" variant="flat" class="ml-auto" size="small">
                 Medium
               </v-chip>
@@ -40,7 +40,7 @@
               <v-icon class="mr-3">
                 mdi-hand-front
               </v-icon>
-              <span class="text-h7">Impact Fort</span>
+              <span class="text-body-large">Impact Fort</span>
               <v-chip color="error" variant="flat" class="ml-auto" size="small">
                 Heavy
               </v-chip>
@@ -51,7 +51,7 @@
               <v-icon class="mr-3">
                 mdi-hand-front
               </v-icon>
-              <span class="text-h7">Impact Rigide</span>
+              <span class="text-body-large">Impact Rigide</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Rigid
               </v-chip>
@@ -62,7 +62,7 @@
               <v-icon class="mr-3">
                 mdi-hand-front
               </v-icon>
-              <span class="text-h7">Impact Doux</span>
+              <span class="text-body-large">Impact Doux</span>
               <v-chip color="success" variant="flat" class="ml-auto" size="small">
                 Soft
               </v-chip>
@@ -71,7 +71,7 @@
         </v-card>
 
         <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
-          <v-card-title class="text-h5 mb-4">
+          <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2">
               mdi-bell-ring
             </v-icon>
@@ -86,7 +86,7 @@ block height="64" class="rounded-lg py-4" color="success" elevation="0"
               <v-icon class="mr-3">
                 mdi-check-circle
               </v-icon>
-              <span class="text-h7">Notification Succès</span>
+              <span class="text-body-large">Notification Succès</span>
               <v-chip color="success" variant="flat" class="ml-auto" size="small">
                 Success
               </v-chip>
@@ -99,7 +99,7 @@ block height="64" class="rounded-lg py-4" color="warning" elevation="0"
               <v-icon class="mr-3">
                 mdi-alert
               </v-icon>
-              <span class="text-h7">Notification Avertissement</span>
+              <span class="text-body-large">Notification Avertissement</span>
               <v-chip color="warning" variant="flat" class="ml-auto" size="small">
                 Warning
               </v-chip>
@@ -112,7 +112,7 @@ block height="64" class="rounded-lg py-4" color="error" elevation="0"
               <v-icon class="mr-3">
                 mdi-close-circle
               </v-icon>
-              <span class="text-h7">Notification Erreur</span>
+              <span class="text-body-large">Notification Erreur</span>
               <v-chip color="error" variant="flat" class="ml-auto" size="small">
                 Error
               </v-chip>
@@ -121,7 +121,7 @@ block height="64" class="rounded-lg py-4" color="error" elevation="0"
         </v-card>
 
         <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
-          <v-card-title class="text-h5 mb-4">
+          <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2">
               mdi-tune
             </v-icon>
@@ -134,7 +134,7 @@ block height="64" class="rounded-lg py-4" color="error" elevation="0"
               <v-icon class="mr-3">
                 mdi-cursor-pointer
               </v-icon>
-              <span class="text-h7">Sélection Start</span>
+              <span class="text-body-large">Sélection Start</span>
               <v-chip color="info" variant="flat" class="ml-auto" size="small">
                 Selection
               </v-chip>
@@ -145,7 +145,7 @@ block height="64" class="rounded-lg py-4" color="info" elevation="0"
               <v-icon class="mr-3">
                 mdi-cursor-pointer
               </v-icon>
-              <span class="text-h7">Sélection Changed²</span>
+              <span class="text-body-large">Sélection Changed²</span>
               <v-chip color="info" variant="flat" class="ml-auto" size="small">
                 Selection Changed
               </v-chip>
@@ -154,7 +154,7 @@ block height="64" class="rounded-lg py-4" color="info" elevation="0"
               <v-icon class="mr-3">
                 mdi-cursor-pointer
               </v-icon>
-              <span class="text-h7">Sélection End</span>
+              <span class="text-body-large">Sélection End</span>
               <v-chip color="info" variant="flat" class="ml-auto" size="small">
                 Selection
               </v-chip>
@@ -163,7 +163,7 @@ block height="64" class="rounded-lg py-4" color="info" elevation="0"
         </v-card>
 
         <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
-          <v-card-title class="text-h5 mb-4">
+          <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2">
               mdi-cog
             </v-icon>
@@ -176,7 +176,7 @@ block height="64" class="rounded-lg py-4" color="info" elevation="0"
               <v-icon class="mr-3">
                 mdi-vibrate
               </v-icon>
-              <span class="text-h7">Vibration Simple</span>
+              <span class="text-body-large">Vibration Simple</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Vibrate
               </v-chip>
@@ -189,7 +189,7 @@ block height="64" class="rounded-lg py-4" color="secondary" elevation="0"
               <v-icon class="mr-3">
                 mdi-playlist-play
               </v-icon>
-              <span class="text-h7">Séquence Personnalisée</span>
+              <span class="text-body-large">Séquence Personnalisée</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Custom
               </v-chip>
@@ -200,7 +200,7 @@ block height="64" class="rounded-lg py-4" color="secondary" elevation="0"
               <v-icon class="mr-3">
                 mdi-feather
               </v-icon>
-              <span class="text-h7">Impact Ultra-Léger</span>
+              <span class="text-body-large">Impact Ultra-Léger</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Ultra Light
               </v-chip>
@@ -211,7 +211,7 @@ block height="64" class="rounded-lg py-4" color="secondary" elevation="0"
               <v-icon class="mr-3">
                 mdi-hand-pointing-up
               </v-icon>
-              <span class="text-h7">Tap Léger</span>
+              <span class="text-body-large">Tap Léger</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Light Tap
               </v-chip>
@@ -224,7 +224,7 @@ block height="64" class="rounded-lg py-4" color="secondary" elevation="0"
               <v-icon class="mr-3">
                 mdi-dot-small
               </v-icon>
-              <span class="text-h7">Micro Impact</span>
+              <span class="text-body-large">Micro Impact</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Micro
               </v-chip>
@@ -237,7 +237,7 @@ block height="64" class="rounded-lg py-4" color="secondary" elevation="0"
               <v-icon class="mr-3">
                 mdi-air-humidifier
               </v-icon>
-              <span class="text-h7">Whisper Touch</span>
+              <span class="text-body-large">Whisper Touch</span>
               <v-chip color="secondary" variant="flat" class="ml-auto" size="small">
                 Whisper
               </v-chip>
@@ -247,7 +247,7 @@ block height="64" class="rounded-lg py-4" color="secondary" elevation="0"
 
         <!-- Informations sur la compatibilité -->
         <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
-          <v-card-title class="text-h5 mb-4">
+          <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2">
               mdi-information
             </v-icon>

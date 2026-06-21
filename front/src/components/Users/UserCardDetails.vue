@@ -20,10 +20,10 @@
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-h5">
+            <div class="text-headline-small">
               {{ user.name }} {{ user.lastName.toUpperCase() }}
             </div>
-            <div class="text-subtitle-1 text-medium-emphasis">
+            <div class="text-body-large text-medium-emphasis">
               {{ user.email }}
             </div>
           </div>
@@ -43,7 +43,7 @@
             cols="12"
             md="6"
           >
-            <div class="text-subtitle-1 mb-2">
+            <div class="text-body-large mb-2">
               Informations
             </div>
             <v-list>

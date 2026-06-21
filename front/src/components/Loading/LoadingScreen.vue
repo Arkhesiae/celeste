@@ -1,5 +1,5 @@
 <template>
-  <v-container class="fill-height ">
+  <v-container class="fill-height d-flex align-center flex-wrap">
     <v-row>
       <v-col
         cols="12"
@@ -14,13 +14,13 @@
             class="img"
           >
           <div class="progress-container">
-            <!-- <span class="text-h7 mb-2 font-weight-bold">Chargement en cours</span>
-          <p class="text-body-2 opacity-50 text-medium-emphasis mb-4">
+            <!-- <span class="text-body-large mb-2 font-weight-bold">Chargement en cours</span>
+          <p class="text-body-medium opacity-50 text-medium-emphasis mb-4">
             Veuillez patienter pendant le chargement de vos données...
           </p> -->
 
 
-            <!-- <span class="text-caption text-medium-emphasis mb-4">{{ progressPercentage }}%</span> -->
+            <!-- <span class="text-body-small text-medium-emphasis mb-4">{{ progressPercentage }}%</span> -->
 
             <v-progress-linear
               indeterminate
@@ -29,7 +29,7 @@
               height="4"
               class="mt-4 rounded-xl "
             />
-            <!-- <span class="text-caption text-medium-emphasis mb-2">{{ initializationStore.lastLoaded || 'Chargement en cours' }}</span> -->
+            <!-- <span class="text-body-small text-medium-emphasis mb-2">{{ initializationStore.lastLoaded || 'Chargement en cours' }}</span> -->
           </div>
         </div>
       </v-col>

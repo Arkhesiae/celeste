@@ -3,43 +3,22 @@
     <!-- En-tête avec l'icône et le menu -->
     <div class="d-flex justify-space-between align-center pa-0">
       <div class="d-flex align-center">
-        <span class="text-h6">Mon équipe</span>
+        <span class="text-title-large">Mon équipe</span>
         <v-btn icon variant="text" color="default" size="small" class="ml-1 text-medium-emphasis"
           @click="showInfo = true">
           <v-icon>mdi-information-outline</v-icon>
         </v-btn>
       </div>
 
-      <!-- <v-menu location="bottom end" @click.stop>
-        <template #activator="{ props }">
-          <v-btn icon v-bind="props" variant="text" color="default">
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </template>
-<v-list rounded="xl"
-        class="pa-4"
-        bg-color="onBackground">
-  <v-list-item rounded="xl"
-               prepend-icon="mdi-handshake-outline"
-               @click="promptDialog('Renfort')">
-    <v-list-item-title>Renforcer une équipe</v-list-item-title>
-  </v-list-item>
-  <v-list-item rounded="xl"
-               prepend-icon="mdi-account-switch-outline"
-               link
-               @click="promptDialog('Changement')">
-    <v-list-item-title>Changer d'équipe</v-list-item-title>
-  </v-list-item>
-</v-list>
-</v-menu> -->
+
     </div>
 
-    <v-card-title class="text-h4 d-flex flex-column align-center  ">
+    <v-card-title class="text-headline-large d-flex flex-column align-center  ">
       <div v-if="permanentTeam" class="d-flex flex-column align-center">
-        <p class="text-overline text-medium-emphasis  ">
+        <p class="text-label-medium text-medium-emphasis  ">
           équipe
         </p>
-        <p class="text-h2 font-weight-medium text-primary">
+        <p class="text-display-large font-weight-medium text-primary">
           {{ permanentTeam ? permanentTeam.teamName : 'Aucune équipe' }}
         </p>
         <p class="team-subtitle ">
@@ -71,7 +50,7 @@
     </v-card-title>
 
     <div class="d-flex align-center justify-center mb-4">
-      <div style="max-width: 600px" class="d-flex ga-2">
+      <div v-if="hasCenter" style="max-width: 600px" class="d-flex ga-2">
         <v-btn value="option2" variant="flat" height="52px" color="primary" class="team-change-btn d-flex flex-column "
           rounded="xl" @click="promptDialog('Changement')">
           <template #prepend>
@@ -87,10 +66,13 @@
           Renfort
         </v-btn>
       </div>
+      <div class="center-alert bg-error text-onError pa-4 rounded-xl ga-2 d-flex" v-else>
+        <v-icon>mdi-alert-outline</v-icon>
+        Aucun centre</div>
     </div>
 
     <div class="d-flex align-center justify-space-between pa-0 mb-3">
-      <div class="text-h6">
+      <div class="text-title-large">
         {{ nextOccurrences?.length > 0 ? 'A venir' : 'Aucun changement à venir' }}
       </div>
       <div>
@@ -134,16 +116,16 @@
       </v-toolbar>
 
       <v-card-text class="pa-6">
-        <h2 class="text-h5 mb-4">
+        <h2 class="text-headline-small mb-4">
           Comment fonctionne mon équipe ?
         </h2>
         <p class="mb-4">
           Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :
         </p>
         <div class="mb-4 d-flex flex-column ga-2">
-          <span class="text-subtitle-2">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
-          <span class="text-subtitle-2">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
-          <span class="text-subtitle-2">Consulter votre historique et vos changements à venir</span>
+          <span class="text-title-small">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
+          <span class="text-title-small">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
+          <span class="text-title-small">Consulter votre historique et vos changements à venir</span>
         </div>
       </v-card-text>
     </v-card>
@@ -156,16 +138,16 @@
       width="500" class="d-none d-md-block">
       <v-card class="pa-6" flat>
         <v-card-text class="pa-6">
-          <h2 class="text-h5 mb-4">
+          <h2 class="text-headline-small mb-4">
             Comment fonctionne mon équipe ?
           </h2>
           <p class="mb-4">
             Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :
           </p>
           <div class="mb-4 d-flex flex-column ga-2">
-            <span class="text-subtitle-2">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
-            <span class="text-subtitle-2">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
-            <span class="text-subtitle-2">Consulter votre historique et vos changements à venir</span>
+            <span class="text-title-small">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
+            <span class="text-title-small">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
+            <span class="text-title-small">Consulter votre historique et vos changements à venir</span>
           </div>
         </v-card-text>
       </v-card>
@@ -226,9 +208,12 @@ const promptDialog = (mode) => {
   emit('show-team-change-dialog', mode);
 };
 
+
+
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const userId = computed(() => authStore.userData.userId);
+const hasCenter = computed(() => !!authStore.userData.centerId);
 
 const permanentTeam = computed(() => teamStore.teamOccurrences?.permanentTeam);
 const temporaryTeam = computed(() => teamStore.teamOccurrences?.temporaryTeam);
@@ -277,6 +262,9 @@ const confirmDelete = async () => {
 </script>
 
 <style>
+
+
+
 .team-substitution-title {
   color: rgb(var(--v-theme-primary));
 }

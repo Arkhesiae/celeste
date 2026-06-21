@@ -3,7 +3,7 @@
     to="/rotation">
     <div class="d-flex align-center justify-space-between">
       <div class="d-flex flex-column ga-2" style="flex: 1; min-width: 0;">
-        <span class="text-caption text-uppercase text-disabled pa-0">
+        <span class="text-body-small text-uppercase text-disabled pa-0">
           Tour de service actif
         </span>
 
@@ -16,7 +16,7 @@
           <div v-if="activeRotation">
             <div class="d-flex align-center justify-space-between mb-2">
               <div>
-                <div class="text-h5 font-weight-medium">
+                <div class="text-headline-small font-weight-medium">
                   {{ activeRotation.name }}
                 </div>
                 <div class="text-medium-emphasis">

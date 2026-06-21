@@ -8,17 +8,17 @@ title="Historique des changements d'équipe" :back-button="true"
       <div class="d-flex justify-center chip-container pa-2">
         <v-chip-group v-model="selectedChangeType" class="pa-0 ma-0 gap-2 d-flex justify-center">
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-2" value="all" size="large" rounded="lg" color="primary"
+class="pa-0 ma-0 mr-2 px-4 text-body-medium" value="all" size="large" rounded="lg" color="primary"
             variant="text">
             Tous
           </v-chip>
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-2" value="Changement" size="large" rounded="lg" color="primary"
+class="pa-0 ma-0 mr-2 px-4 text-body-medium" value="Changement" size="large" rounded="lg" color="primary"
             variant="text">
             Changements
           </v-chip>
           <v-chip
-class="pa-0 ma-0 px-4 text-body-2" value="Renfort" size="large" rounded="lg" color="primary"
+class="pa-0 ma-0 px-4 text-body-medium" value="Renfort" size="large" rounded="lg" color="primary"
             variant="text">
             Renforts
           </v-chip>
@@ -44,11 +44,11 @@ v-for="(occurrence, index) in filteredOccurrences" :key="index"
                       {{ occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline' }}
                     </v-icon>
                     <div>
-                      <div class="text-body-2">
+                      <div class="text-body-medium">
                         {{ occurrence.type === 'Renfort' ? 'Renfort de' : 'Changement vers' }} l'équipe {{
                         occurrence.teamName }}
                       </div>
-                      <div class="text-caption text-medium-emphasis">
+                      <div class="text-body-small text-medium-emphasis">
                         <div v-if="occurrence.type === 'Renfort'">
                           Du {{ formatDate(occurrence.fromDate) }} au {{ formatDate(occurrence.toDate) }}
                         </div>
@@ -59,22 +59,22 @@ v-for="(occurrence, index) in filteredOccurrences" :key="index"
                     </div>
                   </div>
                   <div v-if="occurrence.status === 'cancelled'">
-                    <span class="text-caption text-medium-emphasis mr-2">Annulé</span>
+                    <span class="text-body-small text-medium-emphasis mr-2">Annulé</span>
                     <v-icon color="error" class="mr-2">
                       mdi-close-circle-outline
                     </v-icon>
                   </div>
                   <div
 v-else-if="occurrence.type === 'Renfort' && occurrence.toDate > new Date().toISOString()"
-                    class="text-caption text-medium-emphasis">
+                    class="text-body-small text-medium-emphasis">
                     En cours
                   </div>
-                  <div v-else class="text-caption text-medium-emphasis">
+                  <div v-else class="text-body-small text-medium-emphasis">
                     Effectué
                   </div>
                 </v-card>
               </div>
-              <div v-else class="text-center text-medium-emphasis text-body-2 mt-4">
+              <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
                 Aucun changement d'équipe trouvé
               </div>
             </v-card-text>

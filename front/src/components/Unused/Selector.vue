@@ -7,7 +7,7 @@
 
       <v-col class="pa-2" link>
         <v-card color="primary" variant="tonal" link>
-          <v-card-title class="text-body-1">
+          <v-card-title class="text-body-large">
             <span>{{ selectedValue }}</span>
           </v-card-title>
         </v-card>
@@ -31,7 +31,7 @@
         <v-row v-for="choice in filteredChoices" :key="choice" @click.stop="selectValue(choice)">
           <v-col class="d-flex pa-2">
             <v-card color="primary" variant="tonal" link>
-              <v-card-title class="text-body-1">
+              <v-card-title class="text-body-large">
                 <span>aeaeaaazeaeaa{{ choice }}</span>
               </v-card-title>
             </v-card>

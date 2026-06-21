@@ -1,7 +1,7 @@
 <template>
     <div class="d-flex align-center justify-space-between">
         <div>
-            <v-card-title class="text-h6 font-weight-medium">{{ title }}</v-card-title>
+            <v-card-title class="text-title-large font-weight-medium">{{ title }}</v-card-title>
             <v-card-text>
                 <slot />
             </v-card-text>

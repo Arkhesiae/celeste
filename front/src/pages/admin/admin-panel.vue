@@ -16,9 +16,9 @@
                   icon="mdi-shield-crown"
                   size="20"
                 />
-                <span class="text-h6 font-weight-bold "> Panneau d'Administration </span>
+                <span class="text-title-large font-weight-bold "> Panneau d'Administration </span>
               </div>
-              <p class="text-body-2 opacity-50 mb-0">
+              <p class="text-body-medium opacity-50 mb-0">
                 Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' :
                   'Administrateur Local' }}
               </p>
@@ -58,10 +58,10 @@
               />
             </v-avatar>
             <div>
-              <div class="text-h6 font-weight-bold">
+              <div class="text-title-large font-weight-bold">
                 {{ stat.value }}
               </div>
-              <div class="text-caption opacity-50">
+              <div class="text-body-small opacity-50">
                 {{ stat.label }}
               </div>
             </div>
@@ -93,8 +93,8 @@
             :class="smAndDown ? 'px-4' : ''"
           >
             <div>
-              <span class="text-h7 font-weight-bold">{{ section.title }}</span>
-              <p class="text-body-2 opacity-50 mb-0">
+              <span class="text-body-large font-weight-bold">{{ section.title }}</span>
+              <p class="text-body-medium opacity-50 mb-0">
                 {{ section.description }}
               </p>
             </div>

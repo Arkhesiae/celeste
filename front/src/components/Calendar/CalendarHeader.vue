@@ -3,9 +3,9 @@
     :style="smAndDown ? 'max-width : 600px' : ''">
     <div class="d-flex align-center">
       <div class="d-flex align-center bg-surfaceContainerHighest rounded-lg pa-2 px-4">
-        <h2 class="text-body-2 font-weight-medium mb-0">
+        <span class="text-body-medium font-weight-medium mb-0">
           {{ selectedMonthName }} <span v-if="!isCurrentYear">{{ selectedYear }}</span>
-        </h2>
+        </span>
       </div>
 
       <v-slide-x-reverse-transition>
@@ -76,7 +76,7 @@ const isCurrentMonthAndYear = computed(() => {
 </script>
 
 <style scoped>
-.text-h7 {
+.text-body-large {
   font-size: 1.1rem;
   line-height: 1.2;
 }

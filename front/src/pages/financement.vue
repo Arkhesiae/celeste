@@ -9,9 +9,7 @@
         <template v-if="!smAndDown">
           <v-card rounded="xl" elevation="0" class="py-4" height="100%" color="transparent">
             <div class="d-flex flex-column flex-grow-0" style="max-height: 100%;">
-              <v-card-title class="px-0 py-4">
-                Campagnes de financement
-              </v-card-title>
+             
 
               <EntitySelector :items="campaigns" :prefix="'Campagne'" item-key="index" item-title="index"
                 :item-subtitle="''" title="" :item-status="'status'"
@@ -34,9 +32,9 @@
                 </template>
                 <template #itemDetails="{ item }">
                   <div class="d-flex flex-column">
-                    <span class="text-caption text-medium-emphasis">Début : {{ new
+                    <span class="text-body-small text-medium-emphasis">Début : {{ new
                       Date(item.startDate).toLocaleDateString() }}</span>
-                    <span v-if="item.endDate" class="text-caption text-medium-emphasis">Fin : {{ new
+                    <span v-if="item.endDate" class="text-body-small text-medium-emphasis">Fin : {{ new
                       Date(item.endDate).toLocaleDateString() }}</span>
                   </div>
                 </template>
@@ -85,9 +83,9 @@
                 </template>
                 <template #itemDetails="{ item }">
                   <div class="d-flex flex-column">
-                    <span class="text-caption text-medium-emphasis">Début : {{ new
+                    <span class="text-body-small text-medium-emphasis">Début : {{ new
                       Date(item.startDate).toLocaleDateString() }}</span>
-                    <span v-if="item.endDate" class="text-caption text-medium-emphasis">Fin : {{ new
+                    <span v-if="item.endDate" class="text-body-small text-medium-emphasis">Fin : {{ new
                       Date(item.endDate).toLocaleDateString() }}</span>
                   </div>
                 </template>
@@ -148,7 +146,7 @@
     <!-- <v-row>
       <v-col cols="12" class="pa-2">
         <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
-          <h3 class="text-h6 font-weight-medium mb-4">
+          <h3 class="text-title-large font-weight-medium mb-4">
             <v-icon icon="mdi-chart-line" color="info" class="mr-2" />
             Évolution du Budget
           </h3>
@@ -177,7 +175,7 @@
         <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-heart" color="error" size="48" class="mb-4" />
-            <h3 class="text-h5 font-weight-bold mb-2">Soutenez le projet</h3>
+            <h3 class="text-headline-small font-weight-bold mb-2">Soutenez le projet</h3>
             <p class="text-medium-emphasis mb-6">
               Votre soutien nous permet de maintenir et améliorer l'application pour tous les utilisateurs.
             </p>

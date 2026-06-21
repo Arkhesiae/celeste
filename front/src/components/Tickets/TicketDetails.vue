@@ -21,7 +21,7 @@
             <v-icon size="small" class="mr  -1">
               mdi-identifier
             </v-icon>
-            <span class="text-body-2">{{ ticket._id.slice(-6) }}</span>
+            <span class="text-body-medium">{{ ticket._id.slice(-6) }}</span>
           </div>
           <!-- Date -->
           <div class="">
@@ -77,7 +77,7 @@
         <v-divider class="my-4" />
 
         <!-- Contenu du ticket -->
-        <div class="text-subtitle-2 mb-2">Ticket</div>
+        <div class="text-title-small mb-2">Ticket</div>
         <div class="bg-surfaceContainer pa-4 rounded-xl pre"
           style="font-size: 0.75rem !important; line-height: 1.2 !important;">
           {{ ticket.content }}
@@ -91,15 +91,15 @@
               <div class="d-flex align-center mb-2">
                 <v-icon :icon="reply.isFromAdmin ? 'mdi-star-four-points' : 'mdi-account-outline'" size="x-small"
                   class="mr-2" />
-                <span class="text-caption font-weight-medium">
+                <span class="text-body-small font-weight-medium">
                   {{ reply.isFromAdmin ? 'Administrateur' : 'Utilisateur' }}
                 </span>
                 <v-spacer />
-                <span class="text-caption text-medium-emphasis">
+                <span class="text-body-small text-medium-emphasis">
                   {{ formatDate(reply.createdAt) }}
                 </span>
               </div>
-              <div class="text-body-2 pre" style="font-size: 0.75rem !important; line-height: 1.2 !important;">{{
+              <div class="text-body-medium pre" style="font-size: 0.75rem !important; line-height: 1.2 !important;">{{
                 reply.content }}</div>
             </div>
           </div>

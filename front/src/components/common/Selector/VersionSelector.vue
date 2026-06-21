@@ -14,13 +14,13 @@
         v-if="!hasData"
         class="d-flex ga-2 align-center"
       >
-        <span class="text-h6 font-weight-bold">Aucune donnée disponible</span>
+        <span class="text-title-large font-weight-bold">Aucune donnée disponible</span>
       </div>
       <div
         v-else
         class="d-flex ga-2 align-center"
       >
-        <span class="text-h6 font-weight-bold">{{ title || defaultText }}</span>
+        <span class="text-title-large font-weight-bold">{{ title || defaultText }}</span>
         <slot name="statusChip" />
       </div>
 
@@ -29,13 +29,13 @@
         v-if="!hasData"
         class="d-flex ga-2 align-center"
       >
-        <span class="text-caption text-medium-emphasis">Erreur du serveur</span>
+        <span class="text-body-small text-medium-emphasis">Erreur du serveur</span>
       </div>
       <div
         v-else
         class="d-flex ga-2 align-center"
       >
-        <span class="text-caption text-medium-emphasis">{{ subtitle || '' }}</span>
+        <span class="text-body-small text-medium-emphasis">{{ subtitle || '' }}</span>
       </div>
     </div>
     <v-icon

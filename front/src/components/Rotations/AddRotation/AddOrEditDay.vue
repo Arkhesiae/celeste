@@ -7,7 +7,7 @@
     <template #content>
       <v-fade-transition mode="out-in">
         <v-card-text v-if="currentStep === 1" class="pa-6 pt-0">
-          <v-card-title class="text-subtitle-1 font-weight-medium pa-0 mb-4">
+          <v-card-title class="text-body-large font-weight-medium pa-0 mb-4">
             Type d'horaires
           </v-card-title>
 
@@ -16,10 +16,10 @@
               :color="hourType === 'fixed' ? 'onBackground' : 'surface'" flat rounded="xl" @click="hourType = 'fixed'">
               <div class="d-flex align-center">
                 <div class="ml-3">
-                  <div class="text-subtitle-1 font-weight-medium">
+                  <div class="text-body-large font-weight-medium">
                     Heures fixes
                   </div>
-                  <div class="text-body-2 opacity-50">
+                  <div class="text-body-medium opacity-50">
                     Une seule vacation élémentaire
                   </div>
                 </div>
@@ -31,10 +31,10 @@
               @click="hourType = 'variable'">
               <div class="d-flex align-center">
                 <div class="ml-3">
-                  <div class="text-subtitle-1 font-weight-medium">
+                  <div class="text-body-large font-weight-medium">
                     Heures variables
                   </div>
-                  <div class="text-body-2 opacity-50">
+                  <div class="text-body-medium opacity-50">
                     Plusieurs vacations élémentaires
                   </div>
                 </div>
@@ -54,16 +54,16 @@
 
               <div class="d-flex justify-space-between flex-column align-center ">
                 <div>
-                  <v-card-title class="text-subtitle-1 text-caption ma-0  pa-0">
+                  <v-card-title class="text-body-large text-body-small ma-0  pa-0">
                     {{ hourType === 'variable' ? 'Amplitude totale' : 'Amplitude' }}
                   </v-card-title>
                   <div class="d-flex align-center flex-wrap ga-1">
-                    <span v-if="hourType === 'variable'" class="text-body-1 font-weight-bold">{{ earliestStart }}</span>
-                    <span v-else class="text-body-1 font-weight-bold">{{ newDay.default.startTime }}</span>
+                    <span v-if="hourType === 'variable'" class="text-body-large font-weight-bold">{{ earliestStart }}</span>
+                    <span v-else class="text-body-large font-weight-bold">{{ newDay.default.startTime }}</span>
 
                     <span class="mx-1">-</span>
-                    <span v-if="hourType === 'variable'" class="text-body-1 font-weight-bold">{{ latestEnd }}</span>
-                    <span v-else class="text-body-1 font-weight-bold">{{ newDay.default.endTime }}</span>
+                    <span v-if="hourType === 'variable'" class="text-body-large font-weight-bold">{{ latestEnd }}</span>
+                    <span v-else class="text-body-large font-weight-bold">{{ newDay.default.endTime }}</span>
                     <span v-if="endsNextDay(null)" class="ml-1 0"
                       style="font-size: 10px; opacity: 0.8; top: -2px; position: relative;">+1</span>
                   </div>
@@ -74,12 +74,12 @@
               <v-switch v-model="newDay.optional" false-icon="mdi-close" color="surfaceContainerHighest"
                 true-icon="mdi-plus-box-outline" icon-color="onBackground" base-color="surfaceContainerHighest" inset
                 hide-details />
-              <span class="text-body-2">Jour optionnel</span>
+              <span class="text-body-medium">Jour optionnel</span>
             </div>
           </div>
 
           <div v-if="hourType === 'fixed'" class="d-flex flex-column align-start">
-            <v-card-title class="text-subtitle-1 font-weight-medium ma-0  pa-0 mb-4">
+            <v-card-title class="text-body-large font-weight-medium ma-0  pa-0 mb-4">
               Horaires
             </v-card-title>
             <div class="d-flex align-center align-self-center ga-2  ">
@@ -105,7 +105,7 @@
             </div>
           </div>
 
-          <v-card-title v-if="hourType === 'variable'" class="text-subtitle-1 font-weight-medium pa-0 mb-4">
+          <v-card-title v-if="hourType === 'variable'" class="text-body-large font-weight-medium pa-0 mb-4">
             Vacations
             élémentaires
           </v-card-title>
@@ -184,7 +184,7 @@
     <v-card rounded="xl" color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
         <v-card-title class="">
-          <div class="text-h6 font-weight-medium">{{ mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'
+          <div class="text-title-large font-weight-medium">{{ mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'
           }}
           </div>
         </v-card-title>
@@ -213,7 +213,7 @@
     <v-card rounded="xl" color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
         <v-card-title class="">
-          <div class="text-h6 font-weight-medium">
+          <div class="text-title-large font-weight-medium">
             Modifier le nom de la variante
           </div>
         </v-card-title>

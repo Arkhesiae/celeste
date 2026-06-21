@@ -1,12 +1,12 @@
 <template>
   <div class="otp-verification">
     <div class="text-center">
-      <v-card-title class="pl-0 text-h5">
+      <v-card-title class="pl-0 text-headline-small">
         {{ title }}
       </v-card-title>
       <p
         v-if="email"
-        class="text-body-2 text-medium-emphasis mb-6"
+        class="text-body-medium text-medium-emphasis mb-6"
       >
         Un code de vérification a été envoyé à {{ email }}
       </p>
@@ -23,7 +23,7 @@
         <v-btn
           variant="text"
           :disabled="timer > 0 || loading"
-          class="text-caption"
+          class="text-body-small"
           @click="resendOtp"
         >
           {{ timer > 0 ? `Renvoyer le code (${timer}s)` : 'Renvoyer le code' }}
@@ -32,7 +32,7 @@
 
       <p
         v-if="timer > 0"
-        class="text-caption text-medium-emphasis"
+        class="text-body-small text-medium-emphasis"
       >
         Le code expirera dans 10 minutes
       </p>

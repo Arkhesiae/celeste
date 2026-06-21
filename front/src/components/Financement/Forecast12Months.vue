@@ -5,7 +5,7 @@
     class="smooth-shadow pa-6"
     color="surfaceContainer"
   >
-    <h3 class="text-h6 font-weight-medium mb-4">
+    <h3 class="text-title-large font-weight-medium mb-4">
       Prévision sur 12 Mois
     </h3>
     <div class="months-forecast">
@@ -52,7 +52,7 @@
       <!-- Ligne de prochaine campagne -->
       <div class="next-campaign-line mt-4">
         <div class="campaign-indicator">
-          <span class="text-caption font-weight-medium">Prochaine campagne : {{ nextCampaign }}</span>
+          <span class="text-body-small font-weight-medium">Prochaine campagne : {{ nextCampaign }}</span>
         </div>
       </div>
     </div>

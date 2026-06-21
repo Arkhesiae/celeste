@@ -17,7 +17,7 @@
               posterTeamName }}</span>
           </div>
           <div class="small-dot" />
-          <span class="text-caption font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
+          <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
           }}</span>
 
           <template v-if="isMailingEnabled">
@@ -55,7 +55,7 @@
           <div v-if="firstShift" class="d-flex align-center ga-2">
             <span :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }" style="font-size: .875rem; opacity: 0.7;">{{
               firstShift }}</span>
-            <!-- <span v-if="firstShiftHours" class="text-caption font-weight-medium text-medium-emphasis"
+            <!-- <span v-if="firstShiftHours" class="text-body-small font-weight-medium text-medium-emphasis"
               style="font-size: .70rem;">{{ firstShiftHours.startTime }} - {{ firstShiftHours.endTime }}</span> -->
           </div>
           <v-icon v-if="isAccepted" size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary"
@@ -63,7 +63,7 @@
           <div v-if="secondShift" class="d-flex align-center ga-2">
             <span :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }" style="font-size: .875rem; opacity: 0.7">{{
               secondShift }}</span>
-            <!-- <span v-if="secondShiftHours" class="text-caption font-weight-medium text-medium-emphasis"
+            <!-- <span v-if="secondShiftHours" class="text-body-small font-weight-medium text-medium-emphasis"
               style="font-size: .70rem;">{{ secondShiftHours.startTime }} - {{ secondShiftHours.endTime }}</span> -->
           </div>
         </div>

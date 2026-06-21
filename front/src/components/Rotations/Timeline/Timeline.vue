@@ -2,20 +2,20 @@
   <div>
     <v-card
       v-if="!currentActive"
-      color="surfaceContainerHigh"
+      color="error"
       variant="tonal"
-      class="pa-2 mb-4"
+      class="pa-4 mb-4"
       rounded="xl"
     >
-      <v-card-item>
+      <v-card-item class="px-2">
         <template #prepend>
           <v-icon icon="mdi-alert-outline" />
         </template>
-        <v-card-title class="text-body-1">
+        <v-card-title class="px-0 text-body-large">
           Aucun tour de service actif
         </v-card-title>
       </v-card-item>
-      <v-card-text>
+      <v-card-text class="px-2 pb-0">
         <p class="text-medium-emphasis">
           Programmez l'activation d'un tour de service. Sans tour de service, vos utilisateurs ne peuvent pas
           publier et accepter des demandes.
@@ -49,7 +49,7 @@
           >
             <div class="d-flex flex-column justify-start">
               <div class="d-flex align-center justify-start">
-                <span class="text-overline font-weight-bold">{{ rotation.name }}</span>
+                <span class="text-label-medium font-weight-bold">{{ rotation.name }}</span>
                 <v-chip
                   v-if="rotation.status === 'Active'"
                   class="ms-0"

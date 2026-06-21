@@ -11,7 +11,7 @@
   <v-row v-if="visible">
     <v-col cols="12">
       <div v-if="demands.length === 0">
-        <span class="text-medium-emphasis text-subtitle-2">
+        <span class="text-medium-emphasis text-title-small">
           Aucune demande disponible
         </span>
       </div>

@@ -18,7 +18,7 @@
           mdi-account
         </v-icon>
       </v-avatar>
-      <span class="text-caption font-weight-medium"> {{ props.user?.name }} {{ props.user?.lastName }} ({{ teamName }})
+      <span class="text-body-small font-weight-medium"> {{ props.user?.name }} {{ props.user?.lastName }} ({{ teamName }})
       </span>
     </div>
   </v-text>

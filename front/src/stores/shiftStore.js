@@ -75,16 +75,11 @@ export const useShiftStore = defineStore('shift', () => {
 
     const { date, shiftData, isBaseShift, history, type, baseShift, isOff, startTime, endTime, wasPatched} = entry;
 
-    let start = null;
-    let end = null;
-    const effectiveTimes = shiftData?.shift ? getEffectiveShiftTimes(shiftData.shift, shiftData.selectedVariation) : null;
-    if (shiftData?.shift && shiftData.shift.type !== 'rest') {
-      if (!effectiveTimes || !date || !effectiveTimes.startTime || !effectiveTimes.endTime) {
-        return;
-      }
-      const { startTime: effectiveStartTime, endTime: effectiveEndTime, endsNextDay } = effectiveTimes;
-      start = parseShiftDateTime(date, effectiveStartTime, false);
-      end = parseShiftDateTime(date, effectiveEndTime, endsNextDay);
+    const endsNextDay = shiftData?.shift?.endsNextDay ?? false
+    let start, end
+    if (startTime && endTime) {
+      start = parseShiftDateTime(date, startTime, false);
+      end = parseShiftDateTime(date, endTime, endsNextDay);      
     }
 
     const newValue = {

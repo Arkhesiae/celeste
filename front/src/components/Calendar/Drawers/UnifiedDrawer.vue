@@ -15,8 +15,8 @@
               <v-btn v-if="smAndDown" icon="mdi-arrow-left" variant="text" class="mr-1" @click="handleClose" />
 
               <span :class="{
-                'text-h6': !smAndDown,
-                'text-h7': smAndDown
+                'text-title-large': !smAndDown,
+                'text-body-large': smAndDown
               }" class=" font-weight-medium">
                 {{ formattedDate }}
               </span>

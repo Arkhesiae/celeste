@@ -189,9 +189,9 @@ v-model="newRotation.name" label="Nom du tour de service" variant="outlined" cla
           <v-row>
             <v-col cols="12" md="6">
               <v-card-item class="pa-0 mb-6">
-                <span class="text-overline font-weight-medium">{{ newRotation.name }}</span>
+                <span class="text-label-medium font-weight-medium">{{ newRotation.name }}</span>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <div class="text-h5 font-weight-medium">
+                  <div class="text-headline-small font-weight-medium">
                     Configuration des jours
                   </div>
                 </v-card-title>
@@ -208,7 +208,7 @@ v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded=
                   elevation="0">
                   <v-card-item>
                     <div class="d-flex justify-space-between align-center">
-                      <v-card-title class="text-subtitle-1 font-weight-medium">
+                      <v-card-title class="text-body-large font-weight-medium">
                         Tour de service
                       </v-card-title>
                       <v-chip class="ml-4" color="onBackground" size="small" rounded="lg">

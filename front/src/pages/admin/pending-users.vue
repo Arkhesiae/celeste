@@ -21,10 +21,10 @@
                   {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
                 </v-avatar>
                 <div class="d-flex flex-column">
-                  <div style="line-height: 1.2;" class="text-subtitle-1">
+                  <div style="line-height: 1.2;" class="text-body-large">
                     {{ user.name }} {{ user.lastName.toUpperCase() }}
                   </div>
-                  <div style="line-height: 1.2;" class="text-caption text-medium-emphasis">
+                  <div style="line-height: 1.2;" class="text-body-small text-medium-emphasis">
                     {{ user.email }}
                   </div>
                 </div>

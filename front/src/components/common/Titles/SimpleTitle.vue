@@ -40,7 +40,7 @@ const props = defineProps({
 
 
 const titleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-h5/text-h4
+  const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-headline-small/text-headline-large
   // const minSize = smAndDown.value ? 10 : 10
   return baseSize
 })

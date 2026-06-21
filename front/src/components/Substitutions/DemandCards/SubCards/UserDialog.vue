@@ -31,7 +31,7 @@
             </v-icon>
           </v-avatar>
 
-          <span class="text-h7 font-weight-medium pa-0">
+          <span class="text-body-large font-weight-medium pa-0">
             {{ user?.name }} {{ user?.lastName }} ({{ teamName }})
           </span>
         </div>
@@ -40,7 +40,7 @@
           <v-card-subtitle class="pa-0">
             {{ user?.email }}
           </v-card-subtitle>
-          <span class="text-caption opacity-70 font-weight-medium">
+          <span class="text-body-small opacity-70 font-weight-medium">
             {{ user?.personalData?.phoneNumber }}
           </span>
         </div>

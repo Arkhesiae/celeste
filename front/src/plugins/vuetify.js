@@ -30,7 +30,6 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi'
 // Composables
 import { createVuetify } from 'vuetify'
 import {fr} from "vuetify/locale";
-import {VDateInput} from "vuetify/labs/components";
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
@@ -202,8 +201,7 @@ export default createVuetify({
     },
   },
   components: {
- 
-    VDateInput,
+
   },
   locale: {
     locale: 'fr', // Set default locale to French

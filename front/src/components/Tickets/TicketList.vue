@@ -11,7 +11,7 @@
                 <div class="d-flex align-center ga-1 icon-container">
                   <v-icon size="12" :icon="getTicketIcon(ticket.type)" color="primary" />
                 </div>
-                <span class=" title text-h7 ">{{ ticket.title }}</span>
+                <span class=" title text-body-large ">{{ ticket.title }}</span>
 
 
                 <div v-if="ticket.replySent" class="">

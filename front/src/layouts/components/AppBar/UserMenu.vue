@@ -27,7 +27,7 @@
               </v-icon>
             </v-avatar>
           </template>
-          <v-list-item-title class="text-h6">
+          <v-list-item-title class="text-title-large">
             {{ username }}
           </v-list-item-title>
           <v-list-item-subtitle>{{ email }}</v-list-item-subtitle>
@@ -43,22 +43,22 @@
             <div class="d-flex align-center pa-2">
               <LogoCopy color="background" style="height:30px ; width:30px" />
               <div class="d-flex justify-space-between flex-column align-center ml-3">
-                <div v-if="points > 99999" class="text-center text-h7 ">
+                <div v-if="points > 99999" class="text-center text-body-large ">
                   <v-icon class="mb-1" size="x-large">
                     mdi-infinity
                   </v-icon>
                 </div>
-                <v-list-item-title v-else class="text-h5 font-weight-bold mb-0 pa-0">
+                <v-list-item-title v-else class="text-headline-small font-weight-bold mb-0 pa-0">
                   {{ points }}
                 </v-list-item-title>
-                <v-list-item-subtitle class="text-caption font-weight-bold mt-n2 pa-0">
+                <v-list-item-subtitle class="text-body-small font-weight-bold mt-n2 pa-0">
                   Points
                 </v-list-item-subtitle>
               </div>
             </div>
             <div class="d-flex align-center">
               <v-icon color="onPrimary" icon="mdi-crowd" />
-              <v-list-item-title class="text-subtitle-1 font-weight-bold ml-2">
+              <v-list-item-title class="text-body-large font-weight-bold ml-2">
                 Équipe
               </v-list-item-title>
               <v-list-item-subtitle class="ml-2">
@@ -90,7 +90,7 @@
       </v-list>
 
       <div class="d-flex justify-end">
-        <v-btn prepend-icon="mdi-information-outline" variant="text" color="background" class="text-body-2"
+        <v-btn prepend-icon="mdi-information-outline" variant="text" color="background" class="text-body-medium"
           @click="$emit('navigate-contact')">
           Assistance
         </v-btn>

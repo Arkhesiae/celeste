@@ -22,10 +22,10 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
       <v-col v-if="!isLoading && demands.length === 0" cols="12">
         <v-card class="pa-8 text-center" rounded="xl" elevation="0">
           <v-icon icon="mdi-information-outline" size="48" color="onSurface" opacity="0.3" />
-          <p class="text-h6 mt-4 mb-0">
+          <p class="text-title-large mt-4 mb-0">
             Aucune demande trouvée
           </p>
-          <p class="text-body-2 opacity-70">
+          <p class="text-body-medium opacity-70">
             Il n'y a actuellement aucune demande dans ce centre
           </p>
         </v-card>

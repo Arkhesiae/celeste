@@ -21,10 +21,10 @@ color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl"
               mdi-account-group
             </v-icon>
             <div>
-              <div class="text-h6 font-weight-bold">
+              <div class="text-title-large font-weight-bold">
                 {{ emailStore.userCount }}
               </div>
-              <div class="text-body-2 text-medium-emphasis">
+              <div class="text-body-medium text-medium-emphasis">
                 Utilisateurs actifs
               </div>
             </div>
@@ -38,10 +38,10 @@ color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl"
               mdi-email-check
             </v-icon>
             <div>
-              <div class="text-h6 font-weight-bold">
+              <div class="text-title-large font-weight-bold">
                 {{ emailStore.lastSentCount }}
               </div>
-              <div class="text-body-2 text-medium-emphasis">
+              <div class="text-body-medium text-medium-emphasis">
                 Emails envoyés
               </div>
             </div>
@@ -55,10 +55,10 @@ color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl"
               mdi-email-alert
             </v-icon>
             <div>
-              <div class="text-h6 font-weight-bold">
+              <div class="text-title-large font-weight-bold">
                 {{ emailStore.lastFailedCount }}
               </div>
-              <div class="text-body-2 text-medium-emphasis">
+              <div class="text-body-medium text-medium-emphasis">
                 Échecs d'envoi
               </div>
             </div>
@@ -208,7 +208,7 @@ color="onBackground" variant="flat" rounded="xl" :loading="emailStore.sending" :
     <!-- Dialog de confirmation -->
     <v-dialog v-model="confirmDialog" max-width="500px">
       <v-card rounded="lg">
-        <v-card-title class="text-h6">
+        <v-card-title class="text-title-large">
           <v-icon class="mr-2" color="warning">
             mdi-alert
           </v-icon>

@@ -1,2 +1,23 @@
 ping google.com
 ping google.fr -t
+npm install
+cd front
+npm install
+cd front
+npm install
+claude mcp add --transport http vuetify-mcp https://mcp.vuetifyjs.com/mcp
+cd..
+npm install -g @anthropic-ai/claude-code
+mkdir C:\npm-global
+npm config set prefix "C:\npm-global"
+npm install -g @anthropic-ai/claude-code
+claude mcp add --transport http vuetify-mcp https://mcp.vuetifyjs.com/mcp
+npm config get prefix
+claude mcp add --transport http vuetify-mcp https://mcp.vuetifyjs.com/mcp
+claude
+$env:Path += ";C:\npm-global"
+claude mcp add --transport http vuetify-mcp https://mcp.vuetifyjs.com/mcp
+$env:HOME="C:\Users\nicolas.gardet"
+$env:USERPROFILE="C:\Users\nicolas.gardet"
+mkdir C:\Users\nicolas.gardet\AppData\Anthropic
+claude mcp add --transport http vuetify-mcp https://mcp.vuetifyjs.com/mcp

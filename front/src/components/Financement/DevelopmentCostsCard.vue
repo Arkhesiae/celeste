@@ -5,7 +5,7 @@
     class="smooth-shadow pa-6"
     color="surfaceContainer"
   >
-    <h3 class="text-h6 font-weight-medium mb-4">
+    <h3 class="text-title-large font-weight-medium mb-4">
       <v-icon
         icon="mdi-code-braces"
         color="success"
@@ -27,10 +27,10 @@
           size="32"
         />
         <div>
-          <h3 class="text-h6 font-weight-medium">
+          <h3 class="text-title-large font-weight-medium">
             Développement assisté par IA
           </h3>
-          <p class="text-caption text-medium-emphasis">
+          <p class="text-body-small text-medium-emphasis">
             Accélération éthique du développement
           </p>
         </div>
@@ -39,7 +39,7 @@
         class="pa-4 rounded-lg"
         style="background-color: rgba(var(--v-theme-primary), 0.05); border-left: 4px solid rgb(var(--v-theme-primary));"
       >
-        <p class="text-body-1 mb-3">
+        <p class="text-body-large mb-3">
           En tant que développeur solo, j'utilise l'intelligence artificielle de manière <strong>éthique et responsable</strong>
           pour accélérer et améliorer le développement de cette application.
         </p>
@@ -50,7 +50,7 @@
               color="success"
               class="mr-2"
             />
-            <span class="text-body-2">Code toujours révisé et validé</span>
+            <span class="text-body-medium">Code toujours révisé et validé</span>
           </div>
           <div class="d-flex align-center">
             <v-icon
@@ -58,7 +58,7 @@
               color="success"
               class="mr-2"
             />
-            <span class="text-body-2">Architecture pensée par l'humain</span>
+            <span class="text-body-medium">Architecture pensée par l'humain</span>
           </div>
           <div class="d-flex align-center">
             <v-icon
@@ -66,10 +66,10 @@
               color="success"
               class="mr-2"
             />
-            <span class="text-body-2">Tests et sécurité prioritaires</span>
+            <span class="text-body-medium">Tests et sécurité prioritaires</span>
           </div>
         </div>
-        <p class="text-body-2 text-medium-emphasis mt-3 mb-0">
+        <p class="text-body-medium text-medium-emphasis mt-3 mb-0">
           L'IA est un outil d'assistance qui me permet de me concentrer sur la qualité,
           l'expérience utilisateur et les fonctionnalités complexes plutôt que sur le code répétitif.
         </p>
@@ -81,7 +81,7 @@
         md="6"
       >
         <div class="mb-4">
-          <h4 class="text-subtitle-1 font-weight-medium mb-2">
+          <h4 class="text-body-large font-weight-medium mb-2">
             Développement Initial
           </h4>
           <div class="d-flex justify-space-between align-center mb-2">
@@ -112,7 +112,7 @@
         md="6"
       >
         <div class="mb-4">
-          <h4 class="text-subtitle-1 font-weight-medium mb-2">
+          <h4 class="text-body-large font-weight-medium mb-2">
             Maintenance Continue
           </h4>
           <div class="d-flex justify-space-between align-center mb-2">

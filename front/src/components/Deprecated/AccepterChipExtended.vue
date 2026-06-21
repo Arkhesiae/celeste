@@ -39,7 +39,7 @@ const userName = computed(() => {
     variant="flat"
     size="x-small"
     style=" opacity: 1; transform: scale(1) ; border-color: rgba(var(--v-theme-primary), 0.4);"
-    class="text-caption font-weight-bold px-2 overflow-visible"
+    class="text-body-small font-weight-bold px-2 overflow-visible"
   >
     <div class="mr-2">
       <v-icon

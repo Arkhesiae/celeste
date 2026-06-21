@@ -35,7 +35,7 @@ const accepterUser = computed(() => {
     <div v-if="acceptedAsPoster" class="d-flex align-center justify-center">
       <v-avatar size="16px" class="" variant="tonal">
         <v-img v-if="accepterUser?.avatar" :src="`${API_URL}${accepterUser.avatar}`" alt="Avatar" />
-        <span v-else class="text-caption font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ?
+        <span v-else class="text-body-small font-weight-bold" style="font-size: 8px !important;">{{ accepterUser ?
           `${accepterUser.name.charAt(0)}${accepterUser.lastName.charAt(0)}` : '?' }}</span>
       </v-avatar>
     </div>

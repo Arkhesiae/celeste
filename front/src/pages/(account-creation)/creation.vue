@@ -20,7 +20,7 @@
             elevation="0"
             style="max-width: 900px;"
           >
-            <v-card-title class="pl-0 text-overline font-weight-bold">
+            <v-card-title class="pl-0 text-label-medium font-weight-bold">
               CéLESTE
             </v-card-title>
 
@@ -34,14 +34,14 @@
                   hide-on-leave
                 >
                   <div v-if="step < 6 || step === 7 ">
-                    <v-card-title class="pl-0 text-h4">
+                    <v-card-title class="pl-0 text-headline-large">
                       Créer mon compte
                     </v-card-title>
-                    <span class="text-body-2 text-medium-emphasis pl-0">
+                    <span class="text-body-medium text-medium-emphasis pl-0">
                       Accéder à toutes vos demandes de remplacements, permutations et bien d'autres nouvelles fonctionnalités !
                     </span>
                     <a
-                      class="text-caption d-flex align-center"
+                      class="text-body-small d-flex align-center"
                       style="color: rgb(var(--v-theme-pendingDemand)); text-decoration: none; cursor: pointer"
                       @click="router.push('/account-recovery')"
                     >
@@ -51,10 +51,10 @@
                     </a>
                   </div>
                   <div v-else-if="step === 6">
-                    <v-card-title class=" pl-0 text-h4">
+                    <v-card-title class=" pl-0 text-headline-large">
                       Collecte des données
                     </v-card-title>
-                    <span class="text-body-2 text-medium-emphasis pl-0">
+                    <span class="text-body-medium text-medium-emphasis pl-0">
                       Où vont mes données ?
                     </span>
                   </div>
@@ -93,11 +93,11 @@
                     <v-radio label="Est" value="east"></v-radio>
                     <v-radio label="Ouest" value="west"></v-radio>
                   </v-radio-group> -->
-                      <span class="text-caption text-grey-darken-1">
+                      <span class="text-body-small text-grey-darken-1">
                         Vous ne trouvez pas votre organisme dans la liste ?
                       </span>
                       <a
-                        class="text-caption d-flex align-center text-primary"
+                        class="text-body-small d-flex align-center text-primary"
                         style="color: #85cde8; text-decoration: none; cursor: pointer"
                         @click="router.push('/contact-admin')"
                       >
@@ -122,7 +122,7 @@
                         @blur="validateStep(2)"
                         @update:model-value="onEmailChange"
                       />
-                      <span class="text-caption text-grey-darken-1">Veuillez entrer votre adresse e-mail</span>
+                      <span class="text-body-small text-grey-darken-1">Veuillez entrer votre adresse e-mail</span>
                       <v-slide-y-transition>
                         <v-alert
                           v-if="showLegacyAlert"
@@ -131,11 +131,11 @@
                           variant="tonal"
                           class="mt-2"
                         >
-                          <p class="text-caption">
+                          <p class="text-body-small">
                             Cette adresse email correspond à un compte <b>REMPLACER.OVH</b>
                           </p>
                           <a
-                            class="text-caption d-flex align-center"
+                            class="text-body-small d-flex align-center"
                             style="color: rgb(var(--v-theme-onBackground)); text-decoration: none; cursor: pointer"
                             @click="router.push('/account-recovery')"
                           >
@@ -225,11 +225,11 @@
                         required
                         @update:model-value="validateStep(6)"
                       />
-                      <span class="text-caption text-grey-darken-1">
+                      <span class="text-body-small text-grey-darken-1">
                         Toutes les données collectées ne sont utilisées qu'à des fins de statistiques pour le bon fonctionnement du site.
                       </span>
                       <a
-                        class="text-caption d-flex align-center text-primary"
+                        class="text-body-small d-flex align-center text-primary"
                         style="text-decoration: none; cursor: pointer"
                         @click="showSidePanel('privacy')"
                       >
@@ -243,7 +243,7 @@
                       <v-fade-transition mode="out-in">
                         <v-card v-if="otpValid">
                           <v-card-text>
-                            <span class="text-h6 font-weight-bold">Addresse email vérifiée</span>
+                            <span class="text-title-large font-weight-bold">Addresse email vérifiée</span>
                           </v-card-text>
                         </v-card>
                         <OTPVerification
@@ -279,11 +279,11 @@
                           </v-avatar>
                         </div>
 
-                        <p class="text-subtitle-1 text-overline">
+                        <p class="text-body-large text-label-medium">
                           Votre compte a été créé
                         </p>
 
-                        <p class="text-caption text-medium-emphasis mb-8">
+                        <p class="text-body-small text-medium-emphasis mb-8">
                           Bienvenue {{ user.name }}. Vous pouvez maintenant vous connecter pour accéder à toutes les fonctionnalités.
                         </p>
                       </div>
@@ -393,7 +393,7 @@
                     rounded="xl"
                     @click="sidePanelOpen = false"
                   />
-                  <p class="text-h5 font-weight-bold ">
+                  <p class="text-headline-small font-weight-bold ">
                     Contacter un administrateur
                   </p>
                 </div>
@@ -410,7 +410,7 @@
                 v-else-if="activeSidePanel === 'privacy'"
                 class="privacy-content"
               >
-                <p class="text-h5 font-weight-bold mb-4">
+                <p class="text-headline-small font-weight-bold mb-4">
                   Utilisation des données
                 </p>
 
@@ -424,7 +424,7 @@
                 >
                   <v-expansion-panel>
                     <v-expansion-panel-title>Quelles données sont collectées ?</v-expansion-panel-title>
-                    <v-expansion-panel-text class="text-caption text-medium-emphasis">
+                    <v-expansion-panel-text class="text-body-small text-medium-emphasis">
                       <p>CELESTE collecte uniquement les données nécessaires au bon fonctionnement du service :</p>
                       <ul>
                         <li>Informations personnelles (nom, prénom)</li>
@@ -437,7 +437,7 @@
 
                   <v-expansion-panel>
                     <v-expansion-panel-title>Comment sont utilisées vos données ?</v-expansion-panel-title>
-                    <v-expansion-panel-text class="text-caption text-medium-emphasis">
+                    <v-expansion-panel-text class="text-body-small text-medium-emphasis">
                       <p>Vos données sont utilisées pour :</p>
                       <ul>
                         <li>Gérer votre compte et vos accès</li>
@@ -451,7 +451,7 @@
 
                   <v-expansion-panel>
                     <v-expansion-panel-title>Combien de temps sont conservées vos données ?</v-expansion-panel-title>
-                    <v-expansion-panel-text class="text-caption text-medium-emphasis">
+                    <v-expansion-panel-text class="text-body-small text-medium-emphasis">
                       <p>Vos données sont conservées :</p>
                       <ul>
                         <li>Pendant toute la durée de votre utilisation du service</li>

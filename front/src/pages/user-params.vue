@@ -5,18 +5,18 @@
     <v-row>
       <v-col cols="12" md="6">
         <v-card rounded="xl" elevation="0" class="pa-0" color="transparent">
-          <v-card-title class="text-h5">
+          <v-card-title class="text-headline-small">
             Profil
           </v-card-title>
           <v-card-text class="d-flex flex-column ga-4">
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
               @click="showEmailDialog = true">
-              <span class="text-h7">Modifier l'adresse email</span>
+              <span class="text-body-large">Modifier l'adresse email</span>
               <!-- <v-icon>mdi-chevron-right</v-icon> -->
             </v-btn>
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
               @click="showAvatarDialog = true">
-              <span class="text-h7">Modifier l'avatar</span>
+              <span class="text-body-large">Modifier l'avatar</span>
               <!-- <v-icon>mdi-chevron-right</v-icon> -->
             </v-btn>
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
@@ -26,7 +26,7 @@
                 size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-phone</v-icon>
               </v-chip>
-              <span class="text-h7">Numéro de téléphone</span>
+              <span class="text-body-large">Numéro de téléphone</span>
             </v-btn>
 
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
@@ -36,19 +36,19 @@
                 size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-baby</v-icon>
               </v-chip>
-              <span class="text-h7">Date de naissance</span>
+              <span class="text-body-large">Date de naissance</span>
             </v-btn>
             <!-- <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
               <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-account-key</v-icon>
               </v-chip>
-              <span class="text-h7">Connexion ICNAGENDA</span>
+              <span class="text-body-large">Connexion ICNAGENDA</span>
               
             </v-btn> -->
           </v-card-text>
         </v-card>
         <v-card rounded="xl" elevation="0" class="pa-0" color="background">
-          <v-card-title class="text-h5">
+          <v-card-title class="text-headline-small">
             Apparence
           </v-card-title>
           <v-card-text>
@@ -56,33 +56,33 @@
               <template #prepend>
                 <ThemeSwitch />
               </template>
-              <span class="text-h7">Changer le thème</span>
+              <span class="text-body-large">Changer le thème</span>
             </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
       <v-col cols="12" md="6">
         <v-card rounded="xl" elevation="0" color="background" class="pa-0">
-          <v-card-title class="text-h5">
+          <v-card-title class="text-headline-small">
             Sécurité
           </v-card-title>
           <v-card-text>
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
               @click="showPasswordDialog = true">
-              <span class="text-h7">Modifier le mot de passe</span>
+              <span class="text-body-large">Modifier le mot de passe</span>
             </v-btn>
           </v-card-text>
         </v-card>
         <v-card rounded="xl" elevation="0" class="pa-0" color="background">
           <div class="d-flex align-center justify-start ga-2">
-            <v-card-title class="text-h5">
+            <v-card-title class="text-headline-small">
               Emails
             </v-card-title>
             <v-chip v-if="noCategoryEnabled" color="error" variant="flat" class="rounded-pill py-0 " size="small">
               <v-icon class="mr-2">
                 mdi-email-alert-outline
               </v-icon>
-              <span class="text-caption">Aucune catégorie sélectionnée</span>
+              <span class="text-body-small">Aucune catégorie sélectionnée</span>
             </v-chip>
           </div>
           <v-card-text>
@@ -92,7 +92,7 @@
                 <v-switch v-model="emailGlobalEnabled" inset class="ml-2" hide-details false-icon="mdi-close"
                   true-icon="mdi-email-multiple" />
               </template>
-              <span class="text-h7">Recevoir les emails</span>
+              <span class="text-body-large">Recevoir les emails</span>
             </v-btn>
 
 

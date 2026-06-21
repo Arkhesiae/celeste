@@ -68,7 +68,7 @@
               rounded="lg"
               v-bind="props"
             >
-              <span class="text-overline">{{ selectedSort ? selectedSort.text : sortLabel }}</span>
+              <span class="text-label-medium">{{ selectedSort ? selectedSort.text : sortLabel }}</span>
               <v-icon>mdi-chevron-down</v-icon>
             </v-btn>
           </template>

@@ -10,7 +10,7 @@
             style="min-width: 0; overflow: hidden;">
             <!-- Day number -->
             <div class="day_label_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <span class="text-body-2"
+                <span class="text-body-medium"
                     :style="isWorkDay && !inPast ? 'font-weight: 900 !important' : 'font-weight: 400'"
                     :class="{ 'xs': xs }">
                     {{ date.day }}

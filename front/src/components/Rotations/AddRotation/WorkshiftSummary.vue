@@ -74,16 +74,16 @@ const handleUpdate = (updatedDay) => {
               <div class="d-flex align-center">
                 <div class="d-flex flex-column justify-center align-start ">
                   <div class="d-flex align-center ga-3">
-                    <div class="text-caption opacity-50 font-weight-medium">
+                    <div class="text-body-small opacity-50 font-weight-medium">
                       {{ day.order }}
                     </div>
-                    <div class="text-subtitle-1 font-weight-medium">
+                    <div class="text-body-large font-weight-medium">
                       {{ day.name }}
                     </div>
                     <v-chip v-if="day.optional" color="surfaceContainer" size="x-small" variant="flat" rounded="lg"
                       flat>
                       <div class="d-flex align-center ga-2">
-                        <span class="text-caption text-onSurface">Option</span>
+                        <span class="text-body-small text-onSurface">Option</span>
                         <v-icon size="small" icon="mdi-plus-box-outline" class="text-onSurface" />
                       </div>
                     </v-chip>
@@ -100,7 +100,7 @@ const handleUpdate = (updatedDay) => {
                 <div class="ml-2 ga-1 d-flex align-start">
                   <v-chip v-for="(variant) in day[variantKey(day)]" v-if="day[variantKey(day)]?.length > 0"
                     color="secondary" variant="flat" rounded="xl" class="" size="x-small">
-                    <span class="text-caption">{{ day.name + ' ' + variant.name }}</span>
+                    <span class="text-body-small">{{ day.name + ' ' + variant.name }}</span>
                   </v-chip>
                 </div>
                 <v-chip v-if="day.type === 'rest'" :color="day.type === 'rest' ? 'secondary' : 'primary'" size="x-small"

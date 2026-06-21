@@ -35,7 +35,7 @@ v-model="searchQuery" label="Rechercher" variant="solo" flat rounded="xl" single
         <v-btn
 v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sort"
           @click="openReorderDialog">
-          <span class="text-overline">Réorganiser</span>
+          <span class="text-label-medium">Réorganiser</span>
         </v-btn>
       </v-col>
     </v-row>
@@ -142,7 +142,7 @@ v-model="editedTeamName" variant="underlined" flat rounded="xl" label="Nom de l'
           </v-btn>
         </v-card-title>
         <v-card-text>
-          <div class="text-body-2 text-medium-emphasis mb-4">
+          <div class="text-body-medium text-medium-emphasis mb-4">
             Glissez-déposez les équipes pour modifier leur ordre. L'ordre sera sauvegardé automatiquement.
           </div>
           <VueDraggable
@@ -171,7 +171,7 @@ v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg 
 v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-index: 3000;"
       width="400" floating temporary>
       <v-card-title class="d-flex justify-space-between align-center pa-4">
-        <span class="text-h6">Equipe {{ selectedTeamForMembers?.name }}</span>
+        <span class="text-title-large">Equipe {{ selectedTeamForMembers?.name }}</span>
         <v-btn variant="text" icon @click="membersPanel = false">
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -187,7 +187,7 @@ v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-in
     <v-bottom-sheet v-if="smAndDown" v-model="membersPanel">
       <v-card rounded="0">
         <v-card-title class="d-flex justify-space-between align-center pa-4">
-          <span class="text-h6">Membres de l'équipe {{ selectedTeamForMembers?.name }}</span>
+          <span class="text-title-large">Membres de l'équipe {{ selectedTeamForMembers?.name }}</span>
           <v-btn variant="text" icon @click="membersPanel = false">
             <v-icon>mdi-close</v-icon>
           </v-btn>

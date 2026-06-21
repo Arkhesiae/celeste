@@ -57,7 +57,7 @@
 
     <v-dialog v-model="isEditing" width="500">
       <v-card class="pa-6 rounded-xl">
-        <span class="text-h6">{{ ruleToEdit.name }}</span>
+        <span class="text-title-large">{{ ruleToEdit.name }}</span>
         <span class="opacity-50">Définir une nouvelle valeur pour cette règle ?</span>
 
         <v-number-input v-model="ruleToEdit.value" class="my-4" type="number" control-variant="split" rounded="xl" flat
@@ -76,7 +76,7 @@
 
     <v-dialog v-model="isEditingMailing" width="550">
       <v-card v-if="mailingRuleToEdit" class="pa-6 rounded-xl">
-        <span class="text-h6">{{ mailingRuleToEdit.name }}</span>
+        <span class="text-title-large">{{ mailingRuleToEdit.name }}</span>
         <span class="opacity-50 mb-4 d-block">{{ mailingRuleToEdit.description }}</span>
 
         <v-switch v-model="mailingRuleToEdit.value.enabled" label="Activer l'envoi de mails à l'administration"
@@ -113,7 +113,7 @@
     <v-dialog v-model="showTemplatePreview" width="600">
       <v-card class="pa-6 rounded-xl">
         <div class="d-flex align-center justify-space-between mb-4">
-          <span class="text-h6">Aperçu du modèle d'email</span>
+          <span class="text-title-large">Aperçu du modèle d'email</span>
           <v-btn icon="mdi-close" variant="text" size="small" @click="showTemplatePreview = false" />
         </div>
       </v-card>

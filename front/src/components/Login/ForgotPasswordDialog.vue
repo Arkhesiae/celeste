@@ -1,12 +1,12 @@
 <template>
   <v-dialog v-model="dialog" max-width="500px" transition="dialog-bottom-transition">
     <v-card class="rounded-xl pa-2">
-      <v-card-title class="text-h5 pa-6 pb-2">
+      <v-card-title class="text-headline-small pa-6 pb-2">
         Mot de passe oublié
       </v-card-title>
 
       <v-card-text class="pa-6 pt-4">
-        <p class="text-body-2 text-medium-emphasis mb-4">
+        <p class="text-body-medium text-medium-emphasis mb-4">
           Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe.
           Si cet email existe, vous recevrez un lien de réinitialisation de votre mot de passe.
         </p>

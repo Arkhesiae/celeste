@@ -20,7 +20,14 @@
         md="8"
       >
         <!-- Workshifts List -->
-        <SavedRotation
+
+<template v-if="loading">
+  <RotationItemSkeleton/>
+</template>
+
+<template v-else>
+  <template v-if="rotations?.length>0">
+ <RotationItem
           v-for="rotation in rotations"
           :key="rotation._id"
           :rotation="rotation"
@@ -31,7 +38,19 @@
           @toggle-expand="(id) => expandedRotations[id] = !expandedRotations[id]"
           @edit="handleEdit" 
         />
-      
+  </template>
+  <template v-else>
+    <div class="d-flex ga-2 pa-4 align-center justify-center flex-column text-title-large">
+
+      <v-icon size="24">mdi-tray-remove</v-icon>
+      <span class=" text-disabled ">
+     C'est vide
+      </span>
+ 
+    </div>
+  </template>
+       
+</template>     
 
         <v-row class="mt-8">
           <v-col
@@ -186,14 +205,14 @@
       :model-value="showAddDialog"
       :rotation="rotationToEdit"
       @rotation-submit="saveRotation"
-      @rotation-edit-submit="updateRotation"
+      @rotation-edit-submit="updateRotation" 
       @rotation-edit-cancel="closeAddDialog"
       @update:model-value="closeAddDialog"
     />
 
     <ActivateRotationDialog
-      :is-dialog-visible="showActivateDialog"
-      :rotation="rotationToActivate"
+      v-model="showActivateDialog"
+      :rotationId="activateParams.rotationId"
       @on-submit="setActivationDate"
       @update:dialog-visible="showActivateDialog = $event"
     />
@@ -210,7 +229,6 @@
 </template>
 
 <script setup>
-import { useCenterRotations } from '@/composables/useCenterRotation.js';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
@@ -218,7 +236,8 @@ import { useSnackbarStore } from "@/stores/snackbarStore";
 
 import { useDisplay } from "vuetify";
 import { toUTCNormalized } from '@/utils';
-import SavedRotation from '@/components/Rotations/Information/SavedRotation.vue';
+
+
 
 const { smAndDown } = useDisplay()
 const centerStore = useCenterStore();
@@ -231,29 +250,31 @@ const centers = computed(() => centerStore.centers);
 const isAdmin = computed(() => authStore.userData.isAdmin);
 const isMaster = computed(() => authStore.userData.adminType === 'master');
 
-const myRotations = computed(() => rotationStore.rotations);
-const rotations = computed(() => (isMaster.value ? browsedRotations.value : myRotations.value));
-const sortedRotations = computed(() => rotationStore.sortedRotations);
+const selectedCenterId = ref(authStore.userData.centerId)
 
+const loading = computed(() => rotationStore.loading)
 
-const {
-  rotations: browsedRotations,
-  selectedCenterId,
-  loadingCenterId,
-  fetchForCenter: fetchRotationsForCenter,
-} = useCenterRotations();
+const rotations = computed(() =>
+  rotationStore.getRotationsForCenter(selectedCenterId.value)?.allRotations ?? []
+)
 
+const sortedRotations = computed(() =>
+  rotationStore.getRotationsForCenter(selectedCenterId.value)?.sortedRotations ?? []
+)
 
 const currentActive = computed(() => {
   if (!sortedRotations.value) return null;
   return sortedRotations.value.find(rotation => rotation.status === 'active') || null;
 });
 
+
 const isRotationActive = (rotation) => {
   return currentActive.value && currentActive.value._id === rotation._id;
 };
 
-const rotationToActivate = ref("")
+const activateParams = ref({})
+const removeParams = ref({});
+
 const expandedRotations = ref({})
 
 // Dialogs
@@ -263,15 +284,14 @@ const showErrorDialog = ref(false);
 const errorMessage = ref('');
 const showConfirmationDialog = ref(false);
 const rotationToDelete = ref(null);
-const removeParams = ref({});
+
 const showTimelineDrawer = ref(false);
 const showDateConfirmationDialog = ref(false);
 const showConfirmChangeDialog = ref(false);
-const pendingActivation = ref({ rotation: null, date: null, changes: [] });
+const pendingActivation = ref({ rotation: null, date: null, changes: [], centerId : null });
 
 
 const rotationToEdit = ref(null);
-
 
 
 const saveRotation = async (newRotation) => {
@@ -287,7 +307,6 @@ const saveRotation = async (newRotation) => {
 
 const updateRotation = async (updatedRotation) => {
   try {
-    // S'assurer que nous avons l'ID et le centerId
     if (!updatedRotation._id || !updatedRotation.centerId) {
       throw new Error('Données de rotation invalides');
     }
@@ -300,13 +319,13 @@ const updateRotation = async (updatedRotation) => {
   }
 };
 
-const handleSetActivationDate = (rotation) => {
-  rotationToActivate.value = rotation;
+const handleSetActivationDate = (rotationId, date, centerId) => {
+  activateParams.value =  {rotationId, date, centerId};
   showActivateDialog.value = true
 };
 
-const handleRemoveActivationDate = (shiftId, date, centerId) => {
-  removeParams.value = {shiftId, date, centerId};
+const handleRemoveActivationDate = (rotationId, date, centerId) => {
+  removeParams.value = {rotationId, date, centerId};
   showDateConfirmationDialog.value = true;
 };
 
@@ -329,17 +348,18 @@ const confirmDelete = async () => {
 };
 
 const setActivationDate = async (startDate) => {
-  if (!startDate) {
+  const { date } = activateParams.value;
+  if (!date) {
     return;
   }
     try {
       const UTCDate = toUTCNormalized(startDate);
       const inputDate = UTCDate.split('T')[0];
-      const result = await rotationStore.setActiveRotation(rotationToActivate.value, inputDate);
+      const result = await rotationStore.setActiveRotation(activateParams.value.rotationId, inputDate, activateParams.value.centerId);
 
       if (result.needsApproval) {
         showConfirmChangeDialog.value = true;
-        pendingActivation.value = { type: 'add', rotation: rotationToActivate.value, date: inputDate, changes: result.changes };
+        pendingActivation.value = { type: 'add', rotationId: activateParams.value.rotationId, date: inputDate, changes: result.changes, centerId : activateParams.value.centerId  };
         return 
       } 
       onActivationSuccess(result);
@@ -358,34 +378,34 @@ const removeActivationDate = async () => {
     try {
       const UTCDate = toUTCNormalized(date);
       const inputDate = UTCDate.split('T')[0];
-      const rotation = await rotationStore.rotations.find(rotation => rotation._id === removeParams.value.shiftId);
-      const result = await rotationStore.removeActivationDate(rotation, inputDate, removeParams.value.centerId);
+   
+      const result = await rotationStore.removeActivationDate(removeParams.value.rotationId, inputDate, removeParams.value.centerId);
      
       if (result.needsApproval) {
         showConfirmChangeDialog.value = true;
-        pendingActivation.value = { type: 'remove', rotation: rotation, date: inputDate, changes: result.changes };
+        pendingActivation.value = { type: 'remove', rotationId: removeParams.value.rotationId, date: inputDate, changes: result.changes, centerId : removeParams.value.centerId};
         return 
       } 
       onActivationSuccess(result);
     } catch (error) {
-      snackbarStore.showNotification('Erreur lors de l\'ajout de la date d\'activation : ' + error.message, 'onError', 'mdi-alert-circle-outline');
+      snackbarStore.showNotification('Erreur lors de la suppression de la date : ' + error.message, 'onError', 'mdi-alert-circle-outline');
     }
 };
 
 
 const confirmChange = async () => {
   try {
-    if (pendingActivation.value.type === 'add') {
-      const result = await rotationStore.confirmAddActivation(pendingActivation.value.rotation, pendingActivation.value.date);
-      onActivationSuccess(result);
-    } else {
-      const result = await rotationStore.confirmRemoveActivation(pendingActivation.value.rotation, pendingActivation.value.date);
-      onActivationSuccess(result);
-    }
+    const { type, rotation, date, centerId } = pendingActivation.value;
+
+    const result = type === 'add'
+      ? await rotationStore.setActiveRotation(rotation, date, centerId, { confirm: true })
+      : await rotationStore.removeActivationDate(rotation, date, centerId, { confirm: true });
+
+    onActivationSuccess(result);
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la confirmation du changement : ' + error.message, 'onError', 'mdi-alert-circle-outline');
   }
-}
+};
 
 
 const cancelActivation = () => {
@@ -426,20 +446,15 @@ const handleEdit = (rotation) => {
 };
 
 const handleCenterChange = async (centerId) => {
-  try {
-    await fetchRotationsForCenter(centerId);
-    snackbarStore.showNotification('Tours de service chargés', 'onPrimary', 'mdi-check');
-  } catch (error) {
-    snackbarStore.showNotification('Erreur lors du chargement des tours de service :', error, 'onError', 'mdi-alert-circle-outline');
-  }
+  selectedCenterId.value = centerId
+  await rotationStore.fetchRotations(centerId)
 }
 
 onMounted(async () => {
   try {
-    
     await centerStore.fetchCenters();
-
-    rotationStore.fetchRotations(authStore.userData.centerId);
+    
+    await rotationStore.fetchRotations(authStore.userData.centerId);
     
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la récupération des tours de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');

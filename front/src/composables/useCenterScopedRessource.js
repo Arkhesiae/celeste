@@ -11,7 +11,6 @@ export function useCenterScopedResource(fetchFn) {
   });
 
   const fetchForCenter = async (centerId, { force = false } = {}) => {
-    console.log('hello')
     if (!centerId) return;
     if (itemsByCenter.value[centerId] && !force) {
       selectedCenterId.value = centerId;

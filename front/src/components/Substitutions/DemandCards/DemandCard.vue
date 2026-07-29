@@ -22,7 +22,7 @@
         <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
         }}</span>
 
-        <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
+        <v-icon v-if="canSeeComment" size="x-small" color="onBackground" style="opacity: 0.8;">
           mdi-comment-text-outline
         </v-icon>
 
@@ -135,6 +135,7 @@ import { API_URL } from '@/config/api'
 import { useDisplay } from 'vuetify'
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes'
 import { formatPairsForDate, formatDateLabel, formatDateSuffix } from '@/utils/compatiblePairsFormat'
+import { canSeeDemandComment } from '@/utils/demandComment'
 
 const props = defineProps({
   demand: {
@@ -162,6 +163,10 @@ const loading = ref({
   accept: false,
   interest: false
 })
+
+const canSeeComment = computed(() =>
+  canSeeDemandComment(props.demand?.comment)
+)
 
 
 

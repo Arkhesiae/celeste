@@ -8,29 +8,57 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
             title: center.name,
             subtitle: center.oaci
           })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="" flat
-          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
+          min-width="200px" max-width="300px" clearable @update:model-value="handleCenterChange" />
       </template>
     </MainTitle>
 
+    <v-row class="justify-space-between align-center mb-4">
+      <v-col cols="12" md="6">
+        <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
+          <v-chip variant="text" rounded="lg" value="all">
+            Tous
+          </v-chip>
+          <v-chip variant="text" color="tertiary" rounded="lg" value="admin">
+            Administrateurs
+          </v-chip>
+          <v-chip variant="text" rounded="lg" value="user">
+            Utilisateurs
+          </v-chip>
+          <v-chip variant="text" rounded="lg" value="pending">
+            En attente
+          </v-chip>
+        </v-chip-group>
+      </v-col>
 
-    <!-- <div class="list-header-container"> 
-    <ListHeader
-      :filters="[
-        { label: 'Tous', value: 'all' },
-        { label: 'Administrateurs', value: 'admin', color: 'tertiary' },
-        { label: 'Utilisateurs', value: 'user' }
-      ]"
-      :sort-options="sortOptions"
-      v-model:filter="selectedFilter"
-      v-model:search="searchQuery"
-      v-model:sort="sortBy"
-    /> -->
-    <!-- </div> -->
+      <v-col cols="12" md="6" class="d-flex justify-end">
+        <v-text-field
+          v-model="searchQuery"
+          label="Rechercher un utilisateur"
+          prepend-inner-icon="mdi-magnify"
+          variant="solo"
+          flat
+          rounded="xl"
+          single-line
+          hide-details
+          density="compact"
+          class="search-field"
+          style="max-width: 360px; width: 100%"
+          clearable
+        />
+      </v-col>
+    </v-row>
 
     <v-row>
       <div v-if="isLoading || !showUserList">
         <Loading />
       </div>
+      <v-col
+        v-else-if="!sortedAndFilteredUsers.length"
+        cols="12"
+        class="text-medium-emphasis"
+      >
+        Aucun utilisateur trouvé
+      </v-col>
       <v-col
 v-for="user in sortedAndFilteredUsers" v-else :key="user._id" cols="12" md="6" lg="4"
         :class="smAndDown ? 'pa-0' : ''">
@@ -123,15 +151,21 @@ const filteredUsers = computed(() => {
   }
 
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
+    const query = searchQuery.value.toLowerCase().trim();
     filtered = filtered.filter((user) => {
       const center = getCenterById(user.centerId);
-      return (
-        user.name.toLowerCase().includes(query) ||
-        user.lastName.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query) ||
-        (center && center.name.toLowerCase().includes(query))
-      );
+      const haystack = [
+        user.name,
+        user.lastName,
+        user.email,
+        center?.name,
+        center?.OACI || center?.oaci,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      return haystack.includes(query);
     });
   }
 
@@ -139,13 +173,16 @@ const filteredUsers = computed(() => {
 });
 
 const sortedAndFilteredUsers = computed(() => {
+  const sortKey = sortBy.value?.sortValue;
+  if (!sortKey) return filteredUsers.value;
+
   return [...filteredUsers.value].sort((a, b) => {
     let comparison = 0;
 
-    if (sortBy.value.sortValue === 'createdAt') {
-      comparison = new Date(a[sortBy.value.sortValue]).getTime() - new Date(b[sortBy.value.sortValue]).getTime();
+    if (sortKey === 'createdAt') {
+      comparison = new Date(a[sortKey]).getTime() - new Date(b[sortKey]).getTime();
     } else {
-      comparison = String(a[sortBy.value.sortValue]).localeCompare(String(b[sortBy.value.sortValue]));
+      comparison = String(a[sortKey] ?? '').localeCompare(String(b[sortKey] ?? ''), 'fr');
     }
 
     return sortDirection.value === 'asc' ? comparison : -comparison;

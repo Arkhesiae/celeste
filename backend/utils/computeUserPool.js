@@ -1,6 +1,6 @@
 import pLimit from 'p-limit';
 import User from '../models/User.js';
-import { categorize } from './categorizeDemand.js';
+import { categorize } from './categorizeDemand_v2.js';
 import { generateMapFromDemands } from './generateShiftsMap.js';
 
 const limit = pLimit(10);

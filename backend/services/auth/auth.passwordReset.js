@@ -2,7 +2,7 @@ import User from '../../models/User.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '../email/resetPassword.js';
-import { AppError } from '../../error/appError.js';
+import { AppError } from '../../error/AppError.js';
 
 /**
  * Demande une réinitialisation de mot de passe

@@ -46,9 +46,9 @@ export const useAuthStore = defineStore('auth', () => {
       const data = await authService.refreshToken();
       setUser(data);
       isLoggedIn.value = true;
-    } catch (err) {
-      console.error('Erreur d\'initialisation de l\'authentification:', err.message);
-      logOut();
+    } catch {
+      // Pas de cookie refresh = non connecté (cas normal au premier chargement)
+      clearAuth();
     } finally {
       isAuthReady.value = true;
       isCheckingAuth.value = false;
@@ -81,8 +81,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await authService.logout();
     } catch (err) {
+      // Logout API may fail if already logged out — local state is already cleared
       console.error('Erreur lors de la déconnexion:', err.message);
-      throw err;
     }
   };
 

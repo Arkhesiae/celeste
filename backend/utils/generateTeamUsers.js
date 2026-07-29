@@ -32,6 +32,9 @@ async function generateTeamUsers() {
                 const hashedPassword = await bcrypt.hash('user', 10);
 
                 // Créer le nouvel utilisateur
+                const fromDate = new Date();
+                fromDate.setUTCHours(0, 0, 0, 0);
+
                 const newUser = new User({
                     email,
                     password: hashedPassword,
@@ -40,7 +43,7 @@ async function generateTeamUsers() {
                     centerId: center._id,
                     teams: [{
                         teamId: team._id,
-                        fromDate: new Date()
+                        fromDate
                     }],
                     registrationStatus: 'verified',
                     isActive: true

@@ -89,10 +89,10 @@ export function useAppInitialization() {
     const oneYearFromNow = new Date();
     oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
 
-    substitutionStore.fetchAllDemands({
+    await substitutionStore.fetchAllDemands({
       startDate: today.toISOString(),
       endDate: oneYearFromNow.toISOString()
-    })
+    });
 
     initializationStore.updateInitializationState('substitutions', true);
   };

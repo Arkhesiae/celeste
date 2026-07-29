@@ -1,11 +1,11 @@
 import User from "../../models/User.js";
-import { AppError } from "../../error/appError.js";
+import { AppError } from "../../error/AppError.js";
 import { userPayload } from "./auth.js";
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-const ACCESS_TOKEN_EXPIRY = '90s';
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15m';
 const REFRESH_TOKEN_EXPIRY = '180d';
 
 /**

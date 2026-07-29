@@ -7,30 +7,86 @@ import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 const MIN_REST_MINUTES = 11 * 60;
 
 /**
- * Échantillonne des combinaisons de manière uniforme quand il y en a trop.
- * Inclut toujours la combo par défaut (index 0) en premier.
+ * Variante concrète choisie par le fetcher (pas vic/disp, pas vide).
+ * Si true, on ne ré-explore pas les variantes de ce jour.
  */
-function sampleCombos (combos, maxCount) {
-    if (combos.length <= maxCount) return combos;
-    const result = [combos[0]];
-    const step = (combos.length - 1) / Math.max(1, maxCount - 1);
-    for (let i = 1; i < maxCount; i++) {
-        const idx = Math.min(Math.floor(i * step), combos.length - 1);
-        result.push(combos[idx]);
+function hasConcreteFetcherVariation (selectedVariation) {
+    if (selectedVariation == null) return false;
+    if (selectedVariation === 'vic' || selectedVariation === 'disp') return false;
+    if (typeof selectedVariation === 'object') {
+        return Boolean(selectedVariation._id || selectedVariation.startTime);
     }
-    return result;
+    const id = selectedVariation?.toString?.();
+    return Boolean(id && id !== '[object Object]');
+}
+
+/** Différence en jours UTC entre deux YYYY-MM-DD */
+function utcDayDiff (a, b) {
+    const [ay, am, ad] = a.split('-').map(Number);
+    const [by, bm, bd] = b.split('-').map(Number);
+    const ms = Date.UTC(ay, am - 1, ad) - Date.UTC(by, bm - 1, bd);
+    return Math.round(ms / 86400000);
 }
 
 /**
  * Complexité des calculs par paire de compatibilité :
  * - demandVariations × fetcherCombos appels à checkCompatibilityForVariation
- * - fetcherCombos = ∏(1 + variations_per_date) pour chaque date ambigüe du fetcher
- *   Ex: 7 dates avec 2 variations = 3^7 = 2187 | 5 dates avec 3 variations = 4^5 = 1024
- * - Sans limite : 3 demandVars × 2187 = 6561 itérations, chacune avec N appels DB (acceptedSwitches)
+ * - Sans borne : produit cartésien sur ±12j de vacations multi-variantes → OOM
  */
-const MAX_COMPATIBILITY_COMBOS = 500;
+const MAX_COMPATIBILITY_COMBOS = 128;
+/** Fenêtre autour de la demande où les variantes fetcher impactent vraiment 11h/35h/48h */
+const AMBIGUOUS_DAY_RADIUS = 7;
+/** Nombre max de jours ambigus explorés (les plus proches de la demande) */
+const MAX_AMBIGUOUS_DATES = 4;
 
+/**
+ * Dates ambigües proches de la demande uniquement (évite le produit sur toute la map ±12j).
+ */
+function selectAmbiguousFetcherDates (shiftsMap, demandDateStr) {
+    const candidates = [];
+    for (const [dateStr, entry] of shiftsMap) {
+        if (entry?.shift?.variations?.length < 2) continue;
+        if (hasConcreteFetcherVariation(entry.selectedVariation)) continue;
+        const diff = Math.abs(utcDayDiff(demandDateStr, dateStr));
+        if (diff > AMBIGUOUS_DAY_RADIUS) continue;
+        candidates.push({ dateStr, diff });
+    }
+    candidates.sort((a, b) => a.diff - b.diff || a.dateStr.localeCompare(b.dateStr));
+    return candidates.slice(0, MAX_AMBIGUOUS_DATES).map((c) => c.dateStr);
+}
 
+/**
+ * Produit cartésien borné : arrête dès maxCombos atteints (pas de materialisation géante).
+ * @param {string[]} ambiguousDates
+ * @param {Map} shiftsMap
+ * @param {number} maxCombos
+ * @returns {Array<{[dateStr]: variation}>}
+ */
+function getFetcherVariationCombinations (ambiguousDates, shiftsMap, maxCombos = MAX_COMPATIBILITY_COMBOS) {
+    if (ambiguousDates.length === 0) return [{}];
+
+    const variationsByDate = ambiguousDates.map((d) => {
+        const vars = shiftsMap.get(d)?.shift?.variations;
+        if (!vars || vars.length === 0) return [null];
+        return [null, ...vars];
+    });
+
+    const result = [];
+    const backtrack = (idx, combo) => {
+        if (result.length >= maxCombos) return;
+        if (idx === ambiguousDates.length) {
+            result.push({ ...combo });
+            return;
+        }
+        for (const v of variationsByDate[idx]) {
+            if (result.length >= maxCombos) return;
+            combo[ambiguousDates[idx]] = v;
+            backtrack(idx + 1, combo);
+        }
+    };
+    backtrack(0, {});
+    return result;
+}
 
 /**
  * Construit une map locale en appliquant éventuellement des overrides de variantes pour les vacations du fetcher.
@@ -64,36 +120,6 @@ function buildLocalMapWithOverrides (shiftsMap, demandDateStr, demandData, fetch
         localMap.set(demandDateStr, demandData);
     }
     return localMap;
-}
-
-/**
- * Génère toutes les combinaisons de variantes pour les dates ambigües (produit cartésien).
- * @param {string[]} ambiguousDates - Dates où le fetcher a un shift avec 2+ variantes sans sélection
- * @param {Map} shiftsMap - La map des shifts
- * @returns {Array<{[dateStr]: variation}>}
- */
-function getFetcherVariationCombinations (ambiguousDates, shiftsMap) {
-    if (ambiguousDates.length === 0) return [{}];
-    const variationsByDate = ambiguousDates.map(d => {
-        const entry = shiftsMap.get(d);
-        const vars = entry?.shift?.variations;
-        // Inclure null (défaut) + chaque variante explicite
-        if (!vars || vars.length === 0) return [null];
-        return [null, ...vars];
-    });
-    const result = [];
-    function backtrack (idx, combo) {
-        if (idx === ambiguousDates.length) {
-            result.push({ ...combo });
-            return;
-        }
-        for (const v of variationsByDate[idx]) {
-            combo[ambiguousDates[idx]] = v;
-            backtrack(idx + 1, combo);
-        }
-    }
-    backtrack(0, {});
-    return result;
 }
 
 /**
@@ -224,13 +250,9 @@ const categorize = async (demand, shiftsMap = null) => {
         demandWithLimit.invalidRest35 = invalidWindows35;
         demandWithLimit.invalidWork48 = invalidWindows48;
 
-        // Jours ambigus du fetcher : vacations avec 2+ variantes (avec ou sans choix, pour calculer les alternatives compatibles)
-        const ambiguousFetcherDates = [];
-        for (const [dateStr, entry] of shiftsMap) {
-            if (entry?.shift?.variations?.length >= 2) {
-                ambiguousFetcherDates.push(dateStr);
-            }
-        }
+        // Jours ambigus proches de la demande uniquement (évite OOM sur produit ±12j)
+        const demandDateStr = demandDate.toISOString().split('T')[0];
+        const ambiguousFetcherDates = selectAmbiguousFetcherDates(shiftsMap, demandDateStr);
 
         const demandVariationsToTry = (hasVariations && noSelectedVariation)
             ? (shift.variations || [])
@@ -244,12 +266,15 @@ const categorize = async (demand, shiftsMap = null) => {
         /** Quand poster ET fetcher sont ambigus : date -> fetcherVarKey -> Set(demandVarIds) */
         const compatiblePairsByFetcherDate = new Map();
 
-        const fetcherCombos = getFetcherVariationCombinations(ambiguousFetcherDates, shiftsMap);
-        const totalCombos = demandVariationsToTry.length * fetcherCombos.length;
-        const useFullPairs = totalCombos <= MAX_COMPATIBILITY_COMBOS;
-        const combosToIterate = useFullPairs
-            ? fetcherCombos
-            : sampleCombos(fetcherCombos, Math.max(1, Math.floor(MAX_COMPATIBILITY_COMBOS / demandVariationsToTry.length)));
+        const maxFetcherCombos = Math.max(
+            1,
+            Math.floor(MAX_COMPATIBILITY_COMBOS / Math.max(1, demandVariationsToTry.length))
+        );
+        const combosToIterate = getFetcherVariationCombinations(
+            ambiguousFetcherDates,
+            shiftsMap,
+            maxFetcherCombos
+        );
 
         for (const demandVar of demandVariationsToTry) {
             for (const fetcherCombo of combosToIterate) {
@@ -476,8 +501,10 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
         windowStart.setUTCHours(0, 0, 0, 0);
         const windowEnd = new Date(windowStart);
         windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
+        // start < windowEnd : un service qui commence pile à la fin de fenêtre
+        // n'appartient pas à la plage de 7j (aligné v1).
         const windowShifts = shiftsSorted
-            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd)
+            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) < windowEnd)
             .sort((a, b) => new Date(a.start) - new Date(b.start));
 
         let lastEnd = new Date(windowStart);
@@ -487,19 +514,37 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
         }
         for (let j = 0; j < windowShifts.length; j++) {
             const s = windowShifts[j];
-            const restMinutes = (s.start - lastEnd) / (60 * 1000);
+            const shiftStart = new Date(s.start);
+            const shiftEnd = new Date(s.end);
+            // Nuit chevauchant le début de fenêtre : déjà en service → pas de repos initial
+            if (shiftStart < lastEnd) {
+                if (shiftEnd > lastEnd) lastEnd = shiftEnd;
+                if (j === windowShifts.length - 1) {
+                    const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
+                    if (restMinutesToEnd > longestRest) {
+                        longestRest = restMinutesToEnd;
+                        longestRestStart = new Date(lastEnd);
+                        longestRestEnd = new Date(windowEnd);
+                    }
+                    if (restMinutesToEnd >= 35 * 60) {
+                        restOk = true;
+                    }
+                }
+                continue;
+            }
+            const restMinutes = (shiftStart - lastEnd) / (60 * 1000);
 
             if (restMinutes > longestRest) {
                 longestRest = restMinutes;
                 longestRestStart = lastEnd;
-                longestRestEnd = s.start;
+                longestRestEnd = shiftStart;
             }
 
             if (restMinutes >= 35 * 60) {
                 restOk = true;
                 break;
             }
-            lastEnd = s.end > lastEnd ? s.end : lastEnd;
+            lastEnd = shiftEnd > lastEnd ? shiftEnd : lastEnd;
 
             if (j === windowShifts.length - 1) {
                 const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
@@ -529,46 +574,41 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
 }
 
 function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
-    let workOk = true;
     const invalidWindows48 = [];
 
-    for (let i = 0; i < 7; i++) {
+    const targetDateNorm = new Date(Date.UTC(
+        new Date(targetDate).getUTCFullYear(),
+        new Date(targetDate).getUTCMonth(),
+        new Date(targetDate).getUTCDate()
+    ));
+
+    for (let i = 0; i < 13; i++) {
         let totalWorkMinutes = 0;
-        if (fullScan) {
-            workOk = true
-        }
-        const windowStart = new Date(targetDate);
+        let windowWorkOk = true;
+
+        const windowStart = new Date(targetDateNorm);
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        const windowEnd = new Date(targetDate);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
-        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        windowStart.setUTCHours(0, 0, 0, 0);
+        const windowEnd = new Date(windowStart);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
 
-        for (let j = 0; j < windowShifts.length; j++) {
-            const s = windowShifts[j];
-            if (j === 0 && s.start < windowStart) {
-                const workMinutesToStart = (s.end - windowStart) / (60 * 1000);
-                totalWorkMinutes += workMinutesToStart;
-            }
+        const windowShifts = shiftsSorted.filter(s =>
+            new Date(s.end) > windowStart && new Date(s.start) < windowEnd
+        );
 
-            else if (j === windowShifts.length - 1 && s.end > windowEnd) {
-                const workMinutesToEnd = (windowEnd - s.start) / (60 * 1000);
-                totalWorkMinutes += workMinutesToEnd;
-            }
-
-            else {
-                const workMinutes = (s.end - s.start) / (60 * 1000);
-                totalWorkMinutes += workMinutes;
-            }
-
+        for (const s of windowShifts) {
+            const shiftStart = new Date(s.start);
+            const shiftEnd = new Date(s.end);
+            const overlapStart = shiftStart < windowStart ? windowStart : shiftStart;
+            const overlapEnd = shiftEnd > windowEnd ? windowEnd : shiftEnd;
+            totalWorkMinutes += Math.max(0, (overlapEnd - overlapStart) / (60 * 1000));
             if (totalWorkMinutes > 48 * 60) {
-                workOk = false;
-                if (!fullScan) break;
+                windowWorkOk = false;
+                break;
             }
-
-
         }
 
-        if (!workOk) {
+        if (!windowWorkOk) {
             invalidWindows48.push({
                 windowStart,
                 windowEnd,
@@ -577,7 +617,7 @@ function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
             if (!fullScan) break;
         }
     }
-    return { workOk, invalidWindows48 };
+    return { workOk: invalidWindows48.length === 0, invalidWindows48 };
 }
 
 

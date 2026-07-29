@@ -1,7 +1,7 @@
 import { sendAcceptedDemandEmail } from '../email/userPoolNotificationEmail.js';
-import { AppError } from '../../error/appError.js';
-import mongoose from 'mongoose';
+import { AppError } from '../../error/AppError.js';
 import { acceptRequestWithSession } from './request.internal.js';
+import { runWithOptionalTransaction } from '../../utils/runWithOptionalTransaction.js';
 
 
 /**
@@ -12,19 +12,19 @@ import { acceptRequestWithSession } from './request.internal.js';
  * @param {boolean} opts.isSwitch - true for shift swap, false for substitution
  */
 export async function acceptRequest (requestId, userId, { isSwitch = false } = {}) {
-    const session = await mongoose.startSession();
     let request, accepterShift, acceptedShiftPoints, userShiftData;
 
     try {
-        await session.withTransaction(async () => {
+        await runWithOptionalTransaction(async (session) => {
             ({ request, accepterShift, acceptedShiftPoints, userShiftData } =
                 await acceptRequestWithSession(requestId, userId, { session, isSwitch }));
         });
     } catch (error) {
         if (error instanceof AppError) throw error;
-        throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}` + error, 500);
-    } finally {
-        session.endSession();
+        throw new AppError(
+            `Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}: ${error.message}`,
+            500
+        );
     }
 
     // Post-transaction: populate for return value

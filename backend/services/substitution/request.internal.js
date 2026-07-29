@@ -1,5 +1,5 @@
 import Substitution from '../../models/Substitution.js';
-import { AppError } from '../../error/appError.js';
+import { AppError } from '../../error/AppError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import * as calendarEntryService from '../calendarEntry/calendar-entry.js';

@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import { sendTicketReplyEmail } from './email/ticketReplyEmail.js';
 import { sendNewTicketNotificationEmail } from './email/newTicketEmail.js';
 import { isValidEmail } from '../utils/validation.js';
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 
 const MASTER_ADMIN_EMAIL = process.env.MASTER_ADMIN_EMAIL;
 

@@ -665,34 +665,52 @@ const onWorkHover = (segment, col, idx) => {
 const onIncompatibilityHover = (win) => {
     clearRestSegments();
 
-    const s = new Date(win.longestRestStart);
-    const e = new Date(win.longestRestEnd);
+    // Repos 35h : longestRestStart/End ; travail 48h : windowStart/windowEnd
+    const rawStart = win.longestRestStart ?? win.windowStart;
+    const rawEnd = win.longestRestEnd ?? win.windowEnd;
+    if (!rawStart || !rawEnd) return;
+
+    const s = new Date(rawStart);
+    const e = new Date(rawEnd);
+    if (Number.isNaN(s.getTime()) || Number.isNaN(e.getTime())) return;
+
     const sRawH = s.getUTCHours() + s.getUTCMinutes() / 60;
     const eRawH = e.getUTCHours() + e.getUTCMinutes() / 60;
 
-    const sDay = new Date(s);
-    sDay.setUTCHours(0, 0, 0, 0);
-    const eDay = new Date(e);
-    eDay.setUTCHours(0, 0, 0, 0);
+    // Même referentiel que les work bars : minuit local des composantes UTC
+    const toColDate = (d) => new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+    const colIndexStart = getColIndex(toColDate(s));
+    const colIndexEnd = getColIndex(toColDate(e));
+    const colCount = processedData.value.columns.length || 13;
 
-    const colIndexStart = getColIndex(sDay);
-    const colIndexEnd = getColIndex(eDay);
+    const segments = [];
+    const pushSeg = (colIndex, startHour, endHour) => {
+        if (colIndex < 0 || colIndex >= colCount) return;
+        if (startHour >= endHour) return;
+        segments.push({ colIndex, startHour, endHour });
+    };
 
     if (colIndexStart === colIndexEnd) {
-        displayRestSegment(colIndexStart, { startHour: sRawH, endHour: eRawH });
+        pushSeg(colIndexStart, sRawH, eRawH || 24);
     } else {
-        displayRestSegment(colIndexStart, { startHour: sRawH, endHour: 24 });
+        pushSeg(colIndexStart, sRawH, 24);
         for (let colIdx = colIndexStart + 1; colIdx < colIndexEnd; colIdx++) {
-            displayRestSegment(colIdx, { startHour: 0, endHour: 24 });
+            pushSeg(colIdx, 0, 24);
         }
         if (eRawH > 0) {
-            displayRestSegment(colIndexEnd, { startHour: 0, endHour: eRawH });
+            pushSeg(colIndexEnd, 0, eRawH);
         }
     }
+
+    activeRestSegments.value = segments;
 };
 
 const displayRestSegment = (colIndex, segment) => {
-    activeRestSegments.value.push({ colIndex, ...segment });
+    if (colIndex < 0 || colIndex >= (processedData.value.columns.length || 13)) return;
+    activeRestSegments.value = [
+        ...activeRestSegments.value,
+        { colIndex, ...segment }
+    ];
 };
 
 
@@ -991,8 +1009,8 @@ const getWindowDateLabel = (idx) => {
 /* Highlight Window */
 .window-highlight {
     position: absolute;
-    background-color: rgba(var(--v-theme-primary), 0.11);
-    border: 1px solid rgba(var(--v-theme-primary), 0.03);
+    background-color: rgb(var(--v-theme-primary) / 0.11);
+    border: 1px solid rgb(var(--v-theme-primary) / 0.03);
     border-radius: 16px;
     z-index: 0;
     pointer-events: none;
@@ -1038,7 +1056,7 @@ const getWindowDateLabel = (idx) => {
 .info-stem {
     width: 1px;
     height: 10px;
-    background-color: rgba(var(--v-theme-onBackground), 0.1);
+    background-color: rgb(var(--v-theme-on-background) / 0.1);
     transition: height 0.2s cubic-bezier(0.25, 0.8, 0.5, 1);
 }
 
@@ -1072,16 +1090,16 @@ const getWindowDateLabel = (idx) => {
     height: auto;
 }
 
-/* WORK BARS */
+/* WORK BARS — Vuetify 4: rgb channels are space-separated; rgba(var(--x), a) is invalid */
 .work-bar {
     position: absolute;
     transform: translateX(-50%);
     left: 50%;
-    width: 10px;
-    background-color: rgba(var(--v-theme-primary), 0.2);
-    border: 1px solid rgba(var(--v-theme-onBackground), 0.01);
+    width: 12px;
+    background-color: rgb(var(--v-theme-primary) / 0.75);
+    border: 1px solid rgb(var(--v-theme-primary));
     border-radius: 8px;
-    transition: opacity 0.2s;
+    transition: background-color 0.15s ease, filter 0.15s ease;
     cursor: pointer;
     z-index: 10;
 }
@@ -1090,31 +1108,29 @@ const getWindowDateLabel = (idx) => {
     transform: translateY(-50%);
     top: 50%;
     left: auto;
-    height: 10px;
+    height: 12px;
     border-radius: 4px;
 }
 
 .work-bar.is-hovered {
-    opacity: 0.8;
     background-color: rgb(var(--v-theme-primary));
+    filter: brightness(1.1);
 }
 
 .work-bar.is-demand-shift {
-    background-color: rgba(var(--v-theme-primary), 0);
-    border: 1px dashed rgba(var(--v-theme-error), 1);
-    /* Vibrant Orange for visibility */
-    width: 10px;
-    /* Slightly narrower if they overlap, or use a different position if needed */
+    background-color: rgb(var(--v-theme-error) / 0.2);
+    border: 2px dashed rgb(var(--v-theme-error));
+    width: 12px;
     z-index: 15;
 }
 
 .is-horizontal .work-bar.is-demand-shift {
     width: auto;
-    height: 10px;
+    height: 12px;
 }
 
 .work-bar.is-demand-shift.is-hovered {
-    background-color: rgba(var(--v-theme-error), .5);
+    background-color: rgb(var(--v-theme-error) / 0.5);
 }
 
 /* REST BARS */
@@ -1122,7 +1138,7 @@ const getWindowDateLabel = (idx) => {
     position: absolute;
     left: 10%;
     right: 10%;
-    background-color: rgba(var(--v-theme-surface), 0);
+    background-color: transparent;
     border-radius: 0px;
     z-index: 5;
     transition: background-color 0.2s;
@@ -1141,9 +1157,9 @@ const getWindowDateLabel = (idx) => {
     left: 50%;
     transform: translateX(-50%);
     border-radius: 8px;
-    border: 1px solid rgba(var(--v-theme-primary), 0.001);
-    background-color: rgba(var(--v-theme-primary), .02);
-    width: 1px;
+    border: 1px solid rgb(var(--v-theme-primary) / 0.15);
+    background-color: rgb(var(--v-theme-primary) / 0.15);
+    width: 2px;
     height: 100%;
 }
 
@@ -1152,19 +1168,19 @@ const getWindowDateLabel = (idx) => {
     left: 0;
     transform: translateY(-50%);
     width: 100%;
-    height: 1px;
+    height: 2px;
 }
 
 .rest-bar.is-hovered .rest-bar__inner {
-    background-color: rgba(var(--v-theme-primary), 0.8);
+    background-color: rgb(var(--v-theme-primary) / 0.85);
 }
 
 .rest-bar.is-short-rest .rest-bar__inner {
-    background-color: rgba(var(--v-theme-error), 0.2);
+    background-color: rgb(var(--v-theme-error) / 0.35);
 }
 
 .rest-bar.is-short-rest.is-hovered .rest-bar__inner {
-    background-color: rgba(var(--v-theme-error), 0.8);
+    background-color: rgb(var(--v-theme-error) / 0.85);
 }
 
 .rest-bar.is-active-hover {
@@ -1172,14 +1188,14 @@ const getWindowDateLabel = (idx) => {
 }
 
 .rest-bar.is-active-hover .rest-bar__inner {
-    background-color: rgba(var(--v-theme-error), 1);
-    width: 1px;
-    box-shadow: 0 0 20px rgba(255, 0, 81, 0.1);
+    background-color: rgb(var(--v-theme-error));
+    width: 4px;
+    box-shadow: 0 0 12px rgb(var(--v-theme-error) / 0.45);
 }
 
 .is-horizontal .rest-bar.is-active-hover .rest-bar__inner {
     width: 100%;
-    height: 1px;
+    height: 4px;
 }
 
 
@@ -1222,7 +1238,7 @@ const getWindowDateLabel = (idx) => {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background-color: rgba(var(--v-theme-on-surface), 0.2);
+    background-color: rgb(var(--v-theme-on-surface) / 0.2);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
     cursor: pointer;
 }

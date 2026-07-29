@@ -51,11 +51,17 @@
     <div class="d-flex justify-end ga-2 mt-4 mb-4 position-relative">
       <v-slide-y-transition>
         <div v-if="disabled" class="text-error" style="position: absolute; top: 32px;">
-          <span style="font-size: 10px !important; opacity: 0.6;">Aucun shift valide</span>
+          <span style="font-size: 10px !important; opacity: 0.6;">{{ disabledReason }}</span>
         </div>
       </v-slide-y-transition>
 
-      <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex">
+      <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex flex-column ga-2 flex-grow-1">
+        <span v-if="pendingDemand" class="text-body-small text-medium-emphasis">
+          Votre demande est en attente
+        </span>
+        <span v-else-if="acceptedAsPoster?.length > 0" class="text-body-small text-medium-emphasis">
+          Vous êtes remplacé ce jour
+        </span>
         <v-btn color="error" height="36px" variant="tonal" class="flex-grow-1 d-flex flex-column rounded-xl text-none"
           @click="$emit('cancel', lastOwnDemand)">
           Annuler ma dernière demande
@@ -166,6 +172,7 @@ import { useSnackbarStore } from '@/stores/snackbarStore';
 import { entryTypes } from '@/utils/entryIcons';
 import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useDate } from 'vuetify';
+import { sameDateKey, toDateKey } from '@/utils/dateKey';
 
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
@@ -203,12 +210,6 @@ const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancel', 'openAbsen
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const toDateKey = (d) => {
-  if (!d) return null;
-  const s = typeof d === 'string' ? d : d?.toISOString?.();
-  return s?.slice(0, 10) ?? null;
-};
-
 const getVacation = computed(() => {
   if (!props.selectedDate) return null;
   return shiftStore.persistentVacationsMap.get(toDateKey(props.selectedDate));
@@ -224,12 +225,23 @@ const disabled = computed(() => {
   return isRestDay.value || inPast.value || isOff.value || !isShift.value
 });
 
+const disabledReason = computed(() => {
+  if (inPast.value) return 'Date passée'
+  if (isRestDay.value) return 'Jour de repos'
+  if (substitutionStore.hasAcceptedAsPoster(props.selectedDate)) {
+    return 'Vous êtes remplacé ce jour'
+  }
+  if (!isShift.value) return 'Aucun shift valide'
+  if (isOff.value) return 'Confirmez votre présence pour poster une demande'
+  return ''
+})
+
 const inPast = computed(() =>
   toDateKey(props.selectedDate) < toDateKey(new Date())
 );
 
 const isOff = computed(() =>
-  getVacation.value?.isOff
+  Boolean(getVacation.value?.isOff)
 );
 
 const fetchEntries = async () => {
@@ -302,11 +314,11 @@ const pendingDemand = computed(() => [
   ...substitutionStore.ownPendingHybridSubstitutions,
   ...substitutionStore.ownPendingTrueSubstitutions,
   ...substitutionStore.ownPendingTrueSwitches
-].find(d => d.posterShift.date === props.selectedDate));
+].find(d => sameDateKey(d.posterShift?.date, props.selectedDate)));
 
 const acceptedAsAccepter = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsAccepter.filter(d => d.posterShift.date === props.selectedDate);
+  return substitutionStore.acceptedAsAccepter.filter(d => sameDateKey(d.posterShift?.date, props.selectedDate));
 });
 
 const lastAccepted = computed(() => {
@@ -316,7 +328,7 @@ const lastAccepted = computed(() => {
 
 const acceptedAsPoster = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsPoster.filter(d => d.posterShift.date === props.selectedDate);
+  return substitutionStore.acceptedAsPoster.filter(d => sameDateKey(d.posterShift?.date, props.selectedDate));
 });
 
 const lastOwnDemand = computed(() => {
@@ -338,15 +350,15 @@ const substitutionsDemands = computed(() => {
 
 
 const availableSubstitutions = computed(() =>
-  substitutionStore.availableSubstitutions.filter(d => d.posterShift.date.slice(0, 10) === props.selectedDate)
+  substitutionStore.availableSubstitutions.filter(d => sameDateKey(d.posterShift?.date, props.selectedDate))
 );
 
 const availableSwitches = computed(() =>
-  substitutionStore.availableSwitches.filter(d => d.posterShift.date.slice(0, 10) === props.selectedDate)
+  substitutionStore.availableSwitches.filter(d => sameDateKey(d.posterShift?.date, props.selectedDate))
 );
 
 const otherDemands = computed(() =>
-  substitutionStore.otherDemands.filter(d => d.posterShift.date.slice(0, 10) === props.selectedDate)
+  substitutionStore.otherDemands.filter(d => sameDateKey(d.posterShift?.date, props.selectedDate))
 );
 
 watch(() => props.selectedDate, async (value) => {

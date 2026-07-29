@@ -2,7 +2,7 @@ import Substitution from '../../models/Substitution.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
 import { generateMapFromDemands } from '../../utils/generateShiftsMap.js';
-import { categorize } from '../../utils/categorizeDemand.js';
+import { categorize } from '../../utils/categorizeDemand_v2.js';
 
 
 /**

@@ -32,6 +32,7 @@ import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useAuthStore } from '@/stores/authStore';
+import { toDateKey } from '@/utils/dateKey';
 
 const DIALOG_MODES = {
   REMPLACEMENT: 'replacement',
@@ -84,7 +85,7 @@ const onBottomSheetClose = (isOpen) => {
 
 const handleSelectDate = (dateStr) => {
   if (dateStr) {
-    selectedDate.value = dateStr;
+    selectedDate.value = toDateKey(dateStr) ?? dateStr;
     showBottomSheet.value = true;
   } else {
     showBottomSheet.value = false;

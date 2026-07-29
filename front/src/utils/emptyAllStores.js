@@ -5,6 +5,7 @@ import { usePointStore } from '@/stores/pointStore.js'
 import { useShiftStore } from '@/stores/shiftStore.js'
 import { usePlanningModificationStore } from '@/stores/planningModificationStore.js'
 import { useEmailStore } from '@/stores/emailStore.js'
+import { useTeamStore } from '@/stores/teamStore.js'
 
 export function emptyAllStores() {
     try {
@@ -32,6 +33,11 @@ export function emptyAllStores() {
         const shiftStore = useShiftStore()
         if (shiftStore.emptyStore) {
             shiftStore.emptyStore()
+        }
+
+        const teamStore = useTeamStore()
+        if (teamStore.emptyStore) {
+            teamStore.emptyStore()
         }
 
         const planningModificationStore = usePlanningModificationStore()

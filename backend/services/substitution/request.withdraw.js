@@ -2,9 +2,9 @@ import User from '../../models/User.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import { sendCancelledAcceptanceEmail } from '../email/userPoolNotificationEmail.js';
 import { categorizeRequests } from './request.getAndCat.js';
-import { AppError } from '../../error/appError.js';
-import mongoose from 'mongoose';
+import { AppError } from '../../error/AppError.js';
 import { withdrawFromRequestWithSession } from './request.internal.js';
+import { runWithOptionalTransaction } from '../../utils/runWithOptionalTransaction.js';
 
 
 /**
@@ -14,18 +14,14 @@ import { withdrawFromRequestWithSession } from './request.internal.js';
  * @returns {Promise<Object>} Demande avec acceptation annulée
  */
 export async function withdrawFromRequest (requestId, userId) {
-    const session = await mongoose.startSession();
-
     let updatedRequest, cancelledRequests;
     try {
-        ({ updatedRequest, cancelledRequests } = await session.withTransaction(() =>
+        ({ updatedRequest, cancelledRequests } = await runWithOptionalTransaction((session) =>
             withdrawFromRequestWithSession(requestId, userId, { session })
         ));
     } catch (err) {
         if (err instanceof AppError) throw err;
         throw new AppError("Erreur lors du désistement", 500);
-    } finally {
-        session.endSession();
     }
 
     const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([

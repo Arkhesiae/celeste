@@ -1,6 +1,6 @@
 import User from "../../models/User.js";
 import bcrypt from 'bcrypt';
-import { AppError } from '../../error/appError.js';
+import { AppError } from '../../error/AppError.js';
 import { generateAccessToken, generateRefreshToken } from './auth.refreshToken.js';
 import { userPayload } from "./auth.js";
 

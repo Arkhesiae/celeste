@@ -11,7 +11,7 @@
         <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8;" />
         <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-body-large font-weight-medium"
           :class="index === history.length - 1 ? '' : 'text-disabled'">
-          {{ entry.shiftData?.shift?.name }}
+          {{ entry.shiftData?.shift?.name || (entry.type === 'substitution' ? 'Remplacé' : '') }}
         </span>
         <v-icon v-else :key="entry?.type" size="16" :class="index === history.length - 1 ? '' : 'text-disabled'">
           {{ typeIcon(entry?.type) }}
@@ -86,9 +86,19 @@
     <Transition name="fade-expand">
       <VariationSelector :is-rest-day="isRestDay" :in-past="inPast" :is-shift="isShift" :is-off="isOff"
         :has-no-demand="hasNoDemand" :status="status" :variations="variations" :selected-variation="selectedVariation"
-        @register-mdda="registerMDDA" @patch-hours="patchHours" @select-variation="selectVariationForDay"
+        @register-mdda="openMddaDialog" @patch-hours="patchHours" @select-variation="selectVariationForDay"
         @register-vic="registerVIC" @register-absence="registerAbsence" />
     </Transition>
+
+    <MddaDialog
+      v-model="showMddaDialog"
+      :planned-start="plannedHours.startTime"
+      :planned-end="plannedHours.endTime"
+      :initial-start="hours?.startTime || plannedHours.startTime"
+      :initial-end="hours?.endTime || plannedHours.endTime"
+      :loading="mddaLoading"
+      @confirm="confirmMdda"
+    />
   </div>
 </template>
 
@@ -100,6 +110,8 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
+import { toDateKey } from '@/utils/dateKey';
+import MddaDialog from '@/components/Dialogs/MddaDialog.vue';
 
 const props = defineProps({
   date: { type: [Date, String], required: true },
@@ -116,19 +128,13 @@ const substitutionStore = useSubstitutionStore();
 
 // ─── Date key ─────────────────────────────────────────────────────────────────
 
-const dateKey = computed(() => {
-  if (!props.date) return null;
-  const s = typeof props.date === 'string' ? props.date : props.date?.toISOString?.();
-  return s?.slice(0, 10) ?? null;
-});
+const dateKey = computed(() => toDateKey(props.date));
 
 // ─── Vacation data ────────────────────────────────────────────────────────────
 
 const vacation = computed(() =>
   dateKey.value ? shiftStore.persistentVacationsMap.get(dateKey.value) : null
 );
-
-console.log(vacation.value)
 
 // ─── Derived state ────────────────────────────────────────────────────────────
 
@@ -170,6 +176,20 @@ const hours = computed(() => {
     return { startTime: vacation.value.startTime, endTime: vacation.value.endTime };
   }
   return null;
+});
+
+/** Horaires théoriques (sans MDDA), pour référence + calcul d'offset côté API */
+const plannedHours = computed(() => {
+  const shift = vacation.value?.shiftData?.shift;
+  const variation = vacation.value?.shiftData?.selectedVariation;
+  if (!shift || variation === 'vic' || variation === 'disp' || variation === 'pres') {
+    return { startTime: hours.value?.startTime || '', endTime: hours.value?.endTime || '' };
+  }
+  const effective = getEffectiveShiftTimes(shift, typeof variation === 'object' ? variation : variation);
+  return {
+    startTime: effective?.startTime || hours.value?.startTime || '',
+    endTime: effective?.endTime || hours.value?.endTime || '',
+  };
 });
 
 const inPast = computed(() => {
@@ -242,11 +262,25 @@ const ENTRY_SERVICE_MAP = {
   hourPatch: 'registerHourPatch',
 };
 
+const resolveTeamId = (team) => {
+  if (!team) return null;
+  if (typeof team === 'string') return team;
+  return team._id ?? team.id ?? null;
+};
+
+const resolveVariationId = (variation) => {
+  if (!variation || variation === 'vic' || variation === 'disp' || variation === 'pres') return null;
+  if (typeof variation === 'string') {
+    return /^[a-f\d]{24}$/i.test(variation) ? variation : null;
+  }
+  return variation._id ?? null;
+};
+
 const basePayload = () => ({
   type: 'modification',
   date: dateKey.value,
   shiftId: vacation.value?.shiftData?.shift?._id,
-  teamId: vacation.value?.shiftData?.team?._id,
+  teamId: resolveTeamId(vacation.value?.shiftData?.team),
   confirmCreation: true,
 });
 
@@ -271,21 +305,59 @@ const registerEntry = async (payload) => {
   if (!method) throw new Error('Invalid payload type');
   try {
     const res = await planningModificationService.registerEntry(payload);
-    console.log(res);
-    shiftStore.addEntry(res.userShift[0], dateKey.value);
+    const updated = res?.userShift?.[0];
+    if (!updated) {
+      throw new Error(res?.message || 'Réponse serveur invalide');
+    }
+    shiftStore.addEntry(updated, dateKey.value);
+    emit('entry-registered', updated);
+    snackbarStore.showNotification(
+      payload.type === 'hourPatch' ? 'MDDA enregistrée' : 'Modification enregistrée',
+      'onPrimary',
+      payload.type === 'hourPatch' ? 'mdi-clock-fast' : 'mdi-check'
+    );
   } catch (error) {
     console.error(error);
     snackbarStore.showNotification('Erreur : ' + error.message, 'onError', 'mdi-alert-circle-outline');
   }
 };
 
-const registerMDDA = () => registerEntry({
-  type: 'hourPatch',
-  date: dateKey.value,
-  shiftId: vacation.value?.shiftData?.shift?._id,
-  centerId: authStore.userData?.centerId,
-  confirmCreation: true,
-});
+const showMddaDialog = ref(false);
+const mddaLoading = ref(false);
+
+const openMddaDialog = () => {
+  const shiftId = vacation.value?.shiftData?.shift?._id;
+  if (!dateKey.value || !shiftId) {
+    snackbarStore.showNotification('Impossible de créer la MDDA : vacation introuvable', 'onError', 'mdi-alert-circle-outline');
+    return;
+  }
+  showMddaDialog.value = true;
+};
+
+const confirmMdda = async ({ startTime, endTime }) => {
+  const shiftId = vacation.value?.shiftData?.shift?._id;
+  const teamId = resolveTeamId(vacation.value?.shiftData?.team);
+  if (!dateKey.value || !shiftId) {
+    snackbarStore.showNotification('Impossible de créer la MDDA : vacation introuvable', 'onError', 'mdi-alert-circle-outline');
+    return;
+  }
+  mddaLoading.value = true;
+  try {
+    await registerEntry({
+      type: 'hourPatch',
+      date: dateKey.value,
+      shiftId,
+      teamId,
+      selectedVariation: resolveVariationId(vacation.value?.shiftData?.selectedVariation),
+      startTime,
+      endTime,
+      confirmCreation: true,
+    });
+    showMddaDialog.value = false;
+  } finally {
+    mddaLoading.value = false;
+  }
+};
 
 const patchHours = () => {
   // implement as needed

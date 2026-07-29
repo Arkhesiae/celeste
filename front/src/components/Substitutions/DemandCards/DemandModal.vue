@@ -48,6 +48,16 @@
         </v-expand-transition>
       </v-card>
 
+      <v-card v-if="visibleComment" color="surfaceContainerHighest" rounded="xl" elevation="0" class="mb-4 pa-4">
+        <div class="d-flex align-start ga-2">
+          <v-icon size="18" color="primary" class="mt-1">mdi-comment-text-outline</v-icon>
+          <div>
+            <span class="text-body-small text-medium-emphasis d-block mb-1">Commentaire</span>
+            <span class="text-body-medium font-weight-medium text-onBackground" style="white-space: pre-wrap;">{{ visibleComment }}</span>
+          </div>
+        </div>
+      </v-card>
+
       <v-card rounded="xl" color="background" elevation="0" class="mb-4 pa-4">
         <div class="d-flex align-center justify-space-between">
           <div class="d-flex align-center " style="position: relative; width: 20px;">
@@ -137,16 +147,11 @@
         </div>
       </v-card>
 
-
       <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
         <div class="d-flex justify-space-between align-center text-disabled">
           <span class="text-body-medium font-weight-medium text-medium-emphasis">Date</span>
           <span class="text-body-medium text-disabled">{{ formatDate(demand.posterShift?.date) }}</span>
         </div>
-      </v-card>
-
-      <v-card v-if="demand.comment" color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
-        <span class="text-disabled text-body-medium font-weight-medium">{{ demand.comment }}</span>
       </v-card>
 
       <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
@@ -257,6 +262,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
+import { getVisibleDemandComment } from '@/utils/demandComment';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();
@@ -281,6 +287,10 @@ const props = defineProps({
     default: null
   }
 })
+
+const visibleComment = computed(() =>
+  getVisibleDemandComment(props.demand?.comment)
+)
 
 const getUserById = (userId) => userStore.users.find((user) => user._id === userId);
 

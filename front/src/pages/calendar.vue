@@ -50,6 +50,7 @@ import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
 import SubstitutionForm from '@/components/Substitutions/SubstitutionForm.vue';
 import Donations from '@/components/Donations.vue';
+import { toDateKey } from '@/utils/dateKey';
 
 /** Constantes */
 const DIALOG_MODES = {
@@ -108,7 +109,7 @@ const selectedVacation = computed(() => {
 
 const selectDay = (date) => {
   if (!date) return;
-  selectedDate.value = date.toISOString();
+  selectedDate.value = toDateKey(date.toISOString?.() ?? date) ?? date.toISOString();
 };
 
 const openSubstitutionForm = (mode) => {
@@ -129,7 +130,7 @@ const onBottomSheetClose = (isOpen) => {
 
 const handleSelectDate = (dateStr) => {
   if (dateStr) {
-    selectedDate.value = dateStr;
+    selectedDate.value = toDateKey(dateStr) ?? dateStr;
     showBottomSheet.value = true;
   } else {
     showBottomSheet.value = false;

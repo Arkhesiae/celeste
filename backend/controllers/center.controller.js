@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
 import { findLatestRotation } from '../utils/findLatestRotation.js';
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 
 // GET ALL CENTERS
 const getAllCenters = async (req, res, next) => {

@@ -8,7 +8,7 @@ import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
 import Rule from '../models/Rule.js';
 import emailService from '../services/email/emailService.js';
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 import { isValidDateRange } from '../utils/validation.js';
 
 const getCenterRequests = async (req, res, next) => {
@@ -70,7 +70,7 @@ const getAllCenterDemands = async (req, res, next) => {
 };
 
 const consultDemand = async (req, res, next) => {
-    const { demandId } = req.params;
+    const { id: demandId } = req.params;
     const { userId } = req.user;
 
     try {
@@ -86,7 +86,7 @@ const consultDemand = async (req, res, next) => {
 };
 
 const getSeenCount = async (req, res, next) => {
-    const { demandId } = req.params;
+    const { id: demandId } = req.params;
 
     try {
 
@@ -107,7 +107,7 @@ const getSeenCount = async (req, res, next) => {
 };
 
 const getCompatibility = async (req, res, next) => {
-    const { demandId } = req.params;
+    const { id: demandId } = req.params;
     const { userId } = req.user;
     try {
         if (!demandId) {
@@ -121,7 +121,7 @@ const getCompatibility = async (req, res, next) => {
 };
 
 const getAvailableUsers = async (req, res, next) => {
-    const { demandId } = req.params;
+    const { id: demandId } = req.params;
 
     try {
         if (!demandId) {
@@ -154,7 +154,10 @@ const checkUserShift = async (req, res, next) => {
         }
 
         const userShift = await computeUserShifts(new Date(date), userId);
-        const hasShift = userShift[0]?.shift?.type !== 'rest';
+        const entry = userShift[0];
+        // computeUserShifts expose shiftData.shift + isOff (absence / optionnel non confirmé)
+        const shiftType = entry?.shiftData?.shift?.type;
+        const hasShift = Boolean(entry && !entry.isOff && shiftType === 'work');
         res.status(200).json({ hasShift, shift: userShift });
     } catch (err) {
         next(err);

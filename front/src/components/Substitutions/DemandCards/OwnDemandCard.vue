@@ -27,7 +27,7 @@
               size="x-small" />
           </template>
 
-          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
+          <v-icon v-if="visibleComment" size="x-small" color="onBackground" style="opacity: 0.8;">
             mdi-comment-text-outline
           </v-icon>
 
@@ -72,6 +72,16 @@
             <span class="text-medium-emphasis">{{ labelOption }}</span>
           </div>
         </div>
+      </div>
+
+      <div
+        v-if="visibleComment"
+        class="d-flex align-start ga-2 mt-1 mb-1"
+      >
+        <v-icon size="12" color="onBackground" style="opacity: 0.7; margin-top: 2px;">
+          mdi-comment-text-outline
+        </v-icon>
+        <span class="text-body-small text-onBackground" style="line-height: 1.3; white-space: pre-wrap;">{{ visibleComment }}</span>
       </div>
 
       <div class="d-flex align-center flex-shrink-0 justify-space-between">
@@ -125,6 +135,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api'
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
+import { getVisibleDemandComment } from '@/utils/demandComment';
 
 
 const teamStore = useTeamStore();
@@ -156,6 +167,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['accept', 'decline', 'openDetails']);
+
+const visibleComment = computed(() =>
+  getVisibleDemandComment(props.demand?.comment)
+);
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });

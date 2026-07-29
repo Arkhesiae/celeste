@@ -1,34 +1,31 @@
 <template>
     <div class="d-flex cursor-pointer overflow-hidden day-block" :style="{ height: height + 'px ' }" :class="{
         'isWorkDay': isWorkDay,
+        'isRestDay': !!shiftName && !isWorkDay,
         'selected': selected,
         'today-center-highlight': isToday,
         'empty-day': !isInMonth,
     }" @click="handleClick">
         <!-- Date number + shift name row -->
-        <div class="d-flex justify-space-between align-start px-2" :class="{ 'flex-column': xs }"
-            style="min-width: 0; overflow: hidden;">
+        <div class="d-flex justify-space-between align-start px-2 day-header" style="min-width: 0; overflow: hidden;">
             <!-- Day number -->
             <div class="day_label_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <span class="text-body-medium"
-                    :style="isWorkDay && !inPast ? 'font-weight: 900 !important' : 'font-weight: 400'"
+                <span class="day-number"
+                    :style="isWorkDay && !inPast ? 'font-weight: 900 !important' : 'font-weight: 500'"
                     :class="{ 'xs': xs }">
                     {{ date.day }}
                 </span>
             </div>
 
-            <!-- Shift info -->
+            <!-- Shift info : travail ET repos (R1, R6…) — en haut à droite -->
             <div class="shift_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <div v-if="isWorkDay" class="d-flex align-center test" :class="isOff ? 'offDay' : ''">
-                    <span class="shift-name" :class="{ 'xs': xs }">{{ shiftName }}</span>
+                <div v-if="shiftName" class="d-flex align-center shift-row" :class="isOff ? 'offDay' : ''">
+                    <span class="shift-name" :class="{ 'xs': xs, 'rest': !isWorkDay }">{{ shiftName }}</span>
                     <div v-if="selectedVariation || isOff" class="mod-dot" />
-                    <span class="variation-name" :class="{ 'xs': xs }">
-                        <template v-if="variationName">{{ variationName }}</template>
-                        <template v-else-if="selectedVariation === 'vic'">VIC</template>
-                        <template v-else-if="isOff">
-                            <v-icon size="10px">mdi-cancel</v-icon>
-                        </template>
+                    <span v-if="variationLabel" class="variation-name" :class="{ 'xs': xs }">
+                        {{ variationLabel }}
                     </span>
+                    <v-icon v-else-if="isOff" size="10px">mdi-cancel</v-icon>
                 </div>
                 <div v-else-if="icon" class="d-flex shift-name align-center">
                     <v-icon size="12px">{{ icon }}</v-icon>
@@ -142,6 +139,16 @@ const props = defineProps({
 
 const emit = defineEmits(['select']);
 
+/** Évite de doubler la variante déjà concaténée dans shiftName (ex. J1A). */
+const variationLabel = computed(() => {
+    if (props.selectedVariation === 'vic') return 'VIC';
+    const variation = props.variationName;
+    if (!variation) return '';
+    const shift = props.shiftName || '';
+    if (shift.endsWith(variation)) return '';
+    return variation;
+});
+
 const inPast = computed(() => {
     if (!props.date) return false;
     const today = Temporal.Now.plainDateISO();
@@ -149,15 +156,19 @@ const inPast = computed(() => {
 });
 
 const handleClick = async () => {
-    await Haptics.impact({ style: ImpactStyle.Light });
     emit('select', props.date);
+    try {
+        await Haptics.impact({ style: ImpactStyle.Light });
+    } catch {
+        // Haptics indisponible sur le web / desktop
+    }
 };
 </script>
 
 <style scoped>
 .offDay {
     color: rgb(var(--v-theme-error)) !important;
-    opacity: 0.5 !important;
+    opacity: 0.75 !important;
 }
 
 .day-block {
@@ -165,13 +176,20 @@ const handleClick = async () => {
     position: relative;
     padding-top: 6px;
     min-width: 0;
-    /* prevent flex item from overflowing parent */
     overflow: hidden;
-    background-color: rgba(var(--v-theme-surfaceContainerHigh), 1);
+    background-color: rgb(var(--v-theme-surfaceContainerHigh));
+    border: 1px solid rgba(var(--v-theme-outlineVariant), 0.85);
     display: grid;
     flex-direction: column;
     border-radius: 12px;
-    transition: border-radius var(--motion-expressive-default-effects);
+    transition: border-radius var(--motion-expressive-default-effects),
+        border-color var(--motion-expressive-default-effects),
+        background-color var(--motion-expressive-default-effects);
+}
+
+.day-header {
+    gap: 4px;
+    width: 100%;
 }
 
 .mod-dot {
@@ -179,42 +197,69 @@ const handleClick = async () => {
     height: 3px;
     border-radius: 50%;
     background-color: rgba(var(--v-theme-onSurface), 0.5);
+    flex-shrink: 0;
+}
+
+.shift-row {
+    gap: 3px;
+    min-width: 0;
+    max-width: 100%;
+    justify-content: flex-end;
 }
 
 .shift-name {
-    font-size: 10px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    line-height: 1.15;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    color: rgb(var(--v-theme-onSurface));
+    opacity: 1;
 }
 
 .shift-name.xs {
-    font-size: 9px !important;
+    font-size: 11px !important;
+}
+
+.shift-name.rest {
+    font-weight: 500 !important;
+    opacity: 0.55;
 }
 
 .variation-name {
     display: flex;
     align-items: center;
-    font-size: 10px !important;
-    font-weight: 500 !important;
-    opacity: 0.9;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    opacity: 0.85;
     white-space: nowrap;
     text-overflow: ellipsis;
     min-width: 0;
 }
 
 .variation-name.xs {
-    font-size: 9px !important;
-}
-
-.test {
-    gap: 2px;
+    font-size: 10px !important;
 }
 
 .isWorkDay {
-    opacity: 0.9;
-    font-weight: 900 !important;
+    opacity: 1;
+}
+
+.isRestDay {
+    background-color: rgb(var(--v-theme-surfaceContainerLow));
+    border-color: rgba(var(--v-theme-outlineVariant), 0.4);
+}
+
+.isRestDay .day-number {
+    opacity: 0.55;
+    font-weight: 400 !important;
+}
+
+.isRestDay .shift-name {
+    font-weight: 500 !important;
+    opacity: 0.5;
 }
 
 .indicator-dot {
@@ -226,40 +271,55 @@ const handleClick = async () => {
 .selected {
     border-radius: 16px !important;
     color: rgb(var(--v-theme-onPrimary)) !important;
-    background: rgba(var(--v-theme-primary), 1) !important;
+    background: rgb(var(--v-theme-primary)) !important;
+    border-color: rgb(var(--v-theme-primary)) !important;
+}
+
+.selected .shift-name,
+.selected .variation-name,
+.selected .day-number {
+    color: rgb(var(--v-theme-onPrimary)) !important;
+    opacity: 1;
+}
+
+.selected.isRestDay {
+    background: rgb(var(--v-theme-primary)) !important;
+    border-color: rgb(var(--v-theme-primary)) !important;
 }
 
 .day_label_container {
-    justify-content: center;
+    justify-content: flex-start;
     display: flex;
 }
 
+.day-number {
+    position: relative;
+    font-size: 13px !important;
+    line-height: 1.1;
+}
+
+.day-number.xs {
+    font-size: 12px !important;
+}
+
 .today-center-highlight {
-    border: 1px solid rgba(var(--v-theme-surfaceContainerHighest), 0.92) !important;
+    border: 1.5px solid rgba(var(--v-theme-primary), 0.55) !important;
 }
 
 .empty-day {
-    opacity: 0.4;
+    opacity: 0.45;
+    background-color: rgb(var(--v-theme-surfaceContainerLow));
+    border-color: rgba(var(--v-theme-outlineVariant), 0.45);
 }
 
 .shift_container {
-    opacity: 0.9;
     display: flex;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    justify-content: center;
+    justify-content: flex-end;
     min-width: 0;
-}
-
-.day_label_container span {
-    position: relative;
-    font-size: 12px !important;
-    font-weight: 500 !important;
-}
-
-.day_label_container span.xs {
-    font-size: 11px !important;
-    font-weight: 500 !important;
+    flex: 1 1 auto;
+    max-width: 70%;
 }
 </style>

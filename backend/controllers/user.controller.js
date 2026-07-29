@@ -866,12 +866,13 @@ const getDevListUsers = async (req, res) => {
         const { role } = req.query;
 
         if (role === 'team') {
-            // Récupérer uniquement les utilisateurs d'équipe (non admin)
+            // Agents test : tous les users rattachés à une équipe, hors master
+            // (un agent promu admin local doit rester sélectionnable)
             const users = await User.find({
-                isAdmin: false,
-                adminType: null,
-                isActive: true
-            }).select('name email teams centerId');
+                isActive: true,
+                adminType: { $ne: 'master' },
+                'teams.0': { $exists: true },
+            }).select('name lastName email teams centerId isAdmin adminType');
 
             return res.json(users);
         }

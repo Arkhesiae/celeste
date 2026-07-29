@@ -5,25 +5,24 @@
  */
 export function getDisplayShiftName(vacation) {
   if (!vacation) return '';
-  const shiftData = vacation.shiftData;
-  return shiftData?.shift?.name || '';
-//   if (vacation.isOff && vacation.initialShift) return vacation.initialShift.name || '';
-//   const { shift, selectedVariation } = vacation;
-//   if (!shift) return '';
-//   const baseName = shift.name || '';
-//   if (selectedVariation) {
-//     // selectedVariation peuplé (objet avec name) → utiliser directement
-//     if (typeof selectedVariation === 'object' && selectedVariation?.name) {
-//       return baseName + selectedVariation.name;
-//     }
-//     // Sinon chercher dans shift.variations
-//     if (shift.variations?.length > 0) {
-//       const variationId = (selectedVariation._id || selectedVariation)?.toString?.() || selectedVariation?.toString?.();
-//       const variation = shift.variations.find((v) => (v._id || v)?.toString?.() === variationId);
-//       if (variation?.name) return baseName + variation.name;
-//     }
-//   }
-//   return baseName;
+  if (vacation.isOff && vacation.initialShift) return vacation.initialShift.name || '';
+
+  const shift = vacation.shiftData?.shift || vacation.shift;
+  const selectedVariation = vacation.shiftData?.selectedVariation ?? vacation.selectedVariation;
+  if (!shift) return '';
+
+  const baseName = shift.name || '';
+  if (selectedVariation) {
+    if (typeof selectedVariation === 'object' && selectedVariation?.name) {
+      return baseName + selectedVariation.name;
+    }
+    if (shift.variations?.length > 0) {
+      const variationId = (selectedVariation._id || selectedVariation)?.toString?.() || selectedVariation?.toString?.();
+      const variation = shift.variations.find((v) => (v._id || v)?.toString?.() === variationId);
+      if (variation?.name) return baseName + variation.name;
+    }
+  }
+  return baseName;
 }
 
 /**

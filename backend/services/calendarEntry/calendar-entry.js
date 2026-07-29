@@ -2,7 +2,7 @@ import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
-import { AppError } from '../../error/appError.js';
+import { AppError } from '../../error/AppError.js';
 import * as demandMutationsService from '../substitution/index.js';
 import overlap from '../../utils/overlapTest.js';
 
@@ -158,26 +158,84 @@ async function registerHourPatch (user, date, data, { latestHourPatch, recompute
         await latestHourPatch.save();
     }
 
+    // Horaires de référence SANS patch (après désactivation de l'ancien)
     const userShift = await computeUserShifts([date], user._id);
-    const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
+    const current = userShift?.[0];
+    const currentShiftId = current?.shiftData?.shift?._id?.toString?.()
+        ?? current?.shiftData?.shift?.toString?.();
+    const requestedShiftId = data.shiftId?.toString?.() ?? data.shiftId;
 
-    if (!isSameShift(userShift, data)) {
+    if (!currentShiftId || !requestedShiftId || currentShiftId !== requestedShiftId) {
         throw new AppError('Impossible de créer une MDDA car le shift ne correspond pas', 422);
     }
+
+    const teamFromShift = current?.shiftData?.team;
+    const teamId = data.teamId
+        ?? data.team
+        ?? teamFromShift?._id
+        ?? teamFromShift
+        ?? current?.baseShift?.team?._id
+        ?? current?.baseShift?.team;
+
+    if (!teamId) {
+        throw new AppError('Impossible de créer une MDDA : équipe introuvable', 422);
+    }
+
+    const baseStart = current?.startTime;
+    const baseEnd = current?.endTime;
+    if (!baseStart || !baseEnd) {
+        throw new AppError('Impossible de créer une MDDA : horaires de référence introuvables', 422);
+    }
+
+    const toMinutes = (time) => {
+        const [h, m] = String(time).split(':').map(Number);
+        if (!Number.isFinite(h) || !Number.isFinite(m)) {
+            throw new AppError('Format d\'heure invalide (HH:MM attendu)', 400);
+        }
+        return h * 60 + m;
+    };
+
+    let adjustedStart;
+    let adjustedEnd;
+
+    if (data.startTime != null && data.endTime != null) {
+        adjustedStart = (toMinutes(data.startTime) - toMinutes(baseStart)) / 60;
+        adjustedEnd = (toMinutes(data.endTime) - toMinutes(baseEnd)) / 60;
+    } else if (data.adjustedTime?.adjustedStart != null && data.adjustedTime?.adjustedEnd != null) {
+        adjustedStart = Number(data.adjustedTime.adjustedStart);
+        adjustedEnd = Number(data.adjustedTime.adjustedEnd);
+    } else {
+        throw new AppError('Horaires MDDA requis (startTime / endTime)', 400);
+    }
+
+    if (!Number.isFinite(adjustedStart) || !Number.isFinite(adjustedEnd)) {
+        throw new AppError('Ajustements MDDA invalides', 400);
+    }
+
+    if (adjustedStart === 0 && adjustedEnd === 0) {
+        throw new AppError('Les horaires MDDA sont identiques aux horaires prévus', 400);
+    }
+
+    const selectedVariation = data.selectedVariation
+        && data.selectedVariation !== 'vic'
+        && data.selectedVariation !== 'disp'
+        && data.selectedVariation !== 'pres'
+        ? (data.selectedVariation._id ?? data.selectedVariation)
+        : (current?.shiftData?.selectedVariation?._id ?? null);
 
     const entry = new HourPatch({
         userId: user._id,
         subType: 'mdda',
         date,
         adjustedTime: {
-            adjustedStart: 1,
-            adjustedEnd: 2,
+            adjustedStart,
+            adjustedEnd,
         },
         centerId: user.centerId,
         shiftData: {
             shift: data.shiftId,
-            selectedVariation: data.selectedVariation,
-            team: data.team,
+            selectedVariation,
+            team: teamId,
         },
     });
 
@@ -200,6 +258,16 @@ async function registerMDDA (userId, date, data) {
         throw new AppError('Impossible de créer une MDDA car le shift ne correspond pas', 422);
     }
 
+    const teamFromShift = userShift[0]?.shiftData?.team;
+    const teamId = data.teamId
+        ?? data.team
+        ?? teamFromShift?._id
+        ?? teamFromShift;
+
+    if (!teamId) {
+        throw new AppError('Impossible de créer une MDDA : équipe introuvable', 422);
+    }
+
     const mdda = new HourPatch({
         userId,
         subType: 'mdda',
@@ -211,8 +279,8 @@ async function registerMDDA (userId, date, data) {
         centerId: user.centerId,
         shiftData: {
             shift: data.shiftId,
-            selectedVariation: data.selectedVariation,
-            team: data.team,
+            selectedVariation: data.selectedVariation ?? userShift[0]?.shiftData?.selectedVariation?._id ?? null,
+            team: teamId,
         },
     });
     await mdda.save();

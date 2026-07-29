@@ -247,6 +247,16 @@ export const useTeamStore = defineStore('team', () => {
     }
   };
 
+  const emptyStore = () => {
+    currentCenter.value = '';
+    teams.value = [];
+    centerTeams.value = [];
+    currentTeam.value = null;
+    teamOccurrences.value = [];
+    loading.value = false;
+    error.value = null;
+  };
+
   return {
     // State
     currentCenter,
@@ -269,7 +279,8 @@ export const useTeamStore = defineStore('team', () => {
     renameTeam,
     updateTeamCycleStartDate,
     updateTeamsOrder,
-    deleteTeamOccurrence
+    deleteTeamOccurrence,
+    emptyStore,
   };
 });
 

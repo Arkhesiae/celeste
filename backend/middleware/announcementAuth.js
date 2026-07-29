@@ -1,5 +1,5 @@
 import PublicAnnouncement from '../models/PublicAnnouncement.js';
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 import User from '../models/User.js';
 
 

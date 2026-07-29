@@ -97,6 +97,11 @@ export async function createDemand (data) {
     const dependsOn = sameDayAcceptedSubstitutions.map((s) => s._id);
 
     // Create demand
+    const teamId = userShift.team?._id ?? userShift.team;
+    if (!teamId) {
+        throw new AppError("Équipe introuvable pour cette vacation", 400);
+    }
+
     const demand = new Substitution({
         posterId,
         posterShift: {
@@ -104,7 +109,7 @@ export async function createDemand (data) {
             selectedVariation: selectedVariationId
                 ? (selectedVariationId._id ?? selectedVariationId)
                 : null,
-            teamId: userShift.team._id,
+            teamId,
             date: posterShift.date
         },
         comment: comment || '',

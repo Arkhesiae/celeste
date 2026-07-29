@@ -66,11 +66,14 @@ export const useShiftStore = defineStore('shift', () => {
 
 
 
-  const addEntry = (entry, dateKey = null) => {
-    if (!entry || !entry.date) return;
+  const addEntry = (entry, dateKey = null, targetMap = null) => {
+    if (!entry) return;
 
     if (!dateKey) {
-      dateKey = entry.date.split('T')[0];
+      if (!entry.date) return;
+      dateKey = typeof entry.date === 'string'
+        ? entry.date.split('T')[0]
+        : new Date(entry.date).toISOString().split('T')[0];
     }
 
     const { date, shiftData, isBaseShift, history, type, baseShift, isOff, startTime, endTime, wasPatched} = entry;
@@ -78,8 +81,8 @@ export const useShiftStore = defineStore('shift', () => {
     const endsNextDay = shiftData?.shift?.endsNextDay ?? false
     let start, end
     if (startTime && endTime) {
-      start = parseShiftDateTime(date, startTime, false);
-      end = parseShiftDateTime(date, endTime, endsNextDay);      
+      start = parseShiftDateTime(date || dateKey, startTime, false);
+      end = parseShiftDateTime(date || dateKey, endTime, endsNextDay);      
     }
 
     const newValue = {
@@ -96,7 +99,13 @@ export const useShiftStore = defineStore('shift', () => {
       wasPatched
     };
 
-    persistentVacationsMap.value.set(dateKey, newValue);
+    const map = targetMap ?? persistentVacationsMap.value;
+    map.set(dateKey, newValue);
+
+    // Remplacement de référence pour déclencher la réactivité Vue (Map mutée in-place = silencieux)
+    if (!targetMap) {
+      persistentVacationsMap.value = new Map(map);
+    }
   };
 
   // Getters utiles
@@ -149,9 +158,12 @@ export const useShiftStore = defineStore('shift', () => {
       }
 
       const newShifts = await vacationService.fetchVacationsOfUser(userId.value, dates);
+      // Nouvelle map : évite de mélanger les vacations de l'agent précédent
+      const nextMap = new Map();
       newShifts.forEach((shiftData) => {
-        addEntry(shiftData);
+        addEntry(shiftData, null, nextMap);
       });
+      persistentVacationsMap.value = nextMap;
 
       shiftsWithSubstitutions.value = newShifts;
 
@@ -200,6 +212,8 @@ export const useShiftStore = defineStore('shift', () => {
 
   const emptyStore = () => {
     shiftsWithSubstitutions.value = [];
+    persistentVacationsMap.value = new Map();
+    period.value = { startDate: null, endDate: null };
     loading.value = false;
     error.value = null;
   };

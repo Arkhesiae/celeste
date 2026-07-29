@@ -78,6 +78,7 @@ declare module 'vue' {
     Logo: typeof import('./src/components/Assets/Logo.vue')['default']
     LogoCopy: typeof import('./src/components/Assets/LogoCopy.vue')['default']
     MainTitle: typeof import('./src/components/common/Titles/MainTitle.vue')['default']
+    MddaDialog: typeof import('./src/components/Dialogs/MddaDialog.vue')['default']
     MobileStatusChip: typeof import('./src/components/Tickets/MobileStatusChip.vue')['default']
     NotificationsDialog: typeof import('./src/components/Unused/NotificationsDialog.vue')['default']
     OTPVerification: typeof import('./src/components/OTPVerification.vue')['default']

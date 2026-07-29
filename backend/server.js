@@ -15,7 +15,10 @@ import mainRouter from './routes/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
+dotenv.config(); // .env
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: path.join(__dirname, '.env.development'), override: true });
+}
 
 // ─── Création de l'application Express ────────────────────────────────────────
 const app = express();
@@ -34,6 +37,10 @@ import { initializeRules } from './services/rules/initializeRules.js';
 app.use(cors({
   origin: [
     process.env.FRONT_URL,
+    process.env.FRONTEND_URL,
+    'http://localhost:30035',
+    'https://localhost:30035',
+    'http://127.0.0.1:30035',
     'http://celeste-app.fr',
     'https://celeste-app.fr',
     'capacitor://localhost',
@@ -42,7 +49,7 @@ app.use(cors({
     'capacitor://167.235.244.249',
     'capacitor://celeste-app.fr',
     'capacitor://https://celeste-app.fr',
-  ],
+  ].filter(Boolean),
 
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

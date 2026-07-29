@@ -29,9 +29,14 @@ export const apiFetch = async (url, options = {}) => {
  * @returns {Promise<Response>}
  */
 const doFetch = (url, options = {}) => {
+  const { allowRetry, headers, ...fetchOptions } = options;
   return fetch(`${API_URL}${url}`, {
-    ...options,
-    headers: getAuthHeaders(),
+    credentials: 'include',
+    ...fetchOptions,
+    headers: {
+      ...getAuthHeaders(),
+      ...(headers || {}),
+    },
   });
 };
 
@@ -61,9 +66,14 @@ export const handleResponse = async (response, retryFn, retry = true) => {
 
   // Cas d’erreur classique
   if (!response.ok) {
-    console.error('API Error:', data);
+    const isMissingRefresh =
+      response.status === 401 && data.code === 'AUTH_TOKEN_MISSING';
+    if (!isMissingRefresh) {
+      console.error('API Error:', data);
+    }
     const customError = new Error(data.message || data.error || 'Une erreur est survenue');
     customError.status = response.status;
+    customError.code = data.code;
     throw customError;
   }
 
@@ -82,10 +92,16 @@ const handle401 = async (retryFn) => {
   const authStore = useAuthStore();
 
   if (!refreshPromise) {
-    refreshPromise = refreshToken(authStore);
+    refreshPromise = refreshToken(authStore).finally(() => {
+      refreshPromise = null;
+    });
   }
 
-  await refreshPromise;
+  try {
+    await refreshPromise;
+  } catch {
+    throw new Error('SESSION_EXPIRED');
+  }
 
   const response = await retryFn();
   return handleResponse(response, retryFn, false);
@@ -96,12 +112,11 @@ const refreshToken = async (authStore) => {
   try {
     const data = await authService.refreshToken();
     authStore.setAccessToken(data.accessToken);
+    return data;
   } catch (err) {
     authStore.clearAuth();
     router.push('/login');
-    throw new Error('SESSION_EXPIRED');
-  } finally {
-    refreshPromise = null;
+    throw err;
   }
 };
 
@@ -113,8 +128,11 @@ const refreshToken = async (authStore) => {
  */
 export const getAuthHeaders = () => {
   const authStore = useAuthStore();
-  return {
-    'Authorization': `Bearer ${authStore.accessToken}`,
-    'Content-Type': 'application/json'
+  const headers = {
+    'Content-Type': 'application/json',
   };
-}; 
+  if (authStore.accessToken) {
+    headers.Authorization = `Bearer ${authStore.accessToken}`;
+  }
+  return headers;
+};

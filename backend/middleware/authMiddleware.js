@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 
 const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -14,13 +14,20 @@ const verifyToken = (req, res, next) => {
     }
 
     const token = authHeader.split(' ')[1];
+    if (!token || token === 'undefined' || token === 'null') {
+        return res.status(401).json({
+            code: 'AUTH_TOKEN_MISSING',
+            success: false,
+            message: 'Non autorisé, token manquant.'
+        });
+    }
 
     try {
-        const decoded = jwt.verify(token, 'secret');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret');
         req.user = decoded;
         next();
     } catch (err) {
-        throw new AppError('Non autorisé, token expiré ou invalide.', 401, 'INVALID_ACCESS_TOKEN');
+        next(new AppError('Non autorisé, token expiré ou invalide.', 401, 'INVALID_ACCESS_TOKEN'));
     }
 };
 

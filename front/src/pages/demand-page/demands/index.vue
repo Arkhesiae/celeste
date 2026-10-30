@@ -32,7 +32,7 @@
     </v-row>
 
     <v-dialog
-      v-model="loadingDemands"
+      :model-value="substitutionStore.loading"
       persistent
       width="300"
     >
@@ -62,10 +62,11 @@
 <script setup>
 import { ref } from "vue";
 import { useDisplay } from "vuetify";
+import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 
 const { smAndDown } = useDisplay();
+const substitutionStore = useSubstitutionStore();
 const demandDeps = ref(null);
-const loadingDemands = ref(false);
 const showRulesDialog = ref(false);
 
 const handleReplacement = (demand) => {

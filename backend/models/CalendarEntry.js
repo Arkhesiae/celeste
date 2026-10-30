@@ -203,9 +203,9 @@ const HourPatchSchema = new mongoose.Schema({
 })
 
 HourPatchSchema.pre('save', async function () {
-    const { adjustedStart, adjustedEnd } = this.adjustedTime
-    if (adjustedStart >= adjustedEnd) {
-        throw new Error('adjustedStart doit être inférieur à adjustedEnd')
+    const { adjustedStart, adjustedEnd } = this.adjustedTime || {}
+    if (!Number.isFinite(adjustedStart) || !Number.isFinite(adjustedEnd)) {
+        throw new Error('Les ajustements MDDA doivent être des nombres')
     }
 })
 

@@ -2,6 +2,7 @@ import { sendBulkAnnouncementEmail } from '../services/email/announcementEmail.j
 import User from '../models/User.js';
 import Announcement from '../models/Announcement.js';
 import Center from '../models/Center.js';
+import { AppError } from '../error/AppError.js';
 
 // /**
 //  * Récupère la liste des templates disponibles

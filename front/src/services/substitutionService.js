@@ -30,14 +30,10 @@ export const substitutionService = {
       requestBody.status = status;
     }
 
-   
-    
-    const response = await apiFetch(`/substitution/center`, {
+    return apiFetch(`/substitution/center`, {
       method: 'POST',
       body: JSON.stringify(requestBody)
     });
-
-    return response;
   },
 
   /**
@@ -225,8 +221,7 @@ export const substitutionService = {
    * @returns {Promise<Object>} Les compatibilités de la demande.
    */
   async fetchCompatibility (demandId) {
-    const response = await apiFetch(`/substitution/compatibility/${demandId}`);
-    return response;
+    return apiFetch(`/substitution/compatibility/${demandId}`);
   },
 
   /**

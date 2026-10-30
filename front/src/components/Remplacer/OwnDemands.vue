@@ -127,7 +127,3 @@ const openDemandDetails = (demand) => {
   emit('openDetails', demand);
 };
 </script>
-
-<style scoped>
-/* Styles spécifiques au composant si nécessaire */
-</style>

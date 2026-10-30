@@ -256,7 +256,7 @@ import { useRotationStore } from '@/stores/rotationStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { planningModificationService } from '@/services/planningModificationService';
-import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
+import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const userStore = useUserStore();
 const authStore = useAuthStore();

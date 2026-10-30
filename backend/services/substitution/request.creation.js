@@ -40,10 +40,10 @@ export async function createDemand (data) {
 
     // Validate shift
     const givenDate = new Date(posterShift.date);
-    const userShifts = await computeUserShifts([givenDate], posterId);
-    const userShift = userShifts[0].shiftData;
+    const [computedShift] = await computeUserShifts([givenDate], posterId);
+    const shiftAssignment = computedShift.shiftData;
 
-    if (!userShift?.shift) {
+    if (!shiftAssignment?.shift) {
         throw new AppError("L'utilisateur n'a pas de shift défini pour cette date", 400);
     }
 
@@ -66,8 +66,8 @@ export async function createDemand (data) {
 
     // Validate selected variation if provided
     const selectedVariationId = posterShift.selectedVariation ?? null;
-    if (selectedVariationId && userShift.shift.variations?.length > 0) {
-        const validVariation = userShift.shift.variations.some(
+    if (selectedVariationId && shiftAssignment.shift.variations?.length > 0) {
+        const validVariation = shiftAssignment.shift.variations.some(
             (v) => (v._id ?? v).toString() === (selectedVariationId._id ?? selectedVariationId).toString()
         );
         if (!validVariation) {
@@ -97,14 +97,19 @@ export async function createDemand (data) {
     const dependsOn = sameDayAcceptedSubstitutions.map((s) => s._id);
 
     // Create demand
+    const teamId = shiftAssignment.team?._id ?? shiftAssignment.team;
+    if (!teamId) {
+        throw new AppError("Équipe introuvable pour cette vacation", 400);
+    }
+
     const demand = new Substitution({
         posterId,
         posterShift: {
-            shift: userShift.shift._id,
+            shift: shiftAssignment.shift._id,
             selectedVariation: selectedVariationId
                 ? (selectedVariationId._id ?? selectedVariationId)
                 : null,
-            teamId: userShift.team._id,
+            teamId,
             date: posterShift.date
         },
         comment: comment || '',

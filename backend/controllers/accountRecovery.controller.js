@@ -1,4 +1,5 @@
 import AccountRecoveryRequest from '../models/AccountRecoveryRequest.js';
+import { AppError } from '../error/AppError.js';
 
 
 export const createRequest = async (req, res) => {

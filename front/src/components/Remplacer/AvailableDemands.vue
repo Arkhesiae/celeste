@@ -8,15 +8,18 @@
       </div>
     </v-col>
   </v-row>
-  <v-row v-if="visible">
+  <v-row v-if="visible"> 
     <v-col cols="12">
-      <div v-if="demands.length === 0">
+      <div v-if="substitutionStore.loading" class="d-flex justify-center align-center py-8">
+        <v-progress-circular indeterminate color="primary" size="36" />
+      </div>
+      <div v-else-if="demands.length === 0">
         <span class="text-medium-emphasis text-title-small">
           Aucune demande disponible
         </span>
       </div>
       <div v-else class="d-flex flex-column ga-2 mt-0">
-        <DemandCard v-for="demand in demands" :key="demand._id" :demand="demand" class="pa-0 ma-0 "
+        <DemandCard v-for="demand in filterByDate(demands)" :key="demand._id" :demand="demand" class="pa-0 ma-0 "
           @handle-replacement="handleReplacement" @handle-switch="handleSwitch" @open-details="openDemandDetails" />
       </div>
     </v-col>
@@ -25,33 +28,53 @@
 
 <script setup>
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
+
 const substitutionStore = useSubstitutionStore();
 const props = defineProps({
   selectedDate: {
     type: [Date, String, null],
+    default: null,
   }
 })
 
+const visible = ref(false)
 
-// Options de filtre
-const filters = [
-  { label: 'Toutes', value: 'all', count: computed(() => filteredSubstitutions.value.length + filteredSwitches.value.length + filteredOthers.value.length) },
-  { label: 'Remplaçables', value: 'remplacables', count: computed(() => filteredSubstitutions.value.length) },
-  { label: 'Permutables', value: 'permutables', count: computed(() => filteredSwitches.value.length) },
-  { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: computed(() => filteredOthers.value.length) }
-];
+const allRequests = computed(() => [
+  ...substitutionStore.availableSubstitutions,
+  ...substitutionStore.availableSwitches,
+  ...substitutionStore.otherDemands,
+]);
 
-const selectedFilter = ref('all');
+const compatibles  = computed(() => [...substitutionStore.availableSubstitutions, ...substitutionStore.availableSwitches])
 
-// Options de tri
+
+const filters = computed(() => {
+  const list = [
+    { label: 'Compatibles', value: 'compatibles', count: compatibles.value.length},
+    { label: 'Remplaçables', value: 'remplacables', count: substitutionStore.availableSubstitutions.length },
+    { label: 'Permutables', value: 'permutables', count: substitutionStore.availableSwitches.length },
+    { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: substitutionStore.otherDemands.length },
+    { label: 'Toutes', value: 'all', count: allRequests.value.length }
+  ];
+
+  return list;
+});
+
+const selectedFilter = ref(props.selectedDate ? 'all' : 'compatibles');
+
+watch(
+  () => props.selectedDate,
+  (date) => {
+    selectedFilter.value = date ? 'all' : 'compatibles';
+  }
+);
+
 const sortOptions = [
-  { text: 'Type', tag: 'type' },
   { text: 'Date', tag: 'date' },
   { text: 'Vacation', tag: 'shift.name' },
   { text: 'Points', tag: 'shift.points' },
 ];
 const sortBy = ref(sortOptions[1]);
-
 
 const emits = defineEmits(['open-details', 'handle-replacement', 'handle-switch']);
 
@@ -67,22 +90,17 @@ const handleSwitch = (demand) => {
   emits('handle-switch', demand)
 }
 
-const filteredSubstitutions = computed(() =>
-  filterByDate(substitutionStore.availableSubstitutions)
-);
-
-const filteredSwitches = computed(() =>
-  filterByDate(substitutionStore.availableSwitches)
-);
-
-const filteredOthers = computed(() =>
-  filterByDate(substitutionStore.otherDemands.filter(d => !d.potentiallyCompatible))
-);
-
-const filterByDate = (demands) => {
-  if (!props.selectedDate) return [...demands];
-  return demands.filter(d => d.posterShift.date === props.selectedDate);
-};
+const demands = computed(() => {
+  let result;
+  switch (selectedFilter.value) {
+    case 'compatibles': result = compatibles.value; break;
+    case 'remplacables': result = substitutionStore.availableSubstitutions; break;
+    case 'permutables': result = substitutionStore.availableSwitches; break;
+    case 'incompatibles': result = substitutionStore.otherDemands; break;
+    default: result = allRequests.value; break;
+  }
+  return sortDemands(result);
+});
 
 const sortDemands = (demands) => {
   if (!sortBy.value) return demands;
@@ -94,26 +112,16 @@ const sortDemands = (demands) => {
         return a.posterShift.shift.name?.localeCompare(b.posterShift.shift.name);
       case 'shift.points':
         return a.points - b.points;
-      case 'status':
-        return a.status.localeCompare(b.status);
       default:
         return 0;
     }
   });
 };
 
-const demands = computed(() => {
-  let result;
-  switch (selectedFilter.value) {
-    case 'remplacables': result = filteredSubstitutions.value; break;
-    case 'permutables': result = filteredSwitches.value; break;
-    case 'incompatibles': result = filteredOthers.value; break;
-    default: result = [...filteredSubstitutions.value, ...filteredSwitches.value, ...filteredOthers.value];
-  }
-  return sortDemands(result);
-});
-
-const visible = ref(false)
+const filterByDate = (demands) => {
+  if (!props.selectedDate) return [...demands];
+  return demands.filter(d => d.posterShift.date === props.selectedDate);
+};
 
 onMounted(() => {
   setTimeout(() => {
@@ -121,7 +129,5 @@ onMounted(() => {
   }, 200)
 })
 
-
 </script>
 
-<style scoped></style>

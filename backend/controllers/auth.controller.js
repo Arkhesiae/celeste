@@ -1,11 +1,12 @@
 import * as authService from '../services/auth/index.js';
 import User from '../models/User.js';
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+    path: '/',
 };
 
 

@@ -1,4 +1,4 @@
-import { AppError } from '../error/appError.js';
+import { AppError } from '../error/AppError.js';
 import * as announcementService from '../services/publicAnnouncementService.js';
 
 

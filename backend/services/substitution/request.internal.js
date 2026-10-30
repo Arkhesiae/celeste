@@ -1,5 +1,5 @@
 import Substitution from '../../models/Substitution.js';
-import { AppError } from '../../error/appError.js';
+import { AppError } from '../../error/AppError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import * as calendarEntryService from '../calendarEntry/calendar-entry.js';
@@ -58,7 +58,7 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
  * @param {Set} opts.visited
  * @param {ClientSession} [opts.session] - session Mongoose existante (appels récursifs)
  */
-export async function cancelRequestWithSession (requestId, { visited = new Set(), session, cancelledRequests = [] }) {
+export async function cancelRequestWithSession (requestId, { visited = new Set(), session, cancelledRequests = [], reason }) {
     const key = requestId.toString();
     if (visited.has(key)) return cancelledRequests;
     visited.add(key);
@@ -77,7 +77,7 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
         );
     }
 
-    request.status = 'cancelled';
+    request.status = reason || 'cancelled';
     await request.save({ session });
 
     cancelledRequests.push(request);

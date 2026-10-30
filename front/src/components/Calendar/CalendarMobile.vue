@@ -37,6 +37,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
+import { sameDateKey, toDateKey } from '@/utils/dateKey';
 
 const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
@@ -60,12 +61,10 @@ const plainDateToDateStr = (plainDate) => {
   return plainDate?.date?.toString();
 }
 
-const toDateStr = (date) => {
-  return date?.slice(0, 10);
-}
+const toDateStr = (date) => toDateKey(date);
 
 const isSelected = (dateStr) => {
-  return props.selectedDate === dateStr;
+  return toDateKey(props.selectedDate) === dateStr;
 };
 
 const isToday = (dateStr) => {
@@ -97,14 +96,14 @@ const shiftDataMap = computed(() => {
 const getShiftData = (dateStr) => shiftDataMap.value.get(dateStr) ?? {};
 
 const hasAvailableSubstitutions = (dateStr) => dateStr ? substitutionStore.availableSubstitutions.some(substitution =>
-  substitution.posterShift.date.slice(0, 10) === dateStr
-) : [];
+  sameDateKey(substitution.posterShift?.date, dateStr)
+) : false;
 const hasAvailableSwitches = (dateStr) => dateStr ? substitutionStore.availableSwitches.some(substitution =>
-  substitution.posterShift.date.slice(0, 10) === dateStr
-) : [];
+  sameDateKey(substitution.posterShift?.date, dateStr)
+) : false;
 const hasOtherDemands = (dateStr) => dateStr ? substitutionStore.otherDemands.some(substitution =>
-  substitution.posterShift.date.slice(0, 10) === dateStr
-) : [];
+  sameDateKey(substitution.posterShift?.date, dateStr)
+) : false;
 
 const demandsMap = computed(() => {
   const map = new Map();

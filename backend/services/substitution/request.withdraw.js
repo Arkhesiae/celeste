@@ -2,7 +2,7 @@ import User from '../../models/User.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import { sendCancelledAcceptanceEmail } from '../email/userPoolNotificationEmail.js';
 import { categorizeRequests } from './request.getAndCat.js';
-import { AppError } from '../../error/appError.js';
+import { AppError } from '../../error/AppError.js';
 import mongoose from 'mongoose';
 import { withdrawFromRequestWithSession } from './request.internal.js';
 

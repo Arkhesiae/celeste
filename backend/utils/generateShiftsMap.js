@@ -2,7 +2,8 @@ import { computeUserShifts } from './computeUserShifts.js';
 import { parseShiftUTC } from './parseShiftTime.js';
 import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 
-
+/** Jours avant/après pour couvrir les fenêtres glissantes 7j (±6) + marge nuits / fenêtres étendues */
+const SHIFT_MAP_DAY_RADIUS = 12;
 
 /**
  * Prépare une map des shifts pour tous les utilisateurs concernés par les demandes
@@ -15,40 +16,58 @@ export async function generateShiftsMap (dates, userId) {
     const userDates = new Set();
 
     for (const date of dates) {
-      const baseTime = date.getTime();
+      const base = new Date(date);
+      if (Number.isNaN(base.getTime())) continue;
+      base.setUTCHours(0, 0, 0, 0);
 
-      for (let offset = -6; offset <= 6; offset++) {
-        const d = new Date(baseTime);
-        d.setDate(d.getDate() + offset);
+      for (let offset = -SHIFT_MAP_DAY_RADIUS; offset <= SHIFT_MAP_DAY_RADIUS; offset++) {
+        const d = new Date(base);
+        d.setUTCDate(d.getUTCDate() + offset);
         userDates.add(d.toISOString().slice(0, 10));
       }
     }
 
     const dateArray = [...userDates].sort();
-
     const finalMap = new Map();
 
-    await Promise.all(
-      dateArray.map(date =>
-        computeUserShifts(date, userId).then(shifts =>
-          shifts
-            .filter(s => s.shift?.type === 'work')
-            .forEach(({ shift, teamObject, date, selectedVariation }) => {
-              const effectiveTimes = getEffectiveShiftTimes(shift, selectedVariation) ?? shift.default;
-              if (!effectiveTimes?.startTime || !effectiveTimes?.endTime) return;
-              finalMap.set(date, {
-                shift,
-                team: teamObject,
-                date,
-                selectedVariation: selectedVariation ?? null,
-                start: parseShiftUTC(date, effectiveTimes.startTime, false),
-                end: parseShiftUTC(date, effectiveTimes.endTime, effectiveTimes.endsNextDay)
-              });
-            })
-        )
-      )
-    );
+    // Un seul passage : charge l'user une fois et traite toutes les dates
+    const results = await computeUserShifts(dateArray, userId);
 
+    for (const entry of results) {
+      const shift = entry?.shiftData?.shift;
+      // Uniquement les vacations travaillées (pas repos / pas off / pas empty)
+      if (!shift || shift.type !== 'work' || entry.isOff) continue;
+
+      const dateStr = entry.date;
+      const selectedVariation = entry.shiftData?.selectedVariation ?? null;
+      const variationObj = (selectedVariation && typeof selectedVariation === 'object'
+        && selectedVariation.startTime)
+        ? selectedVariation
+        : selectedVariation;
+
+      const fromEntry = (entry.startTime && entry.endTime)
+        ? {
+          startTime: entry.startTime,
+          endTime: entry.endTime,
+          endsNextDay: getEffectiveShiftTimes(shift, variationObj)?.endsNextDay
+            ?? shift.default?.endsNextDay
+            ?? false,
+        }
+        : null;
+
+      const effectiveTimes = getEffectiveShiftTimes(shift, variationObj) ?? fromEntry;
+
+      if (!effectiveTimes?.startTime || !effectiveTimes?.endTime) continue;
+
+      finalMap.set(dateStr, {
+        shift,
+        team: entry.shiftData?.team ?? null,
+        date: dateStr,
+        selectedVariation: variationObj,
+        start: parseShiftUTC(dateStr, effectiveTimes.startTime, false),
+        end: parseShiftUTC(dateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
+      });
+    }
 
     return finalMap;
   } catch (error) {
@@ -95,5 +114,5 @@ export function shiftMapToArray (shiftsMap) {
       team: entry.team,
       selectedVariation: entry.selectedVariation ?? null
     }))
-    .sort((a, b) => new Date(a.date) - new Date(b.date));
+    .sort((a, b) => new Date(a.start) - new Date(b.start));
 }

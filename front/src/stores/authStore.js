@@ -81,8 +81,8 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       await authService.logout();
     } catch (err) {
+      // Logout API may fail if already logged out — local state is already cleared
       console.error('Erreur lors de la déconnexion:', err.message);
-      throw err;
     }
   };
 

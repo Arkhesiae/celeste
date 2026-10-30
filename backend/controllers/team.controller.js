@@ -2,6 +2,7 @@ import Team from '../models/Team.js';
 import Center from '../models/Center.js';
 import User from "../models/User.js";
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
+import { AppError } from '../error/AppError.js';
 
 // Créer une nouvelle équipe dans un centre
 const createTeam = async (req, res) => {

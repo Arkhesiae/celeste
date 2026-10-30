@@ -4,7 +4,7 @@ import { findLatestRotation } from '../../utils/findLatestRotation.js';
 import { generateShiftsMap } from '../../utils/generateShiftsMap.js';
 import { parseShiftUTC } from '../../utils/parseShiftTime.js';
 import { shiftMapToArray } from '../../utils/generateShiftsMap.js';
-import { checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../../utils/categorizeDemand.js';
+import { checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../../utils/categorizeDemand_v2.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';
 

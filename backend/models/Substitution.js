@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { AppError } from '../error/AppError.js';
 
 const NewShiftSchema = new mongoose.Schema({
     shift: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },

@@ -2,6 +2,7 @@ import { computeUserShifts } from './computeUserShifts.js';
 import Shift from '../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
 import { parseShiftUTC } from './parseShiftTime.js';
+import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
@@ -21,20 +22,30 @@ const categorize = async (demand, shiftsMap = null) => {
             throw new Error("Shifts map not found");
         }
 
-        const vacationOfFetcher = shiftsMap.get(demandDate.toISOString().split('T')[0]);
+        const demandDateStr = demandDate.toISOString().split('T')[0];
+        const vacationOfFetcher = shiftsMap.get(demandDateStr);
         const localMap = new Map(shiftsMap);
+
+        const effectiveTimes = getEffectiveShiftTimes(
+            demand.posterShift.shift,
+            demand.posterShift.selectedVariation
+        );
+        if (!effectiveTimes?.startTime || !effectiveTimes?.endTime) {
+            throw new Error('Horaires de vacation invalides');
+        }
 
         const demandData = {
             shift: demand.posterShift.shift,
             team: demand.posterShift.shift.teamObject,
-            date: demandDate.toISOString().split('T')[0],
-            start: parseShiftUTC(demandDate.toISOString().split('T')[0], demand.posterShift.shift.default.startTime),
-            end: parseShiftUTC(demandDate.toISOString().split('T')[0], demand.posterShift.shift.default.endTime, demand.posterShift.shift.default.endsNextDay),
+            date: demandDateStr,
+            selectedVariation: demand.posterShift.selectedVariation ?? null,
+            start: parseShiftUTC(demandDateStr, effectiveTimes.startTime, false),
+            end: parseShiftUTC(demandDateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
         };
 
-        localMap.set(demandDate.toISOString().split('T')[0], demandData);
+        localMap.set(demandDateStr, demandData);
         const shiftsSorted = shiftMapToArray(localMap);
-        const index = shiftsSorted.findIndex(s => s.date === demandDate.toISOString().split('T')[0]);
+        const index = shiftsSorted.findIndex(s => s.date === demandDateStr);
 
         if (vacationOfFetcher?.shift && vacationOfFetcher.shift.type !== "rest") {
             demandWithLimit.limit.push('alreadyWorking');
@@ -57,11 +68,6 @@ const categorize = async (demand, shiftsMap = null) => {
         const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
         const { workOk, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
 
-        // Additional Legal Checks
-        // const consecutiveDays = checkConsecutiveWorkDays(demand.posterShift.shift, demandDate, shiftsSorted);
-        // const nightControlRest = checkRestAfterNightControl(demand.posterShift.shift, demandDate, shiftsSorted);
-        // const consecutiveNight = checkConsecutiveNightControls(demand.posterShift.shift, demandDate, shiftsSorted);
-
         demandWithLimit.rest = {
             before: computeRest.restBefore,
             after: computeRest.restAfter
@@ -74,9 +80,6 @@ const categorize = async (demand, shiftsMap = null) => {
         if (!computeRest.ok) demandWithLimit.limit.push('insufficientRest');
         if (!restOk) demandWithLimit.limit.push('35limit');
         if (!workOk) demandWithLimit.limit.push('48hLimit');
-        // if (!consecutiveDays.ok) demandWithLimit.limit.push('consecutiveDaysLimit');
-        // if (!nightControlRest.ok) demandWithLimit.limit.push('nightControlRestLimit');
-        // if (!consecutiveNight.ok) demandWithLimit.limit.push('consecutiveNightLimit');
 
         return demandWithLimit;
     } catch (err) {
@@ -181,54 +184,70 @@ function checkMinimumRestTime (shiftsSorted, index) {
 
 
 function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
-    let restOk
     const invalidWindows35 = [];
 
-    for (let i = 0; i < 7; i++) {
-        restOk = false;
+    const targetDateNorm = new Date(Date.UTC(
+        new Date(targetDate).getUTCFullYear(),
+        new Date(targetDate).getUTCMonth(),
+        new Date(targetDate).getUTCDate()
+    ));
+
+    // 13 fenêtres : couvre les 7j qui contiennent la date cible et celles impactées après
+    for (let i = 0; i < 13; i++) {
+        let windowRestOk = false;
         let longestRest = 0;
         let longestRestStart = null;
         let longestRestEnd = null;
 
-        const windowStart = new Date(targetDate);
+        const windowStart = new Date(targetDateNorm);
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        const windowEnd = new Date(targetDate);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
-        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        windowStart.setUTCHours(0, 0, 0, 0);
+        const windowEnd = new Date(windowStart);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
+
+        const windowShifts = shiftsSorted
+            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) < windowEnd)
+            .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+        if (windowShifts.length === 0) {
+            windowRestOk = true;
+        }
 
         let lastEnd = new Date(windowStart);
 
         for (let j = 0; j < windowShifts.length; j++) {
             const s = windowShifts[j];
-            const restMinutes = (s.start - lastEnd) / (60 * 1000);
+            const shiftStart = new Date(s.start);
+            const shiftEnd = new Date(s.end);
+            const restMinutes = (shiftStart - lastEnd) / (60 * 1000);
 
             if (restMinutes > longestRest) {
                 longestRest = restMinutes;
-                longestRestStart = lastEnd;
-                longestRestEnd = s.start;
+                longestRestStart = new Date(lastEnd);
+                longestRestEnd = shiftStart;
             }
 
             if (restMinutes >= 35 * 60) {
-                restOk = true;
-                break
+                windowRestOk = true;
+                break;
             }
-            if (s.end > lastEnd) lastEnd = s.end;
 
-            // Vérifier s'il y a une période de repos de 35h entre le dernier shift et la fin de la fenêtre
+            if (shiftEnd > lastEnd) lastEnd = shiftEnd;
+
             if (j === windowShifts.length - 1) {
                 const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
                 if (restMinutesToEnd > longestRest) {
                     longestRest = restMinutesToEnd;
-                    longestRestStart = lastEnd;
-                    longestRestEnd = windowEnd;
+                    longestRestStart = new Date(lastEnd);
+                    longestRestEnd = new Date(windowEnd);
                 }
                 if (restMinutesToEnd >= 35 * 60) {
-                    restOk = true;
+                    windowRestOk = true;
                 }
             }
         }
 
-        if (!restOk) {
+        if (!windowRestOk) {
             invalidWindows35.push({
                 windowStart,
                 windowEnd,
@@ -239,50 +258,49 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
             if (!fullScan) break;
         }
     }
-    return { restOk, invalidWindows35 };
+
+    return { restOk: invalidWindows35.length === 0, invalidWindows35 };
 }
 
 function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
-    let workOk = true;
     const invalidWindows48 = [];
 
-    for (let i = 0; i < 7; i++) {
+    const targetDateNorm = new Date(Date.UTC(
+        new Date(targetDate).getUTCFullYear(),
+        new Date(targetDate).getUTCMonth(),
+        new Date(targetDate).getUTCDate()
+    ));
+
+    for (let i = 0; i < 13; i++) {
         let totalWorkMinutes = 0;
-        if (fullScan) {
-            workOk = true
-        }
-        const windowStart = new Date(targetDate);
+        let windowWorkOk = true;
+
+        const windowStart = new Date(targetDateNorm);
         windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        const windowEnd = new Date(targetDate);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + i + 1);
-        const windowShifts = shiftsSorted.filter(s => new Date(s.end) >= windowStart && new Date(s.start) <= windowEnd);
+        windowStart.setUTCHours(0, 0, 0, 0);
+        const windowEnd = new Date(windowStart);
+        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
+
+        const windowShifts = shiftsSorted
+            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) < windowEnd)
+            .sort((a, b) => new Date(a.start) - new Date(b.start));
 
         for (let j = 0; j < windowShifts.length; j++) {
             const s = windowShifts[j];
-            if (j === 0 && s.start < windowStart) {
-                const workMinutesToStart = (s.end - windowStart) / (60 * 1000);
-                totalWorkMinutes += workMinutesToStart;
-            }
-
-            else if (j === windowShifts.length - 1 && s.end > windowEnd) {
-                const workMinutesToEnd = (windowEnd - s.start) / (60 * 1000);
-                totalWorkMinutes += workMinutesToEnd;
-            }
-
-            else {
-                const workMinutes = (s.end - s.start) / (60 * 1000);
-                totalWorkMinutes += workMinutes;
-            }
+            const shiftStart = new Date(s.start);
+            const shiftEnd = new Date(s.end);
+            const clippedStart = shiftStart < windowStart ? windowStart : shiftStart;
+            const clippedEnd = shiftEnd > windowEnd ? windowEnd : shiftEnd;
+            const workMinutes = Math.max(0, (clippedEnd - clippedStart) / (60 * 1000));
+            totalWorkMinutes += workMinutes;
 
             if (totalWorkMinutes > 48 * 60) {
-                workOk = false;
+                windowWorkOk = false;
                 if (!fullScan) break;
             }
-
-
         }
 
-        if (!workOk) {
+        if (!windowWorkOk) {
             invalidWindows48.push({
                 windowStart,
                 windowEnd,
@@ -291,7 +309,8 @@ function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
             if (!fullScan) break;
         }
     }
-    return { workOk, invalidWindows48 };
+
+    return { workOk: invalidWindows48.length === 0, invalidWindows48 };
 }
 
 

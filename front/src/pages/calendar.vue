@@ -48,8 +48,6 @@ import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
-import SubstitutionForm from '@/components/Substitutions/SubstitutionForm.vue';
-import Donations from '@/components/Donations.vue';
 
 /** Constantes */
 const DIALOG_MODES = {

@@ -27,8 +27,8 @@ export const createUserService = async (userData) => {
         throw new AppError('Equipe non trouvée', 404);
     }
     const today = new Date();
-
     today.setUTCHours(0, 0, 0, 0);
+    
     user.teams.push({ teamId: firstTeam._id, fromDate: today, toDate: null });
 
     await user.save();

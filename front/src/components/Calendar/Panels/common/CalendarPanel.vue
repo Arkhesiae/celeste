@@ -51,11 +51,17 @@
     <div class="d-flex justify-end ga-2 mt-4 mb-4 position-relative">
       <v-slide-y-transition>
         <div v-if="disabled" class="text-error" style="position: absolute; top: 32px;">
-          <span style="font-size: 10px !important; opacity: 0.6;">Aucun shift valide</span>
+          <span style="font-size: 10px !important; opacity: 0.6;">{{ disabledReason }}</span>
         </div>
       </v-slide-y-transition>
 
-      <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex">
+      <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex flex-column ga-2 flex-grow-1">
+        <span v-if="pendingDemand" class="text-body-small text-medium-emphasis">
+          Votre demande est en attente
+        </span>
+        <span v-else-if="acceptedAsPoster?.length > 0" class="text-body-small text-medium-emphasis">
+          Vous êtes remplacé ce jour
+        </span>
         <v-btn color="error" height="36px" variant="tonal" class="flex-grow-1 d-flex flex-column rounded-xl text-none"
           @click="$emit('cancel', lastOwnDemand)">
           Annuler ma dernière demande
@@ -166,6 +172,7 @@ import { useSnackbarStore } from '@/stores/snackbarStore';
 import { entryTypes } from '@/utils/entryIcons';
 import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useDate } from 'vuetify';
+import { sameDateKey, toDateKey } from '@/utils/dateKey';
 
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
@@ -223,6 +230,17 @@ const isShift = computed(() => {
 const disabled = computed(() => {
   return isRestDay.value || inPast.value || isOff.value || !isShift.value
 });
+
+const disabledReason = computed(() => {
+  if (inPast.value) return 'Date passée'
+  if (isRestDay.value) return 'Jour de repos'
+  if (substitutionStore.hasAcceptedAsPoster(props.selectedDate)) {
+    return 'Vous êtes remplacé ce jour'
+  }
+  if (!isShift.value) return 'Aucun shift valide'
+  if (isOff.value) return 'Confirmez votre présence pour poster une demande'
+  return ''
+})
 
 const inPast = computed(() =>
   toDateKey(props.selectedDate) < toDateKey(new Date())

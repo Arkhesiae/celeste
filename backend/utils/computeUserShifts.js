@@ -5,6 +5,9 @@ import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
 import { CalendarEntry, Assignment, Modification, HourPatch } from '../models/CalendarEntry.js';
 import Shift from '../models/Shift.js';
+import Center from '../models/Center.js';
+import Rotation from '../models/Rotation.js';
+import { findLatestRotation } from './findLatestRotation.js';
 
 
 
@@ -107,6 +110,7 @@ const resolveAssignment = (baseShift, latestAssignment) => {
         return buildShiftResult(null, baseShift.shift, baseShift.team, baseShift)
     }
 
+    // Accepteur d'un rempla / assignation avec vacation concrète
     if (latestAssignment.shiftData?.shift) {
         return buildShiftResult(null, latestAssignment.shiftData.shift, latestAssignment.shiftData.team, baseShift, {
             isBaseShift: false,
@@ -115,13 +119,23 @@ const resolveAssignment = (baseShift, latestAssignment) => {
         })
     }
 
+    // Poster remplacé (shiftData null) ou absence : plus en poste, mais on conserve
+    // la vacation de base pour l'affichage (J4 + état off / remplacé).
+    const freedBySub = latestAssignment.subType === 'substitution'
+    const isAbsence = latestAssignment.subType === 'absence'
+
     return {
         type: latestAssignment.subType,
         isBaseShift: false,
-        isOff: latestAssignment.subType === 'absence',
-        shiftData: null,
-        startTime: latestAssignment.startTime,
-        endTime: latestAssignment.endTime,
+        isOff: freedBySub || isAbsence,
+        shiftData: {
+            shift: baseShift?.shift ?? null,
+            selectedVariation: null,
+            team: baseShift?.team ?? null,
+        },
+        startTime: latestAssignment.startTime ?? null,
+        endTime: latestAssignment.endTime ?? null,
+        baseShift,
     }
 }
 
@@ -208,6 +222,44 @@ const getActiveEntries = async (user, date) => {
     return { assignments, modifications, hoursPatches };
 }
 
+/** Charge toutes les entries actives sur une plage de dates, groupées par jour */
+const getActiveEntriesByDates = async (user, dateStrs) => {
+    const populateShiftData = (query) => query
+        .populate({ path: 'shiftData', populate: 'shift' })
+        .populate({ path: 'shiftData.shift', populate: 'variations' })
+        .populate({ path: 'shiftData.selectedVariation' })
+        .populate({ path: 'shiftData.team' });
+
+    const baseQuery = { userId: user._id, active: true, date: { $in: dateStrs } };
+
+    const [assignments, modifications, hoursPatches] = await Promise.all([
+        populateShiftData(Assignment.find(baseQuery)).sort({ createdAt: 1 }).lean(),
+        populateShiftData(Modification.find(baseQuery)).sort({ createdAt: 1 }).lean(),
+        HourPatch.find(baseQuery).sort({ createdAt: 1 }).lean(),
+    ]);
+
+    const byDate = Object.fromEntries(dateStrs.map((d) => [d, {
+        assignments: [],
+        modifications: [],
+        hoursPatches: [],
+    }]));
+
+    for (const a of assignments) {
+        const key = typeof a.date === 'string' ? a.date.slice(0, 10) : a.date;
+        if (byDate[key]) byDate[key].assignments.push(a);
+    }
+    for (const m of modifications) {
+        const key = typeof m.date === 'string' ? m.date.slice(0, 10) : m.date;
+        if (byDate[key]) byDate[key].modifications.push(m);
+    }
+    for (const h of hoursPatches) {
+        const key = typeof h.date === 'string' ? h.date.slice(0, 10) : h.date;
+        if (byDate[key]) byDate[key].hoursPatches.push(h);
+    }
+
+    return byDate;
+}
+
 const buildShiftResult = (dateStr, shift, team, baseShift, overrides = {}) => ({
     date: dateStr,
     type: shift ? 'shift' : "empty",
@@ -236,31 +288,99 @@ const computeUserShifts = async (dates, userId) => {
         }
 
         const dateArray = Array.isArray(dates) ? dates : [dates];
+        const normalizedDates = dateArray.map((rawDate) => {
+            const date = new Date(rawDate);
+            if (isNaN(date.getTime())) {
+                throw new Error(`Date invalide: ${rawDate}`);
+            }
+            return {
+                date,
+                dateStr: date.toISOString().split('T')[0],
+            };
+        });
+
+        const entriesByDate = await getActiveEntriesByDates(
+            user,
+            normalizedDates.map((d) => d.dateStr)
+        );
+
+        // Une rotation peuplée par équipe (évite N× aggregate + populate)
+        const rotationByTeamId = new Map();
+        const getPopulatedRotation = async (team, date) => {
+            const teamId = team._id?.toString?.() || String(team);
+            if (rotationByTeamId.has(teamId)) return rotationByTeamId.get(teamId);
+
+            const center = await Center.findById(team.center);
+            if (!center) {
+                rotationByTeamId.set(teamId, null);
+                return null;
+            }
+
+            let latestRotation = await findLatestRotation(center._id, date);
+            if (!latestRotation) {
+                rotationByTeamId.set(teamId, null);
+                return null;
+            }
+
+            if (latestRotation.days?.length > 0) {
+                const firstDay = latestRotation.days[0];
+                const needsPopulate = typeof firstDay === 'string' ||
+                    firstDay?.constructor?.name === 'ObjectId' ||
+                    firstDay?.constructor?.name === 'ObjectID' ||
+                    !firstDay?.default;
+                if (needsPopulate) {
+                    latestRotation = await Rotation.findById(latestRotation._id).populate({
+                        path: 'days',
+                        populate: { path: 'variations' }
+                    });
+                }
+            }
+
+            rotationByTeamId.set(teamId, latestRotation);
+            return latestRotation;
+        };
+        const shiftFromRotation = (team, date, rotation) => {
+            if (!rotation?.days?.length) return null;
+            const diffInDays = Math.floor(
+                (date - new Date(team.cycleStartDate)) / (1000 * 60 * 60 * 24)
+            );
+            const total = rotation.days.length;
+            const dayIndex = diffInDays >= 0
+                ? diffInDays % total
+                : (total - (Math.abs(diffInDays) % total)) % total;
+            return rotation.days[dayIndex] || null;
+        };
 
         const results = await Promise.all(
-            dateArray.map(async (rawDate) => {
-                const date = new Date(rawDate);
+            normalizedDates.map(async ({ date, dateStr }) => {
+                const teamOcc = user.teams?.length ? getTeamAtGivenDate(user.teams, date) : null;
+                const team = teamOcc?.teamId ?? null;
 
-                if (isNaN(date.getTime())) {
-                    throw new Error(`Date invalide: ${rawDate}`);
+                let baseShift = null;
+                if (team) {
+                    // Utilise la date max du batch pour résoudre la rotation active
+                    const pivotDate = normalizedDates[normalizedDates.length - 1].date;
+                    const rotation = await getPopulatedRotation(team, pivotDate);
+                    baseShift = shiftFromRotation(team, date, rotation);
                 }
 
-                const dateStr = date.toISOString().split('T')[0];
-
-                const { baseShift, team } = await getBaseShift(date, user);
-
-                const { assignments, modifications, hoursPatches } = await getActiveEntries(user, dateStr);
+                const { assignments, modifications, hoursPatches } = entriesByDate[dateStr]
+                    || { assignments: [], modifications: [], hoursPatches: [] };
 
                 if (!assignments.length && !modifications.length && !hoursPatches.length) {
-                    return buildShiftResult(dateStr, baseShift, team, baseShift, { isOff: baseShift?.optional ?? true })
+                    return buildShiftResult(dateStr, baseShift, team, baseShift, {
+                        isOff: Boolean(baseShift?.optional),
+                    });
                 }
 
-                else {
-                    const { resolvedShift, assignmentHistory } = applyEntries({ shift: baseShift, team }, assignments, modifications, hoursPatches);
+                const { resolvedShift, assignmentHistory } = applyEntries(
+                    { shift: baseShift, team },
+                    assignments,
+                    modifications,
+                    hoursPatches
+                );
 
-                    return { ...resolvedShift, date: dateStr, history: assignmentHistory, baseShift };
-                }
-
+                return { ...resolvedShift, date: dateStr, history: assignmentHistory, baseShift };
             })
         );
         return results;

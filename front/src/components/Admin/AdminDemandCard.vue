@@ -98,6 +98,20 @@
         </div>
       </div>
 
+      <div
+        v-if="demand?.comment"
+        class="d-flex align-start ga-2 mb-4 pa-3 rounded-lg"
+        style="background-color: rgba(var(--v-theme-onSurface), 0.04);"
+      >
+        <v-icon
+          icon="mdi-comment-text-outline"
+          size="16"
+          color="primary"
+          class="mt-1"
+        />
+        {{ demand?.comment }}
+      </div>
+
      
       
 
@@ -209,6 +223,7 @@
 import { useDate } from 'vuetify';
 import { API_URL } from '@/config/api';
 import LogoCopy from '@/components/Assets/LogoCopy.vue';
+import { getVisibleDemandComment } from '@/utils/demandComment';
 
 const props = defineProps({
   demand: {
@@ -221,6 +236,10 @@ const date = useDate();
 const timeSinceCreation = ref('');
 const showUserDialogModal = ref(false);
 const selectedUserData = ref(null);
+
+const visibleComment = computed(() =>
+  getVisibleDemandComment(props.demand?.comment)
+);
 
 // const posterUpdated = computed(() => props.demand?.posterId);
 // const accepterUpdated = computed(() => props.demand?.accepterId);

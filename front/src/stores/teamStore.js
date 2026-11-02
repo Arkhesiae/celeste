@@ -123,9 +123,12 @@ export const useTeamStore = defineStore('team', () => {
     try {
       loading.value = true;
       error.value = null;
-      await teamService.assignToTeam(userId, teamData);
+      // teamData peut contenir `confirmed` et `replaceOccurrenceId` ; 409 → { needsApproval: true, ... }
+      const result = await teamService.assignToTeam(userId, teamData);
+      if (result?.needsApproval) return result;
       await fetchTeamOccurrencesOfUser(userId);
       await fetchCurrentTeamOfUser(userId);
+      return result;
       // Fetch substitutions and vacations ?
     } catch (err) {
       error.value = err.message || 'Erreur lors de l\'attribution de l\'utilisateur à l\'équipe';
@@ -136,13 +139,15 @@ export const useTeamStore = defineStore('team', () => {
   };
 
 
-  const deleteTeamOccurrence = async (userId, occurrenceId) => {
+  const deleteTeamOccurrence = async (userId, occurrenceId, confirmed = false) => {
     try {
       loading.value = true;
       error.value = null;
-      await teamService.deleteTeamOccurrence(userId, occurrenceId);
+      const result = await teamService.deleteTeamOccurrence(userId, occurrenceId, confirmed);
+      if (result?.needsApproval) return result;
       await fetchTeamOccurrencesOfUser(userId);
       await fetchCurrentTeamOfUser(userId);
+      return result;
       // Fetch substitutions and vacations ?
     } catch (err) {
       console.error('Erreur détaillée:', err);

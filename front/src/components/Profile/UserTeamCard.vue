@@ -191,6 +191,9 @@
     text="Êtes-vous sûr de vouloir supprimer ce changement ? Cette action est irréversible." icon="mdi-delete-outline"
     icon-color="error" confirm-text="Supprimer" @confirm="confirmDelete"
     @update:is-dialog-visible="showConfirmationDialog = $event" />
+
+  <TeamChangeImpactDialog v-model="showImpactDialog" :approval="impactApproval" :loading="impactLoading"
+    @confirm="confirmDeleteWithImpact" @cancel="cancelImpact" />
 </template>
 
 <script setup>
@@ -203,6 +206,9 @@ const isHistoryRevealed = ref(false);
 const showInfo = ref(false);
 const showConfirmationDialog = ref(false);
 const occurrenceToDelete = ref(null);
+const showImpactDialog = ref(false);
+const impactApproval = ref(null);
+const impactLoading = ref(false);
 
 const promptDialog = (mode) => {
   emit('show-team-change-dialog', mode);
@@ -249,14 +255,39 @@ const handleDeleteOccurrence = (occurrenceId) => {
 
 const confirmDelete = async () => {
   try {
-    await teamStore.deleteTeamOccurrence(userId.value, occurrenceToDelete.value);
+    const result = await teamStore.deleteTeamOccurrence(userId.value, occurrenceToDelete.value);
 
+    // 409 : des demandes / entrées de calendrier seraient annulées → confirmation détaillée
+    if (result?.needsApproval) {
+      impactApproval.value = result;
+      showImpactDialog.value = true;
+      return;
+    }
+    occurrenceToDelete.value = null;
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'occurrence :', error);
+    occurrenceToDelete.value = null;
+  } finally {
+    showConfirmationDialog.value = false;
+  }
+};
+
+const confirmDeleteWithImpact = async () => {
+  try {
+    impactLoading.value = true;
+    await teamStore.deleteTeamOccurrence(userId.value, occurrenceToDelete.value, true);
   } catch (error) {
     console.error('Erreur lors de la suppression de l\'occurrence :', error);
   } finally {
-    showConfirmationDialog.value = false;
-    occurrenceToDelete.value = null;
+    impactLoading.value = false;
+    cancelImpact();
   }
+};
+
+const cancelImpact = () => {
+  showImpactDialog.value = false;
+  impactApproval.value = null;
+  occurrenceToDelete.value = null;
 };
 
 </script>

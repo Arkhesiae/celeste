@@ -375,7 +375,17 @@ export async function addSubstitutionEntries (demand) {
 
 
 // calendarEntryService.js
-export async function cancelSubstitutionEntries (demandId, { posterId, accepterId, date }) {
+/**
+ * Désactive les entrées de calendrier créées par une substitution (et celles qui les suivent) pour l'auteur
+ * et l'accepteur.
+ * @param {string} demandId
+ * @param {{ posterId, accepterId, date: Date }} params
+ * @param {Object} [opts]
+ * @param {ClientSession} [opts.session] - lectures et écritures dans la transaction. Dans ce cas les vacations
+ *   recalculées ne sont pas retournées (`posterShift` / `accepterShift` = null) : computeUserShifts ne lit pas
+ *   dans la session et verrait l'état d'avant les écritures ; à recalculer après le commit.
+ */
+export async function cancelSubstitutionEntries (demandId, { posterId, accepterId, date }, { session } = {}) {
     const dateStr = date.toISOString().split('T')[0];
 
     try {
@@ -386,7 +396,7 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
             active: true,
             subType: 'substitution',
             'substitution.id': demandId,
-        }, null, { sort: { createdAt: -1 } });
+        }, null, { sort: { createdAt: -1 }, session });
 
         const [posterSubEntry, accepterSubEntry] = await Promise.all([
             findSubEntry(posterId),
@@ -398,15 +408,18 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
             await Promise.all([
                 Assignment.updateMany(
                     { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
-                    { active: false }
+                    { active: false },
+                    { session }
                 ),
                 Modification.updateMany(
                     { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
-                    { active: false }
+                    { active: false },
+                    { session }
                 ),
                 HourPatch.updateMany(
                     { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
-                    { active: false }
+                    { active: false },
+                    { session }
                 ),
             ]);
         };
@@ -415,6 +428,10 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
             cancelAfter(posterId, posterSubEntry),
             cancelAfter(accepterId, accepterSubEntry),
         ]);
+
+        if (session) {
+            return { posterShift: null, accepterShift: null, updatedDemands: null, type: 'restoration' };
+        }
 
         const [posterShift, accepterShift] = await Promise.all([
             computeUserShifts([date], posterId),
@@ -428,6 +445,8 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
             type: 'restoration',
         };
     } catch (error) {
+        // Conserve l'étiquette TransientTransactionError (WriteConflict…) pour que withTransaction réessaie
+        if (error?.hasErrorLabel?.('TransientTransactionError')) throw error;
         throw new AppError("Erreur lors de l'annulation des entrées de substitution", 500);
     }
 }

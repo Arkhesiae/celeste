@@ -138,6 +138,9 @@
 
     <TeamChangeDialog :dialog-mode="dialogMode" :model-value="showTeamChangeDialog" @on-submit="handleTeamChange"
       @on-close="closeAddDialog" @update:model-value="showTeamChangeDialog = $event" />
+
+    <TeamChangeImpactDialog v-model="showImpactDialog" :approval="impactApproval" :loading="isLoading"
+      @confirm="confirmTeamChange" @cancel="cancelImpact" />
   </v-container>
 </template>
 
@@ -165,6 +168,9 @@ const pointStore = usePointStore();
 const transferDialog = ref(false);
 const dialogMode = ref('');
 const showTeamChangeDialog = ref(false);
+const showImpactDialog = ref(false);
+const impactApproval = ref(null);
+const pendingTeamChange = ref(null);
 const isLoading = ref(false);
 const isSticky = ref(false);
 const sentinel = ref(null);
@@ -227,14 +233,24 @@ const setHeaderWidth = () => {
 const handleTeamChange = async (data, conflictToReplace) => {
   try {
     isLoading.value = true;
-    if (conflictToReplace) {
-      await teamStore.deleteTeamOccurrence(userId.value, conflictToReplace._id);
-    }
-    await teamStore.assignUserToTeam(userId.value, {
+    // Le remplacement d'une occurrence en conflit part dans la même requête (aperçu d'impact exact)
+    const payload = {
       teamId: data.teamId,
       fromDate: data.fromDate,
       toDate: data.toDate,
-    });
+      replaceOccurrenceId: conflictToReplace?._id,
+    };
+    const result = await teamStore.assignUserToTeam(userId.value, payload);
+
+    // 409 : des demandes / entrées de calendrier seraient annulées → confirmation détaillée
+    if (result?.needsApproval) {
+      pendingTeamChange.value = payload;
+      impactApproval.value = result;
+      closeAddDialog();
+      showImpactDialog.value = true;
+      return;
+    }
+
     closeAddDialog();
     snackbarStore.showNotification(`Changement d'équipe validé à partir du ${data.fromDate.substring(0, 10)}`, 'onPrimary', "mdi-crowd");
   } catch (error) {
@@ -242,6 +258,28 @@ const handleTeamChange = async (data, conflictToReplace) => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const confirmTeamChange = async () => {
+  const payload = pendingTeamChange.value;
+  if (!payload) return;
+
+  try {
+    isLoading.value = true;
+    await teamStore.assignUserToTeam(userId.value, { ...payload, confirmed: true });
+    snackbarStore.showNotification(`Changement d'équipe validé à partir du ${payload.fromDate.substring(0, 10)}`, 'onPrimary', "mdi-crowd");
+    cancelImpact();
+  } catch (error) {
+    snackbarStore.showNotification(error.message, 'error');
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const cancelImpact = () => {
+  showImpactDialog.value = false;
+  impactApproval.value = null;
+  pendingTeamChange.value = null;
 };
 
 const handleTransferSuccess = () => {

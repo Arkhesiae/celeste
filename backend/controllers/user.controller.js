@@ -454,8 +454,9 @@ const getUsersAndGroupByTeam = async (req, res) => {
 const deleteTeamOccurrence = async (req, res, next) => {
     const { id, occurrenceId } = req.params;
     try {
-        const { changes } = await userTeamService.deleteTeamOccurrence(id, occurrenceId);
-        res.status(200).json({ message: "Occurrence supprimée avec succès", changes });
+        const result = await userTeamService.deleteTeamOccurrence(id, occurrenceId, { confirmed: req.query.confirmed === 'true' });
+        if (result.needsApproval) return res.status(409).json(result); // approbation requise : impact détaillé
+        res.status(200).json({ message: "Occurrence supprimée avec succès", changes: result.changes });
     } catch (err) {
         next(err);
     }
@@ -465,8 +466,10 @@ const deleteTeamOccurrence = async (req, res, next) => {
 const assignTeamToUser = async (req, res, next) => {
     const { id } = req.params;
     try {
-        const { changes } = await userTeamService.assignTeamToUser(id, req.body);
-        res.status(200).json({ message: "Équipe assignée avec succès", changes });
+        const { confirmed, replaceOccurrenceId, ...newTeam } = req.body;
+        const result = await userTeamService.assignTeamToUser(id, newTeam, { confirmed: confirmed === true, replaceOccurrenceId });
+        if (result.needsApproval) return res.status(409).json(result); // approbation requise : impact détaillé
+        res.status(200).json({ message: "Équipe assignée avec succès", changes: result.changes });
     } catch (err) {
         next(err);
     }

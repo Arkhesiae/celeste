@@ -1,4 +1,5 @@
 import Transaction from '../../models/Transaction.js';
+import Substitution from '../../models/Substitution.js';
 
 /**
  * Crée une transaction différée
@@ -27,8 +28,20 @@ const processPendingTransactions = async () => {
         effectiveDate: { $lt: startOfToday }
     }).populate('sender').populate('receiver');
 
+    // Une transaction liée à une demande ne s'exécute que si la demande est toujours acceptée ou terminée
+    const requestIds = [...new Set(pendingTransactions.filter(t => t.request).map(t => t.request.toString()))];
+    const liveRequests = new Set(
+        (await Substitution.find({ _id: { $in: requestIds }, status: { $in: ['accepted', 'completed'] } }).select('_id'))
+            .map(r => r._id.toString())
+    );
+
     for (const transaction of pendingTransactions) {
         try {
+            if (transaction.request && !liveRequests.has(transaction.request.toString())) {
+                transaction.status = 'cancelled';
+                await transaction.save();
+                continue;
+            }
             // Vérifier que l'expéditeur a toujours assez de points
             // if (transaction.type === "replacement" || transaction.type === "swap") {
             //     // Pour replacement/swap, le solde minimum autorisé est -20

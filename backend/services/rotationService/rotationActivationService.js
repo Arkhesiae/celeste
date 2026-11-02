@@ -197,33 +197,31 @@ const simulateDemandConversion = (populatedDemands, oldRotation, newRotation) =>
 
 const handleChanges = async (changes, centerId, message, session = null) => {
     try {
-        await Promise.all(
-            changes.map(async (change) => {
-                if (!change.oldRule && !change.newRule) {
-                    throw new AppError('Aucune rotation trouvée pour le changement.', 404);
+        // Séquentiel : une transaction MongoDB n'accepte pas d'opérations en parallèle sur la même session
+        for (const change of changes) {
+            if (!change.oldRule && !change.newRule) {
+                throw new AppError('Aucune rotation trouvée pour le changement.', 404);
+            }
+            const oldRotation = await Rotation.findById(change.oldRule).session(session).populate('days');
+            const newRotation = await Rotation.findById(change.newRule).session(session).populate('days');
+            const demandsToConvert = await getDemandsToConvert(change, centerId, session);
+
+            const oldRotationDaysCount = oldRotation?.days?.length || 0;
+            const newRotationDaysCount = newRotation?.days?.length || 0;
+
+            if (oldRotationDaysCount !== newRotationDaysCount || !newRotation) {
+                const cancelledCount = await systemCancelDemands(demandsToConvert, session);
+                message += ' - ' + cancelledCount + ' demandes annulées';
+            } else {
+                const result = await convertCenterDemands(demandsToConvert, oldRotation, newRotation, session);
+                if (result.converted > 0) {
+                    message += ' - ' + result.converted + ' demandes converties';
                 }
-                const oldRotation = await Rotation.findById(change.oldRule).session(session).populate('days');
-                const newRotation = await Rotation.findById(change.newRule).session(session).populate('days');
-                const demandsToConvert = await getDemandsToConvert(change, centerId, session);
-
-                const oldRotationDaysCount = oldRotation?.days?.length || 0;
-                const newRotationDaysCount = newRotation?.days?.length || 0;
-
-                if (oldRotationDaysCount !== newRotationDaysCount || !newRotation) {
-                    await systemCancelDemands(demandsToConvert, session);
-                    message += ' - ' + demandsToConvert.length + ' demandes annulées';
-                } else {
-                    const result = await convertCenterDemands(demandsToConvert, oldRotation, newRotation, session);
-                    if (result.converted > 0) {
-                        message += ' - ' + result.converted + ' demandes converties';
-                    }
-                    if (result.cancelled > 0) {
-                        message += ' - ' + result.cancelled + ' demandes annulées';
-                    }
+                if (result.cancelled > 0) {
+                    message += ' - ' + result.cancelled + ' demandes annulées';
                 }
-
-            })
-        );
+            }
+        }
         return message;
     } catch (err) {
         console.error('Erreur lors de la gestion du changement:', err);
@@ -369,23 +367,20 @@ const getDemandsToConvert = async (change, centerId, session = null) => {
     }).session(session);
 };
 
+/**
+ * Annule les demandes avec le même nettoyage qu'une annulation normale : cascade sur les demandes dépendantes,
+ * transactions de points en attente annulées, entrées de calendrier de substitution désactivées.
+ * @returns {Promise<number>} nombre de demandes annulées (cascade comprise)
+ */
 const systemCancelDemands = async (demands, session) => {
-    try {
-        const result = await Substitution.updateMany(
-            { _id: { $in: demands.map(demand => demand._id) } },
-            {
-                $set: {
-                    status: 'system-cancelled',
-                    updatedAt: new Date()
-                }
-            },
-            { session }
-        );
-        return result;
-    } catch (err) {
-        console.error('Erreur lors de l\'annulation des demandes:', err);
-        throw err;
+    const visited = new Set();
+    const cancelledRequests = [];
+
+    for (const demand of demands) {
+        await cancelRequestWithSession(demand._id, { session, visited, cancelledRequests, reason: 'system-cancelled' });
     }
+
+    return cancelledRequests.length;
 };
 
 

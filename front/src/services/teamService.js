@@ -93,8 +93,12 @@ export const teamService = {
     return response;
   },
 
-  async deleteTeamOccurrence(userId, occurrenceId) {
-    const response = await apiFetch(`/users/${userId}/team-occurrences/${occurrenceId}`, {
+  /**
+   * Supprime une occurrence d'équipe. Sans `confirmed`, la réponse peut être `{ needsApproval: true, ... }`
+   * (409) si des demandes ou entrées de calendrier seraient annulées.
+   */
+  async deleteTeamOccurrence(userId, occurrenceId, confirmed = false) {
+    const response = await apiFetch(`/users/${userId}/team-occurrences/${occurrenceId}${confirmed ? '?confirmed=true' : ''}`, {
       method: 'DELETE',
     });
     return response;

@@ -1,8 +1,10 @@
 # Blocking issues audit
 
 Audit date: 2026-11-02. Branch: `cherry-picking` (working tree, with uncommitted changes).
-Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited.
-Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database, and no fixes were applied.
+Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited, except where noted.
+Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database.
+
+This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed issues.
 
 Severity: **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug that will break a code path.
 
@@ -10,29 +12,8 @@ Severity: **P0** = the app cannot run or is trivially compromised; **P1** = seri
 
 ## P0 — Fix before any deploy
 
-### 1. The server does not start (broken import) — FIXED
-`backend/controllers/rotation.controller.js:7`
-
-```js
-import AppError from '../errors/AppError.js';   // wrong folder AND wrong export style
-```
-
-The folder is `backend/error/` (not `errors/`), and `AppError` is a **named** export (`export class AppError`), not a default export. Because `routes/index.js` → `rotations.routes.js` → this controller, `server.js` crashes at import time.
-Verified: `import('./routes/index.js')` fails with `ERR_MODULE_NOT_FOUND`.
-Likely cause: the uncommitted rename `appError.js → AppError.js` / folder refactor was applied only partly.
-**Fix:** `import { AppError } from '../error/AppError.js';`
-**Status:** fixed. A second startup crash sat behind it: `rotations.routes.js` referenced `confirmAddActivationDate` / `confirmRemoveActivationDate`, which no longer exist in the controller (merged into `addActivationDate` / `removeActivationDate` via a `confirmed` flag). The `/confirm-*` routes now call those handlers with `confirmed: true`, so the front end is unchanged. `routes/index.js` imports cleanly.
-
-### 2. Center admin accounts get a guessable password on every boot — FIXED (rotate existing accounts)
-`backend/utils/seedAdmin.js` (`createLocalAdmin`, called unconditionally from `server.js` after the Mongo connect)
-
-For every center, it upserts a user `admin-<oaci>@celeste-app.fr` with `isAdmin: true`, `adminType: 'local'`, `points: MAX_SAFE_INTEGER` and the password **`admin-<oaci>`**. On existing accounts it `Object.assign`s over the document, so:
-- anyone who knows a center's OACI code (public, and listed by `GET /api/center`) can log in as that center's admin in production;
-- any password a real admin sets is **reset on the next restart**.
-
-`seedDefaultConfig.js:328,340` also hardcodes `password: 'user'` / `'admin-lfbb'` (acceptable only if strictly dev, see #5).
-**Status:** `createLocalAdmin` now requires `LOCAL_ADMIN_PASSWORD`; without it, no account is created or touched. New admins get the password `<LOCAL_ADMIN_PASSWORD>-<oaci>`, and existing accounts keep their password. Existing production accounts still have the old `admin-<oaci>` password until it is changed by hand.
-**Original recommendation:** remove `createLocalAdmin` from the production boot path (gate it on a non-production `NODE_ENV`, and never overwrite an existing user's password). Rotate any local admin passwords currently in production.
+### 2. Local admin passwords already in production (residual)
+`createLocalAdmin` now requires `LOCAL_ADMIN_PASSWORD` and no longer overwrites existing passwords, so existing production accounts `admin-<oaci>@celeste-app.fr` still have the old guessable password `admin-<oaci>` until changed by hand: **rotate them**. Also, `utils/seedDefaultConfig.js:328,340` hardcodes `password: 'user'` / `'admin-lfbb'` (acceptable only if strictly dev; see #5 and the `ensureDev` guard in `dev.routes.js`).
 
 ### 3. Center management API has no authentication
 `backend/routes/center.routes.js` — no `verifyToken`/`isAdmin` anywhere.
@@ -58,6 +39,9 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 - The JVM crash/replay logs may contain environment variables and local paths. I did not inspect their contents; review before keeping.
 - `.gitignore` lists `.env`, yet the file is still tracked, because it was added before the ignore rule.
 **Fix:** `git rm --cached` these files, rotate the Mongo credentials, review the logs for secrets, and set `StrictHostKeyChecking` to `accept-new` or `yes`. Rewriting history (a `git-filter-repo` dependency is already in the root `package.json`) is optional once the secrets are rotated.
+
+### 27. Rotation change: confirming from the UI always fails
+`front/src/pages/rotation.vue:362,386` store the pending change as `{ type, rotationId, date, changes, centerId }`, but `confirmChange` (line 398) destructures `{ type, rotation, date, centerId }`. `rotation` is `undefined`, so the confirm call goes to `/rotations/undefined/confirm-activate` (or `confirm-remove-activate`) and the backend answers 400 "ID de rotation invalide". Any activation change that needs approval (which is every change that alters the effective timeline) can therefore not be applied from the UI. **Fix:** read `rotationId` (and reset with the same key in `cancelActivation`).
 
 ---
 
@@ -90,55 +74,82 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ### 11. Oversized request bodies and file uploads
 `server.js` sets `express.json({ limit: '50mb' })` globally, unauthenticated. The avatar upload (`user.routes.js`) trusts the client: any file is saved with a `.png` extension and no MIME check, into `public/avatars`, which is served statically. Reduce the global limit, validate MIME type and magic bytes, and consider re-encoding images.
 
+### 20. Team-change endpoints: cross-center destructive access and data oracle (extends #9)
+`POST /api/users/:id/assign-team` and `DELETE /api/users/:id/team-occurrences/:occurrenceId` (`routes/user.routes.js:71-72`) are protected only by `isUserOrAdmin`: **any admin of any center** can call them for **any user**. Since the team-change work, these calls really execute `sanitizeUserPeriod` (cancel/withdraw substitutions, including other users' cascaded requests, and deactivate calendar entries) instead of throwing, so the impact of #9 is now destructive, not just a data change.
+- **Read oracle:** calling without `confirmed` returns the 409 payload for the chosen period: the victim's substitutions (dates, status, poster/accepter full names) and calendar entries. Anyone allowed to call it can probe any user. If the chosen change affects nothing, it is applied immediately without any confirmation.
+- **`checkUserCenter` fails open on these routes:** it reads `req.params.userId || req.body.userId`, but these routes use `:id`, so adding it as-is would silently pass (`if (!targetUserId) return next()`). The same silent bypass already affects `GET /:id/team-at`.
+- A regular user acting on themselves can also see names from cascaded requests of other users in the preview (`previewUserPeriodImpact` populates dependent requests' poster/accepter).
+**Fix:** a center-scoped guard keyed on `:id` (target user's `centerId` equals the caller's, except master admin) on every `/:id/...` route, with fail-closed behaviour when the target user is missing; restrict cascade names to the caller's own requests or to admins of that center.
+
+### 21. Production MongoDB is a standalone server but team changes now require transactions
+`inTransaction` in `services/user/user.team.js` (and `user.sanitizePeriod.js`) uses `session.withTransaction`, which fails on a standalone `mongod` ("Transaction numbers are only allowed on a replica set member or mongos"). The root `docker-compose.yml` (production) starts `mongo:8.0` with `--bind_ip_all --port 27017` and **no `--replSet`**; only `backend/docker-compose.yml` (dev) sets `--replSet rs0`. If production really runs this way, every team assignment/removal now returns 500, where it previously only saved the user (the substitution cancel/withdraw/accept flows already depend on transactions and would be failing too). **Fix:** confirm production topology; run a single-node replica set in production (`--replSet` + `rs.initiate`) or add a non-transactional fallback.
+
+### 30. `deleteRotation` checks the wrong rotation for "currently active"
+`controllers/rotation.controller.js` (`deleteRotation`) looks for the active rotation with an aggregate that has **no `centerId` filter**, so it compares against the most recently activated rotation of *all* centers: a center's currently active rotation can be deleted (or a deletable one refused) depending on other centers. It also only blocks rotations that are active now or have future activations: deleting one that was active in the past rewrites history (`findLatestRotation` ignores deleted rotations, so past days are recomputed from an earlier rotation, and completed substitutions point to deleted shifts). **Fix:** filter by the rotation's `centerId` and refuse deletion while the rotation has any activation date (or soft-delete while keeping history resolvable).
+
+### 31. `updateDayInRotation` edits shifts in place with no approval or conversion
+`PUT /:id/day` mutates the `Shift` (times, points, type, name, variations) of a rotation that may be active, retroactively changing every user's planning and the shifts referenced by open, accepted and completed substitutions, without any preview, demand re-evaluation or compatibility check. Also: setting a day to `rest` is silently ignored (the whole update block is skipped but 200 is returned); and the variation clean-up `Variation.deleteMany({ _id: { $nin: newList, $in: shift.variations } })` is a no-op because `shift.variations` was already reset to the new list, so removed variations are orphaned. **Fix:** refuse (or route through the same approval flow) edits to rotations that have activation dates; delete variations against the previous list.
+
 ---
 
 ## P2 — Latent runtime errors (code paths that will throw)
 
-### 12. `next` used but never declared (15+ handlers) — FIXED
-The handlers are `async (req, res) =>` but their `catch` calls `next(error)`. In Express 5 the resulting `ReferenceError` becomes a generic 500 and **replaces the real `AppError` status and message** (404/400/403 all turn into 500).
+### 13. Undefined identifier in `categorizeDemand_v2.js`
+`utils/categorizeDemand_v2.js:734` uses `localShiftsSorted`, but the `simulateInsertShift(...)` line that defines it is commented out (`checkConsecutiveNightControls`). It throws a `ReferenceError` whenever that check runs for a work shift. Unfinished code, not a missing import: needs the intended logic.
 
-| File | Lines |
-|---|---|
-| `controllers/accountRecovery.controller.js` | 11, 21, 38 |
-| `controllers/announcement.controller.js` | 74, 107, 179, 213, 266, 294 |
-| `controllers/calendarEntry.controller.js` | 82, 156, 171 |
-| `controllers/message.controller.js` | 15, 52, 74, 90 |
-| `controllers/otp.controller.js` | 55, 85 |
-| `controllers/recovery.controller.js` | 44 (`fetchLegacyUser`) |
-| `controllers/rotation.controller.js` | 264, 309, 352, 375 |
-| `controllers/user.controller.js` | 28 (`createUser`, also used as middleware in `/account-recovery/recover`) |
+### 26. `addSubstitutionEntries` ignores the Mongo session (same defect as the fixed #15)
+`services/calendarEntry/calendar-entry.js:308` takes only `(demand)`, but `request.internal.js:174` calls `addSubstitutionEntries(request, { session })`: its reads, `updateOne`s and saves run outside the acceptance transaction and cannot be rolled back. Fix like `cancelSubstitutionEntries`: accept `{ session }`, pass it to every query/save, and avoid recomputing shifts inside the transaction (the caller uses `accepterShift` from its result, so that return value needs to be computed after commit).
 
-**Status:** fixed. `next` added to 23 handler signatures; `getMailList` in `announcement.controller.js` is a helper, not a handler, so it now rethrows instead of calling `next`.
+### 17. Front production build fails: missing `@/utils/demandComment`
+`front/src/components/Admin/AdminDemandCard.vue` imports `@/utils/demandComment`, which does not exist (`vite build` stops with `ENOENT`). Found while verifying the team-change dialog; unrelated to it and not fixed. Also, `vite build` warns that an `@import url(...)` in a stylesheet is not at the top of the file (the DM Serif Display font import is ignored).
 
-### 13. Undefined identifiers in services (ReferenceError when reached) — partly fixed
-Fixed: `cancelRequestWithSession`, `User` (request.internal.js), `scheduledTransactionService`. Still open: `user.team.js` and `categorizeDemand_v2.js` (unfinished code, not missing imports).
-Found by an ESLint `no-undef` pass:
+### 18. Dead conflict dialogs in the team UI
+`UserTeamCard.vue` (template lines ~157-188) and `TeamChangeDialog.vue` (~193-222) render a "Conflits détectés" dialog using `substitutionConflicts` / `handleDeleteAndSubmit`, which are not defined in `UserTeamCard.vue`'s script (and `substitutionConflicts` is also missing in `TeamChangeDialog.vue`); `showConflictDialog` is never set to true. Superseded by the server-driven 409 flow, safe to delete once confirmed.
 
-| File | Line | Missing |
-|---|---|---|
-| `services/rotationService/rotationActivationService.js` | 271 | `cancelRequestWithSession` (not imported) |
-| `services/substitution/request.internal.js` | 110 | `User` (not imported) |
-| `services/substitution/request.mutations.utils.js` | 9 | `scheduledTransactionService` (not imported) |
-| `services/user/user.team.js` | 110-111 | `cancelModification`, `cancelSubstitution` |
-| `services/user/user.team.js` | 163 | `Modification`, `userId` |
-| `utils/categorizeDemand_v2.js` | 734 | `localShiftsSorted` (the same bug exists at line 427 of the old v1 file) |
+### 19. `teams.vue` passes a string to `assignUserToTeam`
+`front/src/pages/center/[centerId]/teams.vue:383` calls `teamStore.assignUserToTeam(user._id, team._id)` but the store/service expect an object `{ teamId, fromDate, toDate }`. Not verified at runtime; likely returns 400.
 
-These sit on rotation activation, the substitution cleanup cron (every 30 minutes) and team assignment, so they affect core flows once the server boots. `request.internal.js` is the code run by the cron job, so expect scheduled-job errors in the logs.
+### 22. The `confirmed` flag is advisory and not bound to what was previewed
+(The rotation activation flow behaves the same: `/activate` accepts `confirmed: true` directly and the confirm path recomputes the changes instead of applying the previewed ones.)
+The client may send `confirmed: true` (body / `?confirmed=true`) at any time; the server does not check that the caller saw the impact. Between the 409 preview and the confirmation, new substitutions or entries can appear and be cancelled without the user having seen them. Not a privilege issue (the caller is already authorised), but the safeguard is only UX. **Fix (optional):** return an `impactHash` in the 409 and require it with `confirmed`; recompute inside the transaction and answer 409 again if it differs.
 
-### 14. Half-finished cleanup in the working tree
-- `routes/workshift.routes.js` is staged for deletion, and it imports a controller that does not exist (`workshiftController.js`); it is not mounted, so no runtime impact.
-- `backend/deprecated/*` imports `models/Notification.js`, which does not exist (dead code, safe to delete as intended).
-- `utils/categorizeDemand.js` and `utils/convertToCenterTime.js` are staged as deleted but still exist on disk; nothing imports them. Finish the deletion or restore them.
+### 23. Third parties are affected without notice
+Cancelling a poster's accepted request removes the accepter's shift swap, pending point transactions are cancelled, and cascaded requests of unrelated users are cancelled, with **no email or notification** (`sanitizeUserPeriod` deliberately sends none). Integrity/consent concern rather than a vulnerability: affected users learn about it only by noticing their calendar changed. **Fix:** notify the counterpart (reuse `sendCancelledAcceptanceEmail` / a cancellation mail) after commit.
+
+### 24. Input validation gaps on the team-change body
+- No `toDate >= fromDate` check: an inverted occurrence is stored and silently ignored by the segment logic (`buildTeamSegments`), leaving confusing data.
+- `teamId` / `:id` / `occurrenceId` that are not valid ObjectIds raise Mongoose `CastError`s; `errorHandler` returns `err.message` for 500s, so schema/internal details reach the client.
+- The exported helpers (`sanitizeUserPeriod`, `previewUserPeriodImpact`) put `userId` straight into query objects. Safe today (callers pass `user._id`), but a future caller passing `req.body` values would allow operator injection (`{ "$ne": null }`). Coerce with `new mongoose.Types.ObjectId(...)` inside the helpers.
+
+### 25. Amplification: unbounded cascade lookup, no rate limiting
+`previewUserPeriodImpact` walks `dependsOn` children one query at a time (N+1, guarded against cycles), and a period without `to` matches all future rows. With no rate limiting (#8), repeated previews are cheap to trigger and comparatively expensive to serve. **Fix:** rate-limit these routes, batch the cascade lookup (`$in` per level), and cap the number of returned items.
+
+### 33. Rotation change: errors swallowed inside the transaction
+In `convertCenterDemands`, `cancelRequestWithSession` and `withdrawFromRequestWithSession` are wrapped in `try/catch` that only logs, and the code then logs success and counts the demand. A database error aborts the transaction server-side (later operations or the commit then fail with a confusing message); a logic error leaves the demand unconverted while the user is told otherwise. After `withdrawFromRequestWithSession` the code also calls `populatedDemand.save()` on an in-memory document that is stale relative to what the withdraw saved (possible `VersionError` when `acceptedSwitches` is replaced). **Fix:** let errors propagate (abort and report), re-read the demand after a withdraw.
+
+### 34. Same-date activations are ambiguous and the period diff mis-dedupes dates
+Nothing prevents activating two different rotations on the same date. `findLatestRotation` and `findChangedPeriods` then break the tie arbitrarily; verified on the real function: activations `[A, B]` on one day give **no change** while `[B, A]` give a change A→B (and the latter yields two zero-length duplicate periods). Cause: `new Set(...map(a => a.activationDate))` dedupes `Date` objects by reference, not value. **Fix:** reject a second activation on an existing date for the center, and dedupe with `getTime()`.
+
+### 35. Rotation change leaves stale variations and calendar entries
+Converted demands keep `posterShift.selectedVariation` pointing at a variation of the old shift. Calendar entries are never touched by a rotation change (unlike team changes): an accepted substitution's accepter assignment stores the old `shiftData.shift`, which `computeUserShifts` applies directly, so after conversion the calendar can show the old shift while the demand shows the new one; Modifications/HourPatches on old shift ids are ignored by the consistency check and accumulate. **Fix:** on conversion, reset or remap `selectedVariation`, and remap or deactivate the affected entries.
+
+### 36. Rotation flow, smaller defects
+- Removing a date that does not exist succeeds silently (`$pull` is a no-op and still returns the document), so the "Aucune activation trouvée" error can never fire.
+- `GET /rotations/active-at-date` always returns `null`/errors: it passes `req.centerId` (never set) and indexes `rotations[0]` on a function that already returns a single object. The front end does not call it.
+- Retroactive activation changes also convert/cancel past demands that the cron has not archived yet.
+- Rotation reads (`GET /rotations/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are, see `middleware/rotationAuth.js`).
+- `saveRotation` throws a 500 when `days` is missing; the `days` branch of `updateRotation` is dead (commented out).
 
 ---
 
 ## Suggested order of work
-1. #1 (unblocks everything else), then #12 and #13 so the app can be exercised end to end.
-2. #2, #3, #4, #5 before the next production deploy; rotate credentials in parallel.
-3. #6-#9 next sprint; #10-#11 as hardening.
+0. #27 (one-line front fix; without it rotation changes cannot be applied).
+1. #3, #4, #5 and #20 (center authorization on the team routes) before the next production deploy; confirm #21 (replica set) first; rotate credentials (#2, #5) in parallel.
+2. #17 (front build) and #13 so the app can be exercised end to end.
+3. #30-#31; #6-#9 next sprint; #10-#11 and #22-#25 as hardening; #18, #19, #26, #33-#36 as cleanup.
 
 ## Not covered
-- `front/` (auth storage in the browser, Capacitor config, XSS in rendered content).
-- Runtime behaviour: no tests exist (`npm test` is a stub), and I could not exercise the app against MongoDB.
+- `front/` beyond the issues listed above (auth storage in the browser, Capacitor config, XSS in rendered content).
+- Runtime behaviour: no tests exist (`npm test` is a stub), and the app was never exercised against MongoDB (including the new team-change approval flow and the period helpers).
 - Business-rule correctness of the shift/substitution computation.
 - Docker/nginx configuration beyond the files already noted.

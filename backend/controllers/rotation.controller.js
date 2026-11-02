@@ -585,13 +585,8 @@ const updateRotation = async (req, res) => {
             rotation.name = updatedData.name;
         }
 
-        if (updatedData.centerId) {
-            rotation.centerId = updatedData.centerId;
-        }
-
-        if (updatedData.activationDates) {
-            rotation.activationDates = updatedData.activationDates;
-        }
+        // `centerId` et `activationDates` ne sont volontairement pas modifiables ici : changer de centre ou
+        // d'activation passe par les routes d'activation (aperçu, approbation, conversion des demandes).
 
         // // Mettre à jour les jours (shifts) si fournis
         if (updatedData.days) {

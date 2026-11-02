@@ -4,6 +4,13 @@ import {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} fro
 
 const router = express.Router();
 
+// Les anciens endpoints /confirm-* sont conservés pour le front : ils réutilisent
+// les handlers fusionnés add/removeActivationDate avec `confirmed: true`.
+const asConfirmed = (handler) => (req, res, next) => {
+  req.body = { ...req.body, confirmed: true };
+  return handler(req, res, next);
+};
+
 // Routes publiques
 router.get('/', verifyToken, rotationController.getAllRotations);
 router.get('/center/:centerId', verifyToken, rotationController.getRotationsByCenter);
@@ -19,11 +26,11 @@ router.delete('/:id', verifyToken, isAdmin, rotationController.deleteRotation);
 
 router.post('/:id/activate', verifyToken, isAdmin, rotationController.addActivationDate);
 
-router.post('/:id/confirm-activate', verifyToken, isAdmin, rotationController.confirmAddActivationDate);
+router.post('/:id/confirm-activate', verifyToken, isAdmin, asConfirmed(rotationController.addActivationDate));
 
 router.post('/:id/remove-date', verifyToken, isAdmin, rotationController.removeActivationDate);
 
-router.post('/:id/confirm-remove-activate', verifyToken, isAdmin, rotationController.confirmRemoveActivationDate);
+router.post('/:id/confirm-remove-activate', verifyToken, isAdmin, asConfirmed(rotationController.removeActivationDate));
 
 router.put('/:id/day', verifyToken, isAdmin, rotationController.updateDayInRotation);
 

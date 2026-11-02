@@ -3,7 +3,7 @@ import Team from '../models/Team.js';
 import Center from '../models/Center.js';
 import { AppError } from '../error/AppError.js';
 
-export const fetchLegacyUser = async (req, res) => {
+export const fetchLegacyUser = async (req, res, next) => {
     try {
         const { login, center } = req.query;
         if (!login || !center) {

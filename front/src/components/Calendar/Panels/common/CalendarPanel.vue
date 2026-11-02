@@ -210,12 +210,6 @@ const emit = defineEmits(['openRemplaDialog', 'openDrawer', 'cancel', 'openAbsen
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const toDateKey = (d) => {
-  if (!d) return null;
-  const s = typeof d === 'string' ? d : d?.toISOString?.();
-  return s?.slice(0, 10) ?? null;
-};
-
 const getVacation = computed(() => {
   if (!props.selectedDate) return null;
   return shiftStore.persistentVacationsMap.get(toDateKey(props.selectedDate));

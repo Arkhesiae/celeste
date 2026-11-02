@@ -2,7 +2,7 @@ import Rotation from '../../models/Rotation.js';
 import Substitution from '../../models/Substitution.js';
 import mongoose from 'mongoose';
 import { AppError } from '../../error/AppError.js';
-import { withdrawFromRequestWithSession } from '../substitution/request.internal.js';
+import { withdrawFromRequestWithSession, cancelRequestWithSession } from '../substitution/request.internal.js';
 
 
 

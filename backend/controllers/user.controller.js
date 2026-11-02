@@ -20,7 +20,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Créer un nouvel utilisateur
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
     try {
         const user = await createUserService(req.body);
         res.json({ status: 'Utilisateur créé avec succès.', user: user });

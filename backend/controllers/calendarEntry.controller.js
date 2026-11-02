@@ -61,7 +61,7 @@ const restoreInitialShift = async (req, res, next) => {
 };
 
 // Obtenir les modifications d'un utilisateur pour une date donnée
-const getUserEntries = async (req, res) => {
+const getUserEntries = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { date } = req.body;
@@ -139,7 +139,7 @@ const remove = async (req, res, next) => {
 };
 
 // Supprimer une modification
-const deleteModification = async (req, res) => {
+const deleteModification = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.userId;
@@ -158,7 +158,7 @@ const deleteModification = async (req, res) => {
 };
 
 // Obtenir une modification spécifique
-const getModification = async (req, res) => {
+const getModification = async (req, res, next) => {
     try {
         const { id } = req.params;
         const userId = req.user.userId;

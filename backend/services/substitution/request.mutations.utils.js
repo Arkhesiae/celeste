@@ -6,7 +6,7 @@ export const cancelPendingTransactions = async (requestId, { session } = {}) => 
     if (transactions.length > 0) {
         await Promise.all(transactions.map(async (transaction) => {
             try {
-                await scheduledTransactionService.cancelScheduledTransation(transaction._id, { session });
+                await cancelScheduledTransation(transaction._id, { session });
             } catch (error) {
                 console.error(`Erreur lors de l'annulation de la transaction ${transaction._id}:`, error);
             }

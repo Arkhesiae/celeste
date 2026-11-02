@@ -59,7 +59,7 @@ import { AppError } from '../error/AppError.js';
 /**
  * Récupère le nombre total d'utilisateurs pour l'envoi en masse
  */
-const getUserCount = async (req, res) => {
+const getUserCount = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.userId);
 
@@ -104,13 +104,13 @@ const getMailList = async (testMode, isGlobal, centerId) => {
     }
 
   } catch (error) {
-    next(error);
+    throw error;
   }
 };
 /**
  * Envoie un email d'annonce en masse
  */
-const sendAnnouncement = async (req, res) => {
+const sendAnnouncement = async (req, res, next) => {
   try {
     const { title, message, isGlobal, centerId, testMode = false } = req.body;
 
@@ -183,7 +183,7 @@ const sendAnnouncement = async (req, res) => {
 /**
  * Récupère l'historique des annonces envoyées
  */
-const getHistory = async (req, res) => {
+const getHistory = async (req, res, next) => {
   try {
     const { page = 1, limit = 20, sortBy = 'sentAt', sortOrder = 'desc' } = req.query;
 
@@ -217,7 +217,7 @@ const getHistory = async (req, res) => {
 /**
  * Récupère les statistiques des annonces
  */
-const getStats = async (req, res) => {
+const getStats = async (req, res, next) => {
   try {
     const stats = await Announcement.aggregate([
       {
@@ -270,7 +270,7 @@ const getStats = async (req, res) => {
 /**
  * Supprime une annonce de l'historique
  */
-const deleteAnnouncement = async (req, res) => {
+const deleteAnnouncement = async (req, res, next) => {
   try {
     const { id } = req.params;
 

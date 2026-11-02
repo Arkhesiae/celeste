@@ -2,7 +2,7 @@ import AccountRecoveryRequest from '../models/AccountRecoveryRequest.js';
 import { AppError } from '../error/AppError.js';
 
 
-export const createRequest = async (req, res) => {
+export const createRequest = async (req, res, next) => {
   try {
     const request = new AccountRecoveryRequest(req.body);
     await request.save();
@@ -12,7 +12,7 @@ export const createRequest = async (req, res) => {
   }
 };
 
-export const getAllRequests = async (req, res) => {
+export const getAllRequests = async (req, res, next) => {
   try {
     const requests = await AccountRecoveryRequest.find()
       .sort({ createdAt: -1 });
@@ -23,7 +23,7 @@ export const getAllRequests = async (req, res) => {
 };
 
 
-export const updateRequestStatus = async (req, res) => {
+export const updateRequestStatus = async (req, res, next) => {
   try {
     const request = await AccountRecoveryRequest.findByIdAndUpdate(
       req.params.id,

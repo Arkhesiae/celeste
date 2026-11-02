@@ -7,7 +7,7 @@ const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
-export const sendOtp = async (req, res) => {
+export const sendOtp = async (req, res, next) => {
   try {
     const { email } = req.body;
 
@@ -56,7 +56,7 @@ export const sendOtp = async (req, res) => {
   }
 };
 
-export const verifyOtp = async (req, res) => {
+export const verifyOtp = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
 

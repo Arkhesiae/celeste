@@ -4,7 +4,7 @@ import Shift from '../models/Shift.js';
 import Variation from '../models/Variation.js';
 import { isValidDate, isValidId } from '../utils/validation.js';
 import rotationActivationService from '../services/rotationService/rotationActivationService.js';
-import AppError from '../errors/AppError.js';
+import { AppError } from '../error/AppError.js';
 const POINTS_PER_HOUR = 1;
 const BASE_VALUE = 2;
 
@@ -255,7 +255,7 @@ const getAllRotationsWithStatus = async (req, res) => {
 };
 
 // Obtenir le tour de service actif à une date donnée
-const getActiveRotationAtDate = async (req, res) => {
+const getActiveRotationAtDate = async (req, res, next) => {
     try {
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const rotations = await findLatestRotation(req.centerId, date);
@@ -266,7 +266,7 @@ const getActiveRotationAtDate = async (req, res) => {
 };
 
 // Supprimer un tour de service
-const deleteRotation = async (req, res) => {
+const deleteRotation = async (req, res, next) => {
     const { id } = req.params;
 
     try {
@@ -331,7 +331,7 @@ const validateActivationRequest = async (id, activationDate) => {
 };
 
 // Ajouter (ou prévisualiser l'ajout d') une date d'activation
-const addActivationDate = async (req, res) => {
+const addActivationDate = async (req, res, next) => {
     const { id } = req.params;
     const { activationDate, confirmed = false } = req.body;
 
@@ -354,7 +354,7 @@ const addActivationDate = async (req, res) => {
 };
 
 // Supprimer (ou prévisualiser la suppression d') une date d'activation
-const removeActivationDate = async (req, res) => {
+const removeActivationDate = async (req, res, next) => {
     const { id } = req.params;
     const { activationDate, confirmed = false } = req.body;
 

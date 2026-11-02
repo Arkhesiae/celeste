@@ -3,7 +3,7 @@ import User from '../models/User.js';
 import { AppError } from '../error/AppError.js';
 
 // Récupérer tous les messages
-const getMessages = async (req, res) => {
+const getMessages = async (req, res, next) => {
   try {
     const messages = await Message.find()
       .sort({ createdAt: -1 })
@@ -17,7 +17,7 @@ const getMessages = async (req, res) => {
 };
 
 // Créer un nouveau message
-const createMessage = async (req, res) => {
+const createMessage = async (req, res, next) => {
   try {
     const { adminId, type, subject, email, message } = req.body;
 
@@ -54,7 +54,7 @@ const createMessage = async (req, res) => {
 };
 
 // Marquer un message comme lu
-const markAsRead = async (req, res) => {
+const markAsRead = async (req, res, next) => {
   try {
     const message = await Message.findById(req.params.id);
     
@@ -76,7 +76,7 @@ const markAsRead = async (req, res) => {
 };
 
 // Supprimer un message
-const deleteMessage = async (req, res) => {
+const deleteMessage = async (req, res, next) => {
   try {
     const message = await Message.findById(req.params.id);
     

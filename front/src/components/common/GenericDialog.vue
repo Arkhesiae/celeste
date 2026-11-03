@@ -3,7 +3,7 @@
 v-model="modelValue" :transition="smAndDown ? 'slide-x-reverse-transition' : 'scale-transition'"
     :fullscreen="smAndDown" :max-width="maxWidth" :persistent="persistent" :retain-focus="false"
     @after-enter="handleAfterEnter" @after-leave="handleAfterLeave">
-    <v-card height="100vh" :class="smAndDown ? '' : 'rounded-xxl'" class="pt-0 pb-6 px-0 overflow-y-hidden">
+    <v-card  :class="smAndDown ? '' : 'rounded-xxl'" class="pt-0 pb-6 px-0 overflow-y-hidden">
       <!-- Header -->
       <div
 ref="headerRef" :style="{

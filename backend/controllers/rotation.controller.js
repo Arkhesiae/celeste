@@ -56,10 +56,10 @@ const registerShift = async (shift, order, newRotation) => {
             const hasSameNameInRotation = newRotation.days.some(day => day.name === shift.name);
 
             if (isShiftAlreadyInRotation) {
-                throw new Error(`Le shift "${shift.name}" est déjà présent dans cette rotation`);
+                throw new AppError(`Le shift "${shift.name}" est déjà présent dans cette rotation`, 400);
             }
             if (hasSameNameInRotation) {
-                throw new Error(`Le shift "${shift.name}" est déjà présent dans cette rotation`);
+                throw new AppError(`Le shift "${shift.name}" est déjà présent dans cette rotation`, 400);
             }
 
         }
@@ -74,7 +74,7 @@ const registerShift = async (shift, order, newRotation) => {
         points = 0;
     } else {
         if (!startTime || !endTime) {
-            throw new Error('Le jour de travail doit avoir un début et une fin');
+            throw new AppError('Le jour de travail doit avoir un début et une fin', 400);
         }
         const workDuration = computeWorkDuration(startTime, endTime);
 
@@ -108,16 +108,16 @@ const registerVariation = async (variant, shift) => {
             const isVariationAlreadyInShift = shift.variations.some(variationId => variationId.equals(variation._id));
             const hasSameNameInShift = shift.variations.some(variation => variation.name === variant.name);
             if (isVariationAlreadyInShift) {
-                throw new Error(`La variation "${variant.name}" est déjà présente dans ce shift`);
+                throw new AppError(`La variation "${variant.name}" est déjà présente dans ce shift`, 400);
             }
             if (hasSameNameInShift) {
-                throw new Error(`La variation "${variant.name}" est déjà présente dans ce shift`);
+                throw new AppError(`La variation "${variant.name}" est déjà présente dans ce shift`, 400);
             }
 
         }
     }
     if (!variant.startTime || !variant.endTime) {
-        throw new Error('Les variantes doivent avoir un début et une fin');
+        throw new AppError('Les variantes doivent avoir un début et une fin', 400);
     }
 
     const { endsNextDay, points } = computeWorkDuration(variant.startTime, variant.endTime);
@@ -136,15 +136,15 @@ const registerVariation = async (variant, shift) => {
 }
 
 // Sauvegarder un nouveau tour de service
-const saveRotation = async (req, res) => {
+const saveRotation = async (req, res, next) => {
     try {
         const rotation = req.body;
 
         if (!rotation.name) {
-            return res.status(400).json({ message: 'Le nom du tour de service est requis' });
+            throw new AppError('Le nom du tour de service est requis', 400);
         }
         if (!rotation.centerId) {
-            return res.status(400).json({ message: 'Le centre est requis' });
+            throw new AppError('Le centre est requis', 400);
         }
 
         const newRotation = new Rotation({
@@ -173,22 +173,22 @@ const saveRotation = async (req, res) => {
 
         res.status(201).json({ message: 'Tour de service enregistré', rotation: newRotation });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // Obtenir tous les tours de service
-const getAllRotations = async (req, res) => {
+const getAllRotations = async (req, res, next) => {
     try {
         const rotations = await Rotation.find();
         res.json(rotations);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // Obtenir les tours de service d'un centre spécifique
-const getRotationsByCenter = async (req, res) => {
+const getRotationsByCenter = async (req, res, next) => {
     const { centerId } = req.params;
 
     try {
@@ -199,16 +199,16 @@ const getRotationsByCenter = async (req, res) => {
             }
         });
         if (!rotations.length) {
-            return res.status(404).json({ message: 'Aucun tour de service trouvé' });
+            throw new AppError('Aucun tour de service trouvé', 404);
         }
         res.json(rotations);
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // Obtenir tous les tours de service avec leur statut
-const getAllRotationsWithStatus = async (req, res) => {
+const getAllRotationsWithStatus = async (req, res, next) => {
     const { centerId } = req.params;
 
     try {
@@ -250,7 +250,7 @@ const getAllRotationsWithStatus = async (req, res) => {
 
         res.json({ allRotations: rotations, sortedRotations: response });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
@@ -378,32 +378,37 @@ const removeActivationDate = async (req, res, next) => {
 
 
 // Mettre à jour un jour dans une rotation
-const updateDayInRotation = async (req, res) => {
+const updateDayInRotation = async (req, res, next) => {
     const { id } = req.params;
     const { updatedDay } = req.body;
 
     try {
         const rotation = await Rotation.findById(id);
         if (!rotation) {
-            return res.status(404).json({ message: 'Tour de service non trouvé' });
+            throw new AppError('Tour de service non trouvé', 404);
         }
 
+        // Un jour n'est modifiable que tant que le tour n'a jamais été (ni ne sera) activé : sinon la modification
+        // changerait rétroactivement le planning et les demandes déjà passées ou à venir.
+        if (rotation.activationDates?.length > 0) {
+            throw new AppError("Ce tour de service a des dates d'activation (passées ou à venir) : ses jours ne sont plus modifiables. Supprimez ses dates d'activation ou dupliquez-le pour le modifier.", 400, 'ROTATION_HAS_ACTIVATIONS');
+        }
 
         const shift = await Shift.findById(updatedDay._id);
         if (!shift) {
-            return res.status(400).json({ message: 'Jour non trouvé' });
+            throw new AppError('Jour non trouvé', 400);
         }
 
         const isDayInRotation = rotation.days.some(day => day._id.equals(shift._id));
         if (!isDayInRotation) {
-            return res.status(400).json({ message: 'Jour non trouvé dans la rotation' });
+            throw new AppError('Jour non trouvé dans la rotation', 400);
         }
 
         console.log("updatedDay", updatedDay);
 
         if (updatedDay.type !== 'rest') {
             if (!updatedDay.default.startTime || !updatedDay.default.endTime) {
-                throw new Error('Le jour de travail doit avoir un début et une fin');
+                throw new AppError('Le jour de travail doit avoir un début et une fin', 400);
             }
             const { points } = computeWorkDuration(updatedDay.default.startTime, updatedDay.default.endTime);
 
@@ -424,7 +429,7 @@ const updateDayInRotation = async (req, res) => {
                     const variation = await Variation.findById(updatedVariation._id);
                     if (variation) {
                         if (!updatedVariation.startTime || !updatedVariation.endTime) {
-                            throw new Error('Les variantes doivent avoir un début et une fin');
+                            throw new AppError('Les variantes doivent avoir un début et une fin', 400);
                         }
                         const { points } = computeWorkDuration(updatedVariation.startTime, updatedVariation.endTime);
 
@@ -467,12 +472,12 @@ const updateDayInRotation = async (req, res) => {
             })
         });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 
 // Dupliquer une rotation
-const duplicateRotation = async (req, res) => {
+const duplicateRotation = async (req, res, next) => {
     const { id } = req.params;
 
     try {
@@ -487,7 +492,7 @@ const duplicateRotation = async (req, res) => {
 
 
         if (!rotation) {
-            return res.status(404).json({ message: 'Tour de service non trouvé' });
+            throw new AppError('Tour de service non trouvé', 404);
         }
 
         // Créer une copie de la rotation
@@ -565,19 +570,19 @@ const duplicateRotation = async (req, res) => {
             rotation: duplicatedRotation
         });
     } catch (error) {
-        res.status(500).json({ message: 'Erreur lors de la duplication du tour de service', error: error.message });
+        next(error);
     }
 };
 
 // Mettre à jour une rotation
-const updateRotation = async (req, res) => {
+const updateRotation = async (req, res, next) => {
     const { id } = req.params;
     const updatedData = req.body;
 
     try {
         const rotation = await Rotation.findById(id).populate('days');
         if (!rotation) {
-            return res.status(404).json({ message: 'Tour de service non trouvé' });
+            throw new AppError('Tour de service non trouvé', 404);
         }
 
         // Mettre à jour les champs autorisés
@@ -638,7 +643,7 @@ const updateRotation = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors de la mise à jour de la rotation:', error);
-        res.status(500).json({ message: error.message });
+        next(error);
     }
 };
 

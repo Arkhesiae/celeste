@@ -24,12 +24,6 @@ const registerEntry = async (req, res, next) => {
         });
 
     } catch (error) {
-        if (error.status === 409) {
-            console.error('Confirmation nécessaire');
-            return res.status(409).json({
-                message: error.message
-            });
-        }
         next(error);
     }
 };

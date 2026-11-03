@@ -6,11 +6,7 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({
-            code: 'AUTH_TOKEN_MISSING',
-            success: false,
-            message: 'Non autorisé, token manquant.'
-        });
+        return next(new AppError('Non autorisé, token manquant.', 401, 'AUTH_TOKEN_MISSING'));
     }
 
     const token = authHeader.split(' ')[1];

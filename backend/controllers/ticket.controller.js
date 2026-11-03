@@ -1,11 +1,12 @@
 import * as ticketService from '../services/ticketService.js';
 
+import { AppError } from '../error/AppError.js';
 // Récupérer tous les tickets
-const getTickets = async (req, res) => {
+const getTickets = async (req, res, next) => {
   try {
     // Validation de l'utilisateur
     if (!req.user) {
-      return res.status(401).json({ message: 'Utilisateur non authentifié' });
+      throw new AppError('Utilisateur non authentifié', 401);
     }
 
     const archived = req.query.archived === 'true';
@@ -13,36 +14,34 @@ const getTickets = async (req, res) => {
     res.json(tickets);
   } catch (error) {
     console.error('Erreur lors de la récupération des tickets:', error);
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
 // Créer un nouveau ticket
-const createTicket = async (req, res) => {
+const createTicket = async (req, res, next) => {
   try {
     const { adminType, type, subject, email, message, centerId } = req.body;
     
     // Validation des données requises
     if (!adminType || !type || !subject || !email || !message) {
-      return res.status(400).json({ 
-        message: 'Tous les champs sont requis: adminType, type, subject, email, message, centerId' 
-      });
+      throw new AppError('Tous les champs sont requis: adminType, type, subject, email, message, centerId', 400);
     }
 
     if (adminType === 'local' && !centerId) {
-      return res.status(400).json({ message: 'Le centre est requis pour un administrateur local' });
+      throw new AppError('Le centre est requis pour un administrateur local', 400);
     }
 
     // Validation du format email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'Format d\'email invalide' });
+      throw new AppError('Format d\'email invalide', 400);
     }
 
     // Validation des types autorisés
     const validAdminTypes = ['master', 'local'];
     if (!validAdminTypes.includes(adminType)) {
-      return res.status(400).json({ message: 'Type d\'admin invalide' });
+      throw new AppError('Type d\'admin invalide', 400);
     }
 
     const ticketData = { adminType, type, subject, email, message, centerId };
@@ -52,26 +51,22 @@ const createTicket = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la création du ticket:', error);
     
-    if (error.message === 'Administrateur non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-    
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
 // Marquer un ticket comme lu
-const markAsRead = async (req, res) => {
+const markAsRead = async (req, res, next) => {
   try {
     // Validation de l'ID du ticket
     if (!req.params.id) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(req.params.id)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     const updatedTicket = await ticketService.markTicketAsRead(req.params.id);
@@ -79,26 +74,22 @@ const markAsRead = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors du marquage du ticket comme lu:', error);
     
-    if (error.message === 'Ticket non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-    
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
 // Supprimer un ticket
-const deleteTicket = async (req, res) => {
+const deleteTicket = async (req, res, next) => {
   try {
     // Validation de l'ID du ticket
     if (!req.params.id) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(req.params.id)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     await ticketService.removeTicket(req.params.id);
@@ -106,60 +97,56 @@ const deleteTicket = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de la suppression du ticket:', error);
     
-    if (error.message === 'Ticket non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-    
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
 // Mettre à jour le statut d'un ticket
-const updateTicketStatus = async (req, res) => {
+const updateTicketStatus = async (req, res, next) => {
   try {
     const { ticketStatus } = req.body;
     
     // Validation de l'ID du ticket
     if (!req.params.id) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(req.params.id)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     // Validation du statut
     if (!ticketStatus) {
-      return res.status(400).json({ message: 'Statut du ticket requis' });
+      throw new AppError('Statut du ticket requis', 400);
     }
 
     const validStatuses = ['new', 'in_progress', 'done', 'closed'];
     if (!validStatuses.includes(ticketStatus)) {
-      return res.status(400).json({ message: 'Statut invalide' });
+      throw new AppError('Statut invalide', 400);
     }
 
     const updatedTicket = await ticketService.updateTicketStatus(req.params.id, ticketStatus);
     res.json(updatedTicket);
   } catch (error) {
     console.error('Erreur lors de la mise à jour du statut du ticket:', error);
-    res.status(500).json({ message: 'Erreur lors de la mise à jour du statut du ticket' });
+    next(error);
   }
 };
 
 // Marquer qu'une réponse a été envoyée
-const markReplySent = async (req, res) => {
+const markReplySent = async (req, res, next) => {
   try {
     // Validation de l'ID du ticket
     if (!req.params.id) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(req.params.id)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     const updatedTicket = await ticketService.markReplyAsSent(req.params.id);
@@ -167,53 +154,41 @@ const markReplySent = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors du marquage de la réponse envoyée:', error);
     
-    if (error.message === 'Ticket non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-    
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
 // Envoyer une réponse à un ticket
-const sendReply = async (req, res) => {
+const sendReply = async (req, res, next) => {
   try {
     const { content } = req.body;
     const ticketId = req.params.id;
     
     // Validation de l'ID du ticket
     if (!ticketId) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(ticketId)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     // Validation du contenu de la réponse
     if (!content || content.trim().length === 0) {
-      return res.status(400).json({ message: 'Le contenu de la réponse est requis' });
+      throw new AppError('Le contenu de la réponse est requis', 400);
     }
 
     // Validation de l'utilisateur admin
     if (!req.user || !req.user.isAdmin) {
-      return res.status(403).json({ message: 'Accès refusé - Administrateur requis' });
+      throw new AppError('Accès refusé - Administrateur requis', 403);
     }
 
     const updatedTicket = await ticketService.sendTicketReply(ticketId, content, req.user);
     res.json(updatedTicket);
   } catch (error) {
-    if (error.message === 'Ticket non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-
-    else if (error.message === 'Email invalide') {
-      return res.status(400).json({ message: error.message });
-    }
-    
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
@@ -248,17 +223,17 @@ const addEmailReply = async (ticketId, emailContent, senderEmail, senderName = '
 };
 
 // Archiver un ticket
-const archiveTicket = async (req, res) => {
+const archiveTicket = async (req, res, next) => {
   try {
     // Validation de l'ID du ticket
     if (!req.params.id) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(req.params.id)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     const updatedTicket = await ticketService.archiveTicket(req.params.id);
@@ -266,40 +241,29 @@ const archiveTicket = async (req, res) => {
   } catch (error) {
     console.error('Erreur lors de l\'archivage du ticket:', error);
     
-    if (error.message === 'Ticket non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-    
-    if (error.message === 'Seuls les tickets fermés peuvent être archivés') {
-      return res.status(400).json({ message: error.message });
-    }
-    
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 
 // Restaurer un ticket archivé
-const restoreTicket = async (req, res) => {
+const restoreTicket = async (req, res, next) => {
   try {
     // Validation de l'ID du ticket
     if (!req.params.id) {
-      return res.status(400).json({ message: 'ID du ticket requis' });
+      throw new AppError('ID du ticket requis', 400);
     }
 
     // Validation du format de l'ID MongoDB
     const mongoIdRegex = /^[0-9a-fA-F]{24}$/;
     if (!mongoIdRegex.test(req.params.id)) {
-      return res.status(400).json({ message: 'Format d\'ID invalide' });
+      throw new AppError('Format d\'ID invalide', 400);
     }
 
     const updatedTicket = await ticketService.restoreTicket(req.params.id);
     res.json(updatedTicket);
   } catch (error) {
     console.error('Erreur lors de la restauration du ticket:', error);
-    if (error.message === 'Ticket non trouvé') {
-      return res.status(404).json({ message: error.message });
-    }
-    res.status(500).json({ message: 'Erreur du serveur' });
+    next(error);
   }
 };
 

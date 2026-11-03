@@ -3,7 +3,7 @@
 One line per item, with the date. Move items between sections as they progress.
 
 ## Planned
-- (2026-11-02) Fix the rest of the rotation change flow: front confirm key (#27), `deleteRotation` (#30), in-place day edits (#31), swallowed errors (#33), same-date activations (#34), stale variations/entries (#35).
+- (2026-11-02) Fix the rest of the rotation change flow: front confirm key (#27), `deleteRotation` (#30), swallowed errors (#33), same-date activations (#34), stale variations/entries (#35).
 - (2026-11-02) Test the team-change approval flow in a browser against MongoDB (assign, replace, delete; with and without affected substitutions). Expected behaviours to confirm: retroactive changes also deactivate past shift-related calendar entries (completed substitutions are not cancelled, their entries are); `changes[].to` is inclusive; `assignTeamToUser` checks the team (404) before the user (404).
 - (2026-11-02) Fix the front build (`demandComment` import) and remove the dead conflict dialogs (known issues #17, #18).
 - (2026-11-02) Test team assignment / occurrence deletion end to end against MongoDB (sanitize + save in one transaction).
@@ -14,6 +14,9 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (see known issues).
 
 ## Done
+- (2026-11-03) Error handling simplified: every `catch` is `next(error)`; `errorHandler` returns a generic 500 for anything that is not an `AppError` (no more raw Mongoose/driver messages), passes framework 4xx and `MulterError` through, and no longer trusts a `.status` set on a plain `Error`. User-facing plain errors in `computeShiftOfTeam`, `computeUserShifts`, `transaction.scheduled` and `calendar-entry` are now `AppError`s with proper statuses.
+- (2026-11-02) Legacy error handling removed from the backend: controllers, `dev.routes`, the SNS webhook and `authMiddleware` now throw `AppError` / call `next(error)` instead of writing `res.status(4xx/5xx).json(...)`; `errorHandler` returns `{ error, message, code }`; `ruleService`, `publicAnnouncementService` and the rotation/user controllers throw `AppError` with proper statuses (rule not found is now 404, locked 403, instead of a blanket 400).
+- (2026-11-02) Rotation days can only be edited while the rotation has no activation date (past or future); the admin gets an error message otherwise (known issue #31, residual bugs remain).
 - (2026-11-02) Rotation change: demands cancelled because the rotation length differs now get the full cancel cleanup (cascade, pending points transactions, substitution calendar entries); pending transactions of cancelled requests are skipped by the nightly job; changes are processed sequentially inside the transaction.
 - (2026-11-02) Rotation mutations are scoped to the admin's center (`middleware/rotationAuth.js`); `PUT /rotations/:id/update` no longer accepts `centerId` / `activationDates`.
 - (2026-11-02) Dead backend files deleted (`workshift.routes.js`, `backend/deprecated/*`, `utils/categorizeDemand.js` v1, `utils/convertToCenterTime.js`; none were imported).

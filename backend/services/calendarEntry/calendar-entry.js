@@ -289,9 +289,7 @@ async function registerMDDA (userId, date, data) {
 export async function restoreInitialShift (userId, date) {
     const user = await User.findById(userId);
     if (!user) {
-        const err = new Error('Utilisateur non trouvé');
-        err.status = 404;
-        throw err;
+        throw new AppError('Utilisateur non trouvé', 404);
     }
 
     const initialShift = await computeUserShifts([date], userId);
@@ -474,9 +472,7 @@ export async function getUserEntries (userId, date) {
 export async function undoMods (userId, date) {
     const user = await User.findById(userId);
     if (!user) {
-        const err = new Error('Utilisateur non trouvé');
-        err.status = 404;
-        throw err;
+        throw new AppError('Utilisateur non trouvé', 404);
     }
 
     const initialShift = await computeUserShifts([date], userId);
@@ -495,9 +491,7 @@ export async function undoMods (userId, date) {
 export async function deleteAssignment (userId, date) {
     const user = await User.findById(userId);
     if (!user) {
-        const err = new Error('Utilisateur non trouvé');
-        err.status = 404;
-        throw err;
+        throw new AppError('Utilisateur non trouvé', 404);
     }
 
     const latestAssignment = await Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 });

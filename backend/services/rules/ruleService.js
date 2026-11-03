@@ -1,4 +1,5 @@
 import Rule from '../../models/Rule.js';
+import { AppError } from '../../error/AppError.js';
 
 export const getAllRules = async (centerId) => {
     const rules = await Rule.find();
@@ -29,12 +30,12 @@ export const updateRule = async (centerId, ruleName, updates) => {
     const rule = await Rule.findOne({ name: ruleName });
 
     if (!rule) {
-        throw new Error('Rule not found');
+        throw new AppError('Rule not found', 404);
     }
 
     if (centerId) {
         if (rule.locked) {
-            throw new Error('Rule is locked and cannot be modified by center admins');
+            throw new AppError('Rule is locked and cannot be modified by center admins', 403);
         }
         const existingIndex = rule.adminValues.findIndex(v => v.centerId.toString() === centerId.toString());
 
@@ -63,7 +64,7 @@ export const updateRule = async (centerId, ruleName, updates) => {
 export const toggleLock = async (ruleName, shouldLock) => {
     const rule = await Rule.findOne({ name: ruleName });
     if (!rule) {
-        throw new Error('Rule not found');
+        throw new AppError('Rule not found', 404);
     }
 
     rule.locked = shouldLock;
@@ -75,11 +76,11 @@ export const deleteOverride = async (centerId, ruleName) => {
     const rule = await Rule.findOne({ name: ruleName });
 
     if (!rule) {
-        throw new Error('Rule not found');
+        throw new AppError('Rule not found', 404);
     }
 
     if (!centerId) {
-        throw new Error('Center ID is required to delete an override');
+        throw new AppError('Center ID is required to delete an override', 400);
     }
 
     const existingIndex = rule.adminValues.findIndex(v => v.centerId.toString() === centerId.toString());

@@ -87,8 +87,11 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ### 30. `deleteRotation` checks the wrong rotation for "currently active"
 `controllers/rotation.controller.js` (`deleteRotation`) looks for the active rotation with an aggregate that has **no `centerId` filter**, so it compares against the most recently activated rotation of *all* centers: a center's currently active rotation can be deleted (or a deletable one refused) depending on other centers. It also only blocks rotations that are active now or have future activations: deleting one that was active in the past rewrites history (`findLatestRotation` ignores deleted rotations, so past days are recomputed from an earlier rotation, and completed substitutions point to deleted shifts). **Fix:** filter by the rotation's `centerId` and refuse deletion while the rotation has any activation date (or soft-delete while keeping history resolvable).
 
-### 31. `updateDayInRotation` edits shifts in place with no approval or conversion
-`PUT /:id/day` mutates the `Shift` (times, points, type, name, variations) of a rotation that may be active, retroactively changing every user's planning and the shifts referenced by open, accepted and completed substitutions, without any preview, demand re-evaluation or compatibility check. Also: setting a day to `rest` is silently ignored (the whole update block is skipped but 200 is returned); and the variation clean-up `Variation.deleteMany({ _id: { $nin: newList, $in: shift.variations } })` is a no-op because `shift.variations` was already reset to the new list, so removed variations are orphaned. **Fix:** refuse (or route through the same approval flow) edits to rotations that have activation dates; delete variations against the previous list.
+### 31. `updateDayInRotation` residual defects (the retroactive-edit risk is fixed)
+`PUT /rotations/:id/day` now refuses (400, code `ROTATION_HAS_ACTIVATIONS`) any rotation that has activation dates, past or future, and the UI shows the message; days can only be edited on a never-activated rotation. Two bugs remain in that handler:
+- setting a day to `rest` is silently ignored (the whole update block is skipped but 200 is returned);
+- the variation clean-up `Variation.deleteMany({ _id: { $nin: newList, $in: shift.variations } })` is a no-op because `shift.variations` was already reset to the new list, so removed variations are orphaned.
+**Fix:** handle `type: 'rest'` explicitly (or reject it), and delete variations against the previous list.
 
 ---
 
@@ -118,7 +121,7 @@ Cancelling a poster's accepted request removes the accepter's shift swap, pendin
 
 ### 24. Input validation gaps on the team-change body
 - No `toDate >= fromDate` check: an inverted occurrence is stored and silently ignored by the segment logic (`buildTeamSegments`), leaving confusing data.
-- `teamId` / `:id` / `occurrenceId` that are not valid ObjectIds raise Mongoose `CastError`s; `errorHandler` returns `err.message` for 500s, so schema/internal details reach the client.
+- `teamId` / `:id` / `occurrenceId` that are not valid ObjectIds raise Mongoose `CastError`s, which now come back as a generic 500 (no leak) instead of a 400: map `CastError` to 400 in `errorHandler` or validate ids with `isValidId`.
 - The exported helpers (`sanitizeUserPeriod`, `previewUserPeriodImpact`) put `userId` straight into query objects. Safe today (callers pass `user._id`), but a future caller passing `req.body` values would allow operator injection (`{ "$ne": null }`). Coerce with `new mongoose.Types.ObjectId(...)` inside the helpers.
 
 ### 25. Amplification: unbounded cascade lookup, no rate limiting

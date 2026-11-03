@@ -8,6 +8,7 @@ import Shift from '../models/Shift.js';
 import Center from '../models/Center.js';
 import Rotation from '../models/Rotation.js';
 import { findLatestRotation } from './findLatestRotation.js';
+import { AppError } from '../error/AppError.js';
 
 
 
@@ -284,14 +285,14 @@ const computeUserShifts = async (dates, userId) => {
         ]);
 
         if (!user) {
-            throw new Error('Utilisateur non trouvé');
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         const dateArray = Array.isArray(dates) ? dates : [dates];
         const normalizedDates = dateArray.map((rawDate) => {
             const date = new Date(rawDate);
             if (isNaN(date.getTime())) {
-                throw new Error(`Date invalide: ${rawDate}`);
+                throw new AppError(`Date invalide: ${rawDate}`, 400);
             }
             return {
                 date,
@@ -394,7 +395,7 @@ const computeShiftOfUserWithoutSubstitutions = async (dates, userId) => {
     try {
         const user = await User.findById(userId).populate('teams');
         if (!user) {
-            throw new Error('Utilisateur non trouvé');
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         const dateArray = Array.isArray(dates) ? dates : [dates];
@@ -402,7 +403,7 @@ const computeShiftOfUserWithoutSubstitutions = async (dates, userId) => {
             dateArray.map(async (dateStr) => {
                 const date = new Date(dateStr);
                 if (isNaN(date.getTime())) {
-                    throw new Error(`Date invalide: ${dateStr}`);
+                    throw new AppError(`Date invalide: ${dateStr}`, 400);
                 }
 
                 const team = await getTeamAtGivenDate(user.teams, date);
@@ -415,7 +416,7 @@ const computeShiftOfUserWithoutSubstitutions = async (dates, userId) => {
 
                 const teamObject = await Team.findById(team.teamId);
                 if (!teamObject) {
-                    throw new Error(`Équipe non trouvée pour l'ID: ${team.teamId}`);
+                    throw new AppError(`Équipe non trouvée pour l'ID: ${team.teamId}`, 404);
                 }
 
                 const shift = await computeShiftOfTeam(date, team.teamId);

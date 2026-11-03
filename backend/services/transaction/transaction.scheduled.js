@@ -1,5 +1,6 @@
 import Transaction from '../../models/Transaction.js';
 import Substitution from '../../models/Substitution.js';
+import { AppError } from '../../error/AppError.js';
 
 /**
  * Crée une transaction différée
@@ -90,11 +91,11 @@ const processPendingTransactions = async () => {
 const cancelScheduledTransation = async (transactionId, { session }) => {
     const transaction = await Transaction.findById(transactionId).session(session);
     if (!transaction) {
-        throw new Error('Transaction non trouvée');
+        throw new AppError('Transaction non trouvée', 404);
     }
 
     if (transaction.status !== 'pending') {
-        throw new Error('Seules les transactions en attente peuvent être annulées');
+        throw new AppError('Seules les transactions en attente peuvent être annulées', 400);
     }
 
     transaction.status = 'cancelled';

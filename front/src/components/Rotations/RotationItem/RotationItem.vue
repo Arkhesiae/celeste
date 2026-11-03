@@ -169,7 +169,6 @@
 </template>
 
 <script setup>
-import { ref, computed, nextTick } from 'vue';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from "@/stores/authStore.js";
 import { useRotationStore } from "@/stores/rotationStore";
@@ -224,6 +223,7 @@ const handleQuickDayEdit = async (updatedDay) => {
     showDayDetail.value = false;
   } catch (error) {
     console.error('Erreur lors de la mise à jour du jour :', error);
+    snackbarStore.showNotification(error.message || 'Erreur lors de la modification du jour', 'onError', 'mdi-alert-circle-outline');
   }
 };
 

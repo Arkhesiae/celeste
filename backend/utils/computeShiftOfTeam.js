@@ -3,25 +3,26 @@ import Center from '../models/Center.js';
 import { findLatestRotation } from './findLatestRotation.js';
 import Shift from '../models/Shift.js';
 import Rotation from '../models/Rotation.js';
+import { AppError } from '../error/AppError.js';
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée
 const computeShiftOfTeam = async (date, teamData) => {
     try {
         if (!date) {
-            throw new Error('Aucune date fournie');
+            throw new AppError('Aucune date fournie', 400);
         }
 
         if (!teamData) {
-            throw new Error('Données d\'équipe invalides');
+            throw new AppError('Données d\'équipe invalides', 400);
         }
 
         if (!teamData.center) {
-            throw new Error(`Aucun centre associé à l'équipe: ${teamData.teamId}`);
+            throw new AppError(`Aucun centre associé à l'équipe: ${teamData.teamId}`, 404);
         }
 
         const center = await Center.findById(teamData.center);
         if (!center) {
-            throw new Error(`Centre non trouvé pour l'ID: ${teamData.center}`);
+            throw new AppError(`Centre non trouvé pour l'ID: ${teamData.center}`, 404);
         }
 
         let latestRotation = await findLatestRotation(center._id, date);

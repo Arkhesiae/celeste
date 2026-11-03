@@ -59,7 +59,7 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
             );
 
             if (action === 'remove' && !updatedRotation) {
-                throw new Error(`Aucune activation trouvée à la date ${activationDate}`);
+                throw new AppError(`Aucune activation trouvée à la date ${activationDate}`, 404);
             }
 
             const afterList = await getOrderedActivationDates(centerId, session);
@@ -502,7 +502,7 @@ function findChangedPeriods (before, after) {
 //                 );
 
 //                 if (indexToRemove === -1) {
-//                     throw new Error(`Aucune activation trouvée à la date ${activationDate}`);
+//                     throw new AppError(`Aucune activation trouvée à la date ${activationDate}`, 404);
 //                 }
 
 //                 updatedList.splice(indexToRemove, 1);

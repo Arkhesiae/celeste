@@ -1,8 +1,5 @@
 <template>
   <base-dialog v-model="modelValue" :title="props.title" max-width="400" :z-index="2600" :icon="props.icon">
-    <!-- <template v-if="props.icon" #icon>
-      <v-icon :icon="props.icon" size="36" :color="props.iconColor" />
-    </template> -->
 
     {{ props.text }}
 
@@ -21,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-import BaseDialog from './BaseDialog.vue'
 
 const modelValue = defineModel<boolean>({ default: false })
 
@@ -64,8 +60,6 @@ const handleCancel = (): void => {
   border: 1px solid rgba(185, 185, 185, 0.3) !important;
 }
 
-/* Confirmation dialogs keep a start-aligned header even with an icon,
-   overriding BaseDialog's default MD3 "icon dialog" centering */
 :deep(.base-dialog__card--centered .base-dialog__header) {
   justify-content: flex-start;
   text-align: start;

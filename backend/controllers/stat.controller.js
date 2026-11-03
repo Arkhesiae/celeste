@@ -12,7 +12,7 @@ const statController = {
    * @param {Object} req - La requête Express.
    * @param {Object} res - La réponse Express.
    */
-  async getStats(req, res) {
+  async getStats(req, res, next) {
     try {
       // Compter le nombre total d'utilisateurs
       const totalUsers = await User.countDocuments();
@@ -33,10 +33,7 @@ const statController = {
       });
     } catch (error) {
       console.error('Erreur lors de la récupération des statistiques:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur interne du serveur lors de la récupération des statistiques'
-      });
+      next(error);
     }
   },
 
@@ -45,7 +42,7 @@ const statController = {
    * @param {Object} req - La requête Express.
    * @param {Object} res - La réponse Express.
    */
-  async getTotalUsers(req, res) {
+  async getTotalUsers(req, res, next) {
     try {
       const totalUsers = await User.countDocuments();
       
@@ -57,10 +54,7 @@ const statController = {
       });
     } catch (error) {
       console.error('Erreur lors de la récupération du nombre d\'utilisateurs:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur interne du serveur lors de la récupération du nombre d\'utilisateurs'
-      });
+      next(error);
     }
   },
 
@@ -69,7 +63,7 @@ const statController = {
    * @param {Object} req - La requête Express.
    * @param {Object} res - La réponse Express.
    */
-  async getTotalCenters(req, res) {
+  async getTotalCenters(req, res, next) {
     try {
       const totalCenters = await Center.countDocuments();
       
@@ -81,10 +75,7 @@ const statController = {
       });
     } catch (error) {
       console.error('Erreur lors de la récupération du nombre de centres:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur interne du serveur lors de la récupération du nombre de centres'
-      });
+      next(error);
     }
   },
 
@@ -93,7 +84,7 @@ const statController = {
    * @param {Object} req - La requête Express.
    * @param {Object} res - La réponse Express.
    */
-  async getTotalSubstitutions(req, res) {
+  async getTotalSubstitutions(req, res, next) {
     try {
       const totalSubstitutions = await Substitution.countDocuments();
       
@@ -105,10 +96,7 @@ const statController = {
       });
     } catch (error) {
       console.error('Erreur lors de la récupération du nombre de substitutions:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erreur interne du serveur lors de la récupération du nombre de substitutions'
-      });
+      next(error);
     }
   }
 };

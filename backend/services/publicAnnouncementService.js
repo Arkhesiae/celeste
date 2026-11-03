@@ -1,4 +1,5 @@
 import PublicAnnouncement from '../models/PublicAnnouncement.js';
+import { AppError } from '../error/AppError.js';
 
 /**
  * Build the MongoDB query filter for announcements visible to a given user.
@@ -59,7 +60,7 @@ export const getActiveAnnouncements = async (userId, centerId) => {
 export const acknowledgeAnnouncement = async (announcementId, userId) => {
   const announcement = await PublicAnnouncement.findById(announcementId);
   if (!announcement) {
-    throw new Error('Announcement not found');
+    throw new AppError('Announcement not found', 404);
   }
 
   // Idempotent: only add if not already acknowledged
@@ -125,7 +126,7 @@ export const updateAnnouncement = async (id, data) => {
     { new: true, runValidators: true }
   );
   if (!announcement) {
-    throw new Error('Announcement not found');
+    throw new AppError('Announcement not found', 404);
   }
   return announcement;
 };
@@ -136,7 +137,7 @@ export const updateAnnouncement = async (id, data) => {
 export const deleteAnnouncement = async (id) => {
   const announcement = await PublicAnnouncement.findByIdAndDelete(id);
   if (!announcement) {
-    throw new Error('Announcement not found');
+    throw new AppError('Announcement not found', 404);
   }
   return announcement;
 };

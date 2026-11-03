@@ -1,6 +1,7 @@
 import { simpleParser } from "mailparser";
 import Ticket from "../../models/Ticket.js";
 import User from "../../models/User.js";
+import { AppError } from "../../error/AppError.js";
 
 /**
  * Service handling inbound emails received from SES via SNS
@@ -42,7 +43,7 @@ const findUserByEmail = async (email) => {
    * @param {import('express').Request} req
    * @param {import('express').Response} res
    */
-const handleInboundEmail = async (req, res) => {
+const handleInboundEmail = async (req, res, next) => {
     try {
       const message = JSON.parse(req.body);
 
@@ -64,10 +65,10 @@ const handleInboundEmail = async (req, res) => {
         return res.status(200).send("Processed");
       }
 
-      res.status(400).send("Unknown message type");
+      throw new AppError("Unknown message type", 400);
     } catch (err) {
       console.error("❌ Error in inbound email handler:", err);
-      res.status(500).send("Server error");
+      next(err);
     }
   }
 

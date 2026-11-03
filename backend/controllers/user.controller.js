@@ -30,7 +30,7 @@ const createUser = async (req, res, next) => {
 };
 
 // Vérifier la disponibilité d'un email
-const checkEmailAvailability = async (req, res) => {
+const checkEmailAvailability = async (req, res, next) => {
     const { email } = req.body;
 
     try {
@@ -39,12 +39,12 @@ const checkEmailAvailability = async (req, res) => {
         res.json({ available: !existingUser, legacy: !!existingLegacyUser });
     } catch (error) {
         console.error('Erreur lors de la vérification de l\'email:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 // Obtenir tous les utilisateurs
-const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res, next) => {
     try {
         const users = await User.find({}).populate('teams');
 
@@ -59,46 +59,46 @@ const getAllUsers = async (req, res) => {
         res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 // Obtenir un compte utilisateur par ID
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
     const { id } = req.params;
     User.findById(id)
         .then((user) => {
             if (!user) {
-                return res.status(404).json({ error: 'User not found.' });
+                throw new AppError('User not found.', 404);
             }
             res.json(user);
         })
-        .catch((err) => res.status(500).json({ message: err.message }));
+        .catch(next);
 };
 
 // Supprimer un compte utilisateur par ID
-const deleteUserById = (req, res) => {
+const deleteUserById = (req, res, next) => {
     const { id } = req.params;
     User.findByIdAndDelete(id)
         .then((user) => {
             if (!user) {
-                return res.status(404).json({ error: 'User not found.' });
+                throw new AppError('User not found.', 404);
             }
             res.json("User deleted successfully");
         })
-        .catch((err) => res.status(500).json({ message: err.message }));
+        .catch(next);
 };
 
 
 
 // Approuver un utilisateur
-const approveUser = async (req, res) => {
+const approveUser = async (req, res, next) => {
     const { id } = req.params;
 
     try {
         const user = await User.findByIdAndUpdate(id, { registrationStatus: 'verified' }, { new: true });
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         await sendEmailApproval(user.email)
@@ -106,20 +106,20 @@ const approveUser = async (req, res) => {
         res.status(200).json({ message: 'Utilisateur approuvé avec succès', user });
     } catch (error) {
         console.error('Erreur lors de l\'approbation de l\'utilisateur:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 // Supprimer un utilisateur
-const deletePendingUser = async (req, res) => {
+const deletePendingUser = async (req, res, next) => {
     const { id } = req.params;
     try {
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
         if (user.registrationStatus !== 'pending') {
-            return res.status(400).json({ message: 'L\'utilisateur n\'est pas en attente d\'approbation' });
+            throw new AppError('L\'utilisateur n\'est pas en attente d\'approbation', 400);
         }
         await User.findByIdAndDelete(id);
         await sendEmailRejection(user.email);
@@ -127,22 +127,22 @@ const deletePendingUser = async (req, res) => {
         res.status(200).json({ message: 'Candidature rejetée', user });
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 // Promouvoir un utilisateur en administrateur
-const makeUserAdmin = async (req, res) => {
+const makeUserAdmin = async (req, res, next) => {
     const { id } = req.params;
 
     try {
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         if (!user.centerId) {
-            return res.status(404).json({ message: 'Aucun centre trouvé pour cet utilisateur' });
+            throw new AppError('Aucun centre trouvé pour cet utilisateur', 404);
         }
 
         user.isAdmin = true;
@@ -152,18 +152,18 @@ const makeUserAdmin = async (req, res) => {
         res.json({ message: 'Utilisateur promu administrateur local avec succès' });
     } catch (error) {
         console.error('Erreur lors de la promotion de l\'utilisateur:', error);
-        res.status(500).json({ message: 'Échec de la promotion de l\'utilisateur en administrateur' });
+        next(error);
     }
 };
 
 // Retirer le statut administrateur d'un utilisateur
-const removeUserAdmin = async (req, res) => {
+const removeUserAdmin = async (req, res, next) => {
     const { id } = req.params;
 
     try {
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         // Vérifier que l'utilisateur n'est pas le dernier admin de son centre
@@ -175,9 +175,7 @@ const removeUserAdmin = async (req, res) => {
             });
 
             if (centerAdmins <= 1) {
-                return res.status(400).json({
-                    message: 'Impossible de retirer le statut admin : c\'est le dernier administrateur du centre'
-                });
+                throw new AppError('Impossible de retirer le statut admin : c\'est le dernier administrateur du centre', 400);
             }
         }
 
@@ -188,23 +186,23 @@ const removeUserAdmin = async (req, res) => {
         res.json({ message: 'Statut administrateur retiré avec succès' });
     } catch (error) {
         console.error('Erreur lors du retrait du statut administrateur:', error);
-        res.status(500).json({ message: 'Échec du retrait du statut administrateur' });
+        next(error);
     }
 };
 
 // Assigner un utilisateur à un centre
-const assignUserToCenter = async (req, res) => {
+const assignUserToCenter = async (req, res, next) => {
     const userId = req.params.id;
     const { centerId } = req.body;
 
     try {
         const user = await User.findById(userId);
         if (!user) {
-            return res.status(404).json({ error: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         if (user.centerId === centerId) {
-            return res.status(400).json({ error: 'L\'utilisateur est déjà assigné à ce centre' });
+            throw new AppError('L\'utilisateur est déjà assigné à ce centre', 400);
         }
 
         user.centerId = centerId;
@@ -215,17 +213,17 @@ const assignUserToCenter = async (req, res) => {
         res.status(200).json({ message: 'Utilisateur assigné avec succès au nouveau centre' });
     } catch (error) {
         console.error('Erreur lors de l\'assignation de l\'utilisateur à un nouveau centre:', error);
-        res.status(500).json({ error: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 // Obtenir les utilisateurs d'un centre spécifique
-const getUsersByCenter = async (req, res) => {
+const getUsersByCenter = async (req, res, next) => {
     const { centerId } = req.params;
 
     console.log("centerId", centerId);
     if (!centerId) {
-        return res.status(400).json({ message: 'ID du centre manquant' });
+        throw new AppError('ID du centre manquant', 400);
     }
 
     try {
@@ -233,7 +231,7 @@ const getUsersByCenter = async (req, res) => {
         res.status(200).json(usersWithCurrentTeam);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs pour un centre:', error);
-        res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des utilisateurs.' });
+        next(error);
     }
 };
 
@@ -241,7 +239,7 @@ const getUsersByCenter = async (req, res) => {
 const getUserWithTeams = async (userId) => {
     const user = await User.findById(userId).populate('teams');
     if (!user) {
-        throw new Error('User not found');
+        throw new AppError('User not found', 404);
     }
     return user;
 };
@@ -250,12 +248,12 @@ const getUserWithTeams = async (userId) => {
 const getTeamAtDate = async (teams, date) => {
     const teamOccurrence = await getTeamAtGivenDate(teams, date);
     if (!teamOccurrence) {
-        throw new Error('No team found for the given date');
+        throw new AppError('No team found for the given date', 404);
     }
 
     const team = await Team.findById(teamOccurrence.teamId);
     if (!team || team.deleted) {
-        throw new Error('Team not found');
+        throw new AppError('Team not found', 404);
     }
     return {
         ...teamOccurrence.toObject(),
@@ -271,7 +269,7 @@ const getUserTeamAtDate = async (req, res) => {
     const { date } = req.query;
 
     if (!date) {
-        return res.status(400).json({ message: 'Date is required' });
+        throw new AppError('Date is required', 400);
     }
 
     try {
@@ -280,7 +278,7 @@ const getUserTeamAtDate = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error fetching team:', error);
-        res.status(404).json({ message: error.message });
+        throw new AppError(error.message, 404);
     }
 };
 
@@ -294,7 +292,7 @@ const getUserCurrentTeam = async (req, res) => {
         res.json(result);
     } catch (error) {
         console.error('Error fetching current team:', error);
-        res.status(404).json({ message: error.message });
+        throw new AppError(error.message, 404);
     }
 };
 
@@ -349,26 +347,26 @@ const getUserTeamOccurrences = async (req, res) => {
         res.json(categorizedOccurrences);
     } catch (error) {
         console.error("Error fetching team occurrences:", error);
-        res.status(404).json({ message: error.message });
+        throw new AppError(error.message, 404);
     }
 };
 
 // Obtenir les utilisateurs groupés par équipe
-const getUsersAndGroupByTeam = async (req, res) => {
+const getUsersAndGroupByTeam = async (req, res, next) => {
     // Validation de la date
     let date;
     try {
         date = req.query.date ? new Date(req.query.date) : new Date();
         if (isNaN(date.getTime())) {
-            return res.status(400).json({ message: 'Date invalide' });
+            throw new AppError('Date invalide', 400);
         }
     } catch (error) {
-        return res.status(400).json({ message: 'Format de date invalide' });
+        throw new AppError('Format de date invalide', 400);
     }
 
     const centerId = req.params.centerId;
     if (!centerId) {
-        return res.status(400).json({ message: 'ID du centre requis' });
+        throw new AppError('ID du centre requis', 400);
     }
 
     try {
@@ -380,7 +378,7 @@ const getUsersAndGroupByTeam = async (req, res) => {
         ]);
 
         if (!center) {
-            return res.status(404).json({ message: 'Centre non trouvé' });
+            throw new AppError('Centre non trouvé', 404);
         }
 
         // Création d'un Map pour un accès rapide aux équipes
@@ -444,7 +442,7 @@ const getUsersAndGroupByTeam = async (req, res) => {
         res.status(200).json(result);
     } catch (err) {
         console.error("Erreur lors de l'agrégation:", err);
-        res.status(500).json({ error: "Une erreur est survenue lors du traitement des données." });
+        next(err);
     }
 };
 
@@ -496,34 +494,34 @@ const assignTeamToUser = async (req, res, next) => {
 
 
 // Obtenir les vacations d'un utilisateur
-const getUserShiftsWithSubstitutions = async (req, res) => {
+const getUserShiftsWithSubstitutions = async (req, res, next) => {
     try {
         const { dates } = req.body;
         const { id: userId } = req.params;
 
         if (!dates.startDate || !dates.endDate) {
-            return res.status(400).json({ message: 'startDate et endDate sont requis' })
+            throw new AppError('startDate et endDate sont requis', 400);
         }
 
         if (!isValidDateRange({ startDate: dates.startDate.slice(0, 10), endDate: dates.endDate.slice(0, 10) })) {
-            return res.status(400).json({ message: 'Intervalle de dates invalide (format ou cohérence)' })
+            throw new AppError('Intervalle de dates invalide (format ou cohérence)', 400);
         }
 
         if (!userId || !isValidId(userId)) {
-            return res.status(400).json({ message: 'User ID invalide ou manquant' })
+            throw new AppError('User ID invalide ou manquant', 400);
         }
 
         const shifts = await userShiftsService.getUserShifts(dates, userId)
         res.json(shifts);
     } catch (error) {
         console.error(error.message);
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
 
 // Mettre à jour les préférences d'un utilisateur
-const updateUserPreferences = async (req, res) => {
+const updateUserPreferences = async (req, res, next) => {
     const { id } = req.params;
     const { preferences } = req.body;
 
@@ -538,63 +536,63 @@ const updateUserPreferences = async (req, res) => {
         console.log("User preferences :", user.preferences);
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ message: 'Préférences mises à jour avec succès', preferences: user.preferences });
     } catch (error) {
         console.error('Erreur lors de la mise à jour des préférences:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 // Obtenir les préférences d'un utilisateur
-const getUserPreferences = async (req, res) => {
+const getUserPreferences = async (req, res, next) => {
     const { id } = req.params;
 
     try {
         const user = await User.findById(id);
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ preferences: user.preferences });
     } catch (error) {
         console.error('Erreur lors de la récupération des préférences:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
 
-const getPointsById = (req, res) => {
+const getPointsById = (req, res, next) => {
     const id = req.params.id;
     User.findById(id)
         .then((user) => {
             if (!user) {
-                return res.status(404).json({ message: 'User not found.' });
+                throw new AppError('User not found.', 404);
             }
             res.json({ points: user.points });
 
         })
-        .catch((err) => res.status(500).json({ message: err.message }));
+        .catch(next);
 }
 
 /**
  * Effectue un transfert de points entre utilisateurs
  */
-const transferPoints = async (req, res) => {
+const transferPoints = async (req, res, next) => {
     try {
         const { toUserId, amount, description, type, scheduledDate } = req.body;
         const fromUserId = req.user.userId;
 
         // Vérification des paramètres
         if (!toUserId || !amount || amount <= 0) {
-            return res.status(400).json({ message: 'Paramètres invalides' });
+            throw new AppError('Paramètres invalides', 400);
         }
 
         // Vérification que l'utilisateur ne se transfère pas à lui-même
         if (fromUserId === toUserId) {
-            return res.status(400).json({ message: 'Vous ne pouvez pas vous transférer des points à vous-même' });
+            throw new AppError('Vous ne pouvez pas vous transférer des points à vous-même', 400);
         }
 
         // Récupération des utilisateurs
@@ -602,7 +600,7 @@ const transferPoints = async (req, res) => {
         const receiver = await User.findById(toUserId);
 
         if (!sender || !receiver) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         const amountInt = parseInt(amount);
@@ -625,7 +623,7 @@ const transferPoints = async (req, res) => {
 
         // Pour les transferts immédiats, vérifier le solde
         if (sender.points - amount < -40) {
-            return res.status(400).json({ message: 'Solde insuffisant' });
+            throw new AppError('Solde insuffisant', 400);
         }
 
         // Création de la transaction immédiate
@@ -656,14 +654,14 @@ const transferPoints = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors du transfert:', error);
-        res.status(500).json({ error: 'Erreur du serveur lors du transfert' });
+        next(error);
     }
 };
 
 /**
  * Récupère l'historique des transactions d'un utilisateur
  */
-const getTransactionHistory = async (req, res) => {
+const getTransactionHistory = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const limit = parseInt(req.query.limit) || 10;
@@ -682,29 +680,29 @@ const getTransactionHistory = async (req, res) => {
         res.status(200).json(transactions);
     } catch (error) {
         console.error('Erreur lors de la récupération des transactions:', error);
-        res.status(500).json({ error: 'Erreur du serveur lors de la récupération des transactions' });
+        next(error);
     }
 };
 
-const updateAvatar = async (req, res) => {
+const updateAvatar = async (req, res, next) => {
     try {
         const { id } = req.params;
         const avatar = req.file;
 
         if (!avatar) {
-            return res.status(400).json({ message: 'Aucune image fournie' });
+            throw new AppError('Aucune image fournie', 400);
         }
 
 
         // Vérifier le type de fichier
         if (!avatar.mimetype.startsWith('image/')) {
-            return res.status(400).json({ message: 'Le fichier doit être une image' });
+            throw new AppError('Le fichier doit être une image', 400);
         }
 
 
         // Vérifier la taille du fichier (max 10MB)
         if (avatar.size > 10 * 1024 * 1024) {
-            return res.status(400).json({ message: 'L\'image ne doit pas dépasser 10MB' });
+            throw new AppError('L\'image ne doit pas dépasser 10MB', 400);
         }
 
 
@@ -721,7 +719,7 @@ const updateAvatar = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ avatar: user.avatar });
@@ -730,15 +728,15 @@ const updateAvatar = async (req, res) => {
 
         // Gestion spécifique des erreurs multer
         if (error.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({ message: 'L\'image ne doit pas dépasser 5MB' });
+            throw new AppError('L\'image ne doit pas dépasser 5MB', 400);
         }
 
-        res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'avatar' });
+        next(error);
     }
 };
 
 // Mettre à jour l'email de l'utilisateur
-const updateEmail = async (req, res) => {
+const updateEmail = async (req, res, next) => {
     const { email } = req.body;
     const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
 
@@ -746,7 +744,7 @@ const updateEmail = async (req, res) => {
         // Vérifier si le nouvel email est déjà utilisé
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({ message: 'Cette adresse email est déjà utilisée' });
+            throw new AppError('Cette adresse email est déjà utilisée', 400);
         }
 
         // Mettre à jour l'email
@@ -757,17 +755,17 @@ const updateEmail = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ message: 'Email mis à jour avec succès', user });
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'email:', error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour de l\'email' });
+        next(error);
     }
 };
 
-const updatePhone = async (req, res) => {
+const updatePhone = async (req, res, next) => {
     const { phone } = req.body;
     const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
 
@@ -780,17 +778,17 @@ const updatePhone = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ message: 'Numéro de téléphone mis à jour avec succès', user });
     } catch (error) {
         console.error('Erreur lors de la mise à jour du numéro de téléphone:', error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour du numéro de téléphone' });
+        next(error);
     }
 };
 
-const updateBirthDate = async (req, res) => {
+const updateBirthDate = async (req, res, next) => {
     const { birthDate } = req.body;
     const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
 
@@ -803,17 +801,17 @@ const updateBirthDate = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ message: 'Date de naissance mise à jour avec succès', user });
     } catch (error) {
         console.error('Erreur lors de la mise à jour de la date de naissance:', error);
-        res.status(500).json({ message: 'Erreur lors de la mise à jour de la date de naissance' });
+        next(error);
     }
 };
 
-const deletePhone = async (req, res) => {
+const deletePhone = async (req, res, next) => {
     const userId = req.user.userId; // Récupéré depuis le middleware d'authentification
     try {
         const user = await User.findByIdAndUpdate(
@@ -823,18 +821,18 @@ const deletePhone = async (req, res) => {
         );
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         res.json({ message: 'Numéro de téléphone supprimé avec succès', user });
     } catch (error) {
         console.error('Erreur lors de la suppression du numéro de téléphone:', error);
-        res.status(500).json({ message: 'Erreur lors de la suppression du numéro de téléphone' });
+        next(error);
     }
 };
 
 // Récupérer les informations d'un utilisateur par email
-const getUserInfoByEmail = async (req, res) => {
+const getUserInfoByEmail = async (req, res, next) => {
     const { email } = req.params;
 
     try {
@@ -843,7 +841,7 @@ const getUserInfoByEmail = async (req, res) => {
             .populate('centerId', 'name');
 
         if (!user) {
-            return res.status(404).json({ message: 'Utilisateur non trouvé' });
+            throw new AppError('Utilisateur non trouvé', 404);
         }
 
         // Déterminer le rôle de l'utilisateur
@@ -860,11 +858,11 @@ const getUserInfoByEmail = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors de la récupération des informations utilisateur:', error);
-        res.status(500).json({ message: 'Erreur interne du serveur' });
+        next(error);
     }
 };
 
-const getDevListUsers = async (req, res) => {
+const getDevListUsers = async (req, res, next) => {
     try {
         const { role } = req.query;
 
@@ -881,10 +879,10 @@ const getDevListUsers = async (req, res) => {
         }
 
         // Pour l'instant, nous ne gérons que le cas 'team'
-        return res.status(400).json({ message: 'Rôle non supporté' });
+        throw new AppError('Rôle non supporté', 400);
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
-        res.status(500).json({ message: 'Erreur du serveur' });
+        next(error);
     }
 };
 

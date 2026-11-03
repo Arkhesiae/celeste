@@ -169,7 +169,7 @@ v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg 
     <!-- Panneau latéral pour les membres -->
     <v-navigation-drawer
 v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-index: 3000;"
-      width="400" floating temporary>
+      width="460" floating temporary>
       <v-card-title class="d-flex justify-space-between align-center pa-4">
         <span class="text-title-large">Equipe {{ selectedTeamForMembers?.name }}</span>
         <v-btn variant="text" icon @click="membersPanel = false">
@@ -179,7 +179,8 @@ v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-in
       <v-card-text>
         <TeamMembersList
 :members="teamMembers(selectedTeamForMembers?._id)"
-          :renforts="teamRenforts(selectedTeamForMembers?._id)" />
+          :renforts="teamRenforts(selectedTeamForMembers?._id)"
+          :timeline="timelineOfTeam(selectedTeamForMembers?._id)" :timeline-window="timelineWindow" />
       </v-card-text>
     </v-navigation-drawer>
 
@@ -195,7 +196,8 @@ v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-in
         <v-card-text>
           <TeamMembersList
 :members="teamMembers(selectedTeamForMembers?._id)"
-            :renforts="teamRenforts(selectedTeamForMembers?._id)" />
+            :renforts="teamRenforts(selectedTeamForMembers?._id)"
+            :timeline="timelineOfTeam(selectedTeamForMembers?._id)" :timeline-window="timelineWindow" />
         </v-card-text>
       </v-card>
     </v-bottom-sheet>
@@ -302,6 +304,11 @@ const teamMembers = computed(() => (teamId) => {
   return usersGroupedByTeam.value.find(team => team.teamId === teamId)?.users || [];
 });
 
+// Frise des équipes (membres passés, actuels et à venir sur ~1 an) ; null tant que non chargée
+const timelineWindow = computed(() => userStore.teamsTimeline?.window ?? null);
+const timelineOfTeam = (teamId) =>
+  userStore.teamsTimeline?.teams?.find((team) => String(team.teamId) === String(teamId)) ?? null;
+
 const teamRenforts = computed(() => (teamId) => {
   return usersGroupedByTeam.value.find(team => team.teamId === teamId)?.renforts || [];
 });
@@ -382,6 +389,7 @@ const addUserToTeam = async () => {
   try {
     await teamStore.assignUserToTeam(selectedUser.value._id, selectedTeam.value._id);
     snackbarStore.showNotification('Membre ajouté', 'onPrimary', "mdi-check");
+    userStore.fetchTeamsTimeline(centerId);
     addMemberDialog.value = false;
   } catch (error) {
     console.error('Erreur lors de l\'ajout du membre:', error);
@@ -485,6 +493,7 @@ onMounted(async () => {
     await Promise.all([
       teamStore.fetchCenterTeams(centerId),
       userStore.fetchUsersAndGroupByTeam(centerId),
+      userStore.fetchTeamsTimeline(centerId),
       centerStore.fetchActiveRotationOfCenter(centerId),
       centerStore.fetchCenters(),
     ]);

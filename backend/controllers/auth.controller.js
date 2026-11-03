@@ -22,7 +22,7 @@ const loginUser = async (req, res, next) => {
         };
 
         if (result.refreshToken) {
-            res.cookie("refreshToken", result.refreshToken, { ...COOKIE_OPTIONS, maxAge: 365 * 24 * 60 * 60 * 1000 });
+            res.cookie("refreshToken", result.refreshToken, { ...COOKIE_OPTIONS, maxAge: 180 * 24 * 60 * 60 * 1000 });
         }
 
         res.json(response);

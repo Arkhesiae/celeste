@@ -50,9 +50,7 @@ export const useRotationStore = defineStore('rotation', () => {
  */
   const removeActivationDate = async (rotationId, date, centerId, { confirm = false } = {}) => {
     try {
-      const result = confirm
-        ? await rotationService.confirmRemoveActivation(rotationId, date)
-        : await rotationService.removeActivationDate(rotationId, date);
+      const result = await rotationService.removeActivationDate(rotationId, date, confirm);
       await fetchRotations(centerId);
       return result;
     } catch (error) {
@@ -84,9 +82,7 @@ export const useRotationStore = defineStore('rotation', () => {
    */
   const setActiveRotation = async (rotationId, activationDate, centerId, { confirm = false } = {}) => {
     try {
-      const result = confirm
-        ? await rotationService.confirmAddActivation(rotationId, activationDate)
-        : await rotationService.setActiveRotation(rotationId, activationDate);
+      const result = await rotationService.setActiveRotation(rotationId, activationDate, confirm);
       await fetchRotations(centerId);
       return result;
     } catch (error) {

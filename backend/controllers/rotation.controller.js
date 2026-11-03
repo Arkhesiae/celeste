@@ -333,9 +333,14 @@ const validateActivationRequest = async (id, activationDate) => {
 // Ajouter (ou prévisualiser l'ajout d') une date d'activation
 const addActivationDate = async (req, res, next) => {
     const { id } = req.params;
-    const { activationDate, confirmed = false } = req.body;
+    const { activationDate } = req.body;
+    const confirmed = req.body.confirmed === true;
+
+    console.log("rotation.controller.js::addActivationDate: id", id);
 
     await validateActivationRequest(id, activationDate);
+
+    console.log('confirmed', confirmed)
 
     try {
         const result = await rotationActivationService.updateActivationDate('add', id, activationDate, confirmed);
@@ -356,7 +361,8 @@ const addActivationDate = async (req, res, next) => {
 // Supprimer (ou prévisualiser la suppression d') une date d'activation
 const removeActivationDate = async (req, res, next) => {
     const { id } = req.params;
-    const { activationDate, confirmed = false } = req.body;
+    const { activationDate } = req.body;
+    const confirmed = req.body.confirmed === true;
 
     await validateActivationRequest(id, activationDate);
 

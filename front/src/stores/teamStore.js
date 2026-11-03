@@ -17,6 +17,7 @@ export const useTeamStore = defineStore('team', () => {
   // User related
   const currentTeam = ref(null);
   const teamOccurrences = ref([]);
+  const userTeamTimeline = ref(null); // { window, teams: [{ teamId, teamName, segments }] }
 
 
   // Actions
@@ -111,6 +112,19 @@ export const useTeamStore = defineStore('team', () => {
       throw err;
     } finally {
       loading.value = false;
+    }
+  };
+
+  /**
+   * Charge la frise des équipes d'un utilisateur. Non bloquant : une erreur laisse simplement la frise vide.
+   * @param {string} userId - L'ID de l'utilisateur.
+   */
+  const fetchUserTeamTimeline = async (userId) => {
+    try {
+      userTeamTimeline.value = await userService.fetchUserTeamTimeline(userId);
+    } catch (err) {
+      userTeamTimeline.value = null;
+      console.error('Erreur lors de la récupération de la frise des équipes :', err);
     }
   };
 
@@ -269,6 +283,7 @@ export const useTeamStore = defineStore('team', () => {
     centerTeams,
     currentTeam,
     teamOccurrences,
+    userTeamTimeline,
     loading,
     error,
 
@@ -278,6 +293,7 @@ export const useTeamStore = defineStore('team', () => {
     fetchUsersByTeamIds,
     fetchCurrentTeamOfUser,
     fetchTeamOccurrencesOfUser,
+    fetchUserTeamTimeline,
     assignUserToTeam,
     addTeam,
     deleteTeam,

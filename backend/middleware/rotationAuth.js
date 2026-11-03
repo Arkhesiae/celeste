@@ -26,6 +26,7 @@ const denyUnlessSameCenter = (user, centerId) => {
 export const authorizeRotationAccess = async (req, res, next) => {
     try {
         const { id } = req.params;
+
         if (!isValidId(id)) throw new AppError('ID de rotation invalide.', 400);
 
         const user = await loadCaller(req);

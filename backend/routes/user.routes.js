@@ -1,5 +1,6 @@
 import express from 'express';
 import { verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin } from '../middleware/authMiddleware.js';
+import { authorizeCenterParam, authorizeTargetUserCenter } from '../middleware/centerAuth.js';
 import {
   createUser,
   getAllUsers,
@@ -13,6 +14,8 @@ import {
   getUserTeamAtDate,
   getUserCurrentTeam,
   getUsersAndGroupByTeam,
+  getTeamsTimeline,
+  getUserTeamTimeline,
   getUserTeamOccurrences,
   deleteTeamOccurrence,
   assignTeamToUser,
@@ -64,6 +67,8 @@ router.use(verifyToken);
 // Routes pour les équipes (groupées par fonctionnalité)
 
 router.get('/teams/:centerId', getUsersAndGroupByTeam);
+router.get('/teams/:centerId/timeline', authorizeCenterParam('centerId'), getTeamsTimeline);
+router.get('/:id/team-timeline', authorizeTargetUserCenter('id'), getUserTeamTimeline);
 router.get('/center/:centerId', getUsersByCenter);
 router.get('/:id/current-team', getUserCurrentTeam);
 router.get('/:id/team-at', isAdmin, checkUserCenter, getUserTeamAtDate);

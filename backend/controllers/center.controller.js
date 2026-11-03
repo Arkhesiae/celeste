@@ -5,10 +5,11 @@ import Rotation from '../models/Rotation.js';
 import { findLatestRotation } from '../utils/findLatestRotation.js';
 import { AppError } from '../error/AppError.js';
 
-// GET ALL CENTERS
+// GET ALL CENTERS (route publique : formulaires d'inscription / contact) — champs publics uniquement :
+// pas d'`admins` (ids d'utilisateurs), de `relatedCenters`, de `timeZone` ni de drapeaux internes
 const getAllCenters = async (req, res, next) => {
     try {
-        const centers = await Center.find({deleted: false});
+        const centers = await Center.find({deleted: false}).select('name OACI type zone');
         res.json(centers);
     } catch (error) {
         next(error);

@@ -11,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
   // State
   const users = ref([]);
   const usersGroupedByTeam = ref([]);
+  const teamsTimeline = ref(null); // { window, teams: [{ teamId, teamName, members: [...] }] }
   const currentUser = ref(null);
   const loading = ref(false);
   const error = ref(null);
@@ -198,9 +199,24 @@ export const useUserStore = defineStore('user', () => {
     }
   };
 
+  /**
+   * Charge la frise des équipes d'un centre (membres passés, actuels et à venir). Non bloquant : sans frise, la
+   * liste des membres reste affichée.
+   * @param {string} centerId - L'ID du centre.
+   */
+  const fetchTeamsTimeline = async (centerId) => {
+    try {
+      teamsTimeline.value = await userService.fetchTeamsTimeline(centerId);
+    } catch (err) {
+      teamsTimeline.value = null;
+      console.error('Erreur lors de la récupération de la frise des équipes :', err);
+    }
+  };
+
   const emptyStore = () => {
     users.value = [];
     usersGroupedByTeam.value = [];
+    teamsTimeline.value = null;
     currentUser.value = null;
     loading.value = false;
     error.value = null;
@@ -210,6 +226,7 @@ export const useUserStore = defineStore('user', () => {
     // State
     users,
     usersGroupedByTeam,
+    teamsTimeline,
     currentUser,
     loading,
     error,
@@ -230,6 +247,7 @@ export const useUserStore = defineStore('user', () => {
     makeAdmin,
     removeAdmin,
     fetchUsersAndGroupByTeam,
+    fetchTeamsTimeline,
     emptyStore
   };
 });

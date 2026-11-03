@@ -103,6 +103,12 @@
         </v-scroll-x-transition>
       </v-card>
     </v-card-text>
+
+    <!-- Mes équipes sur ~1 an : passé, présent et à venir ; les renforts sont hachurés -->
+    <div v-if="timelineWindow" class="mt-6">
+     
+      <TeamTimeline :rows="timelineRows" :window="timelineWindow" empty-text="Aucune équipe sur cette période." />
+    </div>
   </v-card>
 
   <!-- Dialogue d'information pour mobile -->
@@ -219,6 +225,17 @@ const promptDialog = (mode) => {
 const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const userId = computed(() => authStore.userData.userId);
+
+// Frise des équipes de l'utilisateur (une ligne par équipe), rechargée quand ses occurrences changent
+const timelineWindow = computed(() => teamStore.userTeamTimeline?.window ?? null);
+const timelineRows = computed(() => (teamStore.userTeamTimeline?.teams ?? []).map((team) => ({
+  key: team.teamId,
+  label: `Équipe ${team.teamName ?? '?'}`,
+  segments: team.segments,
+})));
+const loadTimeline = () => (userId.value ? teamStore.fetchUserTeamTimeline(userId.value) : null);
+onMounted(loadTimeline);
+watch(() => teamStore.teamOccurrences, loadTimeline);
 const hasCenter = computed(() => !!authStore.userData.centerId);
 
 const permanentTeam = computed(() => teamStore.teamOccurrences?.permanentTeam);

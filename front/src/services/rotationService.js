@@ -68,53 +68,33 @@ export const rotationService = {
   },
 
   /**
-   * Active une rotation.
+   * Active une rotation à une date. Sans `confirm`, simple aperçu : si des demandes sont touchées, la réponse est
+   * `{ needsApproval: true, changes }` (409) et rien n'est appliqué ; avec `confirm`, le changement est appliqué.
    * @param {string} id - L'ID de la rotation.
-   * @returns {Promise<Object>} La rotation activée.
+   * @param {string} activationDate - La date d'activation (YYYY-MM-DD).
+   * @param {boolean} [confirm=false] - Applique le changement après approbation de l'utilisateur.
+   * @returns {Promise<Object>} Aperçu ou résultat de l'activation.
    */
-  async setActiveRotation(id, activationDate  ) {
+  async setActiveRotation(id, activationDate, confirm = false) {
     const response = await apiFetch(`/rotations/${id}/activate`, {
       method: 'POST',
-      body: JSON.stringify({ activationDate })
+      body: JSON.stringify({ activationDate, confirmed: confirm })
     });
     return response;
   },
 
   /**
-   * Confirme et applique l'activation d'une rotation après approbation utilisateur.
+   * Supprime une date d'activation. Sans `confirm`, simple aperçu (voir setActiveRotation) ; avec `confirm`,
+   * la suppression est appliquée.
    * @param {string} id - L'ID de la rotation.
-   * @returns {Promise<Object>} La rotation activée.
+   * @param {string} activationDate - La date d'activation à supprimer (YYYY-MM-DD).
+   * @param {boolean} [confirm=false] - Applique le changement après approbation de l'utilisateur.
+   * @returns {Promise<Object>} Aperçu ou résultat de la suppression.
    */
-  async confirmAddActivation(id, activationDate) {
-    const response = await apiFetch(`/rotations/${id}/confirm-activate`, {
-      method: 'POST',
-      body: JSON.stringify({ activationDate })
-    });
-    return response;
-  },
-
-  /**
-   * Confirme et applique la suppression d'une date d'activation après approbation utilisateur.
-   * @param {string} id - L'ID de la rotation.
-   * @returns {Promise<Object>} La rotation activée.
-   */
-  async confirmRemoveActivation(id, activationDate) {
-    const response = await apiFetch(`/rotations/${id}/confirm-remove-activate`, {
-      method: 'POST',
-      body: JSON.stringify({ activationDate })
-    });
-    return response;
-  },
-
-  /**
-   * Désactive une rotation.
-   * @param {string} id - L'ID de la rotation.
-   * @returns {Promise<Object>} La rotation désactivée.
-   */
-  async removeActivationDate(id, activationDate) {
+  async removeActivationDate(id, activationDate, confirm = false) {
     const response = await apiFetch(`/rotations/${id}/remove-date`, {
       method: 'POST',
-      body: JSON.stringify({ activationDate })
+      body: JSON.stringify({ activationDate, confirmed: confirm })
     });
     return response;
   },

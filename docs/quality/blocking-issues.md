@@ -15,12 +15,6 @@ Severity: **P0** = the app cannot run or is trivially compromised; **P1** = seri
 ### 2. Local admin passwords already in production (residual)
 `createLocalAdmin` now requires `LOCAL_ADMIN_PASSWORD` and no longer overwrites existing passwords, so existing production accounts `admin-<oaci>@celeste-app.fr` still have the old guessable password `admin-<oaci>` until changed by hand: **rotate them**. Also, `utils/seedDefaultConfig.js:328,340` hardcodes `password: 'user'` / `'admin-lfbb'` (acceptable only if strictly dev; see #5 and the `ensureDev` guard in `dev.routes.js`).
 
-### 3. Center management API has no authentication
-`backend/routes/center.routes.js` — no `verifyToken`/`isAdmin` anywhere.
-
-Unauthenticated callers can `POST /api/center` (create), `PUT /api/center/:id` (update) and `DELETE /api/center/:id` (delete a center), and read admin lists (`GET /api/center/admins`) and user counts.
-**Fix:** add `verifyToken` to the router and `isMasterAdmin` (or an equivalent center-scoped check) to the write routes.
-
 ### 4. JWT secrets fall back to public literals
 `backend/middleware/authMiddleware.js:19` and `backend/services/auth/auth.refreshToken.js:6-7`
 
@@ -39,9 +33,6 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 - The JVM crash/replay logs may contain environment variables and local paths. I did not inspect their contents; review before keeping.
 - `.gitignore` lists `.env`, yet the file is still tracked, because it was added before the ignore rule.
 **Fix:** `git rm --cached` these files, rotate the Mongo credentials, review the logs for secrets, and set `StrictHostKeyChecking` to `accept-new` or `yes`. Rewriting history (a `git-filter-repo` dependency is already in the root `package.json`) is optional once the secrets are rotated.
-
-### 27. Rotation change: confirming from the UI always fails
-`front/src/pages/rotation.vue:362,386` store the pending change as `{ type, rotationId, date, changes, centerId }`, but `confirmChange` (line 398) destructures `{ type, rotation, date, centerId }`. `rotation` is `undefined`, so the confirm call goes to `/rotations/undefined/confirm-activate` (or `confirm-remove-activate`) and the backend answers 400 "ID de rotation invalide". Any activation change that needs approval (which is every change that alters the effective timeline) can therefore not be applied from the UI. **Fix:** read `rotationId` (and reset with the same key in `cancelActivation`).
 
 ---
 
@@ -68,8 +59,8 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ### 9. Authorization gaps in `isUserOrAdmin`
 `middleware/authMiddleware.js:63` lets **any** admin act on **any** user (including other centers), for example `assign-team`, `team-occurrences` deletion and avatar upload. Also `GET /users/:id/transactions`, `/current-team` and `/teams/:centerId`, `/center/:centerId` have no ownership/center check at all (any logged-in user can read any center's data). Needs a center-scope check (`checkUserCenter` exists but is used on only one route).
 
-### 10. Access tokens are `15m`, refresh tokens `180d` — but the cookie lives 365 days
-`auth.controller.js:25` sets `maxAge` 365 days while the refresh JWT expires in 180 days (the comment in `auth.refreshToken.js` says "365 jours"). Harmless but inconsistent; confirm the intended lifetime, and that `COOKIE_OPTIONS` sets `httpOnly`, `secure` and `sameSite`.
+### 10. Access tokens are `15m`
+Harmless but inconsistent; confirm the intended lifetime, and that `COOKIE_OPTIONS` sets `httpOnly`, `secure` and `sameSite`.
 
 ### 11. Oversized request bodies and file uploads
 `server.js` sets `express.json({ limit: '50mb' })` globally, unauthenticated. The avatar upload (`user.routes.js`) trusts the client: any file is saved with a `.png` extension and no MIME check, into `public/avatars`, which is served statically. Reduce the global limit, validate MIME type and magic bytes, and consider re-encoding images.
@@ -79,7 +70,7 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 - **Read oracle:** calling without `confirmed` returns the 409 payload for the chosen period: the victim's substitutions (dates, status, poster/accepter full names) and calendar entries. Anyone allowed to call it can probe any user. If the chosen change affects nothing, it is applied immediately without any confirmation.
 - **`checkUserCenter` fails open on these routes:** it reads `req.params.userId || req.body.userId`, but these routes use `:id`, so adding it as-is would silently pass (`if (!targetUserId) return next()`). The same silent bypass already affects `GET /:id/team-at`.
 - A regular user acting on themselves can also see names from cascaded requests of other users in the preview (`previewUserPeriodImpact` populates dependent requests' poster/accepter).
-**Fix:** a center-scoped guard keyed on `:id` (target user's `centerId` equals the caller's, except master admin) on every `/:id/...` route, with fail-closed behaviour when the target user is missing; restrict cascade names to the caller's own requests or to admins of that center.
+**Fix:** a center-scoped guard keyed on `:id` (now available: `middleware/centerAuth.js` exports `authorizeCenterParam` / `authorizeTargetUserCenter`, fail-closed, currently used only by the new team-timeline routes; apply them here) (target user's `centerId` equals the caller's, except master admin) on every `/:id/...` route, with fail-closed behaviour when the target user is missing; restrict cascade names to the caller's own requests or to admins of that center.
 
 ### 21. Production MongoDB is a standalone server but team changes now require transactions
 `inTransaction` in `services/user/user.team.js` (and `user.sanitizePeriod.js`) uses `session.withTransaction`, which fails on a standalone `mongod` ("Transaction numbers are only allowed on a replica set member or mongos"). The root `docker-compose.yml` (production) starts `mongo:8.0` with `--bind_ip_all --port 27017` and **no `--replSet`**; only `backend/docker-compose.yml` (dev) sets `--replSet rs0`. If production really runs this way, every team assignment/removal now returns 500, where it previously only saved the user (the substitution cancel/withdraw/accept flows already depend on transactions and would be failing too). **Fix:** confirm production topology; run a single-node replica set in production (`--replSet` + `rs.initiate`) or add a non-transactional fallback.
@@ -146,11 +137,13 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 - Rotation reads (`GET /rotations/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are, see `middleware/rotationAuth.js`).
 - `saveRotation` throws a 500 when `days` is missing; the `days` branch of `updateRotation` is dead (commented out).
 
+### 38. Deleting a center does not delete its rotations
+`controllers/center.controller.js` (`deleteCenter`) runs `Rotation.updateMany({ center: id }, { $set: { deleted: true } })`, but rotations store their center in `centerId`, so the filter matches nothing and a deleted center's rotations stay active. The same handler also unsets `centerId` and `teams` on every user of the center without any confirmation or preview. **Fix:** filter on `centerId`, and consider a confirm step (like the team-change 409 flow) since the operation wipes memberships.
+
 ---
 
 ## Suggested order of work
-0. #27 (one-line front fix; without it rotation changes cannot be applied).
-1. #3, #4, #5 and #20 (center authorization on the team routes) before the next production deploy; confirm #21 (replica set) first; rotate credentials (#2, #5) in parallel.
+1. #4, #5 and #20 (center authorization on the team routes) before the next production deploy; confirm #21 (replica set) first; rotate credentials (#2, #5) in parallel.
 2. #17 (front build) and #13 so the app can be exercised end to end.
 3. #30-#31; #6-#9 next sprint; #10-#11 and #22-#25 as hardening; #18, #19, #26, #33-#36 as cleanup.
 

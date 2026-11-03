@@ -14,6 +14,7 @@ import * as userShiftsService from '../services/user/user.shifts.js';
 import { createUserService } from '../services/user/user.create.js';
 import * as userService from '../services/user/getUsersService.js';
 import * as userTeamService from '../services/user/user.team.js';
+import * as teamTimelineService from '../services/user/user.teamTimeline.js';
 import { AppError } from '../error/AppError.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -887,7 +888,29 @@ const getDevListUsers = async (req, res, next) => {
 };
 
 // Exporter les fonctions du module
+// Frise des équipes d'un centre : membres passés, actuels et à venir de chaque équipe (3 mois avant / 9 mois après par défaut)
+const getTeamsTimeline = async (req, res, next) => {
+    try {
+        const { from, to } = req.query;
+        res.status(200).json(await teamTimelineService.getCenterTeamsTimeline(req.params.centerId, { from, to }));
+    } catch (err) {
+        next(err);
+    }
+};
+
+// Frise des équipes d'un utilisateur : ses équipes (affectations permanentes et renforts) sur la fenêtre
+const getUserTeamTimeline = async (req, res, next) => {
+    try {
+        const { from, to } = req.query;
+        res.status(200).json(await teamTimelineService.getUserTeamTimeline(req.params.id, { from, to }));
+    } catch (err) {
+        next(err);
+    }
+};
+
 export {
+    getTeamsTimeline,
+    getUserTeamTimeline,
     createUser,
     getAllUsers,
     getUserById,

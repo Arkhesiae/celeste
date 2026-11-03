@@ -319,9 +319,10 @@ const updateRotation = async (updatedRotation) => {
   }
 };
 
-const handleSetActivationDate = (rotationId, date, centerId) => {
-  activateParams.value =  {rotationId, date, centerId};
-  showActivateDialog.value = true
+// RotationItem émet le tour de service lui-même ; la date d'activation est choisie ensuite dans le dialogue
+const handleSetActivationDate = (rotation) => {
+  activateParams.value = { rotationId: rotation._id, centerId: rotation.centerId };
+  showActivateDialog.value = true;
 };
 
 const handleRemoveActivationDate = (rotationId, date, centerId) => {
@@ -348,8 +349,9 @@ const confirmDelete = async () => {
 };
 
 const setActivationDate = async (startDate) => {
-  const { date } = activateParams.value;
-  if (!date) {
+  const { rotationId } = activateParams.value;
+  if (!rotationId || !startDate) {
+    snackbarStore.showNotification('Aucun tour de service ou aucune date sélectionnée', 'onError', 'mdi-alert-circle-outline');
     return;
   }
     try {
@@ -395,11 +397,11 @@ const removeActivationDate = async () => {
 
 const confirmChange = async () => {
   try {
-    const { type, rotation, date, centerId } = pendingActivation.value;
+    const { type, rotationId, date, centerId } = pendingActivation.value;
 
     const result = type === 'add'
-      ? await rotationStore.setActiveRotation(rotation, date, centerId, { confirm: true })
-      : await rotationStore.removeActivationDate(rotation, date, centerId, { confirm: true });
+      ? await rotationStore.setActiveRotation(rotationId, date, centerId, { confirm: true })
+      : await rotationStore.removeActivationDate(rotationId, date, centerId, { confirm: true });
 
     onActivationSuccess(result);
   } catch (error) {
@@ -410,7 +412,7 @@ const confirmChange = async () => {
 
 const cancelActivation = () => {
   showConfirmChangeDialog.value = false;
-  pendingActivation.value = { rotation: null, date: null, changes: [] };
+  pendingActivation.value = { rotationId: null, date: null, changes: [] };
 }
 
 const onActivationSuccess = (result) => {

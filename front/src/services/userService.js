@@ -114,6 +114,25 @@ export const userService = {
   },
 
   /**
+   * Frise des équipes d'un centre : pour chaque équipe, ses membres passés, actuels et à venir et leurs périodes
+   * (permanent / renfort). Fenêtre par défaut : 3 mois avant et 9 mois après aujourd'hui.
+   * @param {string} centerId - L'ID du centre.
+   * @returns {Promise<{ window: { from: string, to: string }, teams: Array }>}
+   */
+  async fetchTeamsTimeline(centerId) {
+    return apiFetch(`/users/teams/${centerId}/timeline`, { method: 'GET' });
+  },
+
+  /**
+   * Frise des équipes d'un utilisateur (affectations permanentes et renforts sur la fenêtre).
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @returns {Promise<{ window: { from: string, to: string }, teams: Array }>}
+   */
+  async fetchUserTeamTimeline(userId) {
+    return apiFetch(`/users/${userId}/team-timeline`, { method: 'GET' });
+  },
+
+  /**
    * Récupère les occurrences d'équipe d'un utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
    * @returns {Promise<Array>} Liste des occurrences d'équipe.

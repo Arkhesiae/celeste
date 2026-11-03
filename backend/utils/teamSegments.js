@@ -48,6 +48,11 @@ export function getOwnerTeamIdAt (occurrences, date) {
 }
 
 function ownerAt (normalized, key) {
+    return ownerOccurrenceAt(normalized, key)?.teamId ?? null;
+}
+
+/** Occurrence qui fait autorité un jour donné (renfort borné > permanente, puis la plus récente), ou null. */
+function ownerOccurrenceAt (normalized, key) {
     let bounded = null;
     let permanent = null;
 
@@ -60,7 +65,7 @@ function ownerAt (normalized, key) {
         }
     }
 
-    return (bounded ?? permanent)?.teamId ?? null;
+    return bounded ?? permanent ?? null;
 }
 
 /**
@@ -103,6 +108,29 @@ export function buildTeamSegments (occurrences) {
         (a, b) => a === b,
         ({ from, to, result }) => ({ teamId: result, from, to })
     ).filter((segment) => segment.teamId !== null);
+}
+
+/**
+ * Comme buildTeamSegments, mais chaque segment indique aussi s'il vient d'une affectation permanente ou d'un
+ * renfort (occurrence bornée) : `kind: 'permanent' | 'reinforcement'`. Deux segments contigus fusionnent
+ * seulement s'ils ont la même équipe ET le même type. Sert à l'affichage (frises).
+ * @param {Array<{ teamId, fromDate, toDate? }>} occurrences - ex. user.teams
+ * @returns {Array<{ teamId: string, kind: 'permanent'|'reinforcement', from: string, to: string|null }>}
+ */
+export function buildTeamTimeline (occurrences) {
+    const normalized = normalizeOccurrences(occurrences);
+
+    const boundaries = normalized.flatMap(({ from, to }) => (to === null ? [from] : [from, shiftKey(to, 1)]));
+
+    return sweep(
+        boundaries,
+        (key) => {
+            const occ = ownerOccurrenceAt(normalized, key);
+            return occ ? { teamId: occ.teamId, kind: occ.to === null ? 'permanent' : 'reinforcement' } : null;
+        },
+        (a, b) => a?.teamId === b?.teamId && a?.kind === b?.kind,
+        ({ from, to, result }) => (result ? { teamId: result.teamId, kind: result.kind, from, to } : null)
+    ).filter(Boolean);
 }
 
 /**

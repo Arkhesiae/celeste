@@ -1,6 +1,6 @@
 import User from '../../models/User.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
-import { sendCancelledAcceptanceEmail } from '../email/userPoolNotificationEmail.js';
+import { sendCancelledAcceptanceEmail } from '../email/demand/demandEmails.js';
 import { categorizeRequests } from './request.getAndCat.js';
 import { AppError } from '../../error/AppError.js';
 import mongoose from 'mongoose';

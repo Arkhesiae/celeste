@@ -3,7 +3,7 @@ import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { computeUserPool } from '../utils/computeUserPool.js';
 import * as compatibilityService from '../services/substitution/compatibilityService.js';
 import * as demandService from '../services/substitution/index.js';
-import { sendUserPoolNotification } from '../services/email/userPoolNotificationEmail.js';
+import { sendUserPoolNotification } from '../services/email/demand/demandEmails.js';
 import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
 import Rule from '../models/Rule.js';

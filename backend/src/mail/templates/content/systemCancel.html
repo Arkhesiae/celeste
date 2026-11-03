@@ -1,0 +1,50 @@
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+        <td align="left">
+            {{> hello }}
+        </td>
+    </tr>
+    <tr>
+        <td height="40">&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td align="left">
+            <h4 style="color:#333;">Demande annulée [système]</h4>
+        </td>
+    </tr>
+    <tr>
+        <td align="left">
+            <div style="font-family: Arial,sans-serif; max-width:600px; margin:0 auto; ">
+
+                {{#ifEquals role "accepter"}}
+                <p style="margin:0 0 12px 0; line-height:1.5;">
+                    La demande
+                    {{#if typeText}}de <span style="font-weight: 800; text-transform: uppercase; font-size: 12px;">{{typeText}}</span>{{/if}}
+                    de <strong>{{counterpartName}}</strong> du <strong>{{posterShiftDate}}</strong>, que vous aviez acceptée,
+                    a été annulée.
+                </p>
+                <p style="margin:0; line-height:1.5;">
+                    Vous n'êtes plus engagé(e) sur cette vacation et les points associés ne vous seront pas attribués.
+                </p>
+                {{else}}
+                <p style="margin:0 0 12px 0; line-height:1.5;">
+                    Votre demande
+                    {{#if typeText}}de <span style="font-weight: 800; text-transform: uppercase; font-size: 12px;">{{typeText}}</span>{{/if}}
+                    du <strong>{{posterShiftDate}}</strong> a été annulée.
+                </p>
+                {{#if counterpartName}}
+                <p style="margin:0 0 12px 0; line-height:1.5;">
+                    <strong>{{counterpartName}}</strong> ne vous remplace plus. Si ce remplacement avait déjà été déclaré,
+                    pensez à mettre à jour votre déclaration sur OLAFATCO.
+                </p>
+                {{/if}}
+                <p style="margin:0; line-height:1.5; color:#666; font-size:14px;">
+                    Vous pouvez publier une nouvelle demande si nécessaire.
+                </p>
+                {{/ifEquals}}
+
+            </div>
+        </td>
+    </tr>
+</table>

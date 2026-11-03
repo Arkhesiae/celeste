@@ -18,6 +18,7 @@ MONGO_URI=mongodb://localhost:27017/myDatabase?authSource=admin
 ADMIN_EMAIL=admin@celeste.com
 ADMIN_PASSWORD=celeste
 LOCAL_ADMIN_PASSWORD=choisir-un-secret
+REMINDER_HOUR=18
 FRONTEND_URL=https://localhost:30035
 MAIL_SERVICE=console
 ```

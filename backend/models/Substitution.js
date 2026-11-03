@@ -93,6 +93,11 @@ const SubstitutionSchema = new mongoose.Schema({
         enum: ['sent', 'pending'],
         default: 'pending'
     },
+    // Date d'envoi du rappel de la veille à l'accepteur ; remis à null à chaque nouvelle acceptation
+    reminderSentAt: {
+        type: Date,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now

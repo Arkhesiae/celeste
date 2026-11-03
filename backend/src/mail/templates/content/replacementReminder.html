@@ -1,0 +1,38 @@
+<table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+    <tr>
+        <td align="left">
+            {{> hello }}
+        </td>
+    </tr>
+    <tr>
+        <td height="40">&nbsp;</td>
+    </tr>
+
+    <tr>
+        <td align="left">
+            <h4 style="color:#333; margin:0 0 12px 0;">Rappel : {{effectiveTypeText}} demain</h4>
+        </td>
+    </tr>
+    <tr>
+        <td align="left">
+            <div style="font-family: Arial,sans-serif; max-width:600px; margin:0 auto;">
+                <p style="margin:0 0 8px 0; line-height:1.5;">
+                    Demain, vous êtes engagé(e) pour {{effectiveTypeLower}} avec <strong>{{posterName}}</strong> :
+                </p>
+
+                {{> demand }}
+
+                {{#if exchangedShift}}
+                <p style="margin:0 0 8px 0; line-height:1.5;">
+                    En échange, <strong>{{posterName}}</strong> effectue votre vacation habituelle ({{exchangedShift}}).
+                </p>
+                {{/if}}
+
+                <p style="margin:12px 0 0 0; line-height:1.5; color:#666; font-size:14px;">
+                    Un empêchement ? Retirez-vous de la demande depuis l'application dès que possible afin que
+                    {{posterName}} puisse trouver quelqu'un d'autre.
+                </p>
+            </div>
+        </td>
+    </tr>
+</table>

@@ -154,6 +154,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
     request.accepterId = userId;
     request.status = 'accepted';
+    request.reminderSentAt = null;
     request.updatedAt = new Date();
     await request.save({ session });
 

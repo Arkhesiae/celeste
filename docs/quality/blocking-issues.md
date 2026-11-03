@@ -116,8 +116,11 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 (The rotation activation flow behaves the same: `/activate` accepts `confirmed: true` directly and the confirm path recomputes the changes instead of applying the previewed ones.)
 The client may send `confirmed: true` (body / `?confirmed=true`) at any time; the server does not check that the caller saw the impact. Between the 409 preview and the confirmation, new substitutions or entries can appear and be cancelled without the user having seen them. Not a privilege issue (the caller is already authorised), but the safeguard is only UX. **Fix (optional):** return an `impactHash` in the 409 and require it with `confirmed`; recompute inside the transaction and answer 409 again if it differs.
 
-### 23. Third parties are affected without notice
-Cancelling a poster's accepted request removes the accepter's shift swap, pending point transactions are cancelled, and cascaded requests of unrelated users are cancelled, with **no email or notification** (`sanitizeUserPeriod` deliberately sends none). Integrity/consent concern rather than a vulnerability: affected users learn about it only by noticing their calendar changed. **Fix:** notify the counterpart (reuse `sendCancelledAcceptanceEmail` / a cancellation mail) after commit.
+### 23. Notifications still missing in two cases (the system-initiated ones are fixed)
+Team changes and rotation changes now email the affected third parties after commit (`services/email/demand/demandChangeNotifications.js`). Still silent:
+- **User-initiated cancellation:** when a poster cancels their own *accepted* request (`request.cancel.js`), the accepter gets nothing. The `cancelledDemand` template exists but no code sends it.
+- **Converted demands:** when a rotation change only *modifies* a demand (new shift id, hybrid downgraded to substitution, accepted switches reduced), the poster and accepter are not told.
+- The mails are intentionally generic (no cause, no "automatic" wording); cascaded children get the same cancellation mail, with nothing saying that their request depended on another one that was cancelled.
 
 ### 24. Input validation gaps on the team-change body
 - No `toDate >= fromDate` check: an inverted occurrence is stored and silently ignored by the segment logic (`buildTeamSegments`), leaving confusing data.

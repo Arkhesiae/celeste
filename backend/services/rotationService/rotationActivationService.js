@@ -3,6 +3,7 @@ import Substitution from '../../models/Substitution.js';
 import mongoose from 'mongoose';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromRequestWithSession, cancelRequestWithSession } from '../substitution/request.internal.js';
+import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
 
 
 
@@ -47,7 +48,10 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
     const session = await mongoose.startSession();
     try {
         let outcome;
+        let notifications;
         await session.withTransaction(async () => {
+            // Recréé à chaque tentative de la transaction : une tentative rejouée ne double pas les notifications
+            notifications = { cancelled: [], withdrawn: [] };
             const beforeList = await getOrderedActivationDates(centerId, session);
 
             const mongoOp = action === 'add'
@@ -76,10 +80,16 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
                 message += ` (${repetitionsRemoved} répétitions successives supprimées)`;
             }
             if (changes.length > 0) {
-                message = await handleChanges(changes, centerId, message, session);
+                message = await handleChanges(changes, centerId, message, session, notifications);
             }
 
             outcome = { rotation: updatedRotation, message, changes };
+        });
+
+        // Après le commit uniquement : prévenir les agents dont la demande a été annulée ou l'accepteur retiré
+        notifyDemandChanges({
+            cancelledIds: notifications.cancelled,
+            withdrawn: notifications.withdrawn,
         });
         return outcome;
     }
@@ -195,7 +205,7 @@ const simulateDemandConversion = (populatedDemands, oldRotation, newRotation) =>
     return result;
 };
 
-const handleChanges = async (changes, centerId, message, session = null) => {
+const handleChanges = async (changes, centerId, message, session = null, notifications = { cancelled: [], withdrawn: [] }) => {
     try {
         // Séquentiel : une transaction MongoDB n'accepte pas d'opérations en parallèle sur la même session
         for (const change of changes) {
@@ -210,10 +220,10 @@ const handleChanges = async (changes, centerId, message, session = null) => {
             const newRotationDaysCount = newRotation?.days?.length || 0;
 
             if (oldRotationDaysCount !== newRotationDaysCount || !newRotation) {
-                const cancelledCount = await systemCancelDemands(demandsToConvert, session);
+                const cancelledCount = await systemCancelDemands(demandsToConvert, session, notifications);
                 message += ' - ' + cancelledCount + ' demandes annulées';
             } else {
-                const result = await convertCenterDemands(demandsToConvert, oldRotation, newRotation, session);
+                const result = await convertCenterDemands(demandsToConvert, oldRotation, newRotation, session, notifications);
                 if (result.converted > 0) {
                     message += ' - ' + result.converted + ' demandes converties';
                 }
@@ -239,7 +249,7 @@ const handleChanges = async (changes, centerId, message, session = null) => {
  * @param {string} newRotationId - ID de la nouvelle rotation
  * @returns {Promise<{ converted: number, cancelled: number }>}
  */
-const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, session = null) => {
+const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, session = null, notifications = { cancelled: [], withdrawn: [] }) => {
     try {
         if (!oldRotation || !newRotation) {
             throw new AppError('Rotation introuvable.', 404);
@@ -266,7 +276,9 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, 
 
             if (cancelled) {
                 try {
-                    await cancelRequestWithSession(populatedDemand._id, { session, reason: "system-cancelled" });
+                    const cancelledRequests = [];
+                    await cancelRequestWithSession(populatedDemand._id, { session, reason: "system-cancelled", cancelledRequests });
+                    notifications.cancelled.push(...cancelledRequests.map((r) => r._id));
                     console.log(`✅ [${populatedDemand._id}] Demande annulée (${cancelled.reason})`);
                     cancelledDemands++;
                 } catch (error) {
@@ -286,6 +298,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, 
             if (accepter.verdict === 'reopen') {
                 try {
                     await withdrawFromRequestWithSession(populatedDemand._id, populatedDemand.accepterId, { session });
+                    notifications.withdrawn.push({ demandId: populatedDemand._id, accepterId: populatedDemand.accepterId });
                 } catch (err) {
                     console.error('Erreur lors du retrait de la demande:', err);
                 }
@@ -372,7 +385,7 @@ const getDemandsToConvert = async (change, centerId, session = null) => {
  * transactions de points en attente annulées, entrées de calendrier de substitution désactivées.
  * @returns {Promise<number>} nombre de demandes annulées (cascade comprise)
  */
-const systemCancelDemands = async (demands, session) => {
+const systemCancelDemands = async (demands, session, notifications = { cancelled: [], withdrawn: [] }) => {
     const visited = new Set();
     const cancelledRequests = [];
 
@@ -380,6 +393,7 @@ const systemCancelDemands = async (demands, session) => {
         await cancelRequestWithSession(demand._id, { session, visited, cancelledRequests, reason: 'system-cancelled' });
     }
 
+    notifications.cancelled.push(...cancelledRequests.map((r) => r._id));
     return cancelledRequests.length;
 };
 
@@ -453,187 +467,6 @@ function findChangedPeriods (before, after) {
     return changes;
 }
 
-
-
-
-// /**
-//  * Met à jour les dates d'activation d'une rotation (ajout ou suppression)
-//  * @param {'add' | 'remove'} action - Type d'action à effectuer ('add' ou 'remove')
-//  * @param {string} rotationId - ID de la rotation concernée
-//  * @param {string} activationDate - Date d'activation à ajouter ou supprimer
-//  * @returns {Object} Résultat de l'opération (besoin d'approbation ou confirmation directe)
-//  */
-// const updateActivationDate = async (action, rotationId, activationDate) => {
-//     try {
-//         if (!['add', 'remove'].includes(action)) {
-//             throw new Error(`Action invalide : ${action}. Utiliser 'add' ou 'remove'.`);
-//         }
-
-//         const rotationToUpdate = await getValidRotation(rotationId);
-//         const centerId = rotationToUpdate.centerId;
-
-//         // Récupération des activations actuelles du centre
-//         const existingActivations = await getOrderedActivationDates(centerId);
-//         let updatedList = [...existingActivations];
-//         const targetDate = new Date(activationDate);
-
-
-
-//         switch (action) {
-//             // === AJOUT ===
-//             case 'add':
-//                 const newActivation = { rotationId, activationDate: targetDate };
-
-//                 // Trouver l'index d'insertion trié par date
-//                 let insertIndex = updatedList.length;
-//                 for (let i = 0; i < updatedList.length; i++) {
-//                     if (new Date(updatedList[i].activationDate) > targetDate) {
-//                         insertIndex = i;
-//                         break;
-//                     }
-//                 }
-//                 updatedList.splice(insertIndex, 0, newActivation);
-//                 break;
-
-//             // === SUPPRESSION ===
-//             case 'remove':
-//                 const indexToRemove = updatedList.findIndex(
-//                     (a) => new Date(a.activationDate).getTime() === targetDate.getTime()
-//                 );
-
-//                 if (indexToRemove === -1) {
-//                     throw new AppError(`Aucune activation trouvée à la date ${activationDate}`, 404);
-//                 }
-
-//                 updatedList.splice(indexToRemove, 1);
-//         }
-
-//         // Nettoyage de la liste et détection des changements
-//         const { cleanedList } = removeSuccessiveRepetitions(updatedList);
-//         const changes = findChangedPeriods(existingActivations, cleanedList);
-
-//         if (changes.length > 0) {
-//             await Promise.all(
-//                 changes.map(async (change) => {
-//                     const demandsToConvert = await getDemandsToConvert(change, centerId);
-//                     console.log(
-//                         `[${change.from || 'no from'} → ${change.to || 'no to'}] demands affected:`,
-//                         demandsToConvert.length
-//                     );
-//                     change.demandsToConvert = demandsToConvert.map((demand) => demand._id);
-//                 })
-//             );
-
-//             return {
-//                 needsApproval: true,
-//                 changes,
-//                 message: `Cette ${action === 'add' ? 'activation' : 'suppression'} entraînera des changements qui nécessitent votre approbation`
-//             };
-//         }
-
-//         // Exécution si aucun changement détecté
-//         if (action === 'add') {
-//             return await confirmAddActivationDate(rotationId, activationDate);
-//         } else {
-//             return await confirmRemoveActivationDate(rotationId, activationDate);
-//         }
-
-//     } catch (error) {
-//         console.error(`Erreur lors de la ${action === 'add' ? 'création' : 'suppression'} de la date d'activation:`, error);
-//         throw error;
-//     }
-// };
-
-
-// const confirmAddActivationDate = async (rotationId, activationDate) => {
-//     try {
-//         console.log('confirmAddActivationDate', rotationId, activationDate);
-//         const rotationToUpdate = await Rotation.findOne({ _id: rotationId, deleted: false });
-//         if (!rotationToUpdate) {
-//             throw new Error('Rotation not found.');
-//         }
-
-//         const centerId = rotationToUpdate.centerId;
-//         // Vérifier les dates d'activation successives
-
-//         const beforeList = await getOrderedActivationDates(centerId);
-
-//         const updatedRotation = await Rotation.findByIdAndUpdate(
-//             rotationId,
-//             { $push: { activationDates: activationDate } },
-//             { new: true }
-//         );
-
-//         const afterList = await getOrderedActivationDates(centerId);
-//         const { cleanedList, repetitionToRemove } = removeSuccessiveRepetitions(afterList);
-//         const changes = findChangedPeriods(beforeList, cleanedList);
-
-
-//         const repetitionsRemoved = await removeRepetitionsInDb(repetitionToRemove);
-
-//         let message = changes.length === 0
-//             ? 'Cette activation n\'entraîne aucun changement'
-//             : 'Date d\'activation ajoutée';
-
-//         if (repetitionsRemoved > 0) {
-//             message += ` (${repetitionsRemoved} répétitions successives supprimées)`;
-//         }
-
-//         if (changes.length > 0) {
-//             message = await handleChanges(changes, centerId, message);
-//         }
-
-//         return { rotation: updatedRotation, message: message, changes: changes };
-//     } catch (error) {
-//         console.error('Erreur lors de la confirmation de la date d\'activation:', error);
-//         throw error;
-//     }
-// };
-
-// const confirmRemoveActivationDate = async (rotationId, activationDate) => {
-//     try {
-//         console.log('confirmRemoveActivationDate', rotationId, activationDate);
-//         const rotationToUpdate = await Rotation.findOne({ _id: rotationId, deleted: false });
-//         if (!rotationToUpdate) {
-//             throw new Error('Rotation not found.');
-//         }
-
-//         const centerId = rotationToUpdate.centerId;
-//         // Vérifier les dates d'activation successives
-
-//         const beforeList = await getOrderedActivationDates(centerId);
-
-//         const updatedRotation = await Rotation.findByIdAndUpdate(
-//             rotationId,
-//             { $pull: { activationDates: activationDate } },
-//             { new: true }
-//         );
-
-//         const afterList = await getOrderedActivationDates(centerId);
-//         const { cleanedList, repetitionToRemove } = removeSuccessiveRepetitions(afterList);
-//         const changes = findChangedPeriods(beforeList, cleanedList);
-
-
-//         const repetitionsRemoved = await removeRepetitionsInDb(repetitionToRemove);
-
-//         let message = changes.length === 0
-//             ? 'Cette activation n\'entraîne aucun changement'
-//             : 'Date d\'activation supprimée';
-
-//         if (repetitionsRemoved > 0) {
-//             message += ` (${repetitionsRemoved} répétitions successives supprimées)`;
-//         }
-
-//         if (changes.length > 0) {
-//             message = await handleChanges(changes, centerId, message);
-//         }
-
-//         return { rotation: updatedRotation, message: message, changes: changes };
-//     } catch (error) {
-//         console.error('Erreur lors de la confirmation de la date d\'activation:', error);
-//         throw error;
-//     }
-// };
 
 
 

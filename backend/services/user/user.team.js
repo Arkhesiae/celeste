@@ -4,6 +4,7 @@ import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
 import { buildTeamSegments, diffTeamSegments } from '../../utils/teamSegments.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
+import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
 
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -50,15 +51,20 @@ async function buildApprovalRequest (user, { before, after, changes }) {
  */
 async function sanitizeAndSaveTeams (user, afterTeams, session) {
     const { changes } = planTeamChange(user, afterTeams);
+    const cancelled = new Set();
+    const withdrawn = new Set();
 
     for (const { from, to } of changes) {
-        await sanitizeUserPeriod(user._id, { from, to }, { session });
+        const result = await sanitizeUserPeriod(user._id, { from, to }, { session });
+        result.cancelled.forEach((id) => cancelled.add(id));
+        result.withdrawn.forEach((id) => withdrawn.add(id));
     }
 
     user.teams = afterTeams;
     await user.save({ session });
 
-    return changes;
+    // changes + demandes annulées (cascade comprise) / dont l'utilisateur s'est retiré, pour prévenir les tiers après le commit
+    return { changes, cancelled: [...cancelled], withdrawn: [...withdrawn] };
 }
 
 async function inTransaction (fn) {
@@ -76,8 +82,9 @@ async function inTransaction (fn) {
  * @param {string} userId
  * @param {(user) => Array} computeAfter - occurrences après changement (peut lever une AppError)
  * @param {boolean} confirmed
+ * @param {string} [actorId] - qui déclenche le changement : n'est pas notifié par email (voir notifyDemandChanges)
  */
-async function applyTeamChange (userId, computeAfter, confirmed) {
+async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
     if (!confirmed) {
         const user = await User.findById(userId);
         if (!user) throw new AppError('Utilisateur non trouvé', 404);
@@ -87,11 +94,18 @@ async function applyTeamChange (userId, computeAfter, confirmed) {
         if (approval) return approval;
     }
 
-    const changes = await inTransaction(async (session) => {
+    const { changes, cancelled, withdrawn } = await inTransaction(async (session) => {
         const user = await User.findById(userId).session(session);
         if (!user) throw new AppError('Utilisateur non trouvé', 404);
 
         return sanitizeAndSaveTeams(user, computeAfter(user), session);
+    });
+
+    // Après le commit uniquement : les tiers touchés (contrepartie, demandes en cascade) sont prévenus par email
+    notifyDemandChanges({
+        cancelledIds: cancelled,
+        withdrawn: withdrawn.map((demandId) => ({ demandId, accepterId: userId })),
+        actorId,
     });
 
     return { changes };
@@ -104,10 +118,10 @@ async function applyTeamChange (userId, computeAfter, confirmed) {
  * Supprime une occurrence d'équipe d'un utilisateur
  * @param {string} userId
  * @param {string} occurrenceId
- * @param {{ confirmed?: boolean }} [opts]
+ * @param {{ confirmed?: boolean, actorId?: string }} [opts]
  * @returns {Promise<{ changes: Array } | { needsApproval: true, segments, teams, changes: Array }>}
  */
-export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = false } = {}) {
+export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = false, actorId } = {}) {
     return applyTeamChange(userId, (user) => {
         const after = user.teams.filter(t => t._id.toString() !== occurrenceId);
 
@@ -116,18 +130,18 @@ export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = 
         }
 
         return after;
-    }, confirmed);
+    }, confirmed, actorId);
 }
 
 /**
  * Assigne une équipe à un utilisateur
  * @param {string} userId
  * @param {{ teamId: string, fromDate: string, toDate?: string }} newTeam
- * @param {{ confirmed?: boolean, replaceOccurrenceId?: string }} [opts]
+ * @param {{ confirmed?: boolean, replaceOccurrenceId?: string, actorId?: string }} [opts]
  *   replaceOccurrenceId : occurrence remplacée par la nouvelle, dans le même changement
  * @returns {Promise<{ changes: Array } | { needsApproval: true, segments, teams, changes: Array }>}
  */
-export async function assignTeamToUser (userId, newTeam, { confirmed = false, replaceOccurrenceId } = {}) {
+export async function assignTeamToUser (userId, newTeam, { confirmed = false, replaceOccurrenceId, actorId } = {}) {
     if (!newTeam.teamId || !newTeam.fromDate) {
         throw new AppError('teamId and fromDate are required', 400);
     }
@@ -151,5 +165,5 @@ export async function assignTeamToUser (userId, newTeam, { confirmed = false, re
         }
 
         return [...kept, { teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate }];
-    }, confirmed);
+    }, confirmed, actorId);
 }

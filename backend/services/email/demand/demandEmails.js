@@ -1,6 +1,6 @@
-import emailService from './emailService.js';
-import { renderMail } from '../../src/mail/mailRenderer.js';
-import { getEffectiveShiftTimes } from '../../utils/getEffectiveShiftTimes.js';
+import emailService from '../emailService.js';
+import { renderMail } from '../../../src/mail/mailRenderer.js';
+import { getEffectiveShiftTimes } from '../../../utils/getEffectiveShiftTimes.js';
 
 
 /**
@@ -267,6 +267,72 @@ L'équipe Celeste
 
 
 /**
+ * Envoie à l'accepteur le rappel de la veille d'un remplacement / d'une permutation.
+ * @param {Object} demand - Demande acceptée, avec posterId (name, lastName), accepterId (name, email),
+ *   posterShift.shift (+ variations), posterShift.selectedVariation, posterShift.teamId (name) et accepterShift.shift (name) peuplés
+ * @returns {Promise<Object>} Résultat de l'envoi ({ sent: false } en cas d'échec : emailService.sendEmail ne lève pas)
+ */
+async function sendReplacementReminderEmail (demand) {
+  const accepter = demand.accepterId;
+  const posterName = `${demand.posterId?.name ?? ''} ${demand.posterId?.lastName ? demand.posterId.lastName.slice(0, 1) + '.' : ''}`.trim();
+
+  // Une permutation = l'accepteur a fourni sa propre vacation ; sinon c'est un remplacement
+  const exchangedShift = demand.accepterShift?.shift?.name ?? null;
+  const effectiveTypeText = exchangedShift ? 'Permutation' : 'Remplacement';
+  const effectiveTypeLower = exchangedShift ? 'une permutation' : 'un remplacement';
+
+  const posterShift = demand.posterShift;
+  const selectedVariation = posterShift?.selectedVariation;
+  let variationName = null;
+  if (selectedVariation && typeof selectedVariation === 'object' && selectedVariation.name) {
+    variationName = selectedVariation.name;
+  } else if (selectedVariation && posterShift?.shift?.variations?.length) {
+    const vid = (selectedVariation._id || selectedVariation).toString();
+    variationName = posterShift.shift.variations.find((v) => (v._id || v).toString() === vid)?.name ?? null;
+  }
+  const shiftName = (posterShift?.shift?.name ?? '') + (variationName ?? '');
+  const times = getEffectiveShiftTimes(posterShift?.shift, selectedVariation) || posterShift?.shift?.default;
+  const date = formatDateFr(posterShift.date);
+
+  const templateData = {
+    userName: accepter.name,
+    posterName,
+    effectiveTypeText,
+    effectiveTypeLower,
+    exchangedShift,
+    // données de la carte `demand`
+    demandDate: date,
+    typeText: effectiveTypeText,
+    demandType: exchangedShift ? 'switch' : 'substitution',
+    shift: shiftName,
+    startTime: times?.startTime,
+    endTime: times?.endTime,
+    teamName: posterShift?.teamId?.name,
+    points: demand.points,
+  };
+
+  const text = `
+Bonjour ${accepter.name},
+
+Rappel : demain (${date}), vous êtes engagé(e) pour ${effectiveTypeLower} avec ${posterName} : ${shiftName}${times ? ` (${times.startTime} - ${times.endTime})` : ''}.${exchangedShift ? `\nEn échange, ${posterName} effectue votre vacation habituelle (${exchangedShift}).` : ''}
+
+Un empêchement ? Retirez-vous de la demande depuis l'application dès que possible.
+
+Cordialement,
+L'équipe Celeste
+  `.trim();
+
+  return emailService.sendEmail({
+    to: accepter.email,
+    from: 'Celeste <notification@celeste-app.fr>',
+    subject: `Rappel : votre ${effectiveTypeText.toLowerCase()} de demain`,
+    html: renderMail('replacementReminder', templateData),
+    text,
+  });
+}
+
+
+/**
  * Formate une date en français
  * @param {Date|string} date - Date à formater
  * @returns {string} Date formatée
@@ -286,5 +352,7 @@ function formatDateFr(date) {
 export {
   sendUserPoolNotification,
   sendAcceptedDemandEmail,
-  sendCancelledAcceptanceEmail
+  sendCancelledAcceptanceEmail,
+  sendReplacementReminderEmail,
+  formatDateFr
 };

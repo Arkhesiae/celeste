@@ -46,7 +46,8 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
         <TeamCard
 :team="team" :is-admin="isAdmin"
           :members-count="teamMembers(team._id).length + teamRenforts(team._id).length"
-          :renforts-count="teamRenforts(team._id).length" :next-cycle-date="getNextCycleDate(team)"
+          :renforts-count="teamRenforts(team._id).length" :cycle-start-date="getCycleStartLabel(team)" :next-cycle-date="getNextCycleDate(team)"
+          :current-day="getCurrentCycleDay(team)" :grid-link="{ path: `/center/${centerId}/grid`, query: { team: team._id } }"
           @edit-team-name="openEditTeamNameDialog" @edit-cycle="openDatePickerDialog" @add-member="openAddMemberDialog"
           @remove-team="removeTeam" @view-members="openMembersPanel" />
       </v-col>
@@ -73,22 +74,18 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
     </v-dialog>
 
     <!-- Dialog pour le sélecteur de date -->
-    <v-dialog v-model="datePickerDialog" max-width="380" persistent :fullscreen="xs">
-      <v-card rounded="xl" :class="xs ? 'pa-4' : 'pa-6'">
-        <v-card-title>Définir le début de cycle</v-card-title>
-        <v-card-text class="pa-0  d-flex flex-column justify-space-between align-center">
-          <v-date-picker v-model="selectedDate" width="100%" elevation="0" flat rounded="xl" locale="fr" />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text @click="closeDatePickerDialog">
-            Annuler
-          </v-btn>
-          <v-btn text color="primary" @click="setCycleStartDate">
-            Définir
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <base-dialog v-model="datePickerDialog" title="Définir le début de cycle" max-width="380" persistent>
+      <v-date-picker v-model="selectedDate" width="100%" elevation="0" flat rounded="xl" locale="fr" hide-header />
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="closeDatePickerDialog">
+          Annuler
+        </v-btn>
+        <v-btn variant="text" color="primary" @click="setCycleStartDate">
+          Définir
+        </v-btn>
+      </template>
+    </base-dialog>
 
     <!-- Dialog pour ajouter un membre -->
     <v-dialog v-model="addMemberDialog" max-width="500">
@@ -215,6 +212,8 @@ import { VueDraggable } from 'vue-draggable-plus'
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
+import { Temporal } from '@js-temporal/polyfill';
+import { toDateKey } from '@/utils/dateKey';
 
 
 
@@ -231,7 +230,7 @@ const centerId = route.params.centerId;
 const teams = computed(() => teamStore.centerTeams);
 const usersGroupedByTeam = computed(() => userStore.usersGroupedByTeam);
 const users = computed(() => userStore.users);
-const { smAndDown, xs } = useDisplay();
+const { smAndDown } = useDisplay();
 
 // Ajout de la computed property pour le nom du centre
 const centerName = computed(() => {
@@ -437,51 +436,48 @@ const closeReorderDialog = async () => {
   reorderDialog.value = false;
 };
 
+// Fuseau horaire du centre (Temporal) : « aujourd'hui » et les jours de cycle en dépendent
+const centerTimeZone = computed(() => centerStore.centers.find(c => c._id === centerId)?.timeZone || 'Europe/Paris');
+
+// Jours écoulés depuis le début de cycle de l'équipe, et longueur du cycle de la rotation active ; null si inconnus
+const cycleProgress = (team) => {
+  const total = centerStore.activeRotationsByCenter[centerId]?.days?.length;
+  const startKey = toDateKey(team.cycleStartDate);
+  if (!total || !startKey) return null;
+
+  const today = Temporal.Now.plainDateISO(centerTimeZone.value);
+  const elapsed = Temporal.PlainDate.from(startKey).until(today, { largestUnit: 'days' }).days;
+  return { elapsed, total };
+};
+
 // Fonction pour calculer la prochaine date de cycle
 const getNextCycleDate = (team) => {
   if (!team.cycleStartDate) return 'Non défini';
 
-  const activeRotation = centerStore.activeRotationsByCenter[centerId];
-  if (!activeRotation) return null;
+  const progress = cycleProgress(team);
+  if (!progress) return 'Aucune rotation active';   // sans rotation active, la longueur du cycle est inconnue
 
-  const cycleStartDate = new Date(team.cycleStartDate);
-  const now = new Date();
-  const rotationDays = activeRotation.days?.length;
-
-
-  // Calculer combien de cycles complets se sont écoulés depuis la date de début
-  const daysSinceStart = Math.floor((now - cycleStartDate) / (1000 * 60 * 60 * 24));
-  const completedCycles = Math.floor(daysSinceStart / rotationDays);
-
-  // Calculer la date du prochain cycle
-  const nextCycleDate = new Date(cycleStartDate);
-  nextCycleDate.setDate(cycleStartDate.getDate() + (completedCycles + 1) * rotationDays);
-
-  return nextCycleDate.toLocaleDateString();
+  const { elapsed, total } = progress;
+  const completedCycles = Math.floor(elapsed / total);
+  return Temporal.PlainDate.from(toDateKey(team.cycleStartDate))
+    .add({ days: (completedCycles + 1) * total })
+    .toLocaleString();
 };
 
-// Fonction pour calculer le jour actuel dans le cycle
-// const getCurrentDay = (team) => {
-//   if (!team.cycleStartDate) return 'Non défini';
+// Date de début de cycle définie pour l'équipe (affichée même sans rotation active)
+const getCycleStartLabel = (team) => {
+  const key = toDateKey(team.cycleStartDate);
+  return key ? Temporal.PlainDate.from(key).toLocaleString() : 'Non défini';
+};
 
-//   const activeRotation = centerStore.activeRotationsByCenter[centerId];
-//   if (!activeRotation || !activeRotation.days?.length) return 'Rotation non définie';
+// Jour courant du planning de l'équipe : { position (1-indexé), total } ; null si le cycle n'est pas défini
+const getCurrentCycleDay = (team) => {
+  const progress = cycleProgress(team);
+  if (!progress) return null;
 
-//   const cycleStartDate = new Date(team.cycleStartDate);
-//   const now = new Date();
-//   const rotationDays = activeRotation.days.length;
-
-//   // Calculer combien de jours se sont écoulés depuis la date de début
-//   const daysSinceStart = Math.floor((now - cycleStartDate) / (1000 * 60 * 60 * 24));
-
-//   // Calculer le jour actuel dans le cycle (1-indexed)
-//   const currentDayInCycle = (daysSinceStart % rotationDays) + 1;
-
-//   // Trouver le nom du jour correspondant
-//   const currentDayName = activeRotation.days[currentDayInCycle - 1]?.name || `Jour ${currentDayInCycle}`;
-
-//   return currentDayName;
-// };
+  const { elapsed, total } = progress;
+  return { position: (((elapsed % total) + total) % total) + 1, total };
+};
 
 const openMembersPanel = (team) => {
   selectedTeamForMembers.value = team;

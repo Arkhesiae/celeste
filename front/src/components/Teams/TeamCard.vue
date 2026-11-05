@@ -22,6 +22,23 @@
           </v-btn>
         </div>
         <div class="d-flex align-center">
+          <v-btn
+            icon="mdi-timeline-clock-outline"
+            variant="text"
+            size="small"
+            aria-label="Voir les membres sur la frise"
+            title="Membres sur la frise"
+            @click.stop="$emit('view-members', team)"
+          />
+          <v-btn
+            icon="mdi-view-week-outline"
+            variant="text"
+            size="small"
+            aria-label="Ouvrir la grille de l'équipe"
+            title="Grille de l'équipe"
+            :to="gridLink"
+            @click.stop
+          />
           <v-menu
             color="onBackground"
             rounded="lg"
@@ -53,12 +70,6 @@
                 <v-list-item-title>Ajouter un membre</v-list-item-title>
               </v-list-item> -->
               <v-list-item
-                rounded="lg"
-                @click.stop="$emit('view-members', team)"
-              >
-                <v-list-item-title>Voir les membres</v-list-item-title>
-              </v-list-item>
-              <v-list-item
                 v-if="isAdmin"
                 rounded="lg"
                 @click.stop="$emit('remove-team', team._id)"
@@ -88,6 +99,32 @@
             rounded="lg"
           >
             dont {{ renfortsCount }} renfort(s)
+          </v-chip>
+        </div>
+        <div v-if="currentDay" class="d-flex align-center">
+          <strong>Aujourd'hui:</strong>
+          <v-chip
+            class="ml-1"
+            color="primary"
+            size="small"
+            rounded="lg"
+            variant="tonal"
+            prepend-icon="mdi-calendar-today"
+            :title="`Jour ${currentDay.position} du cycle de ${currentDay.total} jours`"
+          >
+            <span class="font-weight-bold">Jour {{ currentDay.position }}</span>
+            <span class="ml-1 text-medium-emphasis">/ {{ currentDay.total }}</span>
+          </v-chip>
+        </div>
+        <div>
+          <strong>Début de cycle:</strong>
+          <v-chip
+            class="ml-1"
+            color="onBackground"
+            size="small"
+            rounded="lg"
+          >
+            {{ cycleStartDate }}
           </v-chip>
         </div>
         <div>
@@ -124,9 +161,24 @@ defineProps({
     type: Number,
     required: true
   },
+  /** Date de début de cycle déjà formatée (ou « Non défini ») */
+  cycleStartDate: {
+    type: String,
+    default: 'Non défini'
+  },
   nextCycleDate: {
     type: String,
     required: true
+  },
+  /** Jour courant du planning de l'équipe : { position (1-indexé), total } ou null si inconnu */
+  currentDay: {
+    type: Object,
+    default: null
+  },
+  /** Destination de la grille de l'équipe */
+  gridLink: {
+    type: [Object, String],
+    default: undefined
   }
 });
 

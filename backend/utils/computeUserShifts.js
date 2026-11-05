@@ -5,9 +5,7 @@ import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
 import { CalendarEntry, Assignment, Modification, HourPatch } from '../models/CalendarEntry.js';
 import Shift from '../models/Shift.js';
-import Center from '../models/Center.js';
 import Rotation from '../models/Rotation.js';
-import { findLatestRotation } from './findLatestRotation.js';
 import { AppError } from '../error/AppError.js';
 
 
@@ -305,40 +303,41 @@ const computeUserShifts = async (dates, userId) => {
             normalizedDates.map((d) => d.dateStr)
         );
 
-        // Une rotation peuplée par équipe (évite N× aggregate + populate)
-        const rotationByTeamId = new Map();
+        // Rotation active à chaque date : même règle que findLatestRotation (dernière activation <= date), mais
+        // résolue jour par jour. Avant, une seule rotation (celle de la dernière date du lot) servait à tout le lot :
+        // un mois contenant un changement de rotation affichait la nouvelle rotation avant son activation.
+        // Chronologie des activations chargée une fois par centre, rotations peuplées une fois chacune.
+        const timelineByCenter = new Map();
+        const populatedRotations = new Map();
+
+        const getTimeline = async (centerId) => {
+            const key = String(centerId);
+            if (!timelineByCenter.has(key)) {
+                timelineByCenter.set(key, (async () => {
+                    const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates').lean();
+                    return rotations
+                        .flatMap((r) => (r.activationDates || []).map((d) => ({ rotationId: String(r._id), at: new Date(d).getTime() })))
+                        .sort((a, b) => a.at - b.at);
+                })());
+            }
+            return timelineByCenter.get(key);
+        };
+
         const getPopulatedRotation = async (team, date) => {
-            const teamId = team._id?.toString?.() || String(team);
-            if (rotationByTeamId.has(teamId)) return rotationByTeamId.get(teamId);
+            const centerId = team.center?._id ?? team.center;
+            if (!centerId) return null;
 
-            const center = await Center.findById(team.center);
-            if (!center) {
-                rotationByTeamId.set(teamId, null);
-                return null;
+            const timeline = await getTimeline(centerId);
+            const active = timeline.filter((entry) => entry.at <= date.getTime()).at(-1);
+            if (!active) return null;
+
+            if (!populatedRotations.has(active.rotationId)) {
+                populatedRotations.set(active.rotationId, Rotation.findById(active.rotationId).populate({
+                    path: 'days',
+                    populate: { path: 'variations' }
+                }).exec());   // exec() : une promesse réutilisable, pas une Query qu'on ne peut attendre qu'une fois
             }
-
-            let latestRotation = await findLatestRotation(center._id, date);
-            if (!latestRotation) {
-                rotationByTeamId.set(teamId, null);
-                return null;
-            }
-
-            if (latestRotation.days?.length > 0) {
-                const firstDay = latestRotation.days[0];
-                const needsPopulate = typeof firstDay === 'string' ||
-                    firstDay?.constructor?.name === 'ObjectId' ||
-                    firstDay?.constructor?.name === 'ObjectID' ||
-                    !firstDay?.default;
-                if (needsPopulate) {
-                    latestRotation = await Rotation.findById(latestRotation._id).populate({
-                        path: 'days',
-                        populate: { path: 'variations' }
-                    });
-                }
-            }
-
-            rotationByTeamId.set(teamId, latestRotation);
-            return latestRotation;
+            return populatedRotations.get(active.rotationId);
         };
         const shiftFromRotation = (team, date, rotation) => {
             if (!rotation?.days?.length) return null;
@@ -359,9 +358,7 @@ const computeUserShifts = async (dates, userId) => {
 
                 let baseShift = null;
                 if (team) {
-                    // Utilise la date max du batch pour résoudre la rotation active
-                    const pivotDate = normalizedDates[normalizedDates.length - 1].date;
-                    const rotation = await getPopulatedRotation(team, pivotDate);
+                    const rotation = await getPopulatedRotation(team, date);
                     baseShift = shiftFromRotation(team, date, rotation);
                 }
 

@@ -7,6 +7,7 @@ import {
     getPublicTeamsByCenter,
     getAllTeams,
     getTeamShifts,
+    getTeamGrid,
     updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder
@@ -35,6 +36,9 @@ router.get('/', verifyToken, resolveCenterId, getAllTeams);
 
 // Récupérer les shifts d'une équipe pour une période donnée
 router.post('/:id/get-shifts', verifyToken, authorizeTeamAccess, getTeamShifts);
+
+// Grille de l'équipe (membres du centre ou master) : ?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD, 93 jours maximum
+router.get('/:id/grid', verifyToken, authorizeTeamAccess, getTeamGrid);
 
 // Mettre à jour l'ordre des équipes
 router.put('/order', verifyToken, isAdmin, authorizeBodyResourcesCenter(Team, { bodyField: 'teamIds', centerField: 'center' }), updateTeamsOrder);

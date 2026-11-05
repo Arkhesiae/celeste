@@ -108,6 +108,7 @@ declare module 'vue' {
     TeamCard: typeof import('./src/components/Teams/TeamCard.vue')['default']
     TeamChangeDialog: typeof import('./src/components/Profile/TeamChangeDialog.vue')['default']
     TeamChangeImpactDialog: typeof import('./src/components/Profile/TeamChangeImpactDialog.vue')['default']
+    TeamGrid: typeof import('./src/components/Teams/TeamGrid.vue')['default']
     TeamMembersList: typeof import('./src/components/Teams/TeamMembersList.vue')['default']
     TeamOccurence: typeof import('./src/components/Profile/TeamOccurence.vue')['default']
     TeamTimeline: typeof import('./src/components/Teams/TeamTimeline.vue')['default']

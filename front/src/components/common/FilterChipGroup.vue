@@ -15,7 +15,12 @@ class="justify-center font-weight-medium ga-2 align-center chip-custom"
         isSelected && filter.color && 'chip-error'
       ]" variant="tonal" rounded="pill" :selected="isSelected"
         @click="toggle">
-        {{ filter.label }}
+        <div class="d-flex align-center ga-1">
+    
+            <v-icon v-if="isSelected">mdi-check</v-icon>
+         
+          {{ filter.label }}
+        </div>
         <template v-if="filter.count" #append>
           <span class="font-weight-bold" style="font-size: .685rem !important;">
             {{ filter.count }}

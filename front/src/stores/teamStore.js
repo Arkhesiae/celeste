@@ -278,6 +278,9 @@ export const useTeamStore = defineStore('team', () => {
     error.value = null;
   };
 
+  /** Grille d'une équipe sur une courte période (non conservée dans le store : lecture à la demande). */
+  const fetchTeamGrid = (teamId, startDate, endDate) => teamService.getTeamGrid(teamId, startDate, endDate);
+
   return {
     // State
     currentCenter,
@@ -302,6 +305,7 @@ export const useTeamStore = defineStore('team', () => {
     renameTeam,
     updateTeamCycleStartDate,
     updateTeamsOrder,
+    fetchTeamGrid,
     deleteTeamOccurrence,
     emptyStore,
   };

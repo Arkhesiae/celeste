@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { AppError } from '../error/AppError.js';
 import { isValidId } from '../utils/validation.js';
+import { getTeamGrid as getTeamGridService } from '../services/team/team.grid.js';
 
 // Créer une nouvelle équipe dans un centre
 const createTeam = async (req, res, next) => {
@@ -129,6 +130,18 @@ const getTeamShifts = async (req, res, next) => {
     }
 };
 
+// Grille d'une équipe (membres + renforts et leurs vacations) sur une courte période
+const getTeamGrid = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { startDate, endDate } = req.query;
+        if (!isValidId(id)) throw new AppError("ID d'équipe invalide", 400);
+        res.json(await getTeamGridService(id, startDate, endDate));
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Mettre à jour la date de début de cycle d'une équipe
 const updateTeamCycleStartDate = async (req, res, next) => {
     const { id } = req.params;
@@ -207,6 +220,7 @@ export {
     getPublicTeamsByCenter,
     getAllTeams,
     getTeamShifts,
+    getTeamGrid,
     updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder

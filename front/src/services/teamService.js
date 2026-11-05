@@ -133,6 +133,18 @@ export const teamService = {
   },
 
   /**
+   * Grille d'une équipe : membres (permanents et renforts) et leurs vacations / entrées par jour.
+   * @param {string} teamId
+   * @param {string} startDate - YYYY-MM-DD
+   * @param {string} endDate - YYYY-MM-DD (7 jours maximum avec la date de début)
+   * @returns {Promise<{ team, startDate, endDate, members: Array }>}
+   */
+  async getTeamGrid(teamId, startDate, endDate) {
+    const params = new URLSearchParams({ startDate, endDate });
+    return apiFetch(`/teams/${teamId}/grid?${params}`, { method: 'GET' });
+  },
+
+  /**
    * Met à jour l'ordre des équipes.
    * @param {Array<string>} teamIds - Liste ordonnée des IDs des équipes.
    * @returns {Promise<Array>} Liste mise à jour des équipes.

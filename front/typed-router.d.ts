@@ -130,6 +130,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/center/[centerId]/grid': RouteRecordInfo<
+      '/center/[centerId]/grid',
+      '/center/:centerId/grid',
+      { centerId: ParamValue<true> },
+      { centerId: ParamValue<false> },
+      | never
+    >,
     '/center/[centerId]/teams': RouteRecordInfo<
       '/center/[centerId]/teams',
       '/center/:centerId/teams',
@@ -439,6 +446,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/calendar.vue': {
       routes:
         | '/calendar'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/center/[centerId]/grid.vue': {
+      routes:
+        | '/center/[centerId]/grid'
       views:
         | never
       pathParamNames:

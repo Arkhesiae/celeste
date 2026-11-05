@@ -1,6 +1,6 @@
 import express from 'express';
-import { verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin } from '../middleware/authMiddleware.js';
-import { authorizeCenterParam, authorizeTargetUserCenter } from '../middleware/centerAuth.js';
+import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
+import { authorizeCenterParam, authorizeTargetUserCenter, authorizeSelfOrCenterAdmin, resolveCenterId } from '../middleware/centerAuth.js';
 import {
   createUser,
   getAllUsers,
@@ -56,7 +56,7 @@ const upload = multer({
 })
 
 
-// Routes publiques (aucune authentification requise)
+// Routes publiques (aucune authentification requise) : inscription et connexion en ont besoin avant qu'un compte existe
 router.post('/create', createUser);
 router.post('/check-email', checkEmailAvailability);
 router.get('/info/:email', getUserInfoByEmail);
@@ -66,38 +66,38 @@ router.get('/devlist', getDevListUsers);
 router.use(verifyToken);
 // Routes pour les équipes (groupées par fonctionnalité)
 
-router.get('/teams/:centerId', getUsersAndGroupByTeam);
+router.get('/teams/:centerId', authorizeCenterParam('centerId'), getUsersAndGroupByTeam);
 router.get('/teams/:centerId/timeline', authorizeCenterParam('centerId'), getTeamsTimeline);
 router.get('/:id/team-timeline', authorizeTargetUserCenter('id'), getUserTeamTimeline);
-router.get('/center/:centerId', getUsersByCenter);
-router.get('/:id/current-team', getUserCurrentTeam);
-router.get('/:id/team-at', isAdmin, checkUserCenter, getUserTeamAtDate);
-router.get('/:id/team-occurrences', isUserOrAdmin, getUserTeamOccurrences);
-router.delete('/:id/team-occurrences/:occurrenceId', isUserOrAdmin, deleteTeamOccurrence);
-router.post('/:id/assign-team', isUserOrAdmin, assignTeamToUser);
+router.get('/center/:centerId', authorizeCenterParam('centerId'), getUsersByCenter);
+router.get('/:id/current-team', authorizeTargetUserCenter('id'), getUserCurrentTeam);
+router.get('/:id/team-at', isAdmin, authorizeSelfOrCenterAdmin('id'), getUserTeamAtDate);
+router.get('/:id/team-occurrences', authorizeSelfOrCenterAdmin('id'), getUserTeamOccurrences);
+router.delete('/:id/team-occurrences/:occurrenceId', authorizeSelfOrCenterAdmin('id'), deleteTeamOccurrence);
+router.post('/:id/assign-team', authorizeSelfOrCenterAdmin('id'), assignTeamToUser);
 
 // Routes pour les shifts
-router.post('/:id/get-shifts-with-substitutions', isUserOrAdmin, getUserShiftsWithSubstitutions);
+router.post('/:id/get-shifts-with-substitutions', authorizeSelfOrCenterAdmin('id'), getUserShiftsWithSubstitutions);
 
 // Routes pour les points et transactions
-router.get('/:id/points', isUserOrAdmin, getPointsById);
+router.get('/:id/points', authorizeSelfOrCenterAdmin('id'), getPointsById);
 router.post('/:id/points/transfer', transferPoints);
 router.get('/:id/transactions', getTransactionHistory);
 
 // Routes pour les préférences et profil utilisateur
-router.get('/:id/preferences', isUserOrAdmin, getUserPreferences);
-router.put('/:id/preferences', isUserOrAdmin, updateUserPreferences);
-router.post('/:id/avatar', upload.single('avatar'), updateAvatar);
+router.get('/:id/preferences', authorizeSelfOrCenterAdmin('id'), getUserPreferences);
+router.put('/:id/preferences', authorizeSelfOrCenterAdmin('id'), updateUserPreferences);
+router.post('/:id/avatar', authorizeSelfOrCenterAdmin('id'), upload.single('avatar'), updateAvatar);
 router.post('/update-email', updateEmail);
 router.post('/update-phone', updatePhone);
 router.post('/update-birthDate', updateBirthDate);
 router.delete('/delete-phone', deletePhone);
 
 // Routes pour la gestion des utilisateurs (admin/master admin)
-router.get('/', getAllUsers);
-router.get('/:id', isUserOrAdmin, getUserById);
-router.post('/pending/:id/approve', isAdmin, approveUser);
-router.delete('/pending/:id', isAdmin, deletePendingUser);
+router.get('/', isAdmin, resolveCenterId, getAllUsers);
+router.get('/:id', authorizeSelfOrCenterAdmin('id'), getUserById);
+router.post('/pending/:id/approve', isAdmin, authorizeSelfOrCenterAdmin('id'), approveUser);
+router.delete('/pending/:id', isAdmin, authorizeSelfOrCenterAdmin('id'), deletePendingUser);
 router.post('/:id/make-admin', isMasterAdmin, makeUserAdmin);
 router.post('/:id/remove-admin', isMasterAdmin, removeUserAdmin);
 router.delete('/:id', isMasterAdmin, deleteUserById);

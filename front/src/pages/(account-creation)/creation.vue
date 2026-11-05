@@ -560,7 +560,7 @@ const fetchCenterTeams = async () => {
 
   loadingTeams.value = true;
   try {
-    await teamStore.fetchCenterTeams(user.value.centerId);
+    await teamStore.fetchCenterTeams(user.value.centerId, { publicList: true }); // pas encore connecté
   } catch (error) {
     stepErrors.value[5] = "Erreur lors de la récupération des équipes";
     console.error("Erreur lors de la récupération des équipes", "error");

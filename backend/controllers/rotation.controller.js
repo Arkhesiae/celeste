@@ -143,13 +143,11 @@ const saveRotation = async (req, res, next) => {
         if (!rotation.name) {
             throw new AppError('Le nom du tour de service est requis', 400);
         }
-        if (!rotation.centerId) {
-            throw new AppError('Le centre est requis', 400);
-        }
 
+        // Le centre vient de l'URL (POST /rotations/center/:centerId), déjà vérifié par authorizeCenterParam
         const newRotation = new Rotation({
             name: rotation.name,
-            centerId: rotation.centerId,
+            centerId: req.params.centerId,
         });
 
         const shifts = rotation.days;

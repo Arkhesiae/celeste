@@ -1,7 +1,7 @@
 import express from 'express';
 import rotationController from '../controllers/rotation.controller.js';
-import {verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin} from '../middleware/authMiddleware.js';
-import { authorizeRotationAccess, authorizeRotationCreation } from '../middleware/rotationAuth.js';
+import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
+import { authorizeCenterParam, authorizeRotationAccess } from '../middleware/centerAuth.js';
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.get('/status/:centerId', verifyToken, rotationController.getAllRotationsW
 router.get('/active-at-date', verifyToken, rotationController.getActiveRotationAtDate);
 
 // Routes protégées par isAdmin, cloisonnées par centre (authorizeRotation*)
-router.post('/create', verifyToken, isAdmin, authorizeRotationCreation, rotationController.saveRotation);
+router.post('/center/:centerId', verifyToken, isAdmin, authorizeCenterParam('centerId'), rotationController.saveRotation);
 
 router.delete('/:id', verifyToken, isAdmin, authorizeRotationAccess, rotationController.deleteRotation);
 

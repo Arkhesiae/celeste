@@ -15,7 +15,12 @@ const REFRESH_TOKEN_EXPIRY = '180d';
  */
 export function generateAccessToken (payload) {
     return jwt.sign(
-        { userId: payload.userId, isAdmin: payload.isAdmin, adminType: payload.adminType },
+        {
+            userId: payload.userId,
+            isAdmin: payload.isAdmin,
+            adminType: payload.adminType,
+            centerId: payload.centerId ? String(payload.centerId) : undefined
+        },
         JWT_SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
@@ -81,7 +86,8 @@ export async function refreshAccessToken (refreshToken) {
     const newAccessToken = generateAccessToken({
         userId: user._id,
         isAdmin: user.isAdmin,
-        adminType: user.adminType
+        adminType: user.adminType,
+        centerId: user.centerId
     });
 
     user.refreshTokens = validTokens;

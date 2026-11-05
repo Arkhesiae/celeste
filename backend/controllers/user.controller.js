@@ -47,7 +47,11 @@ const checkEmailAvailability = async (req, res, next) => {
 // Obtenir tous les utilisateurs
 const getAllUsers = async (req, res, next) => {
     try {
-        const users = await User.find({}).populate('teams');
+        // Master : tous les utilisateurs ; administrateur local : ceux de son centre uniquement (résolu par resolveCenterId)
+        const isMaster = req.user.adminType === 'master';
+        if (!isMaster && !req.user.centerId) throw new AppError('Accès refusé. Aucun centre associé.', 403);
+
+        const users = await User.find(isMaster ? {} : { centerId: req.user.centerId }).populate('teams');
 
         const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
             const currentTeam = await getTeamAtGivenDate(user.teams, new Date());
@@ -838,23 +842,18 @@ const getUserInfoByEmail = async (req, res, next) => {
 
     try {
         const user = await User.findOne({ email })
-            .select('name lastName avatar isAdmin adminType')
+            .select('name lastName avatar')
             .populate('centerId', 'name');
 
         if (!user) {
             throw new AppError('Utilisateur non trouvé', 404);
         }
 
-        // Déterminer le rôle de l'utilisateur
-        let role = 'utilisateur';
-        if (user.isAdmin) {
-            role = user.adminType === 'master' ? 'administrateur principal' : 'administrateur local';
-        }
-
+        // Route publique (écran de connexion) : uniquement ce qu'il affiche. Pas de rôle, pour ne pas révéler
+        // qui sont les administrateurs.
         res.json({
             name: `${user.name} ${user.lastName}`,
             avatar: user.avatar,
-            role: role,
             center: user.centerId?.name || ''
         });
     } catch (error) {
@@ -865,6 +864,9 @@ const getUserInfoByEmail = async (req, res, next) => {
 
 const getDevListUsers = async (req, res, next) => {
     try {
+        // Outil de connexion rapide réservé au développement : inexistant en production
+        if (process.env.NODE_ENV === 'production') throw new AppError('Route introuvable', 404);
+
         const { role } = req.query;
 
         if (role === 'team') {

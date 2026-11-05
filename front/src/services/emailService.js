@@ -33,9 +33,12 @@ export const emailService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async sendAnnouncement(announcementData) {
-    const response = await apiFetch(`/announcements/send`, {
+    // Le périmètre est dans l'URL : /announcements/send = tous les centres (master), sinon un centre
+    const { isGlobal, centerId, ...content } = announcementData;
+    const url = isGlobal ? `/announcements/send` : `/announcements/center/${centerId}/send`;
+    const response = await apiFetch(url, {
       method: 'POST',
-      body: JSON.stringify(announcementData)
+      body: JSON.stringify(content)
     });
     return response;
   },

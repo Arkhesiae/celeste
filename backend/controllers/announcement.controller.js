@@ -112,7 +112,10 @@ const getMailList = async (testMode, isGlobal, centerId) => {
  */
 const sendAnnouncement = async (req, res, next) => {
   try {
-    const { title, message, isGlobal, centerId, testMode = false } = req.body;
+    const { title, message, testMode = false } = req.body;
+    // Le périmètre vient de la route : POST /announcements/send = global (master), /center/:centerId/send = un centre
+    const centerId = req.params.centerId ?? null;
+    const isGlobal = centerId === null;
 
     // Validation des données
     if (!title || !message) {
@@ -125,7 +128,7 @@ const sendAnnouncement = async (req, res, next) => {
       throw new AppError('Aucun utilisateur trouvé pour l\'envoi', 404);
     }
 
-    const center = await Center.findById(centerId);
+    const center = centerId ? await Center.findById(centerId) : null;
 
     // Préparation des données pour le template
     const templateData = {

@@ -38,26 +38,19 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 
 ## P1 — Serious security/correctness defects
 
-### 6. Other endpoints that need no token
-| Route | Problem |
-|---|---|
-| `GET /api/stats`, `/users`, `/centers`, `/substitutions` | comment says "all routes require authentication"; none do |
-| `POST /api/tickets/status/:id` | anyone can change any ticket's status (the handler also returns 500 for every error) |
-| `POST /api/tickets/create` | comment says authenticated users only; no `verifyToken`, so `req.user` is unavailable |
-| `POST /api/messages` | unauthenticated write (probably the public contact form; add rate limiting) |
-| `GET /api/teams/:id` | unauthenticated |
-| `GET /api/users/info/:email`, `GET /api/users/devlist` | unauthenticated user lookup/enumeration; `devlist` returns names, emails and teams of all active users and has no environment guard |
-| `POST /api/users/check-email`, `POST /api/otp/*` | account/email enumeration; see #8 |
+### 6. Public endpoints that need throttling (they cannot require a token)
+Reviewed against the screens that call them: these routes are reached before an account exists or before login, so a token cannot be required. They are now minimal (see CLAUDE.md for the policy) but remain open to abuse until #8 is done:
+- `POST /api/tickets/create` (the `/contact-admin` form also serves people who cannot log in): spam and mail flooding to administrators;
+- `POST /api/users/check-email`, `GET /api/users/info/:email` (login screen shows name, avatar, center), `POST /api/users/create`, `POST /api/otp/*`: account enumeration and OTP guessing;
+- `GET /api/teams/public/:centerId`, `GET /api/center`, `GET /api/stats*`: harmless data (names, counters) but scrapeable.
+`GET /users/devlist` is now disabled in production; `POST /messages` and `POST /tickets/status/:id` require a token and the right center.
 
 ### 7. SNS inbound-mail webhook is unauthenticated
 `POST /api/tickets/inbound` (`services/email/email.inbound.js`) accepts any JSON body: it does not verify the SNS signature or `TopicArn`, and it calls `confirmSubscription(message.SubscribeURL)` with a URL taken from the request (server-side request forgery). Anyone can inject ticket replies on behalf of any user, or make the server fetch arbitrary URLs.
 **Fix:** verify the SNS message signature and `TopicArn`, and only fetch `SubscribeURL` on `*.amazonaws.com`.
 
 ### 8. No brute-force protection
-`package.json` has no `express-rate-limit`/`helmet`. `/auth/login`, `/auth/reset-password`, `/otp/verify` (6-digit codes) and `/otp/send` are open to unlimited guessing. Add rate limiting, and attempt-limiting on OTP verification.
-
-### 9. Authorization gaps in `isUserOrAdmin`
-`middleware/authMiddleware.js:63` lets **any** admin act on **any** user (including other centers), for example `assign-team`, `team-occurrences` deletion and avatar upload. Also `GET /users/:id/transactions`, `/current-team` and `/teams/:centerId`, `/center/:centerId` have no ownership/center check at all (any logged-in user can read any center's data). Needs a center-scope check (`checkUserCenter` exists but is used on only one route).
+`package.json` has no `express-rate-limit`/`helmet`. `/auth/login`, `/auth/reset-password`, `/otp/verify` (6-digit codes) and `/otp/send` are open to unlimited guessing. Add rate limiting, and attempt-limiting on OTP verification. The public routes listed in #6 are the other targets.
 
 ### 10. Access tokens are `15m`
 Harmless but inconsistent; confirm the intended lifetime, and that `COOKIE_OPTIONS` sets `httpOnly`, `secure` and `sameSite`.
@@ -65,12 +58,11 @@ Harmless but inconsistent; confirm the intended lifetime, and that `COOKIE_OPTIO
 ### 11. Oversized request bodies and file uploads
 `server.js` sets `express.json({ limit: '50mb' })` globally, unauthenticated. The avatar upload (`user.routes.js`) trusts the client: any file is saved with a `.png` extension and no MIME check, into `public/avatars`, which is served statically. Reduce the global limit, validate MIME type and magic bytes, and consider re-encoding images.
 
-### 20. Team-change endpoints: cross-center destructive access and data oracle (extends #9)
-`POST /api/users/:id/assign-team` and `DELETE /api/users/:id/team-occurrences/:occurrenceId` (`routes/user.routes.js:71-72`) are protected only by `isUserOrAdmin`: **any admin of any center** can call them for **any user**. Since the team-change work, these calls really execute `sanitizeUserPeriod` (cancel/withdraw substitutions, including other users' cascaded requests, and deactivate calendar entries) instead of throwing, so the impact of #9 is now destructive, not just a data change.
-- **Read oracle:** calling without `confirmed` returns the 409 payload for the chosen period: the victim's substitutions (dates, status, poster/accepter full names) and calendar entries. Anyone allowed to call it can probe any user. If the chosen change affects nothing, it is applied immediately without any confirmation.
-- **`checkUserCenter` fails open on these routes:** it reads `req.params.userId || req.body.userId`, but these routes use `:id`, so adding it as-is would silently pass (`if (!targetUserId) return next()`). The same silent bypass already affects `GET /:id/team-at`.
-- A regular user acting on themselves can also see names from cascaded requests of other users in the preview (`previewUserPeriodImpact` populates dependent requests' poster/accepter).
-**Fix:** a center-scoped guard keyed on `:id` (now available: `middleware/centerAuth.js` exports `authorizeCenterParam` / `authorizeTargetUserCenter`, fail-closed, currently used only by the new team-timeline routes; apply them here) (target user's `centerId` equals the caller's, except master admin) on every `/:id/...` route, with fail-closed behaviour when the target user is missing; restrict cascade names to the caller's own requests or to admins of that center.
+### 20. Admin routes still without a center guard
+`middleware/centerAuth.js` now provides the guards (`authorizeCenterParam`, `authorizeResourceCenter`, `authorizeUserAccess`...) and they cover users, teams, tickets, demands, rotations and announcement sending. Not yet covered:
+- Email announcements: `GET /announcements/history` and `/stats` list **all** centers' announcements to any admin (`Announcement.find()`), and `DELETE /announcements/:id` lets any admin delete any announcement (its owner check is bypassed for admins; it also reads `req.user._id`, which the token does not carry, so it can throw).
+- Contact messages: `GET /messages` and `PUT /messages/:id/read` show every message to any admin (messages have no center; decide whether they are master-only).
+- The team-change preview still names people from cascaded requests of other users when someone previews their own change.
 
 ### 21. Production MongoDB is a standalone server but team changes now require transactions
 `inTransaction` in `services/user/user.team.js` (and `user.sanitizePeriod.js`) uses `session.withTransaction`, which fails on a standalone `mongod` ("Transaction numbers are only allowed on a replica set member or mongos"). The root `docker-compose.yml` (production) starts `mongo:8.0` with `--bind_ip_all --port 27017` and **no `--replSet`**; only `backend/docker-compose.yml` (dev) sets `--replSet rs0`. If production really runs this way, every team assignment/removal now returns 500, where it previously only saved the user (the substitution cancel/withdraw/accept flows already depend on transactions and would be failing too). **Fix:** confirm production topology; run a single-node replica set in production (`--replSet` + `rs.initiate`) or add a non-transactional fallback.
@@ -99,6 +91,9 @@ Harmless but inconsistent; confirm the intended lifetime, and that `COOKIE_OPTIO
 
 ### 18. Dead conflict dialogs in the team UI
 `UserTeamCard.vue` (template lines ~157-188) and `TeamChangeDialog.vue` (~193-222) render a "Conflits détectés" dialog using `substitutionConflicts` / `handleDeleteAndSubmit`, which are not defined in `UserTeamCard.vue`'s script (and `substitutionConflicts` is also missing in `TeamChangeDialog.vue`); `showConflictDialog` is never set to true. Superseded by the server-driven 409 flow, safe to delete once confirmed.
+
+### 39. Center and role in the access token can be stale (P2)
+`middleware/centerAuth.js` (`loadCaller`) trusts `centerId`, `adminType` and `isAdmin` from the JWT. A user moved to another center, demoted, or deleted keeps their old access until the token expires (15m, `auth.refreshToken.js`). Acceptable at that lifetime; reload the user in `loadCaller` if immediate revocation is needed.
 
 ### 19. `teams.vue` passes a string to `assignUserToTeam`
 `front/src/pages/center/[centerId]/teams.vue:383` calls `teamStore.assignUserToTeam(user._id, team._id)` but the store/service expect an object `{ teamId, fromDate, toDate }`. Not verified at runtime; likely returns 400.
@@ -134,7 +129,7 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 - Removing a date that does not exist succeeds silently (`$pull` is a no-op and still returns the document), so the "Aucune activation trouvée" error can never fire.
 - `GET /rotations/active-at-date` always returns `null`/errors: it passes `req.centerId` (never set) and indexes `rotations[0]` on a function that already returns a single object. The front end does not call it.
 - Retroactive activation changes also convert/cancel past demands that the cron has not archived yet.
-- Rotation reads (`GET /rotations/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are, see `middleware/rotationAuth.js`).
+- Rotation reads (`GET /rotations/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are guarded, see `authorizeRotationAccess` in `middleware/centerAuth.js`).
 - `saveRotation` throws a 500 when `days` is missing; the `days` branch of `updateRotation` is dead (commented out).
 
 ### 38. Deleting a center does not delete its rotations
@@ -143,9 +138,9 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 ---
 
 ## Suggested order of work
-1. #4, #5 and #20 (center authorization on the team routes) before the next production deploy; confirm #21 (replica set) first; rotate credentials (#2, #5) in parallel.
+1. #4 and #5 before the next production deploy; confirm #21 (replica set) first; rotate credentials (#2, #5) in parallel.
 2. #17 (front build) and #13 so the app can be exercised end to end.
-3. #30-#31; #6-#9 next sprint; #10-#11 and #22-#25 as hardening; #18, #19, #26, #33-#36 as cleanup.
+3. #30-#31; #6, #8 and #20 next sprint; #10-#11 and #22-#25 as hardening; #18, #19, #26, #33-#36 as cleanup.
 
 ## Not covered
 - `front/` beyond the issues listed above (auth storage in the browser, Capacitor config, XSS in rendered content).

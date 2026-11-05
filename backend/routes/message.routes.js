@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/', verifyToken, isAdmin, messageController.getMessages);
 
 // Création de message (accessible à tous les utilisateurs authentifiés)
-router.post('/', messageController.createMessage);
+router.post('/', verifyToken, messageController.createMessage);
 
 // Seuls les administrateurs peuvent marquer les messages comme lus
 router.put('/:id/read', verifyToken, isAdmin, messageController.markAsRead);

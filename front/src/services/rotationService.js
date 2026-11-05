@@ -34,7 +34,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation créée.
    */
   async createRotation(rotationData) {
-    const response = await apiFetch(`/rotations/create`, {
+    const response = await apiFetch(`/rotations/center/${rotationData.centerId}`, {
       method: 'POST',
       body: JSON.stringify(rotationData)
     });

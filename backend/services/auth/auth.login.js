@@ -28,7 +28,8 @@ export async function loginUser (email, password) {
     const accessToken = generateAccessToken({
         userId: user._id,
         isAdmin: user.isAdmin,
-        adminType: user.adminType
+        adminType: user.adminType,
+        centerId: user.centerId
     });
 
     const { token: refreshToken, expiresAt } = generateRefreshToken(user._id);

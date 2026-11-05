@@ -9,8 +9,9 @@ export const teamService = {
    * Récupère toutes les équipes.
    * @returns {Promise<Array>} Liste des équipes.
    */
-  async getTeams(centerId) {
-    const response = await apiFetch(`/teams/${centerId}`, {
+  async getTeams(centerId, { publicList = false } = {}) {
+    // `publicList` : liste publique (id et nom seulement) pour le formulaire d'inscription, avant qu'un compte n'existe
+    const response = await apiFetch(publicList ? `/teams/public/${centerId}` : `/teams/${centerId}`, {
       method: 'GET'
     });
     return response;
@@ -45,8 +46,8 @@ export const teamService = {
    * @param {Object} teamData - Les données de la nouvelle équipe.
    * @returns {Promise<Object>} L'équipe créée.
    */
-  async createTeam(teamData) {
-    const response = await apiFetch(`/teams/create-team`, {
+  async createTeam({ centerId, ...teamData }) {
+    const response = await apiFetch(`/teams/center/${centerId}`, {
       method: 'POST',
       body: JSON.stringify(teamData)
     });

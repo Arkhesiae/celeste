@@ -4,6 +4,7 @@ import {
     createTeam,
     deleteTeam,
     getTeamsByCenter,
+    getPublicTeamsByCenter,
     getAllTeams,
     getTeamShifts,
     updateTeamCycleStartDate,
@@ -12,24 +13,30 @@ import {
 } from '../controllers/team.controller.js';
 
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
+import Team from '../models/Team.js';
+import { authorizeCenterParam, authorizeTeamAccess, authorizeBodyResourcesCenter, resolveCenterId } from '../middleware/centerAuth.js';
 
 // Créer une nouvelle équipe dans un centre
-router.post('/create-team', verifyToken, isAdmin, createTeam);
-router.put('/:id/cycle-start-date', verifyToken, isAdmin, updateTeamCycleStartDate);
-router.put('/:id/name', verifyToken, isAdmin, updateTeamName);
+router.post('/center/:centerId', verifyToken, isAdmin, authorizeCenterParam('centerId'), createTeam);
+router.put('/:id/cycle-start-date', verifyToken, isAdmin, authorizeTeamAccess, updateTeamCycleStartDate);
+router.put('/:id/name', verifyToken, isAdmin, authorizeTeamAccess, updateTeamName);
 // Supprimer une équipe
-router.delete('/:id', verifyToken, isAdmin, deleteTeam);
+router.delete('/:id', verifyToken, isAdmin, authorizeTeamAccess, deleteTeam);
 
-// Récupérer les équipes d'un centre
-router.get('/:id', getTeamsByCenter);
+// Publique : le formulaire d'inscription propose les équipes du centre choisi avant qu'un compte n'existe.
+// Ne renvoie que l'id et le nom.
+router.get('/public/:centerId', getPublicTeamsByCenter);
+
+// Récupérer les équipes d'un centre (membres du centre, ou master)
+router.get('/:id', verifyToken, authorizeCenterParam('id'), getTeamsByCenter);
 
 // Récupérer toutes les équipes
-router.get('/', verifyToken, getAllTeams);
+router.get('/', verifyToken, resolveCenterId, getAllTeams);
 
 // Récupérer les shifts d'une équipe pour une période donnée
-router.post('/:id/get-shifts', verifyToken, getTeamShifts);
+router.post('/:id/get-shifts', verifyToken, authorizeTeamAccess, getTeamShifts);
 
 // Mettre à jour l'ordre des équipes
-router.put('/order', verifyToken, isAdmin, updateTeamsOrder);
+router.put('/order', verifyToken, isAdmin, authorizeBodyResourcesCenter(Team, { bodyField: 'teamIds', centerField: 'center' }), updateTeamsOrder);
 
 export default router;

@@ -24,8 +24,10 @@ export const useTeamStore = defineStore('team', () => {
   /**
    * Récupère toutes les équipes d'un centre spécifique.
    * @param {string} centerId - L'ID du centre.
+   * @param {Object} [options]
+   * @param {boolean} [options.publicList=false] - Liste publique (id et nom) pour l'inscription, sans connexion.
    */
-  const fetchCenterTeams = async (centerId) => {
+  const fetchCenterTeams = async (centerId, { publicList = false } = {}) => {
     if (!centerId) {
       console.warn('[teamStore] fetchCenterTeams skipped: missing centerId');
       return [];
@@ -34,7 +36,7 @@ export const useTeamStore = defineStore('team', () => {
     try {
       loading.value = true;
       error.value = null;
-      centerTeams.value = await teamService.getTeams(centerId);
+      centerTeams.value = await teamService.getTeams(centerId, { publicList });
       currentCenter.value = centerId;
       return centerTeams.value
     } catch (err) {

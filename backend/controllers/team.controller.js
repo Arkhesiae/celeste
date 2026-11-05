@@ -3,10 +3,12 @@ import Center from '../models/Center.js';
 import User from "../models/User.js";
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { AppError } from '../error/AppError.js';
+import { isValidId } from '../utils/validation.js';
 
 // Créer une nouvelle équipe dans un centre
 const createTeam = async (req, res, next) => {
-    const { centerId, name } = req.body;
+    const { centerId } = req.params;   // POST /teams/center/:centerId, déjà vérifié par authorizeCenterParam
+    const { name } = req.body;
     try {
         const center = await Center.findById(centerId);
         if (!center) {
@@ -68,10 +70,27 @@ const getTeamsByCenter = async (req, res, next) => {
     }
 };
 
-// Récupérer toutes les équipes
+// Route publique (inscription) : id et nom des équipes du centre, rien d'autre
+const getPublicTeamsByCenter = async (req, res, next) => {
+    try {
+        const { centerId } = req.params;
+        if (!isValidId(centerId)) throw new AppError('ID de centre invalide.', 400);
+
+        const teams = await Team.find({ center: centerId, deleted: false }).select('name order').sort({ order: 1 });
+        res.json(teams.map(({ _id, name }) => ({ _id, name })));
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Récupérer toutes les équipes visibles par l'appelant : toutes pour le master, celles de son centre sinon
+// (centre résolu par resolveCenterId)
 const getAllTeams = async (req, res, next) => {
     try {
-        const teams = await Team.find({ deleted: false });
+        const isMaster = req.user.adminType === 'master';
+        if (!isMaster && !req.user.centerId) throw new AppError('Accès refusé. Aucun centre associé.', 403);
+
+        const teams = await Team.find(isMaster ? { deleted: false } : { center: req.user.centerId, deleted: false });
         res.json(teams || { message: 'No teams' });
     } catch (error) {
         console.error('Error fetching teams:', error);
@@ -185,6 +204,7 @@ export {
     createTeam,
     deleteTeam,
     getTeamsByCenter,
+    getPublicTeamsByCenter,
     getAllTeams,
     getTeamShifts,
     updateTeamCycleStartDate,

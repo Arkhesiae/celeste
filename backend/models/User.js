@@ -100,6 +100,17 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Jamais sérialisés vers un client (res.json(user), user.toObject()...) : hash du mot de passe, jetons de session
+// et de réinitialisation. Ils restent lisibles sur le document (user.password, user.refreshTokens...) pour les flux
+// d'authentification, qui ne passent pas par la sérialisation.
+const SENSITIVE_FIELDS = ['password', 'refreshTokens', 'resetPasswordToken', 'resetPasswordExpires'];
+const stripSensitiveFields = (doc, ret) => {
+    for (const field of SENSITIVE_FIELDS) delete ret[field];
+    return ret;
+};
+userSchema.set('toObject', { transform: stripSensitiveFields });
+userSchema.set('toJSON', { transform: stripSensitiveFields });
+
 const legacyUserSchema = new mongoose.Schema({
     _id: mongoose.Schema.Types.ObjectId,
     ID: { type: Number, required: true },

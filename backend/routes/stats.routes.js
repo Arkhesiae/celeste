@@ -4,8 +4,9 @@ import statController from '../controllers/stat.controller.js';
 
 
 /**
- * Routes pour les statistiques de l'application.
- * Toutes les routes nécessitent une authentification.
+ * Routes pour les statistiques de l'application (totaux uniquement : utilisateurs, centres, remplacements).
+ * Publiques par conception : la page d'accueil (/landing) les affiche avant toute connexion. Elles ne renvoient que
+ * des compteurs agrégés, jamais de données individuelles.
  */
 
 // Route pour récupérer toutes les statistiques

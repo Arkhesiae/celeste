@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
 import { AppError } from '../error/AppError.js';
 
 const verifyToken = (req, res, next) => {
@@ -30,35 +29,4 @@ const isMasterAdmin = (req, res, next) => {
     throw new AppError("Accès refusé. Droits d'administrateur principal requis.", 403);
 };
 
-const resolveCenterId = async (req, res, next) => {
-    if (req.user.adminType === 'master') return next();
-
-    const user = await User.findById(req.user.userId).select('centerId').lean();
-    if (!user) throw new AppError('Utilisateur non trouvé.', 404);
-
-    req.user.centerId = user.centerId;
-    next();
-};
-
-const checkUserCenter = async (req, res, next) => {
-    if (req.user.adminType === 'master') return next();
-
-    const targetUserId = req.params.userId || req.body.userId;
-    if (!targetUserId) return next();
-
-    const targetUser = await User.findById(targetUserId).lean();
-    if (!targetUser) throw new AppError('Utilisateur cible non trouvé.', 404);
-
-    if (!targetUser.centerId.equals(req.user.centerId)) {
-        throw new AppError('Vous ne pouvez gérer que les utilisateurs de votre centre.', 403);
-    }
-
-    next();
-};
-
-const isUserOrAdmin = (req, res, next) => {
-    if (req.user.userId === req.params.id || req.user.isAdmin) return next();
-    next(new AppError("Accès refusé. Vous devez être l'utilisateur concerné ou un administrateur.", 403));
-};
-
-export { verifyToken, isAdmin, isMasterAdmin, checkUserCenter, isUserOrAdmin, resolveCenterId };
+export { verifyToken, isAdmin, isMasterAdmin };

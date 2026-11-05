@@ -7,8 +7,8 @@ import {
   updateAnnouncement,
   deleteAnnouncement
 } from '../controllers/publicAnnouncement.controller.js';
-import { verifyToken, isAdmin, resolveCenterId } from '../middleware/authMiddleware.js';
-import { authorizeAnnouncementAccess } from '../middleware/announcementAuth.js';
+import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
+import { authorizeAnnouncementAccess, resolveCenterId } from '../middleware/centerAuth.js';
 
 const router = express.Router();
 

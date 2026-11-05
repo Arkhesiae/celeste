@@ -9,7 +9,7 @@ import { AppError } from '../error/AppError.js';
 // pas d'`admins` (ids d'utilisateurs), de `relatedCenters`, de `timeZone` ni de drapeaux internes
 const getAllCenters = async (req, res, next) => {
     try {
-        const centers = await Center.find({deleted: false}).select('name OACI type zone');
+        const centers = await Center.find({deleted: false}).select('name OACI type zone timeZone');
         res.json(centers);
     } catch (error) {
         next(error);

@@ -24,6 +24,7 @@
           class="mx-auto mt-4"
           width="100%"
           :model-value="selectedDate"
+          :min="minDate"
           locale="fr"
           @update:model-value="updateDate"
         />
@@ -48,17 +49,33 @@
 
 <script setup lang="ts">
 import { useDate } from "vuetify";
+import { Temporal } from "@js-temporal/polyfill";
+
+const DEFAULT_TIME_ZONE = "Europe/Paris";
 
 // ─── Emits ───────────────────────────────────────────────────────────────────
 const emit = defineEmits<{
   onSubmit: [date: Date];
 }>();
 
+// ─── Props ───────────────────────────────────────────────────────────────────
+const props = defineProps<{ timeZone?: string }>();
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 const modelValue = defineModel<boolean>({ required: true });
 
 const date = useDate();
 const selectedDate = ref<Date | null>(null);
+// Premier jour activable : aujourd'hui dans le fuseau du centre (le serveur applique la même règle)
+const minDate = computed(() => {
+  let today: Temporal.PlainDate;
+  try {
+    today = Temporal.Now.plainDateISO(props.timeZone || DEFAULT_TIME_ZONE);
+  } catch {
+    today = Temporal.Now.plainDateISO(DEFAULT_TIME_ZONE); // fuseau invalide
+  }
+  return new Date(today.year, today.month - 1, today.day);
+});
 
 const formattedDate = computed(() =>
   selectedDate.value ? date.format(selectedDate.value, "keyboardDate") : ""

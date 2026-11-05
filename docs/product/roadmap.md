@@ -3,7 +3,8 @@
 One line per item, with the date. Move items between sections as they progress.
 
 ## Planned
-- (2026-11-02) Fix the rest of the rotation change flow: `deleteRotation` (#30), swallowed errors (#33), same-date activations (#34), stale variations/entries (#35).
+- (2026-11-05) Convert remaining native `Date` / `toLocaleDateString({ timeZone })` date logic to Temporal (new convention in `CLAUDE.md`), progressively, when touching the code.
+- (2026-11-02) Fix the rest of the rotation change flow: `deleteRotation` (#30), stale variations/entries (#35).
 - (2026-11-02) Test the team-change approval flow in a browser against MongoDB (assign, replace, delete; with and without affected substitutions). Expected behaviours to confirm: retroactive changes also deactivate past shift-related calendar entries (completed substitutions are not cancelled, their entries are); `changes[].to` is inclusive; `assignTeamToUser` checks the team (404) before the user (404).
 - (2026-11-02) Fix the front build (`demandComment` import) and remove the dead conflict dialogs (known issues #17, #18).
 - (2026-11-02) Test team assignment / occurrence deletion end to end against MongoDB (sanitize + save in one transaction).
@@ -14,6 +15,9 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (see known issues).
 
 ## Done
+- (2026-11-05) Rotation activation dates must be today or later in the center's time zone (Temporal, `Center.timeZone`): otherwise 400 `ROTATION_ACTIVATION_DATE_PAST`; the activation dialog's date picker greys out past days using the center's time zone (computed with Temporal; `@js-temporal/polyfill` added to `front/package.json`), which `GET /center` now returns as `timeZone` (harmless, and needed by the front). Removing a date is unchanged. Syntax-checked only.
+- (2026-11-05) Same-date activations refused (known issue #34): adding an activation on a date where any rotation of the center already has one answers 400 `ROTATION_ACTIVATION_DATE_TAKEN` (`rotationActivationService.js`), for preview and confirm. Syntax-checked only; existing duplicates in the database are not cleaned up.
+- (2026-11-05) Rotation change no longer swallows errors in `convertCenterDemands` (known issue #33): cancel/withdraw failures now abort the transaction and are reported, and the demand is re-read after a withdraw before applying poster/switch changes (no stale save). Syntax-checked only; not run against MongoDB.
 - (2026-11-05) `centerId` is now carried by the access token (`generateAccessToken`, set at login and refresh) and `centerAuth.js` reads role and center from it instead of querying `User` on every guarded request. Tokens issued before the change have no `centerId` and get 403 from the guards until refreshed. Not run against MongoDB, no tests exist.
 - (2026-11-05) `centerAuth.js` simplified: one place loads the caller (`resolveCenterId` moved in from `authMiddleware`, `announcementAuth.js` replaced by `authorizeAnnouncementAccess` via the new `masterOnlyField` option), the `'admin'` user mode and the per-guard custom error texts removed (generic messages). Behavior unchanged except wording; a global announcement that also carries a center is now covered by an explicit test.
 - (2026-11-05) Guards consolidated in one file and the center moved into the URL: `middleware/rotationAuth.js` removed (its guard now lives in `middleware/centerAuth.js`), `authorizeBodyCenter` removed. Creations are `POST /rotations/center/:centerId` and `POST /teams/center/:centerId` (replacing `/rotations/create`, `/teams/create-team`); announcements are `POST /announcements/send` (global, master only) and `POST /announcements/center/:centerId/send` (the "global" notion comes from the route, not from a body flag). Front services updated accordingly.

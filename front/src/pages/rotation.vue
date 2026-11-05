@@ -213,6 +213,7 @@
     <ActivateRotationDialog
       v-model="showActivateDialog"
       :rotationId="activateParams.rotationId"
+      :time-zone="activateTimeZone"
       @on-submit="setActivationDate"
       @update:dialog-visible="showActivateDialog = $event"
     />
@@ -247,6 +248,7 @@ const rotationStore = useRotationStore();
 const snackbarStore = useSnackbarStore();
 
 const centers = computed(() => centerStore.centers);
+const activateTimeZone = computed(() => centers.value.find(c => c._id === activateParams.value.centerId)?.timeZone);
 const isAdmin = computed(() => authStore.userData.isAdmin);
 const isMaster = computed(() => authStore.userData.adminType === 'master');
 

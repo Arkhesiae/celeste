@@ -1,6 +1,9 @@
 import Rotation from '../../models/Rotation.js';
 import Substitution from '../../models/Substitution.js';
+import Center from '../../models/Center.js';
 import mongoose from 'mongoose';
+import { Temporal } from '@js-temporal/polyfill';
+import { toDateKey } from '../../utils/dateKey.js';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromRequestWithSession, cancelRequestWithSession } from '../substitution/request.internal.js';
 import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
@@ -17,6 +20,24 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
 
     const centerId = rotationToUpdate.centerId;
     const targetDate = new Date(activationDate);
+
+    // Une seule rotation peut être activée à une date donnée dans un centre : sinon la rotation active ce jour-là est ambiguë
+    if (action === 'add') {
+        const dateKey = toDateKey(activationDate);
+        if (!dateKey || Number.isNaN(targetDate.getTime())) throw new AppError("Date d'activation invalide.", 400);
+
+        // Seuls le jour courant et les jours futurs sont acceptés, selon le fuseau horaire du centre
+        const center = await Center.findById(centerId).select('timeZone').lean();
+        const today = Temporal.Now.plainDateISO(center?.timeZone || 'Europe/Paris').toString();
+        if (dateKey < today) {
+            throw new AppError("La date d'activation ne peut pas être dans le passé.", 400, 'ROTATION_ACTIVATION_DATE_PAST');
+        }
+
+        const sameDate = await Rotation.exists({ centerId, deleted: false, activationDates: targetDate });
+        if (sameDate) {
+            throw new AppError('Une rotation est déjà activée à cette date dans ce centre.', 400, 'ROTATION_ACTIVATION_DATE_TAKEN');
+        }
+    }
 
     // --- PREVIEW PATH ---
     if (!confirmed) {
@@ -275,51 +296,51 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, 
             const cancelled = [poster, accepter, switches].find(o => o.verdict === 'cancel');
 
             if (cancelled) {
-                try {
-                    const cancelledRequests = [];
-                    await cancelRequestWithSession(populatedDemand._id, { session, reason: "system-cancelled", cancelledRequests });
-                    notifications.cancelled.push(...cancelledRequests.map((r) => r._id));
-                    console.log(`✅ [${populatedDemand._id}] Demande annulée (${cancelled.reason})`);
-                    cancelledDemands++;
-                } catch (error) {
-                    console.error('Erreur lors de l\'annulation de la demande:', error);
-                }
+                // Les erreurs remontent : la transaction est annulée et l'appelant est prévenu
+                const cancelledRequests = [];
+                await cancelRequestWithSession(populatedDemand._id, { session, reason: "system-cancelled", cancelledRequests });
+                notifications.cancelled.push(...cancelledRequests.map((r) => r._id));
+                console.log(`✅ [${populatedDemand._id}] Demande annulée (${cancelled.reason})`);
+                cancelledDemands++;
                 continue;
             }
 
             let demandModified = false;
             let demandReopened = false;
+            let currentDemand = populatedDemand;
 
-            if (poster.verdict === 'modify') {
-                populatedDemand.posterShift.shift = poster.data.newShiftId;
+            if (accepter.verdict === 'reopen') {
+                await withdrawFromRequestWithSession(populatedDemand._id, populatedDemand.accepterId, { session });
+                notifications.withdrawn.push({ demandId: populatedDemand._id, accepterId: populatedDemand.accepterId });
+                console.log(`✅ [${populatedDemand._id}] Demande réouverte (accepter shift est maintenant un repos)`);
+                demandReopened = true;
+                // Le retrait a sauvegardé la demande : on la relit pour ne pas écraser son état avec une copie périmée
+                currentDemand = await Substitution.findById(populatedDemand._id)
+                    .session(session)
+                    .populate('acceptedSwitches.shift')
+                    .populate('posterShift.shift')
+                    .populate('accepterShift.shift');
+            } else if (accepter.verdict === 'modify') {
+                currentDemand.accepterShift.shift = accepter.data.newShiftId;
                 demandModified = true;
             }
 
-            if (accepter.verdict === 'reopen') {
-                try {
-                    await withdrawFromRequestWithSession(populatedDemand._id, populatedDemand.accepterId, { session });
-                    notifications.withdrawn.push({ demandId: populatedDemand._id, accepterId: populatedDemand.accepterId });
-                } catch (err) {
-                    console.error('Erreur lors du retrait de la demande:', err);
-                }
-                console.log(`✅ [${populatedDemand._id}] Demande réouverte (accepter shift est maintenant un repos)`);
-                demandReopened = true;
-            } else if (accepter.verdict === 'modify') {
-                populatedDemand.accepterShift.shift = accepter.data.newShiftId;
+            if (poster.verdict === 'modify') {
+                currentDemand.posterShift.shift = poster.data.newShiftId;
                 demandModified = true;
             }
 
             if (switches.verdict === 'modify') {
-                populatedDemand.acceptedSwitches = switches.data.validSwitches;
+                currentDemand.acceptedSwitches = switches.data.validSwitches;
                 if (switches.data.downgradeToSubstitution) {
-                    populatedDemand.type = 'substitution';
-                    console.log(`✅ [${populatedDemand._id}] Demande convertie en substitution (hybride sans option valide)`);
+                    currentDemand.type = 'substitution';
+                    console.log(`✅ [${currentDemand._id}] Demande convertie en substitution (hybride sans option valide)`);
                 }
                 demandModified = true;
             }
 
             if (demandModified || demandReopened) {
-                await populatedDemand.save({ session });
+                if (demandModified) await currentDemand.save({ session });
                 convertedDemands++;
                 console.log(`✅ [${populatedDemand._id}] Demande convertie avec succès`);
             }

@@ -304,6 +304,8 @@ const emit = defineEmits(['update:modelValue', 'update:theme']);
 const menuItemsLogged = [
   { key: 'remplacements', label: 'Demandes', path: '/demand-page/demands', title: 'Remplacements' },
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
+  // Grille de l'équipe ; un administrateur principal sans centre choisit d'abord un centre
+  { key: 'grid', label: 'Grille', path: authStore.userData.centerId ? '/center/' + authStore.userData.centerId + '/grid' : '/center/centers', title: 'Grille' },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
   { key: 'centres', label: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.userData.adminType === 'master' ? '/center/centers' : '/center/' + authStore.userData.centerId + '/teams', title: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre' },
   // { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },

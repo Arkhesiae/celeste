@@ -1,5 +1,5 @@
 <template>
-    <div class="d-flex cursor-pointer overflow-hidden day-block" :style="{ height: height + 'px ' }" :class="{
+    <div class="d-flex cursor-pointer overflow-hidden day-block pa-2" :style="{ height: height + 'px ' }" :class="{
         'isWorkDay': isWorkDay,
         'isRestDay': !!shiftName && !isWorkDay,
         'selected': selected,
@@ -7,12 +7,14 @@
         'empty-day': !isInMonth,
     }" @click="handleClick">
         <!-- Date number + shift name row -->
-        <div class="d-flex justify-space-between align-start px-2 day-header" style="min-width: 0; overflow: hidden;">
+        <div class="d-flex justify-space-between align-start px-0 day-header" style="min-width: 0; overflow: hidden;">
             <!-- Day number -->
             <div class="day_label_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <span class="day-number"
+                <span 
+                     class="day-number"
+                    :class="{ 'tg-day--today': isToday, 'tg-day--weekend': false, 'xs': xs }"
                     :style="isWorkDay && !inPast ? 'font-weight: 900 !important' : 'font-weight: 500'"
-                    :class="{ 'xs': xs }">
+                    >
                     {{ date.day }}
                 </span>
             </div>
@@ -137,6 +139,16 @@ const props = defineProps({
     },
 });
 
+import { Temporal } from '@js-temporal/polyfill';
+import { useRoute } from 'vue-router';
+
+import { useCenterStore } from '@/stores/centerStore';
+const DEFAULT_TIME_ZONE = 'Europe/Paris';
+const route = useRoute();
+
+const centerStore = useCenterStore();
+const centerId = "aze"
+
 const emit = defineEmits(['select']);
 
 /** Évite de doubler la variante déjà concaténée dans shiftName (ex. J1A). */
@@ -148,6 +160,12 @@ const variationLabel = computed(() => {
     if (shift.endsWith(variation)) return '';
     return variation;
 });
+
+const timeZone = computed(() => centerStore.centers.find((c) => c._id === centerId)?.timeZone || DEFAULT_TIME_ZONE);
+
+const today =  Temporal.Now.plainDateISO(timeZone.value).toString();
+
+const isToday = computed(() =>  Temporal.PlainDate.compare(props.date, today) ===0)
 
 const inPast = computed(() => {
     if (!props.date) return false;
@@ -311,6 +329,17 @@ const handleClick = async () => {
     background-color: rgb(var(--v-theme-surfaceContainerLow));
     border-color: rgba(var(--v-theme-outlineVariant), 0.45);
 }
+
+
+.tg-day--today  {
+  min-width: 24px;
+  padding: 2px 0;
+  text-align: center;
+  border-radius: 12px;
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-onPrimary));
+}
+
 
 .shift_container {
     display: flex;

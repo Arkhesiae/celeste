@@ -15,7 +15,7 @@
           :demands="demandsForDate(plainDateToDateStr(day))"
           :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
           :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
-          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" class="pa-3" :height="86" :class="{
+          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" class="" :height="86" :class="{
             'top-left-corner': index === 0 && week.indexOf(day) === 0,
             'top-right-corner': index === 0 && week.indexOf(day) === week.length - 1,
             'bottom-left-corner': index === calendarDays.length - 1 && week.indexOf(day) === 0,

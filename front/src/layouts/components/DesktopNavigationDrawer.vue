@@ -60,6 +60,16 @@
         @click="router.push({ path: '/calendar' })"
       />
 
+      <!-- Grille de l'équipe -->
+      <v-list-item
+        rounded="xl"
+        :class="isActive(gridPath) ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive(gridPath) ? 'mdi-view-week' : 'mdi-view-week-outline'"
+        title="Grille"
+        value="grid"
+        @click="router.push({ path: gridPath })"
+      />
+
       <v-list-item
         rounded="xl"
         :class="isActive('/rotation') ? 'active-item' : 'inactive-item'"
@@ -140,6 +150,11 @@ const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
 
+
+// Grille du centre de l'utilisateur ; un administrateur principal sans centre choisit d'abord un centre
+const gridPath = computed(() => (authStore.userData.centerId
+  ? `/center/${authStore.userData.centerId}/grid`
+  : '/center/centers'));
 
 const isActive = (path) => {
   return router.currentRoute.value.path === path;

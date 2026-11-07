@@ -17,6 +17,13 @@
       </v-icon>
       <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
     </v-btn>
+    <v-btn :ripple="false" value="grid" icon :class="isActive(gridPath) ? 'active-item' : 'inactive-item'"
+      :active="isActive(gridPath)" @click="router.push({ path: gridPath }); hapticsImpact()">
+      <v-icon size="20">
+        {{ isActive(gridPath) ? 'mdi-view-week' : 'mdi-view-week-outline' }}
+      </v-icon>
+      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Grille</span>
+    </v-btn>
     <v-btn :ripple="false" value="demandes" icon
       :class="isActive('/demand-page/demands') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/demand-page/demands'"
@@ -84,6 +91,11 @@ const substitutionStore = useSubstitutionStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 // const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
 const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
+
+// Grille du centre de l'utilisateur ; un administrateur principal sans centre choisit d'abord un centre
+const gridPath = computed(() => (authStore.userData.centerId
+  ? `/center/${authStore.userData.centerId}/grid`
+  : '/center/centers'));
 
 const isActive = (path) => {
   return router.currentRoute.value.path === path;

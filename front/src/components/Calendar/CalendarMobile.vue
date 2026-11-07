@@ -18,7 +18,7 @@
       <div v-else>
         <v-row v-for="(week, index) in calendarDays" :key="index"
           class="px-4 d-flex justify-space-between align-center my-1 ga-1">
-          <v-col v-for="day in week" :key="day.toString()" class="ma-0 pa-0 d-flex justify-space-around align-center">
+          <v-col v-for="day in week" :key="day.toString()" class="ma-0 d-flex justify-space-around align-center">
             <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
               :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"
               :demands="demandsForDate(plainDateToDateStr(day))"

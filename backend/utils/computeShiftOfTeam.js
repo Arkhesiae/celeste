@@ -4,6 +4,7 @@ import { findLatestRotation } from './findLatestRotation.js';
 import Shift from '../models/Shift.js';
 import Rotation from '../models/Rotation.js';
 import { AppError } from '../error/AppError.js';
+import { cycleDayIndex } from './teamCycle.js';
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée
 const computeShiftOfTeam = async (date, teamData) => {
@@ -45,26 +46,16 @@ const computeShiftOfTeam = async (date, teamData) => {
         }
         
 
-        const diffInMilliseconds = date - new Date(teamData.cycleStartDate);
-        const diffInDays = Math.floor(diffInMilliseconds / (1000 * 60 * 60 * 24));
-
         const rotationPattern = latestRotation.days;
         if (!rotationPattern || rotationPattern.length === 0) {
             throw new Error('Pattern de rotation invalide');
         }
-        
-        const totalPatternDays = rotationPattern.length;
-        let dayIndex;
-        
-        if (diffInDays >= 0) {
-            dayIndex = diffInDays % totalPatternDays;
-        } else {
-            // Pour les dates antérieures, on calcule l'index en remontant dans le pattern
-            dayIndex = (totalPatternDays - (Math.abs(diffInDays) % totalPatternDays)) % totalPatternDays;
-        }
 
-        const shift = rotationPattern[dayIndex];
-        return shift;
+        // Début de cycle défini par l'ancre du centre + offset de l'équipe (repli : ancien cycleStartDate)
+        const dayIndex = cycleDayIndex(teamData, center, date, rotationPattern.length);
+        if (dayIndex === null) return null;   // équipe sans début de cycle
+
+        return rotationPattern[dayIndex];
     } catch (error) {
         console.error('Erreur dans computeShiftOfTeam:', error.message);
         throw error;

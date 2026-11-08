@@ -1,6 +1,8 @@
 import Team from '../models/Team.js';
 import { computeShiftOfTeam } from "./computeShiftOfTeam.js";
 import { getTeamAtGivenDate } from "./getTeamAtGivenDate.js";
+import { cycleDayIndex } from './teamCycle.js';
+import Center from '../models/Center.js';
 import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
 import { CalendarEntry, Assignment, Modification, HourPatch } from '../models/CalendarEntry.js';
@@ -339,15 +341,18 @@ const computeUserShifts = async (dates, userId) => {
             }
             return populatedRotations.get(active.rotationId);
         };
-        const shiftFromRotation = (team, date, rotation) => {
+        // Ancre de cycle du centre, lue une fois par centre
+        const centerByKey = new Map();
+        const getCenter = (centerId) => {
+            const key = String(centerId);
+            if (!centerByKey.has(key)) centerByKey.set(key, Center.findById(centerId).select('cycleAnchorDate').lean().exec());
+            return centerByKey.get(key);
+        };
+
+        const shiftFromRotation = (team, center, date, rotation) => {
             if (!rotation?.days?.length) return null;
-            const diffInDays = Math.floor(
-                (date - new Date(team.cycleStartDate)) / (1000 * 60 * 60 * 24)
-            );
-            const total = rotation.days.length;
-            const dayIndex = diffInDays >= 0
-                ? diffInDays % total
-                : (total - (Math.abs(diffInDays) % total)) % total;
+            const dayIndex = cycleDayIndex(team, center, date, rotation.days.length);
+            if (dayIndex === null) return null;
             return rotation.days[dayIndex] || null;
         };
 
@@ -359,7 +364,8 @@ const computeUserShifts = async (dates, userId) => {
                 let baseShift = null;
                 if (team) {
                     const rotation = await getPopulatedRotation(team, date);
-                    baseShift = shiftFromRotation(team, date, rotation);
+                    const center = await getCenter(team.center?._id ?? team.center);
+                    baseShift = shiftFromRotation(team, center, date, rotation);
                 }
 
                 const { assignments, modifications, hoursPatches } = entriesByDate[dateStr]

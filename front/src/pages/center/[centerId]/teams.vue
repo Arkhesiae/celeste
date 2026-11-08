@@ -13,6 +13,17 @@ color="onBackground" style="border-radius: 16px !important" height="48px" class=
     </MainTitle>
 
 
+    <v-alert
+      v-if="teamCountWarning"
+      type="warning"
+      variant="tonal"
+      rounded="xl"
+      class="mb-4"
+      icon="mdi-alert-outline"
+    >
+      {{ teamCountWarning }}
+    </v-alert>
+
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6">
         <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
@@ -48,7 +59,7 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
           :members-count="teamMembers(team._id).length + teamRenforts(team._id).length"
           :renforts-count="teamRenforts(team._id).length" :cycle-start-date="getCycleStartLabel(team)" :next-cycle-date="getNextCycleDate(team)"
           :current-day="getCurrentCycleDay(team)" :grid-link="{ path: `/center/${centerId}/grid`, query: { team: team._id } }"
-          @edit-team-name="openEditTeamNameDialog" @edit-cycle="openDatePickerDialog" @add-member="openAddMemberDialog"
+          @edit-team-name="openEditTeamNameDialog" @edit-cycle="openCycleDialog" @add-member="openAddMemberDialog"
           @remove-team="removeTeam" @view-members="openMembersPanel" />
       </v-col>
     </v-row>
@@ -73,16 +84,45 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
       </v-card>
     </v-dialog>
 
-    <!-- Dialog pour le sélecteur de date -->
-    <base-dialog v-model="datePickerDialog" title="Définir le début de cycle" max-width="380" persistent>
-      <v-date-picker v-model="selectedDate" width="100%" elevation="0" flat rounded="xl" locale="fr" hide-header />
+    <!-- Dialog pour la position de l'équipe dans le cycle -->
+    <base-dialog v-model="cycleDialog"  :title="`Position de l'équipe ${selectedTeam?.name ?? ''}`" max-width="600" persistent>
+      <p class="text-body-medium mb-4">
+        Aujourd'hui, à quel jour du tour de service cette équipe se trouve-t-elle ?
+      </p>
+      <v-alert v-if="!rotationLength" type="info" color="secondary" variant="tonal" density="compact" rounded="xl" class="mb-4">
+        Aucun tour de service actif : les jours sont numérotés d'après le nombre d'équipes ({{ cycleDays.length }}).
+        Les vacations apparaîtront quand un tour sera activé.
+      </v-alert>
+      <CycleDayPicker
+        v-if="cycleDays.length"
+        v-model="selectedCycleDay"
+        :days="cycleDays"
+        :occupants="cycleOccupants"
+        :current-position="currentCyclePosition"
+        :time-zone="centerTimeZone"
+      />
+      <v-alert
+        v-if="swapTarget"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        rounded="lg"
+        class="mt-4"
+      >
+        Ce jour est celui de l'équipe {{ swapTarget }} : les deux équipes échangeront leurs positions.
+      </v-alert>
       <template #actions>
         <v-spacer />
-        <v-btn variant="text" @click="closeDatePickerDialog">
+        <v-btn variant="text" @click="closeCycleDialog">
           Annuler
         </v-btn>
-        <v-btn variant="text" color="primary" @click="setCycleStartDate">
-          Définir
+        <v-btn
+       
+          :loading="cycleSaving"
+          :disabled="!selectedCycleDay || selectedCycleDay === currentCyclePosition"
+          @click="saveCyclePosition(!!swapTarget)"
+        >
+          {{ swapTarget ? 'Échanger' : 'Définir' }}
         </v-btn>
       </template>
     </base-dialog>
@@ -93,7 +133,7 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
         <v-card-title>Ajouter un membre</v-card-title>
         <v-card-text>
           <v-select
-v-model="selectedUser" :items="availableUsers" item-title="name" item-value="_id"
+v-model="selectedUser" variant="flat" :items="availableUsers" item-title="name" item-value="_id"
             label="Sélectionner un utilisateur" return-object dense />
         </v-card-text>
         <v-card-actions>
@@ -208,7 +248,7 @@ import { useUserStore } from '@/stores/userStore';
 import { useRoute } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { VueDraggable } from 'vue-draggable-plus'
-// import { useRotationStore } from '@/stores/rotationStore';
+import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
@@ -222,7 +262,7 @@ const userStore = useUserStore();
 // const router = useRouter();
 const route = useRoute();
 const snackbarStore = useSnackbarStore();
-// const rotationStore = useRotationStore();
+const rotationStore = useRotationStore();
 const centerStore = useCenterStore();
 const authStore = useAuthStore();
 const isAdmin = computed(() => authStore.userData.isAdmin);
@@ -244,10 +284,11 @@ const searchQuery = ref('');
 const sortBy = ref('order');
 const sortDirection = ref('asc');
 const addTeamDialog = ref(false);
-const datePickerDialog = ref(false);
+const cycleDialog = ref(false);
 const addMemberDialog = ref(false);
 const newTeamName = ref('');
-const selectedDate = ref(new Date());
+const selectedCycleDay = ref(null);
+const cycleSaving = ref(false);
 const selectedTeam = ref(null);
 const selectedUser = ref(null);
 // const minDate = new Date().toISOString().split('T')[0];
@@ -343,36 +384,75 @@ const removeTeam = async (teamId) => {
   }
 };
 
-const openDatePickerDialog = (team) => {
+// Jours du tour de service actif : « Jour 3 · J3 » (nom de la vacation quand elle est connue)
+const activeRotationDays = computed(() => {
+  const { allRotations = [], sortedRotations = [] } = rotationStore.getRotationsForCenter(centerId) ?? {};
+  const activeId = sortedRotations.find((r) => r.status === 'active')?._id;
+  return allRotations.find((r) => r._id === activeId)?.days ?? [];
+});
+
+// Tuiles du sélecteur : un jour du tour actif avec la vacation correspondante quand elle est connue
+const cycleDays = computed(() => {
+  const total = cycleLength.value;
+  return Array.from({ length: total }, (_, index) => {
+    const shift = activeRotationDays.value[index];
+    const { startTime, endTime } = shift?.default ?? {};
+    return {
+      position: index + 1,
+      name: shift?.name ?? '',
+      isRest: shift?.type === 'rest',
+      hours: startTime && endTime ? `${startTime}–${endTime}` : '',
+    };
+  });
+});
+
+// Équipes qui occupent déjà un jour (hors l'équipe éditée) : { position: nom }
+const cycleOccupants = computed(() => {
+  const occupants = {};
+  for (const team of teams.value) {
+    if (team._id === selectedTeam.value?._id) continue;
+    const position = getCurrentCycleDay(team)?.position;
+    if (position) occupants[position] = team.name;
+  }
+  return occupants;
+});
+
+const currentCyclePosition = computed(() => (selectedTeam.value ? getCurrentCycleDay(selectedTeam.value)?.position ?? null : null));
+
+// Équipe qui occupe le jour choisi : elle échangera sa place avec l'équipe éditée
+const swapTarget = computed(() => cycleOccupants.value[selectedCycleDay.value] ?? null);
+
+const openCycleDialog = (team) => {
   selectedTeam.value = team;
-  selectedDate.value = team.cycleStartDate ? new Date(team.cycleStartDate) : new Date();
-  datePickerDialog.value = true;
+  selectedCycleDay.value = getCurrentCycleDay(team)?.position ?? null;
+  cycleDialog.value = true;
 };
 
-const closeDatePickerDialog = () => {
-  datePickerDialog.value = false;
+const closeCycleDialog = () => {
+  cycleDialog.value = false;
   selectedTeam.value = null;
 };
 
-const setCycleStartDate = async () => {
-  if (!selectedTeam.value) return;
+// swap : l'équipe qui occupe déjà ce jour prend la place de celle-ci
+const saveCyclePosition = async (swap) => {
+  if (!selectedTeam.value || !selectedCycleDay.value) return;
 
+  cycleSaving.value = true;
   try {
-    // Créer une nouvelle date à partir de la date sélectionnée
-    const date = new Date(selectedDate.value);
-    // Convertir en UTC en gardant la même date
-    const utcDate = new Date(Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      0, 0, 0, 0
-    ));
-
-    await teamStore.updateTeamCycleStartDate(selectedTeam.value._id, utcDate.toISOString());
-    snackbarStore.showNotification('Date de cycle mise à jour', 'onPrimary', "mdi-check");
-    datePickerDialog.value = false;
+    await teamStore.updateTeamCyclePosition(selectedTeam.value._id, {
+      day: selectedCycleDay.value,
+      date: Temporal.Now.plainDateISO(centerTimeZone.value).toString(),
+      swap,
+    });
+    snackbarStore.showNotification('Position dans le cycle mise à jour', 'onPrimary', "mdi-check");
+    cycleDialog.value = false;
+    selectedTeam.value = null;
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la mise à jour de la date de cycle : ' + error.message, 'onError', "mdi-alert-circle-outline");
+    snackbarStore.showNotification('Erreur lors de la mise à jour de la position : ' + error.message, 'onError', "mdi-alert-circle-outline");
+    // Conflit de dernière minute (une autre personne a modifié le cycle) : recharger pour afficher les occupants à jour
+    if (error.code === 'CYCLE_POSITION_TAKEN') teamStore.fetchCenterTeams(centerId);
+  } finally {
+    cycleSaving.value = false;
   }
 };
 
@@ -439,9 +519,15 @@ const closeReorderDialog = async () => {
 // Fuseau horaire du centre (Temporal) : « aujourd'hui » et les jours de cycle en dépendent
 const centerTimeZone = computed(() => centerStore.centers.find(c => c._id === centerId)?.timeZone || 'Europe/Paris');
 
-// Jours écoulés depuis le début de cycle de l'équipe, et longueur du cycle de la rotation active ; null si inconnus
+// Jours du tour de service actif ; 0 si aucun tour n'est actif
+const rotationLength = computed(() => centerStore.activeRotationsByCenter[centerId]?.days?.length ?? 0);
+
+// Longueur du cycle : celle du tour actif ; sans tour, autant de jours que d'équipes (une équipe par jour)
+const cycleLength = computed(() => rotationLength.value || teams.value.length);
+
+// Jours écoulés depuis le début de cycle de l'équipe, et longueur du cycle ; null si inconnus
 const cycleProgress = (team) => {
-  const total = centerStore.activeRotationsByCenter[centerId]?.days?.length;
+  const total = cycleLength.value;
   const startKey = toDateKey(team.cycleStartDate);
   if (!total || !startKey) return null;
 
@@ -455,7 +541,8 @@ const getNextCycleDate = (team) => {
   if (!team.cycleStartDate) return 'Non défini';
 
   const progress = cycleProgress(team);
-  if (!progress) return 'Aucune rotation active';   // sans rotation active, la longueur du cycle est inconnue
+  // Le prochain début de cycle suppose un tour de service réel (sinon la longueur n'est qu'une déduction)
+  if (!progress || !rotationLength.value) return 'Aucune rotation active';
 
   const { elapsed, total } = progress;
   const completedCycles = Math.floor(elapsed / total);
@@ -479,6 +566,14 @@ const getCurrentCycleDay = (team) => {
   return { position: (((elapsed % total) + total) % total) + 1, total };
 };
 
+// Il faut autant d'équipes que de jours dans le tour de service actif
+const teamCountWarning = computed(() => {
+  const total = centerStore.activeRotationsByCenter[centerId]?.days?.length;
+  if (!total || teams.value.length === total) return '';
+  return `Le centre a ${teams.value.length} équipe(s) pour un tour de service actif de ${total} jour(s) : `
+    + 'il faut autant d\'équipes que de jours pour que chaque jour du tour soit assuré.';
+});
+
 const openMembersPanel = (team) => {
   selectedTeamForMembers.value = team;
   membersPanel.value = true;
@@ -491,6 +586,7 @@ onMounted(async () => {
       userStore.fetchUsersAndGroupByTeam(centerId),
       userStore.fetchTeamsTimeline(centerId),
       centerStore.fetchActiveRotationOfCenter(centerId),
+      rotationStore.fetchRotations(centerId),
       centerStore.fetchCenters(),
     ]);
     orderedTeams.value = teams.value;

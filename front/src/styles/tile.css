@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Global interactive tile  (.tile)
+   Selectable card used in grids of choices (days of a rotation, shifts, options...).
+   Provides the resting look and the hover / active / focus-visible / selected / disabled reactions;
+   the content layout (what goes inside) stays with the component.
+
+   Markup (a real <button> keeps keyboard and screen-reader behavior):
+     <button type="button" role="radio" :aria-checked="selected" class="tile">...</button>
+     <button type="button" :aria-pressed="selected" class="tile tile--muted">...</button>
+
+   States
+     hover           inset ring in the accent color (pointer devices only, never "sticks" on touch)
+     :active         pressed scale
+     :focus-visible  outline offset from the tile (keyboard only)
+     selected        `.tile--selected`, `[aria-checked="true"]` or `[aria-pressed="true"]`: filled with the accent
+     muted           `.tile--muted`: secondary text color, for low-importance choices (e.g. rest days)
+     disabled        `:disabled` or `[aria-disabled="true"]`
+
+   Tuning (override on the element or a parent, no new class needed)
+     --tile-accent  --tile-bg  --tile-color  --tile-border  --tile-radius  --tile-pressed-scale
+   ========================================================================== */
+
+.tile {
+  --tile-accent: rgb(var(--v-theme-primary));
+  --tile-on-accent: rgb(var(--v-theme-onPrimary));
+  --tile-bg: rgba(var(--v-theme-onSurface), 0.03);
+  --tile-color: rgb(var(--v-theme-onSurface));
+  --tile-border: rgba(var(--v-theme-outlineVariant), 0.1);
+  --tile-radius: 16px;
+  --tile-pressed-scale: 0.95;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-height: 84px;
+  padding: 8px;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  color: var(--tile-color);
+  background: var(--tile-bg);
+  border: 1px solid var(--tile-border);
+  border-radius: var(--tile-radius);
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background var(--motion-standard-fast-effects),
+    color var(--motion-standard-fast-effects),
+    border-color var(--motion-standard-fast-effects),
+    box-shadow var(--motion-standard-fast-effects),
+    transform var(--motion-standard-fast-effects);
+}
+
+/* Hover : anneau intérieur (aucun décalage de mise en page, contrairement à une bordure plus épaisse) */
+@media (hover: hover) {
+  .tile:hover {
+    box-shadow: inset 0 0 0 1px var(--tile-accent);
+    border-color: var(--tile-accent);
+  }
+}
+
+.tile:active { transform: scale(var(--tile-pressed-scale)); }
+
+.tile:focus-visible {
+  outline: 2px solid var(--tile-accent);
+  outline-offset: 2px;
+}
+
+.tile--muted { --tile-color: rgb(var(--v-theme-onSurfaceVariant)); }
+
+.tile--selected,
+.tile[aria-checked='true'],
+.tile[aria-pressed='true'] {
+  --tile-bg: var(--tile-accent);
+  --tile-color: var(--tile-on-accent);
+  --tile-border: var(--tile-accent);
+}
+
+.tile:disabled,
+.tile[aria-disabled='true'] {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: none; }
+  .tile:active { transform: none; }
+}

@@ -28,7 +28,7 @@ export async function getTeamGrid (teamId, startDate, endDate) {
         throw new AppError(`La période ne peut pas dépasser ${MAX_DAYS} jours`, 400);
     }
 
-    const team = await Team.findById(teamId).select('name center cycleStartDate deleted').lean();
+    const team = await Team.findById(teamId).select('name center cycleStartDate cycleOffset deleted').lean();
     if (!team || team.deleted) throw new AppError('Équipe non trouvée', 404);
 
     const dates = generateDateArray(startDate, endDate);
@@ -58,8 +58,8 @@ export async function getTeamGrid (teamId, startDate, endDate) {
 
     // Vacation « normale » de l'équipe pour chaque jour : affichée une seule fois dans l'en-tête de la grille
     const teamShiftList = await Promise.all(dates.map(async (date) => {
-        const shift = team.cycleStartDate ? await computeShiftOfTeam(new Date(`${date}T00:00:00Z`), team) : null;
-        return [date, shift];
+        // Null si l'équipe n'a pas de début de cycle
+        return [date, await computeShiftOfTeam(new Date(`${date}T00:00:00Z`), team)];
     }));
     const teamShifts = {};
     const teamShiftIds = new Map();

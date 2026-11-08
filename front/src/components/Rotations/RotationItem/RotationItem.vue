@@ -106,6 +106,18 @@
         </v-btn>
       </template>
     </v-card-item>
+    <v-alert
+      v-if="teamCountMismatch"
+      type="warning"
+      variant="tonal"
+      density="compact"
+      rounded="lg"
+      class="mx-4 mb-2"
+      icon="mdi-alert-outline"
+    >
+      Ce tour de {{ rotation.days?.length ?? 0 }} jour(s) ne correspond pas aux {{ teamsCount }} équipe(s) du centre :
+      il faut autant d'équipes que de jours.
+    </v-alert>
     <v-expand-transition>
       <div
         v-show="isExpanded"
@@ -199,8 +211,16 @@ const props = defineProps({
   isActive: {
     type: Boolean,
     default: false
+  },
+  /** Nombre d'équipes du centre ; null tant qu'il est inconnu (aucun avertissement) */
+  teamsCount: {
+    type: Number,
+    default: null
   }
 });
+
+// Autant d'équipes que de jours dans le tour de service
+const teamCountMismatch = computed(() => props.teamsCount !== null && (props.rotation.days?.length ?? 0) !== props.teamsCount);
 
 const emit = defineEmits(['set-activation-date', 'delete', 'toggle-expand', 'edit']);
 

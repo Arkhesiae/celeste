@@ -119,17 +119,16 @@ export const teamService = {
   },
 
   /**
-   * Met à jour la date de début de cycle d'une équipe.
-   * @param {string} teamId - L'ID de l'équipe.
-   * @param {string} date - La date de début de cycle.
-   * @returns {Promise<Object>} L'équipe mise à jour.
+   * Place une équipe à un jour du tour de service : « à la date `date`, l'équipe est au jour `day` ».
+   * @param {string} teamId
+   * @param {{ day: number, date: string, swap?: boolean }} position - `date` : YYYY-MM-DD ; `swap` : échanger avec l'équipe qui occupe déjà ce jour
+   * @returns {Promise<{ team: Object, swappedWith: string|null }>}
    */
-  async updateTeamCycleStartDate(teamId, cycleStartDate) {
-    const response = await apiFetch(`/teams/${teamId}/cycle-start-date`, {
+  async updateTeamCyclePosition(teamId, { day, date, swap = false }) {
+    return apiFetch(`/teams/${teamId}/cycle-position`, {
       method: 'PUT',
-      body: JSON.stringify({ cycleStartDate })
+      body: JSON.stringify({ day, date, swap })
     });
-    return response;
   },
 
   /**

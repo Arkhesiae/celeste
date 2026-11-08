@@ -42,6 +42,7 @@ declare module 'vue' {
     ConfirmChangeDialog: typeof import('./src/components/Rotations/Common/ConfirmChangeDialog.vue')['default']
     ContactAdminForm: typeof import('./src/components/Forms/ContactAdminForm.vue')['default']
     CurrentBudgetCard: typeof import('./src/components/Financement/CurrentBudgetCard.vue')['default']
+    CycleDayPicker: typeof import('./src/components/Teams/CycleDayPicker.vue')['default']
     DashboardCalendarSection: typeof import('./src/components/Dashboard/DashboardCalendarSection.vue')['default']
     DashboardRightCol: typeof import('./src/components/Dashboard/DashboardRightCol.vue')['default']
     DashboardTeamCard: typeof import('./src/components/Dashboard/DashboardTeamCard.vue')['default']

@@ -231,19 +231,19 @@ export const useTeamStore = defineStore('team', () => {
   };
 
   /**
-   * Met à jour la date de début de cycle d'une équipe.
-   * @param {string} teamId - L'ID de l'équipe.
-   * @param {Date} cycleStartDate - La nouvelle date de début de cycle.
+   * Place une équipe à un jour du tour de service (voir teamService.updateTeamCyclePosition).
+   * @param {string} teamId
+   * @param {{ day: number, date: string, swap?: boolean }} position
    */
-  const updateTeamCycleStartDate = async (teamId, cycleStartDate) => {
+  const updateTeamCyclePosition = async (teamId, position) => {
     try {
       loading.value = true;
       error.value = null;
-      await teamService.updateTeamCycleStartDate(teamId, cycleStartDate);
+      const result = await teamService.updateTeamCyclePosition(teamId, position);
       await fetchCenterTeams(currentCenter.value);
+      return result;
     } catch (err) {
-      console.error('Erreur lors de la mise à jour de la date de début de cycle:', err);
-      error.value = err.message || 'Erreur lors de la mise à jour de la date de début de cycle';
+      error.value = err.message || 'Erreur lors de la mise à jour de la position dans le cycle';
       throw err;
     } finally {
       loading.value = false;
@@ -303,7 +303,7 @@ export const useTeamStore = defineStore('team', () => {
     addTeam,
     deleteTeam,
     renameTeam,
-    updateTeamCycleStartDate,
+    updateTeamCyclePosition,
     updateTeamsOrder,
     fetchTeamGrid,
     deleteTeamOccurrence,

@@ -4,7 +4,7 @@
     rounded="xl"
     variant="flat"
   >
-    <v-card-item>
+    <v-card-item class="pr-0">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
           <span class="text-title-large">Equipe {{ team?.name }}</span>

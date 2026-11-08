@@ -64,6 +64,7 @@ export const handleResponse = async (response, retryFn, retry = true) => {
     console.error('API Error:', data);
     const customError = new Error(data.message || data.error || 'Une erreur est survenue');
     customError.status = response.status;
+    customError.code = data.code;   // code métier éventuel (ex. CYCLE_POSITION_TAKEN)
     throw customError;
   }
 

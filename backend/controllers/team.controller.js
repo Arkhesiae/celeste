@@ -4,7 +4,10 @@ import User from "../models/User.js";
 import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
 import { AppError } from '../error/AppError.js';
 import { isValidId } from '../utils/validation.js';
+import { findLatestRotation } from '../utils/findLatestRotation.js';
+import { mod, daysBetween } from '../utils/teamCycle.js';
 import { getTeamGrid as getTeamGridService } from '../services/team/team.grid.js';
+import { setTeamCyclePosition as setTeamCyclePositionService } from '../services/team/team.cycle.js';
 
 // Créer une nouvelle équipe dans un centre
 const createTeam = async (req, res, next) => {
@@ -142,6 +145,18 @@ const getTeamGrid = async (req, res, next) => {
     }
 };
 
+// Place une équipe à un jour de la rotation : { day (1..N), date (YYYY-MM-DD, aujourd'hui côté centre), swap? }
+const setTeamCyclePosition = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { day, date, swap } = req.body;
+        if (!isValidId(id)) throw new AppError("ID d'équipe invalide", 400);
+        res.json(await setTeamCyclePositionService(id, { day: Number(day), date, swap: swap === true }));
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Mettre à jour la date de début de cycle d'une équipe
 const updateTeamCycleStartDate = async (req, res, next) => {
     const { id } = req.params;
@@ -151,11 +166,23 @@ const updateTeamCycleStartDate = async (req, res, next) => {
             throw new AppError('Date de début de cycle manquante', 400);
         }
 
-        const team = await Team.findByIdAndUpdate(
-            id,
-            { cycleStartDate },
-            { new: true }
-        );
+        const update = { $set: { cycleStartDate } };
+
+        // Double écriture pendant la migration : si le centre utilise déjà une ancre de cycle, l'offset de l'équipe
+        // doit rester cohérent avec la date saisie (il a priorité à la lecture, voir utils/teamCycle.js)
+        const current = await Team.findById(id).select('center');
+        const center = current ? await Center.findById(current.center).select('cycleAnchorDate') : null;
+        if (center?.cycleAnchorDate) {
+            const rotation = await findLatestRotation(center._id, new Date());
+            const total = rotation?.days?.length;
+            if (total) {
+                update.$set.cycleOffset = mod(daysBetween(center.cycleAnchorDate, cycleStartDate), total);
+            } else {
+                update.$unset = { cycleOffset: '' };   // longueur du cycle inconnue : retour à l'ancien champ
+            }
+        }
+
+        const team = await Team.findByIdAndUpdate(id, update, { new: true });
 
         if (!team) {
             throw new AppError('Équipe non trouvée', 404);
@@ -221,6 +248,7 @@ export {
     getAllTeams,
     getTeamShifts,
     getTeamGrid,
+    setTeamCyclePosition,
     updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder

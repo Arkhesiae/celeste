@@ -32,6 +32,7 @@
           :key="rotation._id"
           :rotation="rotation"
           :is-active="isRotationActive(rotation)"
+          :teams-count="teamsCount"
           :is-expanded="expandedRotations[rotation._id]"
           @set-activation-date="handleSetActivationDate"
           @delete="deleteRotation"
@@ -234,6 +235,7 @@ import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from "@/stores/centerStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore";
+import { useTeamStore } from "@/stores/teamStore";
 
 import { useDisplay } from "vuetify";
 import { toUTCNormalized } from '@/utils';
@@ -253,6 +255,18 @@ const isAdmin = computed(() => authStore.userData.isAdmin);
 const isMaster = computed(() => authStore.userData.adminType === 'master');
 
 const selectedCenterId = ref(authStore.userData.centerId)
+
+// Nombre d'équipes du centre affiché : sert à avertir qu'un tour de service n'a pas autant de jours que d'équipes
+const teamStore = useTeamStore();
+const teamsCount = ref(null);
+const loadTeamsCount = async (centerId) => {
+  teamsCount.value = null;
+  try {
+    teamsCount.value = (await teamStore.fetchCenterTeams(centerId))?.length ?? null;
+  } catch {
+    teamsCount.value = null;   // inconnu : pas d'avertissement plutôt qu'un faux positif
+  }
+};
 
 const loading = computed(() => rotationStore.loading)
 
@@ -451,14 +465,17 @@ const handleEdit = (rotation) => {
 
 const handleCenterChange = async (centerId) => {
   selectedCenterId.value = centerId
-  await rotationStore.fetchRotations(centerId)
+  await Promise.all([rotationStore.fetchRotations(centerId), loadTeamsCount(centerId)])
 }
 
 onMounted(async () => {
   try {
     await centerStore.fetchCenters();
     
-    await rotationStore.fetchRotations(authStore.userData.centerId);
+    await Promise.all([
+      rotationStore.fetchRotations(authStore.userData.centerId),
+      loadTeamsCount(authStore.userData.centerId),
+    ]);
     
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la récupération des tours de service : ' + error.message, 'onError', 'mdi-alert-circle-outline');

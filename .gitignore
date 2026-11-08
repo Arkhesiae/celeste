@@ -23,3 +23,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+# Sauvegardes écrites par backend/scripts/migrateCycleOffsets.js --apply
+backend/scripts/backups/

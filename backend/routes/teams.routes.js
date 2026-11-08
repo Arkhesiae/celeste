@@ -8,6 +8,7 @@ import {
     getAllTeams,
     getTeamShifts,
     getTeamGrid,
+    setTeamCyclePosition,
     updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder
@@ -19,6 +20,7 @@ import { authorizeCenterParam, authorizeTeamAccess, authorizeBodyResourcesCenter
 
 // Créer une nouvelle équipe dans un centre
 router.post('/center/:centerId', verifyToken, isAdmin, authorizeCenterParam('centerId'), createTeam);
+router.put('/:id/cycle-position', verifyToken, isAdmin, authorizeTeamAccess, setTeamCyclePosition);
 router.put('/:id/cycle-start-date', verifyToken, isAdmin, authorizeTeamAccess, updateTeamCycleStartDate);
 router.put('/:id/name', verifyToken, isAdmin, authorizeTeamAccess, updateTeamName);
 // Supprimer une équipe

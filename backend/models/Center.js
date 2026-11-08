@@ -9,6 +9,8 @@ const centerSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     type: { type: String, required: true, enum: ['app', 'crna', 'other'] },
     timeZone: { type: String, required: true, default: "Europe/Paris" },
+    // Date de référence du cycle (minuit UTC) : l'équipe d'offset 0 est au jour 1 de la rotation ce jour-là
+    cycleAnchorDate: { type: Date },
     deleted: { type: Boolean, default: false },
 });
 

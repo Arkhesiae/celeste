@@ -23,11 +23,12 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose';
+import { Temporal } from '@js-temporal/polyfill';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
 import '../models/Rotation.js';
 import { findLatestRotation } from '../utils/findLatestRotation.js';
-import { DAY_MS, cycleDayIndex, daysBetween, mod } from '../utils/teamCycle.js';
+import { cycleDayIndex, daysBetween, mod, toMongoDate, toPlainDate } from '../utils/teamCycle.js';
 
 dotenv.config();
 
@@ -39,16 +40,17 @@ const APPLY = args.has('apply');
 const ROLLBACK = args.has('rollback');
 const ONLY_CENTER = args.get('center');
 
-const isUtcMidnight = (d) => new Date(d).getTime() % DAY_MS === 0;
-const iso = (d) => new Date(d).toISOString().slice(0, 10);
+// Vérification sur la valeur brute stockée (un instant) : l'heure compte ici, c'est ce qu'on cherche à repérer
+const isUtcMidnight = (d) => new Date(d).getTime() % (24 * 60 * 60 * 1000) === 0;
+const iso = (d) => toPlainDate(d).toString();
 
 /** Même résultat entre l'ancien calcul (cycleStartDate seul) et le nouveau (ancre + offset) sur une longue plage ? */
 const verifyEquivalence = (legacyTeam, migratedTeam, center, total, from) => {
     for (let i = -4 * total; i <= 2 * 366; i++) {
-        const date = new Date(from.getTime() + i * DAY_MS);
+        const date = from.add({ days: i });
         const before = cycleDayIndex({ cycleStartDate: legacyTeam.cycleStartDate }, null, date, total);
         const after = cycleDayIndex(migratedTeam, center, date, total);
-        if (before !== after) return { ok: false, date: iso(date), before, after };
+        if (before !== after) return { ok: false, date: date.toString(), before, after };
     }
     return { ok: true };
 };
@@ -69,7 +71,7 @@ const analyse = async (center) => {
     const migrated = center.cycleAnchorDate && teams.every((t) => Number.isInteger(t.cycleOffset));
     if (migrated) {
         const bad = teams.filter((t) => t.cycleStartDate
-            && cycleDayIndex({ cycleStartDate: t.cycleStartDate }, null, new Date(), total) !== cycleDayIndex(t, center, new Date(), total));
+            && cycleDayIndex({ cycleStartDate: t.cycleStartDate }, null, Temporal.Now.plainDateISO('UTC'), total) !== cycleDayIndex(t, center, Temporal.Now.plainDateISO('UTC'), total));
         if (bad.length === 0) return { status: 'already-migrated', teams, anomalies, total };
         anomalies.push(`déjà migré mais ${bad.length} équipe(s) incohérente(s) avec cycleStartDate : ${bad.map((t) => t.name).join(', ')}`);
     }
@@ -90,7 +92,7 @@ const analyse = async (center) => {
     if (anomalies.length) return { status: 'blocked', anomalies, teams, total };
 
     // Ancre = plus ancien début de cycle ; offset = écart en jours modulo la longueur du cycle
-    const anchor = new Date(Math.min(...dated.map((t) => new Date(t.cycleStartDate).getTime())));
+    const anchor = dated.map((t) => toPlainDate(t.cycleStartDate)).reduce((min, d) => (Temporal.PlainDate.compare(d, min) < 0 ? d : min));
     const plan = dated.map((t) => ({ team: t, offset: mod(daysBetween(anchor, t.cycleStartDate), total) }));
 
     const seen = new Map();
@@ -100,7 +102,7 @@ const analyse = async (center) => {
     }
 
     const futureCenter = { cycleAnchorDate: anchor };
-    const today = new Date(Math.floor(Date.now() / DAY_MS) * DAY_MS);
+    const today = Temporal.Now.plainDateISO('UTC');
     for (const { team, offset } of plan) {
         const check = verifyEquivalence(team, { cycleOffset: offset }, futureCenter, total, today);
         if (!check.ok) {
@@ -177,7 +179,7 @@ const run = async () => {
         await Team.bulkWrite(r.plan.map(({ team, offset }) => ({
             updateOne: { filter: { _id: team._id }, update: { $set: { cycleOffset: offset } } },
         })));
-        await Center.updateOne({ _id: r.center._id }, { $set: { cycleAnchorDate: r.anchor } });
+        await Center.updateOne({ _id: r.center._id }, { $set: { cycleAnchorDate: toMongoDate(r.anchor) } });
         console.log(`  migré : ${r.center.name}`);
     }
 };

@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill';
 import Team from '../../models/Team.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
@@ -5,7 +6,7 @@ import { Assignment } from '../../models/CalendarEntry.js';
 import { computeUserShifts } from '../../utils/computeUserShifts.js';
 import { computeShiftOfTeam } from '../../utils/computeShiftOfTeam.js';
 import { getTeamAtGivenDate } from '../../utils/getTeamAtGivenDate.js';
-import { generateDateArray } from '../../utils/generateDateArray.js';
+import { eachDay, toMongoDate } from '../../utils/teamCycle.js';
 import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';
 
@@ -21,17 +22,20 @@ const fullName = (u) => [u?.name, u?.lastName].filter(Boolean).join(' ');
  * @param {string} endDate - YYYY-MM-DD
  */
 export async function getTeamGrid (teamId, startDate, endDate) {
-    if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {
+    if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {   // YYYY-MM-DD : l'ordre des chaînes est l'ordre chronologique
         throw new AppError('Période invalide (YYYY-MM-DD)', 400);
     }
-    if (generateDateArray(startDate, endDate).length > MAX_DAYS) {
+    for (const key of [startDate, endDate]) {
+        try { Temporal.PlainDate.from(key); } catch { throw new AppError('Période invalide (YYYY-MM-DD)', 400); }
+    }
+    if (eachDay(startDate, endDate).length > MAX_DAYS) {
         throw new AppError(`La période ne peut pas dépasser ${MAX_DAYS} jours`, 400);
     }
 
     const team = await Team.findById(teamId).select('name center cycleStartDate cycleOffset deleted').lean();
     if (!team || team.deleted) throw new AppError('Équipe non trouvée', 404);
 
-    const dates = generateDateArray(startDate, endDate);
+    const dates = eachDay(startDate, endDate);
 
     const users = await User.find({
         centerId: team.center,
@@ -46,7 +50,7 @@ export async function getTeamGrid (teamId, startDate, endDate) {
         const inTeamDates = new Set();
         let hasPermanentDay = false;
         for (const date of dates) {
-            const occurrence = getTeamAtGivenDate(user.teams, new Date(`${date}T00:00:00Z`));
+            const occurrence = getTeamAtGivenDate(user.teams, toMongoDate(Temporal.PlainDate.from(date)));
             if (occurrence && String(occurrence.teamId) === String(team._id)) {
                 inTeamDates.add(date);
                 if (!occurrence.toDate) hasPermanentDay = true;
@@ -59,7 +63,7 @@ export async function getTeamGrid (teamId, startDate, endDate) {
     // Vacation « normale » de l'équipe pour chaque jour : affichée une seule fois dans l'en-tête de la grille
     const teamShiftList = await Promise.all(dates.map(async (date) => {
         // Null si l'équipe n'a pas de début de cycle
-        return [date, await computeShiftOfTeam(new Date(`${date}T00:00:00Z`), team)];
+        return [date, await computeShiftOfTeam(toMongoDate(Temporal.PlainDate.from(date)), team)];
     }));
     const teamShifts = {};
     const teamShiftIds = new Map();

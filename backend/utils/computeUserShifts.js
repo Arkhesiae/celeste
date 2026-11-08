@@ -1,7 +1,9 @@
 import Team from '../models/Team.js';
 import { computeShiftOfTeam } from "./computeShiftOfTeam.js";
-import { getTeamAtGivenDate } from "./getTeamAtGivenDate.js";
-import { cycleDayIndex } from './teamCycle.js';
+import { getTeamAtGivenDate, getTeamAtDay } from "./getTeamAtGivenDate.js";
+import { Temporal } from '@js-temporal/polyfill';
+import { toCalendarDay, DEFAULT_TIME_ZONE } from './calendarDay.js';
+import { cycleDayIndex, toPlainDate } from './teamCycle.js';
 import Center from '../models/Center.js';
 import User from "../models/User.js";
 import Substitution from '../models/Substitution.js';
@@ -288,16 +290,23 @@ const computeUserShifts = async (dates, userId) => {
             throw new AppError('Utilisateur non trouvé', 404);
         }
 
+        // Centre de l'utilisateur : son fuseau place les instants reçus (horodatages) sur un jour calendaire
+        const centerByKey = new Map();
+        const getCenter = (centerId) => {
+            const key = String(centerId);
+            if (!centerByKey.has(key)) centerByKey.set(key, Center.findById(centerId).select('cycleAnchorDate timeZone').lean().exec());
+            return centerByKey.get(key);
+        };
+        const userCenter = user.centerId ? await getCenter(user.centerId) : null;
+        const timeZone = userCenter?.timeZone || DEFAULT_TIME_ZONE;
+
+        // Chaque date devient un jour calendaire (PlainDate) ; les jours sont déjà des chaînes YYYY-MM-DD dans la
+        // plupart des appels, les instants (Date, ISO avec fuseau) sont lus dans le fuseau du centre
         const dateArray = Array.isArray(dates) ? dates : [dates];
         const normalizedDates = dateArray.map((rawDate) => {
-            const date = new Date(rawDate);
-            if (isNaN(date.getTime())) {
-                throw new AppError(`Date invalide: ${rawDate}`, 400);
-            }
-            return {
-                date,
-                dateStr: date.toISOString().split('T')[0],
-            };
+            const day = toCalendarDay(rawDate, timeZone);
+            if (!day) throw new AppError(`Date invalide: ${rawDate}`, 400);
+            return { day, dateStr: day.toString() };
         });
 
         const entriesByDate = await getActiveEntriesByDates(
@@ -318,19 +327,19 @@ const computeUserShifts = async (dates, userId) => {
                 timelineByCenter.set(key, (async () => {
                     const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates').lean();
                     return rotations
-                        .flatMap((r) => (r.activationDates || []).map((d) => ({ rotationId: String(r._id), at: new Date(d).getTime() })))
-                        .sort((a, b) => a.at - b.at);
+                        .flatMap((r) => (r.activationDates || []).map((d) => ({ rotationId: String(r._id), day: toPlainDate(d) })))
+                        .sort((a, b) => Temporal.PlainDate.compare(a.day, b.day));
                 })());
             }
             return timelineByCenter.get(key);
         };
 
-        const getPopulatedRotation = async (team, date) => {
+        const getPopulatedRotation = async (team, day) => {
             const centerId = team.center?._id ?? team.center;
             if (!centerId) return null;
 
             const timeline = await getTimeline(centerId);
-            const active = timeline.filter((entry) => entry.at <= date.getTime()).at(-1);
+            const active = timeline.filter((entry) => Temporal.PlainDate.compare(entry.day, day) <= 0).at(-1);
             if (!active) return null;
 
             if (!populatedRotations.has(active.rotationId)) {
@@ -341,31 +350,23 @@ const computeUserShifts = async (dates, userId) => {
             }
             return populatedRotations.get(active.rotationId);
         };
-        // Ancre de cycle du centre, lue une fois par centre
-        const centerByKey = new Map();
-        const getCenter = (centerId) => {
-            const key = String(centerId);
-            if (!centerByKey.has(key)) centerByKey.set(key, Center.findById(centerId).select('cycleAnchorDate').lean().exec());
-            return centerByKey.get(key);
-        };
-
-        const shiftFromRotation = (team, center, date, rotation) => {
+        const shiftFromRotation = (team, center, day, rotation) => {
             if (!rotation?.days?.length) return null;
-            const dayIndex = cycleDayIndex(team, center, date, rotation.days.length);
+            const dayIndex = cycleDayIndex(team, center, day, rotation.days.length);
             if (dayIndex === null) return null;
             return rotation.days[dayIndex] || null;
         };
 
         const results = await Promise.all(
-            normalizedDates.map(async ({ date, dateStr }) => {
-                const teamOcc = user.teams?.length ? getTeamAtGivenDate(user.teams, date) : null;
+            normalizedDates.map(async ({ day, dateStr }) => {
+                const teamOcc = user.teams?.length ? getTeamAtDay(user.teams, day) : null;
                 const team = teamOcc?.teamId ?? null;
 
                 let baseShift = null;
                 if (team) {
-                    const rotation = await getPopulatedRotation(team, date);
+                    const rotation = await getPopulatedRotation(team, day);
                     const center = await getCenter(team.center?._id ?? team.center);
-                    baseShift = shiftFromRotation(team, center, date, rotation);
+                    baseShift = shiftFromRotation(team, center, day, rotation);
                 }
 
                 const { assignments, modifications, hoursPatches } = entriesByDate[dateStr]

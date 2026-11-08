@@ -149,9 +149,13 @@ const getTeamGrid = async (req, res, next) => {
 const setTeamCyclePosition = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { day, date, swap } = req.body;
+        const { day, date, swap, confirmed } = req.body;
         if (!isValidId(id)) throw new AppError("ID d'équipe invalide", 400);
-        res.json(await setTeamCyclePositionService(id, { day: Number(day), date, swap: swap === true }));
+        const result = await setTeamCyclePositionService(id, {
+            day: Number(day), date, swap: swap === true, confirmed: confirmed === true, actorId: req.user.userId,
+        });
+        if (result.needsApproval) return res.status(409).json(result);   // approbation requise : impact détaillé
+        res.json(result);
     } catch (error) {
         next(error);
     }

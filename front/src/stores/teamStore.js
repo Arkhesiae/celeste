@@ -240,6 +240,7 @@ export const useTeamStore = defineStore('team', () => {
       loading.value = true;
       error.value = null;
       const result = await teamService.updateTeamCyclePosition(teamId, position);
+      if (result.needsApproval) return result;   // rien n'a changé : l'appelant affiche l'impact
       await fetchCenterTeams(currentCenter.value);
       return result;
     } catch (err) {

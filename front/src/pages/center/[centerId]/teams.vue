@@ -127,6 +127,14 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
       </template>
     </base-dialog>
 
+    <!-- Avertissement : le changement de position annulerait des demandes et des entrées de calendrier -->
+    <CycleChangeImpactDialog
+      v-model="cycleImpactDialog"
+      :impact="cycleImpact"
+      :loading="cycleSaving"
+      @confirm="saveCyclePosition(!!swapTarget, true)"
+    />
+
     <!-- Dialog pour ajouter un membre -->
     <v-dialog v-model="addMemberDialog" max-width="500">
       <v-card>
@@ -289,6 +297,8 @@ const addMemberDialog = ref(false);
 const newTeamName = ref('');
 const selectedCycleDay = ref(null);
 const cycleSaving = ref(false);
+const cycleImpact = ref(null);
+const cycleImpactDialog = ref(false);
 const selectedTeam = ref(null);
 const selectedUser = ref(null);
 // const minDate = new Date().toISOString().split('T')[0];
@@ -434,17 +444,32 @@ const closeCycleDialog = () => {
 };
 
 // swap : l'équipe qui occupe déjà ce jour prend la place de celle-ci
-const saveCyclePosition = async (swap) => {
+// confirmed : l'admin a vu l'impact (demandes annulées, entrées désactivées) et force le changement
+const saveCyclePosition = async (swap, confirmed = false) => {
   if (!selectedTeam.value || !selectedCycleDay.value) return;
 
   cycleSaving.value = true;
   try {
-    await teamStore.updateTeamCyclePosition(selectedTeam.value._id, {
+    const result = await teamStore.updateTeamCyclePosition(selectedTeam.value._id, {
       day: selectedCycleDay.value,
       date: Temporal.Now.plainDateISO(centerTimeZone.value).toString(),
       swap,
+      confirmed,
     });
-    snackbarStore.showNotification('Position dans le cycle mise à jour', 'onPrimary', "mdi-check");
+
+    // Des demandes ou entrées seraient affectées : rien n'a été modifié, on demande confirmation
+    if (result.needsApproval) {
+      cycleImpact.value = result;
+      cycleImpactDialog.value = true;
+      return;
+    }
+
+    cycleImpactDialog.value = false;
+    snackbarStore.showNotification(
+      result.cancelled || result.withdrawn || result.deactivated
+        ? `Position mise à jour : ${result.cancelled} demande(s) annulée(s), ${result.withdrawn} retrait(s), ${result.deactivated} entrée(s) désactivée(s)`
+        : 'Position dans le cycle mise à jour',
+      'onPrimary', "mdi-check");
     cycleDialog.value = false;
     selectedTeam.value = null;
   } catch (error) {

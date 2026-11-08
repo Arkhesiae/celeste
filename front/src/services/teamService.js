@@ -121,13 +121,15 @@ export const teamService = {
   /**
    * Place une équipe à un jour du tour de service : « à la date `date`, l'équipe est au jour `day` ».
    * @param {string} teamId
-   * @param {{ day: number, date: string, swap?: boolean }} position - `date` : YYYY-MM-DD ; `swap` : échanger avec l'équipe qui occupe déjà ce jour
-   * @returns {Promise<{ team: Object, swappedWith: string|null }>}
+   * @param {{ day: number, date: string, swap?: boolean, confirmed?: boolean }} position - `date` : YYYY-MM-DD ;
+   *   `swap` : échanger avec l'équipe qui occupe déjà ce jour ; `confirmed` : accepter l'annulation des demandes et entrées affectées
+   * @returns {Promise<{ team: Object, swappedWith: string|null } | { needsApproval: true, message, teams, members }>}
+   *   needsApproval : rien n'est modifié tant que l'impact (membres, demandes, entrées) n'est pas confirmé
    */
-  async updateTeamCyclePosition(teamId, { day, date, swap = false }) {
+  async updateTeamCyclePosition(teamId, { day, date, swap = false, confirmed = false }) {
     return apiFetch(`/teams/${teamId}/cycle-position`, {
       method: 'PUT',
-      body: JSON.stringify({ day, date, swap })
+      body: JSON.stringify({ day, date, swap, confirmed })
     });
   },
 

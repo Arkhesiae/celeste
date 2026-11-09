@@ -7,6 +7,8 @@ import * as substitutionController from '../controllers/substitution.controller.
 // Routes protégées par token
 router.post('/center', verifyToken, substitutionController.getCenterRequests);
 
+router.get('/center/:centerId/heatmap', verifyToken, authorizeCenterParam('centerId'), substitutionController.getDemandHeatmap);
+
 router.get('/center/:centerId/all', verifyToken, isAdmin, authorizeCenterParam('centerId'), substitutionController.getAllCenterDemands);
 
 router.get('/user', verifyToken, substitutionController.getUserDemands);

@@ -567,6 +567,9 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
+  /** Charge de demandes par jour (comptes), non conservée dans le store : lecture à la demande. */
+  const fetchDemandHeatmap = (centerId, dates) => substitutionService.fetchDemandHeatmap(centerId, dates);
+
   return {
     // State
     substitutions,
@@ -616,6 +619,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
     fetchDemands,
     fetchAllDemands,
+    fetchDemandHeatmap,
     createSubstitutionDemand,
     cancelDemand,
     acceptDemand,

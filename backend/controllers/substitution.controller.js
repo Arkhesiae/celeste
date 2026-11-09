@@ -31,6 +31,17 @@ const getCenterRequests = async (req, res, next) => {
     }
 };
 
+// Charge de demandes par jour (ouvertes / acceptées) : comptes seulement, pour la carte de chaleur du tableau de bord
+const getDemandHeatmap = async (req, res, next) => {
+    try {
+        const { centerId } = req.params;
+        const { startDate, endDate } = req.query;
+        res.status(200).json(await demandService.getDemandHeatmap(centerId, startDate, endDate));
+    } catch (err) {
+        next(err);
+    }
+};
+
 const getUserDemands = async (req, res, next) => {
     const { posterId } = req.user;
 
@@ -447,6 +458,7 @@ export {
     getCenterRequests,
     getUserDemands,
     getAllCenterDemands,
+    getDemandHeatmap,
     consultDemand,
     getSeenCount,
     getCompatibility,

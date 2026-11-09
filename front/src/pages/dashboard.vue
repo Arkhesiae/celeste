@@ -40,6 +40,8 @@
 
         <ActiveRotationCard />
 
+       
+
 
 
         <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16 mx-n3' : ''"
@@ -53,6 +55,9 @@
 
           <!-- <DashboardTeamCard /> -->
         </v-card>
+
+         <DemandHeatmapCard class="my-4 mb-16" />
+
       </v-col>
 
     </v-row>

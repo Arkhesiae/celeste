@@ -53,6 +53,7 @@ declare module 'vue' {
     DemandCards: typeof import('./src/components/Dashboard/DemandCards.vue')['default']
     DemandChip: typeof import('./src/components/Calendar/Chips/DemandChip.vue')['default']
     DemandDependencies: typeof import('./src/components/Substitutions/DemandDependencies.vue')['default']
+    DemandHeatmapCard: typeof import('./src/components/Dashboard/DemandHeatmapCard.vue')['default']
     DemandModal: typeof import('./src/components/Substitutions/DemandCards/DemandModal.vue')['default']
     DevelopmentCostsCard: typeof import('./src/components/Financement/DevelopmentCostsCard.vue')['default']
     Donations: typeof import('./src/components/Donations.vue')['default']

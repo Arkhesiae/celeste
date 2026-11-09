@@ -246,5 +246,16 @@ export const substitutionService = {
       method: 'POST',
     });
     return response;
+  },
+
+  /**
+   * Charge de demandes par jour d'un centre : demandes ouvertes et acceptées, en comptes seulement.
+   * @param {string} centerId
+   * @param {{ startDate: string, endDate: string }} dates - YYYY-MM-DD, 120 jours maximum
+   * @returns {Promise<Array<{ date: string, open: number, accepted: number }>>} un élément par jour
+   */
+  async fetchDemandHeatmap(centerId, { startDate, endDate }) {
+    const params = new URLSearchParams({ startDate, endDate });
+    return apiFetch(`/substitution/center/${centerId}/heatmap?${params}`, { method: 'GET' });
   }
 };

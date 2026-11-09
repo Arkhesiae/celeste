@@ -122,7 +122,7 @@
             <v-col cols="12" md="6">
               <v-date-picker v-model="pickerDates" hide-header class="mx-auto mt-4" elevation="0" width="100%"
                 max-width="600px" :min="new Date().toISOString().split('T')[0]"
-                :multiple="dialogModeValue === 'Renfort' ? 'range' : false" locale="fr"
+                :multiple="dialogMode === 'Renfort' ? 'range' : false" locale="fr"
                 @update:model-value="updateFormattedDate" />
             </v-col>
           </v-row>
@@ -298,6 +298,11 @@ const selectedDates = computed(() => {
   return { startDate: pickerDates.value };
 });
 
+// Une date seule (changement) et une période (renfort) n'ont pas le même format : on repart d'une sélection vide
+watch(() => props.dialogMode, () => {
+  pickerDates.value = null;
+});
+
 const rules = {
   required: (value) => !!value || "Ce champ est requis.",
 };
@@ -339,7 +344,9 @@ const conflict = computed(() => {
 });
 
 const isFormValid = computed(() => {
-  return !!selectedTeam.value && selectedDates.value.startDate && !enRenfortConflict.value;
+  // Un renfort a une fin : sans date de fin, il serait enregistré comme un changement d'équipe définitif
+  const hasPeriod = props.dialogMode !== 'Renfort' || !!selectedDates.value.endDate;
+  return !!selectedTeam.value && !!selectedDates.value.startDate && hasPeriod && !enRenfortConflict.value;
 });
 
 watch(isFormValid, (newVal) => {

@@ -1,4 +1,5 @@
 import Message from '../models/Message.js';
+import { findOrThrow } from '../utils/mongo.js';
 import User from '../models/User.js';
 import { AppError } from '../error/AppError.js';
 
@@ -56,12 +57,7 @@ const createMessage = async (req, res, next) => {
 // Marquer un message comme lu
 const markAsRead = async (req, res, next) => {
   try {
-    const message = await Message.findById(req.params.id);
-    
-    if (!message) {
-      throw new AppError('Message non trouvé', 404);
-    }
-
+    const message = await findOrThrow(Message, req.params.id, { message: 'Message non trouvé' });
     message.isRead = true;
     await message.save();
 
@@ -78,12 +74,7 @@ const markAsRead = async (req, res, next) => {
 // Supprimer un message
 const deleteMessage = async (req, res, next) => {
   try {
-    const message = await Message.findById(req.params.id);
-    
-    if (!message) {
-      throw new AppError('Message non trouvé', 404);
-    }
-
+    const message = await findOrThrow(Message, req.params.id, { message: 'Message non trouvé' });
     await message.deleteOne();
     res.json({ message: 'Message supprimé avec succès' });
   } catch (error) {

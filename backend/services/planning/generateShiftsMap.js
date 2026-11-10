@@ -1,6 +1,7 @@
 import { computeUserShifts } from './computeUserShifts.js';
-import { parseShiftUTC } from './parseShiftTime.js';
-import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
+import { toPlainDate } from '../../utils/dates/plainDate.js';
+import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
+import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
 
 /** Jours avant/après pour couvrir les fenêtres glissantes 7j (±6) + marge nuits / fenêtres étendues */
 const SHIFT_MAP_DAY_RADIUS = 12;
@@ -16,14 +17,11 @@ export async function generateShiftsMap (dates, userId) {
     const userDates = new Set();
 
     for (const date of dates) {
-      const base = new Date(date);
-      if (Number.isNaN(base.getTime())) continue;
-      base.setUTCHours(0, 0, 0, 0);
+      const base = toPlainDate(date);
+      if (!base) continue;
 
       for (let offset = -SHIFT_MAP_DAY_RADIUS; offset <= SHIFT_MAP_DAY_RADIUS; offset++) {
-        const d = new Date(base);
-        d.setUTCDate(d.getUTCDate() + offset);
-        userDates.add(d.toISOString().slice(0, 10));
+        userDates.add(base.add({ days: offset }).toString());
       }
     }
 

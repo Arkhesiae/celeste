@@ -1,8 +1,8 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import generateTeamUsers from '../utils/generateTeamUsers.js';
-import seedDefaultConfig from '../utils/seedDefaultConfig.js';
-import seedTeamDemands, { seedSwitchDemands } from '../utils/seedTeamDemands.js';
+import generateTeamUsers from '../bootstrap/generateTeamUsers.js';
+import seedDefaultConfig from '../bootstrap/seedDefaultConfig.js';
+import seedTeamDemands, { seedSwitchDemands } from '../bootstrap/seedTeamDemands.js';
 import { isMasterAdmin, verifyToken } from '../middleware/authMiddleware.js';
 import { AppError } from '../error/AppError.js';
 

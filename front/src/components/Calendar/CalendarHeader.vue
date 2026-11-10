@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+import { Temporal } from '@js-temporal/polyfill';
 
 import { useDisplay } from "vuetify";
 

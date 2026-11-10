@@ -1,10 +1,13 @@
 import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
-import { computeUserShifts } from '../../utils/computeUserShifts.js';
+import { computeUserShifts } from '../planning/computeUserShifts.js';
 import { AppError } from '../../error/AppError.js';
 import * as demandMutationsService from '../substitution/index.js';
-import overlap from '../../utils/overlapTest.js';
+import overlap from '../../utils/shifts/overlapTest.js';
 
 async function cancelModifications (userId, date) {
     const modifications = await Modification.find({ userId, date, active: true });
@@ -31,7 +34,7 @@ async function cancelSingleAssignment (assignment) {
 
 async function cancelSubstitutionAssignment (assignment) {
     const demand = await Substitution.findById(assignment.substitution.id);
-    const isPoster = demand?.posterId.toString() === assignment?.userId.toString();
+    const isPoster = sameId(demand?.posterId, assignment?.userId);
     if (isPoster) {
         demandMutationsService.cancelRequest(demand._id);
     } else {
@@ -50,15 +53,11 @@ async function cancelHourPatches (userId, date) {
 
 
 const isSameShift = (userShift, data) =>
-    userShift?.[0]?.shiftData?.shift?._id.toString() === data.shiftId.toString();
+    sameId(userShift?.[0]?.shiftData?.shift?._id, data.shiftId);
 
 
 export async function registerEntry (userId, date, data) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const handlers = {
         assignment: registerAssignment,
         modification: registerModification,
@@ -246,13 +245,8 @@ async function registerHourPatch (user, date, data, { latestHourPatch, recompute
 
 
 async function registerMDDA (userId, date, data) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const userShift = await computeUserShifts([date], userId);
-    const isSameShift = (userShift, data) => userShift[0].shiftData?.shift?._id.toString() === data.shiftId.toString();
 
     if (!isSameShift(userShift, data)) {
         throw new AppError('Impossible de créer une MDDA car le shift ne correspond pas', 422);
@@ -287,11 +281,7 @@ async function registerMDDA (userId, date, data) {
 }
 
 export async function restoreInitialShift (userId, date) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const initialShift = await computeUserShifts([date], userId);
 
     cancelModifications(userId, date);
@@ -309,7 +299,7 @@ export async function addSubstitutionEntries (demand) {
     }
 
     try {
-        const dateStr = demand.posterShift.date.toISOString().split('T')[0];
+        const dateStr = toDateKey(demand.posterShift.date);
 
         const [latestAccepterAssignment, latestPosterAssignment] = await Promise.all([
             Assignment.findOne({ userId: demand.accepterId, date: dateStr, active: true, subType: { $ne: 'substitution' } }).sort({ createdAt: -1 }),
@@ -384,7 +374,7 @@ export async function addSubstitutionEntries (demand) {
  *   dans la session et verrait l'état d'avant les écritures ; à recalculer après le commit.
  */
 export async function cancelSubstitutionEntries (demandId, { posterId, accepterId, date }, { session } = {}) {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = toDateKey(date);
 
     try {
 
@@ -470,11 +460,7 @@ export async function getUserEntries (userId, date) {
 
 
 export async function undoMods (userId, date) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const initialShift = await computeUserShifts([date], userId);
 
     cancelModifications(userId, date);
@@ -489,11 +475,7 @@ export async function undoMods (userId, date) {
 
 
 export async function deleteAssignment (userId, date) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const latestAssignment = await Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
     if (!latestAssignment) {
         throw new AppError('Aucune entrée trouvée', 404);

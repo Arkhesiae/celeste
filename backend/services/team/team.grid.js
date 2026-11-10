@@ -1,18 +1,19 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { eachDay, toMongoDate } from '../../utils/dates/plainDate.js';
+import { fullName } from '../../utils/names.js';
+import { sameId } from '../../utils/ids.js';
 import Team from '../../models/Team.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { Assignment } from '../../models/CalendarEntry.js';
-import { computeUserShifts } from '../../utils/computeUserShifts.js';
-import { computeShiftOfTeam } from '../../utils/computeShiftOfTeam.js';
-import { getTeamAtGivenDate } from '../../utils/getTeamAtGivenDate.js';
-import { eachDay, toMongoDate } from '../../utils/teamCycle.js';
+import { computeUserShifts } from '../planning/computeUserShifts.js';
+import { computeShiftOfTeam } from '../planning/computeShiftOfTeam.js';
+import { getTeamAtDay } from '../../utils/getTeamAtDay.js';
+
 import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';
 
 const MAX_DAYS = 93;   // trois périodes de 24 jours (précédente, courante, suivante) = 72 jours
-
-const fullName = (u) => [u?.name, u?.lastName].filter(Boolean).join(' ');
 
 /**
  * Grille d'une équipe : pour chaque membre (permanent ou renfort) sur la période, la vacation ou l'entrée
@@ -50,8 +51,8 @@ export async function getTeamGrid (teamId, startDate, endDate) {
         const inTeamDates = new Set();
         let hasPermanentDay = false;
         for (const date of dates) {
-            const occurrence = getTeamAtGivenDate(user.teams, toMongoDate(Temporal.PlainDate.from(date)));
-            if (occurrence && String(occurrence.teamId) === String(team._id)) {
+            const occurrence = getTeamAtDay(user.teams, Temporal.PlainDate.from(date));
+            if (occurrence && sameId(occurrence.teamId, team._id)) {
                 inTeamDates.add(date);
                 if (!occurrence.toDate) hasPermanentDay = true;
             }
@@ -103,7 +104,7 @@ export async function getTeamGrid (teamId, startDate, endDate) {
     const counterpartOf = (userId, date) => {
         const sub = subByUserDate.get(`${userId}|${date}`);
         if (!sub) return null;
-        const isPoster = String(sub.posterId) === String(userId);
+        const isPoster = sameId(sub.posterId, userId);
         const otherId = isPoster ? sub.accepterId : sub.posterId;
         const name = otherId ? nameById.get(String(otherId)) : null;
         if (!name) return null;

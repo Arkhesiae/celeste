@@ -1,8 +1,9 @@
 import Center from '../models/Center.js';
+import { findOrThrow } from '../utils/mongo.js';
 import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
-import { findLatestRotation } from '../utils/findLatestRotation.js';
+import { findLatestRotation } from '../services/planning/findLatestRotation.js';
 import { AppError } from '../error/AppError.js';
 
 // GET ALL CENTERS (route publique : formulaires d'inscription / contact) — champs publics uniquement :
@@ -132,12 +133,7 @@ const deleteCenter = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const deletedCenter = await Center.findById(id);
-
-        if (!deletedCenter) {
-            throw new AppError('Centre non trouvé', 404);
-        }
-
+        const deletedCenter = await findOrThrow(Center, id, { message: 'Centre non trouvé' });
         deletedCenter.deleted = true;
         await deletedCenter.save();
 
@@ -206,11 +202,7 @@ const getAdminsByCenter = async (req, res, next) => {
 const getActiveRotationOfCenter = async (req, res, next) => {
     const {id} = req.params;
     try {
-        const center = await Center.findById(id);
-        if (!center) {
-            throw new AppError('Centre non trouvé', 404);
-        }
-
+        const center = await findOrThrow(Center, id, { message: 'Centre non trouvé' });
         const activeRotation = await findLatestRotation(center._id, new Date());
         res.json(activeRotation);
     } catch (error) {

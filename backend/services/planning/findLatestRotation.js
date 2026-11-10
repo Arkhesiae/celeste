@@ -1,4 +1,4 @@
-import Rotation from '../models/Rotation.js';
+import Rotation from '../../models/Rotation.js';
 
 const findLatestRotation = async (centerId, date = new Date()) => {
     const dateTimestamp = new Date(date);

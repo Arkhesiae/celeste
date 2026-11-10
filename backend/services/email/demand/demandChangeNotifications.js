@@ -1,8 +1,11 @@
 import Substitution from '../../../models/Substitution.js';
+import { formatDateFr } from '../../../utils/dates/format.js';
+import { shortName } from '../../../utils/names.js';
+import { idOf } from '../../../utils/ids.js';
 import User from '../../../models/User.js';
 import emailService from '../emailService.js';
 import { renderMail } from '../../../src/mail/mailRenderer.js';
-import { formatDateFr, sendCancelledAcceptanceEmail } from './demandEmails.js';
+import { sendCancelledAcceptanceEmail } from './demandEmails.js';
 
 /**
  * Notifications envoyées aux tiers touchés quand une demande de substitution est annulée ou qu'un accepteur
@@ -20,13 +23,6 @@ const FROM = 'Celeste <notification@celeste-app.fr>';
 
 const TYPE_TEXT = { switch: 'Permutation', hybrid: 'Hybride', substitution: 'Remplacement' };
 
-const shortName = (user) => {
-    if (!user) return null;
-    const initial = user.lastName ? `${user.lastName.slice(0, 1)}.` : '';
-    return `${user.name ?? ''} ${initial}`.trim() || null;
-};
-
-const idOf = (value) => String(value?._id ?? value);
 
 /**
  * @param {Object} params

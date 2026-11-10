@@ -1,4 +1,6 @@
 import PublicAnnouncement from '../models/PublicAnnouncement.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { sameId } from '../utils/ids.js';
 import { AppError } from '../error/AppError.js';
 
 /**
@@ -58,14 +60,10 @@ export const getActiveAnnouncements = async (userId, centerId) => {
  * Idempotent — will not add a duplicate entry.
  */
 export const acknowledgeAnnouncement = async (announcementId, userId) => {
-  const announcement = await PublicAnnouncement.findById(announcementId);
-  if (!announcement) {
-    throw new AppError('Announcement not found', 404);
-  }
-
+  const announcement = await findOrThrow(PublicAnnouncement, announcementId, { message: 'Announcement not found' });
   // Idempotent: only add if not already acknowledged
   const alreadyAcknowledged = announcement.acknowledgedBy.some(
-    a => a.userId.toString() === userId.toString()
+    a => sameId(a.userId, userId)
   );
 
   if (!alreadyAcknowledged) {

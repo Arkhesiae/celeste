@@ -1,6 +1,8 @@
 import User from '../../models/User.js';
+import { getCenterTimeZone } from '../center/center.timezone.js';
+import { todayIn } from '../../utils/dates/plainDate.js';
 import ruleService from '../rules/ruleService.js';
-import { getTeamAtGivenDate } from "../../utils/getTeamAtGivenDate.js";
+import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
 
 // Obtenir les utilisateurs d'un centre spécifique
 export const getUsersByCenter = async (centerId, requestingUser) => {
@@ -17,8 +19,11 @@ export const getUsersByCenter = async (centerId, requestingUser) => {
         const requestingUserIsAdmin = requestingUser.isAdmin;
 
  
+        // « Aujourd'hui » dans le fuseau du centre
+        const today = todayIn(await getCenterTimeZone(centerId));
+
         const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
-            const currentTeam = await getTeamAtGivenDate(user.teams, new Date());
+            const currentTeam = getTeamAtDay(user.teams, today);
             const userObj = user.toObject();
 
             if (!requestingUserIsAdmin && !showPoints) {

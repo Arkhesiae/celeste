@@ -1,8 +1,10 @@
-import mongoose from 'mongoose';
+import { inTransaction } from '../../utils/mongo.js';
+import { fullName } from '../../utils/names.js';
+import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
 import { CalendarEntry } from '../../models/CalendarEntry.js';
 import { AppError } from '../../error/AppError.js';
-import { toDateKey } from '../../utils/dateKey.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
 import {
     cancelRequestWithSession,
     withdrawFromRequestWithSession,
@@ -47,17 +49,6 @@ export function normalizePeriod ({ from, to } = {}) {
     };
 }
 
-async function inTransaction (session, fn) {
-    if (session) return fn(session);
-
-    const ownSession = await mongoose.startSession();
-    try {
-        return await ownSession.withTransaction(() => fn(ownSession));
-    } finally {
-        ownSession.endSession();
-    }
-}
-
 /** Demandes ouvertes/acceptées de l'utilisateur (auteur ou accepteur) dont une des dates est dans la période. */
 const periodSubstitutionsQuery = (userId, { fromDate, toDate }) => {
     const dateRange = toDate ? { $gte: fromDate, $lte: toDate } : { $gte: fromDate };
@@ -93,7 +84,7 @@ export async function cancelUserSubstitutionsInPeriod (userId, period, { session
     const normalized = normalizePeriod(period);
     const uid = userId.toString();
 
-    return inTransaction(session, async (activeSession) => {
+    return inTransaction(async (activeSession) => {
         const candidates = await Substitution.find(periodSubstitutionsQuery(userId, normalized))
             .select('_id').session(activeSession);
 
@@ -107,7 +98,7 @@ export async function cancelUserSubstitutionsInPeriod (userId, period, { session
                 .session(activeSession);
             if (!request || !['open', 'accepted'].includes(request.status)) continue;
 
-            if (request.posterId.toString() === uid) {
+            if (sameId(request.posterId, uid)) {
                 await cancelRequestWithSession(_id, { session: activeSession, cancelledRequests, reason });
             } else if (request.accepterId?.toString() === uid && request.status === 'accepted') {
                 await withdrawFromRequestWithSession(_id, userId, { session: activeSession, cancelledRequests });
@@ -119,7 +110,7 @@ export async function cancelUserSubstitutionsInPeriod (userId, period, { session
             cancelled: [...new Set(cancelledRequests.map((r) => r._id.toString()))],
             withdrawn,
         };
-    });
+    }, { session });
 }
 
 /**
@@ -166,7 +157,6 @@ export async function previewUserPeriodImpact (userId, period) {
 
     const byId = new Map();
     const describe = (request, action, cascade) => {
-        const fullName = (user) => (user ? `${user.name ?? ''} ${user.lastName ?? ''}`.trim() : null);
         byId.set(request._id.toString(), {
             id: request._id.toString(),
             action,
@@ -175,8 +165,8 @@ export async function previewUserPeriodImpact (userId, period) {
             status: request.status,
             date: toDateKey(request.posterShift?.date),
             accepterDate: toDateKey(request.accepterShift?.date),
-            poster: fullName(request.posterId),
-            accepter: fullName(request.accepterId),
+            poster: fullName(request.posterId) || null,
+            accepter: fullName(request.accepterId) || null,
         });
     };
 
@@ -230,9 +220,9 @@ export async function previewUserPeriodImpact (userId, period) {
 export async function sanitizeUserPeriod (userId, period, { session, reason } = {}) {
     normalizePeriod(period); // échoue tôt, avant d'ouvrir une transaction
 
-    return inTransaction(session, async (activeSession) => {
+    return inTransaction(async (activeSession) => {
         const substitutions = await cancelUserSubstitutionsInPeriod(userId, period, { session: activeSession, reason });
         const entries = await clearUserCalendarEntriesInPeriod(userId, period, { session: activeSession });
         return { ...substitutions, ...entries };
-    });
+    }, { session });
 }

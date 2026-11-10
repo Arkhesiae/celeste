@@ -1,4 +1,5 @@
 import { simpleParser } from "mailparser";
+import { fullName } from '../../utils/names.js';
 import Ticket from "../../models/Ticket.js";
 import User from "../../models/User.js";
 import { AppError } from "../../error/AppError.js";
@@ -127,7 +128,7 @@ const handleInboundEmail = async (req, res, next) => {
 
     // Construire le nom de l'expéditeur
     const senderName = user 
-      ? `${user.name} ${user.lastName}`.trim()
+      ? fullName(user)
       : from;
 
     // Update corresponding ticket in DB

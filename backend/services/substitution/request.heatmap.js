@@ -1,9 +1,10 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { eachDay, toMongoDate } from '../../utils/dates/plainDate.js';
 import mongoose from 'mongoose';
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';
-import { eachDay, toMongoDate } from '../../utils/teamCycle.js';
+
 
 const MAX_DAYS = 190;   // six mois
 

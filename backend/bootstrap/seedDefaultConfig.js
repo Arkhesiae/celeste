@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import { utcMidnight, addUtcDays } from '../utils/dates/plainDate.js';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
 import User from '../models/User.js';
@@ -101,18 +102,6 @@ const DENSIFIE_ETE_DAYS = [
   restDay('R5'),
   restDay('R6'),
 ];
-
-const utcMidnight = (date = new Date()) => {
-  const d = new Date(date);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-};
-
-const addUtcDays = (date, days) => {
-  const d = new Date(date);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d;
-};
 
 async function upsertCenter () {
   let center = await Center.findOne({ OACI: CENTER.OACI });

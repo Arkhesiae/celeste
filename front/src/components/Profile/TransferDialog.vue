@@ -17,10 +17,10 @@
                 item-value="_id" label="Destinataire" elevation="0" color="surfaceContainerHighest" rounded="xl"
                 :loading="isLoadingUsers" :rules="[v => !!v || 'Le destinataire est requis']" class="mb-4">
                 <template #item="{ props, item }">
-                  <v-list-item v-bind="props" :title="getUserFullName(item.raw)" :subtitle="getUserSubtitle(item.raw)">
+                  <v-list-item v-bind="props" :title="getUserFullName(item)" :subtitle="getUserSubtitle(item)">
                     <template #prepend>
                       <v-avatar size="32" color="primary">
-                        {{ getUserFullName(item.raw).charAt(0) }}
+                        {{ getUserFullName(item).charAt(0) }}
                       </v-avatar>
                     </template>
                   </v-list-item>
@@ -186,7 +186,7 @@ const getCenterName = (centerId) => {
 };
 
 const getUserSubtitle = (user) => {
-  if (authStore.userData.isAdmin) {
+  if (user && authStore.userData.isAdmin) {
     return getCenterName(user.centerId);
   }
   return ' ';

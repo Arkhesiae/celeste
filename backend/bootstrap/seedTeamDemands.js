@@ -1,4 +1,6 @@
 import dotenv from 'dotenv';
+import { toDateKey } from '../utils/dates/dateKey.js';
+import { utcMidnight, addUtcDays } from '../utils/dates/plainDate.js';
 import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Team from '../models/Team.js';
@@ -8,7 +10,7 @@ import '../models/Variation.js';
 import '../models/Shift.js';
 import '../models/Rotation.js';
 import { createDemand } from '../services/substitution/request.creation.js';
-import { computeUserShifts } from './computeUserShifts.js';
+import { computeUserShifts } from '../services/planning/computeUserShifts.js';
 
 dotenv.config({ path: '.env.development' });
 dotenv.config();
@@ -20,18 +22,6 @@ const LOOKAHEAD_DAYS = 90;
 const AGENTS_PER_TEAM = [1, 2];
 const TARGET_DEMANDS = 200;
 const SEED_COMMENT_PREFIX = '[seed]';
-
-const utcMidnight = (date = new Date()) => {
-  const d = new Date(date);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
-};
-
-const addUtcDays = (date, days) => {
-  const d = new Date(date);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d;
-};
 
 /**
  * Remplis le centre LFBB de demandes ouvertes (~TARGET_DEMANDS) pour stress-tester
@@ -68,7 +58,7 @@ export default async function seedTeamDemands ({
   // Round-robin par offset de jour pour diversifier dates / types de vac
   outer: for (let offset = 0; offset < LOOKAHEAD_DAYS; offset++) {
     const date = addUtcDays(today, offset);
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = toDateKey(date);
 
     for (const team of teams) {
       if (team.name === EXCLUDED_TEAM) continue;
@@ -195,7 +185,7 @@ export async function seedSwitchDemands ({
   const observerWorkDays = [];
   for (let offset = 0; offset < LOOKAHEAD_DAYS; offset++) {
     const date = addUtcDays(today, offset);
-    const dateStr = date.toISOString().slice(0, 10);
+    const dateStr = toDateKey(date);
     const results = await computeUserShifts(dateStr, observer._id);
     const entry = results[0];
     const shift = entry?.shiftData?.shift;

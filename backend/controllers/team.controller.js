@@ -1,11 +1,14 @@
 import Team from '../models/Team.js';
+import { daysBetween } from '../utils/dates/plainDate.js';
+import { mod } from '../utils/math.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { isValidId } from '../utils/ids.js';
 import Center from '../models/Center.js';
 import User from "../models/User.js";
-import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
+import { computeShiftOfTeam } from '../services/planning/computeShiftOfTeam.js';
 import { AppError } from '../error/AppError.js';
-import { isValidId } from '../utils/validation.js';
-import { findLatestRotation } from '../utils/findLatestRotation.js';
-import { mod, daysBetween } from '../utils/teamCycle.js';
+import { findLatestRotation } from '../services/planning/findLatestRotation.js';
+
 import { getTeamGrid as getTeamGridService } from '../services/team/team.grid.js';
 import { setTeamCyclePosition as setTeamCyclePositionService } from '../services/team/team.cycle.js';
 
@@ -14,11 +17,7 @@ const createTeam = async (req, res, next) => {
     const { centerId } = req.params;   // POST /teams/center/:centerId, déjà vérifié par authorizeCenterParam
     const { name } = req.body;
     try {
-        const center = await Center.findById(centerId);
-        if (!center) {
-            throw new AppError('Center not found', 404);
-        }
-
+        const center = await findOrThrow(Center, centerId, { message: 'Center not found' });
         const newTeam = new Team({
             name: name,
             center: centerId,
@@ -38,11 +37,7 @@ const deleteTeam = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const team = await Team.findById(id);
-        if (!team) {
-            throw new AppError('Team not found', 404);
-        }
-
+        const team = await findOrThrow(Team, id, { message: 'Team not found' });
         team.deleted = true;
         await team.save();
 

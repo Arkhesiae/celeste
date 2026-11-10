@@ -1,43 +1,18 @@
-import Team from '../models/Team.js';
-import { computeShiftOfTeam } from "./computeShiftOfTeam.js";
-import { getTeamAtGivenDate, getTeamAtDay } from "./getTeamAtGivenDate.js";
+import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
+import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
+import { toPlainDate } from '../../utils/dates/plainDate.js';
+import { sameId } from '../../utils/ids.js';
 import { Temporal } from '@js-temporal/polyfill';
-import { toCalendarDay, DEFAULT_TIME_ZONE } from './calendarDay.js';
-import { cycleDayIndex, toPlainDate } from './teamCycle.js';
-import Center from '../models/Center.js';
-import User from "../models/User.js";
-import Substitution from '../models/Substitution.js';
-import { CalendarEntry, Assignment, Modification, HourPatch } from '../models/CalendarEntry.js';
-import Shift from '../models/Shift.js';
-import Rotation from '../models/Rotation.js';
-import { AppError } from '../error/AppError.js';
+import { toCalendarDay } from '../../utils/dates/calendarDay.js';
+import { cycleDayIndex } from '../../utils/teamCycle.js';
+import Center from '../../models/Center.js';
+import User from "../../models/User.js";
+import Substitution from '../../models/Substitution.js';
+import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
+import Shift from '../../models/Shift.js';
+import Rotation from '../../models/Rotation.js';
+import { AppError } from '../../error/AppError.js';
 
-
-
-/**
- * Récupère le shift initial d'un utilisateur à une date donnée
- * @param {Date} date - La date pour laquelle on souhaite récupérer le shift
- * @param {string} teamId - L'ID de l'équipe
- * @returns {Promise<Object>} - Un objet contenant le shift initial, l'équipe et la variation sélectionnée
- */
-const getBaseShift = async (date, user) => {
-    let team = null;
-    let baseShift = null;
-
-    if (user.teams?.length === 0) {
-        team = null;
-    } else {
-        team = getTeamAtGivenDate(user.teams, date);
-    }
-
-    if (team) {
-        baseShift = await computeShiftOfTeam(date, team.teamId);
-    } else {
-        baseShift = null;
-    }
-
-    return { baseShift, team: team?.teamId };
-}
 
 
 // ── Utilitaires temps ─────────────────────────────────────────────────
@@ -75,7 +50,7 @@ const checkBaseShiftCoherence = (baseShift, latestAssignment) => {
         return false
     }
 
-    if (latestAssignment?.baseShift?.shift._id.toString() !== baseShift.shift._id.toString()) {
+    if (!sameId(latestAssignment?.baseShift?.shift._id, baseShift.shift._id)) {
         console.error('baseShift incohérent : le shift de base a changé')
         return false
     }
@@ -395,50 +370,4 @@ const computeUserShifts = async (dates, userId) => {
     }
 };
 
-const computeShiftOfUserWithoutSubstitutions = async (dates, userId) => {
-    try {
-        const user = await User.findById(userId).populate('teams');
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
-
-        const dateArray = Array.isArray(dates) ? dates : [dates];
-        const results = await Promise.all(
-            dateArray.map(async (dateStr) => {
-                const date = new Date(dateStr);
-                if (isNaN(date.getTime())) {
-                    throw new AppError(`Date invalide: ${dateStr}`, 400);
-                }
-
-                const team = await getTeamAtGivenDate(user.teams, date);
-                if (!team) {
-                    return {
-                        date: dateStr,
-                        status: "Pas d'équipe"
-                    };
-                }
-
-                const teamObject = await Team.findById(team.teamId);
-                if (!teamObject) {
-                    throw new AppError(`Équipe non trouvée pour l'ID: ${team.teamId}`, 404);
-                }
-
-                const shift = await computeShiftOfTeam(date, team.teamId);
-                return {
-                    date: dateStr,
-                    teamObject,
-                    shift
-                };
-            })
-        );
-
-
-        return results;
-    }
-    catch (error) {
-        console.error('Erreur dans le calculs des vacations : ', error.message);
-        throw error;
-    }
-}
-
-export { computeUserShifts, computeShiftOfUserWithoutSubstitutions }; 
+export { computeUserShifts };

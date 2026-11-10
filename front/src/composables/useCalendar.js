@@ -1,4 +1,4 @@
-// import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from '@js-temporal/polyfill';
 
 const groupDaysByWeeks = (days) => {
   const weeks = [];

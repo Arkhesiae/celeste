@@ -1,6 +1,10 @@
-import { computeUserShifts } from "../utils/computeUserShifts.js";
-import { computeShiftOfTeam } from '../utils/computeShiftOfTeam.js';
-import { computeUserPool } from '../utils/computeUserPool.js';
+import { computeUserShifts } from "../services/planning/computeUserShifts.js";
+import { formatDateFr } from '../utils/dates/format.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { fullName } from '../utils/names.js';
+import { sameId } from '../utils/ids.js';
+import { computeShiftOfTeam } from '../services/planning/computeShiftOfTeam.js';
+import { computeUserPool } from '../services/planning/computeUserPool.js';
 import * as compatibilityService from '../services/substitution/compatibilityService.js';
 import * as demandService from '../services/substitution/index.js';
 import { sendUserPoolNotification } from '../services/email/demand/demandEmails.js';
@@ -46,11 +50,7 @@ const getUserDemands = async (req, res, next) => {
     const { posterId } = req.user;
 
     try {
-        const user = await User.findById(posterId);
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
-
+        const user = await findOrThrow(User, posterId, { message: 'Utilisateur non trouvé' });
         const demands = await Substitution.find({ posterId });
         res.status(200).json(demands);
     } catch (err) {
@@ -105,12 +105,7 @@ const getSeenCount = async (req, res, next) => {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
 
-        const request = await Substitution.findById(demandId).select('seenBy');
-
-        if (!request) {
-            throw new AppError('Demande non trouvée', 404);
-        }
-
+        const request = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée', select: 'seenBy' });
         res.json({ seenCount: request.seenBy.length });
     } catch (err) {
         next(err);
@@ -138,11 +133,7 @@ const getAvailableUsers = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
-        const demand = await Substitution.findById(demandId);
-
-        if (!demand) {
-            throw new AppError('Demande non trouvée', 404);
-        }
+        const demand = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée' });
         if (demand.status !== 'open') {
             throw new AppError('Cette demande n\'est plus disponible', 400);
         }
@@ -327,15 +318,10 @@ const markInterest = async (req, res, next) => {
         const { id: demandId } = req.params;
         const { userId } = req.user;
 
-        const demand = await Substitution.findById(demandId);
-
-        if (!demand) {
-            throw new AppError('Demande non trouvée', 404);
-        }
-
+        const demand = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée' });
         const alreadyInterested = demand.interested.includes(userId);
         if (alreadyInterested) {
-            demand.interested = demand.interested.filter(id => id.toString() !== userId);
+            demand.interested = demand.interested.filter(id => !sameId(id, userId));
         } else {
             demand.interested.push(userId);
         }
@@ -382,11 +368,7 @@ const sendAdminEmail = async (req, res, next) => {
             throw new AppError('Identifiant de la demande requis', 400);
         }
 
-        const demand = await Substitution.findById(demandId);
-        if (!demand) {
-            throw new AppError('Demande non trouvée', 404);
-        }
-
+        const demand = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée' });
         const rule = await Rule.findOne({ name: 'Mailing administration' });
         if (!rule) {
             throw new AppError('Règle de mailing non configurée', 404);
@@ -409,15 +391,11 @@ const sendAdminEmail = async (req, res, next) => {
             .populate('posterShift.shift')
             .populate('posterShift.teamId');
 
-        const posterName = populatedDemand.posterId 
-            ? `${populatedDemand.posterId.name} ${populatedDemand.posterId.lastName}` 
-            : 'Un utilisateur';
+        const posterName = fullName(populatedDemand.posterId) || 'Un utilisateur';
 
         const shiftName = populatedDemand.posterShift?.shift?.name || 'Vacation';
         const teamName = populatedDemand.posterShift?.teamId?.name || 'Équipe';
-        const dateStr = populatedDemand.posterShift?.date 
-            ? new Date(populatedDemand.posterShift.date).toLocaleDateString('fr-FR') 
-            : '';
+        const dateStr = formatDateFr(populatedDemand.posterShift?.date, { short: true });
 
         const typeStr = populatedDemand.type === 'switch' ? 'Permutation' : populatedDemand.type === 'substitution' ? 'Remplacement' : 'Remplacement ou permutation';
 

@@ -1,11 +1,11 @@
 import User from '../models/User.js';
+import { isValidId, sameId } from '../utils/ids.js';
 import Substitution from '../models/Substitution.js';
 import Team from '../models/Team.js';
 import Ticket from '../models/Ticket.js';
 import Rotation from '../models/Rotation.js';
 import PublicAnnouncement from '../models/PublicAnnouncement.js';
 import { AppError } from '../error/AppError.js';
-import { isValidId } from '../utils/validation.js';
 
 /**
  * Cloisonnement par centre (à placer après verifyToken).
@@ -36,7 +36,7 @@ const loadCaller = async (req) => ({
 });
 
 const isMaster = (caller) => caller.adminType === 'master';
-const sameCenter = (a, b) => Boolean(a && b && String(a) === String(b));
+const sameCenter = sameId;   // un centre se compare comme n'importe quel id
 
 /** Enveloppe une vérification asynchrone en middleware : elle lève une AppError pour refuser. */
 const guard = (check) => async (req, res, next) => {
@@ -109,7 +109,7 @@ const authorizeUserAccess = (param, mode) => guard(async (req, caller) => {
     const targetId = req.params[param];
     if (!isValidId(targetId)) throw new AppError('ID utilisateur invalide.', 400);
 
-    if (isMaster(caller) || String(req.user.userId) === String(targetId)) return;
+    if (isMaster(caller) || sameId(req.user.userId, targetId)) return;
     if (mode === 'self-or-admin' && !caller.isAdmin) throw new AppError("Accès refusé. Droits d'administrateur requis.", 403);
 
     const target = await User.findById(targetId).select('centerId').lean();

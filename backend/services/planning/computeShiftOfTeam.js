@@ -1,10 +1,11 @@
-import Team from '../models/Team.js';
-import Center from '../models/Center.js';
+import Team from '../../models/Team.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import Center from '../../models/Center.js';
 import { findLatestRotation } from './findLatestRotation.js';
-import Shift from '../models/Shift.js';
-import Rotation from '../models/Rotation.js';
-import { AppError } from '../error/AppError.js';
-import { cycleDayIndex } from './teamCycle.js';
+import Shift from '../../models/Shift.js';
+import Rotation from '../../models/Rotation.js';
+import { AppError } from '../../error/AppError.js';
+import { cycleDayIndex } from '../../utils/teamCycle.js';
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée
 const computeShiftOfTeam = async (date, teamData) => {
@@ -21,11 +22,7 @@ const computeShiftOfTeam = async (date, teamData) => {
             throw new AppError(`Aucun centre associé à l'équipe: ${teamData.teamId}`, 404);
         }
 
-        const center = await Center.findById(teamData.center);
-        if (!center) {
-            throw new AppError(`Centre non trouvé pour l'ID: ${teamData.center}`, 404);
-        }
-
+        const center = await findOrThrow(Center, teamData.center, { message: `Centre non trouvé pour l'ID: ${teamData.center}` });
         let latestRotation = await findLatestRotation(center._id, date);
         if (!latestRotation) {
             return null;

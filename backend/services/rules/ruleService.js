@@ -1,4 +1,5 @@
 import Rule from '../../models/Rule.js';
+import { sameId } from '../../utils/ids.js';
 import { AppError } from '../../error/AppError.js';
 
 export const getAllRules = async (centerId) => {
@@ -14,7 +15,7 @@ export const getAllRules = async (centerId) => {
 
     return rules.map(rule => {
         const effectiveValue = rule.getValueForCenter(centerId);
-        const override = rule.adminValues.find(v => v.centerId.toString() === centerId.toString());
+        const override = rule.adminValues.find(v => sameId(v.centerId, centerId));
 
         return {
             ...rule.toObject(),
@@ -37,7 +38,7 @@ export const updateRule = async (centerId, ruleName, updates) => {
         if (rule.locked) {
             throw new AppError('Rule is locked and cannot be modified by center admins', 403);
         }
-        const existingIndex = rule.adminValues.findIndex(v => v.centerId.toString() === centerId.toString());
+        const existingIndex = rule.adminValues.findIndex(v => sameId(v.centerId, centerId));
 
         if (existingIndex > -1) {
             if (value !== undefined) rule.adminValues[existingIndex].value = value;
@@ -83,7 +84,7 @@ export const deleteOverride = async (centerId, ruleName) => {
         throw new AppError('Center ID is required to delete an override', 400);
     }
 
-    const existingIndex = rule.adminValues.findIndex(v => v.centerId.toString() === centerId.toString());
+    const existingIndex = rule.adminValues.findIndex(v => sameId(v.centerId, centerId));
 
     if (existingIndex > -1) {
         rule.adminValues.splice(existingIndex, 1);

@@ -1,18 +1,24 @@
 import User from '../models/User.js';
+import { getCenterTimeZone, getCenterTimeZones } from '../services/center/center.timezone.js';
+import { toCalendarDay } from '../utils/dates/calendarDay.js';
+import { todayIn, compareDays } from '../utils/dates/plainDate.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { fullName } from '../utils/names.js';
+import { isValidId } from '../utils/ids.js';
 import { LegacyUser } from '../models/User.js';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
-import { getTeamAtGivenDate } from "../utils/getTeamAtGivenDate.js";
+import { getTeamAtDay } from "../utils/getTeamAtDay.js";
 import Transaction from '../models/Transaction.js';
 import { createScheduledTransation } from '../services/transaction/transaction.scheduled.js';
 import path from 'path';
 import fs from 'fs';
-import { isValidDateRange, isValidId } from '../utils/validation.js';
+import { isValidDateRange } from '../utils/validation.js';
 import { fileURLToPath } from 'url';
 import { sendEmailApproval, sendEmailRejection } from '../services/email/approvalEmail.js';
 import * as userShiftsService from '../services/user/user.shifts.js';
 import { createUserService } from '../services/user/user.create.js';
-import * as userService from '../services/user/getUsersService.js';
+import * as userService from '../services/user/user.list.js';
 import * as userTeamService from '../services/user/user.team.js';
 import * as teamTimelineService from '../services/user/user.teamTimeline.js';
 import { AppError } from '../error/AppError.js';
@@ -53,8 +59,11 @@ const getAllUsers = async (req, res, next) => {
 
         const users = await User.find(isMaster ? {} : { centerId: req.user.centerId }).populate('teams');
 
+        // « Aujourd'hui » est le jour du centre de chaque utilisateur (fuseau du centre)
+        const timeZones = await getCenterTimeZones(users.map((u) => u.centerId));
+
         const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
-            const currentTeam = await getTeamAtGivenDate(user.teams, new Date());
+            const currentTeam = getTeamAtDay(user.teams, todayIn(timeZones.get(String(user.centerId))));
             return {
                 ...user.toObject(),
                 currentTeam
@@ -119,10 +128,7 @@ const approveUser = async (req, res, next) => {
 const deletePendingUser = async (req, res, next) => {
     const { id } = req.params;
     try {
-        const user = await User.findById(id);
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
+        const user = await findOrThrow(User, id, { message: 'Utilisateur non trouvé' });
         if (user.registrationStatus !== 'pending') {
             throw new AppError('L\'utilisateur n\'est pas en attente d\'approbation', 400);
         }
@@ -141,11 +147,7 @@ const makeUserAdmin = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findById(id);
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
-
+        const user = await findOrThrow(User, id, { message: 'Utilisateur non trouvé' });
         if (!user.centerId) {
             throw new AppError('Aucun centre trouvé pour cet utilisateur', 404);
         }
@@ -166,11 +168,7 @@ const removeUserAdmin = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findById(id);
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
-
+        const user = await findOrThrow(User, id, { message: 'Utilisateur non trouvé' });
         // Vérifier que l'utilisateur n'est pas le dernier admin de son centre
         if (user.isAdmin && user.adminType === 'local') {
             const centerAdmins = await User.countDocuments({
@@ -201,11 +199,7 @@ const assignUserToCenter = async (req, res, next) => {
     const { centerId } = req.body;
 
     try {
-        const user = await User.findById(userId);
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
-
+        const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
         if (user.centerId === centerId) {
             throw new AppError('L\'utilisateur est déjà assigné à ce centre', 400);
         }
@@ -242,16 +236,13 @@ const getUsersByCenter = async (req, res, next) => {
 
 // Fonction utilitaire pour récupérer un utilisateur et ses équipes
 const getUserWithTeams = async (userId) => {
-    const user = await User.findById(userId).populate('teams');
-    if (!user) {
-        throw new AppError('User not found', 404);
-    }
+    const user = await findOrThrow(User, userId, { message: 'User not found', populate: 'teams' });
     return user;
 };
 
 // Fonction utilitaire pour obtenir une équipe à une date donnée
-const getTeamAtDate = async (teams, date) => {
-    const teamOccurrence = await getTeamAtGivenDate(teams, date);
+const getTeamAtDate = async (teams, day) => {
+    const teamOccurrence = getTeamAtDay(teams, day);
     if (!teamOccurrence) {
         throw new AppError('No team found for the given date', 404);
     }
@@ -279,7 +270,9 @@ const getUserTeamAtDate = async (req, res) => {
 
     try {
         const user = await getUserWithTeams(id);
-        const result = await getTeamAtDate(user.teams, new Date(date));
+        const day = toCalendarDay(date, await getCenterTimeZone(user.centerId));
+        if (!day) throw new AppError('Date invalide', 400);
+        const result = await getTeamAtDate(user.teams, day);
         res.json(result);
     } catch (error) {
         console.error('Error fetching team:', error);
@@ -293,7 +286,7 @@ const getUserCurrentTeam = async (req, res) => {
 
     try {
         const user = await getUserWithTeams(id);
-        const result = await getTeamAtDate(user.teams, new Date());
+        const result = await getTeamAtDate(user.teams, todayIn(await getCenterTimeZone(user.centerId)));
         res.json(result);
     } catch (error) {
         console.error('Error fetching current team:', error);
@@ -358,14 +351,9 @@ const getUserTeamOccurrences = async (req, res) => {
 
 // Obtenir les utilisateurs groupés par équipe
 const getUsersAndGroupByTeam = async (req, res, next) => {
-    // Validation de la date
-    let date;
-    try {
-        date = req.query.date ? new Date(req.query.date) : new Date();
-        if (isNaN(date.getTime())) {
-            throw new AppError('Date invalide', 400);
-        }
-    } catch (error) {
+    // Validation de la date (le jour exact est résolu dans le fuseau du centre, plus bas)
+    const requestedDate = req.query.date;
+    if (requestedDate && !toCalendarDay(requestedDate)) {
         throw new AppError('Format de date invalide', 400);
     }
 
@@ -386,6 +374,8 @@ const getUsersAndGroupByTeam = async (req, res, next) => {
             throw new AppError('Centre non trouvé', 404);
         }
 
+        const day = requestedDate ? toCalendarDay(requestedDate, center.timeZone) : todayIn(center.timeZone);
+
         // Création d'un Map pour un accès rapide aux équipes
         const teamsMap = new Map(teams.map(team => [team._id.toString(), team]));
 
@@ -405,11 +395,11 @@ const getUsersAndGroupByTeam = async (req, res, next) => {
             // Filtrage et tri des occurrences d'équipe
             const validOccurrences = user.teams
                 .filter(occurrence => teamsMap.has(occurrence.teamId.toString()))
-                .sort((a, b) => new Date(b.fromDate) - new Date(a.fromDate));
+                .sort((a, b) => compareDays(b.fromDate, a.fromDate));
 
             // Traitement de l'équipe principale
             const mainTeamOccurrence = validOccurrences.find(occurrence =>
-                new Date(occurrence.fromDate) <= date && !occurrence.toDate
+                !occurrence.toDate && compareDays(occurrence.fromDate, day) <= 0
             );
 
             if (mainTeamOccurrence) {
@@ -430,8 +420,8 @@ const getUsersAndGroupByTeam = async (req, res, next) => {
                 if (occurrence.toDate) {
                     const teamResult = resultMap.get(occurrence.teamId.toString());
                     if (teamResult &&
-                        new Date(occurrence.fromDate) <= date &&
-                        new Date(occurrence.toDate) >= date) {
+                        compareDays(occurrence.fromDate, day) <= 0 &&
+                        compareDays(occurrence.toDate, day) >= 0) {
                         teamResult.renforts.push({
                             userId: user._id,
                             name: user.name,
@@ -556,11 +546,7 @@ const getUserPreferences = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const user = await User.findById(id);
-        if (!user) {
-            throw new AppError('Utilisateur non trouvé', 404);
-        }
-
+        const user = await findOrThrow(User, id, { message: 'Utilisateur non trouvé' });
         res.json({ preferences: user.preferences });
     } catch (error) {
         console.error('Erreur lors de la récupération des préférences:', error);
@@ -852,7 +838,7 @@ const getUserInfoByEmail = async (req, res, next) => {
         // Route publique (écran de connexion) : uniquement ce qu'il affiche. Pas de rôle, pour ne pas révéler
         // qui sont les administrateurs.
         res.json({
-            name: `${user.name} ${user.lastName}`,
+            name: fullName(user),
             avatar: user.avatar,
             center: user.centerId?.name || ''
         });

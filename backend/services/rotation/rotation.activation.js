@@ -1,9 +1,10 @@
 import Rotation from '../../models/Rotation.js';
+import { inTransaction } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
 import Center from '../../models/Center.js';
-import mongoose from 'mongoose';
 import { Temporal } from '@js-temporal/polyfill';
-import { toDateKey } from '../../utils/dateKey.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromRequestWithSession, cancelRequestWithSession } from '../substitution/request.internal.js';
 import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
@@ -66,11 +67,10 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
         return { needsApproval: true, changes, message };
     }
     // --- CONFIRM PATH ---
-    const session = await mongoose.startSession();
     try {
         let outcome;
         let notifications;
-        await session.withTransaction(async () => {
+        await inTransaction(async (session) => {
             // Recréé à chaque tentative de la transaction : une tentative rejouée ne double pas les notifications
             notifications = { cancelled: [], withdrawn: [] };
             const beforeList = await getOrderedActivationDates(centerId, session);
@@ -118,14 +118,11 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
         console.error('Erreur lors de la mise à jour de la date d\'activation:', err);
         throw err;
     }
-    finally {
-        await session.endSession();
-    }
 };
 
 const evaluatePosterShift = (demand, oldRotation, newRotation) => {
     if (!demand.posterShift?.shift) return { verdict: null };
-    const index = oldRotation.days.findIndex(d => d._id.toString() === demand.posterShift.shift._id.toString());
+    const index = oldRotation.days.findIndex(d => sameId(d._id, demand.posterShift.shift._id));
     if (index === -1) return { verdict: 'cancel', reason: 'poster_shift_no_match' };
     const newShift = newRotation.days[index];
     return newShift.type === 'rest'
@@ -135,7 +132,7 @@ const evaluatePosterShift = (demand, oldRotation, newRotation) => {
 
 const evaluateAccepterShift = (demand, oldRotation, newRotation) => {
     if (!['switch', 'hybrid'].includes(demand.type) || !demand.accepterShift?.shift) return { verdict: null };
-    const index = oldRotation.days.findIndex(d => d._id.toString() === demand.accepterShift.shift._id.toString());
+    const index = oldRotation.days.findIndex(d => sameId(d._id, demand.accepterShift.shift._id));
     if (index === -1) return { verdict: 'cancel', reason: 'accepter_shift_no_match' };
     const newShift = newRotation.days[index];
     return newShift.type === 'rest'
@@ -147,7 +144,7 @@ const evaluateAcceptedSwitches = (demand, oldRotation, newRotation) => {
     if (!demand.acceptedSwitches?.length) return { verdict: null };
 
     const validSwitches = demand.acceptedSwitches.reduce((acc, switchItem) => {
-        const index = oldRotation.days.findIndex(d => d._id.toString() === switchItem.shift._id.toString());
+        const index = oldRotation.days.findIndex(d => sameId(d._id, switchItem.shift._id));
         if (index !== -1 && newRotation.days[index].type !== 'rest') {
             acc.push({ shift: newRotation.days[index]._id, points: switchItem.points });
         }
@@ -444,7 +441,7 @@ const removeSuccessiveRepetitions = (orderedList) => {
     const repetitionToRemove = [];
     const cleanedList = orderedList.reduce((acc, curr, i) => {
         const prev = acc[acc.length - 1];
-        if (prev && prev.rotationId.toString() === curr.rotationId.toString()) {
+        if (prev && sameId(prev.rotationId, curr.rotationId)) {
             repetitionToRemove.push(curr);
             return acc;
         }

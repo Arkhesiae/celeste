@@ -27,6 +27,7 @@
 </template>
 
 <script setup>
+import { Temporal } from '@js-temporal/polyfill';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';

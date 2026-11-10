@@ -1,4 +1,6 @@
 import Ticket from '../models/Ticket.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { fullName } from '../utils/names.js';
 import User from '../models/User.js';
 import { sendTicketReplyEmail } from './email/ticketReplyEmail.js';
 import { sendNewTicketNotificationEmail } from './email/newTicketEmail.js';
@@ -10,8 +12,7 @@ const MASTER_ADMIN_EMAIL = process.env.MASTER_ADMIN_EMAIL;
 // --- Helpers ---
 
 const findTicketOrThrow = async (ticketId) => {
-  const ticket = await Ticket.findById(ticketId);
-  if (!ticket) throw new AppError('Ticket non trouvé', 404);
+  const ticket = await findOrThrow(Ticket, ticketId, { message: 'Ticket non trouvé' });
   return ticket;
 };
 
@@ -27,9 +28,7 @@ const populateTicket = (ticketId) =>
  * @returns {Promise<Array>} Liste des tickets
  */
 export const getAllTickets = async (userId, archived = false) => {
-  const user = await User.findById(userId);
-  if (!user) throw new AppError('Utilisateur non trouvé', 404);
-
+  const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
   let query = { deleted: false, archived };
 
   if (user.isAdmin && user.adminType === 'master') {
@@ -184,7 +183,7 @@ export const sendTicketReply = async (ticketId, content, adminUser) => {
   if (!isValidEmail(ticket.senderEmail)) throw new AppError('Email invalide', 400);
 
   const adminName = adminUser.name && adminUser.lastName
-    ? `${adminUser.name} ${adminUser.lastName}`
+    ? fullName(adminUser)
     : 'Support';
 
   ticket.shortId = ticket._id.toString().slice(-6);

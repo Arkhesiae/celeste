@@ -1,10 +1,13 @@
 import User from '../../models/User.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
-import { findLatestRotation } from '../../utils/findLatestRotation.js';
-import { generateShiftsMap } from '../../utils/generateShiftsMap.js';
-import { parseShiftUTC } from '../../utils/parseShiftTime.js';
-import { shiftMapToArray } from '../../utils/generateShiftsMap.js';
-import { checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../../utils/categorizeDemand_v2.js';
+import { findLatestRotation } from '../planning/findLatestRotation.js';
+import { generateShiftsMap } from '../planning/generateShiftsMap.js';
+import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
+import { shiftMapToArray } from '../planning/generateShiftsMap.js';
+import { checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../planning/categorizeDemand.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';
 
@@ -17,7 +20,7 @@ const verifyCompatibilities = async (demands, userId) => {
         const incompatibleSwitches = data.filter(s => !s.compatible);
         result.incompatibleSwitches = [];
         for (const acceptedSwitch of result.acceptedSwitches) {
-            if (incompatibleSwitches.some(i => i._id.toString() === acceptedSwitch.shift._id.toString())) {
+            if (incompatibleSwitches.some(i => sameId(i._id, acceptedSwitch.shift._id))) {
                 result.incompatibleSwitches.push(acceptedSwitch);
             }
         }
@@ -32,11 +35,7 @@ export async function getCompatibleSwitches (date, userId) {
         throw new AppError('Date manquante', 400);
     }
     const demandDate = new Date(date);
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const activeRotation = await findLatestRotation(user.centerId, date);
     if (!activeRotation) {
         throw new AppError('Tour de service actif non trouvé', 404);
@@ -54,14 +53,14 @@ export async function getCompatibleSwitches (date, userId) {
 
         const dayData = {
             shift: day,
-            date: demandDate.toISOString().split('T')[0],
-            start: parseShiftUTC(demandDate.toISOString().split('T')[0], day.default.startTime),
-            end: parseShiftUTC(demandDate.toISOString().split('T')[0], day.default.endTime, day.default.endsNextDay),
+            date: toDateKey(demandDate),
+            start: parseShiftUTC(toDateKey(demandDate), day.default.startTime),
+            end: parseShiftUTC(toDateKey(demandDate), day.default.endTime, day.default.endsNextDay),
         };
 
-        localMap.set(demandDate.toISOString().split('T')[0], dayData);
+        localMap.set(toDateKey(demandDate), dayData);
         const shiftsSorted = shiftMapToArray(localMap);
-        const index = shiftsSorted.findIndex(s => s.date === demandDate.toISOString().split('T')[0]);
+        const index = shiftsSorted.findIndex(s => s.date === toDateKey(demandDate));
 
         const dayLimit = []
 
@@ -109,12 +108,7 @@ export async function getCompatibleSwitchesInRotation (date, userId, rotationId)
         throw new AppError('Date manquante', 400);
     }
     const demandDate = new Date(date);
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const populateRotation = await Rotation.findById(rotationId).populate('days');
 
     const shiftMap = await generateShiftsMap([demandDate], userId);

@@ -1,8 +1,10 @@
 import Substitution from '../../models/Substitution.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
-import { generateMapFromDemands } from '../../utils/generateShiftsMap.js';
-import { categorize } from '../../utils/categorizeDemand_v2.js';
+import { generateMapFromDemands } from '../planning/generateShiftsMap.js';
+import { categorize } from '../planning/categorizeDemand.js';
 
 
 /**
@@ -13,10 +15,7 @@ import { categorize } from '../../utils/categorizeDemand_v2.js';
  * @returns {Promise<Array<Object>>} Liste des demandes
  */
 export async function getRequests (userId, startDateStr, endDateStr) {
-    const user = await User.findById(userId).select('centerId');
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', select: 'centerId' });
     let parsedStartDate, parsedEndDate;
 
     parsedStartDate = new Date(startDateStr);
@@ -71,7 +70,7 @@ export async function getRequests (userId, startDateStr, endDateStr) {
         const obj = request.toObject ? request.toObject() : request;
         return {
             ...obj,
-            isNew: !obj.consultedBy?.some((id) => id.toString() === userId.toString())
+            isNew: !obj.consultedBy?.some((id) => sameId(id, userId))
         };
     };
 

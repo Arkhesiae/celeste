@@ -1,4 +1,5 @@
-import mongoose from 'mongoose';
+import { findOrThrow, inTransaction } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
@@ -67,15 +68,6 @@ async function sanitizeAndSaveTeams (user, afterTeams, session) {
     return { changes, cancelled: [...cancelled], withdrawn: [...withdrawn] };
 }
 
-async function inTransaction (fn) {
-    const session = await mongoose.startSession();
-    try {
-        return await session.withTransaction(() => fn(session));
-    } finally {
-        session.endSession();
-    }
-}
-
 /**
  * Applique un changement d'équipe : sans `confirmed`, retourne une demande d'approbation si des demandes
  * ou entrées de calendrier seraient affectées ; sinon (ou une fois confirmé) l'applique en transaction.
@@ -86,18 +78,14 @@ async function inTransaction (fn) {
  */
 async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
     if (!confirmed) {
-        const user = await User.findById(userId);
-        if (!user) throw new AppError('Utilisateur non trouvé', 404);
-
+        const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
         const plan = planTeamChange(user, computeAfter(user));
         const approval = await buildApprovalRequest(user, plan);
         if (approval) return approval;
     }
 
     const { changes, cancelled, withdrawn } = await inTransaction(async (session) => {
-        const user = await User.findById(userId).session(session);
-        if (!user) throw new AppError('Utilisateur non trouvé', 404);
-
+        const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', session });
         return sanitizeAndSaveTeams(user, computeAfter(user), session);
     });
 
@@ -123,7 +111,7 @@ async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
  */
 export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = false, actorId } = {}) {
     return applyTeamChange(userId, (user) => {
-        const after = user.teams.filter(t => t._id.toString() !== occurrenceId);
+        const after = user.teams.filter(t => !sameId(t._id, occurrenceId));
 
         if (user.teams.length === after.length) {
             throw new AppError('Occurrence non trouvée', 404);
@@ -146,18 +134,14 @@ export async function assignTeamToUser (userId, newTeam, { confirmed = false, re
         throw new AppError('teamId and fromDate are required', 400);
     }
 
-    const teamExists = await Team.findById(newTeam.teamId);
-    if (!teamExists) {
-        throw new AppError('Équipe non trouvée', 404);
-    }
-
+    const teamExists = await findOrThrow(Team, newTeam.teamId, { message: 'Équipe non trouvée' });
     return applyTeamChange(userId, (user) => {
-        if (teamExists.center.toString() !== user.centerId.toString()) {
+        if (!sameId(teamExists.center, user.centerId)) {
             throw new AppError("Erreur dans la correspondance entre l'équipe et le centre", 400);
         }
 
         const kept = replaceOccurrenceId
-            ? user.teams.filter(t => t._id.toString() !== replaceOccurrenceId)
+            ? user.teams.filter(t => !sameId(t._id, replaceOccurrenceId))
             : [...user.teams];
 
         if (replaceOccurrenceId && kept.length === user.teams.length) {

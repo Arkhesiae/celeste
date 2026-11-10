@@ -1,4 +1,8 @@
-import mongoose from 'mongoose';
+import { findOrThrow, inTransaction } from '../../utils/mongo.js';
+import { mod } from '../../utils/math.js';
+import { daysBetween, toMongoDate, toPlainDate } from '../../utils/dates/plainDate.js';
+import { fullName } from '../../utils/names.js';
+import { sameId } from '../../utils/ids.js';
 import { Temporal } from '@js-temporal/polyfill';
 import Team from '../../models/Team.js';
 import Center from '../../models/Center.js';
@@ -6,9 +10,9 @@ import User from '../../models/User.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from '../user/user.sanitizePeriod.js';
 import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
 import { AppError } from '../../error/AppError.js';
-import { findLatestRotation } from '../../utils/findLatestRotation.js';
+import { findLatestRotation } from '../planning/findLatestRotation.js';
 import { isValidDate } from '../../utils/validation.js';
-import { daysBetween, mod, toMongoDate, toPlainDate } from '../../utils/teamCycle.js';
+
 
 /** Offset effectif d'une équipe : son cycleOffset, sinon celui déduit de l'ancien cycleStartDate ; null si inconnu */
 const effectiveOffset = (team, anchor, total) => {
@@ -41,9 +45,7 @@ export async function setTeamCyclePosition (teamId, { day, date, swap = false, c
     const team = await Team.findById(teamId);
     if (!team || team.deleted) throw new AppError('Équipe non trouvée', 404);
 
-    const center = await Center.findById(team.center);
-    if (!center) throw new AppError('Centre non trouvé', 404);
-
+    const center = await findOrThrow(Center, team.center, { message: 'Centre non trouvé' });
     // Jour de référence (PlainDate) : les dates de calendrier ne passent par Date qu'aux frontières Mongo
     let when;
     try {
@@ -107,7 +109,7 @@ export async function setTeamCyclePosition (teamId, { day, date, swap = false, c
             if (substitutions.length || entries.length) {
                 impact.push({
                     userId: member._id,
-                    name: [member.name, member.lastName].filter(Boolean).join(' '),
+                    name: fullName(member),
                     substitutions,
                     entries,
                 });
@@ -134,21 +136,16 @@ export async function setTeamCyclePosition (teamId, { day, date, swap = false, c
     const withdrawn = [];
     let deactivated = 0;
     if (members.length) {
-        const session = await mongoose.startSession();
-        try {
-            await session.withTransaction(async () => {
-                cancelled.length = 0; withdrawn.length = 0; deactivated = 0;   // une tentative rejouée repart de zéro
-                for (const member of members) {
-                    const result = await sanitizeUserPeriod(member._id, period, { session });
-                    cancelled.push(...result.cancelled);
-                    withdrawn.push(...result.withdrawn.map((demandId) => ({ demandId, accepterId: member._id })));
-                    deactivated += result.deactivated;
-                }
-                await writeAll(session);
-            });
-        } finally {
-            await session.endSession();
-        }
+        await inTransaction(async (session) => {
+            cancelled.length = 0; withdrawn.length = 0; deactivated = 0;   // une tentative rejouée repart de zéro
+            for (const member of members) {
+                const result = await sanitizeUserPeriod(member._id, period, { session });
+                cancelled.push(...result.cancelled);
+                withdrawn.push(...result.withdrawn.map((demandId) => ({ demandId, accepterId: member._id })));
+                deactivated += result.deactivated;
+            }
+            await writeAll(session);
+        });
     } else {
         await writeAll(null);
     }
@@ -174,6 +171,6 @@ async function membersOfTeams (teams, when) {
         'teams.teamId': { $in: ids },
     }).select('name lastName teams');
 
-    return users.filter((user) => user.teams.some((o) => ids.some((id) => String(id) === String(o.teamId))
+    return users.filter((user) => user.teams.some((o) => ids.some((id) => sameId(id, o.teamId))
         && (!o.toDate || Temporal.PlainDate.compare(toPlainDate(o.toDate), when) >= 0)));
 }

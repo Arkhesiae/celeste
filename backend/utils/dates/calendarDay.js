@@ -1,8 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 
-export const DEFAULT_TIME_ZONE = 'Europe/Paris';
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { DAY_MS, DEFAULT_TIME_ZONE } from './constants.js';
 const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
 const fromInstant = (epochMs, timeZone) => {

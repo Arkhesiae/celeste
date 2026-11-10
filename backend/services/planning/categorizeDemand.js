@@ -1,8 +1,10 @@
 import { computeUserShifts } from './computeUserShifts.js';
-import Shift from '../models/Shift.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
+import { daysBetween } from '../../utils/dates/plainDate.js';
+import Shift from '../../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
-import { parseShiftUTC } from './parseShiftTime.js';
-import { getEffectiveShiftTimes } from './getEffectiveShiftTimes.js';
+import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
+import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
 // Constantes pour améliorer la lisibilité et la maintenance
 const MIN_REST_MINUTES = 11 * 60;
 
@@ -18,14 +20,6 @@ function hasConcreteFetcherVariation (selectedVariation) {
     }
     const id = selectedVariation?.toString?.();
     return Boolean(id && id !== '[object Object]');
-}
-
-/** Différence en jours UTC entre deux YYYY-MM-DD */
-function utcDayDiff (a, b) {
-    const [ay, am, ad] = a.split('-').map(Number);
-    const [by, bm, bd] = b.split('-').map(Number);
-    const ms = Date.UTC(ay, am - 1, ad) - Date.UTC(by, bm - 1, bd);
-    return Math.round(ms / 86400000);
 }
 
 /**
@@ -47,7 +41,7 @@ function selectAmbiguousFetcherDates (shiftsMap, demandDateStr) {
     for (const [dateStr, entry] of shiftsMap) {
         if (entry?.shift?.variations?.length < 2) continue;
         if (hasConcreteFetcherVariation(entry.selectedVariation)) continue;
-        const diff = Math.abs(utcDayDiff(demandDateStr, dateStr));
+        const diff = Math.abs(daysBetween(dateStr, demandDateStr));
         if (diff > AMBIGUOUS_DAY_RADIUS) continue;
         candidates.push({ dateStr, diff });
     }
@@ -161,7 +155,7 @@ function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNul
     const limit = [];
     let canSwitch = false;
 
-    const demandDateStr = demandDate.toISOString().split('T')[0];
+    const demandDateStr = toDateKey(demandDate);
     const vacationOfFetcher = shiftsMap.get(demandDateStr);
 
     const effectiveTimes = getEffectiveShiftTimes(demand.posterShift.shift, demandVariationOrNull);
@@ -231,7 +225,7 @@ const categorize = async (demand, shiftsMap = null) => {
         const localMap = new Map(shiftsMap);
         const effectiveTimes = getEffectiveShiftTimes(shift, demand.posterShift?.selectedVariation);
         if (effectiveTimes) {
-            const dateStr = demandDate.toISOString().split('T')[0];
+            const dateStr = toDateKey(demandDate);
             const demandData = {
                 shift,
                 team: shift?.teamObject,
@@ -251,7 +245,7 @@ const categorize = async (demand, shiftsMap = null) => {
         demandWithLimit.invalidWork48 = invalidWindows48;
 
         // Jours ambigus proches de la demande uniquement (évite OOM sur produit ±12j)
-        const demandDateStr = demandDate.toISOString().split('T')[0];
+        const demandDateStr = toDateKey(demandDate);
         const ambiguousFetcherDates = selectAmbiguousFetcherDates(shiftsMap, demandDateStr);
 
         const demandVariationsToTry = (hasVariations && noSelectedVariation)
@@ -389,10 +383,10 @@ const categorize = async (demand, shiftsMap = null) => {
 
 // const insertDemandShift = (demand, shiftsMap) => {
 //     const demandDate = new Date(demand.posterShift.date);
-//     shiftsMap.set(demandDate.toISOString().split('T')[0], {
+//     shiftsMap.set(toDateKey(demandDate), {
 //         shift: demand.posterShift.shift,
 //         team: demand.posterShift.shift.teamObject,
-//         date: demandDate.toISOString().split('T')[0],
+//         date: toDateKey(demandDate),
 //         start: demand.posterShift.shift.default.startTime,
 //         end: demand.posterShift.shift.default.endTime,
 //     });
@@ -420,7 +414,7 @@ function simulateInsertShift (targetShift, targetDate, shiftsSorted) {
 
     const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
 
-    const targetShiftIndex = localShiftsSorted.findIndex(s => s.date === targetDate.toISOString().split('T')[0]);
+    const targetShiftIndex = localShiftsSorted.findIndex(s => s.date === toDateKey(targetDate));
 
     if (targetShiftIndex !== -1) {
         // Si le shift existe déjà à cette date, on le remplace

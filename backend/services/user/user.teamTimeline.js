@@ -1,8 +1,11 @@
+import { Temporal } from '@js-temporal/polyfill';
 import User from '../../models/User.js';
+import { toPlainDate, daysBetween } from '../../utils/dates/plainDate.js';
+import { findOrThrow } from '../../utils/mongo.js';
 import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
 import { buildTeamTimeline } from '../../utils/teamSegments.js';
-import { toDateKey } from '../../utils/dateKey.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
 
 /**
  * Données des frises d'équipes (passé, présent, futur) : pour chaque personne, les périodes pendant lesquelles
@@ -14,23 +17,17 @@ import { toDateKey } from '../../utils/dateKey.js';
  */
 
 const MAX_WINDOW_DAYS = 800;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-const shiftMonths = (key, months) => {
-    const d = new Date(`${key}T00:00:00.000Z`);
-    d.setUTCMonth(d.getUTCMonth() + months);
-    return d.toISOString().slice(0, 10);
-};
+const shiftMonths = (key, months) => Temporal.PlainDate.from(key).add({ months }).toString();
 
 /** @returns {{ from: string, to: string }} */
 export function resolveWindow ({ from, to } = {}, now = new Date()) {
-    const today = now.toISOString().slice(0, 10);
+    const today = toPlainDate(now).toString();
     const fromKey = from ? toDateKey(from) : shiftMonths(today, -3);
     const toKey = to ? toDateKey(to) : shiftMonths(today, 9);
 
     if (!fromKey || !toKey) throw new AppError('Période invalide : dates illisibles.', 400);
     if (toKey < fromKey) throw new AppError('Période invalide : "to" est antérieur à "from".', 400);
-    if ((Date.parse(toKey) - Date.parse(fromKey)) / DAY_MS > MAX_WINDOW_DAYS) {
+    if (daysBetween(fromKey, toKey) > MAX_WINDOW_DAYS) {
         throw new AppError(`Période trop longue (maximum ${MAX_WINDOW_DAYS} jours).`, 400);
     }
     return { from: fromKey, to: toKey };
@@ -77,9 +74,7 @@ export async function getCenterTeamsTimeline (centerId, period, now = new Date()
 export async function getUserTeamTimeline (userId, period, now = new Date()) {
     const window = resolveWindow(period, now);
 
-    const user = await User.findById(userId).select('teams');
-    if (!user) throw new AppError('Utilisateur non trouvé', 404);
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', select: 'teams' });
     const segments = buildTeamTimeline(user.teams ?? []).filter((segment) => intersects(segment, window));
     const teamIds = [...new Set(segments.map((s) => s.teamId))];
     const teams = await Team.find({ _id: { $in: teamIds } }).select('name');

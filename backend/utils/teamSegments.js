@@ -1,5 +1,7 @@
+import { Temporal } from '@js-temporal/polyfill';
 import { AppError } from '../error/AppError.js';
-import { toDateKey } from './dateKey.js';
+import { idOf } from './ids.js';
+import { toDateKey } from './dates/dateKey.js';
 
 /**
  * Les équipes d'un utilisateur sont stockées en "occurrences" ({ teamId, fromDate, toDate|null }) qui
@@ -10,19 +12,15 @@ import { toDateKey } from './dateKey.js';
  *   - les segments sont triés, disjoints, et deux segments contigus de la même équipe sont fusionnés
  *   - les jours sans équipe n'appartiennent à aucun segment
  *
- * Règle de propriétaire d'un jour (identique à getTeamAtGivenDate) : une occurrence bornée (renfort) qui
+ * Règle de propriétaire d'un jour (identique à getTeamAtDay) : une occurrence bornée (renfort) qui
  * couvre le jour l'emporte sur l'occurrence permanente (sans toDate) ; à égalité de type, la plus récente
  * `fromDate` l'emporte.
  *
  * Fonctions pures, sans accès base de données.
  */
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const shiftKey = (key, days) => Temporal.PlainDate.from(key).add({ days }).toString();
 
-const shiftKey = (key, days) =>
-    new Date(Date.parse(`${key}T00:00:00.000Z`) + days * DAY_MS).toISOString().slice(0, 10);
-
-const idOf = (teamId) => String(teamId?._id ?? teamId);
 
 function normalizeOccurrences (occurrences) {
     return occurrences.map((occurrence) => {
@@ -33,18 +31,6 @@ function normalizeOccurrences (occurrences) {
         }
         return { teamId: idOf(occurrence.teamId), from, to };
     });
-}
-
-/**
- * Équipe propriétaire d'un jour donné.
- * @param {Array<{ teamId, fromDate, toDate? }>} occurrences
- * @param {string|Date} date
- * @returns {string|null} teamId, ou null si aucune équipe
- */
-export function getOwnerTeamIdAt (occurrences, date) {
-    const key = toDateKey(date);
-    if (!key) throw new AppError('Date invalide.', 400);
-    return ownerAt(normalizeOccurrences(occurrences), key);
 }
 
 function ownerAt (normalized, key) {

@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 3000;
 import './jobs/index.js';
 
 // ─── Initialisation de l'admin ────────────────────────────────────────────────
-import { createAdmin, createLocalAdmin } from './utils/seedAdmin.js';
+import { createAdmin, createLocalAdmin } from './bootstrap/seedAdmin.js';
 
 // ─── Initialisation des règles ────────────────────────────────────────────────
 import { initializeRules } from './services/rules/initializeRules.js';

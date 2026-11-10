@@ -1,7 +1,9 @@
 import Substitution from "../../models/Substitution.js";
+import { toCalendarDay } from '../../utils/dates/calendarDay.js';
+import { findOrThrow } from '../../utils/mongo.js';
 import User from "../../models/User.js";
-import { computeUserShifts } from "../../utils/computeUserShifts.js";
-import { getTeamAtGivenDate } from "../../utils/getTeamAtGivenDate.js";
+import { computeUserShifts } from "../planning/computeUserShifts.js";
+import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
 import { AppError } from "../../error/AppError.js";
 
 const MIN_POINTS_TO_POST_REQUEST = -40;
@@ -28,19 +30,16 @@ export async function createDemand (data) {
     } = data;
 
     // Validate user
-    const user = await User.findById(posterId).populate('teams');
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, posterId, { message: 'Utilisateur non trouvé', populate: 'teams' });
     const maxPoints = maximumTransactionPoints(points, acceptedSwitches)
     if (user.points - maxPoints < MIN_POINTS_TO_POST_REQUEST) {
         throw new AppError("Vous ne pouvez pas poster cette demande, vous n'avez pas assez de points", 400);
     }
 
     // Validate shift
-    const givenDate = new Date(posterShift.date);
-    const [computedShift] = await computeUserShifts([givenDate], posterId);
+    const givenDay = toCalendarDay(posterShift.date);
+    if (!givenDay) throw new AppError('Date de vacation invalide', 400);
+    const [computedShift] = await computeUserShifts([givenDay.toString()], posterId);
     const shiftAssignment = computedShift.shiftData;
 
     if (!shiftAssignment?.shift) {
@@ -48,7 +47,7 @@ export async function createDemand (data) {
     }
 
     // Validate team
-    const team = getTeamAtGivenDate(user.teams, givenDate);
+    const team = getTeamAtDay(user.teams, givenDay);
     if (!team) {
         throw new AppError("L'utilisateur n'appartient à aucune équipe à la date spécifiée", 400);
     }

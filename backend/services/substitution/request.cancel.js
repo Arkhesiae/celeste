@@ -1,6 +1,6 @@
-import { computeUserShifts } from '../../utils/computeUserShifts.js';
+import { computeUserShifts } from '../planning/computeUserShifts.js';
+import { inTransaction } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
-import mongoose from 'mongoose';
 import { cancelRequestWithSession } from './request.internal.js';
 
 
@@ -10,11 +10,9 @@ import { cancelRequestWithSession } from './request.internal.js';
  * @returns {Promise<Object>}
  */
 export async function cancelRequest (requestId) {
-    const session = await mongoose.startSession();
-
     try {
         let cancelledRequests;
-        await session.withTransaction(async () => {
+        await inTransaction(async (session) => {
             cancelledRequests = await cancelRequestWithSession(requestId, { session });
         });
 
@@ -28,7 +26,5 @@ export async function cancelRequest (requestId) {
     } catch (error) {
         if (error instanceof AppError) throw error;
         throw new AppError("Erreur lors de l'annulation de la demande", 500);
-    } finally {
-        session.endSession();
     }
 }

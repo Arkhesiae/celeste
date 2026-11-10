@@ -20,6 +20,8 @@
  * Variable : MONGO_URI (comme le serveur ; .env chargé automatiquement).
  */
 import dotenv from 'dotenv';
+import { mod } from '../utils/math.js';
+import { daysBetween, toMongoDate, toPlainDate } from '../utils/dates/plainDate.js';
 import fs from 'fs';
 import path from 'path';
 import mongoose from 'mongoose';
@@ -27,8 +29,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
 import '../models/Rotation.js';
-import { findLatestRotation } from '../utils/findLatestRotation.js';
-import { cycleDayIndex, daysBetween, mod, toMongoDate, toPlainDate } from '../utils/teamCycle.js';
+import { findLatestRotation } from '../services/planning/findLatestRotation.js';
+import { cycleDayIndex } from '../utils/teamCycle.js';
 
 dotenv.config();
 

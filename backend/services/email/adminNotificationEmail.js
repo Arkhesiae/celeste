@@ -1,4 +1,5 @@
 import emailService from './emailService.js';
+import { formatDateFr } from '../../utils/dates/format.js';
 import { renderMail } from '../../src/mail/mailRenderer.js';
 
 /**
@@ -26,7 +27,7 @@ async function sendAdminNotificationEmail(adminEmails, newUser, center) {
       newUserEmail: newUser.email,
       newUserCenter: center.name,
       newUserCenterOACI: center.OACI,
-      newUserCreatedAt: new Date(newUser.createdAt).toLocaleDateString('fr-FR'),
+      newUserCreatedAt: formatDateFr(newUser.createdAt, { short: true }),
       center: center
     };
     const html = renderMail('adminNotification', templateData);

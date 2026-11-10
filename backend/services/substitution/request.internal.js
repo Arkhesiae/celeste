@@ -1,8 +1,10 @@
 import Substitution from '../../models/Substitution.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
 import { cancelPendingTransactions } from './request.mutations.utils.js';
-import { computeUserShifts } from '../../utils/computeUserShifts.js';
+import { computeUserShifts } from '../planning/computeUserShifts.js';
 import * as calendarEntryService from '../calendarEntry/calendar-entry.js';
 import * as scheduledTransactionService from '../transaction/transaction.scheduled.js';
 
@@ -64,9 +66,7 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
     if (visited.has(key)) return cancelledRequests;
     visited.add(key);
 
-    const request = await Substitution.findById(requestId).session(session);
-    if (!request) throw new AppError('Demande non trouvée', 404);
-
+    const request = await findOrThrow(Substitution, requestId, { message: 'Demande non trouvée', session });
     await cancelCascade(requestId, { session, visited, cancelledRequests });
 
     if (request.status === 'accepted') {
@@ -114,7 +114,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
     if (!request) throw new AppError('Demande non trouvée', 404);
     if (!user && isSwitch) throw new AppError('Utilisateur non trouvé', 404);
     if (request.status !== 'open') throw new AppError("Cette demande n'est plus disponible", 400);
-    if (request.posterId.toString() === userId) throw new AppError('Vous ne pouvez pas accepter votre propre demande', 400);
+    if (sameId(request.posterId, userId)) throw new AppError('Vous ne pouvez pas accepter votre propre demande', 400);
 
     const openDemands = await Substitution.find({
         posterId: userId,
@@ -136,7 +136,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
         userShiftData = userShifts[0];
         const acceptedShiftData = request.acceptedSwitches.find(
-            (s) => s.shift.toString() === userShiftData.shift._id.toString()
+            (s) => sameId(s.shift, userShiftData.shift._id)
         );
         if (!acceptedShiftData) throw new AppError("Votre vacation n'est pas acceptée pour cet échange", 400);
 

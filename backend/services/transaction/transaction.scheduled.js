@@ -1,4 +1,5 @@
 import Transaction from '../../models/Transaction.js';
+import { findOrThrow } from '../../utils/mongo.js';
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
 
@@ -89,11 +90,7 @@ const processPendingTransactions = async () => {
  * @returns {Promise<Object>} La transaction annulée
  */
 const cancelScheduledTransation = async (transactionId, { session }) => {
-    const transaction = await Transaction.findById(transactionId).session(session);
-    if (!transaction) {
-        throw new AppError('Transaction non trouvée', 404);
-    }
-
+    const transaction = await findOrThrow(Transaction, transactionId, { message: 'Transaction non trouvée', session });
     if (transaction.status !== 'pending') {
         throw new AppError('Seules les transactions en attente peuvent être annulées', 400);
     }

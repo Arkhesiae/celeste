@@ -1,4 +1,6 @@
 import User from '../../models/User.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import { fullName } from '../../utils/names.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '../email/resetPassword.js';
@@ -31,7 +33,7 @@ export async function requestPasswordReset (email) {
 
     try {
         // Envoyer l'email de réinitialisation
-        await sendPasswordResetEmail(user.email, resetLink, `${user.name} ${user.lastName}`);
+        await sendPasswordResetEmail(user.email, resetLink, fullName(user));
     } catch (error) {
         // En cas d'erreur d'envoi d'email, nettoyer le token
         user.resetPasswordToken = undefined;
@@ -83,11 +85,7 @@ export async function resetPassword (token, newPassword) {
  * @returns {Promise<Object>} Résultat de la vérification
  */
 export async function verifyPassword (userId, currentPassword) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const passwordMatches = await bcrypt.compare(currentPassword, user.password);
     if (!passwordMatches) {
         throw new AppError('Mot de passe actuel incorrect', 401);
@@ -105,11 +103,7 @@ export async function verifyPassword (userId, currentPassword) {
  * @returns {Promise<Object>} Message de confirmation
  */
 export async function updatePassword (userId, newPassword) {
-    const user = await User.findById(userId);
-    if (!user) {
-        throw new AppError('Utilisateur non trouvé', 404);
-    }
-
+    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     // Hasher le nouveau mot de passe
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 

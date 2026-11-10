@@ -1,4 +1,6 @@
 import { sendBulkAnnouncementEmail } from '../services/email/announcementEmail.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { sameId } from '../utils/ids.js';
 import User from '../models/User.js';
 import Announcement from '../models/Announcement.js';
 import Center from '../models/Center.js';
@@ -277,13 +279,9 @@ const deleteAnnouncement = async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const announcement = await Announcement.findById(id);
-    if (!announcement) {
-      throw new AppError('Annonce non trouvée', 404);
-    }
-
+    const announcement = await findOrThrow(Announcement, id, { message: 'Annonce non trouvée' });
     // Vérifier que l'utilisateur peut supprimer cette annonce
-    if (announcement.sentBy.toString() !== req.user._id.toString() && !req.user.isAdmin) {
+    if (!sameId(announcement.sentBy, req.user._id) && !req.user.isAdmin) {
       throw new AppError('Vous n\'êtes pas autorisé à supprimer cette annonce', 403);
     }
 

@@ -1,9 +1,11 @@
 import Rotation from '../models/Rotation.js';
-import { findLatestRotation } from "../utils/findLatestRotation.js";
+import { findOrThrow } from '../utils/mongo.js';
+import { isValidId } from '../utils/ids.js';
+import { findLatestRotation } from "../services/planning/findLatestRotation.js";
 import Shift from '../models/Shift.js';
 import Variation from '../models/Variation.js';
-import { isValidDate, isValidId } from '../utils/validation.js';
-import rotationActivationService from '../services/rotationService/rotationActivationService.js';
+import { isValidDate } from '../utils/validation.js';
+import rotationActivationService from '../services/rotation/rotation.activation.js';
 import { AppError } from '../error/AppError.js';
 const POINTS_PER_HOUR = 1;
 const BASE_VALUE = 2;
@@ -268,11 +270,7 @@ const deleteRotation = async (req, res, next) => {
     const { id } = req.params;
 
     try {
-        const result = await Rotation.findById(id);
-        if (!result) {
-            throw new AppError('Rotation non trouvée.', 404);
-        }
-
+        const result = await findOrThrow(Rotation, id, { message: 'Rotation non trouvée.' });
         const currentDate = new Date();
         const lastActiveRotation = await Rotation.aggregate([
             { $match: { deleted: false } },
@@ -387,11 +385,7 @@ const updateDayInRotation = async (req, res, next) => {
     const { updatedDay } = req.body;
 
     try {
-        const rotation = await Rotation.findById(id);
-        if (!rotation) {
-            throw new AppError('Tour de service non trouvé', 404);
-        }
-
+        const rotation = await findOrThrow(Rotation, id, { message: 'Tour de service non trouvé' });
         // Un jour n'est modifiable que tant que le tour n'a jamais été (ni ne sera) activé : sinon la modification
         // changerait rétroactivement le planning et les demandes déjà passées ou à venir.
         if (rotation.activationDates?.length > 0) {
@@ -584,11 +578,7 @@ const updateRotation = async (req, res, next) => {
     const updatedData = req.body;
 
     try {
-        const rotation = await Rotation.findById(id).populate('days');
-        if (!rotation) {
-            throw new AppError('Tour de service non trouvé', 404);
-        }
-
+        const rotation = await findOrThrow(Rotation, id, { message: 'Tour de service non trouvé', populate: 'days' });
         // Mettre à jour les champs autorisés
         if (updatedData.name) {
             rotation.name = updatedData.name;

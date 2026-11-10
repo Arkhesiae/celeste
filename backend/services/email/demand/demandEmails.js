@@ -1,6 +1,8 @@
 import emailService from '../emailService.js';
+import { formatDateFr } from '../../../utils/dates/format.js';
+import { shortName } from '../../../utils/names.js';
 import { renderMail } from '../../../src/mail/mailRenderer.js';
-import { getEffectiveShiftTimes } from '../../../utils/getEffectiveShiftTimes.js';
+import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
 
 
 /**
@@ -209,7 +211,7 @@ L'équipe Celeste
  */
 async function sendCancelledAcceptanceEmail(demand, originalAccepter) {
   try {
-    const fullName = `${originalAccepter.name} ${originalAccepter.lastName?.slice(0, 1) + '.'}`;
+    const fullName = shortName(originalAccepter) ?? '';
     const subject = `${fullName} a annulé son acceptation`;
     const text = `
 Bonjour ${demand.posterId.name},
@@ -274,7 +276,7 @@ L'équipe Celeste
  */
 async function sendReplacementReminderEmail (demand) {
   const accepter = demand.accepterId;
-  const posterName = `${demand.posterId?.name ?? ''} ${demand.posterId?.lastName ? demand.posterId.lastName.slice(0, 1) + '.' : ''}`.trim();
+  const posterName = shortName(demand.posterId) ?? '';
 
   // Une permutation = l'accepteur a fourni sa propre vacation ; sinon c'est un remplacement
   const exchangedShift = demand.accepterShift?.shift?.name ?? null;
@@ -332,27 +334,9 @@ L'équipe Celeste
 }
 
 
-/**
- * Formate une date en français
- * @param {Date|string} date - Date à formater
- * @returns {string} Date formatée
- */
-function formatDateFr(date) {
-  const d = (typeof date === 'string') ? new Date(date) : date;
-  return d.toLocaleDateString('fr-FR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
-
-
-
 export {
   sendUserPoolNotification,
   sendAcceptedDemandEmail,
   sendCancelledAcceptanceEmail,
-  sendReplacementReminderEmail,
-  formatDateFr
+  sendReplacementReminderEmail
 };

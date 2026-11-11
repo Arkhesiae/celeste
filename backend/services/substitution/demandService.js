@@ -93,8 +93,14 @@ export async function getCompatibleSwitches (date, userId) {
         if (dayLimit.length === 0) {
             compatible = true;
         }
+        // Les jours de référence sont ceux du tour de service actif à cette date : le front les affiche tels quels
         shifts.push({
             _id: day._id,
+            name: day.name,
+            order: day.order,
+            startTime: day.default?.startTime,
+            endTime: day.default?.endTime,
+            endsNextDay: day.default?.endsNextDay ?? false,
             limit: dayLimit,
             compatible: compatible,
         });

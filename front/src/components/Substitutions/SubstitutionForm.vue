@@ -65,48 +65,42 @@
           </div>
 
           <div>
-            <v-card-title class="pa-0 pl-2 mb-0">
+            <v-card-title class="pa-0 pl-2  mb-0">
               <h2 class="text-title-large font-weight-medium">Permutations acceptées</h2>
             </v-card-title>
-            <v-card-subtitle class="pa-0 pl-2 text-body-small">
+            <v-card-subtitle class="pa-0 ma-0 pl-2 text-body-small">
               Sélectionnez les vacations acceptées
             </v-card-subtitle>
 
             <div>
-              <div v-if="loadingRotations" class="d-flex flex-wrap ga-2">
-                <v-skeleton-loader v-for="n in 6" :key="n" elevation="0" flat width="40" height="32" />
+              <div v-if="loadingRotations" class="switch-grid ga-2">
+                <v-skeleton-loader v-for="n in 6" :key="n" elevation="0" flat height="84" />
               </div>
 
+              <v-alert v-else-if="rotationDays.length === 0" type="info" variant="tonal" rounded="lg" density="compact">
+                Aucun tour de service actif à cette date.
+              </v-alert>
 
-              <v-chip-group v-else v-model="acceptedSwitches" multiple color="surface" :rules="[rules.rotations]">
-                <div v-for="day in rotationDays" :key="day._id" class="d-flex align-center ">
-                  <v-chip :value="day._id" class="ma-1 switch-chip" rounded="lg" selected-class="selected"
-                    variant="flat" base-color="surfaceContainer" color="primary"
-                    :class="isSwitchAvailable(day._id) ? '' : 'text-error'">
-                    <template v-if="day.type === 'rest'">
-                      <v-icon start icon="mdi-bed-outline" />
-                    </template>
-                    <template v-if="!isSwitchAvailable(day._id)">
-                      <v-tooltip activator="parent" location="top">
-                        {{ getUnavailabilityReason(day._id) }}
-                      </v-tooltip>
-                    </template>
-                    <span class="text-body-medium font-weight-bold">{{ day.name }}</span>
-                  </v-chip>
-                </div>
-              </v-chip-group>
-
-              <div v-if="acceptedSwitches.length > 0" class="d-flex flex-column">
-                <div v-for="switchDay in acceptedSwitches" :key="switchDay">
-                  <div v-if="!isSwitchAvailable(switchDay)" class="d-flex align-center pa-2 mb-2"
-                    style="background-color: rgba(var(--v-theme-error), 0.05); border-radius: 10px;">
-                    <v-icon icon="mdi-swap-horizontal" color="error" size="16" class="opacity-70" />
-                    <div class="text-error d-flex align-center ga-2">
-                      <span class="text-body-medium font-weight-bold">{{ getSwitchName(switchDay) }}</span>
-                      <span style="font-size: 12px !important;">{{ getUnavailabilityReason(switchDay) }}</span>
-                    </div>
-                  </div>
-                </div>
+              <!-- Un jour du tour de service actif à la date demandée par tuile : vacation, horaires, compatibilité -->
+              <div v-else class="switch-grid ga-2" role="group" aria-label="Permutations acceptées">
+                <button
+                  v-for="day in rotationDays"
+                  :key="day._id"
+                  type="button"
+                  class="tile switch-tile"
+                  :class="{ 'switch-tile--incompatible': !day.compatible }"
+                  :aria-pressed="acceptedSwitches.includes(day._id)"
+                  @click="toggleSwitch(day._id)"
+                >
+                  <span class="switch-tile__name font-weight-bold">{{ day.name }}</span>
+                  <span class="switch-tile__hours opacity-70">{{ day.hours }}</span>
+                  <span v-if="day.compatible" class="switch-tile__status d-inline-flex align-center ga-1">
+                    <v-icon icon="mdi-check-circle-outline" size="12" />Compatible
+                  </span>
+                  <span v-else class="switch-tile__status d-inline-flex align-center ga-1">
+                    <v-icon icon="mdi-alert-circle-outline" size="12" />{{ day.reason }}
+                  </span>
+                </button>
               </div>
             </div>
           </div>
@@ -211,13 +205,11 @@
 
 <script setup>
 import { useDate } from 'vuetify';
-import { useRotationStore } from '@/stores/rotationStore';
+import { toDateKey } from '@/utils/dateKey';
 import { substitutionService } from '@/services/substitutionService';
-import { useAuthStore } from '@/stores/authStore';
 
 const dialogVisible = defineModel('dialogVisible', { type: Boolean, required: true });
 
-const authStore = useAuthStore();
 const props = defineProps({
   dialogMode: { type: String, required: true },
   date: { type: String },
@@ -232,7 +224,6 @@ const emit = defineEmits([
 ]);
 
 const dateUtil = useDate();
-const rotationStore = useRotationStore();
 
 const pointsPerSwitch = ref({});
 const switchPoints = ref(0);
@@ -289,29 +280,20 @@ const preselectedVariantHint = computed(() =>
   props.selectedShift?.selectedVariation ? 'Variante pré-remplie depuis votre calendrier.' : ''
 );
 
-const activeRotation = computed(() => {
-  const demandDate = new Date(props.date);
-  for (const rotation of rotationStore.sortedRotations) {
-    const start = new Date(rotation.startDate);
-    const end = rotation.endDate ? new Date(rotation.endDate) : null;
-    if (start <= demandDate && (!end || end >= demandDate)) {
-      return rotationStore.rotations.find(r => r._id === rotation._id);
-    }
-  }
-  return null;
-});
+// Jours de référence : ceux du tour de service actif à la date demandée, tels que le serveur les a évalués
+const hoursOf = (day) => (day.startTime && day.endTime ? `${day.startTime} – ${day.endTime}` : '');
 
-const rotationDays = computed(() => {
-  if (!activeRotation.value) return [];
-  return activeRotation.value.days
-    .filter(day => day.type !== 'rest' && day._id !== props.selectedShift?.shift._id)
-    .map((day, index) => ({
+const rotationDays = computed(() =>
+  compatibleSwitches.value
+    .filter(day => day._id !== props.selectedShift?.shift?._id)
+    .map(day => ({
       _id: day._id,
-      index,
       name: day.name,
-      type: day.type
-    }));
-});
+      hours: hoursOf(day),
+      compatible: day.compatible,
+      reason: describeLimits(day.limit),
+    }))
+);
 
 const isNextButtonDisabled = computed(() =>
   !localDate.value ||
@@ -319,18 +301,10 @@ const isNextButtonDisabled = computed(() =>
   (props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length === 0)
 );
 
-// Règles de validation
-const rules = {
-  required: v => !!v || 'Ce champ est requis',
-  points: v => v >= 0 || 'Les points doivent être positifs',
-  date: v => !!v || 'Une date est requise',
-  rotations: v => v.length > 0 || 'Au moins un jour de rotation doit être sélectionné'
-};
-
 // Methods
 
 const getSwitchName = (dayId) =>
-  rotationDays.value.find(day => day._id === dayId)?.name || 'Aucun shift sélectionné';
+  compatibleSwitches.value.find(day => day._id === dayId)?.name || 'Aucun shift sélectionné';
 
 const isVariationSelected = (variation) => selectedVariant.value === variation._id;
 
@@ -338,18 +312,17 @@ const selectVariation = (variation) => {
   selectedVariant.value = variation?._id ?? '';
 };
 
-const isSwitchAvailable = (shiftId) =>
-  compatibleSwitches.value.find(shift => shift._id === shiftId)?.compatible ?? false;
+const describeLimits = (limits) => (limits || []).map(reason => {
+  if (reason === 'insufficientRest') return 'Repos <11h après une période de service';
+  if (reason === '35limit') return 'Repos consécutifs<35h sur 7 jours glissants';
+  if (reason === '48hLimit') return 'Repos <48h sur 7 jours glissants';
+  return reason;
+}).join(', ');
 
-const getUnavailabilityReason = (shiftId) => {
-  const limits = compatibleSwitches.value.find(shift => shift._id === shiftId)?.limit;
-  if (!limits) return null;
-  return limits.map(reason => {
-    if (reason === 'insufficientRest') return 'Repos <11h après une période de service';
-    if (reason === '35limit') return 'Repos consécutifs<35h sur 7 jours glissants';
-    if (reason === '48hLimit') return 'Repos <48h sur 7 jours glissants';
-    return reason;
-  }).join(', ');
+const toggleSwitch = (dayId) => {
+  acceptedSwitches.value = acceptedSwitches.value.includes(dayId)
+    ? acceptedSwitches.value.filter(id => id !== dayId)
+    : [...acceptedSwitches.value, dayId];
 };
 
 const editPoints = (switchDay) => {
@@ -363,8 +336,8 @@ const updatePoints = (data) => {
 };
 
 const fetchCompatibleSwitches = async () => {
-  if (!props.date) return [];
-  return substitutionService.fetchCompatibleSwitches(props.date.split('T')[0]);
+  if (!localDate.value) return [];
+  return substitutionService.fetchCompatibleSwitches(toDateKey(localDate.value));
 };
 
 const closeDialog = () => emit('update:dialogVisible', false);
@@ -438,10 +411,6 @@ watch(acceptedSwitches, (newSwitches, oldSwitches) => {
 watch(() => props.dialogVisible, async (value) => {
   if (value) {
     localDate.value = props.date;
-    const centerId = authStore.userData?.centerId;
-    if (centerId) {
-      await rotationStore.fetchRotations(centerId);
-    }
     demand.value.points = props.dialogMode === 'substitution' ? defaultPoints.value : 0;
 
     try {
@@ -485,18 +454,26 @@ watch(() => props.date, (newDate) => {
   font-weight: 600;
 }
 
-.switch-chip {
-  transition: border-radius var(--motion-expressive-fast-spatial),
-    background-color var(--motion-expressive-fast-effects);
+/* Vuetify n'a pas de classe d-grid */
+.switch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
 }
 
+.switch-tile__name { font-size: 18px; line-height: 1.1; }
+.switch-tile__hours { font-size: 11px; }
+.switch-tile__status { font-size: 10px; line-height: 1.2; }
 
-
-.switch-chip.selected {
-  border-radius: 20px !important;
+/* Vacation que la règle de repos / de charge interdit : toujours choisissable, mais signalée */
+.switch-tile--incompatible {
+  --tile-accent: rgb(var(--v-theme-error));
+  --tile-on-accent: rgb(var(--v-theme-onError));
 }
 
-
+/* Au repos : texte d'erreur ; sélectionnée, `.tile` met le fond en erreur et le texte en onError (contraste) */
+.switch-tile--incompatible:not([aria-pressed='true']) {
+  --tile-color: rgb(var(--v-theme-error));
+}
 
 .chips-container {
   transition: all 0.5s ease-in-out;

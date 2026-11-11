@@ -1,6 +1,7 @@
 import pLimit from 'p-limit';
 import User from '../../models/User.js';
 import { categorize } from './categorizeDemand.js';
+import { getCenterTimeZone } from '../center/center.timezone.js';
 import { generateMapFromDemands } from './generateShiftsMap.js';
 
 const limit = pLimit(10);
@@ -27,6 +28,9 @@ const computeUserPool = async (demand) => {
 
         console.log("Found", users.length, "users for demand");
         
+        // Tous les utilisateurs du pool sont du centre de la demande : un seul fuseau pour tous les plannings
+        const timeZone = await getCenterTimeZone(demand.centerId);
+
         let totalt1 = performance.now();
         const results = await Promise.allSettled(
             users.map((user) => limit(async () => {
@@ -34,7 +38,7 @@ const computeUserPool = async (demand) => {
                 const shiftsMap = await generateMapFromDemands([demand], user._id);
                 // let t2 = performance.now();
                 // c onsole.log("Time taken to generate shifts map and categorize demand :", t2 - t1);
-                const categorizedDemand = await categorize(demand, shiftsMap);
+                const categorizedDemand = await categorize(demand, shiftsMap, { timeZone });
 
 
                 let canSwitch = false;

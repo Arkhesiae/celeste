@@ -1,7 +1,6 @@
 import { computeUserShifts } from './computeUserShifts.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toPlainDate } from '../../utils/dates/plainDate.js';
-import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
 import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
 
 /** Jours avant/après pour couvrir les fenêtres glissantes 7j (±6) + marge nuits / fenêtres étendues */
@@ -11,7 +10,8 @@ const SHIFT_MAP_DAY_RADIUS = 12;
  * Prépare une map des shifts pour tous les utilisateurs concernés par les demandes
  * @param {Date[]} dates - Liste de dates à traiter
  * @param {string} userId - ID de l'utilisateur à analyser
- * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
+ * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, startTime: string, endTime: string, endsNextDay: boolean, selectedVariation: Object|null }>>}
+ *   une vacation = le jour où elle commence (clé YYYY-MM-DD) + heures HH:mm du centre (voir utils/shifts/shiftTime.js)
  */
 export async function generateShiftsMap (dates, userId) {
   try {
@@ -63,8 +63,9 @@ export async function generateShiftsMap (dates, userId) {
         team: entry.shiftData?.team ?? null,
         date: dateStr,
         selectedVariation: variationObj,
-        start: parseShiftUTC(dateStr, effectiveTimes.startTime, false),
-        end: parseShiftUTC(dateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
+        startTime: effectiveTimes.startTime,
+        endTime: effectiveTimes.endTime,
+        endsNextDay: effectiveTimes.endsNextDay ?? false,
       });
     }
 
@@ -99,19 +100,21 @@ export async function shiftMapFromSingleDemand (demand, userId) {
 }
 
 /**
- * Récupère tous les shifts de type "work", triés chronologiquement
- * @param {Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>} shiftsMap
- * @returns {Array<{ shift: Object, date: string, start: Date, end: Date, team: Object }>}
+ * Liste des vacations de la map, triées chronologiquement : par jour de début, puis par heure de début (une vacation
+ * ne commence jamais le lendemain de son jour, et `HH:mm` se compare comme du texte).
+ * @param {Map<string, { shift: Object, team: Object, date: string, startTime: string, endTime: string, endsNextDay: boolean }>} shiftsMap
+ * @returns {Array<{ shift: Object, team: Object, date: string, startTime: string, endTime: string, endsNextDay: boolean, selectedVariation: Object|null }>}
  */
 export function shiftMapToArray (shiftsMap) {
   return Array.from(shiftsMap.values())
     .map(entry => ({
       shift: entry.shift,
-      date: entry.date,
-      start: entry.start,
-      end: entry.end,
       team: entry.team,
+      date: entry.date,
+      startTime: entry.startTime,
+      endTime: entry.endTime,
+      endsNextDay: entry.endsNextDay ?? false,
       selectedVariation: entry.selectedVariation ?? null
     }))
-    .sort((a, b) => new Date(a.start) - new Date(b.start));
+    .sort((a, b) => a.date.localeCompare(b.date) || a.startTime.localeCompare(b.startTime));
 }

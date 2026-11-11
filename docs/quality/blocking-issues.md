@@ -4,16 +4,18 @@ Audit date: 2026-11-02; re-verified against the code on 2026-11-11 (every issue 
 Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited, except where noted.
 Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database.
 
-This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed issues (#1, #17, #19, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
+This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed issues (#1, #13, #17, #19, #43, #44, #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
 
 Severity is shown on each issue; sections below are ordered by when to work on them. **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug that will break a code path.
+
+Compatibility audit (2026-11-11): #42, #45, #47, with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
 
 Changes in this revision (2026-11-11): #13 moved (the file is now `services/planning/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
 
 ---
 
 ## Now — blocks a deploy, or blocks exercising the app
-Do these first. #4, #5, #2 and #21 before any production deploy; #13 so the app can be run end to end.
+Do these first: #4, #5, #2 and #21 before any production deploy.
 
 ### 4. JWT secrets fall back to public literals — P0
 `backend/middleware/authMiddleware.js:14` and `backend/services/auth/auth.refreshToken.js:7-8`
@@ -40,19 +42,25 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ### 21. Production MongoDB is a standalone server but several flows require transactions — P1
 `inTransaction` (`utils/mongo.js`, used by team changes, cycle position changes, rotation activation, substitution accept/cancel/withdraw) uses `session.withTransaction`, which fails on a standalone `mongod` ("Transaction numbers are only allowed on a replica set member or mongos"). The root `docker-compose.yml` (production) starts `mongo:8.0` with no `--replSet`; only `backend/docker-compose.yml` (dev) sets `--replSet rs0`. If production runs this way, all of those flows return 500. **Fix:** confirm production topology; run a single-node replica set in production (`--replSet` + `rs.initiate`) or add a non-transactional fallback.
 
-### 13. Undefined identifier in `categorizeDemand.js` — P2
-`backend/services/planning/categorizeDemand.js:729` iterates `localShiftsSorted`, but the `simulateInsertShift(...)` line that defines it is commented out (line 723; the same pattern at 629). It throws a `ReferenceError` whenever that check runs for a work shift. Unfinished code, not a missing import: needs the intended logic.
-
 ---
 
 ## Next — security and correctness defects to fix this sprint
-Open authorization holes and data-corrupting bugs. #8 also unlocks the throttling needed by #6.
+Open authorization holes, data-corrupting bugs and the compatibility computation (#42, #45, #47). #8 also unlocks the throttling needed by #6.
 
 ### 20. Admin routes still without a center guard — P1
 `middleware/centerAuth.js` provides the guards (`authorizeCenterParam`, `authorizeResourceCenter`, `authorizeTargetUserCenter`...) and they cover users, teams, tickets, demands, rotations, grid/heatmap/timeline and announcement sending. Not yet covered (`routes/announcement.routes.js:25-29`, `routes/message.routes.js:9,15`):
 - Email announcements: `GET /announcements/history` and `/stats` list **all** centers' announcements to any admin (`Announcement.find()`), and `DELETE /announcements/:id` lets any admin delete any announcement. Its owner check reads `req.user._id`, but the token carries `userId`, so the check compares against `undefined` (the admin bypass hides it today).
 - Contact messages: `GET /messages` and `PUT /messages/:id/read` show every message to any admin (messages have no center; decide whether they are master-only).
 - The team-change preview still names people from cascaded requests of other users when someone previews their own change.
+
+### 42. Weekly rest rule (35h) rejects a plain 5/2 planning — P1
+`services/planning/categorizeDemand.js` `checkWeeklyRestPeriod` (used by `checkCompatibilityForVariation` and `getCompatibleSwitches`) looks for a continuous 35h rest **inside** each of the 13 windows of 7 days aligned on UTC midnight (target day -6 .. +6), clipping the rest at the window bounds. A Monday-Friday 07:00-15:00 week has 64h of weekend rest, but a window starting on Sunday only contains 31h + 33h of it, so it is reported as `35limit`. Verified on a scratch database (`getCompatibleSwitches` for a user on a 5-working-days + 2-rest rotation): **0 of 5 candidate shifts are compatible on every day of the week**, even the one identical to the user's own shift. The same user pattern as 4 x 10h + 3 rest passes the rule in the unit probe (not checked on the other rotations). Needs a decision on the intended legal reading (fixed week, or a 35h rest allowed to straddle the window edge) before changing the code. Test: `backend/test/compatibility.rules.test.js` (`R2 35h : une semaine 5/2 périodique`, marked todo).
+
+### 45. Switch compatibility ignores variations — P2
+`demandService.getCompatibleSwitches` evaluates each rotation day with `day.default` hours only. A shift with variations (other start / end times) is reported with the default hours' result; the front cannot tell which variation breaks a rule. Test: `getCompatibleSwitches : une rotation à variantes ...` in `backend/test/compatibility.db.test.js` (todo).
+
+### 47. Overlapping shifts are counted twice in the 48h total — P2
+`checkWeeklyWorkHours` (`categorizeDemand.js`) sums the minutes of overlapping shifts instead of their union (test: todo). Only matters once overlapping data exist (such a planning already fails the 11h rule on the shifts involved, but not on unrelated targets).
 
 ### 7. SNS inbound-mail webhook is unauthenticated — P1
 `POST /api/tickets/inbound` (`services/email/email.inbound.js:56-57`) accepts any JSON body: it does not verify the SNS signature or `TopicArn`, and it calls `confirmSubscription(message.SubscribeURL)` with a URL taken from the request (server-side request forgery). Anyone can inject ticket replies on behalf of any user, or make the server fetch arbitrary URLs.
@@ -138,6 +146,6 @@ Dead code, safe to remove once confirmed.
 
 ## Not covered
 - `front/` beyond the issues listed above (auth storage in the browser, Capacitor config, XSS in rendered content).
-- Runtime behaviour: no tests exist (`npm test` is a stub), and the app was never exercised against a replica-set MongoDB end to end (team-change, cycle-position and rotation approval flows, the period helpers, the day-field dual write were only exercised on scratch databases).
+- Runtime behaviour: tests exist only for the compatibility computation (`backend/test/`); the app was never exercised against a replica-set MongoDB end to end (team-change, cycle-position and rotation approval flows, the period helpers, the day-field dual write were only exercised on scratch databases).
 - Business-rule correctness of the shift/substitution computation.
 - Docker/nginx configuration beyond the files already noted.

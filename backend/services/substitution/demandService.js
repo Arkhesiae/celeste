@@ -1,14 +1,14 @@
 import User from '../../models/User.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
-import { toDateKey } from '../../utils/dates/dateKey.js';
+import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
 import { findLatestRotation } from '../planning/findLatestRotation.js';
 import { generateShiftsMap } from '../planning/generateShiftsMap.js';
-import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
 import { shiftMapToArray } from '../planning/generateShiftsMap.js';
-import { checkMinimumRestTime, checkWeeklyRestPeriod, checkWeeklyWorkHours } from '../planning/categorizeDemand.js';
+import { legalLimitsFor } from '../planning/categorizeDemand.js';
+import { getCenterTimeZone } from '../center/center.timezone.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';
 
@@ -35,16 +35,22 @@ export async function getCompatibleSwitches (date, userId) {
     if (!date) {
         throw new AppError('Date manquante', 400);
     }
-    const demandDate = new Date(date);
+    // Jour demandé sous forme de clé YYYY-MM-DD (pas de Date) : tout le calcul qui suit raisonne en jours
+    const demandDay = toPlainDate(date)?.toString();
+    if (!demandDay) {
+        throw new AppError('Date invalide', 400);
+    }
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-    const activeRotation = await findLatestRotation(user.centerId, date);
+    const timeZone = await getCenterTimeZone(user.centerId);   // fuseau de toutes les vacations de cet utilisateur
+    const activeRotation = await findLatestRotation(user.centerId, demandDay);
     if (!activeRotation) {
         throw new AppError('Tour de service actif non trouvé', 404);
     }
 
     const populateRotation = await Rotation.findById(activeRotation._id).populate('days');
 
-    const shiftMap = await generateShiftsMap([demandDate], userId);
+    // Planning réel de l'utilisateur autour du jour demandé (±12 jours, vacations travaillées seulement)
+    const shiftMap = await generateShiftsMap([demandDay], userId);
 
     const shifts = []
     for (const day of populateRotation.days) {
@@ -52,47 +58,22 @@ export async function getCompatibleSwitches (date, userId) {
         const localMap = new Map(shiftMap);
 
 
+        // La vacation candidate (un jour de la rotation) est posée à la date demandée, à la place de ce que
+        // l'utilisateur y faisait, avec ses horaires par défaut (les variantes ne sont pas évaluées, #45)
         const dayData = {
             shift: day,
-            date: toDateKey(demandDate),
-            start: parseShiftUTC(toDateKey(demandDate), day.default.startTime),
-            end: parseShiftUTC(toDateKey(demandDate), day.default.endTime, day.default.endsNextDay),
+            date: demandDay,
+            startTime: day.default.startTime,
+            endTime: day.default.endTime,
+            endsNextDay: day.default.endsNextDay ?? false,
         };
 
-        localMap.set(toDateKey(demandDate), dayData);
+        localMap.set(demandDay, dayData);
         const shiftsSorted = shiftMapToArray(localMap);
-        const index = shiftsSorted.findIndex(s => s.date === toDateKey(demandDate));
+        // Mêmes règles légales que pour une demande (repos 11h / 35h, charge 48h, 5 jours, nuits)
+        const { limit: dayLimit } = legalLimitsFor(demandDay, shiftsSorted, timeZone);
+        const compatible = dayLimit.length === 0;
 
-        const dayLimit = []
-
-        let compatible = false;
-
-
-        const computeRest = checkMinimumRestTime(shiftsSorted, index);
-        const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
-        const { workOk, invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
-
-        // Additional Legal Checks
-        // const consecutiveDays = checkConsecutiveWorkDays(demand.posterShift.shift, demandDate, shiftsSorted);
-        // const nightControlRest = checkRestAfterNightControl(demand.posterShift.shift, demandDate, shiftsSorted);
-        // const consecutiveNight = checkConsecutiveNightControls(demand.posterShift.shift, demandDate, shiftsSorted);
-
-        const dayRest = {
-            before: computeRest.restBefore,
-            after: computeRest.restAfter
-            
-        };
-
-        dayLimit.invalidRest35 = invalidWindows35;
-        dayLimit.invalidWork48 = invalidWindows48;
-
-        if (!computeRest.ok) dayLimit.push('insufficientRest');
-        if (!restOk) dayLimit.push('35limit');
-        if (!workOk) dayLimit.push('48hLimit');
-
-        if (dayLimit.length === 0) {
-            compatible = true;
-        }
         // Les jours de référence sont ceux du tour de service actif à cette date : le front les affiche tels quels
         shifts.push({
             _id: day._id,
@@ -109,55 +90,6 @@ export async function getCompatibleSwitches (date, userId) {
 
     return shifts;
 };
-
-export async function getCompatibleSwitchesInRotation (date, userId, rotationId) {
-    if (!date) {
-        throw new AppError('Date manquante', 400);
-    }
-    const demandDate = new Date(date);
-    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-    const populateRotation = await Rotation.findById(rotationId).populate('days');
-
-    const shiftMap = await generateShiftsMap([demandDate], userId);
-
-
-    const sortedShifts = shiftMapToArray(shiftMap);
-
-    const shifts = []
-    for (const day of populateRotation.days) {
-        if (day.type === 'rest') continue;
-        const dayLimit = []
-        let compatible = false;
-        const computeRest = checkMinimumRestTime(day, demandDate, sortedShifts);
-        const { restOk, invalidWindow } = checkWeeklyRestPeriod(day, demandDate, sortedShifts);
-        const has35hRest = restOk;
-        const isWithin48h = checkWeeklyWorkHours(day, demandDate, sortedShifts);
-        if (!computeRest.ok) {
-            dayLimit.push('insufficientRest');
-        }
-
-        if (!has35hRest) {
-            dayLimit.push('35limit');
-        }
-
-        if (!isWithin48h) {
-            dayLimit.push('48hLimit');
-        }
-
-        if (dayLimit.length === 0) {
-            compatible = true;
-        }
-        shifts.push({
-            _id: day._id,
-            limit: dayLimit,
-            compatible: compatible,
-        });
-    }
-
-
-    return shifts;
-};
-
 
 /**
  * Marque une demande comme consultée par un utilisateur

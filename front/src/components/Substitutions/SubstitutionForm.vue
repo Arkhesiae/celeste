@@ -316,6 +316,10 @@ const describeLimits = (limits) => (limits || []).map(reason => {
   if (reason === 'insufficientRest') return 'Repos <11h après une période de service';
   if (reason === '35limit') return 'Repos consécutifs<35h sur 7 jours glissants';
   if (reason === '48hLimit') return 'Repos <48h sur 7 jours glissants';
+  if (reason === 'consecutiveDaysLimit') return 'Plus de 5 jours de travail consécutifs';
+  if (reason === 'nightControlRestLimit') return 'Repos <12h après un contrôle de nuit';
+  if (reason === 'consecutiveNightLimit') return 'Plus de 2 contrôles de nuit consécutifs';
+  if (reason === 'restAfterTwoNightsLimit') return 'Repos <48h après 2 contrôles de nuit consécutifs';
   return reason;
 }).join(', ');
 

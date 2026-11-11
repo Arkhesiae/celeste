@@ -1,4 +1,5 @@
 import Center from '../../models/Center.js';
+import User from '../../models/User.js';
 import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
 
 /**
@@ -23,4 +24,10 @@ export async function getCenterTimeZones (centerIds) {
 export async function getCenterTimeZone (centerId) {
     if (!centerId) return DEFAULT_TIME_ZONE;
     return (await getCenterTimeZones([centerId])).get(String(centerId));
+}
+
+/** Fuseau IANA du centre d'un utilisateur (fuseau par défaut si l'utilisateur n'a pas de centre) */
+export async function getUserTimeZone (userId) {
+    const user = await User.findById(userId).select('centerId').lean();
+    return getCenterTimeZone(user?.centerId);
 }

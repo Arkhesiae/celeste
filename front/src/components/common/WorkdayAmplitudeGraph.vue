@@ -466,13 +466,14 @@ const limitLabels = {
     '48hLimit': 'Semaine > 48h',
     consecutiveDaysLimit: '> 5 jours consécutifs',
     nightControlRestLimit: 'Repos nuit < 12h',
-    consecutiveNightLimit: '> 2 nuits consécutives'
+    consecutiveNightLimit: '> 2 nuits consécutives',
+    restAfterTwoNightsLimit: 'Repos < 48h après 2 nuits'
 };
 
 /** Anomalies modifiables en changeant une vacation élémentaire (demande ou accepter) */
 const VARIATION_FIXABLE_LIMITS = new Set([
     'insufficientRest', '35limit', '48hLimit',
-    'consecutiveDaysLimit', 'nightControlRestLimit', 'consecutiveNightLimit'
+    'consecutiveDaysLimit', 'nightControlRestLimit', 'consecutiveNightLimit', 'restAfterTwoNightsLimit'
 ]);
 
 const isVariationFixable = (limit) => VARIATION_FIXABLE_LIMITS.has(limit);

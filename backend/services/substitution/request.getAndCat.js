@@ -6,7 +6,8 @@ import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
 import { generateMapFromDemands } from '../planning/generateShiftsMap.js';
-import { categorize } from '../planning/categorizeDemand.js';
+import { categorizeWithVariations } from '../planning/demandVariations.js';
+import { getUserTimeZone } from '../center/center.timezone.js';
 
 
 /**
@@ -90,10 +91,12 @@ export async function categorizeRequests (requests, userId) {
     if (!openRequests.length) return requests;
 
     const shiftsMap = await generateMapFromDemands(openRequests, userId);
+    // Le planning est celui de l'utilisateur : ses vacations sont dans le fuseau de son centre
+    const timeZone = await getUserTimeZone(userId);
 
     return Promise.all(
         requests.map((request) =>
-            request.status === 'open' ? categorize(request, shiftsMap) : request
+            request.status === 'open' ? categorizeWithVariations(request, shiftsMap, { timeZone }) : request
         )
     );
 }

@@ -1,121 +1,48 @@
-import { computeUserShifts } from './computeUserShifts.js';
+/**
+ * Compatibilité d'une demande de remplacement / de permutation avec le planning d'un utilisateur.
+ *
+ * Le déroulé complet, les hypothèses et la forme du résultat sont décrits dans
+ * docs/architecture/demand-categorization.md. En bref :
+ *
+ *   planning de l'utilisateur (generateShiftsMap)        la demande
+ *                       \                                   /
+ *                        '-- on pose la vacation de la demande à sa date, à la place de celle de l'utilisateur
+ *                                         |
+ *                               legalLimitsFor : 7 règles légales
+ *                                         |
+ *                    categorize → { limit[], canSwitch, rest, invalidRest35, invalidWork48 }
+ *
+ * Modèle de temps (voir utils/shifts/shiftTime.js) :
+ *   - une vacation = { date: 'YYYY-MM-DD' (jour de début), startTime: 'HH:mm', endTime: 'HH:mm', endsNextDay } ;
+ *   - ces heures sont celles du centre ; toutes les vacations d'un planning sont dans le même fuseau (`timeZone`, celui
+ *     du centre de l'utilisateur) ;
+ *   - `legalLimitsFor` en fait des Temporal.ZonedDateTime UNE fois (`withZonedBounds`), et toutes les règles calculent
+ *     sur ces instants : les durées sont réelles, y compris les jours de changement d'heure.
+ */
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
-import { toDateKey } from '../../utils/dates/dateKey.js';
-import { daysBetween } from '../../utils/dates/plainDate.js';
+import { Temporal } from '@js-temporal/polyfill';
+import { isNightControl } from '../../utils/shifts/nightControl.js';
 import Shift from '../../models/Shift.js';
 import { shiftMapToArray } from './generateShiftsMap.js';
-import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
+import { withZonedBounds, wallClockIso } from '../../utils/shifts/shiftTime.js';
 import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
-// Constantes pour améliorer la lisibilité et la maintenance
-const MIN_REST_MINUTES = 11 * 60;
+import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
 
-/**
- * Variante concrète choisie par le fetcher (pas vic/disp, pas vide).
- * Si true, on ne ré-explore pas les variantes de ce jour.
- */
-function hasConcreteFetcherVariation (selectedVariation) {
-    if (selectedVariation == null) return false;
-    if (selectedVariation === 'vic' || selectedVariation === 'disp') return false;
-    if (typeof selectedVariation === 'object') {
-        return Boolean(selectedVariation._id || selectedVariation.startTime);
-    }
-    const id = selectedVariation?.toString?.();
-    return Boolean(id && id !== '[object Object]');
-}
+// ─── Seuils légaux ───────────────────────────────────────────────────────────────────────────────────────────────────
+const MIN_REST_MINUTES = 11 * 60;                   // repos entre deux vacations
+const WEEKLY_REST_MINUTES = 35 * 60;                // un repos continu d'au moins 35h dans chaque période de 7 jours
+const MAX_WEEKLY_WORK_MINUTES = 48 * 60;            // au plus 48h de travail dans chaque période de 7 jours
+const MAX_CONSECUTIVE_WORK_DAYS = 5;
+const MIN_REST_AFTER_NIGHT_MINUTES = 12 * 60;       // après une vacation de contrôle de nuit
+const MAX_CONSECUTIVE_NIGHT_CONTROLS = 2;
+const MIN_REST_AFTER_TWO_NIGHTS_MINUTES = 48 * 60;  // après deux contrôles de nuit consécutifs
+/** Nombre de périodes de 7 jours glissantes qui contiennent le jour cible : celles qui commencent de J-6 à J+6 */
+const WEEKLY_WINDOWS = 13;
 
-/**
- * Complexité des calculs par paire de compatibilité :
- * - demandVariations × fetcherCombos appels à checkCompatibilityForVariation
- * - Sans borne : produit cartésien sur ±12j de vacations multi-variantes → OOM
- */
-const MAX_COMPATIBILITY_COMBOS = 128;
-/** Fenêtre autour de la demande où les variantes fetcher impactent vraiment 11h/35h/48h */
-const AMBIGUOUS_DAY_RADIUS = 7;
-/** Nombre max de jours ambigus explorés (les plus proches de la demande) */
-const MAX_AMBIGUOUS_DATES = 4;
-
-/**
- * Dates ambigües proches de la demande uniquement (évite le produit sur toute la map ±12j).
- */
-function selectAmbiguousFetcherDates (shiftsMap, demandDateStr) {
-    const candidates = [];
-    for (const [dateStr, entry] of shiftsMap) {
-        if (entry?.shift?.variations?.length < 2) continue;
-        if (hasConcreteFetcherVariation(entry.selectedVariation)) continue;
-        const diff = Math.abs(daysBetween(dateStr, demandDateStr));
-        if (diff > AMBIGUOUS_DAY_RADIUS) continue;
-        candidates.push({ dateStr, diff });
-    }
-    candidates.sort((a, b) => a.diff - b.diff || a.dateStr.localeCompare(b.dateStr));
-    return candidates.slice(0, MAX_AMBIGUOUS_DATES).map((c) => c.dateStr);
-}
-
-/**
- * Produit cartésien borné : arrête dès maxCombos atteints (pas de materialisation géante).
- * @param {string[]} ambiguousDates
- * @param {Map} shiftsMap
- * @param {number} maxCombos
- * @returns {Array<{[dateStr]: variation}>}
- */
-function getFetcherVariationCombinations (ambiguousDates, shiftsMap, maxCombos = MAX_COMPATIBILITY_COMBOS) {
-    if (ambiguousDates.length === 0) return [{}];
-
-    const variationsByDate = ambiguousDates.map((d) => {
-        const vars = shiftsMap.get(d)?.shift?.variations;
-        if (!vars || vars.length === 0) return [null];
-        return [null, ...vars];
-    });
-
-    const result = [];
-    const backtrack = (idx, combo) => {
-        if (result.length >= maxCombos) return;
-        if (idx === ambiguousDates.length) {
-            result.push({ ...combo });
-            return;
-        }
-        for (const v of variationsByDate[idx]) {
-            if (result.length >= maxCombos) return;
-            combo[ambiguousDates[idx]] = v;
-            backtrack(idx + 1, combo);
-        }
-    };
-    backtrack(0, {});
-    return result;
-}
-
-/**
- * Construit une map locale en appliquant éventuellement des overrides de variantes pour les vacations du fetcher.
- * fetcherVariationOverrides: { [dateStr]: variation } pour les jours ambigus (sans variante choisie).
- */
-function buildLocalMapWithOverrides (shiftsMap, demandDateStr, demandData, fetcherVariationOverrides = {}) {
-    const localMap = new Map();
-    for (const [dateStr, entry] of shiftsMap) {
-        if (dateStr === demandDateStr) {
-            localMap.set(dateStr, demandData);
-            continue;
-        }
-        const override = fetcherVariationOverrides[dateStr];
-        if (override && entry?.shift) {
-            const effectiveTimes = getEffectiveShiftTimes(entry.shift, override);
-            if (effectiveTimes) {
-                localMap.set(dateStr, {
-                    shift: entry.shift,
-                    team: entry.team,
-                    date: dateStr,
-                    start: parseShiftUTC(dateStr, effectiveTimes.startTime, false),
-                    end: parseShiftUTC(dateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay ?? false),
-                });
-                continue;
-            }
-        }
-        localMap.set(dateStr, { ...entry, start: entry.start, end: entry.end });
-    }
-    // La date de la demande peut être absente de shiftsMap (fetcher en repos ce jour-là)
-    if (!localMap.has(demandDateStr)) {
-        localMap.set(demandDateStr, demandData);
-    }
-    return localMap;
-}
+const isLater = (a, b) => Temporal.ZonedDateTime.compare(a, b) > 0;
+const isEarlier = (a, b) => Temporal.ZonedDateTime.compare(a, b) < 0;
+/** Durée réelle entre deux instants, en minutes */
+const minutesBetween = (earlier, later) => earlier.until(later, { largestUnit: 'minutes' }).total({ unit: 'minutes' });
 
 /**
  * Pré-charge les shifts des acceptedSwitches une seule fois pour éviter N×M appels DB.
@@ -144,43 +71,119 @@ async function buildPreFetchedAcceptedShifts (demand) {
 }
 
 /**
- * Vérifie la compatibilité pour une variation de la demande et optionnellement des overrides pour les vacations du fetcher.
- * Retourne { limit: string[], canSwitch: boolean }.
- * @param {Map<string, Object>} [preFetchedAcceptedShifts] - Map shiftId -> shift pour éviter les appels DB répétés
+ * Position de la vacation cible dans un planning (clé du jour de début). La cible doit y figurer : c'est l'appelant qui
+ * l'a posée à la place de ce que l'utilisateur faisait ce jour-là.
  */
-function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNull, fetcherVariationOverrides = {}, preFetchedAcceptedShifts = null) {
+function targetIndexOf (zonedShifts, targetDate) {
+    const targetIndex = zonedShifts.findIndex(shift => shift.date === targetDate);
+    if (targetIndex === -1) throw new Error(`La vacation cible du ${targetDate} est absente du planning`);
+    return targetIndex;
+}
+
+/**
+ * Évalue les règles légales pour la vacation cible d'un planning.
+ *
+ * `shiftsSorted` doit déjà CONTENIR la vacation cible à `targetDate` (elle remplace la vacation que l'utilisateur avait
+ * ce jour-là). Les règles sont évaluées autour de cette date uniquement : un défaut ancien et lointain n'est pas imputé
+ * à la cible.
+ *
+ *   code                       règle
+ *   insufficientRest           moins de 11h de repos avant ou après la cible
+ *   35limit                    une période de 7 jours glissants autour de la cible n'a aucun repos continu de 35h
+ *   48hLimit                   plus de 48h de travail sur une période de 7 jours glissants autour de la cible
+ *   consecutiveDaysLimit       plus de 5 jours de travail consécutifs (la série qui contient la cible)
+ *   nightControlRestLimit      moins de 12h de repos après une vacation de contrôle de nuit (la cible ou la précédente)
+ *   consecutiveNightLimit      plus de 2 contrôles de nuit consécutifs (la série qui contient la cible)
+ *   restAfterTwoNightsLimit    moins de 48h de repos après deux contrôles de nuit consécutifs que la cible touche
+ *
+ * @param {string} targetDate - jour YYYY-MM-DD de la cible
+ * @param {Array} shiftsSorted - vacations { shift, date, startTime, endTime, endsNextDay }, triées (shiftMapToArray)
+ * @param {string} [timeZone] - fuseau du centre de l'utilisateur, le même pour TOUTES les vacations du planning
+ * @returns {{ limit: string[], rest: { restBefore: number, restAfter: number }, invalidWindows35: Array, invalidWindows48: Array }}
+ *   `limit` vide = compatible ; `rest` en minutes ; les fenêtres en défaut servent à l'affichage (graphique du front)
+ */
+function legalLimitsFor (targetDate, shiftsSorted, timeZone = DEFAULT_TIME_ZONE) {
+    const zonedShifts = withZonedBounds(shiftsSorted, timeZone);
+    const targetIndex = targetIndexOf(zonedShifts, targetDate);
+
+    const restAroundTarget = checkMinimumRestTime(zonedShifts, targetIndex);
+    const { restOk, invalidWindows35 } = checkWeeklyRestPeriod(zonedShifts, targetDate, true);
+    const { workOk, invalidWindows48 } = checkWeeklyWorkHours(zonedShifts, targetDate, true);
+
+    const limit = [];
+    if (!restAroundTarget.ok) limit.push('insufficientRest');
+    if (!restOk) limit.push('35limit');
+    if (!workOk) limit.push('48hLimit');
+    if (!checkConsecutiveWorkDays(zonedShifts, targetDate).ok) limit.push('consecutiveDaysLimit');
+    if (!checkRestAfterNightControl(zonedShifts, targetDate).ok) limit.push('nightControlRestLimit');
+    if (!checkConsecutiveNightControls(zonedShifts, targetDate).ok) limit.push('consecutiveNightLimit');
+    if (!checkRestAfterTwoNightControls(zonedShifts, targetDate).ok) limit.push('restAfterTwoNightsLimit');
+
+    return {
+        limit,
+        rest: { restBefore: restAroundTarget.restBefore, restAfter: restAroundTarget.restAfter },
+        invalidWindows35,
+        invalidWindows48,
+    };
+}
+
+/**
+ * Compatibilité de la demande avec le planning d'un utilisateur, pour UNE variante de la vacation de la demande.
+ *
+ * Étapes :
+ *   1. on détermine les horaires effectifs de la vacation demandée : ceux de la variante donnée, ou à défaut les
+ *      horaires par défaut du shift (hypothèse : tant qu'aucune variante n'est choisie, c'est l'horaire par défaut) ;
+ *   2. on pose cette vacation dans une copie du planning, à la date de la demande (elle remplace ce que l'utilisateur
+ *      avait ce jour-là) ;
+ *   3. si l'utilisateur travaillait déjà ce jour-là : `alreadyWorking`. `canSwitch` est vrai si sa vacation du jour est
+ *      l'une de celles que le demandeur accepte en échange (permutation) ;
+ *   4. on évalue les règles légales (legalLimitsFor) sur le planning obtenu.
+ *
+ * `shiftsMap` est la map du planning de l'utilisateur. Pour évaluer d'autres variantes de SES propres vacations (calcul
+ * optionnel), demandVariations.js passe une map modifiée.
+ *
+ * @param {Object} demand - la demande (posterShift, acceptedSwitches)
+ * @param {Map<string, Object>} shiftsMap - planning de l'utilisateur, par jour
+ * @param {Object|string|null} demandVariationOrNull - variante de la vacation demandée (null = horaires par défaut)
+ * @param {Map<string, Object>} [preFetchedAcceptedShifts] - Map shiftId -> shift pour éviter les appels DB répétés
+ * @param {string} [timeZone] - fuseau du centre de l'utilisateur
+ * @returns {{ limit: string[], canSwitch: boolean, rest?: Object, invalidWindows35?: Array, invalidWindows48?: Array }}
+ */
+function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNull, preFetchedAcceptedShifts = null, timeZone = DEFAULT_TIME_ZONE) {
     if (!demand?.posterShift?.shift) {
         return { limit: ['invalidDemand'], canSwitch: false };
     }
-    const demandDate = new Date(posterDayOf(demand));   // YYYY-MM-DD = minuit UTC
+    const demandDate = posterDayOf(demand);
     const limit = [];
     let canSwitch = false;
 
-    const demandDateStr = toDateKey(demandDate);
-    const vacationOfFetcher = shiftsMap.get(demandDateStr);
+    const shiftOfUserThatDay = shiftsMap.get(demandDate);
 
     const effectiveTimes = getEffectiveShiftTimes(demand.posterShift.shift, demandVariationOrNull);
     if (!effectiveTimes) return { limit: ['invalidShift'], canSwitch: false };
 
-    const demandData = {
+    const demandedShift = {
         shift: demand.posterShift.shift,
         team: demand.posterShift.shift.teamObject,
-        date: demandDateStr,
-        start: parseShiftUTC(demandDateStr, effectiveTimes.startTime, false),
-        end: parseShiftUTC(demandDateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
+        date: demandDate,
+        startTime: effectiveTimes.startTime,
+        endTime: effectiveTimes.endTime,
+        endsNextDay: effectiveTimes.endsNextDay,
     };
 
-    const localMap = buildLocalMapWithOverrides(shiftsMap, demandDateStr, demandData, fetcherVariationOverrides);
-    const shiftsSorted = shiftMapToArray(localMap);
-    const index = shiftsSorted.findIndex(s => s.date === demandDateStr);
+    // La vacation de la demande remplace celle de l'utilisateur ce jour-là (ou s'ajoute s'il était en repos)
+    const planningWithDemand = new Map(shiftsMap);
+    planningWithDemand.set(demandDate, demandedShift);
+    const shiftsSorted = shiftMapToArray(planningWithDemand);
 
-    if (vacationOfFetcher?.shift && vacationOfFetcher.shift.type !== "rest") {
+    if (shiftOfUserThatDay?.shift && shiftOfUserThatDay.shift.type !== "rest") {
         limit.push('alreadyWorking');
+        // Permutation : travailler déjà ce jour-là est acceptable si sa vacation est l'une de celles acceptées en échange
         if (demand.acceptedSwitches?.length > 0) {
             for (const switchItem of demand.acceptedSwitches) {
                 const shiftId = switchItem.shift?._id?.toString?.() ?? switchItem.shift?.toString?.();
-                const shift = preFetchedAcceptedShifts?.get(shiftId) ?? (switchItem.shift && typeof switchItem.shift === 'object' ? switchItem.shift : null);
-                if (shift && ((shift._id?.toString() === vacationOfFetcher.shift._id?.toString()) || (shift?.name === vacationOfFetcher.shift.name))) {
+                const acceptedShift = preFetchedAcceptedShifts?.get(shiftId) ?? (switchItem.shift && typeof switchItem.shift === 'object' ? switchItem.shift : null);
+                if (acceptedShift && ((acceptedShift._id?.toString() === shiftOfUserThatDay.shift._id?.toString()) || (acceptedShift?.name === shiftOfUserThatDay.shift.name))) {
                     canSwitch = true;
                     break;
                 }
@@ -188,190 +191,51 @@ function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNul
         }
     }
 
-    const computeRest = checkMinimumRestTime(shiftsSorted, index);
-    const { restOk } = checkWeeklyRestPeriod(demandDate, shiftsSorted, true);
-    const { workOk } = checkWeeklyWorkHours(demandDate, shiftsSorted, true);
+    const legal = legalLimitsFor(demandDate, shiftsSorted, timeZone);
+    limit.push(...legal.limit);
 
-    if (!computeRest.ok) limit.push('insufficientRest');
-    if (!restOk) limit.push('35limit');
-    if (!workOk) limit.push('48hLimit');
-
-    return { limit, canSwitch };
+    return {
+        limit,
+        canSwitch,
+        rest: legal.rest,
+        invalidWindows35: legal.invalidWindows35,
+        invalidWindows48: legal.invalidWindows48,
+    };
 }
 
-const categorize = async (demand, shiftsMap = null) => {
+/**
+ * Catégorise une demande pour un utilisateur : ajoute à la demande ses limites légales et ses indicateurs.
+ *
+ * Variante de la vacation demandée : celle que le demandeur a choisie (`posterShift.selectedVariation`) ; sinon les
+ * horaires par défaut du shift. `options.selectedVariation` permet de simuler le choix d'une variante par l'utilisateur
+ * qui consulte la demande : quand elle est fournie, elle est prise en compte à la place.
+ * L'exploration de TOUTES les variantes possibles est un calcul à part, optionnel (demandVariations.js).
+ *
+ * @param {Object} demand - document de demande (méthode toObject)
+ * @param {Map<string, Object>} shiftsMap - planning de l'utilisateur (generateShiftsMap), par jour
+ * @param {{ selectedVariation?: Object|string|null, timeZone?: string }} [options] - `timeZone` : fuseau du centre de
+ *   l'utilisateur (défaut : fuseau par défaut de l'application)
+ * @returns {Promise<Object>} la demande + { limit, canSwitch, rest: { before, after }, invalidRest35, invalidWork48 }
+ */
+const categorize = async (demand, shiftsMap = null, options = {}) => {
     try {
-        const demandDate = new Date(posterDayOf(demand));   // YYYY-MM-DD = minuit UTC
-        let demandWithLimit = demand.toObject();
+        const demandWithLimit = demand.toObject();
         demandWithLimit.limit = [];
-        demandWithLimit.compatibleVariations = [];
-        demandWithLimit.compatibleFetcherVariationsByDate = [];
-        demandWithLimit.compatiblePairsByFetcherDate = [];
-        demandWithLimit.potentiallyCompatible = false;
 
         if (!shiftsMap) {
             throw new Error("Shifts map not found");
         }
 
-        const shift = demand.posterShift?.shift;
-        const hasVariations = shift?.variations?.length >= 2;
-        const noSelectedVariation = !demand.posterShift?.selectedVariation;
-
+        const variation = options.selectedVariation ?? demand.posterShift?.selectedVariation ?? null;
         const preFetchedAcceptedShifts = await buildPreFetchedAcceptedShifts(demand);
-        const result = checkCompatibilityForVariation(demand, shiftsMap, demand.posterShift?.selectedVariation, {}, preFetchedAcceptedShifts);
+        const result = checkCompatibilityForVariation(demand, shiftsMap, variation, preFetchedAcceptedShifts, options.timeZone ?? DEFAULT_TIME_ZONE);
+
         demandWithLimit.limit = result.limit;
         demandWithLimit.canSwitch = result.canSwitch;
-
-        demandWithLimit.rest = { before: 0, after: 0 };
-        const localMap = new Map(shiftsMap);
-        const effectiveTimes = getEffectiveShiftTimes(shift, demand.posterShift?.selectedVariation);
-        if (effectiveTimes) {
-            const dateStr = toDateKey(demandDate);
-            const demandData = {
-                shift,
-                team: shift?.teamObject,
-                date: dateStr,
-                start: parseShiftUTC(dateStr, effectiveTimes.startTime, false),
-                end: parseShiftUTC(dateStr, effectiveTimes.endTime, effectiveTimes.endsNextDay),
-            };
-            localMap.set(dateStr, demandData);
-            const shiftsSorted = shiftMapToArray(localMap);
-            const index = shiftsSorted.findIndex(s => s.date === dateStr);
-            const computeRest = checkMinimumRestTime(shiftsSorted, index);
-            demandWithLimit.rest = { before: computeRest.restBefore, after: computeRest.restAfter };
-        }
-        const { invalidWindows35 } = checkWeeklyRestPeriod(demandDate, shiftMapToArray(localMap), true);
-        const { invalidWindows48 } = checkWeeklyWorkHours(demandDate, shiftMapToArray(localMap), true);
-        demandWithLimit.invalidRest35 = invalidWindows35;
-        demandWithLimit.invalidWork48 = invalidWindows48;
-
-        // Jours ambigus proches de la demande uniquement (évite OOM sur produit ±12j)
-        const demandDateStr = toDateKey(demandDate);
-        const ambiguousFetcherDates = selectAmbiguousFetcherDates(shiftsMap, demandDateStr);
-
-        const demandVariationsToTry = (hasVariations && noSelectedVariation)
-            ? (shift.variations || [])
-            : [demand.posterShift?.selectedVariation ?? null];
-
-        let anyPass = false;
-        let anyFail = false;
-        const compatibleDemandVariationIds = new Set();
-        /** Pour chaque date ambigüe du fetcher, les variantes qui font passer au moins une combo */
-        const compatibleFetcherByDate = new Map();
-        /** Quand poster ET fetcher sont ambigus : date -> fetcherVarKey -> Set(demandVarIds) */
-        const compatiblePairsByFetcherDate = new Map();
-
-        const maxFetcherCombos = Math.max(
-            1,
-            Math.floor(MAX_COMPATIBILITY_COMBOS / Math.max(1, demandVariationsToTry.length))
-        );
-        const combosToIterate = getFetcherVariationCombinations(
-            ambiguousFetcherDates,
-            shiftsMap,
-            maxFetcherCombos
-        );
-
-        for (const demandVar of demandVariationsToTry) {
-            for (const fetcherCombo of combosToIterate) {
-                const vr = checkCompatibilityForVariation(demand, shiftsMap, demandVar, fetcherCombo, preFetchedAcceptedShifts);
-                if (vr.limit.length === 0) {
-                    anyPass = true;
-                    if (hasVariations && noSelectedVariation && demandVar) {
-                        compatibleDemandVariationIds.add((demandVar._id || demandVar)?.toString?.());
-                        if (ambiguousFetcherDates.length > 0) {
-                            for (const d of ambiguousFetcherDates) {
-                                const v = fetcherCombo[d];
-                                const fetcherKey = (v?._id || v)?.toString?.() ?? 'default';
-                                if (!compatiblePairsByFetcherDate.has(d)) compatiblePairsByFetcherDate.set(d, new Map());
-                                if (!compatiblePairsByFetcherDate.get(d).has(fetcherKey)) compatiblePairsByFetcherDate.get(d).set(fetcherKey, new Set());
-                                compatiblePairsByFetcherDate.get(d).get(fetcherKey).add((demandVar._id || demandVar)?.toString?.());
-                            }
-                        }
-                    }
-                    if (!noSelectedVariation && ambiguousFetcherDates.length > 0) {
-                        for (const d of ambiguousFetcherDates) {
-                            const v = fetcherCombo[d];
-                            if (!compatibleFetcherByDate.has(d)) compatibleFetcherByDate.set(d, new Set());
-                            const key = (v?._id || v)?.toString?.() ?? 'default';
-                            compatibleFetcherByDate.get(d).add(key);
-                        }
-                    }
-                } else {
-                    anyFail = true;
-                }
-            }
-        }
-
-        if (hasVariations && noSelectedVariation) {
-            const variations = shift.variations || [];
-            demandWithLimit.compatibleVariations = variations
-                .filter(v => compatibleDemandVariationIds.has((v._id || v)?.toString?.()))
-                .map(v => ({ _id: v._id || v, name: v?.name, startTime: v?.startTime, endTime: v?.endTime }));
-            if (compatiblePairsByFetcherDate.size > 0) {
-                const baseShiftName = shift?.name || '';
-                demandWithLimit.compatiblePairsByFetcherDate = ambiguousFetcherDates.map(dateStr => {
-                    const entry = shiftsMap.get(dateStr);
-                    const pairsMap = compatiblePairsByFetcherDate.get(dateStr);
-                    if (!entry?.shift || !pairsMap) return null;
-                    const fetcherShiftName = entry.shift?.name || '';
-                    const pairs = [];
-                    if (pairsMap.has('default')) {
-                        const demandIds = pairsMap.get('default');
-                        const demandVars = variations.filter(v => demandIds.has((v._id || v)?.toString?.()));
-                        if (demandVars.length > 0) {
-                            pairs.push({
-                                fetcherVariation: { name: '', isDefault: true },
-                                demandVariations: demandVars.map(v => ({ _id: v._id || v, name: v?.name })),
-                            });
-                        }
-                    }
-                    for (const fv of entry.shift?.variations || []) {
-                        const key = (fv._id || fv)?.toString?.();
-                        if (!pairsMap.has(key)) continue;
-                        const demandIds = pairsMap.get(key);
-                        const demandVars = variations.filter(v => demandIds.has((v._id || v)?.toString?.()));
-                        if (demandVars.length > 0) {
-                            pairs.push({
-                                fetcherVariation: { _id: fv._id || fv, name: fv?.name, isDefault: false },
-                                demandVariations: demandVars.map(v => ({ _id: v._id || v, name: v?.name })),
-                            });
-                        }
-                    }
-                    if (pairs.length === 0) return null;
-                    const totalFetcherOptions = 1 + (entry.shift?.variations?.length || 0);
-                    const totalDemandVariations = variations.length;
-                    const allDemandPass = pairs.every(p => p.demandVariations.length >= totalDemandVariations);
-                    if (pairs.length >= totalFetcherOptions && allDemandPass) return null;
-                    return { date: dateStr, shiftName: fetcherShiftName, baseShiftName, totalDemandVariations, totalFetcherVariations: totalFetcherOptions, pairs };
-                }).filter(Boolean);
-            }
-        }
-        if (!noSelectedVariation && compatibleFetcherByDate.size > 0) {
-            const totalOptionsByDate = new Map();
-            for (const d of ambiguousFetcherDates) {
-                const entry = shiftsMap.get(d);
-                const total = 1 + (entry?.shift?.variations?.length || 0);
-                totalOptionsByDate.set(d, total);
-            }
-            demandWithLimit.compatibleFetcherVariationsByDate = ambiguousFetcherDates.map(dateStr => {
-                const entry = shiftsMap.get(dateStr);
-                const passingIds = compatibleFetcherByDate.get(dateStr);
-                const totalOptions = totalOptionsByDate.get(dateStr) || 1;
-                if (!entry?.shift || !passingIds || passingIds.size >= totalOptions) return null;
-                const shiftName = entry.shift?.name || '';
-                const variations = [];
-                if (passingIds.has('default')) {
-                    variations.push({ name: '', isDefault: true });
-                }
-                for (const v of entry.shift?.variations || []) {
-                    if (passingIds.has((v._id || v)?.toString?.())) {
-                        variations.push({ _id: v._id || v, name: v?.name, isDefault: false });
-                    }
-                }
-                return { date: dateStr, shiftName, variations };
-            }).filter(Boolean);
-        }
-        demandWithLimit.potentiallyCompatible = anyPass && anyFail;
+        // Repos autour de la vacation demandée (minutes) et fenêtres de 7 jours en défaut, pour le graphique
+        demandWithLimit.rest = { before: result.rest?.restBefore ?? 0, after: result.rest?.restAfter ?? 0 };
+        demandWithLimit.invalidRest35 = result.invalidWindows35 ?? [];
+        demandWithLimit.invalidWork48 = result.invalidWindows48 ?? [];
 
         return demandWithLimit;
     } catch (err) {
@@ -380,187 +244,103 @@ const categorize = async (demand, shiftsMap = null) => {
     }
 };
 
-
-
-// const insertDemandShift = (demand, shiftsMap) => {
-//     const demandDate = new Date(demand.posterShift.date);
-//     shiftsMap.set(toDateKey(demandDate), {
-//         shift: demand.posterShift.shift,
-//         team: demand.posterShift.shift.teamObject,
-//         date: toDateKey(demandDate),
-//         start: demand.posterShift.shift.default.startTime,
-//         end: demand.posterShift.shift.default.endTime,
-//     });
-
-// }
-
-
 /**
- * Simule l'insertion d'un shift dans une liste triée chronologiquement
- * @param {Object} targetShift - Le shift à insérer
- * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Array} shiftsSorted - Liste des shifts triés chronologiquement
- * @returns {Array} Nouvelle liste avec le shift inséré
+ * Vérifie s'il y a au moins 11h de repos avant et après la vacation cible.
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {number} targetIndex - position de la vacation cible dans la liste
+ * @returns {Object} { restBefore: number, restAfter: number, ok: boolean } (repos en minutes)
  */
-function simulateInsertShift (targetShift, targetDate, shiftsSorted) {
-    const localShiftsSorted = shiftsSorted.slice();
+function checkMinimumRestTime (zonedShifts, targetIndex) {
+    const target = zonedShifts[targetIndex];
+    if (target.shift.type !== 'work') return { restBefore: 0, restAfter: 0, ok: true };
 
-    let startTime = targetShift?.default?.startTime;
-    let endTime = targetShift?.default?.endTime;
-    if (!startTime || !endTime) {
-        throw new Error("Invalid shift" + targetShift);
-    }
-    const start = parseShiftUTC(targetDate, startTime);
-    const end = parseShiftUTC(targetDate, endTime, targetShift?.default?.endsNextDay);
+    // La liste est triée par début : les voisins sont la vacation d'avant et celle d'après. Si elles se chevauchent
+    // avec la cible, le repos est négatif donc refusé.
+    const previousShift = zonedShifts[targetIndex - 1];
+    const nextShift = zonedShifts[targetIndex + 1];
 
-    const newShift = { shift: targetShift, team: targetShift.teamObject, date: targetDate, start, end };
-
-    const targetShiftIndex = localShiftsSorted.findIndex(s => s.date === toDateKey(targetDate));
-
-    if (targetShiftIndex !== -1) {
-        // Si le shift existe déjà à cette date, on le remplace
-        localShiftsSorted[targetShiftIndex] = newShift;
-    } else {
-        // Sinon, on l'insère au bon endroit selon la date
-        const insertIndex = localShiftsSorted.findIndex(s => new Date(s.date) > new Date(targetDate));
-        if (insertIndex === -1) {
-            // Si aucune date plus grande n'est trouvée, on ajoute à la fin
-            localShiftsSorted.push(newShift);
-        } else {
-            // Sinon on insère à la position trouvée
-            localShiftsSorted.splice(insertIndex, 0, newShift);
-        }
-    }
-
-    return localShiftsSorted;
-}
-
-
-
-/**
- * Vérifie s'il y a au moins 11h de repos avant et après le shift cible
- * @param {Object} targetShift - Le shift en question
- * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Array} shiftsSorted - Liste des shifts triés chronologiquement
- * @returns {Object} { restBefore: number, restAfter: number, ok: boolean }
- */
-function checkMinimumRestTime (shiftsSorted, index) {
-    if (shiftsSorted[index].shift.type !== 'work') return { restBefore: 0, restAfter: 0, ok: true };
-
-    let previousShift = shiftsSorted[index - 1];
-    let nextShift = shiftsSorted[index + 1];
-
-    const targetStart = shiftsSorted[index].start;
-    const targetEnd = shiftsSorted[index].end;
-
-    let result = {
-        restBefore: 0,
-        restAfter: 0,
-        ok: true,
-    }
+    const result = { restBefore: 0, restAfter: 0, ok: true };
 
     if (previousShift) {
-        result.restBefore = (targetStart - previousShift.end) / (60 * 1000);
+        result.restBefore = minutesBetween(previousShift.end, target.start);
         if (result.restBefore < MIN_REST_MINUTES) result.ok = false;
     }
 
     if (nextShift) {
-        result.restAfter = (nextShift.start - targetEnd) / (60 * 1000);
+        result.restAfter = minutesBetween(target.end, nextShift.start);
         if (result.restAfter < MIN_REST_MINUTES) result.ok = false;
     }
 
     return result;
 }
 
+/**
+ * Les 13 périodes de 7 jours glissants (minuit à minuit, en heure du centre) qui contiennent le jour cible : celles
+ * qui commencent de J-6 (la cible est le dernier jour) à J+6 (la cible est le premier jour).
+ *
+ *   J-6 ........ J ........ J+6        début de chaque fenêtre ; chacune dure 7 jours : [début, début + 7 j[
+ *
+ * Les bornes sont des minuits LOCAUX du fuseau : une fenêtre qui contient un changement d'heure dure 167h ou 169h.
+ *
+ * @param {string} targetDate - jour cible YYYY-MM-DD
+ * @param {string} timeZone - fuseau du centre
+ * @returns {Array<{ start: Temporal.ZonedDateTime, end: Temporal.ZonedDateTime }>}
+ */
+function weeklyWindowsAround (targetDate, timeZone) {
+    const targetDay = Temporal.PlainDate.from(targetDate);
+    return Array.from({ length: WEEKLY_WINDOWS }, (_, windowIndex) => {
+        const firstDay = targetDay.add({ days: windowIndex - 6 });
+        return {
+            start: firstDay.toZonedDateTime(timeZone),
+            end: firstDay.add({ days: 7 }).toZonedDateTime(timeZone),
+        };
+    });
+}
 
-
-
-function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
-    let restOk;
+/**
+ * Règle des 35h : dans CHAQUE période de 7 jours glissants autour de la cible, il doit exister un repos continu d'au
+ * moins 35h. On parcourt les vacations de la fenêtre dans l'ordre en suivant `workedUntil`, la fin du travail déjà
+ * vu : l'écart entre `workedUntil` et le début de la vacation suivante est un repos ; le dernier repos va jusqu'à la
+ * fin de la fenêtre. Une vacation qui chevauche le début de la fenêtre (nuit) repousse `workedUntil` : pas de repos
+ * avant elle.
+ *
+ * Le repos est borné par la fenêtre : un repos à cheval sur deux fenêtres est coupé (voir #42 dans
+ * docs/quality/blocking-issues.md, une semaine 5/2 classique y est refusée).
+ *
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {string} targetDate - jour cible YYYY-MM-DD
+ * @param {boolean} [fullScan=false] - false : s'arrête à la première fenêtre en défaut ; true : les liste toutes
+ * @returns {{ restOk: boolean, invalidWindows35: Array }} fenêtres en défaut : { windowStart, windowEnd (texte lu par le
+ *   front), longestRest (minutes), longestRestStart, longestRestEnd (texte ou null) }
+ */
+function checkWeeklyRestPeriod (zonedShifts, targetDate, fullScan = false) {
     const invalidWindows35 = [];
+    const timeZone = zonedShifts[targetIndexOf(zonedShifts, targetDate)].start.timeZoneId;
 
-    const targetDateNorm = new Date(Date.UTC(
-        targetDate.getUTCFullYear(),
-        targetDate.getUTCMonth(),
-        targetDate.getUTCDate()
-    ));
+    for (const window of weeklyWindowsAround(targetDate, timeZone)) {
+        let workedUntil = window.start;
+        let longestRest = { minutes: 0, from: null, to: null };
+        const considerRest = (restStart, restEnd) => {
+            const minutes = minutesBetween(restStart, restEnd);
+            if (minutes > longestRest.minutes) longestRest = { minutes, from: restStart, to: restEnd };
+        };
 
-    for (let i = 0; i < 13; i++) {
-        restOk = false;
-        let longestRest = 0;
-        let longestRestStart = null;
-        let longestRestEnd = null;
-
-        const windowStart = new Date(targetDateNorm);
-        windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        windowStart.setUTCHours(0, 0, 0, 0);
-        const windowEnd = new Date(windowStart);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
-        // start < windowEnd : un service qui commence pile à la fin de fenêtre
-        // n'appartient pas à la plage de 7j (aligné v1).
-        const windowShifts = shiftsSorted
-            .filter(s => new Date(s.end) >= windowStart && new Date(s.start) < windowEnd)
-            .sort((a, b) => new Date(a.start) - new Date(b.start));
-
-        let lastEnd = new Date(windowStart);
-
-        if (windowShifts.length === 0) {
-            restOk = true;
+        for (const shift of zonedShifts) {
+            // Hors fenêtre : finit avant elle, ou commence à sa fin ou après (un service qui commence pile à la fin de
+            // la fenêtre appartient à la période suivante)
+            if (isEarlier(shift.end, window.start) || !isEarlier(shift.start, window.end)) continue;
+            if (isLater(shift.start, workedUntil)) considerRest(workedUntil, shift.start);
+            if (isLater(shift.end, workedUntil)) workedUntil = shift.end;
         }
-        for (let j = 0; j < windowShifts.length; j++) {
-            const s = windowShifts[j];
-            const shiftStart = new Date(s.start);
-            const shiftEnd = new Date(s.end);
-            // Nuit chevauchant le début de fenêtre : déjà en service → pas de repos initial
-            if (shiftStart < lastEnd) {
-                if (shiftEnd > lastEnd) lastEnd = shiftEnd;
-                if (j === windowShifts.length - 1) {
-                    const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
-                    if (restMinutesToEnd > longestRest) {
-                        longestRest = restMinutesToEnd;
-                        longestRestStart = new Date(lastEnd);
-                        longestRestEnd = new Date(windowEnd);
-                    }
-                    if (restMinutesToEnd >= 35 * 60) {
-                        restOk = true;
-                    }
-                }
-                continue;
-            }
-            const restMinutes = (shiftStart - lastEnd) / (60 * 1000);
+        if (isEarlier(workedUntil, window.end)) considerRest(workedUntil, window.end);
 
-            if (restMinutes > longestRest) {
-                longestRest = restMinutes;
-                longestRestStart = lastEnd;
-                longestRestEnd = shiftStart;
-            }
-
-            if (restMinutes >= 35 * 60) {
-                restOk = true;
-                break;
-            }
-            lastEnd = shiftEnd > lastEnd ? shiftEnd : lastEnd;
-
-            if (j === windowShifts.length - 1) {
-                const restMinutesToEnd = (windowEnd - lastEnd) / (60 * 1000);
-                if (restMinutesToEnd > longestRest) {
-                    longestRest = restMinutesToEnd;
-                    longestRestStart = lastEnd;
-                    longestRestEnd = windowEnd;
-                }
-                if (restMinutesToEnd >= 35 * 60) {
-                    restOk = true;
-                }
-            }
-        }
-
-        if (!restOk) {
+        if (longestRest.minutes < WEEKLY_REST_MINUTES) {
             invalidWindows35.push({
-                windowStart,
-                windowEnd,
-                longestRest,
-                longestRestStart,
-                longestRestEnd
+                windowStart: wallClockIso(window.start),
+                windowEnd: wallClockIso(window.end),
+                longestRest: longestRest.minutes,
+                longestRestStart: longestRest.from === null ? null : wallClockIso(longestRest.from),
+                longestRestEnd: longestRest.to === null ? null : wallClockIso(longestRest.to),
             });
             if (!fullScan) break;
         }
@@ -568,45 +348,33 @@ function checkWeeklyRestPeriod (targetDate, shiftsSorted, fullScan = false) {
     return { restOk: invalidWindows35.length === 0, invalidWindows35 };
 }
 
-function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
+/**
+ * Règle des 48h : dans CHAQUE période de 7 jours glissants autour de la cible, au plus 48h de travail. Une vacation
+ * à cheval sur le bord d'une fenêtre n'y compte que pour la partie qui s'y trouve. Les durées de vacations qui se
+ * chevauchent s'additionnent (elles ne sont pas fusionnées, voir #47).
+ *
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds)
+ * @param {string} targetDate - jour cible YYYY-MM-DD
+ * @param {boolean} [fullScan=false] - false : s'arrête à la première fenêtre en défaut ; true : les liste toutes
+ * @returns {{ workOk: boolean, invalidWindows48: Array }} fenêtres en défaut : { windowStart, windowEnd (texte lu par
+ *   le front), totalWorkMinutes }
+ */
+function checkWeeklyWorkHours (zonedShifts, targetDate, fullScan = false) {
     const invalidWindows48 = [];
+    const timeZone = zonedShifts[targetIndexOf(zonedShifts, targetDate)].start.timeZoneId;
 
-    const targetDateNorm = new Date(Date.UTC(
-        new Date(targetDate).getUTCFullYear(),
-        new Date(targetDate).getUTCMonth(),
-        new Date(targetDate).getUTCDate()
-    ));
-
-    for (let i = 0; i < 13; i++) {
+    for (const window of weeklyWindowsAround(targetDate, timeZone)) {
         let totalWorkMinutes = 0;
-        let windowWorkOk = true;
-
-        const windowStart = new Date(targetDateNorm);
-        windowStart.setUTCDate(windowStart.getUTCDate() + i - 6);
-        windowStart.setUTCHours(0, 0, 0, 0);
-        const windowEnd = new Date(windowStart);
-        windowEnd.setUTCDate(windowEnd.getUTCDate() + 7);
-
-        const windowShifts = shiftsSorted.filter(s =>
-            new Date(s.end) > windowStart && new Date(s.start) < windowEnd
-        );
-
-        for (const s of windowShifts) {
-            const shiftStart = new Date(s.start);
-            const shiftEnd = new Date(s.end);
-            const overlapStart = shiftStart < windowStart ? windowStart : shiftStart;
-            const overlapEnd = shiftEnd > windowEnd ? windowEnd : shiftEnd;
-            totalWorkMinutes += Math.max(0, (overlapEnd - overlapStart) / (60 * 1000));
-            if (totalWorkMinutes > 48 * 60) {
-                windowWorkOk = false;
-                break;
-            }
+        for (const shift of zonedShifts) {
+            const workedFrom = isLater(shift.start, window.start) ? shift.start : window.start;
+            const workedUntil = isEarlier(shift.end, window.end) ? shift.end : window.end;
+            if (isLater(workedUntil, workedFrom)) totalWorkMinutes += minutesBetween(workedFrom, workedUntil);
         }
 
-        if (!windowWorkOk) {
+        if (totalWorkMinutes > MAX_WEEKLY_WORK_MINUTES) {
             invalidWindows48.push({
-                windowStart,
-                windowEnd,
+                windowStart: wallClockIso(window.start),
+                windowEnd: wallClockIso(window.end),
                 totalWorkMinutes,
             });
             if (!fullScan) break;
@@ -615,269 +383,128 @@ function checkWeeklyWorkHours (targetDate, shiftsSorted, fullScan = false) {
     return { workOk: invalidWindows48.length === 0, invalidWindows48 };
 }
 
+const isWork = (zonedShift) => zonedShift?.shift?.type === 'work';
+const isNight = (zonedShift) => isWork(zonedShift) && isNightControl(zonedShift);
+/** Repos (minutes) entre la fin d'une vacation et le début de la suivante */
+const restMinutes = (previousShift, nextShift) => minutesBetween(previousShift.end, nextShift.start);
 
 /**
- * Vérifie qu'un agent ne travaille pas plus de 5 jours consécutifs (temps de trajet exclu)
- * @param {Object} targetShift - Le shift en question
- * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
+ * Série de jours consécutifs, autour de la cible, dont les vacations satisfont `qualifies` (travail, ou contrôle de
+ * nuit). Deux vacations sont « consécutives » si leurs jours de début se suivent : une nuit 22:00-06:00 compte pour le
+ * jour où elle commence.
+ * @returns {Array} les vacations de la série, dans l'ordre des jours ; vide si la cible ne qualifie pas
+ */
+function streakAround (zonedShifts, targetIndex, qualifies) {
+    const target = zonedShifts[targetIndex];
+    if (!qualifies(target)) return [];
+    const qualifyingByDate = new Map(zonedShifts.filter(qualifies).map(shift => [shift.date, shift]));
+    const streak = [target];
+    const targetDay = Temporal.PlainDate.from(target.date);
+    for (let day = targetDay.subtract({ days: 1 }); qualifyingByDate.has(day.toString()); day = day.subtract({ days: 1 })) streak.unshift(qualifyingByDate.get(day.toString()));
+    for (let day = targetDay.add({ days: 1 }); qualifyingByDate.has(day.toString()); day = day.add({ days: 1 })) streak.push(qualifyingByDate.get(day.toString()));
+    return streak;
+}
+
+/**
+ * Vérifie qu'un agent ne travaille pas plus de 5 jours consécutifs (temps de trajet exclu), en comptant la série de
+ * jours consécutifs qui contient la vacation cible (une série éloignée n'est pas de son fait).
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {string} targetDate - jour cible YYYY-MM-DD
  * @returns {Object} { ok: boolean, consecutiveDays: number }
  */
-function checkConsecutiveWorkDays (targetShift, targetDate, shiftsSorted) {
-    if (targetShift.type !== 'work') return { ok: true, consecutiveDays: 0 };
+function checkConsecutiveWorkDays (zonedShifts, targetDate) {
+    const targetIndex = targetIndexOf(zonedShifts, targetDate);
+    if (!isWork(zonedShifts[targetIndex])) return { ok: true, consecutiveDays: 0 };
 
-    // const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
-
-    let maxConsecutiveDays = 0;
-    let currentConsecutiveDays = 0;
-    let currentDate = null;
-
-    for (const shift of shiftsSorted) {
-        if (shift.shift.type === 'work') {
-            const shiftDate = new Date(shift.date);
-
-            if (currentDate === null) {
-                currentConsecutiveDays = 1;
-                currentDate = shiftDate;
-            } else {
-                const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
-
-                if (daysDiff === 1) {
-                    // Jour consécutif
-                    currentConsecutiveDays++;
-                } else if (daysDiff === 0) {
-                    // Même jour, on ne compte pas
-                    continue;
-                } else {
-                    // Jour non consécutif, on réinitialise
-                    maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
-                    currentConsecutiveDays = 1;
-                }
-                currentDate = shiftDate;
-            }
-        } else {
-            // Shift de repos, on réinitialise le compteur
-            maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
-            currentConsecutiveDays = 0;
-            currentDate = null;
-        }
-    }
-
-    // Vérifier le dernier groupe
-    maxConsecutiveDays = Math.max(maxConsecutiveDays, currentConsecutiveDays);
-
-    return {
-        ok: maxConsecutiveDays <= 5,
-        consecutiveDays: maxConsecutiveDays
-    };
+    const consecutiveDays = streakAround(zonedShifts, targetIndex, isWork).length;
+    return { ok: consecutiveDays <= MAX_CONSECUTIVE_WORK_DAYS, consecutiveDays };
 }
 
 /**
- * Vérifie qu'un agent bénéficie d'une période de repos minimale de 12 heures après une vacation de contrôle de nuit
- * @param {Object} targetShift - Le shift en question
- * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
- * @returns {Object} { ok: boolean, restAfterNightControl: number }
+ * Vérifie qu'un agent bénéficie d'au moins 12 heures de repos après une vacation de contrôle de nuit (travail entre
+ * 00h00 et 06h00, heure du centre). Contrôle la cible si c'est un contrôle de nuit, ET la vacation qui la précède si
+ * c'en est un (insérer la cible juste après une nuit raccourcit le repos de cette nuit).
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {string} targetDate - jour cible YYYY-MM-DD
+ * @returns {Object} { ok: boolean, restAfterNightControl: number } (repos le plus court contrôlé, en minutes)
  */
-function checkRestAfterNightControl (targetShift, targetDate, shiftsSorted) {
-    if (targetShift.type !== 'work') return { ok: true, restAfterNightControl: 0 };
+function checkRestAfterNightControl (zonedShifts, targetDate) {
+    const targetIndex = targetIndexOf(zonedShifts, targetDate);
+    if (!isWork(zonedShifts[targetIndex])) return { ok: true, restAfterNightControl: 0 };
 
-    const targetStart = parseShiftUTC(targetDate, targetShift?.default?.startTime);
-    const targetEnd = parseShiftUTC(targetDate, targetShift?.default?.endTime, targetShift?.default?.endsNextDay);
-
-    // Vérifier si c'est un contrôle de nuit (entre 00h00 et 06h00)
-    const isNightControl = targetStart.getHours() >= 0 && targetStart.getHours() < 6;
-
-    if (!isNightControl) return { ok: true, restAfterNightControl: 0 };
-
-    // Chercher le prochain shift après ce contrôle de nuit
-    let nextShift = null;
-    for (const shift of shiftsSorted) {
-        if (shift.shift.type === 'work' && shift.start > targetEnd) {
-            nextShift = shift;
-            break;
-        }
+    let shortestRest = null;
+    for (const nightIndex of [targetIndex - 1, targetIndex]) {
+        const night = zonedShifts[nightIndex];
+        const shiftAfterNight = zonedShifts[nightIndex + 1];
+        if (!isNight(night) || !isWork(shiftAfterNight)) continue;
+        const rest = restMinutes(night, shiftAfterNight);
+        if (shortestRest === null || rest < shortestRest) shortestRest = rest;
     }
 
-    if (!nextShift) return { ok: true, restAfterNightControl: 0 };
-
-    const restMinutes = (nextShift.start - targetEnd) / (60 * 1000);
-    const requiredRestMinutes = 12 * 60; // 12 heures
-
     return {
-        ok: restMinutes >= requiredRestMinutes,
-        restAfterNightControl: restMinutes
+        ok: shortestRest === null || shortestRest >= MIN_REST_AFTER_NIGHT_MINUTES,
+        restAfterNightControl: shortestRest ?? 0
     };
 }
 
 /**
- * Vérifie qu'un agent ne peut exercer plus de deux vacations de contrôle consécutives empiétant sur la plage 00h00-06h00
- * @param {Object} targetShift - Le shift en question
- * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
+ * Vérifie qu'un agent n'exerce pas plus de deux vacations de contrôle de nuit consécutives (jours consécutifs), en
+ * comptant la série qui contient la cible.
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {string} targetDate - jour cible YYYY-MM-DD
  * @returns {Object} { ok: boolean, consecutiveNightControls: number }
  */
-function checkConsecutiveNightControls (targetShift, targetDate, shiftsSorted) {
-    if (targetShift.type !== 'work') return { ok: true, consecutiveNightControls: 0 };
+function checkConsecutiveNightControls (zonedShifts, targetDate) {
+    const targetIndex = targetIndexOf(zonedShifts, targetDate);
+    if (!isWork(zonedShifts[targetIndex])) return { ok: true, consecutiveNightControls: 0 };
 
-    // const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
-
-    let maxConsecutiveNightControls = 0;
-    let currentConsecutiveNightControls = 0;
-    let currentDate = null;
-
-    for (const shift of localShiftsSorted) {
-        if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftUTC(shift.date, shift.shift?.default?.startTime);
-            const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
-
-            if (isNightControl) {
-                const shiftDate = new Date(shift.date);
-
-                if (currentDate === null) {
-                    currentConsecutiveNightControls = 1;
-                    currentDate = shiftDate;
-                } else {
-                    const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
-
-                    if (daysDiff === 1) {
-                        // Jour consécutif
-                        currentConsecutiveNightControls++;
-                    } else if (daysDiff === 0) {
-                        // Même jour, on ne compte pas
-                        continue;
-                    } else {
-                        // Jour non consécutif, on réinitialise
-                        maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
-                        currentConsecutiveNightControls = 1;
-                    }
-                    currentDate = shiftDate;
-                }
-            } else {
-                // Shift de jour, on réinitialise le compteur
-                maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
-                currentConsecutiveNightControls = 0;
-                currentDate = null;
-            }
-        } else {
-            // Shift de repos, on réinitialise le compteur
-            maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
-            currentConsecutiveNightControls = 0;
-            currentDate = null;
-        }
-    }
-
-    // Vérifier le dernier groupe
-    maxConsecutiveNightControls = Math.max(maxConsecutiveNightControls, currentConsecutiveNightControls);
-
-    return {
-        ok: maxConsecutiveNightControls <= 2,
-        consecutiveNightControls: maxConsecutiveNightControls
-    };
+    const consecutiveNightControls = streakAround(zonedShifts, targetIndex, isNight).length;
+    return { ok: consecutiveNightControls <= MAX_CONSECUTIVE_NIGHT_CONTROLS, consecutiveNightControls };
 }
 
 /**
- * Vérifie qu'un agent bénéficie d'une période de repos minimale de 48 heures après deux vacations consécutives de contrôle de nuit
- * @param {Object} targetShift - Le shift en question
- * @param {string} targetDate - Date au format YYYY-MM-DD
- * @param {Array} shiftsSorted - Array des shifts triés chronologiquement
- * @returns {Object} { ok: boolean, restAfterTwoNightControls: number }
+ * Vérifie qu'un agent bénéficie d'au moins 48 heures de repos après deux contrôles de nuit consécutifs.
+ * Ne contrôle que les paires que la cible touche : elle en fait partie, ou c'est la vacation qui les suit.
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {string} targetDate - jour cible YYYY-MM-DD
+ * @returns {Object} { ok: boolean, restAfterTwoNightControls: number } (repos le plus court en défaut, en minutes)
  */
-function checkRestAfterTwoNightControls (targetShift, targetDate, shiftsSorted) {
-    if (targetShift.type !== 'work') return { ok: true, restAfterTwoNightControls: 0 };
+function checkRestAfterTwoNightControls (zonedShifts, targetDate) {
+    const targetIndex = targetIndexOf(zonedShifts, targetDate);
+    if (!isWork(zonedShifts[targetIndex])) return { ok: true, restAfterTwoNightControls: 0 };
 
-    const localShiftsSorted = simulateInsertShift(targetShift, targetDate, shiftsSorted);
+    let shortestViolation = null;
 
-    // Chercher les séquences de deux vacations de contrôle de nuit consécutives
-    let consecutiveNightControls = [];
-    let currentSequence = [];
-    let currentDate = null;
+    // On regarde chaque triplet (nuit, nuit le lendemain, vacation suivante) de la liste triée par début
+    for (let firstNightIndex = 0; firstNightIndex < zonedShifts.length - 1; firstNightIndex++) {
+        const firstNight = zonedShifts[firstNightIndex];
+        const secondNight = zonedShifts[firstNightIndex + 1];
+        const shiftAfterNights = zonedShifts[firstNightIndex + 2];
+        if (!isNight(firstNight) || !isNight(secondNight) || !isWork(shiftAfterNights)) continue;
+        const nextDayOfFirstNight = Temporal.PlainDate.from(firstNight.date).add({ days: 1 }).toString();
+        if (nextDayOfFirstNight !== secondNight.date) continue; // pas consécutives
+        if (targetIndex < firstNightIndex || targetIndex > firstNightIndex + 2) continue; // la cible ne touche pas ce triplet
 
-    for (const shift of localShiftsSorted) {
-        if (shift.shift.type === 'work') {
-            const shiftStart = parseShiftUTC(shift.date, shift.shift?.default?.startTime);
-            const isNightControl = shiftStart.getHours() >= 0 && shiftStart.getHours() < 6;
-
-            if (isNightControl) {
-                const shiftDate = new Date(shift.date);
-
-                if (currentDate === null) {
-                    currentSequence = [shift];
-                    currentDate = shiftDate;
-                } else {
-                    const daysDiff = Math.floor((shiftDate - currentDate) / (1000 * 60 * 60 * 24));
-
-                    if (daysDiff === 1) {
-                        // Jour consécutif
-                        currentSequence.push(shift);
-                        if (currentSequence.length === 2) {
-                            consecutiveNightControls.push([...currentSequence]);
-                        }
-                    } else if (daysDiff === 0) {
-                        // Même jour, on ne compte pas
-                        continue;
-                    } else {
-                        // Jour non consécutif, on réinitialise
-                        currentSequence = [shift];
-                    }
-                    currentDate = shiftDate;
-                }
-            } else {
-                // Shift de jour, on réinitialise le compteur
-                currentSequence = [];
-                currentDate = null;
-            }
-        } else {
-            // Shift de repos, on réinitialise le compteur
-            currentSequence = [];
-            currentDate = null;
-        }
-    }
-
-    // Vérifier le repos après chaque séquence de deux vacations consécutives
-    for (const sequence of consecutiveNightControls) {
-        if (sequence.length === 2) {
-            const lastShiftEnd = parseShiftUTC(sequence[1].date, sequence[1].shift?.default?.endTime, sequence[1].shift?.default?.endsNextDay);
-
-            // Chercher le prochain shift après cette séquence
-            let nextShift = null;
-            for (const shift of localShiftsSorted) {
-                if (shift.shift.type === 'work' && shift.start > lastShiftEnd) {
-                    nextShift = shift;
-                    break;
-                }
-            }
-
-            if (nextShift) {
-                const restMinutes = (nextShift.start - lastShiftEnd) / (60 * 1000);
-                const requiredRestMinutes = 48 * 60; // 48 heures
-
-                if (restMinutes < requiredRestMinutes) {
-                    return {
-                        ok: false,
-                        restAfterTwoNightControls: restMinutes
-                    };
-                }
-            }
-        }
+        const rest = restMinutes(secondNight, shiftAfterNights);
+        if (rest < MIN_REST_AFTER_TWO_NIGHTS_MINUTES && (shortestViolation === null || rest < shortestViolation)) shortestViolation = rest;
     }
 
     return {
-        ok: true,
-        restAfterTwoNightControls: 0
+        ok: shortestViolation === null,
+        restAfterTwoNightControls: shortestViolation ?? 0
     };
 }
-
-
 
 export {
     categorize,
+    checkCompatibilityForVariation,
+    buildPreFetchedAcceptedShifts,
+    legalLimitsFor,
     checkMinimumRestTime,
     checkWeeklyRestPeriod,
     checkWeeklyWorkHours,
     checkConsecutiveWorkDays,
     checkRestAfterNightControl,
     checkConsecutiveNightControls,
-    checkRestAfterTwoNightControls,
-    simulateInsertShift
+    checkRestAfterTwoNightControls
 };

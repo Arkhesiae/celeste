@@ -74,6 +74,7 @@ import { useDisplay, useDate } from 'vuetify';
 import { usePlanningModificationStore } from '@/stores/planningModificationStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterStore } from '@/stores/centerStore';
+import { pickerDayKey } from '@/utils/dateKey';
 
 const props = defineProps({
   dialogVisible: { type: Boolean, required: true },
@@ -247,7 +248,7 @@ const submitModification = async () => {
 
     const modificationData = {
       ...modification.value,
-      date: new Date(modification.value.date).toISOString()
+      date: pickerDayKey(modification.value.date)
     };
 
     const newModification = await planningModificationStore.createModification(modificationData);

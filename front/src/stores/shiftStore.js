@@ -1,5 +1,6 @@
 ;
 import { defineStore } from 'pinia';
+import { Temporal } from '@js-temporal/polyfill';
 import { vacationService } from '@/services/vacationService';
 import { useAuthStore } from '@/stores/authStore';
 import { parseShiftDateTime } from '@/utils/parseShiftDateTime';
@@ -148,11 +149,10 @@ export const useShiftStore = defineStore('shift', () => {
             endDate: period.value.endDate
           };
         } else {
-          let startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-          let endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          const today = Temporal.Now.plainDateISO();
           dates = {
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString()
+            startDate: today.subtract({ days: 30 }).toString(),
+            endDate: today.add({ days: 30 }).toString()
           };
         }
       }

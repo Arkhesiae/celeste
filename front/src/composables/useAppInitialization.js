@@ -1,3 +1,4 @@
+import { Temporal } from '@js-temporal/polyfill';
 import { useAuthStore } from '@/stores/authStore';
 import { useUserStore } from '@/stores/userStore';
 import { useCenterStore } from '@/stores/centerStore';
@@ -77,21 +78,19 @@ export function useAppInitialization() {
   const initializeShiftsAndSubstitutions = async () => {
     if (!authStore.userData.userId) return;
 
+    // Jours (YYYY-MM-DD) : du 1er du mois précédent au dernier jour du mois suivant
+    const today = Temporal.Now.plainDateISO();
+    const nextMonth = Temporal.PlainYearMonth.from(today).add({ months: 1 });
     const dates = {
-      startDate: new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() - 1, 1)).toISOString(), // Premier jour du mois à 00:00 UTC
-      endDate: new Date(Date.UTC(new Date().getFullYear(), new Date().getMonth() + 2, 0, 23, 59, 59, 999)).toISOString() // Dernier jour du mois à 23:59:59.999 UTC
+      startDate: today.subtract({ months: 1 }).with({ day: 1 }).toString(),
+      endDate: nextMonth.toPlainDate({ day: nextMonth.daysInMonth }).toString()
     }
     await shiftStore.fetchShiftsWithSubstitutions(dates);
     initializationStore.updateInitializationState('shifts', true);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const oneYearFromNow = new Date();
-    oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1);
-
     await substitutionStore.fetchAllDemands({
-      startDate: today.toISOString(),
-      endDate: oneYearFromNow.toISOString()
+      startDate: today.toString(),
+      endDate: today.add({ years: 1 }).toString()
     });
 
     initializationStore.updateInitializationState('substitutions', true);

@@ -32,7 +32,7 @@
 </template>
 
 <script setup>
-import { toDateKey } from '@/utils/dateKey';
+import { pickerDayKey } from '@/utils/dateKey';
 import { birthDayOf, formatDay } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore'
 import { profileService } from '@/services/profileService'
@@ -78,9 +78,10 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    await profileService.updateBirthDate(birthDate.value)
-    authStore.userData.birthDate = birthDate.value
-    authStore.userData.birthDay = toDateKey(birthDate.value)
+    const birthDay = pickerDayKey(birthDate.value)
+    await profileService.updateBirthDate(birthDay)
+    authStore.userData.birthDate = birthDay
+    authStore.userData.birthDay = birthDay
     close()
   } catch (error) {
     // TODO: handle error

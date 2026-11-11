@@ -238,7 +238,7 @@ import { useSnackbarStore } from "@/stores/snackbarStore";
 import { useTeamStore } from "@/stores/teamStore";
 
 import { useDisplay } from "vuetify";
-import { toUTCNormalized } from '@/utils';
+import { pickerDayKey } from '@/utils/dateKey';
 
 
 
@@ -371,8 +371,7 @@ const setActivationDate = async (startDate) => {
     return;
   }
     try {
-      const UTCDate = toUTCNormalized(startDate);
-      const inputDate = UTCDate.split('T')[0];
+      const inputDate = pickerDayKey(startDate);
       const result = await rotationStore.setActiveRotation(activateParams.value.rotationId, inputDate, activateParams.value.centerId);
 
       if (result.needsApproval) {
@@ -394,8 +393,7 @@ const removeActivationDate = async () => {
     return;
   }
     try {
-      const UTCDate = toUTCNormalized(date);
-      const inputDate = UTCDate.split('T')[0];
+      const inputDate = pickerDayKey(date);
    
       const result = await rotationStore.removeActivationDate(removeParams.value.rotationId, inputDate, removeParams.value.centerId);
      

@@ -225,10 +225,9 @@
 </template>
 
 <script setup>
-import { sameDateKey } from '@/utils/dateKey';
+import { sameDateKey, pickerDayKey } from '@/utils/dateKey';
 import { posterDay, occurrenceDays } from '@/utils/dayFields.js';
 import { useDate } from 'vuetify';
-import { toUTCNormalized } from "@/utils.js";
 import { useTeamStore } from "@/stores/teamStore";
 import { substitutionService } from '@/services/substitutionService';
 
@@ -329,8 +328,8 @@ const updateFormattedDate = (val) => {
 
 const enRenfortConflict = computed(() => {
   if (!selectedDates.value.startDate || !selectedDates.value.endDate || !teamStore.teamOccurrences?.allOccurrences) return null;
-  const startOfRenfort = new Date(toUTCNormalized(selectedDates.value.startDate));
-  const endOfRenfort = new Date(toUTCNormalized(selectedDates.value.endDate));
+  const startOfRenfort = new Date(pickerDayKey(selectedDates.value.startDate));
+  const endOfRenfort = new Date(pickerDayKey(selectedDates.value.endDate));
   return teamStore.teamOccurrences?.allOccurrences.find((occurrence) => {
     const { from, to } = occurrenceDays(occurrence);
     const startDate = new Date(from);
@@ -342,7 +341,7 @@ const enRenfortConflict = computed(() => {
 const conflict = computed(() => {
   if (!selectedDates.value.startDate || !teamStore.teamOccurrences?.allOccurrences || props.dialogMode === 'Renfort') return null;
   return teamStore.teamOccurrences?.allOccurrences.find(
-    (occurrence) => sameDateKey(occurrenceDays(occurrence).from, toUTCNormalized(selectedDates.value.startDate)) && !occurrenceDays(occurrence).to
+    (occurrence) => sameDateKey(occurrenceDays(occurrence).from, pickerDayKey(selectedDates.value.startDate)) && !occurrenceDays(occurrence).to
   ) || null;
 });
 
@@ -384,8 +383,8 @@ const handleDeleteAndSubmit = async () => {
 const handleSubmit = () => {
   const teamData = {
     teamId: selectedTeam.value,
-    fromDate: toUTCNormalized(selectedDates.value.startDate),
-    toDate: props.dialogMode === 'Renfort' ? toUTCNormalized(selectedDates.value.endDate) : null
+    fromDate: pickerDayKey(selectedDates.value.startDate),
+    toDate: props.dialogMode === 'Renfort' ? pickerDayKey(selectedDates.value.endDate) : null
   };
   submit(teamData, conflict.value);
 };

@@ -168,7 +168,7 @@
 import {ref, watch, computed} from "vue";
 import {useDisplay} from "vuetify";
 import {useDate} from 'vuetify';
-import {toUTCNormalized} from "@/utils.js";
+import { pickerDayKey as toUTCNormalized } from "@/utils/dateKey";
 import {useAuthStore} from "@/stores/authStore.js";
 import {useRemplacementStore} from "@/stores/remplacementStore.js";
 

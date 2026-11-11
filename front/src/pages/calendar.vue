@@ -48,6 +48,7 @@ import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useRotationStore } from "@/stores/rotationStore.js";
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
+import { toDateKey } from '@/utils/dateKey';
 
 /** Constantes */
 const DIALOG_MODES = {
@@ -106,7 +107,7 @@ const selectedVacation = computed(() => {
 
 const selectDay = (date) => {
   if (!date) return;
-  selectedDate.value = date.toISOString();
+  selectedDate.value = toDateKey(date);
 };
 
 const openSubstitutionForm = (mode) => {

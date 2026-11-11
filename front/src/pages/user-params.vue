@@ -31,8 +31,8 @@
 
             <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0"
               @click="showBirthDateDialog = true">
-              <v-chip :color="authStore.userData.birthDate ? 'primary' : 'surface'"
-                :variant="authStore.userData.birthDate ? 'flat' : 'text'" class="rounded-pill py-0 position-absolute"
+              <v-chip :color="birthDayOf(authStore.userData) ? 'primary' : 'surface'"
+                :variant="birthDayOf(authStore.userData) ? 'flat' : 'text'" class="rounded-pill py-0 position-absolute"
                 size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
                 <v-icon>mdi-baby</v-icon>
               </v-chip>
@@ -127,6 +127,7 @@
 </template>
 
 <script setup>
+import { birthDayOf } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore'
 import { useSnackbarStore } from '@/stores/snackbarStore';
 

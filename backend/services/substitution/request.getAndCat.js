@@ -1,4 +1,6 @@
 import Substitution from '../../models/Substitution.js';
+import { toDay } from '../../utils/dates/dayFields.js';
+import { dayFilter } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
@@ -16,17 +18,12 @@ import { categorize } from '../planning/categorizeDemand.js';
  */
 export async function getRequests (userId, startDateStr, endDateStr) {
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', select: 'centerId' });
-    let parsedStartDate, parsedEndDate;
-
-    parsedStartDate = new Date(startDateStr);
-    parsedEndDate = new Date(endDateStr);
-
 
     const baseFilter = {
         centerId: user.centerId,
         deleted: false,
         status: { $in: ['open', 'accepted'] },
-        'posterShift.date': { $gte: parsedStartDate, $lte: parsedEndDate }
+        ...dayFilter('posterShift.day', 'posterShift.date', { gte: toDay(startDateStr), lte: toDay(endDateStr) })
     };
 
     const options = [

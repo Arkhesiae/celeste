@@ -1,4 +1,6 @@
 import { computeUserShifts } from "../services/planning/computeUserShifts.js";
+import { toDay } from '../utils/dates/dayFields.js';
+import { dayFilter, posterDayOf } from '../utils/dates/dayAccess.js';
 import { formatDateFr } from '../utils/dates/format.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
@@ -178,15 +180,15 @@ const detectTeamChangeConflicts = async (req, res, next) => {
             posterId: userId,
             deleted: false,
             status: { $in: ['open', 'pending', 'accepted'] },
-            'posterShift.date': { $gte: new Date(fromDate) }
+            ...dayFilter('posterShift.day', 'posterShift.date', { gte: toDay(fromDate) })
         });
 
         const conflicts = [];
         for (const sub of substitutions) {
             const originalShiftId = sub.posterShift.shift?._id?.toString() || sub.posterShift._id?.toString();
-            const newShift = await computeShiftOfTeam(new Date(sub.posterShift.date), newTeamId);
+            const newShift = await computeShiftOfTeam(posterDayOf(sub), newTeamId);
             if (originalShiftId && newShift && originalShiftId !== newShift._id) {
-                conflicts.push({ id: sub._id, newShift, originalShiftId, date: sub.posterShift.date });
+                conflicts.push({ id: sub._id, newShift, originalShiftId, date: posterDayOf(sub) });
             }
         }
 
@@ -395,7 +397,7 @@ const sendAdminEmail = async (req, res, next) => {
 
         const shiftName = populatedDemand.posterShift?.shift?.name || 'Vacation';
         const teamName = populatedDemand.posterShift?.teamId?.name || 'Équipe';
-        const dateStr = formatDateFr(populatedDemand.posterShift?.date, { short: true });
+        const dateStr = formatDateFr(posterDayOf(populatedDemand), { short: true });
 
         const typeStr = populatedDemand.type === 'switch' ? 'Permutation' : populatedDemand.type === 'substitution' ? 'Remplacement' : 'Remplacement ou permutation';
 

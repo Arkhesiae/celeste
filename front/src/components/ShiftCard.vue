@@ -96,6 +96,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -103,7 +104,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
-import { toDateKey } from '@/utils/dateKey';
+import { toDateKey, sameDateKey } from '@/utils/dateKey';
 
 const props = defineProps({
   date: { type: [Date, String], required: true },
@@ -201,13 +202,13 @@ const dayType = computed(() => {
 });
 
 const hasNoDemand = computed(() => {
-  const acceptedAsAccepter = substitutionStore.acceptedAsAccepter.filter(d => d.posterShift.date === props.date);
-  const acceptedAsPoster = substitutionStore.acceptedAsPoster.filter(d => d.posterShift.date === props.date);
+  const acceptedAsAccepter = substitutionStore.acceptedAsAccepter.filter(d => sameDateKey(posterDay(d), props.date));
+  const acceptedAsPoster = substitutionStore.acceptedAsPoster.filter(d => sameDateKey(posterDay(d), props.date));
   const pendingDemand = [
     ...substitutionStore.ownPendingHybridSubstitutions,
     ...substitutionStore.ownPendingTrueSubstitutions,
     ...substitutionStore.ownPendingTrueSwitches,
-  ].find(d => d.posterShift.date === props.date);
+  ].find(d => sameDateKey(posterDay(d), props.date));
   return !pendingDemand && !acceptedAsPoster?.length && !acceptedAsAccepter?.length;
 });
 

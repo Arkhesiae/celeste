@@ -1,4 +1,6 @@
 import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
+import { toDay } from '../../utils/dates/dayFields.js';
+import { dayFilter, posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
@@ -71,7 +73,13 @@ export async function registerEntry (userId, date, data) {
 
     const [userShift, substitution, latestAssignment, latestModification, latestHourPatch] = await Promise.all([
         computeUserShifts([date], userId),
-        Substitution.findOne({ $or: [{ posterId: userId }, { accepterId: userId }], "posterShift.date": date, status: { $in: ['open', 'accepted'] } }).sort({ createdAt: -1 }),
+        Substitution.findOne({
+            $and: [
+                { $or: [{ posterId: userId }, { accepterId: userId }] },
+                dayFilter('posterShift.day', 'posterShift.date', { eq: toDay(date) }),
+            ],
+            status: { $in: ['open', 'accepted'] },
+        }).sort({ createdAt: -1 }),
         Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
         Modification.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
         HourPatch.findOne({ userId, date, active: true }).sort({ createdAt: -1 }),
@@ -299,7 +307,7 @@ export async function addSubstitutionEntries (demand) {
     }
 
     try {
-        const dateStr = toDateKey(demand.posterShift.date);
+        const dateStr = posterDayOf(demand);
 
         const [latestAccepterAssignment, latestPosterAssignment] = await Promise.all([
             Assignment.findOne({ userId: demand.accepterId, date: dateStr, active: true, subType: { $ne: 'substitution' } }).sort({ createdAt: -1 }),
@@ -344,8 +352,8 @@ export async function addSubstitutionEntries (demand) {
         await posterEntry.save();
 
         const [posterShifts, accepterShifts] = await Promise.all([
-            computeUserShifts([demand.posterShift.date], demand.posterId),
-            computeUserShifts([demand.posterShift.date], demand.accepterId),
+            computeUserShifts([posterDayOf(demand)], demand.posterId),
+            computeUserShifts([posterDayOf(demand)], demand.accepterId),
         ]);
 
         return {

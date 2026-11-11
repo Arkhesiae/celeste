@@ -1,4 +1,5 @@
 import Substitution from '../../../models/Substitution.js';
+import { posterDayOf } from '../../../utils/dates/dayAccess.js';
 import { formatDateFr } from '../../../utils/dates/format.js';
 import { shortName } from '../../../utils/names.js';
 import { idOf } from '../../../utils/ids.js';
@@ -74,7 +75,7 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
         for (const id of new Set(cancelledIds.map(String))) {
             const demand = demandById.get(id);
             if (!demand) continue;
-            const date = formatDateFr(demand.posterShift.date);
+            const date = formatDateFr(posterDayOf(demand));
             const posterName = shortName(demand.posterId);
             const accepterName = shortName(demand.accepterId);
             const common = { typeText: TYPE_TEXT[demand.type], posterShiftDate: date };

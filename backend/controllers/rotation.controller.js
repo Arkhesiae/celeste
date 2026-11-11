@@ -1,6 +1,8 @@
 import Rotation from '../models/Rotation.js';
+import { toPlainDate } from '../utils/dates/plainDate.js';
+import { activationDaysOf } from '../utils/dates/dayAccess.js';
 import { findOrThrow } from '../utils/mongo.js';
-import { isValidId } from '../utils/ids.js';
+import { isValidId, sameId } from '../utils/ids.js';
 import { findLatestRotation } from "../services/planning/findLatestRotation.js";
 import Shift from '../models/Shift.js';
 import Variation from '../models/Variation.js';
@@ -226,11 +228,11 @@ const getAllRotationsWithStatus = async (req, res, next) => {
 
 
         const expanded = rotations.flatMap((rotation) =>
-            rotation.activationDates.map((date) => ({
+            activationDaysOf(rotation).map((day) => ({
                 _id: rotation._id,
                 centerId: rotation.centerId,
                 name: rotation.name,
-                activationDate: new Date(date),
+                activationDate: new Date(day),   // YYYY-MM-DD = minuit UTC
             }))
         );
 
@@ -272,19 +274,14 @@ const deleteRotation = async (req, res, next) => {
     try {
         const result = await findOrThrow(Rotation, id, { message: 'Rotation non trouvée.' });
         const currentDate = new Date();
-        const lastActiveRotation = await Rotation.aggregate([
-            { $match: { deleted: false } },
-            { $unwind: '$activationDates' },
-            { $match: { activationDates: { $lte: currentDate } } },
-            { $sort: { activationDates: -1 } },
-            { $limit: 1 },
-        ]);
+        const lastActiveRotation = await findLatestRotation(result.centerId, currentDate);
 
-        if (lastActiveRotation.length > 0 && lastActiveRotation[0]._id.equals(result._id)) {
+        if (lastActiveRotation && sameId(lastActiveRotation._id, result._id)) {
             throw new AppError('Le tour de service ne peut pas être supprimé car il est actif.', 400, 'ActiveRotation');
         }
 
-        const hasFutureActivations = result.activationDates.some(date => new Date(date) > currentDate)
+        const today = toPlainDate(currentDate).toString();
+        const hasFutureActivations = activationDaysOf(result).some(day => day > today);
 
         if (hasFutureActivations) {
             throw new AppError('Le tour de service ne peut pas être supprimé car il reste des activations.', 400, 'RemainingOccurences');
@@ -388,7 +385,7 @@ const updateDayInRotation = async (req, res, next) => {
         const rotation = await findOrThrow(Rotation, id, { message: 'Tour de service non trouvé' });
         // Un jour n'est modifiable que tant que le tour n'a jamais été (ni ne sera) activé : sinon la modification
         // changerait rétroactivement le planning et les demandes déjà passées ou à venir.
-        if (rotation.activationDates?.length > 0) {
+        if (activationDaysOf(rotation).length > 0) {
             throw new AppError("Ce tour de service a des dates d'activation (passées ou à venir) : ses jours ne sont plus modifiables. Supprimez ses dates d'activation ou dupliquez-le pour le modifier.", 400, 'ROTATION_HAS_ACTIVATIONS');
         }
 
@@ -499,6 +496,7 @@ const duplicateRotation = async (req, res, next) => {
             days: [], // On va remplir avec les nouveaux IDs
             centerId: rotation.centerId,
             activationDates: [], // La copie commence sans dates d'activation
+            activationDays: [],
         });
 
         await duplicatedRotation.save();

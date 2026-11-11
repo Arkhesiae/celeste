@@ -1,3 +1,4 @@
+import { birthDayOf } from '../../utils/dates/dayAccess.js';
 
 
 /**
@@ -14,6 +15,7 @@ export function userPayload (user, accessToken) {
         email: user.email,
         phone: phoneNumber ?? '',
         birthDate: birthDate ?? '',
+        birthDay: birthDayOf(user) ?? '',   // jumeau « jour » (YYYY-MM-DD), repli signalé sur birthDate
         isAdmin: user.isAdmin,
         adminType: user.adminType,
         centerId: user.centerId,

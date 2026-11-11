@@ -20,7 +20,7 @@
                   {{ activeRotation.name }}
                 </div>
                 <div class="text-medium-emphasis">
-                  Actif depuis le {{ new Date(activeRotation.activationDate).toLocaleDateString() }}
+                  Actif depuis le {{ formatDay(activationDay(activeRotation), undefined, undefined) }}
                 </div>
               </div>
             </div>
@@ -37,6 +37,7 @@
 </template>
 
 <script setup>
+import { formatDay, activationDay } from '@/utils/dayFields.js';
 import { useDisplay } from 'vuetify';
 import { useRotationStore } from '@/stores/rotationStore.js';
 

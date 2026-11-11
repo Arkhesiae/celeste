@@ -1,4 +1,5 @@
 import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
+import { activationDaysOf } from '../../utils/dates/dayAccess.js';
 import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
 import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { sameId } from '../../utils/ids.js';
@@ -269,7 +270,7 @@ const computeUserShifts = async (dates, userId) => {
         const centerByKey = new Map();
         const getCenter = (centerId) => {
             const key = String(centerId);
-            if (!centerByKey.has(key)) centerByKey.set(key, Center.findById(centerId).select('cycleAnchorDate timeZone').lean().exec());
+            if (!centerByKey.has(key)) centerByKey.set(key, Center.findById(centerId).select('cycleAnchorDate cycleAnchorDay timeZone').lean().exec());
             return centerByKey.get(key);
         };
         const userCenter = user.centerId ? await getCenter(user.centerId) : null;
@@ -300,9 +301,9 @@ const computeUserShifts = async (dates, userId) => {
             const key = String(centerId);
             if (!timelineByCenter.has(key)) {
                 timelineByCenter.set(key, (async () => {
-                    const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates').lean();
+                    const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates activationDays').lean();
                     return rotations
-                        .flatMap((r) => (r.activationDates || []).map((d) => ({ rotationId: String(r._id), day: toPlainDate(d) })))
+                        .flatMap((r) => activationDaysOf(r).map((d) => ({ rotationId: String(r._id), day: toPlainDate(d) })))
                         .sort((a, b) => Temporal.PlainDate.compare(a.day, b.day));
                 })());
             }

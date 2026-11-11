@@ -1,13 +1,18 @@
 import mongoose from 'mongoose';
+import { dayField } from '../utils/dates/dayFields.js';
 
 const TeamOccurrenceSchema = new mongoose.Schema({
     teamId : { type: mongoose.Schema.Types.ObjectId, ref: 'Team', required: true },
+    // TEMPORARY(day-fields): ancien champ Date (idem toDate ci-dessous) : a supprimer avec la bascule (restent fromDay / toDay).
     fromDate : { type: Date, default: () => {
         const currentDate = new Date();
         currentDate.setUTCHours(0, 0, 0, 0); // Set the time to midnight UTC
         return currentDate;
     }},
-    toDate : { type: Date, default: null}
+    toDate : { type: Date, default: null},
+    // Jumeaux « jour » (YYYY-MM-DD) de fromDate / toDate : migration en cours, voir utils/dates/dayFields.js
+    fromDay : dayField,
+    toDay : { ...dayField, default: null }
 
 });
 
@@ -82,7 +87,9 @@ const userSchema = new mongoose.Schema({
     },        
     personalData : {
         phoneNumber : { type: String, default: '' },
+        // TEMPORARY(day-fields): ancien champ Date, a supprimer avec la bascule (reste birthDay).
         birthDate : { type: Date, default: null },
+        birthDay : dayField,   // jumeau « jour » de birthDate (migration en cours)
     },
     lastLogin: Date,
     isActive: {

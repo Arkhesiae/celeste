@@ -27,6 +27,8 @@
 </template>
 
 <script setup>
+import { sameDateKey } from '@/utils/dateKey';
+import { posterDay } from '@/utils/dayFields.js';
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 
 const substitutionStore = useSubstitutionStore();
@@ -107,7 +109,7 @@ const sortDemands = (demands) => {
   return [...demands].sort((a, b) => {
     switch (sortBy.value.tag) {
       case 'date':
-        return new Date(a.posterShift.date) - new Date(b.posterShift.date);
+        return (posterDay(a) ?? '').localeCompare(posterDay(b) ?? '');
       case 'shift.name':
         return a.posterShift.shift.name?.localeCompare(b.posterShift.shift.name);
       case 'shift.points':
@@ -120,7 +122,7 @@ const sortDemands = (demands) => {
 
 const filterByDate = (demands) => {
   if (!props.selectedDate) return [...demands];
-  return demands.filter(d => d.posterShift.date === props.selectedDate);
+  return demands.filter(d => sameDateKey(posterDay(d), props.selectedDate));
 };
 
 onMounted(() => {

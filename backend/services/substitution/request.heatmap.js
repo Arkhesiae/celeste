@@ -1,5 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { eachDay, toMongoDate } from '../../utils/dates/plainDate.js';
+import { dayFilter, reportMissingDay } from '../../utils/dates/dayAccess.js';
+import { eachDay } from '../../utils/dates/plainDate.js';
 import mongoose from 'mongoose';
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
@@ -35,25 +36,31 @@ export async function getDemandHeatmap (centerId, startDate, endDate) {
     const days = eachDay(first, last);
     if (days.length > MAX_DAYS) throw new AppError(`La période ne peut pas dépasser ${MAX_DAYS} jours`, 400);
 
+    const match = {
+        centerId: new mongoose.Types.ObjectId(centerId),
+        deleted: false,
+        status: { $in: ['open', 'accepted'] },
+        ...dayFilter('posterShift.day', 'posterShift.date', { gte: first.toString(), lte: last.toString() }),
+    };
+
     const counts = await Substitution.aggregate([
-        {
-            $match: {
-                centerId: new mongoose.Types.ObjectId(centerId),
-                deleted: false,
-                status: { $in: ['open', 'accepted'] },
-                'posterShift.date': { $gte: toMongoDate(first), $lt: toMongoDate(last.add({ days: 1 })) },
-            },
-        },
+        { $match: match },
         {
             $group: {
                 _id: {
-                    date: { $dateToString: { format: '%Y-%m-%d', date: '$posterShift.date', timezone: 'UTC' } },
+                    // Jumeau « jour » ; repli sur l'ancien champ pour les demandes qui n'en ont pas encore
+                    // TEMPORARY(day-fields): le repli sur posterShift.date ($ifNull) disparait a la bascule.
+                    date: { $ifNull: ['$posterShift.day', { $dateToString: { format: '%Y-%m-%d', date: '$posterShift.date', timezone: 'UTC' } }] },
                     status: '$status',
                 },
                 count: { $sum: 1 },
             },
         },
     ]);
+
+    // TEMPORARY(day-fields): controle de migration (compte + [jours]), a supprimer a la bascule.
+    const withoutTwin = await Substitution.countDocuments({ ...match, 'posterShift.day': { $exists: false } });
+    if (withoutTwin) reportMissingDay('Substitution.posterShift.day (carte de chaleur)', `${withoutTwin} demande(s)`);
 
     const byDay = new Map(days.map((date) => [date, { date, open: 0, accepted: 0 }]));
     for (const { _id, count } of counts) {

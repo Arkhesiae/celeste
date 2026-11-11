@@ -1,4 +1,5 @@
 import { inTransaction } from '../../utils/mongo.js';
+import { dayFilter, posterDayOf, accepterDayOf } from '../../utils/dates/dayAccess.js';
 import { fullName } from '../../utils/names.js';
 import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
@@ -50,13 +51,16 @@ export function normalizePeriod ({ from, to } = {}) {
 }
 
 /** Demandes ouvertes/acceptées de l'utilisateur (auteur ou accepteur) dont une des dates est dans la période. */
-const periodSubstitutionsQuery = (userId, { fromDate, toDate }) => {
-    const dateRange = toDate ? { $gte: fromDate, $lte: toDate } : { $gte: fromDate };
+const periodSubstitutionsQuery = (userId, { fromKey, toKey: endKey }) => {
+    const bounds = endKey ? { gte: fromKey, lte: endKey } : { gte: fromKey };
     return {
         deleted: { $ne: true },
         status: { $in: ['open', 'accepted'] },
         $or: [{ posterId: userId }, { accepterId: userId }],
-        $and: [{ $or: [{ 'posterShift.date': dateRange }, { 'accepterShift.date': dateRange }] }],
+        $and: [{ $or: [
+            dayFilter('posterShift.day', 'posterShift.date', bounds),
+            dayFilter('accepterShift.day', 'accepterShift.date', bounds),
+        ] }],
     };
 };
 
@@ -163,8 +167,8 @@ export async function previewUserPeriodImpact (userId, period) {
             cascade,
             type: request.type,
             status: request.status,
-            date: toDateKey(request.posterShift?.date),
-            accepterDate: toDateKey(request.accepterShift?.date),
+            date: posterDayOf(request),
+            accepterDate: accepterDayOf(request),
             poster: fullName(request.posterId) || null,
             accepter: fullName(request.accepterId) || null,
         });

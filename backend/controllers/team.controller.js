@@ -1,4 +1,5 @@
 import Team from '../models/Team.js';
+import { anchorDayOf } from '../utils/dates/dayAccess.js';
 import { daysBetween } from '../utils/dates/plainDate.js';
 import { mod } from '../utils/math.js';
 import { findOrThrow } from '../utils/mongo.js';
@@ -170,12 +171,13 @@ const updateTeamCycleStartDate = async (req, res, next) => {
         // Double écriture pendant la migration : si le centre utilise déjà une ancre de cycle, l'offset de l'équipe
         // doit rester cohérent avec la date saisie (il a priorité à la lecture, voir utils/teamCycle.js)
         const current = await Team.findById(id).select('center');
-        const center = current ? await Center.findById(current.center).select('cycleAnchorDate') : null;
-        if (center?.cycleAnchorDate) {
+        const center = current ? await Center.findById(current.center).select('cycleAnchorDate cycleAnchorDay') : null;
+        const anchorDay = center ? anchorDayOf(center) : null;
+        if (anchorDay) {
             const rotation = await findLatestRotation(center._id, new Date());
             const total = rotation?.days?.length;
             if (total) {
-                update.$set.cycleOffset = mod(daysBetween(center.cycleAnchorDate, cycleStartDate), total);
+                update.$set.cycleOffset = mod(daysBetween(anchorDay, cycleStartDate), total);
             } else {
                 update.$unset = { cycleOffset: '' };   // longueur du cycle inconnue : retour à l'ancien champ
             }

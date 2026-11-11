@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { dayField } from '../utils/dates/dayFields.js';
 
 const centerSchema = new mongoose.Schema({
     name: { type: String, required: true },
@@ -10,7 +11,9 @@ const centerSchema = new mongoose.Schema({
     type: { type: String, required: true, enum: ['app', 'crna', 'other'] },
     timeZone: { type: String, required: true, default: "Europe/Paris" },
     // Date de référence du cycle (minuit UTC) : l'équipe d'offset 0 est au jour 1 de la rotation ce jour-là
+    // TEMPORARY(day-fields): ancien champ Date, a supprimer avec la bascule (reste cycleAnchorDay).
     cycleAnchorDate: { type: Date },
+    cycleAnchorDay: dayField,   // jumeau « jour » de cycleAnchorDate (migration en cours)
     deleted: { type: Boolean, default: false },
 });
 

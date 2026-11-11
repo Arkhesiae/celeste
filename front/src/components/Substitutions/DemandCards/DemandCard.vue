@@ -19,7 +19,7 @@
           }}</span>
         </div>
         <div class="small-dot" />
-        <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
+        <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(posterDay(demand))
         }}</span>
 
         <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
@@ -123,6 +123,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { computed, onMounted, ref, onUnmounted } from 'vue'
 import { useUserStore } from "@/stores/userStore.js"
 import { useDate } from 'vuetify'
@@ -196,7 +197,7 @@ const compatibleVariationNames = computed(() => {
 const compatiblePairsText = computed(() => {
   const byDate = props.demand?.compatiblePairsByFetcherDate;
   if (!byDate?.length) return '';
-  const demandDate = props.demand?.posterShift?.date;
+  const demandDate = posterDay(props.demand);
   const filtered = byDate.filter(({ date, pairs }) => !isUserAlreadyCompatibleForPairsDate(date, pairs));
   if (!filtered.length) return '';
   return filtered.map((entry) => {
@@ -237,7 +238,7 @@ const isUserAlreadyCompatibleForPairsDate = (dateStr, pairs) => {
 const compatibleFetcherVariationNames = computed(() => {
   const byDate = props.demand?.compatibleFetcherVariationsByDate;
   if (!byDate?.length) return '';
-  const demandDate = props.demand?.posterShift?.date;
+  const demandDate = posterDay(props.demand);
   const filtered = byDate.filter(({ date, variations }) => !isUserAlreadyCompatibleForDate(date, variations));
   if (!filtered.length) return '';
   return filtered.map(({ date, shiftName, variations }) => {

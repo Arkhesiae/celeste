@@ -1,4 +1,5 @@
 import { findOrThrow, inTransaction } from '../../utils/mongo.js';
+import { anchorDayOf, occurrenceDays } from '../../utils/dates/dayAccess.js';
 import { mod } from '../../utils/math.js';
 import { daysBetween, toMongoDate, toPlainDate } from '../../utils/dates/plainDate.js';
 import { fullName } from '../../utils/names.js';
@@ -65,7 +66,8 @@ export async function setTeamCyclePosition (teamId, { day, date, swap = false, c
     }
 
     // Ancre : celle du centre, ou la date saisie si le centre n'en a pas encore (les équipes sans offset restent lues sur cycleStartDate)
-    const anchor = center.cycleAnchorDate ? toPlainDate(center.cycleAnchorDate) : when;
+    const existingAnchorDay = anchorDayOf(center);
+    const anchor = existingAnchorDay ? toPlainDate(existingAnchorDay) : when;
     const offsetFor = (dayNumber) => mod(daysBetween(anchor, when) - (dayNumber - 1), total);
     const newOffset = offsetFor(day);
 
@@ -128,7 +130,10 @@ export async function setTeamCyclePosition (teamId, { day, date, swap = false, c
     // Séquentiel : des opérations concurrentes sur une même session de transaction ne sont pas permises
     const writeAll = async (session) => {
         await Team.bulkWrite(writes, { session });
-        if (!center.cycleAnchorDate) await Center.updateOne({ _id: center._id }, { $set: { cycleAnchorDate: toMongoDate(anchor) } }, { session });
+        // Ancre : les deux champs ; réécrite aussi quand seul l'ancien existe (le jumeau manquant est alors complété)
+        if (!center.cycleAnchorDay) {
+            await Center.updateOne({ _id: center._id }, { $set: { cycleAnchorDate: toMongoDate(anchor), cycleAnchorDay: anchor.toString() } }, { session });
+        }
     };
 
     // Nettoyage et nouvelle position dans une même transaction ; sans membre à nettoyer, simple écriture
@@ -172,5 +177,5 @@ async function membersOfTeams (teams, when) {
     }).select('name lastName teams');
 
     return users.filter((user) => user.teams.some((o) => ids.some((id) => sameId(id, o.teamId))
-        && (!o.toDate || Temporal.PlainDate.compare(toPlainDate(o.toDate), when) >= 0)));
+        && (!occurrenceDays(o).to || occurrenceDays(o).to >= when.toString())));
 }

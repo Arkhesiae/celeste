@@ -1,3 +1,5 @@
+import { posterDay } from '@/utils/dayFields.js';
+import { sameDateKey } from '@/utils/dateKey';
 
 
 export function useSubstitutionManagement (substitutionStore) {
@@ -8,29 +10,29 @@ export function useSubstitutionManagement (substitutionStore) {
 
   const hasOwnOpenSubstitution = computed(() => (date) => {
     if (!date) return false;
-    return ownPendingSubstitutions.value?.some(s => s.posterShift.date === date);
+    return ownPendingSubstitutions.value?.some(s => sameDateKey(posterDay(s), date));
   });
 
   const hasAvailableSubstitution = computed(() => (date) => {
     if (!date) return false;
     return availableSubstitutions.value?.some(demand => {
-      return demand.posterShift.date === date.toISOString();
+      return sameDateKey(posterDay(demand), date);
     });
   });
 
   const getAvailableSubstitutionsCount = (date) => {
     if (!date) return 0;
-    return availableSubstitutions.value?.filter(demand => demand.posterShift.date === date).length;
+    return availableSubstitutions.value?.filter(demand => sameDateKey(posterDay(demand), date)).length;
   };
 
   const hasAcceptedSubstitutionAsPoster = computed(() => (date) => {
     if (!date) return false;
-    return ownAcceptedSubstitutions.value?.some(s => s.posterShift.date === date);
+    return ownAcceptedSubstitutions.value?.some(s => sameDateKey(posterDay(s), date));
   });
 
   const hasAcceptedSubstitutionAsAccepter = computed(() => (date) => {
     if (!date) return false;
-    return acceptedSubstitutionsToDo.value?.some(s => s.posterShift.date === date);
+    return acceptedSubstitutionsToDo.value?.some(s => sameDateKey(posterDay(s), date));
   });
 
   const getAvailableSwitchesCount = (date) => {

@@ -16,11 +16,11 @@
         </span>
       </span>
       <span v-if="occurrence.type === 'Renfort'" class="occurrence-sub">
-        Du <strong>{{ formattedOccurenceDate(occurrence.fromDate) }}</strong>
-        au <strong>{{ formattedOccurenceDate(occurrence.toDate) }}</strong> inclus
+        Du <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).from) }}</strong>
+        au <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).to) }}</strong> inclus
       </span>
       <span v-else class="occurrence-sub">
-        À partir du <strong>{{ formattedOccurenceDate(occurrence.fromDate) }}</strong>
+        À partir du <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).from) }}</strong>
       </span>
 
     </div>
@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+import { occurrenceDays } from '@/utils/dayFields.js';
 import { useDisplay } from "vuetify";
 
 const props = defineProps({
@@ -52,7 +53,7 @@ const { smAndDown } = useDisplay();
 const relativeDays = computed(() => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const changeDate = new Date(props.occurrence.fromDate);
+  const changeDate = new Date(occurrenceDays(props.occurrence).from);
   const diffTime = changeDate - today;
   return Math.floor(diffTime / (1000 * 60 * 60 * 24));
 });

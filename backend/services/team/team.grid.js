@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { occurrenceDays } from '../../utils/dates/dayAccess.js';
 import { eachDay, toMongoDate } from '../../utils/dates/plainDate.js';
 import { fullName } from '../../utils/names.js';
 import { sameId } from '../../utils/ids.js';
@@ -54,7 +55,7 @@ export async function getTeamGrid (teamId, startDate, endDate) {
             const occurrence = getTeamAtDay(user.teams, Temporal.PlainDate.from(date));
             if (occurrence && sameId(occurrence.teamId, team._id)) {
                 inTeamDates.add(date);
-                if (!occurrence.toDate) hasPermanentDay = true;
+                if (!occurrenceDays(occurrence).to) hasPermanentDay = true;
             }
         }
         if (inTeamDates.size === 0) continue;

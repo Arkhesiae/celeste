@@ -35,6 +35,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 
@@ -107,7 +108,7 @@ const currentTitle = computed(() => filterInfo[ownFilter.value]?.title || 'Mes d
 const currentSubtitle = computed(() => filterInfo[ownFilter.value]?.subtitle || '');
 
 const sortDemands = (demands) => {
-  return [...demands].sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
+  return [...demands].sort((a, b) => (posterDay(a) ?? '').localeCompare(posterDay(b) ?? ''));
 };
 
 const demands = computed(() => {

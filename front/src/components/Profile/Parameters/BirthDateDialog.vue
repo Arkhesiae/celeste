@@ -5,7 +5,7 @@
         <div>
           <span>Date de naissance actuelle</span>
           <v-list-item-subtitle>
-            {{ formatBirthDate(authStore.userData.birthDate) || 'Non renseignée' }}
+            {{ formatBirthDate(birthDayOf(authStore.userData)) || 'Non renseignée' }}
           </v-list-item-subtitle>
         </div>
       </div>
@@ -32,6 +32,8 @@
 </template>
 
 <script setup>
+import { toDateKey } from '@/utils/dateKey';
+import { birthDayOf, formatDay } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore'
 import { profileService } from '@/services/profileService'
 
@@ -67,11 +69,7 @@ const close = () => {
 
 const formatBirthDate = (date) => {
   if (!date) return null
-  return new Date(date).toLocaleDateString('fr-FR', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
+  return formatDay(date)
 }
 
 const handleSubmit = async () => {
@@ -82,6 +80,7 @@ const handleSubmit = async () => {
   try {
     await profileService.updateBirthDate(birthDate.value)
     authStore.userData.birthDate = birthDate.value
+    authStore.userData.birthDay = toDateKey(birthDate.value)
     close()
   } catch (error) {
     // TODO: handle error

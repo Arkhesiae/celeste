@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import { toDay } from '../utils/dates/dayFields.js';
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
 import bcrypt from 'bcrypt';
@@ -45,6 +46,7 @@ async function generateTeamUsers() {
                     teams: [{
                         teamId: team._id,
                         fromDate: today,
+                        fromDay: toDay(today),
                     }],
                     registrationStatus: 'verified',
                     isActive: true

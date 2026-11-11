@@ -1,3 +1,4 @@
+// TEMPORARY(day-fields): script jetable : a supprimer une fois tous les centres migres et Team.cycleStartDate retire.
 /**
  * Migration : Team.cycleStartDate  ->  Center.cycleAnchorDate + Team.cycleOffset
  *
@@ -20,6 +21,7 @@
  * Variable : MONGO_URI (comme le serveur ; .env chargé automatiquement).
  */
 import dotenv from 'dotenv';
+import { anchorDayOf } from '../utils/dates/dayAccess.js';
 import { mod } from '../utils/math.js';
 import { daysBetween, toMongoDate, toPlainDate } from '../utils/dates/plainDate.js';
 import fs from 'fs';
@@ -70,7 +72,7 @@ const analyse = async (center) => {
     if (teams.length === 0) return { status: 'skipped', reason: 'aucune équipe', teams, anomalies };
 
     // Déjà migré et cohérent ?
-    const migrated = center.cycleAnchorDate && teams.every((t) => Number.isInteger(t.cycleOffset));
+    const migrated = anchorDayOf(center) && teams.every((t) => Number.isInteger(t.cycleOffset));
     if (migrated) {
         const bad = teams.filter((t) => t.cycleStartDate
             && cycleDayIndex({ cycleStartDate: t.cycleStartDate }, null, Temporal.Now.plainDateISO('UTC'), total) !== cycleDayIndex(t, center, Temporal.Now.plainDateISO('UTC'), total));
@@ -103,7 +105,7 @@ const analyse = async (center) => {
         else seen.set(offset, team.name);
     }
 
-    const futureCenter = { cycleAnchorDate: anchor };
+    const futureCenter = { cycleAnchorDay: anchor.toString() };
     const today = Temporal.Now.plainDateISO('UTC');
     for (const { team, offset } of plan) {
         const check = verifyEquivalence(team, { cycleOffset: offset }, futureCenter, total, today);
@@ -181,7 +183,7 @@ const run = async () => {
         await Team.bulkWrite(r.plan.map(({ team, offset }) => ({
             updateOne: { filter: { _id: team._id }, update: { $set: { cycleOffset: offset } } },
         })));
-        await Center.updateOne({ _id: r.center._id }, { $set: { cycleAnchorDate: toMongoDate(r.anchor) } });
+        await Center.updateOne({ _id: r.center._id }, { $set: { cycleAnchorDate: toMongoDate(r.anchor), cycleAnchorDay: r.anchor.toString() } });
         console.log(`  migré : ${r.center.name}`);
     }
 };

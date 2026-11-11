@@ -17,7 +17,7 @@
               posterTeamName }}</span>
           </div>
           <div class="small-dot" />
-          <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(demand?.posterShift?.date)
+          <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(posterDay(demand))
           }}</span>
 
           <template v-if="isMailingEnabled">
@@ -117,6 +117,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';

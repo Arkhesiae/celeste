@@ -1,4 +1,4 @@
-import { compareDays } from './dates/plainDate.js';
+import { occurrenceDays } from './dates/dayAccess.js';
 
 /**
  * Équipe d'un utilisateur un jour donné (Temporal.PlainDate) : un renfort (occurrence bornée, `toDate` inclus) l'emporte
@@ -12,10 +12,13 @@ import { compareDays } from './dates/plainDate.js';
  * @returns {Object|null} l'occurrence qui fait autorité, telle quelle (teamId éventuellement peuplé)
  */
 export const getTeamAtDay = (occurrences, day) => {
-    const sorted = occurrences.slice().sort((a, b) => compareDays(b.fromDate, a.fromDate));
-    const started = (o) => compareDays(o.fromDate, day) <= 0;
+    const dayKey = day.toString();
+    // Bornes en jours (jumeau YYYY-MM-DD, repli signalé sur l'ancien champ) : les chaînes se comparent comme les jours
+    const withDays = occurrences.map((occurrence) => ({ occurrence, ...occurrenceDays(occurrence) }));
+    const sorted = withDays.sort((a, b) => (a.from < b.from ? 1 : a.from > b.from ? -1 : 0));
+    const started = (o) => o.from <= dayKey;
 
-    return sorted.find((o) => o.toDate && started(o) && compareDays(o.toDate, day) >= 0)
-        ?? sorted.find((o) => !o.toDate && started(o))
-        ?? null;
+    const found = sorted.find((o) => o.to && started(o) && o.to >= dayKey)
+        ?? sorted.find((o) => !o.to && started(o));
+    return found?.occurrence ?? null;
 };

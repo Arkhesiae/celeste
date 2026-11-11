@@ -172,7 +172,7 @@
             <v-card v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl"
               elevation="0">
               <v-list-item-title>
-                Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
+                Demande du {{ toDisplayFormat(posterDay(conf.sub)) }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 Demande initiale : <strong>{{ conf.sub?.posterShift?.shift?.name }}</strong> → après changement :
@@ -203,6 +203,7 @@
 </template>
 
 <script setup>
+import { posterDay, occurrenceDays, formatDay } from '@/utils/dayFields.js';
 import { useTeamStore } from "@/stores/teamStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 
@@ -244,21 +245,11 @@ const allOccurrences = computed(() => teamStore.teamOccurrences?.allOccurrences)
 const nextOccurrences = computed(() => teamStore.teamOccurrences?.nextOccurrences);
 
 const formattedPermanentTeamDate = computed(() => {
-  if (!permanentTeam.value?.fromDate) return '';
-  return new Date(permanentTeam.value.fromDate).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  return formatDay(occurrenceDays(permanentTeam.value).from);
 });
 
 const formattedTemporaryTeamDate = computed(() => {
-  if (!temporaryTeam.value?.toDate) return '';
-  return new Date(temporaryTeam.value.toDate).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  return formatDay(occurrenceDays(temporaryTeam.value).to);
 });
 
 const showTemporaryTeamChip = computed(() =>

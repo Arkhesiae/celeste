@@ -76,7 +76,7 @@
                     @click="$emit('removeActivationDate', rotation._id, rotation.activationDate, rotation.centerId)"
                   >
                     <span v-bind="props">
-                      {{ new Date(rotation.activationDate).toLocaleDateString() || 'N/A' }}
+                      {{ formatDay(activationDay(rotation), undefined, undefined) || 'N/A' }}
                     </span>
                   </v-chip>
                 </template>
@@ -90,6 +90,7 @@
 </template>
 
 <script setup>
+import { formatDay, activationDay } from '@/utils/dayFields.js';
 defineProps({
   currentActive: {
     type: [Object, null],

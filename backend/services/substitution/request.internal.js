@@ -1,4 +1,7 @@
 import Substitution from '../../models/Substitution.js';
+import { formatDateFr } from '../../utils/dates/format.js';
+import { todayIn } from '../../utils/dates/plainDate.js';
+import { posterDayOf, dayFilter } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
@@ -46,7 +49,7 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
     await cancelPendingTransactions(requestId, { session });
     const { accepterShift } = await calendarEntryService.cancelSubstitutionEntries(
         requestId,
-        { posterId: request.posterId, accepterId: userId, date: request.posterShift.date },
+        { posterId: request.posterId, accepterId: userId, date: posterDayOf(request) },
         { session }
     );
 
@@ -73,7 +76,7 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
         await cancelPendingTransactions(requestId, { session });
         await calendarEntryService.cancelSubstitutionEntries(
             requestId,
-            { posterId: request.posterId, accepterId: request.accepterId, date: request.posterShift.date },
+            { posterId: request.posterId, accepterId: request.accepterId, date: posterDayOf(request) },
             { session }
         );
     }
@@ -119,7 +122,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
     const openDemands = await Substitution.find({
         posterId: userId,
         status: 'open',
-        'posterShift.date': request.posterShift.date
+        ...dayFilter('posterShift.day', 'posterShift.date', { eq: posterDayOf(request) })
     }).session(session);
 
     if (openDemands.length > 0) {
@@ -131,7 +134,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
     // Switch-specific: validate accepter shift and points
     if (isSwitch) {
-        const userShifts = await computeUserShifts(new Date(request.posterShift.date), userId);
+        const userShifts = await computeUserShifts(posterDayOf(request), userId);
         if (!userShifts?.length) throw new AppError('Vacation utilisateur non trouvée', 404);
 
         userShiftData = userShifts[0];
@@ -166,8 +169,8 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
             amount: points,
             type: 'replacement',
             request: requestId,
-            description: `${isSwitch ? 'Permutation' : 'Remplacement'} du ${new Date(request.posterShift.date).toLocaleDateString('fr-FR')}`,
-            scheduledDate: new Date(request.posterShift.date)
+            description: `${isSwitch ? 'Permutation' : 'Remplacement'} du ${formatDateFr(posterDayOf(request), { short: true })}`,
+            scheduledDate: new Date(posterDayOf(request))   // YYYY-MM-DD = minuit UTC
         }, { session });
     }
 
@@ -183,12 +186,12 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
  */
 export const processPastDemands = async () => {
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = todayIn().toString();
 
     // Trouve toutes les demandes ouvertes avec des dates passées (excluant aujourd'hui)
     const pastDemands = await Substitution.find({
         status: 'open',
-        'posterShift.date': { $lt: startOfToday },
+        ...dayFilter('posterShift.day', 'posterShift.date', { lt: today }),
         deleted: false
     });
 
@@ -212,10 +215,10 @@ export const processPastDemands = async () => {
 
 export const processAndCompleteDemands = async () => {
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = todayIn().toString();
     const completedDemands = await Substitution.find({
         status: 'accepted',
-        'posterShift.date': { $lt: startOfToday },
+        ...dayFilter('posterShift.day', 'posterShift.date', { lt: today }),
         deleted: false
     });
 

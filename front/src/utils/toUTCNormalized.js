@@ -1,3 +1,4 @@
+// TEMPORARY(day-fields): le front enverra des YYYY-MM-DD (toDateKey / PlainDate) ; supprimer ce fichier et son doublon src/utils.js quand les 3 appelants (TeamChangeDialog, rotation.vue, Unused/SwitchForm) sont migres.
 export const toUTCNormalized = (input) => {
     if (!input) {
       return;

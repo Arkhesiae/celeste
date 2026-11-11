@@ -1,4 +1,5 @@
 import User from '../../models/User.js';
+import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
@@ -16,7 +17,7 @@ const verifyCompatibilities = async (demands, userId) => {
     const list = [];
     for (const demand of demands) {
         const result = demand.toObject();
-        const data = await getCompatibleSwitches(result.posterShift.date, userId);
+        const data = await getCompatibleSwitches(posterDayOf(result), userId);
         const incompatibleSwitches = data.filter(s => !s.compatible);
         result.incompatibleSwitches = [];
         for (const acceptedSwitch of result.acceptedSwitches) {

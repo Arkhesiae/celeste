@@ -1,4 +1,6 @@
 import Rotation from '../../models/Rotation.js';
+import { activationDaysOf, dayFilter, dayInArrayFilter } from '../../utils/dates/dayAccess.js';
+import { toDay } from '../../utils/dates/dayFields.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
@@ -21,6 +23,7 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
 
     const centerId = rotationToUpdate.centerId;
     const targetDate = new Date(activationDate);
+    const targetDay = toDay(targetDate);   // jumeau « jour » de targetDate : écrit en même temps
 
     // Une seule rotation peut être activée à une date donnée dans un centre : sinon la rotation active ce jour-là est ambiguë
     if (action === 'add') {
@@ -34,7 +37,7 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
             throw new AppError("La date d'activation ne peut pas être dans le passé.", 400, 'ROTATION_ACTIVATION_DATE_PAST');
         }
 
-        const sameDate = await Rotation.exists({ centerId, deleted: false, activationDates: targetDate });
+        const sameDate = await Rotation.exists({ centerId, deleted: false, ...dayInArrayFilter('activationDays', 'activationDates', dateKey) });
         if (sameDate) {
             throw new AppError('Une rotation est déjà activée à cette date dans ce centre.', 400, 'ROTATION_ACTIVATION_DATE_TAKEN');
         }
@@ -76,8 +79,8 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
             const beforeList = await getOrderedActivationDates(centerId, session);
 
             const mongoOp = action === 'add'
-                ? { $push: { activationDates: targetDate } }
-                : { $pull: { activationDates: targetDate } };
+                ? { $push: { activationDates: targetDate, activationDays: targetDay } }
+                : { $pull: { activationDates: targetDate, activationDays: targetDay } };
 
             const updatedRotation = await Rotation.findByIdAndUpdate(
                 rotationId, mongoOp, { new: true, session }
@@ -364,7 +367,7 @@ const removeRepetitionsInDb = async (repetitionToRemove, session = null) => {
     for (const repetition of repetitionToRemove) {
         await Rotation.findByIdAndUpdate(
             repetition.rotationId,
-            { $pull: { activationDates: repetition.activationDate } },
+            { $pull: { activationDates: repetition.activationDate, activationDays: toDay(repetition.activationDate) } },
             { new: true, session }
         );
         removedCount++;
@@ -386,15 +389,16 @@ const simulateActivationChange = (existingActivations, action, rotationId, targe
 
 
 const getDemandsToConvert = async (change, centerId, session = null) => {
-    const dateFilter = {};
-    if (change.from) dateFilter.$gte = new Date(change.from);
-    if (change.to) dateFilter.$lt = new Date(change.to);
+    // Période [from, to[ en jours : borne basse incluse, borne haute exclue
+    const bounds = {};
+    if (change.from) bounds.gte = toDay(change.from);
+    if (change.to) bounds.lt = toDay(change.to);
 
     return Substitution.find({
         centerId,
         status: { $in: ['open', 'accepted'] },
         deleted: false,
-        'posterShift.date': dateFilter
+        ...dayFilter('posterShift.day', 'posterShift.date', bounds)
     }).session(session);
 };
 
@@ -423,13 +427,15 @@ const systemCancelDemands = async (demands, session, notifications = { cancelled
  * @returns {Array} Liste ordonnée des activations avec rotation et date
  */
 const getOrderedActivationDates = async (centerId, session = null) => {
-    const activations = await Rotation.aggregate([
-        { $match: { centerId, deleted: false } },
-        { $unwind: '$activationDates' },
-        { $project: { rotationId: '$_id', activationDate: '$activationDates' } },
-        { $sort: { activationDate: 1 } }
-    ]).session(session);
-    return activations;
+    const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates activationDays').session(session).lean();
+
+    return rotations
+        .flatMap((rotation) => activationDaysOf(rotation).map((day) => ({
+            _id: rotation._id,
+            rotationId: rotation._id,
+            activationDate: new Date(day),   // YYYY-MM-DD = minuit UTC
+        })))
+        .sort((a, b) => a.activationDate - b.activationDate);
 };
 
 

@@ -1,4 +1,5 @@
 import { findOrThrow, inTransaction } from '../../utils/mongo.js';
+import { toDay } from '../../utils/dates/dayFields.js';
 import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import Team from '../../models/Team.js';
@@ -148,6 +149,9 @@ export async function assignTeamToUser (userId, newTeam, { confirmed = false, re
             throw new AppError('Occurrence à remplacer non trouvée', 404);
         }
 
-        return [...kept, { teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate }];
+        return [...kept, {
+            teamId: newTeam.teamId, fromDate: newTeam.fromDate, toDate: newTeam.toDate,
+            fromDay: toDay(newTeam.fromDate), toDay: toDay(newTeam.toDate),
+        }];
     }, confirmed, actorId);
 }

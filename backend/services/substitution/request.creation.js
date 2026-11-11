@@ -1,4 +1,5 @@
 import Substitution from "../../models/Substitution.js";
+import { dayFilter } from '../../utils/dates/dayAccess.js';
 import { toCalendarDay } from '../../utils/dates/calendarDay.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import User from "../../models/User.js";
@@ -55,7 +56,7 @@ export async function createDemand (data) {
     // Check for existing open demands on this date
     const existingDemands = await Substitution.find({
         posterId,
-        'posterShift.date': posterShift.date,
+        ...dayFilter('posterShift.day', 'posterShift.date', { eq: givenDay.toString() }),
         deleted: false,
         status: { $in: ['open'] }
     });
@@ -84,13 +85,12 @@ export async function createDemand (data) {
 
     // Find accepted substitutions involving the poster on the same day
     const sameDayAcceptedSubstitutions = await Substitution.find({
-        'posterShift.date': posterShift.date,
         deleted: false,
         status: 'accepted',
-        $or: [
-            { posterId },
-            { accepterId: posterId }
-        ]
+        $and: [
+            dayFilter('posterShift.day', 'posterShift.date', { eq: givenDay.toString() }),
+            { $or: [{ posterId }, { accepterId: posterId }] },
+        ],
     }).select('_id');
 
     const dependsOn = sameDayAcceptedSubstitutions.map((s) => s._id);
@@ -109,7 +109,8 @@ export async function createDemand (data) {
                 ? (selectedVariationId._id ?? selectedVariationId)
                 : null,
             teamId,
-            date: posterShift.date
+            date: posterShift.date,
+            day: givenDay.toString()   // jumeau « jour » de date (YYYY-MM-DD)
         },
         comment: comment || '',
         points,

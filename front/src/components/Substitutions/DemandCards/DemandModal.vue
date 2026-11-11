@@ -141,7 +141,7 @@
       <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
         <div class="d-flex justify-space-between align-center text-disabled">
           <span class="text-body-medium font-weight-medium text-medium-emphasis">Date</span>
-          <span class="text-body-medium text-disabled">{{ formatDate(demand.posterShift?.date) }}</span>
+          <span class="text-body-medium text-disabled">{{ formatDate(posterDay(demand)) }}</span>
         </div>
       </v-card>
 
@@ -247,6 +247,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { useUserStore } from '@/stores/userStore';
 import { useDate } from 'vuetify'
 import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -392,7 +393,7 @@ const toDateKey = (d) => {
 };
 
 const selectVariationForDemand = async (variation) => {
-  const dateKey = toDateKey(props.demand?.posterShift?.date);
+  const dateKey = posterDay(props.demand);
   const shiftId = props.demand?.posterShift?.shift?._id;
   if (!dateKey || !shiftId) return;
   loadingVariation.value = true;

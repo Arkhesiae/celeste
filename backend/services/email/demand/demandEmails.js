@@ -1,4 +1,5 @@
 import emailService from '../emailService.js';
+import { posterDayOf, shiftDayOf } from '../../../utils/dates/dayAccess.js';
 import { formatDateFr } from '../../../utils/dates/format.js';
 import { shortName } from '../../../utils/names.js';
 import { renderMail } from '../../../src/mail/mailRenderer.js';
@@ -78,7 +79,7 @@ async function sendUserPoolNotification(userPool, demand) {
           acceptedSwitches: acceptedSwitches,
           posterName: fullName,
           teamName: demand.posterShift.teamId.name,
-          demandDate: formatDateFr(demand.posterShift.date),
+          demandDate: formatDateFr(posterDayOf(demand)),
           shift: shiftDisplayName,
           startTime: effectiveTimes?.startTime || demand.posterShift.shift?.default?.startTime,
           endTime: effectiveTimes?.endTime || demand.posterShift.shift?.default?.endTime,
@@ -145,7 +146,7 @@ async function sendAcceptedDemandEmail (demand) {
     const text = `
 Bonjour ${demand.posterId.name},
 
-Bonne nouvelle, ${fullName} a accepté votre demande de remplacement pour le ${formatDateFr(demand.posterShift.date)}.
+Bonne nouvelle, ${fullName} a accepté votre demande de remplacement pour le ${formatDateFr(posterDayOf(demand))}.
 
 N'oubliez pas de déclarer ce remplacement sur OLAFATCO.
 
@@ -171,7 +172,7 @@ L'équipe Celeste
       userName: demand.posterId.name,
       accepterName: fullName,
       posterShift: demand.posterShift.shift.name,
-      posterShiftDate: formatDateFr(demand.posterShift.date),
+      posterShiftDate: formatDateFr(posterDayOf(demand)),
       creationDate: formatDateFr(demand.createdAt),
       typeText: typeText(),
       accepterShift: demand.accepterShift?.shift?.name,
@@ -216,7 +217,7 @@ async function sendCancelledAcceptanceEmail(demand, originalAccepter) {
     const text = `
 Bonjour ${demand.posterId.name},
 
-${fullName} ne vous remplace plus pour votre demande le ${formatDateFr(demand.posterShift.date)}.
+${fullName} ne vous remplace plus pour votre demande le ${formatDateFr(posterDayOf(demand))}.
 
 Votre demande est à nouveau visible pour d'autres collègues.
 
@@ -241,7 +242,7 @@ L'équipe Celeste
       typeText: typeText(),
       userName: demand.posterId.name,
       accepterName: fullName,
-      posterShiftDate: formatDateFr(demand.posterShift.date),
+      posterShiftDate: formatDateFr(posterDayOf(demand)),
     }
 
 
@@ -294,7 +295,7 @@ async function sendReplacementReminderEmail (demand) {
   }
   const shiftName = (posterShift?.shift?.name ?? '') + (variationName ?? '');
   const times = getEffectiveShiftTimes(posterShift?.shift, selectedVariation) || posterShift?.shift?.default;
-  const date = formatDateFr(posterShift.date);
+  const date = formatDateFr(shiftDayOf(posterShift, 'Substitution.posterShift.day'));
 
   const templateData = {
     userName: accepter.name,

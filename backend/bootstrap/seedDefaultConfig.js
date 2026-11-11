@@ -1,4 +1,6 @@
 import bcrypt from 'bcrypt';
+import { occurrenceDays, activationDaysOf } from '../utils/dates/dayAccess.js';
+import { toDay } from '../utils/dates/dayFields.js';
 import { utcMidnight, addUtcDays } from '../utils/dates/plainDate.js';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
@@ -172,13 +174,16 @@ async function ensureAgents (center, teams) {
         let changed = false;
         for (const occ of existing.teams || []) {
           if (occ.teamId?.toString() !== team._id.toString()) continue;
-          const normalized = occ.fromDate ? utcMidnight(occ.fromDate) : null;
+          const currentFromDay = occurrenceDays(occ).from;
+          const normalized = currentFromDay ? utcMidnight(currentFromDay) : null;
           // Reculer un fromDate trop récent qui tronque l'historique utile aux 35h
           if (!normalized || normalized.getTime() > desiredFrom.getTime()) {
             occ.fromDate = desiredFrom;
+            occ.fromDay = toDay(desiredFrom);
             changed = true;
-          } else if (new Date(occ.fromDate).getTime() !== normalized.getTime()) {
+          } else if (new Date(occ.fromDate).getTime() !== normalized.getTime() || occ.fromDay !== currentFromDay) {
             occ.fromDate = normalized;
+            occ.fromDay = toDay(normalized);
             changed = true;
           }
         }
@@ -199,7 +204,7 @@ async function ensureAgents (center, teams) {
         name: `Agent${n}`,
         lastName: `Équipe ${team.name}`,
         centerId: center._id,
-        teams: [{ teamId: team._id, fromDate: desiredFrom }],
+        teams: [{ teamId: team._id, fromDate: desiredFrom, fromDay: toDay(desiredFrom) }],
         registrationStatus: 'verified',
         isActive: true,
         points: 10,
@@ -254,16 +259,17 @@ async function ensureRotation (center, activationDate) {
 
   if (rotation) {
     const dates = [...(rotation.activationDates || [])];
-    let changed = false;
-    const hasActivation = dates.some(
-      (d) => new Date(d).getTime() === activationDate.getTime()
-    );
-    if (!hasActivation) {
+    const days = activationDaysOf(rotation);
+    const activationDay = toDay(activationDate);
+    let changed = rotation.activationDays?.length !== days.length;   // jumeau manquant ou incomplet : on le complète
+    if (!days.includes(activationDay)) {
       dates.push(activationDate);
+      days.push(activationDay);
       changed = true;
     }
     if (changed) {
       rotation.activationDates = dates;
+      rotation.activationDays = days;
       await rotation.save();
     }
     return { rotation, created: false };
@@ -280,6 +286,7 @@ async function ensureRotation (center, activationDate) {
     centerId: center._id,
     days: shiftIds,
     activationDates: [activationDate],
+    activationDays: [toDay(activationDate)],
   });
 
   return { rotation, created: true };

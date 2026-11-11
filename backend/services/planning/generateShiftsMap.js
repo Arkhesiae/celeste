@@ -1,4 +1,5 @@
 import { computeUserShifts } from './computeUserShifts.js';
+import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { parseShiftUTC } from '../../utils/shifts/parseShiftTime.js';
 import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
@@ -82,7 +83,7 @@ export async function generateShiftsMap (dates, userId) {
  * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
  */
 export function generateMapFromDemands (demands, userId) {
-  const demandDates = demands.map(d => new Date(d.posterShift.date));
+  const demandDates = demands.map(d => posterDayOf(d));
   return generateShiftsMap(demandDates, userId);
 }
 
@@ -93,7 +94,7 @@ export function generateMapFromDemands (demands, userId) {
  * @returns {Promise<Map<string, { shift: Object, team: Object, date: string, start: Date, end: Date }>>}
  */
 export async function shiftMapFromSingleDemand (demand, userId) {
-  const demandDates = [new Date(demand.posterShift.date)];
+  const demandDates = [posterDayOf(demand)];
   return await generateShiftsMap(demandDates, userId);
 }
 

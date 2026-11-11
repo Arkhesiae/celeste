@@ -5,13 +5,14 @@
     <WorkdayAmplitudeGraph
         v-else
         :days="days"
-        :center-date="props.demand?.posterShift?.date"
+        :center-date="posterDay(props.demand)"
         :compatibility="compatibility"
         :demand="props.demand"
     />
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { substitutionService } from '@/services/substitutionService';
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
@@ -42,10 +43,10 @@ const addUtcDays = (dateStr, offset) => {
 }
 
 const generateDaysData = (shiftsArray) => {
-    if (!props.demand?.posterShift?.date) return []
+    if (!posterDay(props.demand)) return []
 
     const posterShift = props.demand.posterShift
-    const demandDateStr = toUtcDateStr(posterShift.date)
+    const demandDateStr = toUtcDateStr(posterDay(props.demand))
     if (!demandDateStr) return []
 
     const parseTimeUTC = (date, time, endsNextDay = false) => {
@@ -60,8 +61,8 @@ const generateDaysData = (shiftsArray) => {
         const effective = getEffectiveShiftTimes(posterShift.shift, posterShift.selectedVariation)
         if (!effective?.startTime || !effective?.endTime) return null
         return {
-            start: parseTimeUTC(posterShift.date, effective.startTime).toISOString(),
-            end: parseTimeUTC(posterShift.date, effective.endTime, effective.endsNextDay).toISOString(),
+            start: parseTimeUTC(demandDateStr, effective.startTime).toISOString(),
+            end: parseTimeUTC(demandDateStr, effective.endTime, effective.endsNextDay).toISOString(),
             name: getDisplayShiftName({ shift: posterShift.shift, selectedVariation: posterShift.selectedVariation })
                 || posterShift.shift?.name
                 || 'Vacation',

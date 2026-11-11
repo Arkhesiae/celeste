@@ -50,10 +50,10 @@ v-for="(occurrence, index) in filteredOccurrences" :key="index"
                       </div>
                       <div class="text-body-small text-medium-emphasis">
                         <div v-if="occurrence.type === 'Renfort'">
-                          Du {{ formatDate(occurrence.fromDate) }} au {{ formatDate(occurrence.toDate) }}
+                          Du {{ formatDate(occurrenceDays(occurrence).from) }} au {{ formatDate(occurrenceDays(occurrence).to) }}
                         </div>
                         <div v-else>
-                          À partir du {{ formatDate(occurrence.fromDate) }}
+                          À partir du {{ formatDate(occurrenceDays(occurrence).from) }}
                         </div>
                       </div>
                     </div>
@@ -65,7 +65,7 @@ v-for="(occurrence, index) in filteredOccurrences" :key="index"
                     </v-icon>
                   </div>
                   <div
-v-else-if="occurrence.type === 'Renfort' && occurrence.toDate > new Date().toISOString()"
+v-else-if="occurrence.type === 'Renfort' && occurrenceDays(occurrence).to > todayKey()"
                     class="text-body-small text-medium-emphasis">
                     En cours
                   </div>
@@ -86,6 +86,7 @@ v-else-if="occurrence.type === 'Renfort' && occurrence.toDate > new Date().toISO
 </template>
 
 <script setup>
+import { occurrenceDays, todayKey } from '@/utils/dayFields.js';
 import { useTeamStore } from '@/stores/teamStore';
 // import { useRouter } from 'vue-router';
 
@@ -94,7 +95,7 @@ const selectedChangeType = ref('all');
 
 const occurrences = computed(() => {
   if (!teamStore.teamOccurrences?.allOccurrences) return [];
-  return teamStore.teamOccurrences.allOccurrences.filter(o => new Date(o.fromDate) <= new Date());
+  return teamStore.teamOccurrences.allOccurrences.filter(o => occurrenceDays(o).from <= todayKey());
 });
 const isLoading = computed(() => teamStore.isLoading);
 
@@ -104,9 +105,7 @@ const filteredOccurrences = computed(() => {
     : occurrences.value.filter(o => o.type === selectedChangeType.value);
 
   return filtered.sort((a, b) => {
-    const dateA = new Date(a.fromDate);
-    const dateB = new Date(b.fromDate);
-    return dateB - dateA;
+    return (occurrenceDays(b).from ?? '').localeCompare(occurrenceDays(a).from ?? '');
   });
 });
 

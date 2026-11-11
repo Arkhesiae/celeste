@@ -33,6 +33,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
@@ -97,13 +98,13 @@ const shiftDataMap = computed(() => {
 const getShiftData = (dateStr) => shiftDataMap.value.get(dateStr) ?? {};
 
 const hasAvailableSubstitutions = (dateStr) => dateStr ? substitutionStore.availableSubstitutions.some(substitution =>
-  sameDateKey(substitution.posterShift?.date, dateStr)
+  sameDateKey(posterDay(substitution), dateStr)
 ) : false;
 const hasAvailableSwitches = (dateStr) => dateStr ? substitutionStore.availableSwitches.some(substitution =>
-  sameDateKey(substitution.posterShift?.date, dateStr)
+  sameDateKey(posterDay(substitution), dateStr)
 ) : false;
 const hasOtherDemands = (dateStr) => dateStr ? substitutionStore.otherDemands.some(substitution =>
-  sameDateKey(substitution.posterShift?.date, dateStr)
+  sameDateKey(posterDay(substitution), dateStr)
 ) : false;
 
 const demandsMap = computed(() => {
@@ -117,7 +118,7 @@ const demandsMap = computed(() => {
   ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   for (const demand of all) {
-    const key = toDateStr(demand.posterShift.date);
+    const key = toDateStr(posterDay(demand));
     if (!map.has(key)) map.set(key, []);
     map.get(key).push(demand);
   }

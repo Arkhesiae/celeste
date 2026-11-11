@@ -1,7 +1,9 @@
 import User from '../models/User.js';
+import { toDay } from '../utils/dates/dayFields.js';
+import { occurrenceDays } from '../utils/dates/dayAccess.js';
 import { getCenterTimeZone, getCenterTimeZones } from '../services/center/center.timezone.js';
 import { toCalendarDay } from '../utils/dates/calendarDay.js';
-import { todayIn, compareDays } from '../utils/dates/plainDate.js';
+import { todayIn } from '../utils/dates/plainDate.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { isValidId } from '../utils/ids.js';
@@ -235,6 +237,10 @@ const getUsersByCenter = async (req, res, next) => {
 };
 
 // Fonction utilitaire pour récupérer un utilisateur et ses équipes
+// { fromDay, toDay } d'une occurrence (jumeaux « jour », repli sur les anciens champs) pour les réponses d'API
+// TEMPORARY(day-fields): ajoute fromDay/toDay aux sorties d'API pour le front ; inutile quand l'API ne renverra plus que les jumeaux (le front lit deja les deux).
+const dayBounds = (occurrence) => { const { from, to } = occurrenceDays(occurrence); return { fromDay: from, toDay: to }; };
+
 const getUserWithTeams = async (userId) => {
     const user = await findOrThrow(User, userId, { message: 'User not found', populate: 'teams' });
     return user;
@@ -255,7 +261,7 @@ const getTeamAtDate = async (teams, day) => {
         ...teamOccurrence.toObject(),
         name: team.name,
         cycleStartDate: team.cycleStartDate,
-        type: teamOccurrence.toDate ? "Renfort" : "Changement"
+        type: occurrenceDays(teamOccurrence).to ? "Renfort" : "Changement"
     };
 };
 
@@ -300,10 +306,10 @@ const getUserTeamOccurrences = async (req, res) => {
 
     try {
         const user = await getUserWithTeams(id);
-        const now = new Date();
-        const sortedOccurrences = user.teams.sort((a, b) =>
-            new Date(a.fromDate) - new Date(b.fromDate)
-        );
+        // « Aujourd'hui » dans le fuseau du centre ; les bornes des occurrences sont lues en jours (jumeau, repli signalé)
+        const today = todayIn(await getCenterTimeZone(user.centerId)).toString();
+        const fromOf = (occurrence) => occurrenceDays(occurrence).from ?? '';
+        const sortedOccurrences = [...user.teams].sort((a, b) => fromOf(a).localeCompare(fromOf(b)));
 
 
         const categorizedOccurrences = {
@@ -315,27 +321,28 @@ const getUserTeamOccurrences = async (req, res) => {
 
         for (const occurrence of sortedOccurrences) {
             const occurrenceObj = occurrence.toObject();
-            const startDate = new Date(occurrenceObj.fromDate);
-            const endDate = occurrenceObj.toDate ? new Date(occurrenceObj.toDate) : null;
+            const { from: startDay, to: endDay } = occurrenceDays(occurrence);
             const team = await Team.findById(occurrenceObj.teamId);
 
             if (!team || team.deleted) continue;
 
             const occurrenceWithTeam = {
                 ...occurrenceObj,
+                fromDay: startDay,
+                toDay: endDay,
                 teamName: team.name,
-                type: endDate ? "Renfort" : "Changement"
+                type: endDay ? "Renfort" : "Changement"
             };
 
-            if (startDate <= now && endDate && endDate >= now) {
+            if (startDay <= today && endDay && endDay >= today) {
                 categorizedOccurrences.temporaryTeam = occurrenceWithTeam;
             }
 
-            if (startDate <= now && !endDate) {
+            if (startDay <= today && !endDay) {
                 categorizedOccurrences.permanentTeam = occurrenceWithTeam;
             }
 
-            if (startDate > now) {
+            if (startDay > today) {
                 categorizedOccurrences.nextOccurrences.push(occurrenceWithTeam);
             }
 
@@ -395,12 +402,14 @@ const getUsersAndGroupByTeam = async (req, res, next) => {
             // Filtrage et tri des occurrences d'équipe
             const validOccurrences = user.teams
                 .filter(occurrence => teamsMap.has(occurrence.teamId.toString()))
-                .sort((a, b) => compareDays(b.fromDate, a.fromDate));
+                .sort((a, b) => (occurrenceDays(b).from ?? '').localeCompare(occurrenceDays(a).from ?? ''));
 
             // Traitement de l'équipe principale
-            const mainTeamOccurrence = validOccurrences.find(occurrence =>
-                !occurrence.toDate && compareDays(occurrence.fromDate, day) <= 0
-            );
+            const dayKey = day.toString();
+            const mainTeamOccurrence = validOccurrences.find(occurrence => {
+                const { from, to } = occurrenceDays(occurrence);
+                return !to && from <= dayKey;
+            });
 
             if (mainTeamOccurrence) {
                 const teamResult = resultMap.get(mainTeamOccurrence.teamId.toString());
@@ -410,24 +419,25 @@ const getUsersAndGroupByTeam = async (req, res, next) => {
                         name: user.name,
                         lastName: user.lastName,
                         fromDate: mainTeamOccurrence.fromDate,
-                        toDate: mainTeamOccurrence.toDate
+                        toDate: mainTeamOccurrence.toDate,
+                        ...dayBounds(mainTeamOccurrence)
                     });
                 }
             }
 
             // Traitement des renforts
             for (const occurrence of validOccurrences) {
-                if (occurrence.toDate) {
+                const { from, to } = occurrenceDays(occurrence);
+                if (to) {
                     const teamResult = resultMap.get(occurrence.teamId.toString());
-                    if (teamResult &&
-                        compareDays(occurrence.fromDate, day) <= 0 &&
-                        compareDays(occurrence.toDate, day) >= 0) {
+                    if (teamResult && from <= dayKey && to >= dayKey) {
                         teamResult.renforts.push({
                             userId: user._id,
                             name: user.name,
                             lastName: user.lastName,
                             fromDate: occurrence.fromDate,
-                            toDate: occurrence.toDate
+                            toDate: occurrence.toDate,
+                            ...dayBounds(occurrence)
                         });
                     }
                 }
@@ -787,7 +797,7 @@ const updateBirthDate = async (req, res, next) => {
         // Mettre à jour la date de naissance dans personalData
         const user = await User.findByIdAndUpdate(
             userId,
-            { 'personalData.birthDate': birthDate },
+            { 'personalData.birthDate': birthDate, 'personalData.birthDay': toDay(birthDate) },
             { new: true }
         );
 

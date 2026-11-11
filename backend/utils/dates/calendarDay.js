@@ -30,6 +30,7 @@ const fromInstant = (epochMs, timeZone) => {
  * @param {string} [timeZone] - fuseau IANA du centre
  * @returns {Temporal.PlainDate|null} null si la valeur n'est pas une date valide
  */
+// TEMPORARY(day-fields): la regle « minuit UTC = jour stocke tel quel » n'a de sens que tant que des `Date` sont stockees ; ensuite, un jour est une chaine YYYY-MM-DD et seuls les instants passent par le fuseau du centre.
 export const toCalendarDay = (value, timeZone = DEFAULT_TIME_ZONE) => {
     try {
         if (value instanceof Temporal.PlainDate) return value;

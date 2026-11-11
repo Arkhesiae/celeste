@@ -1,3 +1,4 @@
+// TEMPORARY(day-fields): doublon de utils/toUTCNormalized.js ; a supprimer avec lui.
 export const toUTCNormalized = (input) => {
   if (!input) {
     return;

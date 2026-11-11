@@ -14,6 +14,7 @@ import { DEFAULT_TIME_ZONE } from './constants.js';
  */
 
 /** Date | chaîne ISO | YYYY-MM-DD | PlainDate -> PlainDate (jour calendaire UTC) ; null si la valeur n'est pas une date */
+// TEMPORARY(day-fields): la branche qui lit une `Date` (minuit UTC) disparait a la bascule ; ne resteront que les chaines YYYY-MM-DD et les PlainDate.
 export const toPlainDate = (value) => {
     if (value instanceof Temporal.PlainDate) return value;
     const key = toDateKey(value);
@@ -26,6 +27,7 @@ export const toPlainDate = (value) => {
 };
 
 /** PlainDate -> Date à minuit UTC : pour écrire dans Mongo ou interroger par date, nulle part ailleurs */
+// TEMPORARY(day-fields): plus utilise une fois les anciens champs Date supprimes (ecriture de l'ancien champ) ; a supprimer a la bascule.
 export const toMongoDate = (plainDate) => new Date(`${plainDate.toString()}T00:00:00Z`);
 
 /** Nombre de jours calendaires entre deux dates (a -> b) ; négatif si b précède a */
@@ -47,7 +49,9 @@ export const compareDays = (a, b) => Temporal.PlainDate.compare(toPlainDate(a), 
 export const todayIn = (timeZone = DEFAULT_TIME_ZONE) => Temporal.Now.plainDateISO(timeZone);
 
 /** Minuit UTC du jour d'une date (Date) : pour les scripts de données de test qui fabriquent des `Date` */
+// TEMPORARY(day-fields): idem toMongoDate : n'existe que pour ecrire/comparer l'ancien champ Date.
 export const utcMidnight = (date = new Date()) => toMongoDate(toPlainDate(date));
 
 /** Date (minuit UTC) décalée de `days` jours : pour les scripts de données de test */
+// TEMPORARY(day-fields): idem toMongoDate : n'existe que pour ecrire/comparer l'ancien champ Date.
 export const addUtcDays = (date, days) => toMongoDate(toPlainDate(date).add({ days }));

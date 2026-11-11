@@ -1,4 +1,5 @@
 import { computeUserShifts } from './computeUserShifts.js';
+import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import { daysBetween } from '../../utils/dates/plainDate.js';
 import Shift from '../../models/Shift.js';
@@ -151,7 +152,7 @@ function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNul
     if (!demand?.posterShift?.shift) {
         return { limit: ['invalidDemand'], canSwitch: false };
     }
-    const demandDate = new Date(demand.posterShift.date);
+    const demandDate = new Date(posterDayOf(demand));   // YYYY-MM-DD = minuit UTC
     const limit = [];
     let canSwitch = false;
 
@@ -200,7 +201,7 @@ function checkCompatibilityForVariation (demand, shiftsMap, demandVariationOrNul
 
 const categorize = async (demand, shiftsMap = null) => {
     try {
-        const demandDate = new Date(demand.posterShift.date);
+        const demandDate = new Date(posterDayOf(demand));   // YYYY-MM-DD = minuit UTC
         let demandWithLimit = demand.toObject();
         demandWithLimit.limit = [];
         demandWithLimit.compatibleVariations = [];

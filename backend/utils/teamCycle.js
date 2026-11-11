@@ -1,4 +1,5 @@
 import { toPlainDate, daysBetween } from './dates/plainDate.js';
+import { anchorDayOf } from './dates/dayAccess.js';
 import { mod } from './math.js';
 
 /**
@@ -15,9 +16,11 @@ import { mod } from './math.js';
  */
 
 /** Début de cycle effectif d'une équipe (PlainDate) ou null s'il n'est pas défini */
+// TEMPORARY(day-fields): le repli sur Team.cycleStartDate disparait quand tous les centres sont migres (ancre + decalage) ; la fonction ne gardera que la branche ancre.
 const cycleStartOf = (team, center) => {
-    if (Number.isInteger(team?.cycleOffset) && center?.cycleAnchorDate) {
-        return toPlainDate(center.cycleAnchorDate).add({ days: team.cycleOffset });
+    const anchorDay = Number.isInteger(team?.cycleOffset) ? anchorDayOf(center) : null;   // jumeau « jour », repli sur l'ancien champ
+    if (anchorDay) {
+        return toPlainDate(anchorDay).add({ days: team.cycleOffset });
     }
     return team?.cycleStartDate ? toPlainDate(team.cycleStartDate) : null;
 };

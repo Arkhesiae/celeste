@@ -98,7 +98,7 @@
                   <v-card-text class="pa-0 ma-0">
                     <p class="opacity-50">
                       Vous avez déjà un changement prévu pour le {{
-                        toDisplayFormat(conflict.fromDate)
+                        toDisplayFormat(occurrenceDays(conflict).from)
                       }} dans l'équipe <strong>{{ conflict.teamName }}</strong>
                     </p>
                   </v-card-text>
@@ -111,8 +111,8 @@
                   <v-card-text class="pa-0 ma-0">
                     <p class="opacity-50">
                       Vous avez déjà un renfort prévu entre le {{
-                        toDisplayFormat(enRenfortConflict.fromDate) }} et le {{
-                        toDisplayFormat(enRenfortConflict.toDate) }}
+                        toDisplayFormat(occurrenceDays(enRenfortConflict).from) }} et le {{
+                        toDisplayFormat(occurrenceDays(enRenfortConflict).to) }}
                       dans l'équipe <strong>{{ enRenfortConflict.teamName }}</strong>
                     </p>
                   </v-card-text>
@@ -176,7 +176,7 @@
 
       <v-card-text class="opacity-50">
         Vous avez déjà un changement prévu dans l'équipe <strong>{{ conflict?.teamName || '?' }}</strong> pour le
-        <strong>{{ toDisplayFormat(conflict?.fromDate) || '?' }}</strong>.
+        <strong>{{ toDisplayFormat(occurrenceDays(conflict).from) || '?' }}</strong>.
         Ecraser le changement ?
       </v-card-text>
       <v-card-actions class="justify-space-between">
@@ -202,7 +202,7 @@
             <v-card v-for="(conf, idx) in substitutionConflicts" :key="idx" color="background" class="pa-4" rounded="xl"
               elevation="0">
               <v-list-item-title>
-                Demande du {{ toDisplayFormat(conf.sub?.posterShift?.date) }}
+                Demande du {{ toDisplayFormat(posterDay(conf.sub)) }}
               </v-list-item-title>
               <v-list-item-subtitle>
                 Demande initiale : <strong>{{ conf.sub?.posterShift?.shift?.name }}</strong> → après changement :
@@ -225,6 +225,8 @@
 </template>
 
 <script setup>
+import { sameDateKey } from '@/utils/dateKey';
+import { posterDay, occurrenceDays } from '@/utils/dayFields.js';
 import { useDate } from 'vuetify';
 import { toUTCNormalized } from "@/utils.js";
 import { useTeamStore } from "@/stores/teamStore";
@@ -330,8 +332,9 @@ const enRenfortConflict = computed(() => {
   const startOfRenfort = new Date(toUTCNormalized(selectedDates.value.startDate));
   const endOfRenfort = new Date(toUTCNormalized(selectedDates.value.endDate));
   return teamStore.teamOccurrences?.allOccurrences.find((occurrence) => {
-    const startDate = new Date(occurrence.fromDate);
-    const endDate = occurrence.toDate ? new Date(occurrence.toDate) : null;
+    const { from, to } = occurrenceDays(occurrence);
+    const startDate = new Date(from);
+    const endDate = to ? new Date(to) : null;
     return startDate <= startOfRenfort && endDate >= startOfRenfort || startDate <= endOfRenfort && endDate >= endOfRenfort;
   }) || null;
 });
@@ -339,7 +342,7 @@ const enRenfortConflict = computed(() => {
 const conflict = computed(() => {
   if (!selectedDates.value.startDate || !teamStore.teamOccurrences?.allOccurrences || props.dialogMode === 'Renfort') return null;
   return teamStore.teamOccurrences?.allOccurrences.find(
-    (occurrence) => toUTCNormalized(occurrence.fromDate) === toUTCNormalized(selectedDates.value.startDate) && !occurrence.toDate
+    (occurrence) => sameDateKey(occurrenceDays(occurrence).from, toUTCNormalized(selectedDates.value.startDate)) && !occurrenceDays(occurrence).to
   ) || null;
 });
 

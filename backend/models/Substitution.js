@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
+import { dayField } from '../utils/dates/dayFields.js';
 import { AppError } from '../error/AppError.js';
 
 const NewShiftSchema = new mongoose.Schema({
     shift: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift' },
+    // TEMPORARY(day-fields): ancien champ Date (posterShift.date / accepterShift.date), a supprimer avec la bascule (reste `day`).
     date: { type: Date, required: false },
+    day: dayField,   // jumeau « jour » de date (YYYY-MM-DD), migration en cours
     teamId: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
     selectedVariation: { type: mongoose.Schema.Types.ObjectId, ref: 'Variation', default: null },
 });

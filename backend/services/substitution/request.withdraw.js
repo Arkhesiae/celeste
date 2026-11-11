@@ -1,4 +1,5 @@
 import User from '../../models/User.js';
+import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { computeUserShifts } from '../planning/computeUserShifts.js';
 import { sendCancelledAcceptanceEmail } from '../email/demand/demandEmails.js';
@@ -25,7 +26,7 @@ export async function withdrawFromRequest (requestId, userId) {
     }
 
     const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([
-        computeUserShifts([updatedRequest.posterShift.date], userId),
+        computeUserShifts([posterDayOf(updatedRequest)], userId),
         categorizeRequests([updatedRequest], userId),
         User.findById(userId).select('name lastName email'),
     ]);

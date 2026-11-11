@@ -1,4 +1,5 @@
 import { ref } from 'vue';
+import { posterDay } from '@/utils/dayFields.js';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import { useSubstitutionStore } from '@/stores/substitutionStore.js';
 
@@ -23,7 +24,7 @@ export function useDemandActions () {
 
     const handleReplacement = async (demand) => {
         try {
-            const response = await substitutionStore.checkUserShift(demand.posterShift.date);
+            const response = await substitutionStore.checkUserShift(posterDay(demand));
             userHasShift.value = response.hasShift;
             canSwitch.value = demand.canSwitch;
             selectedDemand.value = demand;

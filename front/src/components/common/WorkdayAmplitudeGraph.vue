@@ -382,6 +382,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { formatPairsForDate, formatDateLabel, formatDateSuffix } from '@/utils/compatiblePairsFormat';
 import { useShiftStore } from '@/stores/shiftStore';
 
@@ -513,7 +514,7 @@ const compatibleInfoForTooltip = computed(() => {
     const demand = props.demand;
     if (!demand) return '';
     const hasPosterVariation = !!demand?.posterShift?.selectedVariation;
-    const demandDate = demand?.posterShift?.date;
+    const demandDate = posterDay(demand);
 
     if (hasPosterVariation) {
         const byDate = demand?.compatibleFetcherVariationsByDate;

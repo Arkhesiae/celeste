@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { occurrenceDays } from './dates/dayAccess.js';
 import { AppError } from '../error/AppError.js';
 import { idOf } from './ids.js';
 import { toDateKey } from './dates/dateKey.js';
@@ -24,9 +25,9 @@ const shiftKey = (key, days) => Temporal.PlainDate.from(key).add({ days }).toStr
 
 function normalizeOccurrences (occurrences) {
     return occurrences.map((occurrence) => {
-        const from = toDateKey(occurrence.fromDate);
-        const to = occurrence.toDate == null ? null : toDateKey(occurrence.toDate);
-        if (!from || (occurrence.toDate != null && !to)) {
+        const { from, to } = occurrenceDays(occurrence);   // jumeau « jour », repli signalé sur l'ancien champ
+        const hasEnd = occurrence.toDay != null || occurrence.toDate != null;
+        if (!from || (hasEnd && !to)) {
             throw new AppError("Occurrence d'équipe invalide : date de début ou de fin illisible.", 400);
         }
         return { teamId: idOf(occurrence.teamId), from, to };

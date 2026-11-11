@@ -84,7 +84,7 @@
               size="16"
               color="primary"
             />
-            <span class=" font-weight-bold">{{ formatDate(demand?.posterShift?.date) }}</span>
+            <span class=" font-weight-bold">{{ formatDate(posterDay(demand)) }}</span>
           </v-chip>
         </div>
         <div class="d-flex align-center ga-2">
@@ -219,6 +219,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 
 import { useDate } from 'vuetify';
 import { API_URL } from '@/config/api';

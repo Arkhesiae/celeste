@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { toDay } from '../../utils/dates/dayFields.js';
 import { hash } from "bcrypt";
 import User from '../../models/User.js';
 import Center from '../../models/Center.js';
@@ -29,7 +30,7 @@ export const createUserService = async (userData) => {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     
-    user.teams.push({ teamId: firstTeam._id, fromDate: today, toDate: null });
+    user.teams.push({ teamId: firstTeam._id, fromDate: today, toDate: null, fromDay: toDay(today), toDay: null });
 
     await user.save();
 

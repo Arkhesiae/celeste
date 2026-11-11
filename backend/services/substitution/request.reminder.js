@@ -1,4 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
+import { dayFilter } from '../../utils/dates/dayAccess.js';
 import Center from '../../models/Center.js';
 import Substitution from '../../models/Substitution.js';
 import { sendReplacementReminderEmail } from '../email/demand/demandEmails.js';
@@ -27,14 +28,14 @@ export async function sendUpcomingReplacementReminders ({ now = new Date(), hour
             .toZonedDateTimeISO(center.timeZone || 'Europe/Paris');
         if (local.hour < hour) continue;
 
-        const tomorrow = new Date(`${local.toPlainDate().add({ days: 1 }).toString()}T00:00:00.000Z`);
+        const tomorrow = local.toPlainDate().add({ days: 1 }).toString();
 
         const demands = await Substitution.find({
             centerId: center._id,
             status: 'accepted',
             deleted: { $ne: true },
             reminderSentAt: null,
-            'posterShift.date': tomorrow,
+            ...dayFilter('posterShift.day', 'posterShift.date', { eq: tomorrow }),
         }).populate([
             { path: 'posterId', select: 'name lastName' },
             { path: 'accepterId', select: 'name email isActive preferences' },

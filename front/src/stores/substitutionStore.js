@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia';
+import { posterDay } from '@/utils/dayFields.js';
 import { substitutionService } from '@/services/substitutionService';
 import { ruleService } from '@/services/ruleService';
 import { useAuthStore } from '@/stores/authStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { usePointStore } from '@/stores/pointStore';
-import { sameDateKey, sameId } from '@/utils/dateKey';
+import { sameDateKey, sameId, toDateKey } from '@/utils/dateKey';
 
 /**
  * Store Pinia pour gérer l'état des substitutions.
@@ -36,7 +37,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const matchesDate = (substitutions, date) => {
     if (!substitutions?.length || !date) return false;
     return substitutions.some((substitution) =>
-      sameDateKey(substitution.posterShift?.date, date)
+      sameDateKey(posterDay(substitution), date)
     );
   };
 
@@ -102,7 +103,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       ...ownPendingTrueSwitches.value
     ];
 
-    const ownPendingDemand = ownPendingDemands.find(substitution => sameDateKey(substitution.posterShift?.date, date));
+    const ownPendingDemand = ownPendingDemands.find(substitution => sameDateKey(posterDay(substitution), date));
     if (ownPendingDemand?.length > 1) {
       console.error('Plusieurs demandes en attente pour un même jour');
       throw new Error('Plusieurs demandes en attente pour un même jour');
@@ -192,7 +193,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       ...acceptedAsPoster.value,
     ];
 
-    const acceptedAsPosterDemand = acceptedAsPosterDemands.find(substitution => sameDateKey(substitution.posterShift?.date, date));
+    const acceptedAsPosterDemand = acceptedAsPosterDemands.find(substitution => sameDateKey(posterDay(substitution), date));
     if (acceptedAsPosterDemand?.length > 1) {
       console.error('Plusieurs demandes acceptées pour un même jour');
       throw new Error('Plusieurs demandes acceptées pour un même jour');
@@ -214,7 +215,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const findAcceptedAsAccepter = computed(() => (date) => {
     if (!userId.value) return [];
-    const acceptedAsAccepterDemand = acceptedAsAccepter.value.find(substitution => sameDateKey(substitution.posterShift?.date, date));
+    const acceptedAsAccepterDemand = acceptedAsAccepter.value.find(substitution => sameDateKey(posterDay(substitution), date));
     if (acceptedAsAccepterDemand?.length > 1) {
 
       console.error('Plusieurs demandes acceptées pour un même jour');
@@ -278,17 +279,17 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const countOtherDemands = computed(() => (date) => {
     if (!userId.value) return 0;
-    return otherDemands.value.filter(substitution => sameDateKey(substitution.posterShift?.date, date)).length;
+    return otherDemands.value.filter(substitution => sameDateKey(posterDay(substitution), date)).length;
   });
 
   const countAvailableSwitches = computed(() => (date) => {
     if (!userId.value) return 0;
-    return availableSwitches.value.filter(substitution => sameDateKey(substitution.posterShift?.date, date)).length;
+    return availableSwitches.value.filter(substitution => sameDateKey(posterDay(substitution), date)).length;
   });
 
   const countAvailableSubstitutions = computed(() => (date) => {
     if (!userId.value) return 0;
-    return availableSubstitutions.value.filter(substitution => sameDateKey(substitution.posterShift?.date, date)).length;
+    return availableSubstitutions.value.filter(substitution => sameDateKey(posterDay(substitution), date)).length;
   });
 
 
@@ -525,8 +526,8 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       .filter(substitution =>
         substitution.status === 'open' &&
         isOther(substitution) &&
-        new Date(substitution.posterShift.date) >= startDate &&
-        new Date(substitution.posterShift.date) <= endDate
+        posterDay(substitution) >= toDateKey(startDate) &&
+        posterDay(substitution) <= toDateKey(endDate)
       )
       .map(substitution => substitution._id);
   };

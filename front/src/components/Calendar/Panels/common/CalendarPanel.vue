@@ -164,6 +164,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -314,11 +315,11 @@ const pendingDemand = computed(() => [
   ...substitutionStore.ownPendingHybridSubstitutions,
   ...substitutionStore.ownPendingTrueSubstitutions,
   ...substitutionStore.ownPendingTrueSwitches
-].find(d => d.posterShift.date === props.selectedDate));
+].find(d => sameDateKey(posterDay(d), props.selectedDate)));
 
 const acceptedAsAccepter = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsAccepter.filter(d => d.posterShift.date === props.selectedDate);
+  return substitutionStore.acceptedAsAccepter.filter(d => sameDateKey(posterDay(d), props.selectedDate));
 });
 
 const lastAccepted = computed(() => {
@@ -328,7 +329,7 @@ const lastAccepted = computed(() => {
 
 const acceptedAsPoster = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsPoster.filter(d => d.posterShift.date === props.selectedDate);
+  return substitutionStore.acceptedAsPoster.filter(d => sameDateKey(posterDay(d), props.selectedDate));
 });
 
 const lastOwnDemand = computed(() => {
@@ -350,15 +351,15 @@ const substitutionsDemands = computed(() => {
 
 
 const availableSubstitutions = computed(() =>
-  substitutionStore.availableSubstitutions.filter(d => d.posterShift.date.slice(0, 10) === props.selectedDate)
+  substitutionStore.availableSubstitutions.filter(d => posterDay(d) === toDateKey(props.selectedDate))
 );
 
 const availableSwitches = computed(() =>
-  substitutionStore.availableSwitches.filter(d => d.posterShift.date.slice(0, 10) === props.selectedDate)
+  substitutionStore.availableSwitches.filter(d => posterDay(d) === toDateKey(props.selectedDate))
 );
 
 const otherDemands = computed(() =>
-  substitutionStore.otherDemands.filter(d => d.posterShift.date.slice(0, 10) === props.selectedDate)
+  substitutionStore.otherDemands.filter(d => posterDay(d) === toDateKey(props.selectedDate))
 );
 
 watch(() => props.selectedDate, async (value) => {

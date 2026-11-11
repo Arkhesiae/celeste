@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { dayField } from '../utils/dates/dayFields.js';
 
 const RotationSchema = new mongoose.Schema({
     name: {type: String, required: true},
@@ -12,6 +13,10 @@ const RotationSchema = new mongoose.Schema({
     days: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shift' }],
     activationDates: {
         type: [Date],
+    },
+    // Jumeau « jour » de activationDates (YYYY-MM-DD, même ordre), migration en cours : voir utils/dates/dayFields.js
+    activationDays: {
+        type: [dayField],
     },
 
     deleted: {type: Boolean, default: false},

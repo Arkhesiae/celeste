@@ -24,6 +24,7 @@
 </template>
 
 <script setup>
+import { posterDay } from '@/utils/dayFields.js';
 import { useDisplay } from 'vuetify';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Pagination } from 'swiper/modules';
@@ -62,7 +63,7 @@ const upcomingDemands = computed(() => {
     return [
         ...asPoster,
         ...acceptedAsAccepter.value
-    ].sort((a, b) => new Date(a.posterShift.date) - new Date(b.posterShift.date));
+    ].sort((a, b) => (posterDay(a) ?? '').localeCompare(posterDay(b) ?? ''));
 });
 
 // Demandes "Je me fais remplacer"

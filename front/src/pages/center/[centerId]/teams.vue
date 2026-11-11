@@ -59,7 +59,7 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
           :members-count="teamMembers(team._id).length + teamRenforts(team._id).length"
           :renforts-count="teamRenforts(team._id).length" :cycle-start-date="getCycleStartLabel(team)" :next-cycle-date="getNextCycleDate(team)"
           :current-day="getCurrentCycleDay(team)" :grid-link="{ path: `/center/${centerId}/grid`, query: { team: team._id } }"
-          @edit-team-name="openEditTeamNameDialog" @edit-cycle="openCycleDialog" @add-member="openAddMemberDialog"
+          @edit-team-name="openEditTeamNameDialog" @edit-cycle="openCycleDialog"
           @remove-team="removeTeam" @view-members="openMembersPanel" />
       </v-col>
     </v-row>
@@ -134,26 +134,6 @@ v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sor
       :loading="cycleSaving"
       @confirm="saveCyclePosition(!!swapTarget, true)"
     />
-
-    <!-- Dialog pour ajouter un membre -->
-    <v-dialog v-model="addMemberDialog" max-width="500">
-      <v-card>
-        <v-card-title>Ajouter un membre</v-card-title>
-        <v-card-text>
-          <v-select
-v-model="selectedUser" variant="flat" :items="availableUsers" item-title="name" item-value="_id"
-            label="Sélectionner un utilisateur" return-object dense />
-        </v-card-text>
-        <v-card-actions>
-          <v-btn text @click="addMemberDialog = false">
-            Annuler
-          </v-btn>
-          <v-btn text color="primary" @click="addUserToTeam">
-            Ajouter
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
 
     <!-- Dialog pour modifier le nom de l'équipe -->
     <v-dialog v-model="editTeamNameDialog" max-width="360">
@@ -277,7 +257,6 @@ const isAdmin = computed(() => authStore.userData.isAdmin);
 const centerId = route.params.centerId;
 const teams = computed(() => teamStore.centerTeams);
 const usersGroupedByTeam = computed(() => userStore.usersGroupedByTeam);
-const users = computed(() => userStore.users);
 const { smAndDown } = useDisplay();
 
 // Ajout de la computed property pour le nom du centre
@@ -293,14 +272,12 @@ const sortBy = ref('order');
 const sortDirection = ref('asc');
 const addTeamDialog = ref(false);
 const cycleDialog = ref(false);
-const addMemberDialog = ref(false);
 const newTeamName = ref('');
 const selectedCycleDay = ref(null);
 const cycleSaving = ref(false);
 const cycleImpact = ref(null);
 const cycleImpactDialog = ref(false);
 const selectedTeam = ref(null);
-const selectedUser = ref(null);
 // const minDate = new Date().toISOString().split('T')[0];
 const editTeamNameDialog = ref(false);
 const editedTeamName = ref('');
@@ -342,12 +319,6 @@ const filteredAndSortedTeams = computed(() => {
     }
     return sortDirection.value === 'asc' ? comparison : -comparison;
   });
-});
-
-const availableUsers = computed(() => {
-  return users.value.filter(user =>
-    !selectedTeam.value?.members?.includes(user._id)
-  );
 });
 
 const teamMembers = computed(() => (teamId) => {
@@ -478,26 +449,6 @@ const saveCyclePosition = async (swap, confirmed = false) => {
     if (error.code === 'CYCLE_POSITION_TAKEN') teamStore.fetchCenterTeams(centerId);
   } finally {
     cycleSaving.value = false;
-  }
-};
-
-const openAddMemberDialog = (team) => {
-  selectedTeam.value = team;
-  selectedUser.value = null;
-  addMemberDialog.value = true;
-};
-
-const addUserToTeam = async () => {
-  if (!selectedTeam.value || !selectedUser.value) return;
-
-  try {
-    await teamStore.assignUserToTeam(selectedUser.value._id, selectedTeam.value._id);
-    snackbarStore.showNotification('Membre ajouté', 'onPrimary', "mdi-check");
-    userStore.fetchTeamsTimeline(centerId);
-    addMemberDialog.value = false;
-  } catch (error) {
-    console.error('Erreur lors de l\'ajout du membre:', error);
-    snackbarStore.showNotification('Erreur lors de l\'ajout du membre', 'onError');
   }
 };
 

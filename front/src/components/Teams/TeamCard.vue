@@ -66,9 +66,6 @@
               >
                 <v-list-item-title>Modifier le cycle</v-list-item-title>
               </v-list-item>
-              <!-- <v-list-item v-if="isAdmin" rounded="lg" @click.stop="$emit('add-member', team)">
-                <v-list-item-title>Ajouter un membre</v-list-item-title>
-              </v-list-item> -->
               <v-list-item
                 v-if="isAdmin"
                 rounded="lg"
@@ -182,5 +179,5 @@ defineProps({
   }
 });
 
-defineEmits(['edit-team-name', 'edit-cycle', 'add-member', 'remove-team', 'view-members']);
+defineEmits(['edit-team-name', 'edit-cycle', 'remove-team', 'view-members']);
 </script> 

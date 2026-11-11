@@ -4,11 +4,11 @@ Audit date: 2026-11-02; re-verified against the code on 2026-11-11 (every issue 
 Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited, except where noted.
 Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database.
 
-This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed issues (#1, #17, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
+This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed issues (#1, #17, #19, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
 
 Severity is shown on each issue; sections below are ordered by when to work on them. **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug that will break a code path.
 
-Changes in this revision (2026-11-11): #13 moved (the file is now `services/planning/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; #19 line number updated; new entries #40 and #41 for the day-field migration.
+Changes in this revision (2026-11-11): #13 moved (the file is now `services/planning/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
 
 ---
 
@@ -46,7 +46,7 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ---
 
 ## Next — security and correctness defects to fix this sprint
-Open authorization holes and data-corrupting bugs. #8 also unlocks the throttling needed by #6; #19 is probably a broken screen.
+Open authorization holes and data-corrupting bugs. #8 also unlocks the throttling needed by #6.
 
 ### 20. Admin routes still without a center guard — P1
 `middleware/centerAuth.js` provides the guards (`authorizeCenterParam`, `authorizeResourceCenter`, `authorizeTargetUserCenter`...) and they cover users, teams, tickets, demands, rotations, grid/heatmap/timeline and announcement sending. Not yet covered (`routes/announcement.routes.js:25-29`, `routes/message.routes.js:9,15`):
@@ -81,9 +81,6 @@ These routes are reached before an account exists or before login, so a token ca
 
 ### 40. Day-field migration (`Date` → `YYYY-MM-DD`) is not finished: nothing protects against drift — P1
 The twin fields, dual write and dual read are in place, but the data is only consistent once `node backend/scripts/migrateDayFields.js --apply --confirm=<db>` has run in each environment, then `--check` is clean and no `[jours]` line appears in the logs. Until then, rows without a twin work through the legacy fallback (logged), and any writer added without the twin silently creates drift. Also pending: the front still sends ISO strings built by `toUTCNormalized` (team change dialog, rotation activation, demand creation), and `Transaction.effectiveDate` has not been decided (day or instant). Everything to delete at cut-over is tagged `TEMPORARY(day-fields)` (`grep -rn "TEMPORARY(day-fields)" backend front/src`). **Fix:** run the script per environment, then follow the steps in `docs/product/roadmap.md`. The cycle migration (`migrateCycleOffsets.js`) has the same status per center: the local "Bordeaux" center was blocked by an anomaly (12 teams vs a 2-day rotation) before it was reported migrated.
-
-### 19. `teams.vue` passes a string to `assignUserToTeam` — P2
-`front/src/pages/center/[centerId]/teams.vue:494` calls `teamStore.assignUserToTeam(selectedUser.value._id, selectedTeam.value._id)` but the store/service expect an object (`{ teamId, fromDate, toDate, confirmed, replaceOccurrenceId }`). Not verified at runtime; likely returns 400, so assigning a team from this page is probably broken.
 
 ---
 

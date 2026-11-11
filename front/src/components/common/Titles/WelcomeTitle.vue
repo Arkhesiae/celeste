@@ -182,6 +182,8 @@ const headerStyle = reactive({
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+
 /* .main-title.scrolled {
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   position:fixed;
@@ -263,5 +265,4 @@ img.logo-xs {
   transform: scale(0.8) translateX(20px);
 }
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
 </style>

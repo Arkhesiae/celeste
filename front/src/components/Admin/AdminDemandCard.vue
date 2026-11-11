@@ -99,7 +99,7 @@
       </div>
 
       <div
-        v-if="demand?.comment"
+        v-if="visibleComment"
         class="d-flex align-start ga-2 mb-4 pa-3 rounded-lg"
         style="background-color: rgba(var(--v-theme-onSurface), 0.04);"
       >
@@ -109,7 +109,7 @@
           color="primary"
           class="mt-1"
         />
-        {{ demand?.comment }}
+        {{ visibleComment }}
       </div>
 
      

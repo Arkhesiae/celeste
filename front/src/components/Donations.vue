@@ -218,6 +218,8 @@
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+
 .campaign-root {
     max-width: 680px;
     margin: 0 auto;
@@ -331,5 +333,4 @@
     letter-spacing: 0.02em;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
 </style>

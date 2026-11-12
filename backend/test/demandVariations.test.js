@@ -1,11 +1,11 @@
 /**
- * Exploration optionnelle des variantes ambiguës (services/planning/demandVariations.js).
+ * Exploration optionnelle des variantes ambiguës (services/substitution/compatibility/demandVariations.js).
  * `categorize` ne la fait pas ; `categorizeWithVariations` l'ajoute.
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { categorize } from '../services/planning/categorizeDemand.js';
-import { categorizeWithVariations, exploreVariations } from '../services/planning/demandVariations.js';
+import { categorize } from '../services/substitution/compatibility/categorizeDemand.js';
+import { categorizeWithVariations, exploreVariations } from '../services/substitution/compatibility/demandVariations.js';
 
 const DAY0 = '2026-03-10';
 const addDays = (key, n) => new Date(Date.parse(`${key}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);

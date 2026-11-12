@@ -6,14 +6,14 @@ import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { sameId } from '../utils/ids.js';
 import { computeShiftOfTeam } from '../services/planning/computeShiftOfTeam.js';
-import { computeUserPool } from '../services/planning/computeUserPool.js';
-import * as compatibilityService from '../services/substitution/compatibilityService.js';
+import { computeUserPool } from '../services/substitution/substitution.userPool.js';
+import * as compatibilityService from '../services/substitution/substitution.compatibility.js';
 import * as demandService from '../services/substitution/index.js';
 import { sendUserPoolNotification } from '../services/email/demand/demandEmails.js';
 import Substitution from '../models/Substitution.js';
 import User from "../models/User.js";
 import Rule from '../models/Rule.js';
-import emailService from '../services/email/emailService.js';
+import emailService from '../services/email/email.transport.js';
 import { AppError } from '../error/AppError.js';
 import { isValidDateRange } from '../utils/validation.js';
 

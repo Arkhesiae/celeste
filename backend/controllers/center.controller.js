@@ -3,7 +3,7 @@ import { findOrThrow } from '../utils/mongo.js';
 import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
-import { findLatestRotation } from '../services/planning/findLatestRotation.js';
+import { findLatestRotation } from '../services/rotation/rotation.latest.js';
 import { AppError } from '../error/AppError.js';
 import { getCentersMap } from '../services/center/center.map.js';
 

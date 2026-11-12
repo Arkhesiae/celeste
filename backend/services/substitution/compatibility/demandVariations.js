@@ -18,13 +18,13 @@
  * compatiblePairsByFetcherDate, potentiallyCompatible, et `variationsExplored` (false = ces champs sont vides parce que
  * l'exploration n'a pas eu lieu, pas parce qu'aucune variante ne convient).
  */
-import { posterDayOf } from '../../utils/dates/dayAccess.js';
-import { daysBetween } from '../../utils/dates/plainDate.js';
-import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
-import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
+import { posterDayOf } from '../../../utils/dates/dayAccess.js';
+import { daysBetween } from '../../../utils/dates/plainDate.js';
+import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
+import { DEFAULT_TIME_ZONE } from '../../../utils/dates/constants.js';
 import { categorize, checkCompatibilityForVariation, buildPreFetchedAcceptedShifts } from './categorizeDemand.js';
 
-import { MAX_COMPATIBILITY_COMBOS, AMBIGUOUS_DAY_RADIUS, MAX_AMBIGUOUS_DATES } from '../../config/compatibility.js';
+import { MAX_COMPATIBILITY_COMBOS, AMBIGUOUS_DAY_RADIUS, MAX_AMBIGUOUS_DATES } from '../../../config/compatibility.js';
 /** Résultat quand l'exploration n'a pas eu lieu : mêmes champs, vides */
 const NOT_EXPLORED = Object.freeze({
     compatibleVariations: [],

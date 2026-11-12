@@ -9,7 +9,7 @@ const teamSchema = new mongoose.Schema({
             return currentDate;
         } },
     endDate: { type: Date }, 
-    // Ancien modèle (conservé pendant la migration, voir utils/teamCycle.js) : date de début de cycle propre à l'équipe
+    // Ancien modèle (conservé pendant la migration, voir services/team/team.cycleIndex.js) : date de début de cycle propre à l'équipe
     // TEMPORARY(day-fields): ancien champ, a supprimer quand tous les centres sont migres (ancre + decalage) ; pas de jumeau : il disparait.
     cycleStartDate: { type: Date },
     // Nouveau modèle : position de l'équipe dans le cycle (0..N-1, unique dans le centre) ; début de cycle = Center.cycleAnchorDate + offset

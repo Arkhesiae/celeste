@@ -7,7 +7,7 @@ import express from 'express';
 import { errorHandler } from './middleware/errorHandler.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { renderMail } from './src/mail/mailRenderer.js';
+import { renderMail } from './services/email/mailRenderer.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

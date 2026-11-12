@@ -1,5 +1,5 @@
 import { AppError } from '../error/AppError.js';
-import * as announcementService from '../services/publicAnnouncementService.js';
+import * as announcementService from '../services/publicAnnouncement/publicAnnouncement.service.js';
 
 
 export const getActiveAnnouncements = async (req, res, next) => {

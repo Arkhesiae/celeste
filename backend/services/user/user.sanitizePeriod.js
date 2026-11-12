@@ -9,7 +9,7 @@ import { toDateKey } from '../../utils/dates/dateKey.js';
 import {
     cancelRequestWithSession,
     withdrawFromRequestWithSession,
-} from '../substitution/request.internal.js';
+} from '../substitution/request.cascade.js';
 
 /**
  * Helpers pour "assainir" une période d'un utilisateur (ex. après un changement d'équipe) :

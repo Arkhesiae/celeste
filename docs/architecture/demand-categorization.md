@@ -8,17 +8,17 @@ Files (all under `backend/`):
 | File | Role |
 |---|---|
 | `services/planning/generateShiftsMap.js` | builds the user's planning around the demand day (`Map` day → shift entry) |
-| `services/planning/categorizeDemand.js` | the compatibility computation: `categorize`, `legalLimitsFor` and the seven rules |
-| `services/planning/demandVariations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
+| `services/substitution/compatibility/categorizeDemand.js` | the compatibility computation: `categorize`, `legalLimitsFor` and the seven rules |
+| `services/substitution/compatibility/demandVariations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
 | `utils/shifts/shiftTime.js` | `withZonedBounds` (date key + `HH:mm` → Temporal instants in the center's zone) and `wallClockIso` (instant → text for the front) |
 | `utils/shifts/nightControl.js` | what a night control is (`isNightControl`) |
-| `services/substitution/demandService.js` | `getCompatibleSwitches`: the same rules for the candidate days of a switch |
+| `services/substitution/substitution.switches.js` | `getCompatibleSwitches`: the same rules for the candidate days of a switch |
 | `test/` | `npm test` (see "Tests" below) |
 
 ## 1. Flow
 
 ```
- request.getAndCat.js / compatibilityService.js / computeUserPool.js
+ request.list.js / substitution.compatibility.js / substitution.userPool.js
                  |
    generateShiftsMap(demand days, userId)         planning of the user, ±12 days, worked shifts only
                  |
@@ -35,9 +35,9 @@ Files (all under `backend/`):
 
 Who calls what:
 
-- **User pool** (who gets the e-mail for a new demand, `computeUserPool.js`): `categorize` only. It reads `limit`,
+- **User pool** (who gets the e-mail for a new demand, `substitution.userPool.js`): `categorize` only. It reads `limit`,
   `canSwitch` and `rest`.
-- **Demand lists and detail** (`request.getAndCat.js`, `compatibilityService.js`): `categorizeWithVariations`, which is
+- **Demand lists and detail** (`request.list.js`, `substitution.compatibility.js`): `categorizeWithVariations`, which is
   `categorize` plus the optional variation exploration (off by default, see section 5).
 - **Switch dialog** (`GET /substitution/compatible-switches/:date`, `getCompatibleSwitches`): for each non-rest day of
   the rotation active at that date, the candidate day is put in the planning and goes through the same `legalLimitsFor`.
@@ -123,7 +123,7 @@ user whose planning it is.
 - **Text for the front.** The front displays the UTC hours of the ISO strings it receives, so `wallClockIso` writes the
   local time of the center with a `Z` (`2026-03-28T22:00:00.000Z` for 22:00 in Paris). It is used for the
   `invalidRest35` / `invalidWork48` windows (`windowStart`, `windowEnd`, `longestRestStart`, `longestRestEnd`) and for the
-  `start` / `end` of the planning returned by `getCompatibility` (`compatibilityService.js`). Durations (`rest`,
+  `start` / `end` of the planning returned by `getCompatibility` (`substitution.compatibility.js`). Durations (`rest`,
   `longestRest`, `totalWorkMinutes`) are real minutes.
 
 ## 5. Result

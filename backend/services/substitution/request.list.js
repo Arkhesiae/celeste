@@ -6,7 +6,7 @@ import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
 import { generateMapFromDemands } from '../planning/generateShiftsMap.js';
-import { categorizeWithVariations } from '../planning/demandVariations.js';
+import { categorizeWithVariations } from './compatibility/demandVariations.js';
 import { getUserTimeZone } from '../center/center.timezone.js';
 
 

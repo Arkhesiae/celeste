@@ -9,7 +9,7 @@ import { MIN_POINTS_BALANCE } from '../../config/points.js';
  * @param {Object} transactionData - Données de la transaction
  * @returns {Promise<Object>} La transaction créée
  */
-const createScheduledTransation = async (transactionData) => {
+const createScheduledTransaction = async (transactionData) => {
     const transaction = new Transaction({
         ...transactionData,
         status: 'pending',
@@ -90,7 +90,7 @@ const processPendingTransactions = async () => {
  * @param {string} transactionId - ID de la transaction
  * @returns {Promise<Object>} La transaction annulée
  */
-const cancelScheduledTransation = async (transactionId, { session }) => {
+const cancelScheduledTransaction = async (transactionId, { session }) => {
     const transaction = await findOrThrow(Transaction, transactionId, { message: 'Transaction non trouvée', session });
     if (transaction.status !== 'pending') {
         throw new AppError('Seules les transactions en attente peuvent être annulées', 400);
@@ -101,4 +101,4 @@ const cancelScheduledTransation = async (transactionId, { session }) => {
     return transaction;
 };
 
-export { createScheduledTransation, processPendingTransactions, cancelScheduledTransation }; 
+export { createScheduledTransaction, processPendingTransactions, cancelScheduledTransaction }; 

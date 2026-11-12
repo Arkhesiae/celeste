@@ -2,7 +2,7 @@ import { computeUserShifts } from '../planning/computeUserShifts.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
-import { cancelRequestWithSession } from './request.internal.js';
+import { cancelRequestWithSession } from './request.cascade.js';
 
 
 /**

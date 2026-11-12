@@ -4,7 +4,7 @@ import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
-import { buildTeamSegments, diffTeamSegments } from '../../utils/teamSegments.js';
+import { buildTeamSegments, diffTeamSegments } from '../team/team.segments.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
 import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
 

@@ -3,7 +3,7 @@ import { toPlainDate } from '../utils/dates/plainDate.js';
 import { activationDaysOf } from '../utils/dates/dayAccess.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { isValidId, sameId } from '../utils/ids.js';
-import { findLatestRotation } from "../services/planning/findLatestRotation.js";
+import { findLatestRotation } from "../services/rotation/rotation.latest.js";
 import Shift from '../models/Shift.js';
 import Variation from '../models/Variation.js';
 import { isValidDate } from '../utils/validation.js';

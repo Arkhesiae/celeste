@@ -5,7 +5,7 @@
  * Sûre par construction :
  *   - par défaut c'est un DRY-RUN : rien n'est écrit, le rapport dit ce qui serait fait ;
  *   - `cycleStartDate` n'est jamais modifié ni supprimé : le retour arrière consiste à retirer les nouveaux champs
- *     (`--rollback`), le code relit alors l'ancien champ (voir utils/teamCycle.js) ;
+ *     (`--rollback`), le code relit alors l'ancien champ (voir services/team/team.cycleIndex.js) ;
  *   - un centre n'est migré que s'il ne présente aucune anomalie (équipe sans date, nombre d'équipes différent du
  *     nombre de jours de la rotation, dates qui ne sont pas à minuit UTC, offsets en double) ;
  *   - avant d'écrire, l'équivalence est VÉRIFIÉE : pour chaque équipe, l'ancien et le nouveau calcul donnent le même
@@ -31,8 +31,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
 import '../models/Rotation.js';
-import { findLatestRotation } from '../services/planning/findLatestRotation.js';
-import { cycleDayIndex } from '../utils/teamCycle.js';
+import { findLatestRotation } from '../services/rotation/rotation.latest.js';
+import { cycleDayIndex } from '../services/team/team.cycleIndex.js';
 
 const args = new Map(process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, '').split('=');

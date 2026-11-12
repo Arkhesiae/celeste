@@ -10,7 +10,7 @@ Severity is shown on each issue; sections below are ordered by when to work on t
 
 Compatibility audit (2026-11-11): #45, #47, with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
 
-Changes in this revision (2026-11-11): #13 moved (the file is now `services/planning/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
+Changes in this revision (2026-11-11): #13 moved (the file is now `services/substitution/compatibility/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
 
 ---
 
@@ -54,7 +54,7 @@ Open authorization holes, data-corrupting bugs and the compatibility computation
 - The team-change preview still names people from cascaded requests of other users when someone previews their own change.
 
 ### 45. Switch compatibility ignores variations — P2
-`demandService.getCompatibleSwitches` evaluates each rotation day with `day.default` hours only. A shift with variations (other start / end times) is reported with the default hours' result; the front cannot tell which variation breaks a rule. Test: `getCompatibleSwitches : une rotation à variantes ...` in `backend/test/compatibility.db.test.js` (todo).
+`getCompatibleSwitches` (`substitution.switches.js`) evaluates each rotation day with `day.default` hours only. A shift with variations (other start / end times) is reported with the default hours' result; the front cannot tell which variation breaks a rule. Test: `getCompatibleSwitches : une rotation à variantes ...` in `backend/test/compatibility.db.test.js` (todo).
 
 ### 47. Overlapping shifts are counted twice in the 48h total — P2
 `checkWeeklyWorkHours` (`categorizeDemand.js`) sums the minutes of overlapping shifts instead of their union (test: todo). Only matters once overlapping data exist (such a planning already fails the 11h rule on the shifts involved, but not on unrelated targets).
@@ -76,7 +76,7 @@ These routes are reached before an account exists or before login, so a token ca
 `server.js:53-54` sets `express.json({ limit: '50mb' })` and `urlencoded` to 50mb globally, unauthenticated. The avatar upload (`user.routes.js`) trusts the client: any file is saved with a `.png` extension and no MIME check, into `public/avatars`, which is served statically. Reduce the global limit, validate MIME type and magic bytes, and consider re-encoding images.
 
 ### 30. `deleteRotation` still allows deleting a rotation that was active in the past — P1
-(The missing `centerId` filter is fixed: `findLatestRotation(result.centerId, ...)`.) `controllers/rotation.controller.js` (`deleteRotation`) only blocks a rotation that is active now or has future activations. Deleting one that was active in the past rewrites history: `findLatestRotation` ignores deleted rotations, so past days are recomputed from an earlier rotation, and completed substitutions point to deleted shifts. **Fix:** refuse deletion while the rotation has any activation day (or soft-delete while keeping history resolvable).
+(The missing `centerId` filter is fixed: `findLatestRotation(result.centerId, ...)` (`services/rotation/rotation.latest.js`).) `controllers/rotation.controller.js` (`deleteRotation`) only blocks a rotation that is active now or has future activations. Deleting one that was active in the past rewrites history: `findLatestRotation` ignores deleted rotations, so past days are recomputed from an earlier rotation, and completed substitutions point to deleted shifts. **Fix:** refuse deletion while the rotation has any activation day (or soft-delete while keeping history resolvable).
 
 ### 31. `updateDayInRotation` residual defects — P1
 `PUT /rotations/:id/day` refuses (400, code `ROTATION_HAS_ACTIVATIONS`) any rotation that has activation dates, so days can only be edited on a never-activated rotation. Two bugs remain in that handler (`controllers/rotation.controller.js`, ~lines 404-450):
@@ -93,7 +93,7 @@ The twin fields, dual write and dual read are in place, but the data is only con
 Not urgent individually; most concern the rotation change flow (#35-#36) and the team-change flow (#22-#25).
 
 ### 41. Cron jobs compute "today" in the default time zone, not per center — P2
-`services/substitution/request.internal.js:189,218` (`processPastDemands`, `processAndCompleteDemands`) call `todayIn()` with the default zone (`Europe/Paris`), so a center in another zone has demands cancelled/archived at the wrong moment around midnight. `reminderJob` is already per-center. **Fix:** group by center and use `getCenterTimeZone`.
+`services/substitution/request.expiry.js` (`processPastDemands`, `processAndCompleteDemands`) call `todayIn()` with the default zone (`Europe/Paris`), so a center in another zone has demands cancelled/archived at the wrong moment around midnight. `reminderJob` is already per-center. **Fix:** group by center and use `getCenterTimeZone`.
 
 ### 35. Rotation change leaves stale variations and calendar entries — P2
 Converted demands keep `posterShift.selectedVariation` pointing at a variation of the old shift. Calendar entries are never touched by a rotation change (unlike team changes): an accepted substitution's accepter assignment stores the old `shiftData.shift`, which `computeUserShifts` applies directly, so after conversion the calendar can show the old shift while the demand shows the new one; Modifications/HourPatches on old shift ids are ignored by the consistency check and accumulate. **Fix:** on conversion, reset or remap `selectedVariation`, and remap or deactivate the affected entries.

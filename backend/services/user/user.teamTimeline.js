@@ -4,14 +4,14 @@ import { toPlainDate, daysBetween } from '../../utils/dates/plainDate.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
-import { buildTeamTimeline } from '../../utils/teamSegments.js';
+import { buildTeamTimeline } from '../team/team.segments.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 
 import { TEAM_TIMELINE_MAX_DAYS as MAX_WINDOW_DAYS } from '../../config/limits.js';
 /**
  * Données des frises d'équipes (passé, présent, futur) : pour chaque personne, les périodes pendant lesquelles
  * chaque équipe est effectivement la sienne, avec le type `permanent` / `reinforcement`.
- * La règle « un renfort l'emporte sur l'affectation permanente » vient de utils/teamSegments.js, pour qu'il n'y ait
+ * La règle « un renfort l'emporte sur l'affectation permanente » vient de services/team/team.segments.js, pour qu'il n'y ait
  * qu'une seule source de vérité côté serveur : le front ne fait que dessiner.
  *
  * Fenêtre : { from, to } en YYYY-MM-DD, bornes incluses ; par défaut 3 mois avant et 9 mois après aujourd'hui.

@@ -1,11 +1,11 @@
 import Team from '../../models/Team.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import Center from '../../models/Center.js';
-import { findLatestRotation } from './findLatestRotation.js';
+import { findLatestRotation } from '../rotation/rotation.latest.js';
 import Shift from '../../models/Shift.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';
-import { cycleDayIndex } from '../../utils/teamCycle.js';
+import { cycleDayIndex } from '../team/team.cycleIndex.js';
 
 // Calculer le shift de travail pour une équipe donnée et une date donnée
 const computeShiftOfTeam = async (date, teamData) => {

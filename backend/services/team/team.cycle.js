@@ -11,7 +11,7 @@ import User from '../../models/User.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from '../user/user.sanitizePeriod.js';
 import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
 import { AppError } from '../../error/AppError.js';
-import { findLatestRotation } from '../planning/findLatestRotation.js';
+import { findLatestRotation } from '../rotation/rotation.latest.js';
 import { isValidDate } from '../../utils/validation.js';
 
 

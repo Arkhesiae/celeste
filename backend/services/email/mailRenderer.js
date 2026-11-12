@@ -1,8 +1,10 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import Handlebars from "handlebars";
 
-const __dirname = path.resolve();
+// Les modèles de mail sont à côté de ce fichier (services/email/templates), quel que soit le dossier de lancement
+const templatesRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), "templates");
 const cache = new Map();
 
 // Load all partials once
@@ -46,15 +48,15 @@ Handlebars.registerHelper('formatText', function (text) {
  * @returns {string} Compiled HTML
  */
 export function renderMail(templateName, data = {}) {
-  const templatesDir = path.join(__dirname, "src/mail/templates/content");
-  const basePath = path.join(__dirname, "src/mail/templates/base.html");
+  const templatesDir = path.join(templatesRoot, "content");
+  const basePath = path.join(templatesRoot, "base.html");
   const templatePath = path.join(templatesDir, `${templateName}.html`);
 
   if (!fs.existsSync(templatePath)) {
     throw new Error(`Template ${templateName} not found`);
   }
 
-  const partialsDir = path.join(__dirname, "src/mail/templates/partials");
+  const partialsDir = path.join(templatesRoot, "partials");
   fs.readdirSync(partialsDir).forEach((file) => {
     if (file.endsWith(".html")) {
       const name = path.basename(file, ".html");

@@ -1,7 +1,7 @@
 import User from "../../models/User.js";
 import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from "../../error/AppError.js";
-import { userPayload } from "./auth.js";
+import { userPayload } from "./auth.payload.js";
 import jwt from 'jsonwebtoken';
 import { DEFAULT_ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from '../../config/auth.js';
 

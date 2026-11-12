@@ -1,4 +1,4 @@
-import { occurrenceDays } from './dates/dayAccess.js';
+import { occurrenceDays } from '../../utils/dates/dayAccess.js';
 
 /**
  * Équipe d'un utilisateur un jour donné (Temporal.PlainDate) : un renfort (occurrence bornée, `toDate` inclus) l'emporte

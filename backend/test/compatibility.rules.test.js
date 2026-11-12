@@ -1,5 +1,5 @@
 /**
- * Tests des règles de repos / de charge utilisées par le calcul de compatibilité (services/planning/categorizeDemand.js).
+ * Tests des règles de repos / de charge utilisées par le calcul de compatibilité (services/substitution/compatibility/categorizeDemand.js).
  *
  * Fonctions pures, sans base de données :  node --test backend/test/
  *
@@ -33,7 +33,7 @@ import {
   checkRestAfterNightControl,
   checkConsecutiveNightControls,
   checkRestAfterTwoNightControls,
-} from '../services/planning/categorizeDemand.js';
+} from '../services/substitution/compatibility/categorizeDemand.js';
 import { shiftMapToArray } from '../services/planning/generateShiftsMap.js';
 import { isNightControl } from '../utils/shifts/nightControl.js';
 import { withZonedBounds, wallClockIso } from '../utils/shifts/shiftTime.js';
@@ -314,7 +314,7 @@ test('Contrôle de nuit : le résultat ne dépend pas du fuseau du serveur', () 
   const probe = (serverTimeZone) => {
     const code = `
       import { isNightControl } from './utils/shifts/nightControl.js';
-      import { checkRestAfterNightControl } from './services/planning/categorizeDemand.js';
+      import { checkRestAfterNightControl } from './services/substitution/compatibility/categorizeDemand.js';
       import { withZonedBounds } from './utils/shifts/shiftTime.js';
       const shiftOf = (date, startTime, endTime, endsNextDay = false) => ({ shift: { type: 'work' }, date, startTime, endTime, endsNextDay });
       const [night, nextShift] = withZonedBounds([shiftOf('2026-03-10', '22:00', '06:00', true), shiftOf('2026-03-11', '14:00', '20:00')], 'UTC');

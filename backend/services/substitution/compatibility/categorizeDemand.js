@@ -19,14 +19,14 @@
  *   - `legalLimitsFor` en fait des Temporal.ZonedDateTime UNE fois (`withZonedBounds`), et toutes les règles calculent
  *     sur ces instants : les durées sont réelles, y compris les jours de changement d'heure.
  */
-import { posterDayOf } from '../../utils/dates/dayAccess.js';
+import { posterDayOf } from '../../../utils/dates/dayAccess.js';
 import { Temporal } from '@js-temporal/polyfill';
-import { isNightControl } from '../../utils/shifts/nightControl.js';
-import Shift from '../../models/Shift.js';
-import { shiftMapToArray } from './generateShiftsMap.js';
-import { withZonedBounds, wallClockIso } from '../../utils/shifts/shiftTime.js';
-import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
-import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
+import { isNightControl } from '../../../utils/shifts/nightControl.js';
+import Shift from '../../../models/Shift.js';
+import { shiftMapToArray } from '../../planning/generateShiftsMap.js';
+import { withZonedBounds, wallClockIso } from '../../../utils/shifts/shiftTime.js';
+import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
+import { DEFAULT_TIME_ZONE } from '../../../utils/dates/constants.js';
 
 import {
     MIN_REST_MINUTES,
@@ -37,7 +37,7 @@ import {
     MAX_CONSECUTIVE_NIGHT_CONTROLS,
     MIN_REST_AFTER_TWO_NIGHTS_MINUTES,
     WEEKLY_WINDOWS,
-} from '../../config/workRules.js';
+} from '../../../config/workRules.js';
 const isLater = (a, b) => Temporal.ZonedDateTime.compare(a, b) > 0;
 const isEarlier = (a, b) => Temporal.ZonedDateTime.compare(a, b) < 0;
 /** Durée réelle entre deux instants, en minutes */

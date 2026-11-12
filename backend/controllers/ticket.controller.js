@@ -1,4 +1,4 @@
-import * as ticketService from '../services/ticketService.js';
+import * as ticketService from '../services/ticket/ticket.service.js';
 
 import { AppError } from '../error/AppError.js';
 // Récupérer tous les tickets

@@ -1,4 +1,4 @@
-import * as calendarEntryService from '../services/calendarEntry/calendar-entry.js';
+import * as calendarEntryService from '../services/calendarEntry/index.js';
 import { isValidDate } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 

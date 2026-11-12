@@ -3,7 +3,7 @@ import { findOrThrow } from '../../utils/mongo.js';
 import { fullName } from '../../utils/names.js';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import { sendPasswordResetEmail } from '../email/resetPassword.js';
+import { sendPasswordResetEmail } from '../email/resetPasswordEmail.js';
 import { AppError } from '../../error/AppError.js';
 
 /**

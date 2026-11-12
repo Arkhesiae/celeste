@@ -1,6 +1,6 @@
-import { toPlainDate, daysBetween } from './dates/plainDate.js';
-import { anchorDayOf } from './dates/dayAccess.js';
-import { mod } from './math.js';
+import { toPlainDate, daysBetween } from '../../utils/dates/plainDate.js';
+import { anchorDayOf } from '../../utils/dates/dayAccess.js';
+import { mod } from '../../utils/math.js';
 
 /**
  * Position d'une équipe dans le cycle de la rotation : une seule formule pour tout le backend.

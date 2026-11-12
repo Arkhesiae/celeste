@@ -1,6 +1,6 @@
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
-import { cancelPendingTransactions } from './request.mutations.utils.js';
+import { cancelPendingTransactions } from './request.pendingTransactions.js';
 
 
 // ---------------------------- WIP ----------------------------

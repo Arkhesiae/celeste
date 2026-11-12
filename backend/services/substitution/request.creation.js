@@ -4,7 +4,7 @@ import { toCalendarDay } from '../../utils/dates/calendarDay.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import User from "../../models/User.js";
 import { computeUserShifts } from "../planning/computeUserShifts.js";
-import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
+import { getTeamAtDay } from "../team/team.atDay.js";
 import { AppError } from "../../error/AppError.js";
 import { MIN_POINTS_BALANCE } from "../../config/points.js";
 

@@ -1,6 +1,6 @@
 /**
  * Règles de repos et de charge de travail appliquées au calcul de compatibilité des demandes
- * (services/planning/categorizeDemand.js ; description : docs/architecture/demand-categorization.md).
+ * (services/substitution/compatibility/categorizeDemand.js ; description : docs/architecture/demand-categorization.md).
  */
 export const MIN_REST_MINUTES = 11 * 60;                   // repos entre deux vacations
 export const WEEKLY_REST_MINUTES = 35 * 60;                // un repos continu d'au moins 35h dans chaque période de 7 jours

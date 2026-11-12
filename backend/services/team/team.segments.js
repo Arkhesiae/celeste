@@ -1,8 +1,8 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { occurrenceDays } from './dates/dayAccess.js';
-import { AppError } from '../error/AppError.js';
-import { idOf } from './ids.js';
-import { toDateKey } from './dates/dateKey.js';
+import { occurrenceDays } from '../../utils/dates/dayAccess.js';
+import { AppError } from '../../error/AppError.js';
+import { idOf } from '../../utils/ids.js';
+import { toDateKey } from '../../utils/dates/dateKey.js';
 
 /**
  * Les équipes d'un utilisateur sont stockées en "occurrences" ({ teamId, fromDate, toDate|null }) qui

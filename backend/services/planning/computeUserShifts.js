@@ -1,11 +1,11 @@
-import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
+import { getTeamAtDay } from "../team/team.atDay.js";
 import { activationDaysOf } from '../../utils/dates/dayAccess.js';
 import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
 import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { sameId } from '../../utils/ids.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { toCalendarDay } from '../../utils/dates/calendarDay.js';
-import { cycleDayIndex } from '../../utils/teamCycle.js';
+import { cycleDayIndex } from '../team/team.cycleIndex.js';
 import Center from '../../models/Center.js';
 import User from "../../models/User.js";
 import Substitution from '../../models/Substitution.js';

@@ -1,7 +1,7 @@
-import PublicAnnouncement from '../models/PublicAnnouncement.js';
-import { findOrThrow } from '../utils/mongo.js';
-import { sameId } from '../utils/ids.js';
-import { AppError } from '../error/AppError.js';
+import PublicAnnouncement from '../../models/PublicAnnouncement.js';
+import { findOrThrow } from '../../utils/mongo.js';
+import { sameId } from '../../utils/ids.js';
+import { AppError } from '../../error/AppError.js';
 
 /**
  * Build the MongoDB query filter for announcements visible to a given user.

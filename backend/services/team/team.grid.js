@@ -9,7 +9,7 @@ import Substitution from '../../models/Substitution.js';
 import { Assignment } from '../../models/CalendarEntry.js';
 import { computeUserShifts } from '../planning/computeUserShifts.js';
 import { computeShiftOfTeam } from '../planning/computeShiftOfTeam.js';
-import { getTeamAtDay } from '../../utils/getTeamAtDay.js';
+import { getTeamAtDay } from './team.atDay.js';
 
 import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';

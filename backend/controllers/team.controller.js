@@ -8,7 +8,7 @@ import Center from '../models/Center.js';
 import User from "../models/User.js";
 import { computeShiftOfTeam } from '../services/planning/computeShiftOfTeam.js';
 import { AppError } from '../error/AppError.js';
-import { findLatestRotation } from '../services/planning/findLatestRotation.js';
+import { findLatestRotation } from '../services/rotation/rotation.latest.js';
 
 import { getTeamGrid as getTeamGridService } from '../services/team/team.grid.js';
 import { setTeamCyclePosition as setTeamCyclePositionService } from '../services/team/team.cycle.js';
@@ -169,7 +169,7 @@ const updateTeamCycleStartDate = async (req, res, next) => {
         const update = { $set: { cycleStartDate } };
 
         // Double écriture pendant la migration : si le centre utilise déjà une ancre de cycle, l'offset de l'équipe
-        // doit rester cohérent avec la date saisie (il a priorité à la lecture, voir utils/teamCycle.js)
+        // doit rester cohérent avec la date saisie (il a priorité à la lecture, voir services/team/team.cycleIndex.js)
         const current = await Team.findById(id).select('center');
         const center = current ? await Center.findById(current.center).select('cycleAnchorDate cycleAnchorDay') : null;
         const anchorDay = center ? anchorDayOf(center) : null;

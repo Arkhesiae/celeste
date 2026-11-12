@@ -8,7 +8,7 @@ import User from '../models/User.js';
 import Rotation from '../models/Rotation.js';
 import Shift from '../models/Shift.js';
 import Variation from '../models/Variation.js';
-import { createLocalAdmin } from './seedAdmin.js';
+import { createLocalAdmin } from '../bootstrap/seedAdmin.js';
 
 const CENTER = {
   name: 'Bordeaux',

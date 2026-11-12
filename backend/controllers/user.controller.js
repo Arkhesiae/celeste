@@ -13,9 +13,9 @@ import { AVATAR_MAX_BYTES } from '../config/limits.js';
 import { LegacyUser } from '../models/User.js';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
-import { getTeamAtDay } from "../utils/getTeamAtDay.js";
+import { getTeamAtDay } from "../services/team/team.atDay.js";
 import Transaction from '../models/Transaction.js';
-import { createScheduledTransation } from '../services/transaction/transaction.scheduled.js';
+import { createScheduledTransaction } from '../services/transaction/transaction.scheduled.js';
 import path from 'path';
 import fs from 'fs';
 import { isValidDateRange } from '../utils/validation.js';
@@ -610,7 +610,7 @@ const transferPoints = async (req, res, next) => {
         const amountInt = parseInt(amount);
         // Si la date d'effectivité est dans le futur, créer une transaction différée
         if (scheduledDate) {
-            const transaction = await createScheduledTransation({
+            const transaction = await createScheduledTransaction({
                 sender: fromUserId,
                 receiver: toUserId,
                 amount: amountInt,

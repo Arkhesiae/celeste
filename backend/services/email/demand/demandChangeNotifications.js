@@ -4,8 +4,8 @@ import { formatDateFr } from '../../../utils/dates/format.js';
 import { shortName } from '../../../utils/names.js';
 import { idOf } from '../../../utils/ids.js';
 import User from '../../../models/User.js';
-import emailService from '../emailService.js';
-import { renderMail } from '../../../src/mail/mailRenderer.js';
+import emailService from '../email.transport.js';
+import { renderMail } from '../mailRenderer.js';
 import { sendCancelledAcceptanceEmail } from './demandEmails.js';
 
 /**

@@ -1,5 +1,5 @@
-import emailService from './emailService.js';
-import { renderMail } from '../../src/mail/mailRenderer.js';
+import emailService from './email.transport.js';
+import { renderMail } from './mailRenderer.js';
 
 /**
  * Envoie un email de réinitialisation de mot de passe

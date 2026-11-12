@@ -5,7 +5,7 @@ place or not standard**, with the target position or name, so the changes can be
 were done are removed (they are recorded in `docs/product/roadmap.md`, "Done"). Facts come from `git ls-files`, an import
 graph of the backend modules, and line counts.
 
-Done so far: the case of `AppError.js` in git (known issue #49), the dead `AccountRecoveryRequest` model, `config/` (shared
+Done so far: the `rotation` controller extracted into services, the last naming fixes (`services/rule`, `PointTransfer`, route and controller file names); the case of `AppError.js` in git (known issue #49), the dead `AccountRecoveryRequest` model, `config/` (shared
 constants, one file per topic), `public/avatars` and the root crash logs untracked, the mechanical renames, the file moves
 (`src/mail` → `services/email`, `utils/team*` → `services/team`, the substitution code out of `services/planning/`,
 `findLatestRotation` → `services/rotation`, dev fixtures → `dev/`) and the service renames to the dot style (the
@@ -29,12 +29,13 @@ style `<domain>.<action>.js` (`user.team.js`, `request.accept.js`).
 
 ## 2. Layering (`routes → controllers → services → models`)
 
-- **12 of 15 controllers import models directly** (`announcement`, `auth`, `center`, `message`, `otp`, `recovery`,
-  `rotation`, `rule`, `stat`, `substitution`, `team`, `user`) and run queries and business rules themselves. The biggest
-  are `user.controller.js` (943 lines, 5 models), `rotation.controller.js` (653 lines, copying a rotation, editing a day,
-  deleting) and `substitution.controller.js` (457 lines). `services/rotation/` contains one file
-  (`rotation.activation.js`) although the rotation CRUD lives in the controller. Proposed: controllers only read the
-  request, call a service and answer; move the rest to `services/<domain>/`, starting with `rotation` and `user`.
+- **10 of 15 controllers still import models directly** (`accountRecovery`, `announcement`, `auth`, `center`, `message`,
+  `otp`, `rule`, `stat`, `substitution`, `team`) and run queries and business rules themselves. The biggest is
+  now `substitution.controller.js` (457 lines). `rotation` and `user` were extracted (rotation controller 132 lines, logic in
+  `services/rotation/rotation.{create,read,update,delete,activationRequest}.js`; user controller has no model import, logic in
+  `services/user/user.{account,profile,points,teamRead,list}.js`).
+  Proposed: controllers only read the request, call a service and answer; move the rest to `services/<domain>/`, one
+  resource per change, `substitution` next, then `center`, `team` and the small ones.
 - `middleware/centerAuth.js` imports six models (it looks up the resource to find its center). Acceptable for an
   authorization guard; if it is moved, the lookups belong to `services/auth/` (`auth.centerAccess.js`).
 - Good: no service imports a controller, route or middleware, and no model imports a service.
@@ -45,23 +46,24 @@ Most services now follow the dot style (`<domain>.<action>.js`); what still brea
 
 | Current | Anomaly | Proposed |
 |---|---|---|
-| `services/rules/` | the only plural service folder (`substitution`, `transaction`, `calendarEntry` are singular), next to `rule.controller.js` and `models/Rule.js`; its files are `ruleService.js`, `initializeRules.js`, `predefinedRules.js` | `services/rule/` with `rule.service.js`, `rule.initialize.js`, `rule.predefined.js` (the URL `/rules` can stay) |
-| `models/Transaction.js` | a transfer of points, which reads like a database transaction (`inTransaction`, `session`) | `PointTransfer.js` (or `PointTransaction.js`) |
-| `models/CalendarEntry.js` | exports four models (`CalendarEntry`, `Assignment`, `Modification`, `HourPatch`) | fine as discriminators, but name them in a header comment; the folder `calendarEntry/`, the route `calendar-entry.routes.js` and the URL `/planning-modifications` are three names for one resource |
+| `models/CalendarEntry.js` | exports four models (`CalendarEntry`, `Assignment`, `Modification`, `HourPatch`) | fine as discriminators, but name them in a header comment; the folder `calendarEntry/`, the route `calendar-entry.routes.js` and the legacy URL `/planning-modifications` are two names for one resource (URL: see section 4) |
 
 ## 4. Routes, controllers and URLs
 
-| Route file | Controller | Mount | Anomaly |
-|---|---|---|---|
-| `account-recovery.routes.js` | `recovery.controller.js` | `/account-recovery` | three names for one resource (route, controller, URL) |
-| `rules.routes.js` | `rule.controller.js` | `/rules` | plural route, singular controller |
-| `stats.routes.js` | `stat.controller.js` | `/stats` | idem |
-| `calendar-entry.routes.js` | `calendarEntry.controller.js` | `/planning-modifications` | three names |
-| `public-announcement.routes.js` | `publicAnnouncement.controller.js` | `/public-announcements` | kebab route, camel controller (acceptable, but the pattern is not written anywhere) |
-| `center.routes.js` | `center.controller.js` | `/center` | **singular URL**, while `/users`, `/teams`, `/rotations`, `/rules` are plural; `/substitution` is singular too. Changing a URL touches the front (`services/*Service.js`), so only do it with the front |
+Rule (also in `CLAUDE.md`): route files are `<resource>.routes.js` and controllers `<resource>.controller.js`, both singular (as most
+already were: `announcement`, `team`, `user`, ...), and `models/` and `services/` use the same singular word. Applied on
+2026-11-12: `rules.routes.js` → `rule.routes.js`, `stats.routes.js` → `stat.routes.js` (a first pass wrongly pluralised
+`calendar-entry.routes.js`; reverted), `recovery.controller.js` →
+`accountRecovery.controller.js`, `services/rules/` → `services/rule/` (`rule.service.js`, `rule.initialize.js`,
+`rule.predefined.js`), `models/Transaction.js` → `PointTransfer.js` (the registered model name stays `Transaction`: it gives
+the collection name `transactions` and the `ref` of other schemas).
 
-Rule to write down: route files kebab-case plural of the resource, controllers `<resource>.controller.js` in the
-singular, and the same singular word in `models/` and `services/`.
+What remains is only about **URLs**, which the front calls, so they change only together with the front:
+
+| Mount | Anomaly |
+|---|---|
+| `/center`, `/substitution` | singular, while `/users`, `/teams`, `/rotations`, `/rules` are plural |
+| `/planning-modifications` | the backend calls the resource "calendar entry" (model, service folder, controller, route file); the URL is the legacy name |
 
 ## 5. Export style
 
@@ -85,8 +87,6 @@ singular, and the same singular word in `models/` and `services/`.
 
 ## 7. Suggested order of what remains
 
-1. Extract controller logic into services, one resource per change, `rotation` first, then `user`.
-2. Rename the last service folder and model that break the naming (`services/rules` → `services/rule`, `models/Transaction.js`
-   → `PointTransfer.js`) and the route / controller / URL pairs of section 4.
-3. Add `backend/.env.example`, the Docker volume for the avatars, and a logger.
-4. Decide the URL naming (singular `/center`, `/substitution`) together with a front change, if at all.
+1. Extract the controller logic of `user` (then `substitution`, `center`, `team` and the small ones) into services, one resource per change.
+2. Add `backend/.env.example`, the Docker volume for the avatars, and a logger.
+3. Decide the URL naming (singular `/center`, `/substitution`, legacy `/planning-modifications`) together with a front change, if at all.

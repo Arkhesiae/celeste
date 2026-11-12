@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import Rule from '../../models/Rule.js'; // your Rule model
-import { predefinedRules } from './predefinedRules.js';
+import { predefinedRules } from './rule.predefined.js';
 
 export async function initializeRules () {
     try {

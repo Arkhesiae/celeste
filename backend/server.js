@@ -32,7 +32,7 @@ import './jobs/index.js';
 import { createAdmin, createLocalAdmin } from './bootstrap/seedAdmin.js';
 
 // ─── Initialisation des règles ────────────────────────────────────────────────
-import { initializeRules } from './services/rules/initializeRules.js';
+import { initializeRules } from './services/rule/rule.initialize.js';
 
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({

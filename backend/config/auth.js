@@ -12,3 +12,6 @@ export const REFRESH_TOKEN_MAX_AGE_MS = REFRESH_TOKEN_DAYS * 24 * 60 * 60 * 1000
 
 /** Durée de validité d'un code à usage unique (inscription, vérification d'e-mail) */
 export const OTP_VALIDITY_MS = 10 * 60 * 1000;
+
+/** Longueur minimale d'un mot de passe à la création d'un compte (le formulaire du front applique la même) */
+export const MIN_PASSWORD_LENGTH = 8;

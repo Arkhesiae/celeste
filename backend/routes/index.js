@@ -9,11 +9,11 @@ import ticketRoutes from './ticket.routes.js';
 import otpRoutes from './otp.routes.js';
 import authRouter from './auth.routes.js';
 import devRouter from './dev.routes.js';
-import rulesRouter from './rules.routes.js';
+import rulesRouter from './rule.routes.js';
 import accountRecoveryRouter from './account-recovery.routes.js';
 import announcementRoutes from './announcement.routes.js';
 import calendarEntryRouter from './calendar-entry.routes.js';
-import statsRouter from './stats.routes.js';
+import statsRouter from './stat.routes.js';
 import publicAnnouncementRouter from './public-announcement.routes.js';
 
 const router = express.Router();

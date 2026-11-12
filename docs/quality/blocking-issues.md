@@ -128,6 +128,9 @@ Team changes, cycle position changes and rotation changes email the affected thi
 ### 39. Center and role in the access token can be stale — P2
 `middleware/centerAuth.js` (`loadCaller`) trusts `centerId`, `adminType` and `isAdmin` from the JWT (`generateAccessToken` also sets the access lifetime, 15m). A user moved to another center, demoted, or deleted keeps their old access until the token expires. Acceptable at that lifetime; reload the user in `loadCaller` if immediate revocation is needed.
 
+### 50. Account recovery takes the point balance from the request — P1
+`backend/controllers/accountRecovery.controller.js` (`initiateAccountRecovery`, line 51 `points` read from `req.body`, line 94 used as the balance of the new account): the route is public and the only proof is knowing a legacy `login` or `oldEmail`, so anyone who knows one can claim any balance (`createRecoveredUser` now only checks it is a non-negative integer). The balance should come from the legacy record, not from the client. Found while fixing the sign-up route, which used to trust `approved` and `points` from the body in the same way (fixed, see roadmap 2026-11-12).
+
 ---
 
 ## Cleanup

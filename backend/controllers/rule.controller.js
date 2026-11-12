@@ -1,5 +1,5 @@
-import ruleService from '../services/rules/ruleService.js';
-import { initializeRules as initRulesService } from '../services/rules/initializeRules.js';
+import ruleService from '../services/rule/rule.service.js';
+import { initializeRules as initRulesService } from '../services/rule/rule.initialize.js';
 import Rule from '../models/Rule.js';
 
 import { AppError } from '../error/AppError.js';

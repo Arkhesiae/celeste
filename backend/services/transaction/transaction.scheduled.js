@@ -1,4 +1,4 @@
-import Transaction from '../../models/Transaction.js';
+import PointTransfer from '../../models/PointTransfer.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
@@ -10,7 +10,7 @@ import { MIN_POINTS_BALANCE } from '../../config/points.js';
  * @returns {Promise<Object>} La transaction créée
  */
 const createScheduledTransaction = async (transactionData) => {
-    const transaction = new Transaction({
+    const transaction = new PointTransfer({
         ...transactionData,
         status: 'pending',
         effectiveDate: new Date(transactionData.scheduledDate)
@@ -26,7 +26,7 @@ const createScheduledTransaction = async (transactionData) => {
 const processPendingTransactions = async () => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const pendingTransactions = await Transaction.find({
+    const pendingTransactions = await PointTransfer.find({
         status: 'pending',
         effectiveDate: { $lt: startOfToday }
     }).populate('sender').populate('receiver');
@@ -91,7 +91,7 @@ const processPendingTransactions = async () => {
  * @returns {Promise<Object>} La transaction annulée
  */
 const cancelScheduledTransaction = async (transactionId, { session }) => {
-    const transaction = await findOrThrow(Transaction, transactionId, { message: 'Transaction non trouvée', session });
+    const transaction = await findOrThrow(PointTransfer, transactionId, { message: 'Transaction non trouvée', session });
     if (transaction.status !== 'pending') {
         throw new AppError('Seules les transactions en attente peuvent être annulées', 400);
     }

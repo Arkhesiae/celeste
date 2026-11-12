@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const TransactionSchema = new mongoose.Schema({
+const PointTransferSchema = new mongoose.Schema({
     sender: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -48,10 +48,11 @@ const TransactionSchema = new mongoose.Schema({
 });
 
 // Index pour optimiser les requêtes
-TransactionSchema.index({ sender: 1, receiver: 1 });
-TransactionSchema.index({ createdAt: -1 });
-TransactionSchema.index({ effectiveDate: 1, status: 1 });
+PointTransferSchema.index({ sender: 1, receiver: 1 });
+PointTransferSchema.index({ createdAt: -1 });
+PointTransferSchema.index({ effectiveDate: 1, status: 1 });
 
-const Transaction = mongoose.model('Transaction', TransactionSchema);
+// Le nom enregistré reste 'Transaction' : c'est lui qui donne le nom de la collection (`transactions`) et les `ref` des autres schémas
+const PointTransfer = mongoose.model('Transaction', PointTransferSchema);
 
-export default Transaction; 
+export default PointTransfer; 

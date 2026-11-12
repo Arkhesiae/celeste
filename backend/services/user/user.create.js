@@ -10,6 +10,10 @@ import { AppError } from '../../error/AppError.js';
 export const createUserService = async (userData) => {
     const { name, lastName, password, email, centerId, team, points, approved } = userData;
 
+    if (await User.exists({ email })) {
+        throw new AppError('Cette adresse email est déjà utilisée', 400);
+    }
+
     const hashedPassword = await hash(password, 10);
     const user = new User({
         name,

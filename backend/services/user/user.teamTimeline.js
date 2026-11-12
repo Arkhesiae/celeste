@@ -7,6 +7,7 @@ import { AppError } from '../../error/AppError.js';
 import { buildTeamTimeline } from '../../utils/teamSegments.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 
+import { TEAM_TIMELINE_MAX_DAYS as MAX_WINDOW_DAYS } from '../../config/limits.js';
 /**
  * Données des frises d'équipes (passé, présent, futur) : pour chaque personne, les périodes pendant lesquelles
  * chaque équipe est effectivement la sienne, avec le type `permanent` / `reinforcement`.
@@ -16,7 +17,6 @@ import { toDateKey } from '../../utils/dates/dateKey.js';
  * Fenêtre : { from, to } en YYYY-MM-DD, bornes incluses ; par défaut 3 mois avant et 9 mois après aujourd'hui.
  */
 
-const MAX_WINDOW_DAYS = 800;
 const shiftMonths = (key, months) => Temporal.PlainDate.from(key).add({ months }).toString();
 
 /** @returns {{ from: string, to: string }} */

@@ -35,8 +35,6 @@ import mongoose from 'mongoose';
 import { DAY_FIELDS, toDay } from '../utils/dates/dayFields.js';
 import { DAY_MS } from '../utils/dates/constants.js';
 
-dotenv.config();
-
 const args = new Map(process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, '').split('=');
     return [k, v ?? true];

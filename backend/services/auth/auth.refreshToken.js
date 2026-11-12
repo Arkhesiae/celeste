@@ -3,11 +3,11 @@ import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from "../../error/AppError.js";
 import { userPayload } from "./auth.js";
 import jwt from 'jsonwebtoken';
+import { DEFAULT_ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from '../../config/auth.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
-const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || '15m';
-const REFRESH_TOKEN_EXPIRY = '180d';
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || DEFAULT_ACCESS_TOKEN_EXPIRY;
 
 /**
  * Génère un access token JWT

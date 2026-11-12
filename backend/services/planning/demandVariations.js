@@ -24,14 +24,7 @@ import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTime
 import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
 import { categorize, checkCompatibilityForVariation, buildPreFetchedAcceptedShifts } from './categorizeDemand.js';
 
-// ─── Bornes du calcul (la combinatoire explose vite : 3 variantes sur 4 jours = 3^4 combinaisons × variantes de la demande)
-/** Nombre maximal d'évaluations (variantes de la demande × combinaisons de variantes de l'utilisateur) */
-const MAX_COMPATIBILITY_COMBOS = 128;
-/** Un jour trop éloigné de la demande n'influence plus ses fenêtres de repos : on ne l'explore pas */
-const AMBIGUOUS_DAY_RADIUS = 7;
-/** Nombre maximal de jours explorés (les plus proches de la demande) */
-const MAX_AMBIGUOUS_DATES = 4;
-
+import { MAX_COMPATIBILITY_COMBOS, AMBIGUOUS_DAY_RADIUS, MAX_AMBIGUOUS_DATES } from '../../config/compatibility.js';
 /** Résultat quand l'exploration n'a pas eu lieu : mêmes champs, vides */
 const NOT_EXPLORED = Object.freeze({
     compatibleVariations: [],

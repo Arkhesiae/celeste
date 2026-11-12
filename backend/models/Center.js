@@ -14,6 +14,15 @@ const centerSchema = new mongoose.Schema({
     // TEMPORARY(day-fields): ancien champ Date, a supprimer avec la bascule (reste cycleAnchorDay).
     cycleAnchorDate: { type: Date },
     cycleAnchorDay: dayField,   // jumeau « jour » de cycleAnchorDate (migration en cours)
+    // Position géographique, trouvée à partir du nom du centre (services/center/center.geocode.js) ; absente tant que la
+    // recherche n'a pas abouti. `lookupFailedAt` évite de relancer à chaque requête une recherche qui n'a rien trouvé.
+    location: {
+        latitude: { type: Number, min: -90, max: 90 },
+        longitude: { type: Number, min: -180, max: 180 },
+        displayName: { type: String },
+        geocodedAt: { type: Date },
+    },
+    locationLookupFailedAt: { type: Date },
     deleted: { type: Boolean, default: false },
 });
 

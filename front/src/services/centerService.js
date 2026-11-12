@@ -17,6 +17,15 @@ export const centerService = {
   },
 
   /**
+   * Carte du tableau de bord : position et demandes à venir (ouvertes / acceptées) de chaque centre.
+   * `pendingLocations` : centres dont la position est encore en cours de recherche.
+   * @returns {Promise<{ centers: Array<{ _id: string, name: string, OACI: string, latitude: number, longitude: number, open: number, accepted: number, isOwn: boolean }>, pendingLocations: number }>}
+   */
+  async fetchCentersMap() {
+    return apiFetch(`/center/map`, { method: 'GET' });
+  },
+
+  /**
    * Récupère les utilisateurs d'un centre spécifique.
    * @param {string} centerId - L'ID du centre.
    * @returns {Promise<Array>} Liste des utilisateurs du centre.

@@ -9,8 +9,7 @@ import Variation from '../models/Variation.js';
 import { isValidDate } from '../utils/validation.js';
 import rotationActivationService from '../services/rotation/rotation.activation.js';
 import { AppError } from '../error/AppError.js';
-const POINTS_PER_HOUR = 1;
-const BASE_VALUE = 2;
+import { SHIFT_POINTS_PER_HOUR, SHIFT_BASE_POINTS } from '../config/points.js';
 
 // Helper function to compute work duration
 const computeWorkDuration = (start, end) => {
@@ -28,7 +27,7 @@ const computeWorkDuration = (start, end) => {
     }
     const durationInMillis = endDate - startDate;
     const hours = Math.floor(durationInMillis / 3600000);
-    const points = Math.floor(hours * POINTS_PER_HOUR) + BASE_VALUE;
+    const points = Math.floor(hours * SHIFT_POINTS_PER_HOUR) + SHIFT_BASE_POINTS;
     return { points: 10, duration: hours, endsNextDay };
 };
 

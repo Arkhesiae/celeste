@@ -4,7 +4,7 @@ Audit date: 2026-11-02; re-verified against the code on 2026-11-11 (every issue 
 Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited, except where noted.
 Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database.
 
-This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed or closed issues (#1, #26, #48, #13, #17, #19, #42 (35h rule bounded by the window: intended), #43, #44, #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
+This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed or closed issues (#1, #49, #26, #48, #13, #17, #19, #42 (35h rule bounded by the window: intended), #43, #44, #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
 
 Severity is shown on each issue; sections below are ordered by when to work on them. **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug that will break a code path.
 

@@ -3,9 +3,7 @@ import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
 
-/** Jours avant/après pour couvrir les fenêtres glissantes 7j (±6) + marge nuits / fenêtres étendues */
-const SHIFT_MAP_DAY_RADIUS = 12;
-
+import { SHIFT_MAP_DAY_RADIUS } from '../../config/compatibility.js';
 /**
  * Prépare une map des shifts pour tous les utilisateurs concernés par les demandes
  * @param {Date[]} dates - Liste de dates à traiter

@@ -36,6 +36,7 @@ declare module 'vue' {
     CalendarPanel: typeof import('./src/components/Calendar/Panels/common/CalendarPanel.vue')['default']
     CalendarSidePanel: typeof import('./src/components/Deprecated/CalendarSidePanel.vue')['default']
     CentersComponent: typeof import('./src/components/Centers/CentersComponent.vue')['default']
+    CentersMapCard: typeof import('./src/components/Dashboard/CentersMapCard.vue')['default']
     ConfirmationChip: typeof import('./src/components/Deprecated/ConfirmationChip.vue')['default']
     ConfirmationChipExtended: typeof import('./src/components/Deprecated/ConfirmationChipExtended.vue')['default']
     ConfirmationDialog: typeof import('./src/components/common/ConfirmationDialog.vue')['default']

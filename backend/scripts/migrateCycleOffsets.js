@@ -34,8 +34,6 @@ import '../models/Rotation.js';
 import { findLatestRotation } from '../services/planning/findLatestRotation.js';
 import { cycleDayIndex } from '../utils/teamCycle.js';
 
-dotenv.config();
-
 const args = new Map(process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, '').split('=');
     return [k, v ?? true];

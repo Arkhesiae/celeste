@@ -3,6 +3,7 @@ import { sendEmailOtp } from '../services/email/otpEmail.js';
 import crypto from 'crypto';
 import { AppError } from '../error/AppError.js';
 
+import { OTP_VALIDITY_MS } from '../config/auth.js';
 const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
@@ -29,7 +30,7 @@ export const sendOtp = async (req, res, next) => {
 
     // Générer un nouveau code OTP
     const otp = generateOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // Expire dans 10 minutes
+    const expiresAt = new Date(Date.now() + OTP_VALIDITY_MS);
 
     // Sauvegarder l'OTP dans la base de données
     await Otp.create({

@@ -5,6 +5,7 @@ import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
 import { findLatestRotation } from '../services/planning/findLatestRotation.js';
 import { AppError } from '../error/AppError.js';
+import { getCentersMap } from '../services/center/center.map.js';
 
 // GET ALL CENTERS (route publique : formulaires d'inscription / contact) — champs publics uniquement :
 // pas d'`admins` (ids d'utilisateurs), de `relatedCenters`, de `timeZone` ni de drapeaux internes
@@ -12,6 +13,15 @@ const getAllCenters = async (req, res, next) => {
     try {
         const centers = await Center.find({deleted: false}).select('name OACI type zone timeZone');
         res.json(centers);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// CARTE DES CENTRES (tableau de bord) : position + nombre de demandes à venir, ouvertes et acceptées, de chaque centre
+const getCentersMapData = async (req, res, next) => {
+    try {
+        res.json(await getCentersMap(req.user.centerId));
     } catch (error) {
         next(error);
     }
@@ -112,9 +122,16 @@ const updateCenter = async (req, res, next) => {
     const {name, adminId} = req.body;
 
     try {
+        // Un nouveau nom = une nouvelle position à chercher (voir center.map.js)
+        const previous = await Center.findById(id).select('name');
+        const renamed = previous && name && previous.name !== name;
         const updatedCenter = await Center.findByIdAndUpdate(
             id,
-            {name, adminId: adminId || null},
+            {
+                name,
+                adminId: adminId || null,
+                ...(renamed ? { $unset: { location: '', locationLookupFailedAt: '' } } : {}),
+            },
             {new: true}
         );
 
@@ -229,6 +246,7 @@ const getActiveRotationsByCenter = async (req, res, next) => {
 
 export {
     getAllCenters,
+    getCentersMapData,
     addCenter,
     updateCenter,
     deleteCenter,

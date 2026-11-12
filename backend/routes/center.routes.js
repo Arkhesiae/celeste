@@ -6,6 +6,7 @@ const router = express.Router();
 
 import {
     getAllCenters,
+    getCentersMapData,
     addCenter,
     updateCenter,
     deleteCenter,
@@ -22,6 +23,9 @@ router.get('/', getAllCenters);
 
 // Tout le reste exige un utilisateur connecté
 router.use(verifyToken);
+
+// Carte du tableau de bord : tout utilisateur connecté ; comptes de demandes et position seulement, voir center.map.js
+router.get('/map', getCentersMapData);
 
 // Vues et gestion transverses aux centres : administrateur principal uniquement
 router.get('/all-active-rotations', isMasterAdmin, getActiveRotationsByCenter);

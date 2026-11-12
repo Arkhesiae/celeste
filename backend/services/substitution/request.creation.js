@@ -6,8 +6,7 @@ import User from "../../models/User.js";
 import { computeUserShifts } from "../planning/computeUserShifts.js";
 import { getTeamAtDay } from "../../utils/getTeamAtDay.js";
 import { AppError } from "../../error/AppError.js";
-
-const MIN_POINTS_TO_POST_REQUEST = -40;
+import { MIN_POINTS_BALANCE } from "../../config/points.js";
 
 const maximumTransactionPoints = (points, acceptedSwitches) => {
     let maxPoints = points;
@@ -33,7 +32,7 @@ export async function createDemand (data) {
     // Validate user
     const user = await findOrThrow(User, posterId, { message: 'Utilisateur non trouvé', populate: 'teams' });
     const maxPoints = maximumTransactionPoints(points, acceptedSwitches)
-    if (user.points - maxPoints < MIN_POINTS_TO_POST_REQUEST) {
+    if (user.points - maxPoints < MIN_POINTS_BALANCE) {
         throw new AppError("Vous ne pouvez pas poster cette demande, vous n'avez pas assez de points", 400);
     }
 

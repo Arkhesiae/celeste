@@ -26,3 +26,10 @@ pnpm-debug.log*
 
 # Sauvegardes écrites par backend/scripts/migrateCycleOffsets.js --apply
 backend/scripts/backups/
+
+# Avatars téléversés (données d'exécution, servis par /api/avatars ; le dossier est créé au démarrage du serveur)
+backend/public/avatars/
+
+# Journaux de plantage de la JVM
+hs_err_pid*.log
+replay_pid*.log

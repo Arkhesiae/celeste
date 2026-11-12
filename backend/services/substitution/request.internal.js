@@ -12,6 +12,7 @@ import * as calendarEntryService from '../calendarEntry/calendar-entry.js';
 import * as scheduledTransactionService from '../transaction/transaction.scheduled.js';
 
 
+import { MAX_POINTS_TO_ACCEPT_REQUEST } from '../../config/points.js';
 /**
  * Point d'entrée privé — annule l'acceptation d'une demande de substitution
  * @param {string} requestId
@@ -97,9 +98,6 @@ async function cancelCascade (parentId, { session, visited, cancelledRequests })
     }
 }
 
-
-// Note: Ensure this constant is available if it was globally defined, otherwise provide fallback:
-const MAX_POINTS_TO_ACCEPT_REQUEST = 99999;
 
 /**
  * Accepte une demande de substitution ou un échange de vacations

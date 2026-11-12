@@ -36,11 +36,16 @@ import {
   deletePhone,
 } from '../controllers/user.controller.js';
 import multer from 'multer';
+import fs from 'fs';
+import { AVATARS_DIRECTORY } from '../config/paths.js';
+import { AVATAR_MAX_BYTES } from '../config/limits.js';
 const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/avatars/')
+    // Dossier non suivi par git : multer ne le crée pas quand la destination est une fonction
+    fs.mkdirSync(AVATARS_DIRECTORY, { recursive: true });
+    cb(null, AVATARS_DIRECTORY)
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -51,7 +56,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
+    fileSize: AVATAR_MAX_BYTES
   }
 })
 

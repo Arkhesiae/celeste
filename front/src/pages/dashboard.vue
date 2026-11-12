@@ -56,7 +56,9 @@
           <!-- <DashboardTeamCard /> -->
         </v-card>
 
-         <DemandHeatmapCard class="my-4 mb-16" />
+         <DemandHeatmapCard class="my-4" />
+
+         <!-- <CentersMapCard class="my-4 mb-16" /> -->
 
       </v-col>
 

@@ -20,6 +20,9 @@ export const useCenterStore = defineStore('center', () => {
 
 
   // Actions
+  /** Carte des centres du tableau de bord (voir centerService.fetchCentersMap). */
+  const fetchCentersMap = () => centerService.fetchCentersMap();
+
   /**
    * Récupère tous les centres.
    */
@@ -237,6 +240,7 @@ export const useCenterStore = defineStore('center', () => {
 
     // Actions
     fetchCenters,
+    fetchCentersMap,
     fetchUsersByCenter,
     getUserCenterById,
     createCenter,

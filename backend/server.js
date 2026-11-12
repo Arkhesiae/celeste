@@ -1,13 +1,19 @@
+// ─── Variables d'environnement : le fichier .env est lu ici, avant l'import des autres modules ──────────────
+import 'dotenv/config';
+
 // ─── Imports Node.js ──────────────────────────────────────────────────────────
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import express from 'express';
 import { errorHandler } from './middleware/errorHandler.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { renderMail } from './src/mail/mailRenderer.js';
+import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { DEFAULT_PORT, MONGO_MAX_RETRIES, MONGO_RETRY_DELAY_MS } from './config/server.js';
+import { REQUEST_BODY_LIMIT } from './config/limits.js';
+import { PUBLIC_DIRECTORY, AVATARS_DIRECTORY } from './config/paths.js';
 
 // ─── Import du routeur principal ─────────────────────────────────────────────
 import mainRouter from './routes/index.js';
@@ -15,11 +21,9 @@ import mainRouter from './routes/index.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
-
 // ─── Création de l'application Express ────────────────────────────────────────
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || DEFAULT_PORT;
 
 // ─── Tâches planifiées (cron) ─────────────────────────────────────────────────
 import './jobs/index.js';
@@ -50,18 +54,20 @@ app.use(cors({
 }));
 
 // ─── Middlewares Express ──────────────────────────────────────────────────────
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: REQUEST_BODY_LIMIT }));
+app.use(express.urlencoded({ limit: REQUEST_BODY_LIMIT, extended: true }));
 app.use(cookieParser());
 
 // ─── Fichiers statiques ───────────────────────────────────────────────────────
-app.use('/api/avatars', express.static(path.join(__dirname, 'public/avatars')));
+// Les avatars téléversés ne sont pas suivis par git : le dossier est créé au besoin
+fs.mkdirSync(AVATARS_DIRECTORY, { recursive: true });
+app.use('/api/avatars', express.static(AVATARS_DIRECTORY));
 app.get("/preview/:template", (req, res) => {
   const html = renderMail(req.params.template, {});
   res.send(html);
 });
 
-app.use('/', express.static(path.join(__dirname, 'public')));
+app.use('/', express.static(PUBLIC_DIRECTORY));
 
 // ─── Routes API ───────────────────────────────────────────────────────────────
 app.use('/api', mainRouter);
@@ -73,15 +79,13 @@ app.get('/api', (req, res) => {
 
 // ─── Catch-all pour les routes SPA (Vue/React) ────────────────────────────────
 app.get(/^\/(?!api).*/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
+  res.sendFile(path.join(PUBLIC_DIRECTORY, 'index.html'));
 });
 
 // Error handler — must be last
 app.use(errorHandler);
 
 // ─── Connexion à MongoDB & Lancement du serveur ───────────────────────────────
-const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 5_000;
 
 async function connectWithRetry(attempt = 1) {
   try {
@@ -97,15 +101,15 @@ async function connectWithRetry(attempt = 1) {
     });
 
   } catch (err) {
-    console.error(`❌ Erreur de connexion à MongoDB (tentative ${attempt}/${MAX_RETRIES}) :`, err.message);
+    console.error(`❌ Erreur de connexion à MongoDB (tentative ${attempt}/${MONGO_MAX_RETRIES}) :`, err.message);
 
-    if (attempt >= MAX_RETRIES) {
+    if (attempt >= MONGO_MAX_RETRIES) {
       console.error('🛑 Nombre maximum de tentatives atteint. Arrêt du serveur.');
       process.exit(1);
     }
 
-    console.log(`⏳ Nouvelle tentative dans ${RETRY_DELAY_MS / 1000}s...`);
-    await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+    console.log(`⏳ Nouvelle tentative dans ${MONGO_RETRY_DELAY_MS / 1000}s...`);
+    await new Promise(resolve => setTimeout(resolve, MONGO_RETRY_DELAY_MS));
     await connectWithRetry(attempt + 1);
   }
 }

@@ -1,6 +1,7 @@
 import * as authService from '../services/auth/index.js';
 import User from '../models/User.js';
 import { AppError } from '../error/AppError.js';
+import { REFRESH_TOKEN_MAX_AGE_MS } from '../config/auth.js';
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
@@ -22,7 +23,7 @@ const loginUser = async (req, res, next) => {
         };
 
         if (result.refreshToken) {
-            res.cookie("refreshToken", result.refreshToken, { ...COOKIE_OPTIONS, maxAge: 180 * 24 * 60 * 60 * 1000 });
+            res.cookie("refreshToken", result.refreshToken, { ...COOKIE_OPTIONS, maxAge: REFRESH_TOKEN_MAX_AGE_MS });
         }
 
         res.json(response);

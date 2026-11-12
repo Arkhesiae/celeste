@@ -7,8 +7,8 @@ import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';
 
 
-const MAX_DAYS = 190;   // six mois
 
+import { DEMAND_HEATMAP_MAX_DAYS as MAX_DAYS } from '../../config/limits.js';
 /**
  * Charge de demandes par jour pour un centre : pour chaque jour de la période, combien de demandes ouvertes et
  * combien d'acceptées (et non terminées) portent sur ce jour. Sert à repérer les dates « tendues ».

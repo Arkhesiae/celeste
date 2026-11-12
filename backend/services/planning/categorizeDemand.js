@@ -28,17 +28,16 @@ import { withZonedBounds, wallClockIso } from '../../utils/shifts/shiftTime.js';
 import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';
 import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
 
-// ─── Seuils légaux ───────────────────────────────────────────────────────────────────────────────────────────────────
-const MIN_REST_MINUTES = 11 * 60;                   // repos entre deux vacations
-const WEEKLY_REST_MINUTES = 35 * 60;                // un repos continu d'au moins 35h dans chaque période de 7 jours
-const MAX_WEEKLY_WORK_MINUTES = 48 * 60;            // au plus 48h de travail dans chaque période de 7 jours
-const MAX_CONSECUTIVE_WORK_DAYS = 5;
-const MIN_REST_AFTER_NIGHT_MINUTES = 12 * 60;       // après une vacation de contrôle de nuit
-const MAX_CONSECUTIVE_NIGHT_CONTROLS = 2;
-const MIN_REST_AFTER_TWO_NIGHTS_MINUTES = 48 * 60;  // après deux contrôles de nuit consécutifs
-/** Nombre de périodes de 7 jours glissantes qui contiennent le jour cible : celles qui commencent de J-6 à J+6 */
-const WEEKLY_WINDOWS = 13;
-
+import {
+    MIN_REST_MINUTES,
+    WEEKLY_REST_MINUTES,
+    MAX_WEEKLY_WORK_MINUTES,
+    MAX_CONSECUTIVE_WORK_DAYS,
+    MIN_REST_AFTER_NIGHT_MINUTES,
+    MAX_CONSECUTIVE_NIGHT_CONTROLS,
+    MIN_REST_AFTER_TWO_NIGHTS_MINUTES,
+    WEEKLY_WINDOWS,
+} from '../../config/workRules.js';
 const isLater = (a, b) => Temporal.ZonedDateTime.compare(a, b) > 0;
 const isEarlier = (a, b) => Temporal.ZonedDateTime.compare(a, b) < 0;
 /** Durée réelle entre deux instants, en minutes */

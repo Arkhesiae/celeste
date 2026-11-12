@@ -9,6 +9,7 @@ import { AppError } from '../error/AppError.js';
 
 const MASTER_ADMIN_EMAIL = process.env.MASTER_ADMIN_EMAIL;
 
+
 // --- Helpers ---
 
 const findTicketOrThrow = async (ticketId) => {

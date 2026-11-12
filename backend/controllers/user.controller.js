@@ -7,6 +7,9 @@ import { todayIn } from '../utils/dates/plainDate.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { isValidId } from '../utils/ids.js';
+import { MIN_POINTS_BALANCE } from '../config/points.js';
+import { AVATARS_DIRECTORY } from '../config/paths.js';
+import { AVATAR_MAX_BYTES } from '../config/limits.js';
 import { LegacyUser } from '../models/User.js';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
@@ -623,7 +626,7 @@ const transferPoints = async (req, res, next) => {
         }
 
         // Pour les transferts immédiats, vérifier le solde
-        if (sender.points - amount < -40) {
+        if (sender.points - amount < MIN_POINTS_BALANCE) {
             throw new AppError('Solde insuffisant', 400);
         }
 
@@ -702,13 +705,13 @@ const updateAvatar = async (req, res, next) => {
 
 
         // Vérifier la taille du fichier (max 10MB)
-        if (avatar.size > 10 * 1024 * 1024) {
+        if (avatar.size > AVATAR_MAX_BYTES) {
             throw new AppError('L\'image ne doit pas dépasser 10MB', 400);
         }
 
 
         // Déplacer le fichier vers le dossier public/avatars
-        const uploadPath = path.join(__dirname, '../public/avatars', avatar.filename);
+        const uploadPath = path.join(AVATARS_DIRECTORY, avatar.filename);
         await fs.promises.mkdir(path.dirname(uploadPath), { recursive: true });
         await fs.promises.rename(avatar.path, uploadPath);
 

@@ -3,6 +3,7 @@ import { findOrThrow } from '../../utils/mongo.js';
 import Substitution from '../../models/Substitution.js';
 import { AppError } from '../../error/AppError.js';
 
+import { MIN_POINTS_BALANCE } from '../../config/points.js';
 /**
  * Crée une transaction différée
  * @param {Object} transactionData - Données de la transaction
@@ -60,7 +61,7 @@ const processPendingTransactions = async () => {
             //         continue;
             //     }
             // }
-            if ((transaction.sender.points - transaction.amount) < -40) {
+            if ((transaction.sender.points - transaction.amount) < MIN_POINTS_BALANCE) {
                 transaction.status = 'cancelled';
                 await transaction.save();
                 continue;

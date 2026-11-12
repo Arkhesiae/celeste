@@ -4,6 +4,7 @@ import Center from '../../models/Center.js';
 import Substitution from '../../models/Substitution.js';
 import { sendReplacementReminderEmail } from '../email/demand/demandEmails.js';
 
+import { DEFAULT_REMINDER_HOUR } from '../../config/schedules.js';
 /**
  * Rappel de la veille : prévient l'accepteur d'un remplacement / d'une permutation qui a lieu demain.
  *
@@ -18,7 +19,7 @@ import { sendReplacementReminderEmail } from '../email/demand/demandEmails.js';
  * @param {number} [opts.hour] - heure locale à partir de laquelle on rappelle
  * @returns {Promise<{ sent: number, skipped: number }>}
  */
-export async function sendUpcomingReplacementReminders ({ now = new Date(), hour = Number(process.env.REMINDER_HOUR ?? 18) } = {}) {
+export async function sendUpcomingReplacementReminders ({ now = new Date(), hour = Number(process.env.REMINDER_HOUR ?? DEFAULT_REMINDER_HOUR) } = {}) {
     const centers = await Center.find({}).select('timeZone');
     let sent = 0;
     let skipped = 0;

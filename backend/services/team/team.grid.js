@@ -14,8 +14,8 @@ import { getTeamAtDay } from '../../utils/getTeamAtDay.js';
 import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';
 
-const MAX_DAYS = 93;   // trois périodes de 24 jours (précédente, courante, suivante) = 72 jours
 
+import { TEAM_GRID_MAX_DAYS as MAX_DAYS } from '../../config/limits.js';
 /**
  * Grille d'une équipe : pour chaque membre (permanent ou renfort) sur la période, la vacation ou l'entrée
  * de calendrier de chaque jour (une vacation de nuit appartient au jour où elle commence).

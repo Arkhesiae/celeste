@@ -30,7 +30,7 @@ const requiredText = (value, label) => {
 };
 
 /** Données d'un nouveau compte, contrôlées ; ni `approved` ni `points` ne sont lus ici (voir les deux handlers) */
-const readNewUser = (body) => {
+export const readNewUser = (body) => {
     const { name, lastName, email, password, centerId, team } = assertObject(body);
     if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
         throw new AppError(`Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères`, 400);
@@ -60,7 +60,7 @@ const createUser = async (req, res, next) => {
 const createRecoveredUser = async (req, res, next) => {
     try {
         const { points } = req.body;
-        if (!Number.isInteger(points) || points < 0) {
+        if (!Number.isInteger(points)) {
             throw new AppError('Points invalides', 400);
         }
         const user = await createUserService({ ...readNewUser(req.body), approved: true, points });

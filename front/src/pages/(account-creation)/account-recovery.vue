@@ -136,7 +136,6 @@ async function handleRecovery () {
       oldEmail: oldAccount.value.email,
       email: useOldEmail.value ? oldAccount.value.email : newEmail.value,
       password: newPassword.value,
-      points: oldAccount.value.points,
       equipe: oldAccount.value.equipe
     }
 

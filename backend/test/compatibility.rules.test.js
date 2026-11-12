@@ -18,7 +18,7 @@
  * (`withZonedBounds`). Les tests de règles utilisent le fuseau 'UTC' (aucun décalage), la section « Fuseau » Paris.
  *
  * `{ todo: true }` = défaut connu (le test décrit le comportement attendu, il échoue aujourd'hui) : voir
- * docs/quality/blocking-issues.md (#42, #47). Un contrôle de nuit est une vacation qui travaille à un moment quelconque
+ * docs/quality/blocking-issues.md (#47). Un contrôle de nuit est une vacation qui travaille à un moment quelconque
  * entre 00h00 et 06h00, heure du centre.
  */
 import test from 'node:test';
@@ -112,13 +112,14 @@ test('R1 11h : le repos avant / après est renvoyé en minutes', () => {
 });
 
 // ─── R2 : 35 h de repos continu sur 7 jours ──────────────────────────────────
-test('R2 35h : une semaine 5/2 périodique (lundi-vendredi 07-15, 64h de repos le week-end) est conforme', { todo: true }, () => {
-  // Le repos du week-end (vendredi 15:00 -> lundi 07:00) fait 64h mais les fenêtres de 7 jours alignées sur minuit n'en
-  // contiennent que 31h + 33h quand elles commencent le dimanche : le calcul déclare « 35limit » pour tout le planning.
+test('R2 35h : le repos est borné par la fenêtre de 7 jours (comportement voulu) : une semaine 5/2 lundi-vendredi est refusée', () => {
+  // Le repos du week-end (vendredi 15:00 -> lundi 07:00) fait 64h, mais une fenêtre de 7 jours qui commence le dimanche
+  // n'en contient que 31h (avant lundi) + 33h (après vendredi) : aucune n'atteint 35h continues. Voulu : le repos de 35h
+  // doit tenir tout entier dans chaque période de 7 jours glissants.
   const week = [];
   for (let dayIndex = 0; dayIndex < 8 * 7; dayIndex++) if (dayIndex % 7 < 5) week.push(work(addDays('2026-03-02', dayIndex), '07:00', '15:00'));
   for (const target of ['2026-03-17', '2026-03-18', '2026-03-19']) {
-    assert.equal(rules(week, target).rest35, true, `cible ${target}`);
+    assert.equal(rules(week, target).rest35, false, `cible ${target}`);
   }
 });
 

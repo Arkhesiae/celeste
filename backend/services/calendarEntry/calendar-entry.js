@@ -301,7 +301,15 @@ export async function restoreInitialShift (userId, date) {
     return { userShift, updatedDemands: null, type: "restoration" };
 }
 
-export async function addSubstitutionEntries (demand) {
+/**
+ * Crée les entrées de calendrier d'une substitution acceptée pour le demandeur et l'accepteur.
+ * @param {Object} demand - la demande acceptée
+ * @param {Object} [opts]
+ * @param {ClientSession} [opts.session] - lectures et écritures dans la transaction. Dans ce cas les vacations
+ *   recalculées ne sont pas retournées (`posterShift` / `accepterShift` = null) : computeUserShifts ne lit pas
+ *   dans la session et verrait l'état d'avant les écritures ; à recalculer après le commit.
+ */
+export async function addSubstitutionEntries (demand, { session } = {}) {
     if (!demand) {
         throw new AppError('Demande invalide', 400);
     }
@@ -309,15 +317,18 @@ export async function addSubstitutionEntries (demand) {
     try {
         const dateStr = posterDayOf(demand);
 
-        const [latestAccepterAssignment, latestPosterAssignment] = await Promise.all([
-            Assignment.findOne({ userId: demand.accepterId, date: dateStr, active: true, subType: { $ne: 'substitution' } }).sort({ createdAt: -1 }),
-            Assignment.findOne({ userId: demand.posterId, date: dateStr, active: true, subType: { $ne: 'substitution' } }).sort({ createdAt: -1 }),
-        ]);
+        // Opérations l'une après l'autre : dans une transaction, des opérations concurrentes sur la même session font
+        // échouer la transaction (NoSuchTransaction) quand elles en sont les premières
+        const findLatestAssignment = (userId) => Assignment.findOne(
+            { userId, date: dateStr, active: true, subType: { $ne: 'substitution' } },
+            null,
+            { sort: { createdAt: -1 }, session }
+        );
+        const latestAccepterAssignment = await findLatestAssignment(demand.accepterId);
+        const latestPosterAssignment = await findLatestAssignment(demand.posterId);
 
-        await Promise.all([
-            latestAccepterAssignment && Assignment.updateOne({ _id: latestAccepterAssignment._id }, { active: false }),
-            latestPosterAssignment && Assignment.updateOne({ _id: latestPosterAssignment._id }, { active: false }),
-        ].filter(Boolean));
+        if (latestAccepterAssignment) await Assignment.updateOne({ _id: latestAccepterAssignment._id }, { active: false }, { session });
+        if (latestPosterAssignment) await Assignment.updateOne({ _id: latestPosterAssignment._id }, { active: false }, { session });
 
         const accepterEntry = new Assignment({
             shiftData: {
@@ -348,8 +359,12 @@ export async function addSubstitutionEntries (demand) {
         });
 
 
-        await accepterEntry.save();
-        await posterEntry.save();
+        await accepterEntry.save({ session });
+        await posterEntry.save({ session });
+
+        if (session) {
+            return { posterShift: null, accepterShift: null, updatedDemands: null, type: 'substitution' };
+        }
 
         const [posterShifts, accepterShifts] = await Promise.all([
             computeUserShifts([posterDayOf(demand)], demand.posterId),
@@ -364,6 +379,9 @@ export async function addSubstitutionEntries (demand) {
         };
 
     } catch (err) {
+        // Conserve l'étiquette TransientTransactionError (WriteConflict…) pour que withTransaction réessaie
+        if (err?.hasErrorLabel?.('TransientTransactionError')) throw err;
+        console.error("Erreur lors de l'ajout des entrées de substitution :", err);
         throw new AppError("Erreur lors de l'ajout des entrées de substitution", 500);
     }
 }
@@ -394,36 +412,21 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
             'substitution.id': demandId,
         }, null, { sort: { createdAt: -1 }, session });
 
-        const [posterSubEntry, accepterSubEntry] = await Promise.all([
-            findSubEntry(posterId),
-            findSubEntry(accepterId),
-        ]);
+        // Opérations l'une après l'autre : dans une transaction, des opérations concurrentes sur la même session
+        // peuvent échouer (NoSuchTransaction), voir known issue #48
+        const posterSubEntry = await findSubEntry(posterId);
+        const accepterSubEntry = await findSubEntry(accepterId);
 
         const cancelAfter = async (userId, subEntry) => {
             if (!subEntry) return;
-            await Promise.all([
-                Assignment.updateMany(
-                    { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
-                    { active: false },
-                    { session }
-                ),
-                Modification.updateMany(
-                    { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
-                    { active: false },
-                    { session }
-                ),
-                HourPatch.updateMany(
-                    { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } },
-                    { active: false },
-                    { session }
-                ),
-            ]);
+            const sinceSubstitution = { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } };
+            await Assignment.updateMany(sinceSubstitution, { active: false }, { session });
+            await Modification.updateMany(sinceSubstitution, { active: false }, { session });
+            await HourPatch.updateMany(sinceSubstitution, { active: false }, { session });
         };
 
-        await Promise.all([
-            cancelAfter(posterId, posterSubEntry),
-            cancelAfter(accepterId, accepterSubEntry),
-        ]);
+        await cancelAfter(posterId, posterSubEntry);
+        await cancelAfter(accepterId, accepterSubEntry);
 
         if (session) {
             return { posterShift: null, accepterShift: null, updatedDemands: null, type: 'restoration' };

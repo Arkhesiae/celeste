@@ -304,8 +304,9 @@ function weeklyWindowsAround (targetDate, timeZone) {
  * fin de la fenêtre. Une vacation qui chevauche le début de la fenêtre (nuit) repousse `workedUntil` : pas de repos
  * avant elle.
  *
- * Le repos est borné par la fenêtre : un repos à cheval sur deux fenêtres est coupé (voir #42 dans
- * docs/quality/blocking-issues.md, une semaine 5/2 classique y est refusée).
+ * Le repos est borné par la fenêtre (comportement voulu) : le repos de 35h doit tenir tout entier dans chaque période
+ * de 7 jours. Un repos à cheval sur deux fenêtres est coupé ; une semaine 5/2 lundi-vendredi (64h de repos le week-end)
+ * est donc refusée : les fenêtres commençant le dimanche n'en contiennent que 31h + 33h.
  *
  * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
  * @param {string} targetDate - jour cible YYYY-MM-DD

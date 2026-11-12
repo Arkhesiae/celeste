@@ -109,10 +109,9 @@ const MAX_POINTS_TO_ACCEPT_REQUEST = 99999;
  * @param {boolean} opts.isSwitch - true for shift swap, false for substitution
  */
 export async function acceptRequestWithSession (requestId, userId, { session, isSwitch = false }) {
-    const [request, user] = await Promise.all([
-        Substitution.findById(requestId).session(session),
-        isSwitch ? User.findById(userId).session(session) : Promise.resolve(null),
-    ]);
+    // L'une après l'autre : opérations concurrentes sur une session de transaction non supportées (known issue #48)
+    const request = await Substitution.findById(requestId).session(session);
+    const user = isSwitch ? await User.findById(userId).session(session) : null;
 
     if (!request) throw new AppError('Demande non trouvée', 404);
     if (!user && isSwitch) throw new AppError('Utilisateur non trouvé', 404);
@@ -174,10 +173,11 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
         }, { session });
     }
 
-    // Only substitution creates calendar entries inside the transaction
-    const { accepterShift } = await calendarEntryService.addSubstitutionEntries(request, { session })
+    // Les entrées de calendrier sont écrites dans la transaction ; la vacation de l'accepteur qui en résulte se calcule
+    // après le commit (voir acceptRequest) : computeUserShifts ne lit pas dans la session
+    await calendarEntryService.addSubstitutionEntries(request, { session });
 
-    return { request, accepterShift, acceptedShiftPoints, userShiftData };
+    return { request, acceptedShiftPoints, userShiftData };
 }
 
 /**

@@ -2,6 +2,8 @@ import { sendAcceptedDemandEmail } from '../email/demand/demandEmails.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
 import { acceptRequestWithSession } from './request.internal.js';
+import { computeUserShifts } from '../planning/computeUserShifts.js';
+import { posterDayOf } from '../../utils/dates/dayAccess.js';
 
 
 /**
@@ -12,17 +14,21 @@ import { acceptRequestWithSession } from './request.internal.js';
  * @param {boolean} opts.isSwitch - true for shift swap, false for substitution
  */
 export async function acceptRequest (requestId, userId, { isSwitch = false } = {}) {
-    let request, accepterShift, acceptedShiftPoints, userShiftData;
+    let request, acceptedShiftPoints, userShiftData;
 
     try {
         await inTransaction(async (session) => {
-            ({ request, accepterShift, acceptedShiftPoints, userShiftData } =
+            ({ request, acceptedShiftPoints, userShiftData } =
                 await acceptRequestWithSession(requestId, userId, { session, isSwitch }));
         });
     } catch (error) {
         if (error instanceof AppError) throw error;
         throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}` + error, 500);
     }
+
+    // Post-transaction : vacation de l'accepteur ce jour-là, avec les entrées de calendrier qui viennent d'être validées
+    // (une substitution ; pour une permutation, la vacation est celle de `userShiftData`)
+    const accepterShift = isSwitch ? null : (await computeUserShifts([posterDayOf(request)], userId))[0];
 
     // Post-transaction: populate for return value
     await request.populate([

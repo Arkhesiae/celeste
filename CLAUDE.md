@@ -16,7 +16,7 @@ Cursor rule (`.cursor/rules`): always provide solutions that consider the full f
 Backend (`cd backend`):
 - `npm run dev` — nodemon `server.js`; `npm start` — plain node
 - `npm run format` — prettier on `src/**`
-- `npm test` runs `node --test`: `test/compatibility.rules.test.js` (pure rest / workload rules against an independent oracle; tests marked `todo` describe known defects, see `docs/quality/blocking-issues.md` #42, #45-#47) and `test/compatibility.db.test.js` (`getCompatibleSwitches` on a scratch database `TEST_MONGO_URI`, default `mongodb://127.0.0.1:27017/celeste_test_compat`, dropped before and after, skipped when MongoDB is unreachable). No other test suite exists.
+- `npm test` runs `node --test`: `test/compatibility.rules.test.js` (pure rest / workload rules against an independent oracle; tests marked `todo` describe known defects, see `docs/quality/blocking-issues.md` #45, #47) and `test/compatibility.db.test.js` (`getCompatibleSwitches` on a scratch database `TEST_MONGO_URI`, default `mongodb://127.0.0.1:27017/celeste_test_compat`, dropped before and after, skipped when MongoDB is unreachable). No other test suite exists.
 
 Front (`cd front`):
 - `npm run dev` (or `npm run front` for `--host`), `npm run build`, `npm run lint` (eslint --fix)

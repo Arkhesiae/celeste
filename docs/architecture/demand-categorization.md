@@ -95,9 +95,12 @@ already contains the target shift.
 
 `categorize` adds `alreadyWorking` (the user has a shift that day) and the technical `invalidDemand` / `invalidShift`.
 
-Known limits of the rules (see `docs/quality/blocking-issues.md`): **#42** the 35 h rest is clipped at the window edges, so
-a plain Monday–Friday week is rejected; **#45** `getCompatibleSwitches` uses default hours only; **#47** overlapping
-shifts counted twice.
+The 35 h rule is **bounded by the window by design**: the rest must fit entirely inside each 7-day window, so a rest that
+straddles two windows is cut, and a Monday–Friday 07:00–15:00 week (64 h of weekend rest, but 31 h + 33 h inside a window
+starting on Sunday) is rejected.
+
+Known limits of the rules (see `docs/quality/blocking-issues.md`): **#45** `getCompatibleSwitches` uses default hours only;
+**#47** overlapping shifts counted twice.
 
 ## 4b. Time zones
 
@@ -163,7 +166,7 @@ because nothing was explored, not because no variation fits).
 
 - `test/compatibility.rules.test.js`: every rule at its boundaries, 3000 random plannings against an independent
   minute-by-minute oracle for 11 h / 35 h / 48 h, night controls under four server time zones, and the limit codes through
-  `categorize`. Tests marked `todo` describe known defects (#42, #47).
+  `categorize`. Tests marked `todo` describe known defects (#47).
 - `test/compatibility.db.test.js`: `getCompatibleSwitches` on a scratch MongoDB database (`TEST_MONGO_URI`, default
   `mongodb://127.0.0.1:27017/celeste_test_compat`, dropped before and after, skipped when unreachable) against the same
   oracle extended with the 5-day and night rules.

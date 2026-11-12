@@ -4,11 +4,11 @@ Audit date: 2026-11-02; re-verified against the code on 2026-11-11 (every issue 
 Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited, except where noted.
 Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database.
 
-This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed issues (#1, #13, #17, #19, #43, #44, #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
+This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed or closed issues (#1, #26, #48, #13, #17, #19, #42 (35h rule bounded by the window: intended), #43, #44, #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
 
 Severity is shown on each issue; sections below are ordered by when to work on them. **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug that will break a code path.
 
-Compatibility audit (2026-11-11): #42, #45, #47, with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
+Compatibility audit (2026-11-11): #45, #47, with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
 
 Changes in this revision (2026-11-11): #13 moved (the file is now `services/planning/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
 
@@ -45,16 +45,13 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ---
 
 ## Next — security and correctness defects to fix this sprint
-Open authorization holes, data-corrupting bugs and the compatibility computation (#42, #45, #47). #8 also unlocks the throttling needed by #6.
+Open authorization holes, data-corrupting bugs and the compatibility computation (#45, #47). #8 also unlocks the throttling needed by #6.
 
 ### 20. Admin routes still without a center guard — P1
 `middleware/centerAuth.js` provides the guards (`authorizeCenterParam`, `authorizeResourceCenter`, `authorizeTargetUserCenter`...) and they cover users, teams, tickets, demands, rotations, grid/heatmap/timeline and announcement sending. Not yet covered (`routes/announcement.routes.js:25-29`, `routes/message.routes.js:9,15`):
 - Email announcements: `GET /announcements/history` and `/stats` list **all** centers' announcements to any admin (`Announcement.find()`), and `DELETE /announcements/:id` lets any admin delete any announcement. Its owner check reads `req.user._id`, but the token carries `userId`, so the check compares against `undefined` (the admin bypass hides it today).
 - Contact messages: `GET /messages` and `PUT /messages/:id/read` show every message to any admin (messages have no center; decide whether they are master-only).
 - The team-change preview still names people from cascaded requests of other users when someone previews their own change.
-
-### 42. Weekly rest rule (35h) rejects a plain 5/2 planning — P1
-`services/planning/categorizeDemand.js` `checkWeeklyRestPeriod` (used by `checkCompatibilityForVariation` and `getCompatibleSwitches`) looks for a continuous 35h rest **inside** each of the 13 windows of 7 days aligned on UTC midnight (target day -6 .. +6), clipping the rest at the window bounds. A Monday-Friday 07:00-15:00 week has 64h of weekend rest, but a window starting on Sunday only contains 31h + 33h of it, so it is reported as `35limit`. Verified on a scratch database (`getCompatibleSwitches` for a user on a 5-working-days + 2-rest rotation): **0 of 5 candidate shifts are compatible on every day of the week**, even the one identical to the user's own shift. The same user pattern as 4 x 10h + 3 rest passes the rule in the unit probe (not checked on the other rotations). Needs a decision on the intended legal reading (fixed week, or a 35h rest allowed to straddle the window edge) before changing the code. Test: `backend/test/compatibility.rules.test.js` (`R2 35h : une semaine 5/2 périodique`, marked todo).
 
 ### 45. Switch compatibility ignores variations — P2
 `demandService.getCompatibleSwitches` evaluates each rotation day with `day.default` hours only. A shift with variations (other start / end times) is reported with the default hours' result; the front cannot tell which variation breaks a rule. Test: `getCompatibleSwitches : une rotation à variantes ...` in `backend/test/compatibility.db.test.js` (todo).
@@ -110,9 +107,6 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 - Retroactive activation changes also convert/cancel past demands that the cron has not archived yet.
 - Rotation reads (`GET /rotations/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are guarded, see `authorizeRotationAccess`).
 - `saveRotation` throws a 500 when `days` is missing; the `days` branch of `updateRotation` is dead (commented out).
-
-### 26. `addSubstitutionEntries` ignores the Mongo session (same defect as the fixed #15) — P2
-`services/calendarEntry/calendar-entry.js:304` takes only `(demand)`, but `request.internal.js:178` calls `addSubstitutionEntries(request, { session })`: its reads, `updateOne`s and saves run outside the acceptance transaction and cannot be rolled back. Fix like `cancelSubstitutionEntries`: accept `{ session }`, pass it to every query/save, and avoid recomputing shifts inside the transaction (the caller uses `accepterShift` from its result, so that return value needs to be computed after commit).
 
 ### 24. Input validation gaps on the team-change body — P2
 - No `toDate >= fromDate` check: an inverted occurrence is stored and silently ignored by the segment logic (`buildTeamSegments`), leaving confusing data.

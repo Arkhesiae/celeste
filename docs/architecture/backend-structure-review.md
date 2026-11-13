@@ -15,9 +15,7 @@ style `<domain>.<action>.js` (`user.team.js`, `request.accept.js`).
 |---|---|---|
 | `backend/error/` | singular folder with a single file (`AppError.js`); the other error code is `middleware/errorHandler.js` | `backend/errors/AppError.js`, or `utils/AppError.js` |
 | `backend/scripts/` | two migration scripts (`migrateCycleOffsets.js`, `migrateDayFields.js`), both marked `TEMPORARY`; another `scripts/` folder exists at the repository root (`backup_mongo.sh`, ssh helpers) | `backend/scripts/migrations/` and a note that they are deleted after the cut-over; keep one rule for what goes in the root `scripts/` |
-| `backend/docker-compose.yml`, `Dockerfile.dev` | development files that share their names with the production `Dockerfile` / `docker-compose.yml` at the root | `docker-compose.dev.yml` (the `Dockerfile.dev` name is fine) |
 | repository root | tracked files that are not part of the app: `replacement.txt`, `ssh_config`, `Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt` (secrets tracked: known issue #5) | remove from git, add to `.gitignore` |
-| `backend/.env` | present locally, untracked (good); no `.env.example` and no backend `README` to say which variables exist | add `backend/.env.example` generated from the list in `CLAUDE.md` |
 
 ## 2. Layering (`routes → controllers → services → models`)
 
@@ -52,12 +50,8 @@ they change only together with it: `/stat/users|centers|substitutions`, `/center
 (and `/timeline`), `/announcement/users-count`, `/user/:id/team-occurrences`, `/user/:id/transactions`.
 Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:centerId`, ...) or stay as descriptive names.
 
-## 5. Files to remove or check
+## 5. Exceptions to the import rule
 
-- `backend/services/substitution/request.internal.js`: untracked, imported by nothing, and it declares the same functions
-  as `request.accept.js`, `request.cascade.js` and `request.expiry.js` (a stale copy of the code that was split); it is the
-  reason this file is left out of `services/substitution/index.js`. Delete it once confirmed.
-- `backend/services/rotationService/` and `backend/services/rules/`: empty folders left on disk (not tracked by git).
 - Tests (`backend/test/`) import service files directly, as they test internals (`categorizeDemand`, `demandVariations`);
   this is the only place that does it outside `services/`.
 
@@ -67,6 +61,8 @@ Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:center
   in `dev/`, and no logger: add a small `utils/logger.js` with levels, and stop logging in controllers.
 - `package.json`: no lint configuration for the backend (the checks in this repository use the front's ESLint with a
   temporary configuration); no `engines` field although the Dockerfile uses Node 20 (and the tests ran on Node 26).
+- `MAIL_SERVICE` is read in `services/email/email.transport.js` but never used: mails go to the console unless
+  `NODE_ENV=production`, then through SES. Either make `MAIL_SERVICE` decide (as `CLAUDE.md` says) or stop reading it.
 - Files over 500 lines (candidates to split): `services/substitution/compatibility/categorizeDemand.js` 510,
   `services/rotation/rotation.activation.js` 502.
 
@@ -75,8 +71,7 @@ Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:center
 1. Extract the controller logic of `substitution`, then `center`, `team` and the small ones into services, one resource per
    change, with input validation and the common response shape (section 2); add each new service file to its
    domain's `index.js`.
-2. Add `backend/.env.example`, a logger, and a backend lint configuration with `engines`.
-3. Clean the repository root (tracked `replacement.txt`, `ssh_config`, `Microsoft/`), rename the development compose file,
-   move the error folder, delete the stale files of section 5.
+2. Add a logger, and a backend lint configuration with `engines` (`backend/.env.example` is done).
+3. Clean the repository root (tracked `replacement.txt`, `ssh_config`, `Microsoft/`), move the error folder.
 4. Decide the two remaining file-naming exceptions (section 3: `<domain>.service.js`, middleware suffixes).
 5. Decide whether the plural sub-paths of section 4 are renamed too, together with the front.

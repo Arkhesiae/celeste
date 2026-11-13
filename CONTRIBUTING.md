@@ -12,15 +12,8 @@ VITE_ADMIN_MAIL=admin@celeste.com
 VITE_ADMIN_PASS=celeste
 ```
 
-- Dans le fichier /backend/.env.development, modifier l'adresse IP locale par localhost (ou votre adresse IP) :
-```
-MONGO_URI=mongodb://localhost:27017/myDatabase?authSource=admin
-ADMIN_EMAIL=admin@celeste.com
-ADMIN_PASSWORD=celeste
-LOCAL_ADMIN_PASSWORD=choisir-un-secret
-REMINDER_HOUR=18
-FRONTEND_URL=https://localhost:30035
-MAIL_SERVICE=console
-```
+- Copier `/backend/.env.example` en `/backend/.env` (le seul fichier lu par le backend) et remplir les valeurs ; chaque variable y est
+  expliquée. Au minimum : `MONGO_URI`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `FRONT_URL`.
+- Démarrer MongoDB en replica set (les transactions l'exigent) : `docker compose -f backend/docker-compose.dev.yml up -d`
 - Installer le package dotenv dans /backend/ `npm i dotenv`
 - Installer le package vite dans /front/ : `npm i vite`

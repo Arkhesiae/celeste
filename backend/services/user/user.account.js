@@ -1,7 +1,7 @@
 import User, { LegacyUser } from '../../models/User.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
-import { sendEmailApproval, sendEmailRejection } from '../email/approvalEmail.js';
+import { sendEmailApproval, sendEmailRejection } from '../email/email.approval.js';
 
 /**
  * Compte d'un utilisateur : disponibilité de l'e-mail, approbation d'une inscription, rôle d'administrateur,

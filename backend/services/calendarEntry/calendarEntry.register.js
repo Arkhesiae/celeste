@@ -9,7 +9,7 @@ import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
-import { computeUserShifts } from '../planning/computeUserShifts.js';
+import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { AppError } from '../../error/AppError.js';
 import { cancelModifications, cancelHourPatches } from './calendarEntry.cancel.js';
 

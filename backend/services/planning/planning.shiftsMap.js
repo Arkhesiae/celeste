@@ -1,4 +1,4 @@
-import { computeUserShifts } from './computeUserShifts.js';
+import { computeUserShifts } from './planning.userShifts.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { getEffectiveShiftTimes } from '../../utils/shifts/getEffectiveShiftTimes.js';

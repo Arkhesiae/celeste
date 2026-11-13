@@ -17,7 +17,7 @@ import Rotation from '../models/Rotation.js';
 import User from '../models/User.js';
 import Variation from '../models/Variation.js';
 import { getCompatibleSwitches } from '../services/substitution/substitution.switches.js';
-import { generateShiftsMap } from '../services/planning/generateShiftsMap.js';
+import { generateShiftsMap } from '../services/planning/planning.shiftsMap.js';
 
 const URI = process.env.TEST_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_compat';
 let available = false;

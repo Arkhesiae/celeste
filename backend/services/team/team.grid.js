@@ -7,8 +7,8 @@ import Team from '../../models/Team.js';
 import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { Assignment } from '../../models/CalendarEntry.js';
-import { computeUserShifts } from '../planning/computeUserShifts.js';
-import { computeShiftOfTeam } from '../planning/computeShiftOfTeam.js';
+import { computeUserShifts } from '../planning/planning.userShifts.js';
+import { computeShiftOfTeam } from '../planning/planning.teamShift.js';
 import { getTeamAtDay } from './team.atDay.js';
 
 import { AppError } from '../../error/AppError.js';

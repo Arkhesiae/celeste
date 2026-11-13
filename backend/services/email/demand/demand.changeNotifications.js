@@ -5,8 +5,8 @@ import { shortName } from '../../../utils/names.js';
 import { idOf } from '../../../utils/ids.js';
 import User from '../../../models/User.js';
 import * as emailService from '../email.transport.js';
-import { renderMail } from '../mailRenderer.js';
-import { sendCancelledAcceptanceEmail } from './demandEmails.js';
+import { renderMail } from '../email.renderer.js';
+import { sendCancelledAcceptanceEmail } from './demand.emails.js';
 
 /**
  * Notifications envoyées aux tiers touchés quand une demande de substitution est annulée ou qu'un accepteur

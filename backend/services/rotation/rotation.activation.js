@@ -9,7 +9,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromRequestWithSession, cancelRequestWithSession } from '../substitution/request.cascade.js';
-import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
+import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 
 
 

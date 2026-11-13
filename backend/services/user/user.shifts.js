@@ -1,5 +1,5 @@
 import { eachDay } from "../../utils/dates/plainDate.js";
-import { computeUserShifts } from "../planning/computeUserShifts.js";
+import { computeUserShifts } from "../planning/planning.userShifts.js";
 import Shift from "../../models/Shift.js";
 
 /**

@@ -1,6 +1,6 @@
 import * as emailService from './email.transport.js';
 import { formatDateFr } from '../../utils/dates/format.js';
-import { renderMail } from './mailRenderer.js';
+import { renderMail } from './email.renderer.js';
 
 /**
  * Envoie un email de notification aux administrateurs d'un centre

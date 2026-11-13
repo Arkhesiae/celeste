@@ -1,3 +1,12 @@
+/**
+ * Entrées du calendrier d'un utilisateur : un seul fichier pour quatre modèles, qui partagent la collection
+ * `calendarentries` (discriminateur `type`) et s'importent par nom :
+ *   - `CalendarEntry`  : modèle de base (période, utilisateur, `active`) ;
+ *   - `Assignment`     : affectation à une vacation (`type: 'assignment'`) ;
+ *   - `Modification`   : modification d'une vacation existante (`type: 'modification'`) ;
+ *   - `HourPatch`      : changement d'horaires (MDDA) (`type: 'hourPatch'`).
+ * Le dossier de services, le contrôleur et le fichier de routes s'appellent `calendarEntry` ; l'URL est `/calendar-entry`.
+ */
 import mongoose from 'mongoose';
 
 const ShiftDataSchema = new mongoose.Schema(

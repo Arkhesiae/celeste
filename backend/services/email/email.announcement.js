@@ -1,5 +1,5 @@
 import * as emailService from './email.transport.js';
-import { renderMail } from './mailRenderer.js';
+import { renderMail } from './email.renderer.js';
 
 /**
  * Envoie un email d'annonce en masse à tous les utilisateurs

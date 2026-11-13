@@ -1,8 +1,8 @@
 import User from '../../models/User.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { inTransaction } from '../../utils/mongo.js';
-import { computeUserShifts } from '../planning/computeUserShifts.js';
-import { sendCancelledAcceptanceEmail } from '../email/demand/demandEmails.js';
+import { computeUserShifts } from '../planning/planning.userShifts.js';
+import { sendCancelledAcceptanceEmail } from '../email/demand/demand.emails.js';
 import { categorizeRequests } from './request.list.js';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromRequestWithSession } from './request.cascade.js';

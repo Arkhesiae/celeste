@@ -2,7 +2,7 @@ import * as emailService from '../email.transport.js';
 import { posterDayOf, shiftDayOf } from '../../../utils/dates/dayAccess.js';
 import { formatDateFr } from '../../../utils/dates/format.js';
 import { shortName } from '../../../utils/names.js';
-import { renderMail } from '../mailRenderer.js';
+import { renderMail } from '../email.renderer.js';
 import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
 
 

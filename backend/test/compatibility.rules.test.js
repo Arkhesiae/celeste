@@ -34,7 +34,7 @@ import {
   checkConsecutiveNightControls,
   checkRestAfterTwoNightControls,
 } from '../services/substitution/compatibility/categorizeDemand.js';
-import { shiftMapToArray } from '../services/planning/generateShiftsMap.js';
+import { shiftMapToArray } from '../services/planning/planning.shiftsMap.js';
 import { isNightControl } from '../utils/shifts/nightControl.js';
 import { withZonedBounds, wallClockIso } from '../utils/shifts/shiftTime.js';
 

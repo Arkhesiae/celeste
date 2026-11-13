@@ -2,8 +2,8 @@ import Ticket from '../../models/Ticket.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { fullName } from '../../utils/names.js';
 import User from '../../models/User.js';
-import { sendTicketReplyEmail } from '../email/ticketReplyEmail.js';
-import { sendNewTicketNotificationEmail } from '../email/newTicketEmail.js';
+import { sendTicketReplyEmail } from '../email/email.ticketReply.js';
+import { sendNewTicketNotificationEmail } from '../email/email.newTicket.js';
 import { isValidEmail } from '../../utils/validation.js';
 import { AppError } from '../../error/AppError.js';
 

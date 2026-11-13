@@ -4,7 +4,7 @@ import { hash } from "bcrypt";
 import User from '../../models/User.js';
 import Center from '../../models/Center.js';
 import Team from '../../models/Team.js';
-import { sendAdminNotificationEmail } from '../email/adminNotificationEmail.js';
+import { sendAdminNotificationEmail } from '../email/email.adminNotification.js';
 import { AppError } from '../../error/AppError.js';
 
 export const createUserService = async (userData) => {

@@ -1,5 +1,5 @@
 import * as emailService from './email.transport.js';
-import { renderMail } from './mailRenderer.js';
+import { renderMail } from './email.renderer.js';
 import Center from '../../models/Center.js';
 
 /**

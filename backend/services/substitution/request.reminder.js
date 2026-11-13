@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { dayFilter } from '../../utils/dates/dayAccess.js';
 import Center from '../../models/Center.js';
 import Substitution from '../../models/Substitution.js';
-import { sendReplacementReminderEmail } from '../email/demand/demandEmails.js';
+import { sendReplacementReminderEmail } from '../email/demand/demand.emails.js';
 
 import { DEFAULT_REMINDER_HOUR } from '../../config/schedules.js';
 /**

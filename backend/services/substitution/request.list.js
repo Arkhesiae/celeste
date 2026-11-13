@@ -5,7 +5,7 @@ import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
-import { generateMapFromDemands } from '../planning/generateShiftsMap.js';
+import { generateMapFromDemands } from '../planning/planning.shiftsMap.js';
 import { categorizeWithVariations } from './compatibility/demandVariations.js';
 import { getUserTimeZone } from '../center/center.timezone.js';
 

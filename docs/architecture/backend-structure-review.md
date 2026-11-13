@@ -36,13 +36,14 @@ style `<domain>.<action>.js` (`user.team.js`, `request.accept.js`).
 
 ## 3. File naming
 
+Rule (in `CLAUDE.md`): service files are `<domain>.<action>.js`, and routes, controllers, models and service folders use the
+same singular camelCase word (kebab-case is for URLs only). What still breaks it:
+
 | Current | Anomaly | Proposed |
 |---|---|---|
-| `services/ticket/ticket.service.js`, `services/publicAnnouncement/publicAnnouncement.service.js`, `services/rule/rule.service.js` | one `<domain>.service.js` file per domain instead of the dot style by action | split by action (`ticket.create.js`, `ticket.reply.js`, ...) when their controllers are extracted |
-| `services/email/` top level (`adminNotificationEmail.js`, `announcementEmail.js`, `approvalEmail.js`, `newTicketEmail.js`, `otpEmail.js`, `resetPasswordEmail.js`, `ticketReplyEmail.js`, `mailRenderer.js`) | mails named after the mail, while the transport and inbound files use `email.<name>.js` | `email.<name>.js` (`email.approval.js`, ...), or keep and document the exception |
-| `services/planning/` (`computeUserShifts.js`, `computeShiftOfTeam.js`, `generateShiftsMap.js`), `services/substitution/compatibility/` (`categorizeDemand.js`, `demandVariations.js`) | files named after their main function rather than `<domain>.<action>.js` | `planning.userShifts.js`, `planning.teamShift.js`, `planning.shiftsMap.js`; the compatibility files are acceptable as a sub-folder of a domain |
-| controllers `accountRecovery`, `calendarEntry`, `publicAnnouncement` | camelCase, while their route files are kebab-case (`account-recovery.routes.js`, `calendar-entry.routes.js`, `public-announcement.routes.js`) | pick one case for multi-word resources (kebab-case for files, as the routes already are) |
-| `models/CalendarEntry.js` | exports four models (`CalendarEntry`, `Assignment`, `Modification`, `HourPatch`) with no header comment | fine as discriminators, but name them in a header comment; the service folder is `calendarEntry/` and the controller `calendarEntry.controller.js` while the route file is `calendar-entry.routes.js` (see the case row above) |
+| `services/ticket/ticket.service.js` (10 functions), `services/publicAnnouncement/publicAnnouncement.service.js`, `services/rule/rule.service.js` | one `<domain>.service.js` file per domain instead of one file per action | accepted for a small single-file domain (documented in `CLAUDE.md`); split by action (`ticket.create.js`, `ticket.reply.js`, ...) if one of them grows or when its controller is reworked |
+| `services/substitution/compatibility/` (`categorizeDemand.js`, `demandVariations.js`) | named after their main function, in a sub-folder of the domain | acceptable (used by the tests and documented in `docs/architecture/demand-categorization.md`); rename to `compatibility.categorize.js` / `compatibility.variations.js` only if the folder grows |
+| `middleware/` (`authMiddleware.js`, `centerAuth.js`, `errorHandler.js`) | three different suffix styles | `auth.middleware.js`, `centerAuth.middleware.js`, `errorHandler.middleware.js`, or keep (they are named after what they export) |
 
 ## 4. URLs
 
@@ -77,5 +78,5 @@ Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:center
 2. Add `backend/.env.example`, a logger, and a backend lint configuration with `engines`.
 3. Clean the repository root (tracked `replacement.txt`, `ssh_config`, `Microsoft/`), rename the development compose file,
    move the error folder, delete the stale files of section 5.
-4. Settle the file-naming exceptions (section 3).
+4. Decide the two remaining file-naming exceptions (section 3: `<domain>.service.js`, middleware suffixes).
 5. Decide whether the plural sub-paths of section 4 are renamed too, together with the front.

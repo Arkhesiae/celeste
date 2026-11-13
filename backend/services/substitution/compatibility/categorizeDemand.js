@@ -23,7 +23,7 @@ import { posterDayOf } from '../../../utils/dates/dayAccess.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { isNightControl } from '../../../utils/shifts/nightControl.js';
 import Shift from '../../../models/Shift.js';
-import { shiftMapToArray } from '../../planning/generateShiftsMap.js';
+import { shiftMapToArray } from '../../planning/planning.shiftsMap.js';
 import { withZonedBounds, wallClockIso } from '../../../utils/shifts/shiftTime.js';
 import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
 import { DEFAULT_TIME_ZONE } from '../../../utils/dates/constants.js';

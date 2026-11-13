@@ -7,7 +7,7 @@ Files (all under `backend/`):
 
 | File | Role |
 |---|---|
-| `services/planning/generateShiftsMap.js` | builds the user's planning around the demand day (`Map` day → shift entry) |
+| `services/planning/planning.shiftsMap.js` | builds the user's planning around the demand day (`Map` day → shift entry) |
 | `services/substitution/compatibility/categorizeDemand.js` | the compatibility computation: `categorize`, `legalLimitsFor` and the seven rules |
 | `services/substitution/compatibility/demandVariations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
 | `utils/shifts/shiftTime.js` | `withZonedBounds` (date key + `HH:mm` → Temporal instants in the center's zone) and `wallClockIso` (instant → text for the front) |

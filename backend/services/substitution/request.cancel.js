@@ -1,4 +1,4 @@
-import { computeUserShifts } from '../planning/computeUserShifts.js';
+import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';

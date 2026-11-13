@@ -3,7 +3,7 @@ import { dayFilter } from '../../utils/dates/dayAccess.js';
 import { toCalendarDay } from '../../utils/dates/calendarDay.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import User from "../../models/User.js";
-import { computeUserShifts } from "../planning/computeUserShifts.js";
+import { computeUserShifts } from "../planning/planning.userShifts.js";
 import { getTeamAtDay } from "../team/team.atDay.js";
 import { AppError } from "../../error/AppError.js";
 import { MIN_POINTS_BALANCE } from "../../config/points.js";

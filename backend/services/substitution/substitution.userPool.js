@@ -2,7 +2,7 @@ import pLimit from 'p-limit';
 import User from '../../models/User.js';
 import { categorize } from './compatibility/categorizeDemand.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
-import { generateMapFromDemands } from '../planning/generateShiftsMap.js';
+import { generateMapFromDemands } from '../planning/planning.shiftsMap.js';
 
 const limit = pLimit(10);
 

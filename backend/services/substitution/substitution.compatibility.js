@@ -1,7 +1,7 @@
 import Substitution from "../../models/Substitution.js";
 import { findOrThrow } from '../../utils/mongo.js';
 import User from "../../models/User.js";
-import { shiftMapFromSingleDemand, shiftMapToArray } from "../planning/generateShiftsMap.js";
+import { shiftMapFromSingleDemand, shiftMapToArray } from "../planning/planning.shiftsMap.js";
 import { categorizeWithVariations } from "./compatibility/demandVariations.js";
 import { AppError } from "../../error/AppError.js";
 import { getCenterTimeZone } from "../center/center.timezone.js";

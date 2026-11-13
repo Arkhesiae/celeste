@@ -6,7 +6,7 @@ import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
 import { buildTeamSegments, diffTeamSegments } from '../team/team.segments.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
-import { notifyDemandChanges } from '../email/demand/demandChangeNotifications.js';
+import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

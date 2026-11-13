@@ -18,7 +18,10 @@
             <div style="font-family: Arial,sans-serif; max-width:600px; margin:0 auto; ">
             
                 <p>Bonjour {{userName}},</p>
-                <p><strong>{{posterName}} {{posterLastName}}</strong> a annulé sa demande de remplacement pour le <strong>{{posterShiftDate}}</strong> (créée le {{creationDate}}).</p>
+                <p><strong>{{posterName}} {{posterLastName}}</strong> a annulé sa demande de remplacement pour le <strong>{{posterShiftDate}}</strong>{{#if creationDate}} (créée le {{creationDate}}){{/if}}.</p>
+                {{#if youWereAccepter}}
+                <p>Vous aviez accepté cette demande : vous n'êtes plus engagé(e) sur cette vacation et les points associés ne vous seront pas attribués.</p>
+                {{/if}}
                 {{#if accepters}}
                 <p style="color:#666; font-size:14px; margin-top:15px;">
                     <strong>Note :</strong> Cette demande avait été acceptée par : {{accepters}}

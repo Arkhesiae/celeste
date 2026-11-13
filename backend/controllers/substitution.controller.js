@@ -289,7 +289,7 @@ const cancelDemand = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('Paramètres manquants', 400);
         }
-        const result = await substitutionService.cancelRequest(demandId);
+        const result = await substitutionService.cancelRequest(demandId, { actorId: req.user.userId });
         res.status(200).json({ message: 'Demande annulée avec succès', demand: result.initialCancel, shift: result.shift });
     } catch (err) {
         next(err);

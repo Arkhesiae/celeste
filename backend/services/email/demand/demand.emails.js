@@ -335,9 +335,49 @@ L'équipe Celeste
 }
 
 
+/**
+ * Prévient l'accepteur que l'auteur a annulé lui-même sa demande (email « demande annulée »).
+ * @param {Object} demand - demande annulée, avec posterId (name, lastName) et accepterId (name, email) peuplés
+ * @returns {Promise<Object>} résultat de l'envoi
+ */
+async function sendCancelledDemandEmail (demand) {
+  const accepter = demand.accepterId;
+  const posterName = shortName(demand.posterId) ?? '';
+  const date = formatDateFr(posterDayOf(demand));
+
+  const text = `
+Bonjour ${accepter.name},
+
+${posterName} a annulé sa demande du ${date}, que vous aviez acceptée.
+
+Vous n'êtes plus engagé(e) sur cette vacation.
+
+Cordialement,
+L'équipe Celeste
+  `.trim();
+
+  const html = renderMail('cancelledDemand', {
+    userName: accepter.name,
+    posterName: demand.posterId.name,
+    posterLastName: demand.posterId.lastName,
+    posterShiftDate: date,
+    creationDate: formatDateFr(demand.createdAt),
+    youWereAccepter: true,
+  });
+
+  return emailService.sendEmail({
+    to: accepter.email,
+    from: 'Celeste <notification@celeste-app.fr>',
+    subject: `${posterName} a annulé sa demande`,
+    html,
+    text,
+  });
+}
+
 export {
   sendUserPoolNotification,
   sendAcceptedDemandEmail,
   sendCancelledAcceptanceEmail,
+  sendCancelledDemandEmail,
   sendReplacementReminderEmail
 };

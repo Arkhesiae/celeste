@@ -6,7 +6,7 @@ import { idOf } from '../../../utils/ids.js';
 import User from '../../../models/User.js';
 import * as emailService from '../email.transport.js';
 import { renderMail } from '../email.renderer.js';
-import { sendCancelledAcceptanceEmail } from './demand.emails.js';
+import { sendCancelledAcceptanceEmail, sendCancelledDemandEmail } from './demand.emails.js';
 
 /**
  * Notifications envoyées aux tiers touchés quand une demande de substitution est annulée ou qu'un accepteur
@@ -14,7 +14,7 @@ import { sendCancelledAcceptanceEmail } from './demand.emails.js';
  * Les emails sont volontairement génériques : ils ne précisent ni la cause ni que l'opération est automatique.
  *  - retrait d'un accepteur → l'auteur reçoit l'email « acceptation annulée » (cancelledAcceptance), le même que
  *    lorsque l'accepteur se désiste lui-même
- *  - annulation → l'auteur et/ou l'accepteur reçoivent l'email « demande annulée » (demandCancelled), cascade comprise
+ *  - annulation → l'auteur et/ou l'accepteur reçoivent l'email « demande annulée » (systemCancel), cascade comprise
  *
  * À appeler APRÈS le commit de la transaction : un rollback n'envoie donc aucun email. Ne lève jamais :
  * une panne d'envoi ne doit pas faire échouer l'opération métier.
@@ -101,6 +101,51 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
         return { sent };
     } catch (error) {
         console.error('❌ Erreur lors de l\'envoi des notifications de changement de demandes :', error);
+        return { sent: 0, error: error.message };
+    }
+}
+
+/**
+ * Prévient les personnes touchées quand une demande est annulée par une action directe d'un utilisateur (`request.cancel.js`).
+ *  - l'auteur annule sa propre demande acceptée : l'accepteur reçoit l'email « demande annulée » (cancelledDemand) ; l'auteur
+ *    n'est pas prévenu, c'est lui qui agit ;
+ *  - quelqu'un d'autre l'annule (un administrateur par exemple) : l'auteur et l'accepteur reçoivent l'email générique
+ *    d'annulation, comme pour un changement de planning ;
+ *  - les demandes annulées en cascade (celles qui en dépendaient) sont traitées comme les annulations d'un changement de
+ *    planning (`notifyDemandChanges`) : leurs auteurs et accepteurs sont prévenus, sauf `actorId`.
+ *
+ * À appeler APRÈS le commit de la transaction. Ne lève jamais.
+ *
+ * @param {Object} params
+ * @param {string|ObjectId} params.demandId - la demande annulée à la demande de l'utilisateur
+ * @param {Array<string|ObjectId>} [params.cascadedIds] - demandes annulées avec elle
+ * @param {string|ObjectId} [params.actorId] - utilisateur qui annule : jamais notifié
+ * @returns {Promise<{ sent: number }>}
+ */
+export async function notifyDemandCancelledByUser ({ demandId, cascadedIds = [], actorId } = {}) {
+    try {
+        const demand = await Substitution.findById(demandId).populate([
+            { path: 'posterId', select: 'name lastName email' },
+            { path: 'accepterId', select: 'name lastName email' },
+        ]);
+        if (!demand) return { sent: 0 };
+
+        const posterIsActor = actorId && idOf(demand.posterId) === idOf(actorId);
+        let sent = 0;
+
+        if (posterIsActor) {
+            // Seule une demande acceptée a un accepteur (le retrait ou l'annulation de l'acceptation le remet à zéro)
+            if (demand.accepterId?.email?.trim()) {
+                await sendCancelledDemandEmail(demand);
+                sent += 1;
+            }
+            const cascade = await notifyDemandChanges({ cancelledIds: cascadedIds, actorId });
+            return { sent: sent + (cascade.sent ?? 0) };
+        }
+
+        return await notifyDemandChanges({ cancelledIds: [demandId, ...cascadedIds], actorId });
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'envoi des notifications d\'annulation :', error);
         return { sent: 0, error: error.message };
     }
 }

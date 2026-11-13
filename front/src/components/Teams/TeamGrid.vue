@@ -324,7 +324,7 @@ const rows = computed(() => {
   min-width: 0;
   border-radius: 12px;
   background: rgba(var(--v-theme-onSurface), 0.03);
-  padding: 3px 1px;
+
 }
 
 .tg-cell--weekend { background: rgba(var(--v-theme-onSurface), 0.05); }

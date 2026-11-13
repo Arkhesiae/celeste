@@ -64,6 +64,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useTeamStore } from '@/stores/teamStore';
 import { useCenterStore } from '@/stores/centerStore';
+import { useAuthStore } from '@/stores/authStore';
 
 const SPANS = [6, 12, 24];
 const MOBILE_SPAN = 6;
@@ -73,6 +74,7 @@ const route = useRoute();
 const router = useRouter();
 const teamStore = useTeamStore();
 const centerStore = useCenterStore();
+const authStore = useAuthStore();
 const centerId = route.params.centerId;
 
 const teams = computed(() => [...teamStore.centerTeams].sort((a, b) => a.order - b.order));
@@ -153,11 +155,22 @@ watch(selectedTeamId, (id) => {
 
 watch([selectedTeamId, startDate, span], loadGrid);
 
+// Équipe de l'utilisateur aujourd'hui (null s'il n'en a pas : administrateur principal, par exemple)
+const ownTeamId = async () => {
+  if (!teamStore.currentTeam) await teamStore.fetchCurrentTeamOfUser(authStore.userData.userId);
+  return teamStore.currentTeam?.teamId ?? null;
+};
+
 // Le jour courant change à minuit (fuseau du centre) si la page reste ouverte
 let timer = null;
 onMounted(async () => {
   await Promise.all([teamStore.fetchCenterTeams(centerId), centerStore.fetchCenters()]);
-  if (!team.value) selectedTeamId.value = teams.value[0]?._id ?? null;
+  // Sans équipe dans l'adresse (les raccourcis du menu n'en donnent pas) : celle de l'utilisateur si elle est de ce centre,
+  // sinon la première
+  if (!team.value) {
+    const own = await ownTeamId();
+    selectedTeamId.value = teams.value.some((t) => t._id === own) ? own : (teams.value[0]?._id ?? null);
+  }
   goToToday();
   timer = setInterval(() => { today.value = Temporal.Now.plainDateISO(timeZone.value).toString(); }, 60000);
 });

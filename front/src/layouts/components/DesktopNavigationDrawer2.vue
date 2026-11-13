@@ -154,6 +154,18 @@ const isActive = (path) => {
 
 const isAdmin = computed(() => authStore.userData.isAdmin);
 
+// Grille du centre de l'utilisateur : la page ouvre l'équipe de l'utilisateur (voir pages/center/[centerId]/grid.vue).
+// Un administrateur principal sans centre n'en a pas : il choisit d'abord un centre.
+const gridItems = computed(() => (authStore.userData.centerId
+  ? [{
+    path: `/center/${authStore.userData.centerId}/grid`,
+    title: 'Grille',
+    value: 'grid',
+    iconActive: 'mdi-view-week',
+    iconInactive: 'mdi-view-week-outline'
+  }]
+  : []));
+
 const isMaster = computed(() => authStore.userData.adminType === 'master');
 
 const pendingUsersCount = computed(() => {
@@ -178,6 +190,7 @@ const navigationItems = computed(() => [
     iconActive: 'mdi-calendar',
     iconInactive: 'mdi-calendar-outline'
   },
+  ...gridItems.value,
   {
     path: '/rotation',
     title: 'Tours de service',

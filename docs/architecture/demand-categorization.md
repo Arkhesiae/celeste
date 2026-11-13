@@ -8,8 +8,9 @@ Files (all under `backend/`):
 | File | Role |
 |---|---|
 | `services/planning/planning.shiftsMap.js` | builds the user's planning around the demand day (`Map` day → shift entry) |
-| `services/substitution/compatibility/categorizeDemand.js` | the compatibility computation: `categorize`, `legalLimitsFor` and the seven rules |
-| `services/substitution/compatibility/demandVariations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
+| `services/substitution/compatibility/compatibility.categorize.js` | the compatibility computation for one demand: `categorize`, `checkCompatibilityForVariation` |
+| `services/substitution/compatibility/compatibility.rules.js` | the pure legal rules: `legalLimitsFor` and the seven checks (no database, no environment) |
+| `services/substitution/compatibility/compatibility.variations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
 | `utils/shifts/shiftTime.js` | `withZonedBounds` (date key + `HH:mm` → Temporal instants in the center's zone) and `wallClockIso` (instant → text for the front) |
 | `utils/shifts/nightControl.js` | what a night control is (`isNightControl`) |
 | `services/substitution/substitution.switches.js` | `getCompatibleSwitches`: the same rules for the candidate days of a switch |

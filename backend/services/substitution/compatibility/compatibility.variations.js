@@ -2,7 +2,7 @@
  * Exploration des variantes ambiguës et compatibilité « potentielle » d'une demande — OPTIONNEL, désactivé par défaut.
  *
  * Contexte. Une vacation peut avoir des variantes (autres horaires). Tant que personne n'en choisit une, les calculs
- * de compatibilité (categorizeDemand.js) supposent les horaires PAR DÉFAUT du shift ; dès qu'une variante est choisie
+ * de compatibilité (compatibility.categorize.js) supposent les horaires PAR DÉFAUT du shift ; dès qu'une variante est choisie
  * (par le demandeur sur la demande, par l'utilisateur dans son calendrier), elle est prise en compte. Rien de plus.
  *
  * Ce fichier va plus loin : pour les vacations dont la variante n'est pas choisie, il essaie TOUTES les variantes et
@@ -22,7 +22,7 @@ import { posterDayOf } from '../../../utils/dates/dayAccess.js';
 import { daysBetween } from '../../../utils/dates/plainDate.js';
 import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
 import { DEFAULT_TIME_ZONE } from '../../../utils/dates/constants.js';
-import { categorize, checkCompatibilityForVariation, buildPreFetchedAcceptedShifts } from './categorizeDemand.js';
+import { categorize, checkCompatibilityForVariation, buildPreFetchedAcceptedShifts } from './compatibility.categorize.js';
 
 import { MAX_COMPATIBILITY_COMBOS, AMBIGUOUS_DAY_RADIUS, MAX_AMBIGUOUS_DATES } from '../../../config/compatibility.js';
 /** Résultat quand l'exploration n'a pas eu lieu : mêmes champs, vides */

@@ -39,8 +39,7 @@ same singular camelCase word (kebab-case is for URLs only). What still breaks it
 
 | Current | Anomaly | Proposed |
 |---|---|---|
-| `services/ticket/ticket.service.js` (10 functions), `services/publicAnnouncement/publicAnnouncement.service.js`, `services/rule/rule.service.js` | one `<domain>.service.js` file per domain instead of one file per action | accepted for a small single-file domain (documented in `CLAUDE.md`); split by action (`ticket.create.js`, `ticket.reply.js`, ...) if one of them grows or when its controller is reworked |
-| `services/substitution/compatibility/` (`categorizeDemand.js`, `demandVariations.js`) | named after their main function, in a sub-folder of the domain | acceptable (used by the tests and documented in `docs/architecture/demand-categorization.md`); rename to `compatibility.categorize.js` / `compatibility.variations.js` only if the folder grows |
+| `services/publicAnnouncement/publicAnnouncement.service.js`, `services/rule/rule.service.js` | one `<domain>.service.js` file per domain instead of one file per action | accepted for a small single-file domain (documented in `CLAUDE.md`); split by action if one of them grows or when its controller is reworked |
 | `middleware/` (`authMiddleware.js`, `centerAuth.js`, `errorHandler.js`) | three different suffix styles | `auth.middleware.js`, `centerAuth.middleware.js`, `errorHandler.middleware.js`, or keep (they are named after what they export) |
 
 ## 4. URLs
@@ -52,7 +51,7 @@ Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:center
 
 ## 5. Exceptions to the import rule
 
-- Tests (`backend/test/`) import service files directly, as they test internals (`categorizeDemand`, `demandVariations`);
+- Tests (`backend/test/`) import service files directly, as they test internals (`compatibility.rules`, `compatibility.categorize`, `compatibility.variations`);
   this is the only place that does it outside `services/`.
 
 ## 6. Hygiene
@@ -63,8 +62,7 @@ Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:center
   temporary configuration); no `engines` field although the Dockerfile uses Node 20 (and the tests ran on Node 26).
 - `MAIL_SERVICE` is read in `services/email/email.transport.js` but never used: mails go to the console unless
   `NODE_ENV=production`, then through SES. Either make `MAIL_SERVICE` decide (as `CLAUDE.md` says) or stop reading it.
-- Files over 500 lines (candidates to split): `services/substitution/compatibility/categorizeDemand.js` 510,
-  `services/rotation/rotation.activation.js` 502.
+- Files over 500 lines (candidates to split): `services/rotation/rotation.activation.js` 502.
 
 ## 7. Suggested order of what remains
 

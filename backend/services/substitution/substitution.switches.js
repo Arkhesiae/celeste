@@ -7,7 +7,7 @@ import Substitution from '../../models/Substitution.js';
 import { findLatestRotation } from '../rotation/rotation.latest.js';
 import { generateShiftsMap } from '../planning/planning.shiftsMap.js';
 import { shiftMapToArray } from '../planning/planning.shiftsMap.js';
-import { legalLimitsFor } from './compatibility/categorizeDemand.js';
+import { legalLimitsFor } from './compatibility/compatibility.rules.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';

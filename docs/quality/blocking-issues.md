@@ -10,7 +10,7 @@ Severity is shown on each issue; sections below are ordered by when to work on t
 
 Compatibility audit (2026-11-11): #45, #47, with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
 
-Changes in this revision (2026-11-11): #13 moved (the file is now `services/substitution/compatibility/categorizeDemand.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
+Changes in this revision (2026-11-11): #13 moved (the file is now `services/substitution/compatibility/compatibility.rules.js` and `compatibility.categorize.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
 
 ---
 
@@ -57,7 +57,7 @@ Open authorization holes, data-corrupting bugs and the compatibility computation
 `getCompatibleSwitches` (`substitution.switches.js`) evaluates each rotation day with `day.default` hours only. A shift with variations (other start / end times) is reported with the default hours' result; the front cannot tell which variation breaks a rule. Test: `getCompatibleSwitches : une rotation à variantes ...` in `backend/test/compatibility.db.test.js` (todo).
 
 ### 47. Overlapping shifts are counted twice in the 48h total — P2
-`checkWeeklyWorkHours` (`categorizeDemand.js`) sums the minutes of overlapping shifts instead of their union (test: todo). Only matters once overlapping data exist (such a planning already fails the 11h rule on the shifts involved, but not on unrelated targets).
+`checkWeeklyWorkHours` (`compatibility.rules.js`) sums the minutes of overlapping shifts instead of their union (test: todo). Only matters once overlapping data exist (such a planning already fails the 11h rule on the shifts involved, but not on unrelated targets).
 
 ### 7. SNS inbound-mail webhook is unauthenticated — P1
 `POST /api/ticket/inbound` (`services/email/email.inbound.js:56-57`) accepts any JSON body: it does not verify the SNS signature or `TopicArn`, and it calls `confirmSubscription(message.SubscribeURL)` with a URL taken from the request (server-side request forgery). Anyone can inject ticket replies on behalf of any user, or make the server fetch arbitrary URLs.

@@ -1,5 +1,5 @@
 /**
- * Tests des règles de repos / de charge utilisées par le calcul de compatibilité (services/substitution/compatibility/categorizeDemand.js).
+ * Tests des règles de repos / de charge utilisées par le calcul de compatibilité (services/substitution/compatibility/compatibility.rules.js).
  *
  * Fonctions pures, sans base de données :  node --test backend/test/
  *
@@ -11,7 +11,7 @@
  *   R5  repos >= 12 h après une vacation de contrôle de nuit                    (checkRestAfterNightControl)
  *   R6  <= 2 vacations de nuit consécutives                                     (checkConsecutiveNightControls)
  *   R7  repos >= 48 h après deux vacations de nuit consécutives                 (checkRestAfterTwoNightControls)
- * Toutes sont appliquées par le calcul de compatibilité (legalLimitsFor, categorizeDemand.js).
+ * Toutes sont appliquées par le calcul de compatibilité (legalLimitsFor, compatibility.rules.js).
  *
  * Modèle de temps : une vacation = { date: 'YYYY-MM-DD', startTime: 'HH:mm', endTime: 'HH:mm', endsNextDay }, lue dans
  * le fuseau du centre ; les fonctions `check*` reçoivent le planning converti en Temporal.ZonedDateTime
@@ -24,8 +24,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { categorize } from '../services/substitution/compatibility/compatibility.categorize.js';
 import {
-  categorize,
   checkMinimumRestTime,
   checkWeeklyRestPeriod,
   checkWeeklyWorkHours,
@@ -33,7 +33,7 @@ import {
   checkRestAfterNightControl,
   checkConsecutiveNightControls,
   checkRestAfterTwoNightControls,
-} from '../services/substitution/compatibility/categorizeDemand.js';
+} from '../services/substitution/compatibility/compatibility.rules.js';
 import { shiftMapToArray } from '../services/planning/planning.shiftsMap.js';
 import { isNightControl } from '../utils/shifts/nightControl.js';
 import { withZonedBounds, wallClockIso } from '../utils/shifts/shiftTime.js';
@@ -314,7 +314,7 @@ test('Contrôle de nuit : le résultat ne dépend pas du fuseau du serveur', () 
   const probe = (serverTimeZone) => {
     const code = `
       import { isNightControl } from './utils/shifts/nightControl.js';
-      import { checkRestAfterNightControl } from './services/substitution/compatibility/categorizeDemand.js';
+      import { checkRestAfterNightControl } from './services/substitution/compatibility/compatibility.rules.js';
       import { withZonedBounds } from './utils/shifts/shiftTime.js';
       const shiftOf = (date, startTime, endTime, endsNextDay = false) => ({ shift: { type: 'work' }, date, startTime, endTime, endsNextDay });
       const [night, nextShift] = withZonedBounds([shiftOf('2026-03-10', '22:00', '06:00', true), shiftOf('2026-03-11', '14:00', '20:00')], 'UTC');
@@ -496,7 +496,7 @@ test('categorize : moins de 48h après deux nuits consécutives (restAfterTwoNig
   assert.ok(lessThan48h.limit.includes('restAfterTwoNightsLimit'), JSON.stringify(lessThan48h.limit));
 });
 
-test('categorize : sans les champs de variantes (ils sont optionnels, voir demandVariations.js)', async () => {
+test('categorize : sans les champs de variantes (ils sont optionnels, voir compatibility.variations.js)', async () => {
   const result = await categorize(demandOf(withShift(shortShift), day(0)), mapOf([]));
   for (const field of ['compatibleVariations', 'compatibleFetcherVariationsByDate', 'compatiblePairsByFetcherDate', 'potentiallyCompatible']) {
     assert.equal(field in result, false, field);

@@ -1,11 +1,13 @@
 <template>
-    <div class="d-flex cursor-pointer overflow-hidden day-block pa-2" :style="{ height: height + 'px ' }" :class="{
+    <div class="d-flex cursor-pointer overflow-hidden day-block tile pa-2" role="button" tabindex="0"
+        :aria-pressed="selected" :style="{ height: height + 'px ' }" :class="{
         'isWorkDay': isWorkDay,
         'isRestDay': !!shiftName && !isWorkDay,
+        'isVic': isVic,
         'selected': selected,
         'today-center-highlight': isToday,
         'empty-day': !isInMonth,
-    }" @click="handleClick">
+    }" @click="handleClick" @keydown.enter.prevent="handleClick" @keydown.space.prevent="handleClick">
         <!-- Date number + shift name row -->
         <div class="d-flex justify-space-between align-start px-0 day-header" style="min-width: 0; overflow: hidden;">
             <!-- Day number -->
@@ -151,9 +153,12 @@ const centerId = "aze"
 
 const emit = defineEmits(['select']);
 
+/** Journée en VIC : la tuile prend la couleur secondaire (un jour travaillé est primaire) */
+const isVic = computed(() => props.selectedVariation === 'vic');
+
 /** Évite de doubler la variante déjà concaténée dans shiftName (ex. J1A). */
 const variationLabel = computed(() => {
-    if (props.selectedVariation === 'vic') return 'VIC';
+    if (isVic.value) return 'VIC';
     const variation = props.variationName;
     if (!variation) return '';
     const shift = props.shiftName || '';
@@ -190,19 +195,34 @@ const handleClick = async () => {
 }
 
 .day-block {
+    /* Tuile globale (styles/tile.css) : fond, bordure, survol, focus et état sélectionné en viennent ; on ne règle ici que
+       ce qui est propre au calendrier. Couleur : jour travaillé = primaire (accent par défaut de la tuile), VIC = secondaire. */
+    --tile-radius: 12px;
     width: 100% !important;
     position: relative;
     padding-top: 6px;
     min-width: 0;
+    min-height: 0;   /* la hauteur vient de la prop `height`, pas des 84 px minimum de la tuile */
     overflow: hidden;
-    background-color: rgb(var(--v-theme-surfaceContainerHigh));
-    border: 1px solid rgba(var(--v-theme-outlineVariant), 0.85);
     display: grid;
-    flex-direction: column;
-    border-radius: 12px;
     transition: border-radius var(--motion-expressive-default-effects),
-        border-color var(--motion-expressive-default-effects),
-        background-color var(--motion-expressive-default-effects);
+        background var(--motion-standard-fast-effects),
+        color var(--motion-standard-fast-effects),
+        border-color var(--motion-standard-fast-effects),
+        box-shadow var(--motion-standard-fast-effects),
+        transform var(--motion-standard-fast-effects);
+}
+
+/* VIC : l'accent de la tuile (survol, focus, fond une fois sélectionnée) passe au secondaire */
+.isVic {
+    --tile-accent: rgb(var(--v-theme-secondary));
+    --tile-on-accent: rgb(var(--v-theme-onSecondary));
+}
+
+/* Teinte légère de l'accent au repos pour un jour travaillé ou en VIC ; sélectionnée, c'est l'accent plein (tuile) */
+.isWorkDay:not([aria-pressed='true']),
+.isVic:not([aria-pressed='true']) {
+    --tile-bg: color-mix(in srgb, var(--tile-accent) 10%, transparent);
 }
 
 .day-header {
@@ -265,19 +285,14 @@ const handleClick = async () => {
     opacity: 1;
 }
 
-.isRestDay {
-    background-color: rgb(var(--v-theme-surfaceContainerLow));
-    border-color: rgba(var(--v-theme-outlineVariant), 0.4);
-}
-
 .isRestDay .day-number {
-    opacity: 0.55;
+    opacity: 0.95;
     font-weight: 400 !important;
 }
 
 .isRestDay .shift-name {
     font-weight: 500 !important;
-    opacity: 0.5;
+    opacity: 0.01;
 }
 
 .indicator-dot {
@@ -286,23 +301,16 @@ const handleClick = async () => {
     border-radius: 8px;
 }
 
+/* Tuile sélectionnée : coins plus arrondis (le fond plein vient de la tuile, via aria-pressed) */
 .selected {
-    border-radius: 16px !important;
-    color: rgb(var(--v-theme-onPrimary)) !important;
-    background: rgb(var(--v-theme-primary)) !important;
-    border-color: rgb(var(--v-theme-primary)) !important;
+    --tile-radius: 16px;
 }
 
 .selected .shift-name,
 .selected .variation-name,
 .selected .day-number {
-    color: rgb(var(--v-theme-onPrimary)) !important;
+    color: var(--tile-on-accent) !important;
     opacity: 1;
-}
-
-.selected.isRestDay {
-    background: rgb(var(--v-theme-primary)) !important;
-    border-color: rgb(var(--v-theme-primary)) !important;
 }
 
 .day_label_container {
@@ -320,14 +328,12 @@ const handleClick = async () => {
     font-size: 12px !important;
 }
 
-.today-center-highlight {
+.today-center-highlight:not(.selected) {
     border: 1.5px solid rgba(var(--v-theme-primary), 0.55) !important;
 }
 
 .empty-day {
     opacity: 0.45;
-    background-color: rgb(var(--v-theme-surfaceContainerLow));
-    border-color: rgba(var(--v-theme-outlineVariant), 0.45);
 }
 
 

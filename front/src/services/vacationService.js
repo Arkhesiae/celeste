@@ -13,7 +13,7 @@ export const vacationService = {
    * @returns {Promise<Array>} Liste des créneaux horaires
    */
   async fetchWorkdaysOfUser(userId, dates) {
-    const response = await apiFetch(`/users/${userId}/get-shifts`, {
+    const response = await apiFetch(`/user/${userId}/get-shifts`, {
       method: 'POST',
       body: JSON.stringify({ dates }),
     });
@@ -27,7 +27,7 @@ export const vacationService = {
    * @returns {Promise<Array>} Liste des créneaux horaires
    */
   async fetchVacationsOfUser(userId, dates) {
-    const response = await apiFetch(`/users/${userId}/get-shifts-with-substitutions`, {
+    const response = await apiFetch(`/user/${userId}/get-shifts-with-substitutions`, {
       method: 'POST',
       body: JSON.stringify({ dates }),
     });
@@ -50,7 +50,7 @@ export const vacationService = {
     nextDate.setDate(nextDate.getDate() + 1);
 
     try {
-      const response = await apiFetch(`/users/${userId}/get-shifts`, {
+      const response = await apiFetch(`/user/${userId}/get-shifts`, {
         method: "POST",
         body: JSON.stringify({
           dates: [

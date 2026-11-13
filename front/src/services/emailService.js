@@ -10,7 +10,7 @@ export const emailService = {
    * @returns {Promise<Array>} Liste des templates.
    */
   async getTemplates() {
-    const response = await apiFetch(`/announcements/templates`, {
+    const response = await apiFetch(`/announcement/templates`, {
       method: 'GET'
     });
     return response;
@@ -21,7 +21,7 @@ export const emailService = {
    * @returns {Promise<number>} Le nombre d'utilisateurs.
    */
   async getUserCount() {
-    const response = await apiFetch(`/announcements/users-count`, {
+    const response = await apiFetch(`/announcement/users-count`, {
       method: 'GET'
     });
     return response;
@@ -35,7 +35,7 @@ export const emailService = {
   async sendAnnouncement(announcementData) {
     // Le périmètre est dans l'URL : /announcements/send = tous les centres (master), sinon un centre
     const { isGlobal, centerId, ...content } = announcementData;
-    const url = isGlobal ? `/announcements/send` : `/announcements/center/${centerId}/send`;
+    const url = isGlobal ? `/announcement/send` : `/announcement/center/${centerId}/send`;
     const response = await apiFetch(url, {
       method: 'POST',
       body: JSON.stringify(content)
@@ -50,7 +50,7 @@ export const emailService = {
    */
   async getHistory(params = {}) {
     const queryParams = new URLSearchParams(params);
-    const response = await apiFetch(`/announcements/history?${queryParams}`, {
+    const response = await apiFetch(`/announcement/history?${queryParams}`, {
       method: 'GET'
     });
     return response;
@@ -61,7 +61,7 @@ export const emailService = {
    * @returns {Promise<Object>} Les statistiques.
    */
   async getStats() {
-    const response = await apiFetch(`/announcements/stats`, {
+    const response = await apiFetch(`/announcement/stats`, {
       method: 'GET'
     });
     return response;
@@ -73,7 +73,7 @@ export const emailService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async deleteAnnouncement(id) {
-    const response = await apiFetch(`/announcements/${id}`, {
+    const response = await apiFetch(`/announcement/${id}`, {
       method: 'DELETE',
     });
     return response;
@@ -86,7 +86,7 @@ export const emailService = {
    * @returns {Promise<string>} Le HTML du template.
    */
   async getTemplatePreview(templateType, data) {
-    const response = await apiFetch(`/announcements/templates/${templateType}/preview`, {
+    const response = await apiFetch(`/announcement/templates/${templateType}/preview`, {
       method: 'POST',
       body: JSON.stringify(data)
     });

@@ -11,7 +11,7 @@ export const teamService = {
    */
   async getTeams(centerId, { publicList = false } = {}) {
     // `publicList` : liste publique (id et nom seulement) pour le formulaire d'inscription, avant qu'un compte n'existe
-    const response = await apiFetch(publicList ? `/teams/public/${centerId}` : `/teams/${centerId}`, {
+    const response = await apiFetch(publicList ? `/team/public/${centerId}` : `/team/${centerId}`, {
       method: 'GET'
     });
     return response;
@@ -22,7 +22,7 @@ export const teamService = {
    * @returns {Promise<Array>} Liste des équipes.
    */
   async getAllTeams() {
-    const response = await apiFetch(`/teams`, {
+    const response = await apiFetch(`/team`, {
       method: 'GET'
     });
     return response;
@@ -34,7 +34,7 @@ export const teamService = {
    * @returns {Promise<Object>} Les données de l'équipe.
    */
   async getTeamById(id) {
-      const response = await apiFetch(`/teams/${id}`, {
+      const response = await apiFetch(`/team/${id}`, {
       method: 'GET'
     });
     return response;
@@ -47,7 +47,7 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe créée.
    */
   async createTeam({ centerId, ...teamData }) {
-    const response = await apiFetch(`/teams/center/${centerId}`, {
+    const response = await apiFetch(`/team/center/${centerId}`, {
       method: 'POST',
       body: JSON.stringify(teamData)
     });
@@ -61,7 +61,7 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
   async renameTeam(id, teamData) {
-    const response = await apiFetch(`/teams/${id}/name`, {
+    const response = await apiFetch(`/team/${id}/name`, {
       method: 'PUT',
       body: JSON.stringify(teamData)
     });
@@ -74,7 +74,7 @@ export const teamService = {
    * @returns {Promise<void>}
    */
   async deleteTeam(id) {
-    const response = await apiFetch(`/teams/${id}`, {
+    const response = await apiFetch(`/team/${id}`, {
       method: 'DELETE',
     });
     return response;
@@ -87,7 +87,7 @@ export const teamService = {
    * @returns {Promise<Object>} L'équipe mise à jour.
    */
   async assignToTeam(userId, teamData) {
-    const response = await apiFetch(`/users/${userId}/assign-team`, {
+    const response = await apiFetch(`/user/${userId}/assign-team`, {
       method: 'POST',
       body: JSON.stringify(teamData)
     });
@@ -99,7 +99,7 @@ export const teamService = {
    * (409) si des demandes ou entrées de calendrier seraient annulées.
    */
   async deleteTeamOccurrence(userId, occurrenceId, confirmed = false) {
-    const response = await apiFetch(`/users/${userId}/team-occurrences/${occurrenceId}${confirmed ? '?confirmed=true' : ''}`, {
+    const response = await apiFetch(`/user/${userId}/team-occurrences/${occurrenceId}${confirmed ? '?confirmed=true' : ''}`, {
       method: 'DELETE',
     });
     return response;
@@ -112,7 +112,7 @@ export const teamService = {
    * @returns {Promise<Array>} Liste des membres de l'équipe.
    */
   async getTeamMembers(teamId) {
-    const response = await apiFetch(`/teams/${teamId}/members`, {
+    const response = await apiFetch(`/team/${teamId}/members`, {
       method: 'GET'
     });
     return response;
@@ -127,7 +127,7 @@ export const teamService = {
    *   needsApproval : rien n'est modifié tant que l'impact (membres, demandes, entrées) n'est pas confirmé
    */
   async updateTeamCyclePosition(teamId, { day, date, swap = false, confirmed = false }) {
-    return apiFetch(`/teams/${teamId}/cycle-position`, {
+    return apiFetch(`/team/${teamId}/cycle-position`, {
       method: 'PUT',
       body: JSON.stringify({ day, date, swap, confirmed })
     });
@@ -142,7 +142,7 @@ export const teamService = {
    */
   async getTeamGrid(teamId, startDate, endDate) {
     const params = new URLSearchParams({ startDate, endDate });
-    return apiFetch(`/teams/${teamId}/grid?${params}`, { method: 'GET' });
+    return apiFetch(`/team/${teamId}/grid?${params}`, { method: 'GET' });
   },
 
   /**
@@ -151,7 +151,7 @@ export const teamService = {
    * @returns {Promise<Array>} Liste mise à jour des équipes.
    */
   async updateTeamsOrder(teamIds) {
-    const response = await apiFetch(`/teams/order`, {
+    const response = await apiFetch(`/team/order`, {
       method: 'PUT',
       body: JSON.stringify({ teamIds })
     });

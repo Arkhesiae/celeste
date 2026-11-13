@@ -1,4 +1,4 @@
-import emailService from './email.transport.js';
+import * as emailService from './email.transport.js';
 import { renderMail } from './mailRenderer.js';
 
 /**

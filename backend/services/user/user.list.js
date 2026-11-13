@@ -1,7 +1,7 @@
 import User from '../../models/User.js';
 import { getCenterTimeZone, getCenterTimeZones } from '../center/center.timezone.js';
 import { todayIn } from '../../utils/dates/plainDate.js';
-import ruleService from '../rule/rule.service.js';
+import * as ruleService from '../rule/rule.service.js';
 import { getTeamAtDay } from "../team/team.atDay.js";
 import { AppError } from '../../error/AppError.js';
 

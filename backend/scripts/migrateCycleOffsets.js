@@ -31,8 +31,8 @@ import { Temporal } from '@js-temporal/polyfill';
 import Center from '../models/Center.js';
 import Team from '../models/Team.js';
 import '../models/Rotation.js';
-import { findLatestRotation } from '../services/rotation/rotation.latest.js';
-import { cycleDayIndex } from '../services/team/team.cycleIndex.js';
+import { findLatestRotation } from '../services/rotation/index.js';
+import { cycleDayIndex } from '../services/team/index.js';
 
 const args = new Map(process.argv.slice(2).map((a) => {
     const [k, v] = a.replace(/^--/, '').split('=');

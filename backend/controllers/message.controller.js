@@ -1,6 +1,6 @@
 import Message from '../models/Message.js';
-import { findOrThrow } from '../utils/mongo.js';
 import User from '../models/User.js';
+import { findOrThrow } from '../utils/mongo.js';
 import { AppError } from '../error/AppError.js';
 
 // Récupérer tous les messages
@@ -82,9 +82,4 @@ const deleteMessage = async (req, res, next) => {
   }
 };
 
-export default {
-  getMessages,
-  createMessage,
-  markAsRead,
-  deleteMessage
-}; 
+export { getMessages, createMessage, markAsRead, deleteMessage };

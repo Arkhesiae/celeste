@@ -10,7 +10,7 @@ export const publicAnnouncementService = {
    * Returns { permanentAnnouncements, nonPermanentAnnouncements }.
    */
   async getActive() {
-    return apiFetch('/public-announcements/active', { method: 'GET' });
+    return apiFetch('/public-announcement/active', { method: 'GET' });
   },
 
   /**
@@ -18,7 +18,7 @@ export const publicAnnouncementService = {
    * @param {string} id - Announcement ID
    */
   async acknowledge(id) {
-    return apiFetch(`/public-announcements/${id}/acknowledge`, { method: 'POST' });
+    return apiFetch(`/public-announcement/${id}/acknowledge`, { method: 'POST' });
   },
 
   /**
@@ -27,7 +27,7 @@ export const publicAnnouncementService = {
    */
   async getAll(params = {}) {
     const query = new URLSearchParams(params).toString();
-    return apiFetch(`/public-announcements${query ? '?' + query : ''}`, { method: 'GET' });
+    return apiFetch(`/public-announcement${query ? '?' + query : ''}`, { method: 'GET' });
   },
 
   /**
@@ -35,7 +35,7 @@ export const publicAnnouncementService = {
    * @param {Object} data - Announcement fields
    */
   async create(data) {
-    return apiFetch('/public-announcements', {
+    return apiFetch('/public-announcement', {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -47,7 +47,7 @@ export const publicAnnouncementService = {
    * @param {Object} data - Fields to update
    */
   async update(id, data) {
-    return apiFetch(`/public-announcements/${id}`, {
+    return apiFetch(`/public-announcement/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
@@ -58,6 +58,6 @@ export const publicAnnouncementService = {
    * @param {string} id - Announcement ID
    */
   async remove(id) {
-    return apiFetch(`/public-announcements/${id}`, { method: 'DELETE' });
+    return apiFetch(`/public-announcement/${id}`, { method: 'DELETE' });
   }
 };

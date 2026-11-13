@@ -7,7 +7,7 @@ import express from 'express';
 import { errorHandler } from './middleware/errorHandler.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { renderMail } from './services/email/mailRenderer.js';
+import { renderMail } from './services/email/index.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -32,7 +32,7 @@ import './jobs/index.js';
 import { createAdmin, createLocalAdmin } from './bootstrap/seedAdmin.js';
 
 // ─── Initialisation des règles ────────────────────────────────────────────────
-import { initializeRules } from './services/rule/rule.initialize.js';
+import { initializeRules } from './services/rule/index.js';
 
 // ─── Middleware CORS ──────────────────────────────────────────────────────────
 app.use(cors({

@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { TRANSACTION_JOB_CRON } from '../config/schedules.js';
-import { processPendingTransactions } from '../services/transaction/transaction.scheduled.js';
+import { processPendingTransactions } from '../services/transaction/index.js';
 
 // Exécuter toutes les 30 minutes
 cron.schedule(TRANSACTION_JOB_CRON, async () => {

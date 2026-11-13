@@ -1,8 +1,7 @@
-import ruleService from '../services/rule/rule.service.js';
-import { initializeRules as initRulesService } from '../services/rule/rule.initialize.js';
 import Rule from '../models/Rule.js';
-
 import { AppError } from '../error/AppError.js';
+import * as ruleService from '../services/rule/index.js';
+
 export const getAllRules = async (req, res, next) => {
   try {
     const { centerId } = req.query;
@@ -71,7 +70,7 @@ export const deleteRuleOverride = async (req, res, next) => {
 // Existing route requirement handlers
 export const initializeRules = async (req, res, next) => {
   try {
-    await initRulesService();
+    await ruleService.initializeRules();
     res.status(200).json({ message: 'Rules initialized successfully' });
   } catch (error) {
     console.error('Error initializing rules:', error);
@@ -93,13 +92,4 @@ export const resetRules = async (req, res, next) => {
     console.error('Error resetting rules:', error);
     next(error);
   }
-};
-
-export default {
-  getAllRules,
-  updateRule,
-  toggleLock,
-  initializeRules,
-  resetRules,
-  deleteRuleOverride
 };

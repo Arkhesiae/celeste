@@ -1,10 +1,10 @@
-import { sendBulkAnnouncementEmail } from '../services/email/announcementEmail.js';
-import { findOrThrow } from '../utils/mongo.js';
-import { sameId } from '../utils/ids.js';
 import User from '../models/User.js';
 import Announcement from '../models/Announcement.js';
 import Center from '../models/Center.js';
+import { findOrThrow } from '../utils/mongo.js';
+import { sameId } from '../utils/ids.js';
 import { AppError } from '../error/AppError.js';
+import * as emailService from '../services/email/index.js';
 
 // /**
 //  * Récupère la liste des templates disponibles
@@ -115,7 +115,7 @@ const getMailList = async (testMode, isGlobal, centerId) => {
 const sendAnnouncement = async (req, res, next) => {
   try {
     const { title, message, testMode = false } = req.body;
-    // Le périmètre vient de la route : POST /announcements/send = global (master), /center/:centerId/send = un centre
+    // Le périmètre vient de la route : POST /announcement/send = global (master), /center/:centerId/send = un centre
     const centerId = req.params.centerId ?? null;
     const isGlobal = centerId === null;
 
@@ -141,7 +141,7 @@ const sendAnnouncement = async (req, res, next) => {
     };
 
     // Envoi des emails
-    const results = await sendBulkAnnouncementEmail(userEmails, templateData);
+    const results = await emailService.sendBulkAnnouncementEmail(userEmails, templateData);
 
     // Sauvegarde de l'annonce en base
     const announcement = new Announcement({

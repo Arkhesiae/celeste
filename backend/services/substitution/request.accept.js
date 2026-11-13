@@ -7,7 +7,7 @@ import { sameId } from '../../utils/ids.js';
 import { AppError } from '../../error/AppError.js';
 import { computeUserShifts } from '../planning/computeUserShifts.js';
 import { sendAcceptedDemandEmail } from '../email/demand/demandEmails.js';
-import * as calendarEntryService from '../calendarEntry/index.js';
+import { addSubstitutionEntries } from '../calendarEntry/calendarEntry.register.js';
 import * as scheduledTransactionService from '../transaction/transaction.scheduled.js';
 import { MAX_POINTS_TO_ACCEPT_REQUEST } from '../../config/points.js';
 
@@ -146,7 +146,7 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
     // Les entrées de calendrier sont écrites dans la transaction ; la vacation de l'accepteur qui en résulte se calcule
     // après le commit (voir acceptRequest) : computeUserShifts ne lit pas dans la session
-    await calendarEntryService.addSubstitutionEntries(request, { session });
+    await addSubstitutionEntries(request, { session });
 
     return { request, acceptedShiftPoints, userShiftData };
 }

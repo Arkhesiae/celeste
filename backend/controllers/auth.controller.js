@@ -1,7 +1,7 @@
-import * as authService from '../services/auth/index.js';
+import { REFRESH_TOKEN_MAX_AGE_MS } from '../config/auth.js';
 import User from '../models/User.js';
 import { AppError } from '../error/AppError.js';
-import { REFRESH_TOKEN_MAX_AGE_MS } from '../config/auth.js';
+import * as authService from '../services/auth/index.js';
 
 const COOKIE_OPTIONS = {
     httpOnly: true,
@@ -130,12 +130,4 @@ const updatePassword = async (req, res, next) => {
     }
 }
 
-export default {
-    loginUser,
-    refreshAccessToken,
-    logout,
-    requestPasswordReset,
-    resetPassword,
-    verifyPassword,
-    updatePassword
-};
+export { loginUser, refreshAccessToken, logout, requestPasswordReset, resetPassword, verifyPassword, updatePassword };

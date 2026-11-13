@@ -1,6 +1,6 @@
-import * as ticketService from '../services/ticket/ticket.service.js';
-
 import { AppError } from '../error/AppError.js';
+import * as ticketService from '../services/ticket/index.js';
+
 // Récupérer tous les tickets
 const getTickets = async (req, res, next) => {
   try {

@@ -1,4 +1,4 @@
-import emailService from './email.transport.js';
+import * as emailService from './email.transport.js';
 import { renderMail } from './mailRenderer.js';
 
 /**
@@ -55,8 +55,4 @@ Votre réponse sera automatiquement associée à ce ticket.
     console.error('❌ Erreur envoi réponse ticket:', error);
     throw error;
   }
-};
-
-export default {
-  sendTicketReplyEmail
 };

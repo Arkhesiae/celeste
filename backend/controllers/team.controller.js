@@ -1,21 +1,19 @@
 import Team from '../models/Team.js';
+import Center from '../models/Center.js';
+import User from '../models/User.js';
 import { anchorDayOf } from '../utils/dates/dayAccess.js';
 import { daysBetween } from '../utils/dates/plainDate.js';
 import { mod } from '../utils/math.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { isValidId } from '../utils/ids.js';
-import Center from '../models/Center.js';
-import User from "../models/User.js";
-import { computeShiftOfTeam } from '../services/planning/computeShiftOfTeam.js';
 import { AppError } from '../error/AppError.js';
-import { findLatestRotation } from '../services/rotation/rotation.latest.js';
-
-import { getTeamGrid as getTeamGridService } from '../services/team/team.grid.js';
-import { setTeamCyclePosition as setTeamCyclePositionService } from '../services/team/team.cycle.js';
+import * as planningService from '../services/planning/index.js';
+import * as rotationService from '../services/rotation/index.js';
+import * as teamService from '../services/team/index.js';
 
 // Créer une nouvelle équipe dans un centre
 const createTeam = async (req, res, next) => {
-    const { centerId } = req.params;   // POST /teams/center/:centerId, déjà vérifié par authorizeCenterParam
+    const { centerId } = req.params;   // POST /team/center/:centerId, déjà vérifié par authorizeCenterParam
     const { name } = req.body;
     try {
         const center = await findOrThrow(Center, centerId, { message: 'Center not found' });
@@ -118,7 +116,7 @@ const getTeamShifts = async (req, res, next) => {
         const results = await Promise.all(
             dateArray.map(async (date) => ({
                 date,
-                status: await computeShiftOfTeam(date, team._id)
+                status: await planningService.computeShiftOfTeam(date, team._id)
             }))
         );
 
@@ -135,7 +133,7 @@ const getTeamGrid = async (req, res, next) => {
         const { id } = req.params;
         const { startDate, endDate } = req.query;
         if (!isValidId(id)) throw new AppError("ID d'équipe invalide", 400);
-        res.json(await getTeamGridService(id, startDate, endDate));
+        res.json(await teamService.getTeamGrid(id, startDate, endDate));
     } catch (error) {
         next(error);
     }
@@ -147,7 +145,7 @@ const setTeamCyclePosition = async (req, res, next) => {
         const { id } = req.params;
         const { day, date, swap, confirmed } = req.body;
         if (!isValidId(id)) throw new AppError("ID d'équipe invalide", 400);
-        const result = await setTeamCyclePositionService(id, {
+        const result = await teamService.setTeamCyclePosition(id, {
             day: Number(day), date, swap: swap === true, confirmed: confirmed === true, actorId: req.user.userId,
         });
         if (result.needsApproval) return res.status(409).json(result);   // approbation requise : impact détaillé
@@ -174,7 +172,7 @@ const updateTeamCycleStartDate = async (req, res, next) => {
         const center = current ? await Center.findById(current.center).select('cycleAnchorDate cycleAnchorDay') : null;
         const anchorDay = center ? anchorDayOf(center) : null;
         if (anchorDay) {
-            const rotation = await findLatestRotation(center._id, new Date());
+            const rotation = await rotationService.findLatestRotation(center._id, new Date());
             const total = rotation?.days?.length;
             if (total) {
                 update.$set.cycleOffset = mod(daysBetween(anchorDay, cycleStartDate), total);

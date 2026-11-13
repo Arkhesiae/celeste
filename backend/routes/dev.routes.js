@@ -1,14 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import { isMasterAdmin, verifyToken } from '../middleware/authMiddleware.js';
 import generateTeamUsers from '../dev/seedTeamUsers.js';
 import seedDefaultConfig from '../dev/seedDefaultConfig.js';
 import seedTeamDemands, { seedSwitchDemands } from '../dev/seedTeamDemands.js';
-import { isMasterAdmin, verifyToken } from '../middleware/authMiddleware.js';
 import { AppError } from '../error/AppError.js';
+
+const router = express.Router();
 
 dotenv.config();
 
-const router = express.Router();
 
 const ensureDev = () => {
   if (process.env.NODE_ENV === 'production') {

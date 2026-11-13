@@ -1,8 +1,9 @@
 import express from 'express';
-const router = express.Router();
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
 import { authorizeCenterParam, authorizeDemandAccess } from '../middleware/centerAuth.js';
 import * as substitutionController from '../controllers/substitution.controller.js';
+
+const router = express.Router();
 
 // Routes protégées par token
 router.post('/center', verifyToken, substitutionController.getCenterRequests);

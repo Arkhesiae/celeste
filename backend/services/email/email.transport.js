@@ -167,8 +167,4 @@ async function sendBulkEmail(emails, mailOptions) {
 
 
 
-export default {
-  sendEmail,
-  sendBulkEmail,
-  sendMassEmail
-}; 
+export { sendEmail, sendBulkEmail, sendMassEmail };

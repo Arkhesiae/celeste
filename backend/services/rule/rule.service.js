@@ -93,10 +93,3 @@ export const deleteOverride = async (centerId, ruleName) => {
 
     return rule.getValueForCenter(centerId);
 };
-
-export default {
-    getAllRules,
-    updateRule,
-    toggleLock,
-    deleteOverride
-};

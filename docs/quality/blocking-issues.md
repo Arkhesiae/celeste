@@ -49,8 +49,8 @@ Open authorization holes, data-corrupting bugs and the compatibility computation
 
 ### 20. Admin routes still without a center guard — P1
 `middleware/centerAuth.js` provides the guards (`authorizeCenterParam`, `authorizeResourceCenter`, `authorizeTargetUserCenter`...) and they cover users, teams, tickets, demands, rotations, grid/heatmap/timeline and announcement sending. Not yet covered (`routes/announcement.routes.js:25-29`, `routes/message.routes.js:9,15`):
-- Email announcements: `GET /announcements/history` and `/stats` list **all** centers' announcements to any admin (`Announcement.find()`), and `DELETE /announcements/:id` lets any admin delete any announcement. Its owner check reads `req.user._id`, but the token carries `userId`, so the check compares against `undefined` (the admin bypass hides it today).
-- Contact messages: `GET /messages` and `PUT /messages/:id/read` show every message to any admin (messages have no center; decide whether they are master-only).
+- Email announcements: `GET /announcement/history` and `/stats` list **all** centers' announcements to any admin (`Announcement.find()`), and `DELETE /announcement/:id` lets any admin delete any announcement. Its owner check reads `req.user._id`, but the token carries `userId`, so the check compares against `undefined` (the admin bypass hides it today).
+- Contact messages: `GET /message` and `PUT /message/:id/read` show every message to any admin (messages have no center; decide whether they are master-only).
 - The team-change preview still names people from cascaded requests of other users when someone previews their own change.
 
 ### 45. Switch compatibility ignores variations — P2
@@ -60,7 +60,7 @@ Open authorization holes, data-corrupting bugs and the compatibility computation
 `checkWeeklyWorkHours` (`categorizeDemand.js`) sums the minutes of overlapping shifts instead of their union (test: todo). Only matters once overlapping data exist (such a planning already fails the 11h rule on the shifts involved, but not on unrelated targets).
 
 ### 7. SNS inbound-mail webhook is unauthenticated — P1
-`POST /api/tickets/inbound` (`services/email/email.inbound.js:56-57`) accepts any JSON body: it does not verify the SNS signature or `TopicArn`, and it calls `confirmSubscription(message.SubscribeURL)` with a URL taken from the request (server-side request forgery). Anyone can inject ticket replies on behalf of any user, or make the server fetch arbitrary URLs.
+`POST /api/ticket/inbound` (`services/email/email.inbound.js:56-57`) accepts any JSON body: it does not verify the SNS signature or `TopicArn`, and it calls `confirmSubscription(message.SubscribeURL)` with a URL taken from the request (server-side request forgery). Anyone can inject ticket replies on behalf of any user, or make the server fetch arbitrary URLs.
 **Fix:** verify the SNS message signature and `TopicArn`, and only fetch `SubscribeURL` on `*.amazonaws.com`.
 
 ### 8. No brute-force protection — P1
@@ -68,9 +68,9 @@ Open authorization holes, data-corrupting bugs and the compatibility computation
 
 ### 6. Public endpoints that need throttling (they cannot require a token) — P1
 These routes are reached before an account exists or before login, so a token cannot be required. They return the strict minimum (see CLAUDE.md for the policy) but stay open to abuse until #8 is done:
-- `POST /api/tickets/create` (the `/contact-admin` form also serves people who cannot log in): spam and mail flooding to administrators;
-- `POST /api/users/check-email`, `GET /api/users/info/:email` (login screen shows name, avatar, center), `POST /api/users/create`, `POST /api/otp/*`: account enumeration and OTP guessing;
-- `GET /api/teams/public/:centerId`, `GET /api/center`, `GET /api/stats*`: harmless data (names, counters) but scrapeable.
+- `POST /api/ticket/create` (the `/contact-admin` form also serves people who cannot log in): spam and mail flooding to administrators;
+- `POST /api/user/check-email`, `GET /api/user/info/:email` (login screen shows name, avatar, center), `POST /api/user/create`, `POST /api/otp/*`: account enumeration and OTP guessing;
+- `GET /api/team/public/:centerId`, `GET /api/center`, `GET /api/stat*`: harmless data (names, counters) but scrapeable.
 
 ### 11. Oversized request bodies and file uploads — P1
 `server.js:53-54` sets `express.json({ limit: '50mb' })` and `urlencoded` to 50mb globally, unauthenticated. The avatar upload (`user.routes.js`) trusts the client: any file is saved with a `.png` extension and no MIME check, into `public/avatars`, which is served statically. Reduce the global limit, validate MIME type and magic bytes, and consider re-encoding images.
@@ -79,7 +79,7 @@ These routes are reached before an account exists or before login, so a token ca
 (The missing `centerId` filter is fixed: `findLatestRotation(result.centerId, ...)` (`services/rotation/rotation.latest.js`).) `controllers/rotation.controller.js` (`deleteRotation`) only blocks a rotation that is active now or has future activations. Deleting one that was active in the past rewrites history: `findLatestRotation` ignores deleted rotations, so past days are recomputed from an earlier rotation, and completed substitutions point to deleted shifts. **Fix:** refuse deletion while the rotation has any activation day (or soft-delete while keeping history resolvable).
 
 ### 31. `updateDayInRotation` residual defects — P1
-`PUT /rotations/:id/day` refuses (400, code `ROTATION_HAS_ACTIVATIONS`) any rotation that has activation dates, so days can only be edited on a never-activated rotation. Two bugs remain in that handler (`controllers/rotation.controller.js`, ~lines 404-450):
+`PUT /rotation/:id/day` refuses (400, code `ROTATION_HAS_ACTIVATIONS`) any rotation that has activation dates, so days can only be edited on a never-activated rotation. Two bugs remain in that handler (`controllers/rotation.controller.js`, ~lines 404-450):
 - setting a day to `rest` is silently ignored (the whole update block is guarded by `type !== 'rest'` but 200 is returned);
 - the variation clean-up `Variation.deleteMany({ _id: { $nin: newList, $in: shift.variations } })` is a no-op because `shift.variations` was already reset to the new list, so removed variations are orphaned.
 **Fix:** handle `type: 'rest'` explicitly (or reject it), and delete variations against the previous list.
@@ -103,9 +103,9 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 
 ### 36. Rotation flow, smaller defects — P2
 - Removing a date that does not exist succeeds silently: `rotation.activation.js:89` only throws when the rotation itself is missing (`findByIdAndUpdate` returns the document even when `$pull` matched nothing), so "Aucune activation trouvée" cannot fire for a missing date.
-- `GET /rotations/active-at-date` is broken: it passes `req.centerId` (never set) to `findLatestRotation` (`rotation.controller.js:263`). The front does not call it.
+- `GET /rotation/active-at-date` is broken: it passes `req.centerId` (never set) to `findLatestRotation` (`rotation.controller.js:263`). The front does not call it.
 - Retroactive activation changes also convert/cancel past demands that the cron has not archived yet.
-- Rotation reads (`GET /rotations/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are guarded, see `authorizeRotationAccess`).
+- Rotation reads (`GET /rotation/center/:centerId`, `/status/:centerId`) are not scoped to the caller's center (only the mutations are guarded, see `authorizeRotationAccess`).
 - `saveRotation` throws a 500 when `days` is missing; the `days` branch of `updateRotation` is dead (commented out).
 
 ### 24. Input validation gaps on the team-change body — P2
@@ -114,7 +114,7 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 - The exported helpers (`sanitizeUserPeriod`, `previewUserPeriodImpact`) put `userId` straight into query objects. Safe today (callers pass `user._id`), but a future caller passing `req.body` values would allow operator injection. Coerce with `new mongoose.Types.ObjectId(...)` inside the helpers.
 
 ### 22. The `confirmed` flag is advisory and not bound to what was previewed — P2
-The client may send `confirmed: true` at any time; the server does not check that the caller saw the impact. Between the 409 preview and the confirmation, new substitutions or entries can appear and be cancelled without the user having seen them. The rotation activation flow and the team cycle position flow (`PUT /teams/:id/cycle-position`) behave the same (the confirm path recomputes the changes instead of applying the previewed ones). Not a privilege issue (the caller is already authorised), but the safeguard is only UX. **Fix (optional):** return an `impactHash` in the 409 and require it with `confirmed`; recompute inside the transaction and answer 409 again if it differs.
+The client may send `confirmed: true` at any time; the server does not check that the caller saw the impact. Between the 409 preview and the confirmation, new substitutions or entries can appear and be cancelled without the user having seen them. The rotation activation flow and the team cycle position flow (`PUT /team/:id/cycle-position`) behave the same (the confirm path recomputes the changes instead of applying the previewed ones). Not a privilege issue (the caller is already authorised), but the safeguard is only UX. **Fix (optional):** return an `impactHash` in the 409 and require it with `confirmed`; recompute inside the transaction and answer 409 again if it differs.
 
 ### 25. Amplification: unbounded cascade lookup, no rate limiting — P2
 `previewUserPeriodImpact` walks `dependsOn` children one query at a time (N+1, guarded against cycles), and a period without `to` matches all future rows. With no rate limiting (#8), repeated previews are cheap to trigger and comparatively expensive to serve. **Fix:** rate-limit these routes, batch the cascade lookup (`$in` per level), and cap the number of returned items.
@@ -130,6 +130,9 @@ Team changes, cycle position changes and rotation changes email the affected thi
 
 ### 50. Account recovery takes the point balance from the request — P1 — FIXED 2026-11-12
 `initiateAccountRecovery` read `points` from the public request body, so knowing a legacy `login` was enough to claim any balance; the route also never checked `recovered`, so one legacy account could be recovered many times, each time with a balance. Fixed: the balance is the legacy account's `compte` (kept as is, it can be negative; 0 if it is not a number), the client value is ignored (and the page no longer sends it); an already recovered account is refused (400); the legacy account is claimed atomically (`findOneAndUpdate` on `recovered: { $ne: true }`), only after the new account's data is validated, so a bad password no longer burns it and two simultaneous requests cannot both succeed. Still open on this flow: nothing proves the caller owns the legacy account beyond knowing its login (the OTP step is client side only).
+
+### 51. Two calendar-entry handlers call functions that do not exist — P2
+`backend/controllers/calendarEntry.controller.js:141` (`calendarEntryService.removeModification`) and `:160` (`calendarEntryService.getModificationById`): neither function exists in `services/calendarEntry/`, so the handler throws a `TypeError` and answers 500. `getModification` is routed (`GET /calendar-entry/:id`, `routes/calendar-entry.routes.js:19`), so that URL always fails; `deleteModification` has no route. Found while checking that every `service.function` call in the controllers resolves; the same calls were already in `HEAD`. The front service `planningModificationService.js` calls `GET /calendar-entry/:userId`, which hits this route (check whether that front call is still used).
 
 ---
 

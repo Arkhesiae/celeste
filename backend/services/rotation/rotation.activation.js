@@ -494,9 +494,4 @@ function findChangedPeriods (before, after) {
 
 
 
-export default {
-    findChangedPeriods,
-    removeRepetitionsInDb,
-    updateActivationDate,
-    convertCenterDemands,
-};
+export { findChangedPeriods, removeRepetitionsInDb, updateActivationDate, convertCenterDemands };

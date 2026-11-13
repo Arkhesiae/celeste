@@ -1,11 +1,11 @@
 import Center from '../models/Center.js';
-import { findOrThrow } from '../utils/mongo.js';
 import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
-import { findLatestRotation } from '../services/rotation/rotation.latest.js';
+import { findOrThrow } from '../utils/mongo.js';
 import { AppError } from '../error/AppError.js';
-import { getCentersMap } from '../services/center/center.map.js';
+import * as rotationService from '../services/rotation/index.js';
+import * as centerService from '../services/center/index.js';
 
 // GET ALL CENTERS (route publique : formulaires d'inscription / contact) — champs publics uniquement :
 // pas d'`admins` (ids d'utilisateurs), de `relatedCenters`, de `timeZone` ni de drapeaux internes
@@ -21,7 +21,7 @@ const getAllCenters = async (req, res, next) => {
 // CARTE DES CENTRES (tableau de bord) : position + nombre de demandes à venir, ouvertes et acceptées, de chaque centre
 const getCentersMapData = async (req, res, next) => {
     try {
-        res.json(await getCentersMap(req.user.centerId));
+        res.json(await centerService.getCentersMap(req.user.centerId));
     } catch (error) {
         next(error);
     }
@@ -220,7 +220,7 @@ const getActiveRotationOfCenter = async (req, res, next) => {
     const {id} = req.params;
     try {
         const center = await findOrThrow(Center, id, { message: 'Centre non trouvé' });
-        const activeRotation = await findLatestRotation(center._id, new Date());
+        const activeRotation = await rotationService.findLatestRotation(center._id, new Date());
         res.json(activeRotation);
     } catch (error) {
         next(error);
@@ -234,7 +234,7 @@ const getActiveRotationsByCenter = async (req, res, next) => {
         const activeRotationsByCenter = {};
 
         for (const center of centers) {
-            const lastActiveRotation = await findLatestRotation(center._id, new Date());
+            const lastActiveRotation = await rotationService.findLatestRotation(center._id, new Date());
             activeRotationsByCenter[center._id] = lastActiveRotation;
         }
 

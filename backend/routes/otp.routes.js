@@ -1,6 +1,7 @@
 import express from 'express';
+import * as otpController from '../controllers/otp.controller.js';
+
 const router = express.Router();
-import otpController from '../controllers/otp.controller.js';
 
 router.post('/send', otpController.sendOtp);
 router.post('/verify', otpController.verifyOtp);

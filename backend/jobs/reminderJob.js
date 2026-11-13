@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { REMINDER_CRON } from '../config/schedules.js';
-import { sendUpcomingReplacementReminders } from '../services/substitution/request.reminder.js';
+import { sendUpcomingReplacementReminders } from '../services/substitution/index.js';
 
 // Toutes les heures : chaque centre est rappelé une fois, à partir de REMINDER_HOUR (heure locale du centre)
 cron.schedule(REMINDER_CRON, async () => {

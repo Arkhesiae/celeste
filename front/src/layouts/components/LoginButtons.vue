@@ -189,7 +189,7 @@ const fetchTeamUsers = async () => {
   try {
     loadingUsers.value = true;
     // Endpoint public (pas d'auth) — fetch direct pour pouvoir lister hors session
-    const response = await fetch(`${API_URL}/users/devlist?role=team`);
+    const response = await fetch(`${API_URL}/user/devlist?role=team`);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }

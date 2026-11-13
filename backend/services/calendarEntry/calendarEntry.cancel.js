@@ -11,7 +11,8 @@ import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { computeUserShifts } from '../planning/computeUserShifts.js';
 import { AppError } from '../../error/AppError.js';
-import * as demandMutationsService from '../substitution/index.js';
+import { cancelRequest } from '../substitution/request.cancel.js';
+import { withdrawFromRequest } from '../substitution/request.withdraw.js';
 
 export async function cancelModifications (userId, date) {
     const modifications = await Modification.find({ userId, date, active: true });
@@ -40,9 +41,9 @@ async function cancelSubstitutionAssignment (assignment) {
     const demand = await Substitution.findById(assignment.substitution.id);
     const isPoster = sameId(demand?.posterId, assignment?.userId);
     if (isPoster) {
-        demandMutationsService.cancelRequest(demand._id);
+        cancelRequest(demand._id);
     } else {
-        demandMutationsService.withdrawFromRequest(demand._id, assignment.userId.toString());
+        withdrawFromRequest(demand._id, assignment.userId.toString());
     }
 }
 

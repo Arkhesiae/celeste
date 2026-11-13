@@ -1,4 +1,4 @@
-import emailService from './email.transport.js';
+import * as emailService from './email.transport.js';
 import { formatDateFr } from '../../utils/dates/format.js';
 import { renderMail } from './mailRenderer.js';
 

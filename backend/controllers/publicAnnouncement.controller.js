@@ -1,13 +1,12 @@
 import { AppError } from '../error/AppError.js';
-import * as announcementService from '../services/publicAnnouncement/publicAnnouncement.service.js';
-
+import * as publicAnnouncementService from '../services/publicAnnouncement/index.js';
 
 export const getActiveAnnouncements = async (req, res, next) => {
   try {
     const { userId, centerId } = req.user;
 
     const { permanentAnnouncements, nonPermanentAnnouncements } =
-      await announcementService.getActiveAnnouncements(userId, centerId ?? null);
+      await publicAnnouncementService.getActiveAnnouncements(userId, centerId ?? null);
 
     res.json({ success: true, permanentAnnouncements, nonPermanentAnnouncements });
   } catch (err) {
@@ -17,7 +16,7 @@ export const getActiveAnnouncements = async (req, res, next) => {
 
 export const acknowledgeAnnouncement = async (req, res, next) => {
   try {
-    await announcementService.acknowledgeAnnouncement(req.params.id, req.user.userId);
+    await publicAnnouncementService.acknowledgeAnnouncement(req.params.id, req.user.userId);
     res.json({ success: true, message: 'Annonce acquittée' });
   } catch (err) {
     next(err);
@@ -28,7 +27,7 @@ export const getAllAnnouncements = async (req, res, next) => {
   try {
     const { page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
 
-    const result = await announcementService.getAllAnnouncements({ page, limit, sortBy, sortOrder });
+    const result = await publicAnnouncementService.getAllAnnouncements({ page, limit, sortBy, sortOrder });
 
     res.json({ success: true, ...result });
   } catch (err) {
@@ -51,7 +50,7 @@ export const createAnnouncement = async (req, res, next) => {
       throw new AppError('Un centre est requis pour une annonce locale', 400);
     }
 
-    const announcement = await announcementService.createAnnouncement(
+    const announcement = await publicAnnouncementService.createAnnouncement(
       { title, message, type, isPermanent, isActive, isGlobal, centerId, expiresAt },
       req.user.userId
     );
@@ -71,7 +70,7 @@ export const updateAnnouncement = async (req, res, next) => {
       centerId = req.user.centerId ?? null;
     }
 
-    const announcement = await announcementService.updateAnnouncement(req.params.id, {
+    const announcement = await publicAnnouncementService.updateAnnouncement(req.params.id, {
       title, message, type, isPermanent, isActive, isGlobal, centerId, expiresAt,
     });
 
@@ -83,7 +82,7 @@ export const updateAnnouncement = async (req, res, next) => {
 
 export const deleteAnnouncement = async (req, res, next) => {
   try {
-    await announcementService.deleteAnnouncement(req.params.id);
+    await publicAnnouncementService.deleteAnnouncement(req.params.id);
     res.json({ success: true, message: 'Annonce supprimée' });
   } catch (err) {
     next(err);

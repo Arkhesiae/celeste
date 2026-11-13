@@ -11,7 +11,7 @@ export const accountCreationService = {
    * @returns {Promise<Object>} L'utilisateur créé.
    */
   async createAccount(userData) {
-    const response = await apiFetch(`/users/create`, {
+    const response = await apiFetch(`/user/create`, {
       method: 'POST',
       body: JSON.stringify(userData)
     });
@@ -24,7 +24,7 @@ export const accountCreationService = {
    * @returns {Promise<boolean>} True si l'email est disponible.
    */
   async checkEmailAvailability(email) {
-    const response = await apiFetch(`/users/check-email`, {
+    const response = await apiFetch(`/user/check-email`, {
       method: 'POST',
       body: JSON.stringify({ email })
     });
@@ -50,7 +50,7 @@ export const accountCreationService = {
    * @returns {Promise<Object>} Les informations de l'utilisateur.
    */
   async getUserInfo(email) {
-    const response = await apiFetch(`/users/info/${encodeURIComponent(email)}`, {
+    const response = await apiFetch(`/user/info/${encodeURIComponent(email)}`, {
       method: 'GET',
     });
     return response;

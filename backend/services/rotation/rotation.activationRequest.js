@@ -2,7 +2,7 @@ import Rotation from '../../models/Rotation.js';
 import { isValidId } from '../../utils/ids.js';
 import { isValidDate } from '../../utils/validation.js';
 import { AppError } from '../../error/AppError.js';
-import rotationActivationService from './rotation.activation.js';
+import * as rotationActivationService from './rotation.activation.js';
 
 /**
  * Demande d'ajout ou de retrait d'une date d'activation : valide la demande, puis laisse `rotation.activation.js`

@@ -11,7 +11,7 @@ export const pointService = {
  * @returns {Promise<Object>} Les points de l'utilisateur
  */
   getUserPoints: async (id) => {
-      const response = await apiFetch(`/users/${id}/points`, {
+      const response = await apiFetch(`/user/${id}/points`, {
       method: 'GET',
     });
   return response;
@@ -27,7 +27,7 @@ export const pointService = {
  * @returns {Promise<Object>} La transaction créée
  */
   transferPoints: async (fromUserId, toUserId, amount, description = '', scheduledDate = null) => {
-    const response = await apiFetch(`/users/${fromUserId}/points/transfer`, {
+    const response = await apiFetch(`/user/${fromUserId}/points/transfer`, {
       method: 'POST',
       body: JSON.stringify({
       toUserId,
@@ -47,7 +47,7 @@ export const pointService = {
  * @returns {Promise<Array>} Liste des transactions
  */
   getTransactionHistory: async (userId, limit = 1000) => {
-    const response = await apiFetch(`/users/${userId}/transactions?limit=${limit}`, {
+    const response = await apiFetch(`/user/${userId}/transactions?limit=${limit}`, {
       method: 'GET',
     });
     return response;
@@ -59,7 +59,7 @@ export const pointService = {
  * @returns {Promise<Array>} Liste des transactions en attente
  */
   getPendingTransactions: async (userId) => {
-    const response = await apiFetch(`/users/${userId}/transactions/pending`, {
+    const response = await apiFetch(`/user/${userId}/transactions/pending`, {
       method: 'GET',
     });
     return response;

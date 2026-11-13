@@ -1,9 +1,9 @@
-import Otp from '../models/Otp.js';
-import { sendEmailOtp } from '../services/email/otpEmail.js';
 import crypto from 'crypto';
-import { AppError } from '../error/AppError.js';
-
 import { OTP_VALIDITY_MS } from '../config/auth.js';
+import Otp from '../models/Otp.js';
+import { AppError } from '../error/AppError.js';
+import * as emailService from '../services/email/index.js';
+
 const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
@@ -48,7 +48,7 @@ export const sendOtp = async (req, res, next) => {
       
     } else {
       // En production, envoyer l'email
-      await sendEmailOtp(email.toLowerCase(), otp);
+      await emailService.sendEmailOtp(email.toLowerCase(), otp);
     }
 
     res.json({ message: 'Code OTP envoyé avec succès' });
@@ -86,8 +86,3 @@ export const verifyOtp = async (req, res, next) => {
     next(error);
   }
 };
-
-export default {
-  sendOtp,
-  verifyOtp
-}; 

@@ -1,21 +1,17 @@
-import { computeUserShifts } from "../services/planning/computeUserShifts.js";
+import Substitution from '../models/Substitution.js';
+import User from '../models/User.js';
+import Rule from '../models/Rule.js';
 import { toDay } from '../utils/dates/dayFields.js';
 import { dayFilter, posterDayOf } from '../utils/dates/dayAccess.js';
 import { formatDateFr } from '../utils/dates/format.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { sameId } from '../utils/ids.js';
-import { computeShiftOfTeam } from '../services/planning/computeShiftOfTeam.js';
-import { computeUserPool } from '../services/substitution/substitution.userPool.js';
-import * as compatibilityService from '../services/substitution/substitution.compatibility.js';
-import * as demandService from '../services/substitution/index.js';
-import { sendUserPoolNotification } from '../services/email/demand/demandEmails.js';
-import Substitution from '../models/Substitution.js';
-import User from "../models/User.js";
-import Rule from '../models/Rule.js';
-import emailService from '../services/email/email.transport.js';
-import { AppError } from '../error/AppError.js';
 import { isValidDateRange } from '../utils/validation.js';
+import { AppError } from '../error/AppError.js';
+import * as planningService from '../services/planning/index.js';
+import * as substitutionService from '../services/substitution/index.js';
+import * as emailService from '../services/email/index.js';
 
 const getCenterRequests = async (req, res, next) => {
     const { userId } = req.user;
@@ -30,7 +26,7 @@ const getCenterRequests = async (req, res, next) => {
             throw new AppError('Les dates sont invalides', 400);
         }
 
-        const requests = await demandService.getRequests(userId, startDate, endDate);
+        const requests = await substitutionService.getRequests(userId, startDate, endDate);
         res.status(200).json(requests);
     } catch (err) {
         next(err);
@@ -42,7 +38,7 @@ const getDemandHeatmap = async (req, res, next) => {
     try {
         const { centerId } = req.params;
         const { startDate, endDate } = req.query;
-        res.status(200).json(await demandService.getDemandHeatmap(centerId, startDate, endDate));
+        res.status(200).json(await substitutionService.getDemandHeatmap(centerId, startDate, endDate));
     } catch (err) {
         next(err);
     }
@@ -91,7 +87,7 @@ const consultDemand = async (req, res, next) => {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
 
-        const demand = await demandService.consultDemand(demandId, userId);
+        const demand = await substitutionService.consultDemand(demandId, userId);
         res.status(200).json({ message: 'Demande consultée avec succès', demand });
     } catch (err) {
         next(err);
@@ -121,7 +117,7 @@ const getCompatibility = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
-        const data = await compatibilityService.getCompatibility(demandId, userId);
+        const data = await substitutionService.getCompatibility(demandId, userId);
         res.status(200).json(data);
     } catch (err) {
         next(err);
@@ -140,7 +136,7 @@ const getAvailableUsers = async (req, res, next) => {
             throw new AppError('Cette demande n\'est plus disponible', 400);
         }
 
-        const userPool = await computeUserPool(demand);
+        const userPool = await substitutionService.computeUserPool(demand);
         res.status(200).json({ userPool, totalUsers: userPool.length });
     } catch (err) {
         //console.error('Erreur lors du calcul du pool d\'utilisateurs:', err);
@@ -157,9 +153,9 @@ const checkUserShift = async (req, res, next) => {
             throw new AppError('La date est requise', 400);
         }
 
-        const userShift = await computeUserShifts(new Date(date), userId);
+        const userShift = await planningService.computeUserShifts(new Date(date), userId);
         const entry = userShift[0];
-        // computeUserShifts expose shiftData.shift + isOff (absence / optionnel non confirmé)
+        // planningService.computeUserShifts expose shiftData.shift + isOff (absence / optionnel non confirmé)
         const shiftType = entry?.shiftData?.shift?.type;
         const hasShift = Boolean(entry && !entry.isOff && shiftType === 'work');
         res.status(200).json({ hasShift, shift: userShift });
@@ -186,7 +182,7 @@ const detectTeamChangeConflicts = async (req, res, next) => {
         const conflicts = [];
         for (const sub of substitutions) {
             const originalShiftId = sub.posterShift.shift?._id?.toString() || sub.posterShift._id?.toString();
-            const newShift = await computeShiftOfTeam(posterDayOf(sub), newTeamId);
+            const newShift = await planningService.computeShiftOfTeam(posterDayOf(sub), newTeamId);
             if (originalShiftId && newShift && originalShiftId !== newShift._id) {
                 conflicts.push({ id: sub._id, newShift, originalShiftId, date: posterDayOf(sub) });
             }
@@ -212,7 +208,7 @@ const createDemand = async (req, res, next) => {
             throw new AppError('Paramètres manquants', 400);
         }
 
-        const demand = await demandService.createDemand(req.body);
+        const demand = await substitutionService.createDemand(req.body);
         res.status(201).json(demand);
 
         // Notifications en arrière-plan, après la réponse
@@ -222,9 +218,9 @@ const createDemand = async (req, res, next) => {
             { path: 'acceptedSwitches.shift', select: 'name default' },
         ]);
 
-        const userPool = await computeUserPool(populatedDemand);
+        const userPool = await substitutionService.computeUserPool(populatedDemand);
         if (userPool.length > 0) {
-            sendUserPoolNotification(userPool, populatedDemand)
+            emailService.sendUserPoolNotification(userPool, populatedDemand)
                 .then(results => console.log(`📧 Notifications envoyées:`, results))
                 .catch(error => console.error('❌ Erreur notifications:', error));
         }
@@ -243,7 +239,7 @@ const acceptDemand = async (req, res, next) => {
             throw new AppError('Paramètres manquants', 400);
         }
 
-        const { request, shift } = await demandService.acceptDemand(demandId, userId);
+        const { request, shift } = await substitutionService.acceptDemand(demandId, userId);
         res.status(200).json({ message: 'Demande acceptée', request, newShiftData: shift });
     } catch (err) {
         next(err);
@@ -259,7 +255,7 @@ const swapShifts = async (req, res, next) => {
             throw new AppError('Paramètres manquants', 400);
         }
 
-        const { demand, acceptedShiftPoints, shift } = await demandService.swapShifts(demandId, userId);
+        const { demand, acceptedShiftPoints, shift } = await substitutionService.swapShifts(demandId, userId);
         res.status(200).json({
             message: 'Switch enregistré',
             demand,
@@ -279,7 +275,7 @@ const withdrawFromDemand = async (req, res, next) => {
     }
 
     try {
-        const result = await demandService.withdrawFromRequest(demandId, userId);
+        const result = await substitutionService.withdrawFromRequest(demandId, userId);
         res.status(200).json({ message: 'Désistement enregistré', request: result.updatedRequest, newShiftData: result.shift });
     } catch (err) {
         next(err);
@@ -293,7 +289,7 @@ const cancelDemand = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('Paramètres manquants', 400);
         }
-        const result = await demandService.cancelRequest(demandId);
+        const result = await substitutionService.cancelRequest(demandId);
         res.status(200).json({ message: 'Demande annulée avec succès', demand: result.initialCancel, shift: result.shift });
     } catch (err) {
         next(err);
@@ -307,7 +303,7 @@ const deleteDemand = async (req, res, next) => {
             throw new AppError('Paramètres manquants', 400);
         }
 
-        await demandService.deleteDemand(demandId);
+        await substitutionService.deleteDemand(demandId);
         res.status(200).json({ message: 'Demande supprimée' });
     } catch (err) {
         next(err);
@@ -344,7 +340,7 @@ const recategorizeSubstitutions = async (req, res, next) => {
     try {
         const userId = req.user.userId;
         const { substitutionIds } = req.body;
-        const categorizedSubstitutions = await demandService.recategorizeSubstitutions(substitutionIds, userId);
+        const categorizedSubstitutions = await substitutionService.recategorizeSubstitutions(substitutionIds, userId);
         res.status(200).json({ message: 'Substitutions recatégorisées avec succès', categorizedSubstitutions });
     } catch (err) {
         next(err);
@@ -355,7 +351,7 @@ const getCompatibleSwitches = async (req, res, next) => {
     try {
         const date = req.params.date;
         const userId = req.user.userId;
-        const compatibleShifts = await demandService.getCompatibleSwitches(date, userId);
+        const compatibleShifts = await substitutionService.getCompatibleSwitches(date, userId);
         res.status(200).json(compatibleShifts);
     } catch (err) {
         next(err);

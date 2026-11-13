@@ -3,7 +3,7 @@ import { apiFetch } from '@/config/api';
 export const ticketService = {
   async createTicket(ticketData) {
     console.log(ticketData);
-    const response = await apiFetch(`/tickets/create`, {
+    const response = await apiFetch(`/ticket/create`, {
       method: 'POST',
       body: JSON.stringify(ticketData)
     });
@@ -11,21 +11,21 @@ export const ticketService = {
   },
 
   async markAsRead(ticketId) {
-    const response = await apiFetch(`/tickets/${ticketId}/read`, {
+    const response = await apiFetch(`/ticket/${ticketId}/read`, {
       method: 'PUT',
     });
     return response;
   },
 
   async deleteTicket(ticketId) {
-    const response = await apiFetch(`/tickets/${ticketId}`, {
+    const response = await apiFetch(`/ticket/${ticketId}`, {
       method: 'DELETE',
     });
     return response;
   },
 
   async updateTicketStatus(id, ticketStatus) {
-    const response = await apiFetch(`/tickets/status/${id}`, {
+    const response = await apiFetch(`/ticket/status/${id}`, {
       method: 'POST',
       body: JSON.stringify({ ticketStatus })
     });
@@ -33,14 +33,14 @@ export const ticketService = {
   },
 
   async markReplySent(ticketId) {
-    const response = await apiFetch(`/tickets/${ticketId}/reply-sent`, {
+    const response = await apiFetch(`/ticket/${ticketId}/reply-sent`, {
       method: 'PUT',
     });
     return response;
   },
 
   async sendTicketReply(ticketId, content) {
-    const response = await apiFetch(`/tickets/${ticketId}/reply`, {
+    const response = await apiFetch(`/ticket/${ticketId}/reply`, {
       method: 'POST',
       body: JSON.stringify({ content })
     });
@@ -48,21 +48,21 @@ export const ticketService = {
   },
 
   async fetchTickets(archived = false) {
-    const response = await apiFetch(`/tickets?archived=${archived}`, {
+    const response = await apiFetch(`/ticket?archived=${archived}`, {
       method: 'GET',
     });
     return response;
   },
 
   async archiveTicket(ticketId) {
-    const response = await apiFetch(`/tickets/${ticketId}/archive`, {
+    const response = await apiFetch(`/ticket/${ticketId}/archive`, {
       method: 'PUT',
     });
     return response;
   },
 
   async restoreTicket(ticketId) {
-    const response = await apiFetch(`/tickets/${ticketId}/restore`, {
+    const response = await apiFetch(`/ticket/${ticketId}/restore`, {
       method: 'PUT',
     });
     return response;

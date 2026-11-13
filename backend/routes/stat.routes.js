@@ -1,7 +1,7 @@
 import express from 'express';
-const router = express.Router();
-import statController from '../controllers/stat.controller.js';
+import * as statController from '../controllers/stat.controller.js';
 
+const router = express.Router();
 
 /**
  * Routes pour les statistiques de l'application (totaux uniquement : utilisateurs, centres, remplacements).

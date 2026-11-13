@@ -10,7 +10,7 @@ export const rotationService = {
    * @returns {Promise<Array>} Liste des rotations.
    */
   async fetchRotations(centerId) {
-    const response = await apiFetch(`/rotations/status/${centerId}`, {
+    const response = await apiFetch(`/rotation/status/${centerId}`, {
       method: 'GET'
     });
     return response;
@@ -22,7 +22,7 @@ export const rotationService = {
    * @returns {Promise<Object>} Les données de la rotation.
    */
   async getRotationById(id) {
-    const response = await apiFetch(`/rotations/${id}`, {
+    const response = await apiFetch(`/rotation/${id}`, {
       method: 'GET'
     });
     return response;
@@ -34,7 +34,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation créée.
    */
   async createRotation(rotationData) {
-    const response = await apiFetch(`/rotations/center/${rotationData.centerId}`, {
+    const response = await apiFetch(`/rotation/center/${rotationData.centerId}`, {
       method: 'POST',
       body: JSON.stringify(rotationData)
     });
@@ -48,7 +48,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation mise à jour.
    */
   async updateRotation(id, rotationData) {
-    const response = await apiFetch(`/rotations/${id}/update`, {
+    const response = await apiFetch(`/rotation/${id}/update`, {
       method: 'PUT',
       body: JSON.stringify(rotationData)
     });
@@ -61,7 +61,7 @@ export const rotationService = {
    * @returns {Promise<void>}
    */
   async deleteRotation(id) {
-    const response = await apiFetch(`/rotations/${id}`, {
+    const response = await apiFetch(`/rotation/${id}`, {
       method: 'DELETE',
     });
     return response;
@@ -76,7 +76,7 @@ export const rotationService = {
    * @returns {Promise<Object>} Aperçu ou résultat de l'activation.
    */
   async setActiveRotation(id, activationDate, confirm = false) {
-    const response = await apiFetch(`/rotations/${id}/activate`, {
+    const response = await apiFetch(`/rotation/${id}/activate`, {
       method: 'POST',
       body: JSON.stringify({ activationDate, confirmed: confirm })
     });
@@ -92,7 +92,7 @@ export const rotationService = {
    * @returns {Promise<Object>} Aperçu ou résultat de la suppression.
    */
   async removeActivationDate(id, activationDate, confirm = false) {
-    const response = await apiFetch(`/rotations/${id}/remove-date`, {
+    const response = await apiFetch(`/rotation/${id}/remove-date`, {
       method: 'POST',
       body: JSON.stringify({ activationDate, confirmed: confirm })
     });
@@ -118,7 +118,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation mise à jour.
    */
   async updateDayInRotation(id, updatedDay) {
-    const response = await apiFetch(`/rotations/${id}/day`, {
+    const response = await apiFetch(`/rotation/${id}/day`, {
       method: 'PUT',
       body: JSON.stringify({ updatedDay })
     });
@@ -131,7 +131,7 @@ export const rotationService = {
    * @returns {Promise<Object>} La rotation dupliquée.
    */
   async duplicateRotation(id) {
-    const response = await apiFetch(`/rotations/${id}/duplicate`, {
+    const response = await apiFetch(`/rotation/${id}/duplicate`, {
       method: 'POST',
     });
     return response;

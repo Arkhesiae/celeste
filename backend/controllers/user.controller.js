@@ -1,15 +1,7 @@
+import { MIN_PASSWORD_LENGTH } from '../config/auth.js';
 import { assertId, assertEmail, assertDay, assertPositiveInteger, assertObject, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
-import { MIN_PASSWORD_LENGTH } from '../config/auth.js';
-import * as userShiftsService from '../services/user/user.shifts.js';
-import { createUserService } from '../services/user/user.create.js';
-import * as userService from '../services/user/user.list.js';
-import * as userAccountService from '../services/user/user.account.js';
-import * as userProfileService from '../services/user/user.profile.js';
-import * as userPointsService from '../services/user/user.points.js';
-import * as userTeamService from '../services/user/user.team.js';
-import * as userTeamReadService from '../services/user/user.teamRead.js';
-import * as teamTimelineService from '../services/user/user.teamTimeline.js';
+import * as userService from '../services/user/index.js';
 
 /**
  * Utilisateurs : ce fichier lit et contrôle la requête, appelle le service (`services/user/`) et répond.
@@ -48,7 +40,7 @@ export const readNewUser = (body) => {
 // Inscription (route publique) : le compte démarre toujours en attente d'approbation, avec 0 point, quoi que dise le corps
 const createUser = async (req, res, next) => {
     try {
-        const user = await createUserService({ ...readNewUser(req.body), approved: false, points: 0 });
+        const user = await userService.createUserService({ ...readNewUser(req.body), approved: false, points: 0 });
         res.json({ message: 'Utilisateur créé avec succès.', user });
     } catch (err) {
         next(err);
@@ -63,7 +55,7 @@ const createRecoveredUser = async (req, res, next) => {
         if (!Number.isInteger(points)) {
             throw new AppError('Points invalides', 400);
         }
-        const user = await createUserService({ ...readNewUser(req.body), approved: true, points });
+        const user = await userService.createUserService({ ...readNewUser(req.body), approved: true, points });
         res.json({ message: 'Utilisateur créé avec succès.', user });
     } catch (err) {
         next(err);
@@ -73,7 +65,7 @@ const createRecoveredUser = async (req, res, next) => {
 // Vérifier la disponibilité d'un email
 const checkEmailAvailability = async (req, res, next) => {
     try {
-        res.json(await userAccountService.checkEmailAvailability(assertEmail(req.body.email)));
+        res.json(await userService.checkEmailAvailability(assertEmail(req.body.email)));
     } catch (error) {
         next(error);
     }
@@ -100,7 +92,7 @@ const getUserById = async (req, res, next) => {
 // Supprimer un compte utilisateur par ID
 const deleteUserById = async (req, res, next) => {
     try {
-        await userAccountService.deleteUserById(assertId(req.params.id, 'ID utilisateur'));
+        await userService.deleteUserById(assertId(req.params.id, 'ID utilisateur'));
         res.json({ message: 'Utilisateur supprimé avec succès' });
     } catch (error) {
         next(error);
@@ -110,7 +102,7 @@ const deleteUserById = async (req, res, next) => {
 // Approuver un utilisateur
 const approveUser = async (req, res, next) => {
     try {
-        const user = await userAccountService.approveUser(assertId(req.params.id, 'ID utilisateur'));
+        const user = await userService.approveUser(assertId(req.params.id, 'ID utilisateur'));
         res.json({ message: 'Utilisateur approuvé avec succès', user });
     } catch (error) {
         next(error);
@@ -120,7 +112,7 @@ const approveUser = async (req, res, next) => {
 // Rejeter la candidature d'un utilisateur en attente
 const deletePendingUser = async (req, res, next) => {
     try {
-        const user = await userAccountService.rejectPendingUser(assertId(req.params.id, 'ID utilisateur'));
+        const user = await userService.rejectPendingUser(assertId(req.params.id, 'ID utilisateur'));
         res.json({ message: 'Candidature rejetée', user });
     } catch (error) {
         next(error);
@@ -130,7 +122,7 @@ const deletePendingUser = async (req, res, next) => {
 // Promouvoir un utilisateur en administrateur
 const makeUserAdmin = async (req, res, next) => {
     try {
-        await userAccountService.makeUserLocalAdmin(assertId(req.params.id, 'ID utilisateur'));
+        await userService.makeUserLocalAdmin(assertId(req.params.id, 'ID utilisateur'));
         res.json({ message: 'Utilisateur promu administrateur local avec succès' });
     } catch (error) {
         next(error);
@@ -140,7 +132,7 @@ const makeUserAdmin = async (req, res, next) => {
 // Retirer le statut administrateur d'un utilisateur
 const removeUserAdmin = async (req, res, next) => {
     try {
-        await userAccountService.removeUserAdmin(assertId(req.params.id, 'ID utilisateur'));
+        await userService.removeUserAdmin(assertId(req.params.id, 'ID utilisateur'));
         res.json({ message: 'Statut administrateur retiré avec succès' });
     } catch (error) {
         next(error);
@@ -150,7 +142,7 @@ const removeUserAdmin = async (req, res, next) => {
 // Assigner un utilisateur à un centre
 const assignUserToCenter = async (req, res, next) => {
     try {
-        await userAccountService.assignUserToCenter(
+        await userService.assignUserToCenter(
             assertId(req.params.id, 'ID utilisateur'),
             assertId(req.body.centerId, 'ID du centre')
         );
@@ -176,7 +168,7 @@ const getUserTeamAtDate = async (req, res, next) => {
         if (!req.query.date) {
             throw new AppError('Date requise', 400);
         }
-        res.json(await userTeamReadService.getUserTeamAtDate(id, assertDay(req.query.date)));
+        res.json(await userService.getUserTeamAtDate(id, assertDay(req.query.date)));
     } catch (error) {
         next(error);
     }
@@ -185,7 +177,7 @@ const getUserTeamAtDate = async (req, res, next) => {
 // Obtenir l'équipe actuelle d'un utilisateur
 const getUserCurrentTeam = async (req, res, next) => {
     try {
-        res.json(await userTeamReadService.getUserCurrentTeam(assertId(req.params.id, 'ID utilisateur')));
+        res.json(await userService.getUserCurrentTeam(assertId(req.params.id, 'ID utilisateur')));
     } catch (error) {
         next(error);
     }
@@ -194,7 +186,7 @@ const getUserCurrentTeam = async (req, res, next) => {
 // Obtenir les changements d'équipe d'un utilisateur
 const getUserTeamOccurrences = async (req, res, next) => {
     try {
-        res.json(await userTeamReadService.getUserTeamOccurrences(assertId(req.params.id, 'ID utilisateur')));
+        res.json(await userService.getUserTeamOccurrences(assertId(req.params.id, 'ID utilisateur')));
     } catch (error) {
         next(error);
     }
@@ -205,7 +197,7 @@ const getUsersAndGroupByTeam = async (req, res, next) => {
     try {
         const centerId = assertId(req.params.centerId, 'ID du centre');
         const { date } = req.query;
-        res.json(await userTeamReadService.getUsersGroupedByTeam(centerId, date ? assertDay(date) : undefined));
+        res.json(await userService.getUsersGroupedByTeam(centerId, date ? assertDay(date) : undefined));
     } catch (error) {
         next(error);
     }
@@ -216,7 +208,7 @@ const deleteTeamOccurrence = async (req, res, next) => {
     try {
         const id = assertId(req.params.id, 'ID utilisateur');
         const occurrenceId = assertId(req.params.occurrenceId, 'ID de l\'occurrence');
-        const result = await userTeamService.deleteTeamOccurrence(id, occurrenceId, { confirmed: req.query.confirmed === 'true', actorId: req.user.userId });
+        const result = await userService.deleteTeamOccurrence(id, occurrenceId, { confirmed: req.query.confirmed === 'true', actorId: req.user.userId });
         if (result.needsApproval) return res.status(409).json(result); // approbation requise : impact détaillé
         res.json({ message: 'Occurrence supprimée avec succès', changes: result.changes });
     } catch (error) {
@@ -232,7 +224,7 @@ const assignTeamToUser = async (req, res, next) => {
         if (replaceOccurrenceId !== undefined) {
             assertId(replaceOccurrenceId, 'ID de l\'occurrence à remplacer');
         }
-        const result = await userTeamService.assignTeamToUser(id, newTeam, { confirmed: confirmed === true, replaceOccurrenceId, actorId: req.user.userId });
+        const result = await userService.assignTeamToUser(id, newTeam, { confirmed: confirmed === true, replaceOccurrenceId, actorId: req.user.userId });
         if (result.needsApproval) return res.status(409).json(result); // approbation requise : impact détaillé
         res.json({ message: 'Équipe assignée avec succès', changes: result.changes });
     } catch (error) {
@@ -253,7 +245,7 @@ const getUserShiftsWithSubstitutions = async (req, res, next) => {
             throw new AppError('Intervalle de dates invalide (format ou cohérence)', 400);
         }
 
-        res.json(await userShiftsService.getUserShifts(dates, userId));
+        res.json(await userService.getUserShifts(dates, userId));
     } catch (error) {
         next(error);
     }
@@ -263,7 +255,7 @@ const getUserShiftsWithSubstitutions = async (req, res, next) => {
 const updateUserPreferences = async (req, res, next) => {
     try {
         const id = assertId(req.params.id, 'ID utilisateur');
-        const preferences = await userProfileService.updateUserPreferences(id, assertObject(req.body.preferences, 'Préférences'));
+        const preferences = await userService.updateUserPreferences(id, assertObject(req.body.preferences, 'Préférences'));
         res.json({ message: 'Préférences mises à jour avec succès', preferences });
     } catch (error) {
         next(error);
@@ -273,7 +265,7 @@ const updateUserPreferences = async (req, res, next) => {
 // Obtenir les préférences d'un utilisateur
 const getUserPreferences = async (req, res, next) => {
     try {
-        res.json({ preferences: await userProfileService.getUserPreferences(assertId(req.params.id, 'ID utilisateur')) });
+        res.json({ preferences: await userService.getUserPreferences(assertId(req.params.id, 'ID utilisateur')) });
     } catch (error) {
         next(error);
     }
@@ -282,7 +274,7 @@ const getUserPreferences = async (req, res, next) => {
 // Obtenir le solde de points d'un utilisateur
 const getPointsById = async (req, res, next) => {
     try {
-        res.json({ points: await userPointsService.getPoints(assertId(req.params.id, 'ID utilisateur')) });
+        res.json({ points: await userService.getPoints(assertId(req.params.id, 'ID utilisateur')) });
     } catch (error) {
         next(error);
     }
@@ -295,7 +287,7 @@ const transferPoints = async (req, res, next) => {
         if (description !== undefined && typeof description !== 'string') {
             throw new AppError('Description invalide', 400);
         }
-        const result = await userPointsService.transferPoints({
+        const result = await userService.transferPoints({
             fromUserId: req.user.userId,
             toUserId: assertId(toUserId, 'ID du destinataire'),
             amount: assertPositiveInteger(amount, 'Montant'),
@@ -313,7 +305,7 @@ const transferPoints = async (req, res, next) => {
 const getTransactionHistory = async (req, res, next) => {
     try {
         const limit = req.query.limit === undefined ? 10 : assertPositiveInteger(req.query.limit, 'Limite');
-        res.json(await userPointsService.getTransferHistory(req.user.userId, limit));
+        res.json(await userService.getTransferHistory(req.user.userId, limit));
     } catch (error) {
         next(error);
     }
@@ -322,7 +314,7 @@ const getTransactionHistory = async (req, res, next) => {
 // Mettre à jour l'avatar (le fichier est reçu et limité en taille par multer, avant ce contrôleur)
 const updateAvatar = async (req, res, next) => {
     try {
-        const avatar = await userProfileService.updateAvatar(assertId(req.params.id, 'ID utilisateur'), req.file);
+        const avatar = await userService.updateAvatar(assertId(req.params.id, 'ID utilisateur'), req.file);
         res.json({ message: 'Avatar mis à jour avec succès', avatar });
     } catch (error) {
         next(error);
@@ -332,7 +324,7 @@ const updateAvatar = async (req, res, next) => {
 // Mettre à jour l'email de l'utilisateur (l'identité vient du jeton)
 const updateEmail = async (req, res, next) => {
     try {
-        const user = await userProfileService.updateEmail(req.user.userId, assertEmail(req.body.email));
+        const user = await userService.updateEmail(req.user.userId, assertEmail(req.body.email));
         res.json({ message: 'Email mis à jour avec succès', user });
     } catch (error) {
         next(error);
@@ -345,7 +337,7 @@ const updatePhone = async (req, res, next) => {
         if (typeof phone !== 'string' || !phone.trim()) {
             throw new AppError('Numéro de téléphone invalide', 400);
         }
-        const user = await userProfileService.updatePhone(req.user.userId, phone.trim());
+        const user = await userService.updatePhone(req.user.userId, phone.trim());
         res.json({ message: 'Numéro de téléphone mis à jour avec succès', user });
     } catch (error) {
         next(error);
@@ -354,7 +346,7 @@ const updatePhone = async (req, res, next) => {
 
 const updateBirthDate = async (req, res, next) => {
     try {
-        const user = await userProfileService.updateBirthDate(req.user.userId, assertDay(req.body.birthDate, 'Date de naissance'));
+        const user = await userService.updateBirthDate(req.user.userId, assertDay(req.body.birthDate, 'Date de naissance'));
         res.json({ message: 'Date de naissance mise à jour avec succès', user });
     } catch (error) {
         next(error);
@@ -363,7 +355,7 @@ const updateBirthDate = async (req, res, next) => {
 
 const deletePhone = async (req, res, next) => {
     try {
-        const user = await userProfileService.deletePhone(req.user.userId);
+        const user = await userService.deletePhone(req.user.userId);
         res.json({ message: 'Numéro de téléphone supprimé avec succès', user });
     } catch (error) {
         next(error);
@@ -373,7 +365,7 @@ const deletePhone = async (req, res, next) => {
 // Récupérer les informations d'un utilisateur par email (route publique : écran de connexion)
 const getUserInfoByEmail = async (req, res, next) => {
     try {
-        res.json(await userProfileService.getUserLoginInfo(assertEmail(req.params.email)));
+        res.json(await userService.getUserLoginInfo(assertEmail(req.params.email)));
     } catch (error) {
         next(error);
     }
@@ -391,7 +383,7 @@ const getDevListUsers = async (req, res, next) => {
 // Frise des équipes d'un centre : membres passés, actuels et à venir de chaque équipe (3 mois avant / 9 mois après par défaut)
 const getTeamsTimeline = async (req, res, next) => {
     try {
-        res.json(await teamTimelineService.getCenterTeamsTimeline(assertId(req.params.centerId, 'ID du centre'), timelineWindow(req.query)));
+        res.json(await userService.getCenterTeamsTimeline(assertId(req.params.centerId, 'ID du centre'), timelineWindow(req.query)));
     } catch (error) {
         next(error);
     }
@@ -400,7 +392,7 @@ const getTeamsTimeline = async (req, res, next) => {
 // Frise des équipes d'un utilisateur : ses équipes (affectations permanentes et renforts) sur la fenêtre
 const getUserTeamTimeline = async (req, res, next) => {
     try {
-        res.json(await teamTimelineService.getUserTeamTimeline(assertId(req.params.id, 'ID utilisateur'), timelineWindow(req.query)));
+        res.json(await userService.getUserTeamTimeline(assertId(req.params.id, 'ID utilisateur'), timelineWindow(req.query)));
     } catch (error) {
         next(error);
     }

@@ -9,8 +9,8 @@ import Substitution from '../models/Substitution.js';
 import '../models/Variation.js';
 import '../models/Shift.js';
 import '../models/Rotation.js';
-import { createDemand } from '../services/substitution/request.creation.js';
-import { computeUserShifts } from '../services/planning/computeUserShifts.js';
+import { createDemand } from '../services/substitution/index.js';
+import { computeUserShifts } from '../services/planning/index.js';
 
 dotenv.config({ path: '.env.development' });
 dotenv.config();

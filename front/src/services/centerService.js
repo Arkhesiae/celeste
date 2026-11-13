@@ -31,7 +31,7 @@ export const centerService = {
    * @returns {Promise<Array>} Liste des utilisateurs du centre.
    */
   async fetchUsersByCenter(centerId) {
-    const response = await apiFetch(`/users/center/${centerId}`, {
+    const response = await apiFetch(`/user/center/${centerId}`, {
       method: 'GET'
     });
     return response;
@@ -43,7 +43,7 @@ export const centerService = {
    * @returns {Promise<Object>} Le centre de l'utilisateur.
    */
   async getUserCenterById(userId) {
-    const userResponse = await apiFetch(`/users/${userId}`, {
+    const userResponse = await apiFetch(`/user/${userId}`, {
       method: 'GET'
     });
     const user = await userResponse;

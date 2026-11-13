@@ -7,7 +7,7 @@ export const profileService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async updateEmail(newEmail) {
-    const response = await apiFetch(`/users/update-email`, {
+    const response = await apiFetch(`/user/update-email`, {
       method: 'POST',
       body: JSON.stringify({ email: newEmail })
     });
@@ -20,7 +20,7 @@ export const profileService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async updatePhone(newPhone) {
-    const response = await apiFetch(`/users/update-phone`, {
+    const response = await apiFetch(`/user/update-phone`, {
       method: 'POST',
       body: JSON.stringify({ phone: newPhone })
     });
@@ -32,7 +32,7 @@ export const profileService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async deletePhone() {
-    const response = await apiFetch(`/users/delete-phone`, {
+    const response = await apiFetch(`/user/delete-phone`, {
       method: 'DELETE',
     });
     return response;
@@ -44,7 +44,7 @@ export const profileService = {
    * @returns {Promise<Object>} La réponse du serveur.
    */
   async updateBirthDate(newBirthDate) {
-    const response = await apiFetch(`/users/update-birthDate`, {
+    const response = await apiFetch(`/user/update-birthDate`, {
       method: 'POST',
       body: JSON.stringify({ birthDate: newBirthDate })
     });

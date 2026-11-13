@@ -6,15 +6,15 @@ import Substitution from '../../models/Substitution.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
-import { cancelPendingTransactions } from './request.pendingTransactions.js';
-import * as calendarEntryService from '../calendarEntry/index.js';
+import { cancelRequestTransactions } from './request.pendingTransactions.js';
+import { cancelSubstitutionEntries } from '../calendarEntry/calendarEntry.cancel.js';
 
 /**
  * Point d'entrée privé — annule l'acceptation d'une demande de substitution
  * @param {string} requestId
  * @returns {Promise<Object>}
  */
-export async function withdrawFromRequestWithSession (requestId, userId, { visited = new Set(), session, cancelledRequests = [] }) {
+export async function withdrawFromRequestWithSession(requestId, userId, { visited = new Set(), session, cancelledRequests = [] }) {
     const key = requestId.toString();
     if (visited.has(key)) return { updatedRequest: null, accepterShift: null, cancelledRequests };
     visited.add(key);
@@ -43,8 +43,8 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
     await request.save({ session });
 
     // Cancel transactions and calendar entries
-    await cancelPendingTransactions(requestId, { session });
-    const { accepterShift } = await calendarEntryService.cancelSubstitutionEntries(
+    await cancelRequestTransactions(requestId, { session });
+    const { accepterShift } = await cancelSubstitutionEntries(
         requestId,
         { posterId: request.posterId, accepterId: userId, date: posterDayOf(request) },
         { session }
@@ -61,7 +61,7 @@ export async function withdrawFromRequestWithSession (requestId, userId, { visit
  * @param {Set} opts.visited
  * @param {ClientSession} [opts.session] - session Mongoose existante (appels récursifs)
  */
-export async function cancelRequestWithSession (requestId, { visited = new Set(), session, cancelledRequests = [], reason }) {
+export async function cancelRequestWithSession(requestId, { visited = new Set(), session, cancelledRequests = [], reason }) {
     const key = requestId.toString();
     if (visited.has(key)) return cancelledRequests;
     visited.add(key);
@@ -70,8 +70,8 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
     await cancelCascade(requestId, { session, visited, cancelledRequests });
 
     if (request.status === 'accepted') {
-        await cancelPendingTransactions(requestId, { session });
-        await calendarEntryService.cancelSubstitutionEntries(
+        await cancelRequestTransactions(requestId, { session });
+        await cancelSubstitutionEntries(
             requestId,
             { posterId: request.posterId, accepterId: request.accepterId, date: posterDayOf(request) },
             { session }
@@ -87,7 +87,7 @@ export async function cancelRequestWithSession (requestId, { visited = new Set()
 }
 
 
-async function cancelCascade (parentId, { session, visited, cancelledRequests }) {
+async function cancelCascade(parentId, { session, visited, cancelledRequests }) {
     const childRequests = await Substitution.find({ dependsOn: parentId }).session(session);
     for (const child of childRequests) {
         await cancelRequestWithSession(child._id, { visited, session, cancelledRequests });

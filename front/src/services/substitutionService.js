@@ -117,7 +117,7 @@ export const substitutionService = {
    * @returns {Promise<Array>} Liste des substitutions de l'utilisateur.
    */
   async getUserSubstitutions(userId) {
-    const response = await apiFetch(`/users/${userId}/substitution`, {
+    const response = await apiFetch(`/user/${userId}/substitution`, {
       method: 'GET'
     });
     return response;

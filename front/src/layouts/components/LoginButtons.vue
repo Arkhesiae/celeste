@@ -128,7 +128,7 @@ const adminEmail = import.meta.env.VITE_ADMIN_MAIL;
 const adminPassword = import.meta.env.VITE_ADMIN_PASS;
 
 const localAdminEmail = import.meta.env.VITE_LOCAL_ADMIN_MAIL || 'admin-lfbb@celeste-app.fr';
-const localAdminPassword = import.meta.env.VITE_LOCAL_ADMIN_PASS || 'admin-lfbb';
+const localAdminPassword = import.meta.env.VITE_LOCAL_ADMIN_PASS;
 
 const CREDENTIALS_BY_ROLE = {
   master: { email: adminEmail, password: adminPassword },

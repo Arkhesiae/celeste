@@ -17,6 +17,10 @@ const CENTER = {
   zone: 'west',
 };
 
+// Les premières versions de ce seed créaient le centre sous l'indicateur LFBD (une faute : `seedTeamDemands.js`, comme tout le
+// reste, cherche LFBB). Un centre créé ainsi est renommé en LFBB plutôt que doublé.
+const LEGACY_OACI = 'LFBD';
+
 const AGENTS_PER_TEAM = 2;
 const ROTATION_NAME = 'Densifié Ete';
 const TEAM_COUNT = 12;
@@ -108,6 +112,26 @@ const DENSIFIE_ETE_DAYS = [
 async function upsertCenter () {
   let center = await Center.findOne({ OACI: CENTER.OACI });
   let created = false;
+  let renamedFrom = null;
+  let restored = false;
+
+  // Le centre peut avoir été supprimé depuis l'application (suppression logique) : le seed le rétablit
+  if (center?.deleted) {
+    center.deleted = false;
+    await center.save();
+    restored = true;
+  }
+
+  if (!center) {
+    // Seulement le centre créé par ce seed (même nom et même type) : un vrai centre LFBD n'est pas touché
+    const legacy = await Center.findOne({ OACI: LEGACY_OACI, name: CENTER.name, type: CENTER.type });
+    if (legacy) {
+      legacy.OACI = CENTER.OACI;
+      await legacy.save();
+      center = legacy;
+      renamedFrom = LEGACY_OACI;
+    }
+  }
 
   if (!center) {
     center = await Center.create({
@@ -120,7 +144,7 @@ async function upsertCenter () {
     created = true;
   }
 
-  return { center, created };
+  return { center, created, renamedFrom, restored };
 }
 
 async function ensureTeams (center, activationDate) {
@@ -187,8 +211,19 @@ async function ensureAgents (center, teams) {
             changed = true;
           }
         }
-        if (!existing.centerId) {
+        // Supprimer un centre retire leur centre et leurs équipes aux utilisateurs : un agent du seed sans aucune équipe de
+        // ce centre (liste vide, ou équipes supprimées) retrouve la sienne, sinon il n'apparaît plus dans les connexions rapides
+        const teamIds = new Set(teams.map((t) => String(t._id)));
+        if (!(existing.teams || []).some((occ) => teamIds.has(String(occ.teamId)))) {
+          existing.teams = [{ teamId: team._id, fromDate: desiredFrom, fromDay: toDay(desiredFrom) }];
+          changed = true;
+        }
+        if (String(existing.centerId) !== String(center._id)) {
           existing.centerId = center._id;
+          changed = true;
+        }
+        if (!existing.isActive) {
+          existing.isActive = true;
           changed = true;
         }
         if (changed) {
@@ -293,14 +328,14 @@ async function ensureRotation (center, activationDate) {
 }
 
 /**
- * Seed idempotent : centre LFBB, équipes 1–12, agents, TDS Densifié Ete.
+ * Seed idempotent : centre LFBB (Bordeaux), équipes 1–12, agents, TDS Densifié Ete.
  */
 export async function seedDefaultConfig () {
   // Activation antérieure à "aujourd'hui" : sinon findLatestRotation renvoie null
   // pour J1/J2 avant une N du jour, et le 35h devient un faux compatible.
   const activationDate = addUtcDays(utcMidnight(), -60);
 
-  const { center, created: centerCreated } = await upsertCenter();
+  const { center, created: centerCreated, renamedFrom, restored: centerRestored } = await upsertCenter();
   const { teams, created: teamsCreated } = await ensureTeams(center, activationDate);
   const { created: agentsCreated, repaired: agentsRepaired } = await ensureAgents(center, teams);
   const { rotation, created: rotationCreated } = await ensureRotation(center, activationDate);
@@ -315,6 +350,8 @@ export async function seedDefaultConfig () {
       name: center.name,
       OACI: center.OACI,
       created: centerCreated,
+      renamedFrom,
+      restored: centerRestored,
     },
     teams: { count: teams.length, created: teamsCreated },
     agents: {
@@ -331,10 +368,14 @@ export async function seedDefaultConfig () {
       created: rotationCreated,
       activatedAt: activationDate,
     },
-    localAdmin: {
-      email: 'admin-lfbb@celeste-app.fr',
-      password: 'admin-lfbb',
-    },
+    // Compte créé par `createLocalAdmin` pour chaque centre : e-mail et mot de passe viennent de l'OACI et de
+    // LOCAL_ADMIN_PASSWORD (le secret n'est pas renvoyé). Sans cette variable, aucun compte n'est créé.
+    localAdmin: process.env.LOCAL_ADMIN_PASSWORD
+      ? {
+        email: `admin-${center.OACI.toLowerCase()}@celeste-app.fr`,
+        password: `<LOCAL_ADMIN_PASSWORD>-${center.OACI.toLowerCase()}`,
+      }
+      : { error: 'LOCAL_ADMIN_PASSWORD non défini : aucun administrateur local créé' },
   };
 }
 

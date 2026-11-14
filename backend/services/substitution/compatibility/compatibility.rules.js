@@ -263,7 +263,7 @@ function checkWeeklyWorkHours (zonedShifts, targetDate, fullScan = false) {
     return { workOk: invalidWindows48.length === 0, invalidWindows48 };
 }
 
-const isWork = (zonedShift) => zonedShift?.shift?.type === 'work';
+const isWork = (zonedShift) => zonedShift?.shift?.type === 'work' || Boolean(zonedShift?.assignment);
 const isNight = (zonedShift) => isWork(zonedShift) && isNightControl(zonedShift);
 /** Repos (minutes) entre la fin d'une vacation et le début de la suivante */
 const restMinutes = (previousShift, nextShift) => minutesBetween(previousShift.end, nextShift.start);
@@ -387,5 +387,7 @@ export {
     windowStartingOn,
     longestRestIn,
     workMinutesIn,
-    minutesBetween
+    minutesBetween,
+    isWork,
+    isNight
 };

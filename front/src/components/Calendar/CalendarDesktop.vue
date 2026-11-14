@@ -34,7 +34,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
-import { entryTypes } from '@/utils/entryIcons';
+import { entryTypeOf } from '@/utils/entryIcons';
 import { sameDateKey, toDateKey } from '@/utils/dateKey';
 import { useWorkIndicators } from '@/composables/useWorkIndicators';
 
@@ -95,8 +95,10 @@ const shiftDataMap = computed(() => {
       shiftName: getDisplayShiftName(value),
       selectedVariation: value?.shiftData?.selectedVariation ?? null,
       variationName: value?.shiftData?.selectedVariation?.name ?? null,
+      // Congé (`absence`) ou autre affectation : la tuile prend leur couleur et l'icône remplace le nom de la vacation
+      entryKind: entryTypeOf(value?.type) ? (value.type === 'absence' ? 'leave' : 'entry') : null,
       icon: (() => {
-        const entry = entryTypes.find((e) => e.key === value?.type);
+        const entry = entryTypeOf(value?.type);
         return entry ? `mdi-${entry.icon}` : null;
       })(),
     });

@@ -72,7 +72,6 @@ import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
 import { toDateKey } from '@/utils/dateKey';
 import { Temporal } from '@js-temporal/polyfill';
-import { useRoute } from 'vue-router';
 import { useWorkCheckStore } from '@/stores/workCheckStore.js';
 import { orderedPeriod } from '@/utils/workWindows';
 
@@ -119,9 +118,7 @@ const {
 } = useCalendarNavigation();
 
 const { calendarDays } = useCalendar(selectedYear, selectedMonth);
-// `?workDemo=1` (développement) ajoute des alertes d'exemple pour voir les indicateurs sur un planning conforme
-const workDemo = import.meta.env.DEV && useRoute().query.workDemo === '1';
-const { loading, fetchMonthData } = useCalendarData(calendarDays, { workDemo });
+const { loading, fetchMonthData } = useCalendarData(calendarDays);
 
 // Utilisation des composables
 

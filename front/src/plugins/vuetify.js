@@ -65,6 +65,11 @@ export default createVuetify({
       darkTheme: {
         dark: true,
         colors: {
+          // Jours d'affectation du calendrier : congé, et toutes les autres affectations (une seule teinte)
+          "leave": "#7fd1e8",
+          "onLeave": "#00363f",
+          "entry": "#f2c46d",
+          "onEntry": "#3f2e00",
           "permutation": "#dcffbc",
           "onPermutation": "#5c2a65",
           "primary": "#b4b3f5ff",
@@ -183,6 +188,10 @@ export default createVuetify({
           "surfaceContainer": "#E9EFF1",
           "surfaceContainerHigh": "#E3E9EB",
           "surfaceContainerHighest": "#DDE3E5",
+          "leave": "#00799a",
+          "onLeave": "#ffffff",
+          "entry": "#8a5a00",
+          "onEntry": "#ffffff",
           "remplacement": "#4e3e64",
           "onRemplacement": "#f6ccfd",
           "permutation": "#9777a0",

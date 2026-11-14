@@ -1,20 +1,15 @@
 import { getTeamAtDay } from "../team/team.atDay.js";
 import { activationDaysOf } from '../../utils/dates/dayAccess.js';
 import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
-import { toPlainDate } from '../../utils/dates/plainDate.js';
-import { sameId } from '../../utils/ids.js';
+import { compareDays, toPlainDate, todayIn } from '../../utils/dates/plainDate.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { toCalendarDay } from '../../utils/dates/calendarDay.js';
 import { cycleDayIndex } from '../team/team.cycleIndex.js';
 import Center from '../../models/Center.js';
 import User from "../../models/User.js";
-import Substitution from '../../models/Substitution.js';
-import { CalendarEntry, Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
-import Shift from '../../models/Shift.js';
+import { Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';
-
-
 
 // ── Utilitaires temps ─────────────────────────────────────────────────
 
@@ -43,21 +38,6 @@ const checkHourPatchCoherence = (latestModification) => {
 const isSameShift = (resolvedShift, entry) =>
     resolvedShift?.shiftData?.shift?._id?.equals(entry?.shiftData?.shift?._id);
 
-const isModificationConsistent = (latestModification, resolvedShift) => isSameShift(resolvedShift, latestModification);
-
-const checkBaseShiftCoherence = (baseShift, latestAssignment) => {
-    if (!baseShift) {
-        console.error('baseShift incohérent : aucun shift de base résolu')
-        return false
-    }
-
-    if (!sameId(latestAssignment?.baseShift?.shift._id, baseShift.shift._id)) {
-        console.error('baseShift incohérent : le shift de base a changé')
-        return false
-    }
-    return true
-}
-
 // ── Résolution ────────────────────────────────────────────────────────
 
 const buildAssignmentHistory = (assignments) =>
@@ -67,24 +47,63 @@ const buildAssignmentHistory = (assignments) =>
         wasOverride: a.wasOverride,
     }))
 
-const applyEntries = (baseShift, assignments, modifications, hoursPatches) => {
+export const applyEntries = (baseShift, assignments, modifications, hoursPatches, { day, today }) => {
     const latestAssignment = assignments.at(-1) ?? null
     const latestModification = modifications.at(-1) ?? null
     const latestHourPatch = hoursPatches.at(-1) ?? null
 
     let resolvedShift = resolveAssignment(baseShift, latestAssignment)
 
-    if (isModificationConsistent(latestModification, resolvedShift)) {
+    if (isSameShift(resolvedShift, latestModification)) {
         resolvedShift = applyModification(resolvedShift, latestModification)
+    }
+
+    if (isUnconfirmedOptional(resolvedShift.shiftData?.shift, { latestAssignment, latestModification })) {
+        resolvedShift = { ...resolvedShift, isOff: true }
     }
 
     if (!resolvedShift.isOff) checkHourPatchCoherence(latestModification)
     resolvedShift = applyHourPatch(resolvedShift, latestHourPatch)
 
+    resolvedShift = { ...resolvedShift, isWorked: computeIsWorked(resolvedShift, { latestAssignment, day, today }) }
+
     return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments) }
 }
 
-const resolveAssignment = (baseShift, latestAssignment) => {
+/** Jour facultatif de la rotation que rien n'a confirmé (ni affectation, ni modification « présent ») : l'agent n'y est pas */
+const isUnconfirmedOptional = (shift, { latestAssignment, latestModification } = {}) =>
+    Boolean(shift?.optional) && !latestAssignment && latestModification?.subType !== 'pres'
+
+/**
+ * `isWorked` : le jour compte comme TRAVAILLÉ pour les règles de repos et de charge (compatibilité, contrôle des 7 jours).
+ * Ce n'est pas `isOff`, qui dit seulement que l'agent n'est pas à la vacation affichée (remplacé, dispo, jour facultatif non
+ * confirmé) et qui sert à l'affichage : un jour peut n'être pas « off » sans être travaillé (repos, congé, VIC passé).
+ * - off : non ;
+ * - affectation sans vacation : travaillée si son type est dans ASSIGNMENT_WORK_SUBTYPES et qu'elle a ses horaires ;
+ * - vacation de travail : travaillée, sauf un VIC dont le jour est passé (compté comme un jour off) ;
+ * - tout le reste (repos, congé, arrêt maladie...) : non.
+ */
+const computeIsWorked = (result, { latestAssignment, day, today }) => {
+    if (result.isOff) return false
+
+    if (latestAssignment && !latestAssignment.shiftData?.shift) {
+        return ASSIGNMENT_WORK_SUBTYPES.has(latestAssignment.subType) && Boolean(result.startTime && result.endTime)
+    }
+
+    const shift = result.shiftData?.shift
+    if (shift?.type !== 'work') return false
+
+    if (result.shiftData.selectedVariation === 'vic' && compareDays(day, today) < 0) return false
+
+    return true
+}
+
+/** Types d'affectation qui comptent comme du travail ; les congés (`absence` = « Congé » dans l'interface, `sick_leave`, `maternity_leave`) et la substitution non */
+const ASSIGNMENT_WORK_SUBTYPES = new Set([
+    'manager', 'english_training', 'training', 'simulation', 'other', 'test', 'office', 'stage', 'instruc', 'custom', 'vis_med',
+])
+
+export const resolveAssignment = (baseShift, latestAssignment) => {
     if (!latestAssignment) {
         return buildShiftResult(null, baseShift.shift, baseShift.team, baseShift)
     }
@@ -98,17 +117,17 @@ const resolveAssignment = (baseShift, latestAssignment) => {
         })
     }
 
-    // Poster remplacé (shiftData null) ou absence : plus en poste, mais on conserve
-    // la vacation de base pour l'affichage (J4 + état off / remplacé).
+    // Poster remplacé : plus en poste, mais on conserve la vacation de base pour l'affichage (J4 + état off / remplacé).
+    // Toute autre affectation (formation, congé, bureau...) n'est pas une vacation : elle remplace celle de la rotation, dont
+    // il ne reste que `baseShift` ; `isWorked` est calculé ensuite (computeIsWorked).
     const freedBySub = latestAssignment.subType === 'substitution'
-    const isAbsence = latestAssignment.subType === 'absence'
 
     return {
         type: latestAssignment.subType,
         isBaseShift: false,
-        isOff: freedBySub || isAbsence,
+        isOff: freedBySub,
         shiftData: {
-            shift: baseShift?.shift ?? null,
+            shift: freedBySub ? baseShift?.shift ?? null : null,
             selectedVariation: null,
             team: baseShift?.team ?? null,
         },
@@ -118,10 +137,7 @@ const resolveAssignment = (baseShift, latestAssignment) => {
     }
 }
 
-
 const applyModification = (resolvedShift, latestModification) => {
-    if (!latestModification) return resolvedShift
-
     const modShiftData = latestModification.shiftData
 
     switch (latestModification.subType) {
@@ -168,9 +184,6 @@ const applyModification = (resolvedShift, latestModification) => {
         default:
             return resolvedShift
     }
-
-
-
 }
 
 const applyHourPatch = (resolvedShift, latestHourPatch) => {
@@ -181,24 +194,6 @@ const applyHourPatch = (resolvedShift, latestHourPatch) => {
         startTime: addHours(resolvedShift.startTime, latestHourPatch.adjustedTime.adjustedStart),
         endTime: addHours(resolvedShift.endTime, latestHourPatch.adjustedTime.adjustedEnd),
     }
-}
-
-const getActiveEntries = async (user, date) => {
-    const populateShiftData = (query) => query
-        .populate({ path: 'shiftData', populate: 'shift' })
-        .populate({ path: 'shiftData.shift', populate: 'variations' })
-        .populate({ path: 'shiftData.selectedVariation' })
-        .populate({ path: 'shiftData.team' });
-
-    const baseQuery = { userId: user._id, active: true, date, };
-
-    const [assignments, modifications, hoursPatches] = await Promise.all([
-        populateShiftData(Assignment.find({ ...baseQuery })).sort({ createdAt: 1 }).lean(),
-        populateShiftData(Modification.find({ ...baseQuery })).sort({ createdAt: 1 }).lean(),
-        HourPatch.find({ ...baseQuery }).sort({ createdAt: 1 }).lean(),
-    ]);
-
-    return { assignments, modifications, hoursPatches };
 }
 
 /** Charge toutes les entries actives sur une plage de dates, groupées par jour */
@@ -275,6 +270,7 @@ const computeUserShifts = async (dates, userId) => {
         };
         const userCenter = user.centerId ? await getCenter(user.centerId) : null;
         const timeZone = userCenter?.timeZone || DEFAULT_TIME_ZONE;
+        const today = todayIn(timeZone);
 
         // Chaque date devient un jour calendaire (PlainDate) ; les jours sont déjà des chaînes YYYY-MM-DD dans la
         // plupart des appels, les instants (Date, ISO avec fuseau) sont lus dans le fuseau du centre
@@ -349,8 +345,11 @@ const computeUserShifts = async (dates, userId) => {
                     || { assignments: [], modifications: [], hoursPatches: [] };
 
                 if (!assignments.length && !modifications.length && !hoursPatches.length) {
+                    // Sans rien d'explicite, un jour facultatif de la rotation n'est pas travaillé
+                    const isOff = isUnconfirmedOptional(baseShift)
                     return buildShiftResult(dateStr, baseShift, team, baseShift, {
-                        isOff: Boolean(baseShift?.optional),
+                        isOff,
+                        isWorked: baseShift?.type === 'work' && !isOff,
                     });
                 }
 
@@ -358,7 +357,8 @@ const computeUserShifts = async (dates, userId) => {
                     { shift: baseShift, team },
                     assignments,
                     modifications,
-                    hoursPatches
+                    hoursPatches,
+                    { day, today }
                 );
 
                 return { ...resolvedShift, date: dateStr, history: assignmentHistory, baseShift };

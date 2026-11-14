@@ -106,6 +106,7 @@ async function registerAssignment (user, date, data, { substitution, latestAssig
                 team: data.team,
             },
         }),
+        comment: data?.subType === "congé" ? 'congé': "",
         userId: user._id,
         date,
         centerId: user.centerId,

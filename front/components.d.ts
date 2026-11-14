@@ -97,6 +97,7 @@ declare module 'vue' {
     RecurringCostsCard: typeof import('./src/components/Financement/RecurringCostsCard.vue')['default']
     Replaced: typeof import('./src/components/Substitutions/DemandCards/SubCards/Replaced.vue')['default']
     ReplyDialog: typeof import('./src/components/Tickets/ReplyDialog.vue')['default']
+    RestRuleTile: typeof import('./src/components/Calendar/Panels/RestRuleTile.vue')['default']
     RotationItem: typeof import('./src/components/Rotations/RotationItem/RotationItem.vue')['default']
     RotationItemSkeleton: typeof import('./src/components/Rotations/RotationItem/RotationItemSkeleton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
@@ -141,6 +142,8 @@ declare module 'vue' {
     VMenuMd3: typeof import('./src/components/common/Menus/vMenuMd3.vue')['default']
     WelcomeTitle: typeof import('./src/components/common/Titles/WelcomeTitle.vue')['default']
     WorkdayAmplitudeGraph: typeof import('./src/components/common/WorkdayAmplitudeGraph.vue')['default']
+    WorkLegend: typeof import('./src/components/Calendar/Panels/WorkLegend.vue')['default']
     WorkshiftSummary: typeof import('./src/components/Rotations/AddRotation/WorkshiftSummary.vue')['default']
+    WorkWindowTile: typeof import('./src/components/Calendar/Panels/WorkWindowTile.vue')['default']
   }
 }

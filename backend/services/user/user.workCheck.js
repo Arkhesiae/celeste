@@ -3,7 +3,6 @@ import User from '../../models/User.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { eachDay } from '../../utils/dates/plainDate.js';
 import { withZonedBounds } from '../../utils/shifts/shiftTime.js';
-import { isNightControl } from '../../utils/shifts/nightControl.js';
 import {
     MIN_REST_MINUTES,
     WEEKLY_REST_MINUTES,
@@ -15,7 +14,7 @@ import { WORK_CHECK_MARGIN_DAYS } from '../../config/limits.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { shiftMapToArray, toShiftsMap } from '../planning/planning.shiftsMap.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
-import { windowStartingOn, longestRestIn, workMinutesIn, minutesBetween } from '../substitution/compatibility/compatibility.rules.js';
+import { windowStartingOn, longestRestIn, workMinutesIn, minutesBetween, isNight } from '../substitution/compatibility/compatibility.rules.js';
 
 /**
  * Contrôle du temps de travail d'un utilisateur sur une période, pour le calendrier : temps travaillé de chaque jour, repos
@@ -25,8 +24,6 @@ import { windowStartingOn, longestRestIn, workMinutesIn, minutesBetween } from '
  * (`compatibility.rules.js`, `config/workRules.js`) : le calendrier affiche ce que la compatibilité appliquerait.
  */
 
-const isWork = (zonedShift) => zonedShift?.shift?.type === 'work';
-const isNight = (zonedShift) => isWork(zonedShift) && isNightControl(zonedShift);
 
 /** Date et heure locale du centre, sans fuseau : `2026-03-10T22:00` */
 const localMinute = (zonedDateTime) => zonedDateTime.toPlainDateTime().toString({ smallestUnit: 'minute' });
@@ -89,7 +86,7 @@ export function analyzeWork ({ shifts, timeZone, from, to }) {
             date,
             workedMinutes: ofDay.reduce((sum, { shift }) => sum + minutesBetween(shift.start, shift.end), 0),
             shifts: ofDay.map(({ shift }) => ({
-                name: shift.shift?.name ?? '',
+                name: shift.shift?.name ?? shift.assignment ?? '',
                 startTime: shift.startTime,
                 endTime: shift.endTime,
                 endsNextDay: Boolean(shift.endsNextDay),

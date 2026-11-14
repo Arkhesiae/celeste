@@ -45,9 +45,26 @@ export async function generateShiftsMap (dates, userId) {
 export function toShiftsMap (results) {
   const finalMap = new Map();
   for (const entry of results) {
+    // `isWorked` (voir computeIsWorked) : seul ce qui compte comme travail pour les règles entre dans la map
+    if (!entry?.isWorked) continue;
+
+    // Affectation travaillée : pas une vacation, un type à part (`assignment`) aux horaires saisis
+    if (entry.type !== 'shift' && entry.startTime && entry.endTime) {
+      finalMap.set(entry.date, {
+        shift: null,
+        assignment: entry.type,
+        team: entry.shiftData?.team ?? null,
+        date: entry.date,
+        selectedVariation: null,
+        startTime: entry.startTime,
+        endTime: entry.endTime,
+        endsNextDay: entry.endTime <= entry.startTime,
+      });
+      continue;
+    }
+
     const shift = entry?.shiftData?.shift;
-    // Uniquement les vacations travaillées (pas repos / pas off / pas empty)
-    if (!shift || shift.type !== 'work' || entry.isOff) continue;
+    if (!shift) continue;
 
     const dateStr = entry.date;
     const selectedVariation = entry.shiftData?.selectedVariation ?? null;

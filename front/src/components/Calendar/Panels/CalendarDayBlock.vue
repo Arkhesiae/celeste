@@ -4,6 +4,8 @@
         'isWorkDay': isWorkDay,
         'isRestDay': !!shiftName && !isWorkDay,
         'isVic': isVic,
+        'isLeave': entryKind === 'leave',
+        'isEntry': entryKind === 'entry',
         'selected': selected,
         'in-period': inPeriod,
         'today-center-highlight': isToday,
@@ -24,16 +26,17 @@
 
             <!-- Shift info : travail ET repos (R1, R6…) — en haut à droite -->
             <div class="shift_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <div v-if="shiftName" class="d-flex align-center shift-row" :class="isOff ? 'offDay' : ''">
+                <!-- Affectation (formation, bureau, congé...) : son icône prend la place du nom de la vacation de base -->
+                <div v-if="icon" class="d-flex shift-name align-center" :title="shiftName">
+                    <v-icon size="14px">{{ icon }}</v-icon>
+                </div>
+                <div v-else-if="shiftName" class="d-flex align-center shift-row" :class="isOff ? 'offDay' : ''">
                     <span class="shift-name" :class="{ 'xs': xs, 'rest': !isWorkDay }">{{ shiftName }}</span>
                     <div v-if="selectedVariation || isOff" class="mod-dot" />
                     <span v-if="variationLabel" class="variation-name" :class="{ 'xs': xs }">
                         {{ variationLabel }}
                     </span>
                     <v-icon v-else-if="isOff" size="10px">mdi-cancel</v-icon>
-                </div>
-                <div v-else-if="icon" class="d-flex shift-name align-center">
-                    <v-icon size="12px">{{ icon }}</v-icon>
                 </div>
             </div>
         </div>
@@ -127,6 +130,11 @@ const props = defineProps({
         default: null,
     },
     variationName: {
+        type: String,
+        default: null,
+    },
+    /** Affectation du jour : 'leave' (congé) ou 'entry' (toute autre), qui donne sa couleur à la tuile */
+    entryKind: {
         type: String,
         default: null,
     },
@@ -266,9 +274,28 @@ const handleClick = async () => {
     --tile-on-accent: rgb(var(--v-theme-onSecondary));
 }
 
-/* Teinte légère de l'accent au repos pour un jour travaillé ou en VIC ; sélectionnée, c'est l'accent plein (tuile) */
+/* Affectations : une couleur pour les congés, une seule pour toutes les autres */
+.isLeave {
+    --tile-accent: rgb(var(--v-theme-leave));
+    --tile-on-accent: rgb(var(--v-theme-onLeave));
+}
+
+.isEntry {
+    --tile-accent: rgb(var(--v-theme-entry));
+    --tile-on-accent: rgb(var(--v-theme-onEntry));
+}
+
+/* L'icône d'affectation prend la couleur de l'accent au repos (sélectionnée, elle prend la couleur « sur accent » de la tuile) */
+.isLeave:not(.selected) .shift-name,
+.isEntry:not(.selected) .shift-name {
+    color: var(--tile-accent);
+}
+
+/* Teinte légère de l'accent au repos pour un jour travaillé, en VIC ou d'affectation ; sélectionnée, c'est l'accent plein (tuile) */
 .isWorkDay:not([aria-pressed='true']),
-.isVic:not([aria-pressed='true']) {
+.isVic:not([aria-pressed='true']),
+.isLeave:not([aria-pressed='true']),
+.isEntry:not([aria-pressed='true']) {
     --tile-bg: color-mix(in srgb, var(--tile-accent) 10%, transparent);
 }
 

@@ -4,7 +4,7 @@ import { useSnackbarStore } from "@/stores/snackbarStore.js";
 import { useWorkCheckStore } from "@/stores/workCheckStore.js";
 import { useAuthStore } from "@/stores/authStore.js";
 
-export function useCalendarData (calendarDays, { workDemo = false } = {}) {
+export function useCalendarData (calendarDays) {
     const shiftStore = useShiftStore();
     const substitutionStore = useSubstitutionStore();
     const snackbarStore = useSnackbarStore();
@@ -58,7 +58,7 @@ export function useCalendarData (calendarDays, { workDemo = false } = {}) {
     };
 
     // Contrôle du temps de travail de la période affichée : un échec n'empêche pas d'afficher le calendrier (le store l'absorbe)
-    const fetchWorkCheck = () => workCheckStore.fetchWorkCheck(authStore.userData.userId, startDate.value, endDate.value, { demo: workDemo });
+    const fetchWorkCheck = () => workCheckStore.fetchWorkCheck(authStore.userData.userId, startDate.value, endDate.value);
 
     const fetchMonthData = async () => {
         try {

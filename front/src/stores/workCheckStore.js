@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { userService } from '@/services/userService';
-import { withDemoIssues } from '@/utils/workCheckDemo';
 
 /**
  * Contrôle du temps de travail de l'utilisateur pour la période affichée par le calendrier : temps travaillé par jour,
@@ -23,15 +22,13 @@ export const useWorkCheckStore = defineStore('workCheck', () => {
    * @param {string} userId
    * @param {string} from - premier jour affiché
    * @param {string} to - dernier jour affiché
-   * @param {{ demo?: boolean }} [options] - `demo` : ajoute des alertes d'exemple (développement uniquement)
    */
-  const fetchWorkCheck = async (userId, from, to, { demo = false } = {}) => {
+  const fetchWorkCheck = async (userId, from, to) => {
     const request = ++lastRequest;
     isLoading.value = true;
     error.value = null;
     try {
-      let data = await userService.fetchWorkCheck(userId, from, to);
-      if (demo && import.meta.env.DEV) data = withDemoIssues(data);
+      const data = await userService.fetchWorkCheck(userId, from, to);
       if (request !== lastRequest) return;
       daysByDate.value = Object.fromEntries(data.days.map((day) => [day.date, day]));
       windows.value = data.windows;

@@ -5,6 +5,7 @@
         'isRestDay': !!shiftName && !isWorkDay,
         'isVic': isVic,
         'selected': selected,
+        'in-period': inPeriod,
         'today-center-highlight': isToday,
         'empty-day': !isInMonth,
     }" @click="handleClick" @keydown.enter.prevent="handleClick" @keydown.space.prevent="handleClick">
@@ -37,6 +38,24 @@
             </div>
         </div>
 
+        <!-- Sous la date, hors de l'en-tête (pour ne pas rétrécir le nom de la vacation) : repos insuffisant avant la vacation de
+             ce jour, et temps travaillé (une nuit compte en entier le jour où elle commence) -->
+        <div v-if="restProblem || workedMinutes > 0" class="day-indicators">
+            <span v-if="restProblem" class="rest-flag" role="img" :aria-label="restLabel">
+                <v-icon size="10">mdi-sleep-off</v-icon>
+                <v-tooltip activator="parent" location="top" :text="restLabel" />
+            </span>
+            <span v-if="workedMinutes > 0" class="worked-time" :title="formatHours(workedMinutes)">{{ formatCompactHours(workedMinutes) }}</span>
+        </div>
+
+        <!-- Périodes de 7 jours en défaut : une ligne pleine pour plus de 48 h de travail, en pointillé pour un repos de 35 h manquant -->
+        <div v-for="line in windowLines" :key="line.issue" class="window-line-hit" :class="`window-line-hit--${line.issue}`"
+            role="button" tabindex="0" :aria-label="line.label" @click.stop="emit('inspect-window', line.windows[0])"
+            @keydown.enter.stop.prevent="emit('inspect-window', line.windows[0])">
+            <span class="window-line" :class="[`window-line--${line.issue}`, { 'cap-start': line.capStart, 'cap-end': line.capEnd }]" />
+            <v-tooltip activator="parent" location="top" :text="line.label" />
+        </div>
+
         <!-- Demand chips (bottom-right) -->
         <div class="d-flex justify-center position-absolute mb-1 mr-1" style="bottom: 0; right: 0;">
             <div v-for="(demand, index) in demands" :key="demand.id">
@@ -64,6 +83,7 @@
 <script setup>
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useDisplay } from 'vuetify';
+import { formatCompactHours, formatHours } from '@/utils/workWindows';
 
 const { xs } = useDisplay();
 
@@ -139,6 +159,28 @@ const props = defineProps({
         type: Number,
         default: 64,
     },
+
+    // ── Contrôle du temps de travail (voir stores/workCheckStore.js) ──────────────────────────────────────────────
+    /** Minutes travaillées ce jour (null : pas de donnée) */
+    workedMinutes: {
+        type: Number,
+        default: null,
+    },
+    /** Repos avant la vacation du jour : { minutes, requiredMinutes, ok } */
+    rest: {
+        type: Object,
+        default: null,
+    },
+    /** Lignes sous le jour : [{ issue: 'work'|'rest', capStart, capEnd, windows: [début…], label }] */
+    windowLines: {
+        type: Array,
+        default: () => [],
+    },
+    /** Jour à l'intérieur de la période choisie (les bornes sont `selected`) */
+    inPeriod: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 import { Temporal } from '@js-temporal/polyfill';
@@ -151,7 +193,12 @@ const route = useRoute();
 const centerStore = useCenterStore();
 const centerId = "aze"
 
-const emit = defineEmits(['select']);
+const emit = defineEmits(['select', 'inspect-window']);
+
+const restProblem = computed(() => Boolean(props.rest) && !props.rest.ok);
+const restLabel = computed(() => (props.rest
+    ? `Repos de ${formatHours(props.rest.minutes)} avant la vacation de ce jour (minimum ${formatHours(props.rest.requiredMinutes)})`
+    : ''));
 
 /** Journée en VIC : la tuile prend la couleur secondaire (un jour travaillé est primaire) */
 const isVic = computed(() => props.selectedVariation === 'vic');
@@ -316,6 +363,84 @@ const handleClick = async () => {
 .day_label_container {
     justify-content: flex-start;
     display: flex;
+}
+
+/* Ligne sous la date, positionnée à part : elle ne change pas la largeur de l'en-tête */
+.day-indicators {
+    position: absolute;
+    left: 8px;
+    top: 27px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    max-width: calc(100% - 8px);
+    pointer-events: none;
+}
+
+.day-indicators .rest-flag {
+    pointer-events: auto;
+}
+
+.worked-time {
+    font-size: 10.5px;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+/* Pastille d'alerte : lisible sur toutes les teintes de la tuile, sélectionnée ou non */
+.rest-flag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background: rgb(var(--v-theme-error));
+    color: rgb(var(--v-theme-onError));
+}
+
+/* Lignes des périodes de 7 jours en défaut : la zone cliquable (9 px) est plus haute que le trait (3 px) */
+.window-line-hit {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 9px;
+    cursor: help;
+    outline: none;
+}
+
+.window-line-hit--work { bottom: 0; }
+.window-line-hit--rest { bottom: 8px; }
+
+.window-line-hit:focus-visible .window-line {
+    outline: 2px solid var(--tile-accent);
+    outline-offset: 1px;
+}
+
+.window-line {
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgb(var(--v-theme-error));
+}
+
+/* Pas de couleur seule : plus de 48 h = trait plein, repos de 35 h manquant = pointillés */
+.window-line--rest {
+    background: repeating-linear-gradient(90deg, rgb(var(--v-theme-error)) 0 6px, transparent 6px 9px);
+}
+
+.window-line.cap-start { left: 8px; border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
+.window-line.cap-end { right: 8px; border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
+
+/* Jour à l'intérieur de la période choisie : teinte de l'accent (les bornes sont pleines, comme une tuile sélectionnée) */
+.in-period:not([aria-pressed='true']) {
+    --tile-bg: color-mix(in srgb, var(--tile-accent) 28%, transparent);
+    --tile-border: color-mix(in srgb, var(--tile-accent) 55%, transparent);
 }
 
 .day-number {

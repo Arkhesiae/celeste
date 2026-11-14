@@ -43,6 +43,20 @@ export const userService = {
   },
 
   /**
+   * Contrôle du temps de travail d'une période : temps travaillé de chaque jour, repos avant chaque vacation et périodes de
+   * 7 jours glissantes (travail cumulé, plus long repos continu), avec les seuils appliqués.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @param {string} from - Premier jour (YYYY-MM-DD).
+   * @param {string} to - Dernier jour (YYYY-MM-DD, 62 jours au plus après le premier).
+   * @returns {Promise<{ period: Object, timeZone: string, limits: Object, days: Array, windows: Array }>}
+   */
+  async fetchWorkCheck(userId, from, to) {
+    return apiFetch(`/user/${userId}/work-check?from=${from}&to=${to}`, {
+      method: 'GET'
+    });
+  },
+
+  /**
    * Met à jour les informations d'un utilisateur.
    * @param {string} id - L'ID de l'utilisateur.
    * @param {Object} userData - Les nouvelles données de l'utilisateur.

@@ -1,11 +1,15 @@
 import { useShiftStore } from "@/stores/shiftStore.js";
 import { useSubstitutionStore } from "@/stores/substitutionStore.js";
 import { useSnackbarStore } from "@/stores/snackbarStore.js";
+import { useWorkCheckStore } from "@/stores/workCheckStore.js";
+import { useAuthStore } from "@/stores/authStore.js";
 
-export function useCalendarData (calendarDays) {
+export function useCalendarData (calendarDays, { workDemo = false } = {}) {
     const shiftStore = useShiftStore();
     const substitutionStore = useSubstitutionStore();
     const snackbarStore = useSnackbarStore();
+    const workCheckStore = useWorkCheckStore();
+    const authStore = useAuthStore();
 
     const loadingShifts = ref(false);
     const loadingSubstitutions = ref(false);
@@ -53,11 +57,15 @@ export function useCalendarData (calendarDays) {
         }
     };
 
+    // Contrôle du temps de travail de la période affichée : un échec n'empêche pas d'afficher le calendrier (le store l'absorbe)
+    const fetchWorkCheck = () => workCheckStore.fetchWorkCheck(authStore.userData.userId, startDate.value, endDate.value, { demo: workDemo });
+
     const fetchMonthData = async () => {
         try {
             await Promise.all([
             fetchShifts(),
-            fetchSubstitutions()
+            fetchSubstitutions(),
+            fetchWorkCheck()
             ]);
         } catch (err) {
             snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-outline');

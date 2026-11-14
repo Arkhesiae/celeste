@@ -54,6 +54,7 @@ router.post('/:id/get-shifts-with-substitutions', authorizeSelfOrCenterAdmin('id
 
 // Routes pour les points et transactions
 router.get('/:id/points', authorizeSelfOrCenterAdmin('id'), userController.getPointsById);
+router.get('/:id/work-check', authorizeSelfOrCenterAdmin('id'), userController.getUserWorkCheck);
 router.post('/:id/points/transfer', userController.transferPoints);
 router.get('/:id/transactions', userController.getTransactionHistory);
 

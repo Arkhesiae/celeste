@@ -1,6 +1,8 @@
 import { MIN_PASSWORD_LENGTH } from '../config/auth.js';
+import { WORK_CHECK_MAX_DAYS } from '../config/limits.js';
 import { assertId, assertEmail, assertDay, assertPositiveInteger, assertObject, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
+import { Temporal } from '@js-temporal/polyfill';
 import * as userService from '../services/user/index.js';
 
 /**
@@ -280,6 +282,25 @@ const getPointsById = async (req, res, next) => {
     }
 };
 
+// Contrôle du temps de travail d'une période (temps par jour, repos entre vacations, périodes de 7 jours) : `from` et `to`
+const getUserWorkCheck = async (req, res, next) => {
+    try {
+        const id = assertId(req.params.id, 'ID utilisateur');
+        const from = assertDay(req.query.from, 'Date de début');
+        const to = assertDay(req.query.to, 'Date de fin');
+        if (!isValidDateRange({ startDate: from, endDate: to })) {
+            throw new AppError('La date de fin doit suivre la date de début', 400);
+        }
+        const days = Temporal.PlainDate.from(from).until(Temporal.PlainDate.from(to), { largestUnit: 'days' }).days + 1;
+        if (days > WORK_CHECK_MAX_DAYS) {
+            throw new AppError(`La période ne peut pas dépasser ${WORK_CHECK_MAX_DAYS} jours`, 400);
+        }
+        res.json(await userService.getWorkCheck(id, { from, to }));
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Effectue un transfert de points entre utilisateurs (l'émetteur est l'utilisateur connecté)
 const transferPoints = async (req, res, next) => {
     try {
@@ -413,6 +434,7 @@ export {
     getUserById,
     deleteUserById,
     getPointsById,
+    getUserWorkCheck,
     approveUser,
     deletePendingUser,
     makeUserAdmin,

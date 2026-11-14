@@ -2,26 +2,48 @@
   <v-container>
     <v-row class="mt-16">
       <v-col cols="12" md="">
-        <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" @navigate-month="navigateMonth"
-          @go-to-today="goToToday" />
+        <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" :selection-mode="selectionMode"
+          @navigate-month="navigateMonth" @go-to-today="goToToday" @update:selection-mode="setSelectionMode" />
 
-        <CalendarDesktop v-if="!smAndDown" :calendar-days="calendarDays" :selected-date="selectedDate"
-          @update:selected-date="handleSelectDate" />
+        <CalendarDesktop v-if="!smAndDown" :calendar-days="calendarDays" :selected-date="selectedDate" :period="period"
+          @update:selected-date="handleSelectDate" @inspect-window="inspectWindow" />
 
-        <CalendarMobile v-else :calendar-days="calendarDays" :loading="loading" :selected-date="selectedDate"
-          @update:selected-date="handleSelectDate" />
+        <CalendarMobile v-else :calendar-days="calendarDays" :loading="loading" :selected-date="selectedDate" :period="period"
+          @update:selected-date="handleSelectDate" @inspect-window="inspectWindow" />
+
+        <WorkLegend v-if="workCheckStore.limits" :limits="workCheckStore.limits" class="mt-4 px-2" />
       </v-col>
 
       <v-col v-if="!mdAndDown" cols="auto" style="width: 400px !important; max-width: 400px !important;">
-        <CalendarPanel v-if="selectedDate" :selected-date="selectedDate" @open-rempla-dialog="openSubstitutionForm"
-          @open-drawer="handleOpenDrawer" @cancel="handleCancel" @withdraw="handleWithdraw" />
+        <div class="d-flex flex-column ga-4">
+          <CalendarPanel v-if="selectedDate && selectionMode === 'day'" :selected-date="selectedDate"
+            @open-rempla-dialog="openSubstitutionForm" @open-drawer="handleOpenDrawer" @cancel="handleCancel"
+            @withdraw="handleWithdraw" />
+
+          <!-- Contrôle du temps de travail : la règle des 35 h sur la période choisie, puis la fenêtre de 7 jours -->
+          <RestRuleTile v-if="selectionMode === 'period' && workCheckStore.limits" :period="period"
+            :windows="workCheckStore.windows" :limits="workCheckStore.limits" @clear="period = null"
+            @preset="applyPreset" @inspect-window="inspectWindow" />
+          <WorkWindowTile v-if="windowStart && workCheckStore.limits" :window-start="windowStart"
+            :windows="workCheckStore.windows" :days-by-date="workCheckStore.daysByDate" :limits="workCheckStore.limits"
+            @update:window-start="windowStart = $event" />
+        </div>
       </v-col>
 
 
       <v-bottom-sheet v-if="mdAndDown" :model-value="showBottomSheet" inset class="safe-area-bottom"
         @update:model-value="onBottomSheetClose">
-        <CalendarPanel v-if="selectedDate" :selected-date="selectedDate" @open-rempla-dialog="openSubstitutionForm"
-          @open-drawer="handleOpenDrawer" @cancel="handleCancel" @withdraw="handleWithdraw" />
+        <div class="d-flex flex-column ga-4">
+          <CalendarPanel v-if="selectedDate && selectionMode === 'day'" :selected-date="selectedDate"
+            @open-rempla-dialog="openSubstitutionForm" @open-drawer="handleOpenDrawer" @cancel="handleCancel"
+            @withdraw="handleWithdraw" />
+          <RestRuleTile v-if="selectionMode === 'period' && workCheckStore.limits" :period="period"
+            :windows="workCheckStore.windows" :limits="workCheckStore.limits" @clear="period = null"
+            @preset="applyPreset" @inspect-window="inspectWindow" />
+          <WorkWindowTile v-if="windowStart && workCheckStore.limits" :window-start="windowStart"
+            :windows="workCheckStore.windows" :days-by-date="workCheckStore.daysByDate" :limits="workCheckStore.limits"
+            @update:window-start="windowStart = $event" />
+        </div>
       </v-bottom-sheet>
     </v-row>
 
@@ -49,6 +71,10 @@ import { useRotationStore } from "@/stores/rotationStore.js";
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
 import { toDateKey } from '@/utils/dateKey';
+import { Temporal } from '@js-temporal/polyfill';
+import { useRoute } from 'vue-router';
+import { useWorkCheckStore } from '@/stores/workCheckStore.js';
+import { orderedPeriod } from '@/utils/workWindows';
 
 /** Constantes */
 const DIALOG_MODES = {
@@ -67,6 +93,11 @@ const rotationStore = useRotationStore();
 
 /**  États */
 const selectedDate = ref(null);
+// Contrôle du temps de travail : `day` = un jour à la fois ; `period` = deux jours choisis, contrôle de la règle des 35 h
+const selectionMode = ref('day');
+const period = ref(null);          // { start, end } ; `end` absent tant que le deuxième jour n'est pas choisi
+const windowStart = ref(null);     // premier jour de la fenêtre de 7 jours affichée dans la tuile
+const workCheckStore = useWorkCheckStore();
 const showSubstitutionForm = ref(false);
 const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
@@ -88,7 +119,9 @@ const {
 } = useCalendarNavigation();
 
 const { calendarDays } = useCalendar(selectedYear, selectedMonth);
-const { loading, fetchMonthData } = useCalendarData(calendarDays);
+// `?workDemo=1` (développement) ajoute des alertes d'exemple pour voir les indicateurs sur un planning conforme
+const workDemo = import.meta.env.DEV && useRoute().query.workDemo === '1';
+const { loading, fetchMonthData } = useCalendarData(calendarDays, { workDemo });
 
 // Utilisation des composables
 
@@ -127,13 +160,60 @@ const onBottomSheetClose = (isOpen) => {
 };
 
 const handleSelectDate = (dateStr) => {
+  if (dateStr && selectionMode.value === 'period') {
+    selectPeriodDay(dateStr);
+    return;
+  }
   if (dateStr) {
     selectedDate.value = dateStr;
+    windowStart.value = dateStr;    // la tuile de fenêtre part du jour choisi
     showBottomSheet.value = true;
   } else {
     showBottomSheet.value = false;
     selectedDate.value = null;
   }
+};
+
+// Mode « Période » : un premier jour, puis un deuxième ; un troisième clic recommence. Deux fois le même jour = une période d'un jour.
+const selectPeriodDay = (dateStr) => {
+  if (!period.value?.start || period.value.end) {
+    period.value = { start: dateStr, end: null };
+    return;
+  }
+  period.value = orderedPeriod(period.value.start, dateStr);
+  windowStart.value = period.value.start;
+  showBottomSheet.value = true;
+};
+
+const setSelectionMode = (mode) => {
+  selectionMode.value = mode;
+  showBottomSheet.value = false;
+  if (mode === 'period') {
+    period.value = null;
+    selectedDate.value = null;
+  }
+};
+
+// Un clic sur une ligne du calendrier : on regarde cette période de 7 jours, dans les deux tuiles
+const inspectWindow = (start) => {
+  selectionMode.value = 'period';
+  period.value = { start, end: Temporal.PlainDate.from(start).add({ days: 6 }).toString() };
+  windowStart.value = start;
+  selectedDate.value = null;
+  showBottomSheet.value = true;
+};
+
+// Périodes courantes proposées par la tuile quand rien n'est choisi
+const applyPreset = (key) => {
+  if (key === 'today7') {
+    const today = Temporal.Now.plainDateISO();
+    period.value = { start: today.toString(), end: today.add({ days: 6 }).toString() };
+  } else {
+    const first = Temporal.PlainDate.from({ year: selectedYear.value, month: selectedMonth.value, day: 1 });
+    period.value = { start: first.toString(), end: first.with({ day: first.daysInMonth }).toString() };
+  }
+  windowStart.value = period.value.start;
+  showBottomSheet.value = true;
 };
 
 

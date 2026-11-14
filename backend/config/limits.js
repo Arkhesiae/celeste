@@ -12,3 +12,7 @@ export const AVATAR_MAX_BYTES = 10 * 1024 * 1024;
 export const DEMAND_HEATMAP_MAX_DAYS = 190;      // six mois
 export const TEAM_GRID_MAX_DAYS = 93;            // trois périodes de 24 jours (précédente, courante, suivante) = 72 jours
 export const TEAM_TIMELINE_MAX_DAYS = 800;
+
+/** Contrôle du temps de travail du calendrier : période maximale demandée (jours) et marge chargée de part et d'autre */
+export const WORK_CHECK_MAX_DAYS = 62;
+export const WORK_CHECK_MARGIN_DAYS = 7;

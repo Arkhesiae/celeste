@@ -24,7 +24,9 @@
               :demands="demandsForDate(plainDateToDateStr(day))"
               :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
               :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
-              :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" :height="64" @select="selectDate" />
+              :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" :worked-minutes="workOf(plainDateToDateStr(day))?.workedMinutes ?? null"
+              :rest="workOf(plainDateToDateStr(day))?.rest ?? null" :window-lines="linesFor(plainDateToDateStr(day))"
+              :in-period="inPeriod(plainDateToDateStr(day))" @inspect-window="emit('inspect-window', $event)" :height="64" @select="selectDate" />
           </v-col>
         </v-row>
       </div>
@@ -40,6 +42,7 @@ import { useShiftStore } from '@/stores/shiftStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
 import { sameDateKey, toDateKey } from '@/utils/dateKey';
+import { useWorkIndicators } from '@/composables/useWorkIndicators';
 
 const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
@@ -49,11 +52,15 @@ const props = defineProps({
   loadingVacations: Boolean,
   rotationsMap: Map,
   selectedDate: [String, null],
+  /** Période choisie ({ start, end }, `end` absent tant que le deuxième jour n'est pas choisi) */
+  period: { type: Object, default: null },
 });
 
 const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
-const emit = defineEmits(['update:selectedDate', 'swipe-left', 'swipe-right']);
+const { workOf, linesFor, inPeriod } = useWorkIndicators(toRef(props, 'period'));
+
+const emit = defineEmits(['update:selectedDate', 'swipe-left', 'swipe-right', 'inspect-window']);
 
 const selectDate = (date) => {
   emit('update:selectedDate', date.toString());
@@ -66,7 +73,8 @@ const plainDateToDateStr = (plainDate) => {
 const toDateStr = (date) => toDateKey(date);
 
 const isSelected = (dateStr) => {
-  return toDateKey(props.selectedDate) === dateStr;
+  // Les deux jours de la période choisie s'affichent comme sélectionnés
+  return toDateKey(props.selectedDate) === dateStr || props.period?.start === dateStr || props.period?.end === dateStr;
 };
 
 const isToday = (dateStr) => {

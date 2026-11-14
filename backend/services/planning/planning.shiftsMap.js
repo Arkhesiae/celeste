@@ -25,53 +25,63 @@ export async function generateShiftsMap (dates, userId) {
     }
 
     const dateArray = [...userDates].sort();
-    const finalMap = new Map();
 
     // Un seul passage : charge l'user une fois et traite toutes les dates
     const results = await computeUserShifts(dateArray, userId);
 
-    for (const entry of results) {
-      const shift = entry?.shiftData?.shift;
-      // Uniquement les vacations travaillées (pas repos / pas off / pas empty)
-      if (!shift || shift.type !== 'work' || entry.isOff) continue;
-
-      const dateStr = entry.date;
-      const selectedVariation = entry.shiftData?.selectedVariation ?? null;
-      const variationObj = (selectedVariation && typeof selectedVariation === 'object'
-        && selectedVariation.startTime)
-        ? selectedVariation
-        : selectedVariation;
-
-      const fromEntry = (entry.startTime && entry.endTime)
-        ? {
-          startTime: entry.startTime,
-          endTime: entry.endTime,
-          endsNextDay: getEffectiveShiftTimes(shift, variationObj)?.endsNextDay
-            ?? shift.default?.endsNextDay
-            ?? false,
-        }
-        : null;
-
-      const effectiveTimes = getEffectiveShiftTimes(shift, variationObj) ?? fromEntry;
-
-      if (!effectiveTimes?.startTime || !effectiveTimes?.endTime) continue;
-
-      finalMap.set(dateStr, {
-        shift,
-        team: entry.shiftData?.team ?? null,
-        date: dateStr,
-        selectedVariation: variationObj,
-        startTime: effectiveTimes.startTime,
-        endTime: effectiveTimes.endTime,
-        endsNextDay: effectiveTimes.endsNextDay ?? false,
-      });
-    }
-
-    return finalMap;
+    return toShiftsMap(results);
   } catch (error) {
     console.error('Erreur dans generateShiftsMap:', error);
     throw error;
   }
+}
+
+/**
+ * Convertit le planning calculé d'un utilisateur (`computeUserShifts`) en map de vacations travaillées : uniquement le
+ * travail (ni repos, ni absence), une entrée par jour de début, avec les horaires effectifs (variante choisie comprise).
+ * @param {Array} results - résultat de computeUserShifts
+ * @returns {Map<string, { shift: Object, team: Object, date: string, startTime: string, endTime: string, endsNextDay: boolean, selectedVariation: Object|null }>}
+ */
+export function toShiftsMap (results) {
+  const finalMap = new Map();
+  for (const entry of results) {
+    const shift = entry?.shiftData?.shift;
+    // Uniquement les vacations travaillées (pas repos / pas off / pas empty)
+    if (!shift || shift.type !== 'work' || entry.isOff) continue;
+
+    const dateStr = entry.date;
+    const selectedVariation = entry.shiftData?.selectedVariation ?? null;
+    const variationObj = (selectedVariation && typeof selectedVariation === 'object'
+      && selectedVariation.startTime)
+      ? selectedVariation
+      : selectedVariation;
+
+    const fromEntry = (entry.startTime && entry.endTime)
+      ? {
+        startTime: entry.startTime,
+        endTime: entry.endTime,
+        endsNextDay: getEffectiveShiftTimes(shift, variationObj)?.endsNextDay
+          ?? shift.default?.endsNextDay
+          ?? false,
+      }
+      : null;
+
+    const effectiveTimes = getEffectiveShiftTimes(shift, variationObj) ?? fromEntry;
+
+    if (!effectiveTimes?.startTime || !effectiveTimes?.endTime) continue;
+
+    finalMap.set(dateStr, {
+      shift,
+      team: entry.shiftData?.team ?? null,
+      date: dateStr,
+      selectedVariation: variationObj,
+      startTime: effectiveTimes.startTime,
+      endTime: effectiveTimes.endTime,
+      endsNextDay: effectiveTimes.endsNextDay ?? false,
+    });
+  }
+
+  return finalMap;
 }
 
 

@@ -139,6 +139,63 @@ function weeklyWindowsAround (targetDate, timeZone) {
 }
 
 /**
+ * La période de 7 jours qui commence au jour donné : de minuit à minuit (heure du centre), [début, début + 7 j[.
+ * @param {string} startDay - premier jour YYYY-MM-DD
+ * @param {string} timeZone - fuseau du centre
+ * @returns {{ start: Temporal.ZonedDateTime, end: Temporal.ZonedDateTime }}
+ */
+function windowStartingOn (startDay, timeZone) {
+    const firstDay = Temporal.PlainDate.from(startDay);
+    return {
+        start: firstDay.toZonedDateTime(timeZone),
+        end: firstDay.add({ days: 7 }).toZonedDateTime(timeZone),
+    };
+}
+
+/**
+ * Le plus long repos continu d'une période (voir checkWeeklyRestPeriod pour le détail). On parcourt les vacations de la
+ * période dans l'ordre en suivant `workedUntil`, la fin du travail déjà vu : l'écart entre `workedUntil` et le début de la
+ * vacation suivante est un repos ; le dernier repos va jusqu'à la fin de la période.
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds), triées par début
+ * @param {{ start: Temporal.ZonedDateTime, end: Temporal.ZonedDateTime }} window
+ * @returns {{ minutes: number, from: Temporal.ZonedDateTime|null, to: Temporal.ZonedDateTime|null }}
+ */
+function longestRestIn (zonedShifts, window) {
+    let workedUntil = window.start;
+    let longestRest = { minutes: 0, from: null, to: null };
+    const considerRest = (restStart, restEnd) => {
+        const minutes = minutesBetween(restStart, restEnd);
+        if (minutes > longestRest.minutes) longestRest = { minutes, from: restStart, to: restEnd };
+    };
+
+    for (const shift of zonedShifts) {
+        // Hors période : finit avant elle, ou commence à sa fin ou après (un service qui commence pile à la fin de la
+        // période appartient à la période suivante)
+        if (isEarlier(shift.end, window.start) || !isEarlier(shift.start, window.end)) continue;
+        if (isLater(shift.start, workedUntil)) considerRest(workedUntil, shift.start);
+        if (isLater(shift.end, workedUntil)) workedUntil = shift.end;
+    }
+    if (isEarlier(workedUntil, window.end)) considerRest(workedUntil, window.end);
+    return longestRest;
+}
+
+/**
+ * Minutes de travail d'une période : une vacation à cheval sur un bord n'y compte que pour la partie qui s'y trouve ; les
+ * durées de vacations qui se chevauchent s'additionnent (voir #47).
+ * @param {Array} zonedShifts - vacations avec `start` / `end` (withZonedBounds)
+ * @param {{ start: Temporal.ZonedDateTime, end: Temporal.ZonedDateTime }} window
+ */
+function workMinutesIn (zonedShifts, window) {
+    let totalWorkMinutes = 0;
+    for (const shift of zonedShifts) {
+        const workedFrom = isLater(shift.start, window.start) ? shift.start : window.start;
+        const workedUntil = isEarlier(shift.end, window.end) ? shift.end : window.end;
+        if (isLater(workedUntil, workedFrom)) totalWorkMinutes += minutesBetween(workedFrom, workedUntil);
+    }
+    return totalWorkMinutes;
+}
+
+/**
  * Règle des 35h : dans CHAQUE période de 7 jours glissants autour de la cible, il doit exister un repos continu d'au
  * moins 35h. On parcourt les vacations de la fenêtre dans l'ordre en suivant `workedUntil`, la fin du travail déjà
  * vu : l'écart entre `workedUntil` et le début de la vacation suivante est un repos ; le dernier repos va jusqu'à la
@@ -160,21 +217,7 @@ function checkWeeklyRestPeriod (zonedShifts, targetDate, fullScan = false) {
     const timeZone = zonedShifts[targetIndexOf(zonedShifts, targetDate)].start.timeZoneId;
 
     for (const window of weeklyWindowsAround(targetDate, timeZone)) {
-        let workedUntil = window.start;
-        let longestRest = { minutes: 0, from: null, to: null };
-        const considerRest = (restStart, restEnd) => {
-            const minutes = minutesBetween(restStart, restEnd);
-            if (minutes > longestRest.minutes) longestRest = { minutes, from: restStart, to: restEnd };
-        };
-
-        for (const shift of zonedShifts) {
-            // Hors fenêtre : finit avant elle, ou commence à sa fin ou après (un service qui commence pile à la fin de
-            // la fenêtre appartient à la période suivante)
-            if (isEarlier(shift.end, window.start) || !isEarlier(shift.start, window.end)) continue;
-            if (isLater(shift.start, workedUntil)) considerRest(workedUntil, shift.start);
-            if (isLater(shift.end, workedUntil)) workedUntil = shift.end;
-        }
-        if (isEarlier(workedUntil, window.end)) considerRest(workedUntil, window.end);
+        const longestRest = longestRestIn(zonedShifts, window);
 
         if (longestRest.minutes < WEEKLY_REST_MINUTES) {
             invalidWindows35.push({
@@ -206,12 +249,7 @@ function checkWeeklyWorkHours (zonedShifts, targetDate, fullScan = false) {
     const timeZone = zonedShifts[targetIndexOf(zonedShifts, targetDate)].start.timeZoneId;
 
     for (const window of weeklyWindowsAround(targetDate, timeZone)) {
-        let totalWorkMinutes = 0;
-        for (const shift of zonedShifts) {
-            const workedFrom = isLater(shift.start, window.start) ? shift.start : window.start;
-            const workedUntil = isEarlier(shift.end, window.end) ? shift.end : window.end;
-            if (isLater(workedUntil, workedFrom)) totalWorkMinutes += minutesBetween(workedFrom, workedUntil);
-        }
+        const totalWorkMinutes = workMinutesIn(zonedShifts, window);
 
         if (totalWorkMinutes > MAX_WEEKLY_WORK_MINUTES) {
             invalidWindows48.push({
@@ -345,5 +383,9 @@ export {
     checkConsecutiveWorkDays,
     checkRestAfterNightControl,
     checkConsecutiveNightControls,
-    checkRestAfterTwoNightControls
+    checkRestAfterTwoNightControls,
+    windowStartingOn,
+    longestRestIn,
+    workMinutesIn,
+    minutesBetween
 };

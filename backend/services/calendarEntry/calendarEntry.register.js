@@ -84,7 +84,7 @@ async function registerAssignment (user, date, data, { substitution, latestAssig
     }
 
     if (substitution) {
-        throw new AppError('Impossible de créer une entrée si une demande est en cours ce jour', 409);
+        throw new AppError('Impossible de créer une entrée si une demande est en cours ce jour', 422);
     }
 
     if (latestAssignment) {

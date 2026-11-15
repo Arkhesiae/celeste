@@ -19,21 +19,23 @@ import { MAX_POINTS_TO_ACCEPT_REQUEST } from '../../config/points.js';
  * @param {boolean} opts.isSwitch - true for shift swap, false for substitution
  */
 export async function acceptRequest (requestId, userId, { isSwitch = false } = {}) {
-    let request, acceptedShiftPoints, userShiftData;
+    let request, acceptedShiftPoints;
 
     try {
         await inTransaction(async (session) => {
-            ({ request, acceptedShiftPoints, userShiftData } =
+            ({ request, acceptedShiftPoints } =
                 await acceptRequestWithSession(requestId, userId, { session, isSwitch }));
         });
     } catch (error) {
         if (error instanceof AppError) throw error;
-        throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}` + error, 500);
+        // Le détail reste dans les logs : le texte brut d'une erreur ne doit pas arriver au client
+        console.error(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'} :`, error);
+        throw new AppError(`Erreur lors de l'acceptation de la ${isSwitch ? 'permutation' : 'demande'}`, 500);
     }
 
     // Post-transaction : vacation de l'accepteur ce jour-là, avec les entrées de calendrier qui viennent d'être validées
-    // (une substitution ; pour une permutation, la vacation est celle de `userShiftData`)
-    const accepterShift = isSwitch ? null : (await computeUserShifts([posterDayOf(request)], userId))[0];
+    // (la vacation du demandeur pour un remplacement, la sienne échangée pour une permutation)
+    const accepterShift = (await computeUserShifts([posterDayOf(request)], userId))[0];
 
     // Post-transaction: populate for return value
     await request.populate([
@@ -62,7 +64,7 @@ export async function acceptRequest (requestId, userId, { isSwitch = false } = {
         .catch((err) => console.error('❌ Erreur notification:', err));
 
     return isSwitch
-        ? { request: result, acceptedShiftPoints, shift: userShiftData }
+        ? { request: result, acceptedShiftPoints, shift: accepterShift }
         : { request: result, shift: accepterShift };
 }
 
@@ -100,16 +102,16 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
     }
 
     let acceptedShiftPoints = 0;
-    let userShiftData = null;
 
     // Switch-specific: validate accepter shift and points
     if (isSwitch) {
-        const userShifts = await computeUserShifts(posterDayOf(request), userId);
-        if (!userShifts?.length) throw new AppError('Vacation utilisateur non trouvée', 404);
+        const [accepterDay] = await computeUserShifts([posterDayOf(request)], userId);
+        // Une vacation cédée reste affichée barrée : seule une vacation réellement travaillée peut être échangée
+        const heldShift = accepterDay?.isWorked ? accepterDay.shiftData?.shift : null;
+        if (!heldShift) throw new AppError("Vous n'avez pas de vacation à échanger ce jour-là", 400);
 
-        userShiftData = userShifts[0];
         const acceptedShiftData = request.acceptedSwitches.find(
-            (s) => sameId(s.shift, userShiftData.shift._id)
+            (s) => sameId(s.shift, heldShift._id)
         );
         if (!acceptedShiftData) throw new AppError("Votre vacation n'est pas acceptée pour cet échange", 400);
 
@@ -118,10 +120,13 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
             throw new AppError("Vous ne pouvez pas accepter cette demande, vous avez déjà assez de points", 400);
         }
 
+        const heldTeam = accepterDay.shiftData.team;
         request.accepterShift = {
-            shift: userShiftData.shift._id,
-            teamId: userShiftData.teamObject._id,
+            shift: heldShift._id,
+            teamId: heldTeam?._id ?? heldTeam,
             selectedVariation: null,
+            date: request.posterShift.date,
+            day: posterDayOf(request),   // même jour que celui du demandeur
         };
     }
 
@@ -148,5 +153,5 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
     // après le commit (voir acceptRequest) : computeUserShifts ne lit pas dans la session
     await addSubstitutionEntries(request, { session });
 
-    return { request, acceptedShiftPoints, userShiftData };
+    return { request, acceptedShiftPoints };
 }

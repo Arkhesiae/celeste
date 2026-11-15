@@ -49,7 +49,19 @@ export async function registerEntry (userId, date, data) {
     return result;
 }
 
-async function registerModification (user, date, data, { userShift, latestModification, recomputeShift }) {
+// Le demandeur d'un remplacement accepté : son entrée `substitution` n'a pas de vacation (elle est tenue par l'accepteur).
+// Dans une permutation, le demandeur reçoit celle de l'accepteur : il n'est pas « remplacé »
+const isReplacedPoster = (latestAssignment) =>
+    latestAssignment?.subType === 'substitution' && !latestAssignment.shiftData?.shift;
+
+async function registerModification (user, date, data, { userShift, latestAssignment, latestModification, recomputeShift }) {
+    // Remplacé, l'agent ne travaille plus la vacation : une modification (présent, dispo, VIC, variation) la lui rendrait
+    // alors que l'accepteur la tient. Celui qui tient la vacation (accepteur d'un remplacement ou d'une permutation, demandeur
+    // d'une permutation) peut en revanche la modifier librement : choisir une variation, être en dispo...
+    if (isReplacedPoster(latestAssignment)) {
+        throw new AppError('Impossible de modifier une vacation remplacée, annulez d\'abord le remplacement', 422);
+    }
+
     if (!isSameShift(userShift, data)) {
         throw new AppError('Impossible de créer une modification car le shift ne correspond pas', 422);
     }
@@ -118,7 +130,12 @@ async function registerAssignment (user, date, data, { substitution, latestAssig
     return { userShift: await recomputeShift(), updatedDemands: null, type: 'creation' };
 }
 
-async function registerHourPatch (user, date, data, { latestHourPatch, recomputeShift }) {
+async function registerHourPatch (user, date, data, { latestAssignment, latestHourPatch, recomputeShift }) {
+    // Remplacé, l'agent ne travaille plus la vacation : rien à ajuster
+    if (isReplacedPoster(latestAssignment)) {
+        throw new AppError('Impossible d\'ajuster les horaires d\'une vacation remplacée, annulez d\'abord le remplacement', 422);
+    }
+
     if (latestHourPatch) {
         latestHourPatch.active = false;
         await latestHourPatch.save();
@@ -292,8 +309,17 @@ export async function addSubstitutionEntries (demand, { session } = {}) {
             centerId: demand.centerId,
         });
 
+        // Remplacement : le demandeur n'a plus de vacation. Permutation : il prend celle de l'accepteur (`accepterShift`)
+        const exchanged = demand.accepterShift?.shift
+            ? {
+                team: demand.accepterShift.teamId,
+                shift: demand.accepterShift.shift,
+                selectedVariation: demand.accepterShift.selectedVariation,
+            }
+            : null;
+
         const posterEntry = new Assignment({
-            shiftData: null,
+            shiftData: exchanged,
             subType: 'substitution',
             substitution: {
                 id: demand._id,

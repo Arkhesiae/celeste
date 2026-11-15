@@ -17,10 +17,7 @@ Gravité : **P0** données fausses ou faille de sécurité, **P1** fonctionnalit
 
 | # | Gr. | Où | En une ligne |
 |---|-----|----|--------------|
-| S2 | P0 | `calendarEntry.register.js` `registerModification` | Une modification `pres` remet un agent remplacé sur une vacation désormais tenue par quelqu'un d'autre |
 | S4 | P0 | `routes/substitution.routes.js` | N'importe quel membre du centre peut annuler ou supprimer la demande de n'importe qui |
-| S5 | P1 | `calendarEntry.register.js` `addSubstitutionEntries` | Une permutation ne donne jamais au demandeur la vacation de l'accepteur |
-| S6 | P1 | `request.accept.js` `acceptRequestWithSession` | Accepter une permutation lève une erreur (`userShiftData.shift`, `.teamObject` n'existent pas) |
 | S7 | P1 | `calendarEntry.cancel.js` | Les annulations sont lancées sans attendre : la vacation renvoyée au client est calculée avant leur écriture |
 | S8 | P1 | `request.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
 | S9 | P1 | `request.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
@@ -35,29 +32,11 @@ L'analyse des remplacements chaînés est en section 3, la proposition d'interfa
 
 ### 2.1 Flux des remplacements
 
-**S2 (P0). Une modification remet un agent remplacé en poste.** `registerModification` compare `isSameShift(userShift, data)` à `shiftData.shift`, qui est la vacation de base
-conservée pour un demandeur remplacé, donc le contrôle passe. Ensuite `applyModification`, cas `pres`, met `isOff: false` : A est de nouveau « présent » alors que B tient la vacation.
-Les autres modifications sur un tel jour (`vic`, `variation`, `disp`) sont aussi acceptées, et un accepteur (B) peut ajouter `disp` sans que le remplacement soit touché, de sorte que
-personne ne travaille la vacation alors que la demande reste `accepted`. `registerAssignment` bloque les remplacements actifs, `registerModification` et `registerHourPatch` non.
-Piste de correction : le même garde-fou que `registerAssignment` (`latestAssignment.subType === 'substitution'` ou une `Substitution` ouverte/acceptée ce jour-là), ou un
-message dédié « annulez d'abord la demande ».
-
 **S4 (P0). Contrôles de l'acteur manquants.** `POST /:id/cancel` et `DELETE /:id/delete` sont seulement derrière `authorizeDemandAccess` (même centre). Rien ne vérifie que
 l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` que pour la notification. `DELETE /:id/delete` exécute `deleteDemand`, en chantier
 (l'en-tête du fichier dit « non opérationnel ») : il pose le drapeau `deleted` sans toucher aux entrées de calendrier, donc sur une demande acceptée le remplacement reste dans le
 planning. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
 `POST /detect-team-change-conflicts` prend `userId` dans le corps sans aucun garde de centre : il révèle les demandes et dates d'un autre utilisateur.
-
-**S5 (P1). Une permutation ne donne jamais au demandeur la vacation de l'accepteur.** `addSubstitutionEntries` écrit toujours `accepterEntry` avec la vacation du demandeur et
-`posterEntry` avec `shiftData: null`, quel que soit `demand.type`. Pour un échange, le demandeur devrait recevoir `demand.accepterShift` (la vacation propre de l'accepteur
-ce jour-là), sinon après un échange une vacation est travaillée deux fois et l'autre pas du tout. `savedEntry` mis à part, `accepterShift` est stocké dans la demande et
-n'est utilisé nulle part ailleurs pour cela. (À confirmer : le sens voulu d'une permutation ; d'après `substitution.switches.js` c'est « même jour, vacation différente ».)
-
-**S6 (P1). Accepter une permutation ne peut pas fonctionner tel que c'est écrit.** `acceptRequestWithSession` lit `userShifts[0]` (une entrée de `computeUserShifts`, qui a
-`shiftData.shift` et `shiftData.team`) comme `userShiftData.shift._id` et `userShiftData.teamObject._id`. Ni `shift` ni `teamObject` n'existent sur ce
-résultat (`teamObject` n'est produit que pour les demandes dans `compatibility.categorize.js`), donc cela lève une TypeError, attrapée dans `acceptRequest` et transformée en
-`AppError` générique dont le message est `"Erreur lors de l'acceptation de la permutation" + error` (le texte brut de l'erreur arrive au client, contre la convention d'erreurs).
-Cela masque probablement S5.
 
 **S7 (P1). Écritures lancées sans attendre.** `cancelModifications`, `cancelHourPatches` et `cancelAssignments` utilisent `forEach(... save())` sans `await`.
 `restoreInitialShift` et `undoMods` appellent les trois sans `await`, puis enchaînent `computeUserShifts`, donc le `userShift` renvoyé peut encore montrer
@@ -141,7 +120,7 @@ Prenons : A poste S1, B accepte, B poste S2 (enfant de S1), C accepte, C poste S
 - Mails après commit pour les demandes en cascade (`notifyDemandChanges`).
 
 ### 3.2 Ce qui peut mal tourner
-1. **S2 ci-dessus** : un agent remplacé peut rentrer de nouveau dans la chaîne (`pres`), ce qui crée deux titulaires de la même vacation.
+1. **Rentrée d'un agent remplacé** : corrigée (demande, modification et ajustement d'horaires refusés sur un jour remplacé) ; le point ne reste que comme test de non-régression.
 2. **`dependsOn` est trop large et utilisé comme parent unique.** `createDemand` stocke **toutes** les demandes acceptées de ce jour impliquant le demandeur comme demandeur *ou* accepteur. Le bon parent de S2 est la seule demande
    dont l'`accepterId` est le nouveau demandeur (la vacation transmise à B). Avec la règle large, un utilisateur qui a à la fois donné et reçu le même jour a plusieurs parents, l'annulation de l'un d'eux annule l'enfant, et le
    contrôle de cycle du hook `pre('save')` est faux pour les tableaux : `this.dependsOn` est toujours vrai (un tableau), `findById(tableau)` est converti en `$in` et ne renvoie que **le premier** résultat,
@@ -162,7 +141,7 @@ Prenons : A poste S1, B accepte, B poste S2 (enfant de S1), C accepte, C poste S
 
 ### 3.3 Vérifications à transformer en tests
 A→B→C puis A annule ; A→B→C puis B retire ; A→B→A ; A remplacé poste ou ajoute `pres` ; A→B où B avait une formation ou une affectation `absence` ce jour-là (entrée désactivée, jamais restaurée) ;
-acceptation d'une permutation de bout en bout (S5, S6) ; annulation d'une demande déjà terminée (S11) ; acceptation simultanée de la même demande par deux utilisateurs.
+annulation d'une permutation acceptée (les deux jours reviennent à l'état d'avant) ; annulation d'une demande déjà terminée (S11) ; acceptation simultanée de la même demande par deux utilisateurs.
 
 ---
 
@@ -183,7 +162,7 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 4. **Pour B (au milieu).** B voit « Vous avez repris la vacation de A, remplacée par C » et les actions côté demandeur de S2 (annuler, changer les points) ; le bouton de retrait de S1 avertit qu'il annule S2.
 5. **Notifications.** Après commit, prévenir les autres titulaires de la chaîne (pas seulement les personnes du maillon modifié) quand un maillon change : C accepte S2 (A est informé que le titulaire final est C), C se retire (A et B sont informés que B travaille de nouveau),
    B se retire de S1 (A apprend que S1 est de nouveau ouverte et que S2 a été annulée). Les mails actuels sont volontairement génériques ; un mail « chaîne » dirait seulement qui est désormais sur la vacation.
-6. **Garde-fous que l'interface doit refléter.** Le jour « remplacé » ne doit pas proposer « poster une demande » ni l'action `pres` (S2) ; la chaîne doit refuser une boucle sauf confirmation.
+6. **Garde-fous que l'interface doit refléter.** Le jour « remplacé » ne doit pas proposer « poster une demande » ni l'action `pres` (le serveur les refuse) ; la chaîne doit refuser une boucle sauf confirmation.
 
 ---
 
@@ -221,7 +200,7 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 1. **Un seul écrivain pour « désactiver des entrées ».** `cancelModifications`, `cancelHourPatches`, `cancelAssignments`, `cancelSingleAssignment`, `cancelAfter`, le `Promise.all` de `deleteAssignment` :
    tous sont `updateMany({ userId, date, active: true, ...filter }, { active: false }, { session })`. Un seul helper avec une liste de `kind` et un `since` optionnel retire ~60 lignes et corrige S7.
 2. **Une seule fonction pour `restoreInitialShift` / `undoMods`**, sans `user`/`initialShift` inutilisés, et supprimer `cancelSubstitutionAssignment`, `registerMDDA`, le code commenté : cela retire aussi le cycle d'imports.
-3. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » (S2) au lieu d'un contrôle dans un seul des trois gestionnaires.
+3. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » au lieu de contrôles écrits dans chaque gestionnaire (affectation, modification et ajustement d'horaires les ont désormais chacun).
 4. **`getActiveEntriesByDates`** : trois requêtes, c'est correct ; le regroupement peut être un seul `groupBy` sur `a.date` sans branche `typeof`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
 5. **`computeUserShifts`** : le pipeline `resolveAssignment` / `applyModification` / `applyHourPatch` est lisible ; les deux choses qui le rendent difficile sont la double forme de `baseShift` et les trois endroits qui décident `isOff`.
    Une enveloppe `base = { shift, team }` renommée, et `isOff` / `isWorked` affectés dans `resolveAssignment` et une étape finale, feraient de l'état de chaque jour une fonction de (base, dernière affectation, dernière modification, dernier patch).
@@ -234,11 +213,10 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 
 ## 7. Ordre suggéré (si vous décidez d'agir)
 
-1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur), S2 (pas de modification sur un jour remplacé).
+1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur).
 2. Justesse des données : S7 (await/updateMany), S8 (`finalStatus` transmis), S11 (garde d'état), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
-3. Permutation : S5 et S6 ensemble, avec un test de bout en bout sur la base de test.
-4. Routes et appels morts : S10, `getUserDemands`, `register-modification`.
-5. Modèle de chaîne : `parentId`, puis la chaîne dans l'API et l'interface de la section 4.
-6. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
+3. Routes et appels morts : S10, `getUserDemands`, `register-modification`.
+4. Modèle de chaîne : `parentId`, puis la chaîne dans l'API et l'interface de la section 4.
+5. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
 
 Rien de ce qui précède n'a été appliqué. Dites-moi quels points prendre et dans quel ordre.

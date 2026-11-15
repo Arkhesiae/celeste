@@ -21,7 +21,8 @@ import { Assignment, Modification } from '../models/CalendarEntry.js';
 import { computeUserShifts } from '../services/planning/planning.userShifts.js';
 import { toShiftsMap } from '../services/planning/planning.shiftsMap.js';
 import { createDemand } from '../services/substitution/request.creation.js';
-import { addSubstitutionEntries } from '../services/calendarEntry/calendarEntry.register.js';
+import { addSubstitutionEntries, registerEntry } from '../services/calendarEntry/calendarEntry.register.js';
+import { swapShifts } from '../services/substitution/request.accept.js';
 import Substitution from '../models/Substitution.js';
 
 const URI = process.env.TEST_WORKED_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_worked';
@@ -96,7 +97,7 @@ test('isWorked : VIC passé / à venir, jour facultatif, affectation, congé et 
   assert.equal(map.get(at(5)).shift, null);
 });
 
-test('createDemand : refusé sur un repos, un jour facultatif ou une vacation déjà cédée (S1)', async (t) => {
+test('createDemand : refusé sur un repos, un jour facultatif ou une vacation déjà cédée (S1), sans modification sur un jour remplacé (S2)', async (t) => {
   if (!available) return t.skip('MongoDB indisponible');
 
   // Cycle de 3 jours qui commence aujourd'hui : J (travail), O (travail facultatif), R (repos)
@@ -134,7 +135,79 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
   await addSubstitutionEntries(demand);
 
   await assert.rejects(post(poster._id, 0), refused);   // A ne tient plus la vacation
+
+  // S2 : ni « présent » ni autre modification, ni horaires, sur le jour remplacé (A) ; B, qui tient la vacation, est libre
+  const modification = { type: 'modification', entryType: 'pres', shiftId: work._id, teamId: team._id };
+  const hourPatch = { type: 'hourPatch', shiftId: work._id, teamId: team._id, startTime: '09:00', endTime: '17:00' };
+  await assert.rejects(registerEntry(poster._id, at(0), modification), refused);
+  await assert.rejects(registerEntry(poster._id, at(0), hourPatch), refused);
+  await registerEntry(accepter._id, at(0), hourPatch);  // l'accepteur peut ajuster ses horaires
+
   const chained = await post(accepter._id, 0);          // B, qui la tient, peut la reposter (chaîne)
   assert.equal(chained.status, 'open');
   assert.equal(await Substitution.countDocuments({ posterId: poster._id }), 1);
+
+  await registerEntry(accepter._id, at(0), { ...modification, entryType: 'disp' });  // et se mettre en dispo
+});
+
+test('permutation : chacun prend la vacation de l’autre, et peut la modifier (S5, S6)', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+
+  // Deux équipes décalées : aujourd'hui l'équipe 1 fait J, l'équipe 2 fait K
+  const today = Temporal.Now.plainDateISO('Europe/Paris');
+  const at = (offset) => today.add({ days: offset }).toString();
+  const center = await Center.create({
+    name: 'C3', OACI: 'TEST3', type: 'app', timeZone: 'Europe/Paris',
+    cycleAnchorDate: new Date(`${today}T00:00:00Z`), cycleAnchorDay: today.toString(),
+  });
+  const team1 = await Team.create({ name: 'T1', center: center._id, cycleOffset: 0, cycleStartDate: new Date(`${today}T00:00:00Z`) });
+  const team2 = await Team.create({ name: 'T2', center: center._id, cycleOffset: 2, cycleStartDate: new Date(`${today.add({ days: 2 })}T00:00:00Z`) });
+  const shiftJ = await Shift.create({ name: 'J3', order: 0, type: 'work', default: { startTime: '08:00', endTime: '16:00', points: 10 } });
+  const shiftK = await Shift.create({ name: 'K3', order: 1, type: 'work', default: { startTime: '10:00', endTime: '18:00', points: 10 } });
+  const shiftR = await Shift.create({ name: 'R3', order: 2, type: 'rest', default: { startTime: null, endTime: null, points: 0 } });
+  await Rotation.create({
+    name: 'rot3', centerId: center._id, days: [shiftJ._id, shiftK._id, shiftR._id],
+    activationDates: [new Date(`${today}T00:00:00Z`)], activationDays: [today.toString()],
+  });
+  const makeUser = (email, team) => User.create({
+    name: 'Test', lastName: email, email, password: 'x', centerId: center._id,
+    teams: [{ teamId: team._id, fromDate: new Date('2020-01-01T00:00:00Z'), fromDay: '2020-01-01', toDate: null, toDay: null }],
+  });
+  const poster = await makeUser('poster3@example.com', team1);
+  const accepter = await makeUser('accepter3@example.com', team2);
+  const dayOf = async (user) => (await computeUserShifts([at(0)], user._id))[0];
+
+  assert.equal((await dayOf(poster)).shiftData.shift.name, 'J3');
+  assert.equal((await dayOf(accepter)).shiftData.shift.name, 'K3');
+
+  // A (J) propose une permutation contre K ; un agent qui n'a pas K ne peut pas l'accepter
+  const demand = await createDemand({
+    posterId: poster._id, posterShift: { date: at(0) }, points: 0,
+    acceptedSwitches: [{ shift: shiftK._id, points: 0 }], isTrueSwitch: true,
+  });
+  assert.equal(demand.type, 'switch');
+  const stranger = await makeUser('stranger3@example.com', team1);
+  await assert.rejects(swapShifts(demand._id, stranger._id), { status: 400 });
+
+  // B (K) accepte : S6, plus d'erreur ; S5, A reçoit K et B reçoit J
+  const { shift: accepterDay } = await swapShifts(demand._id, accepter._id);
+  assert.equal(accepterDay.shiftData.shift.name, 'J3');
+
+  const [posterDay, newAccepterDay] = [await dayOf(poster), await dayOf(accepter)];
+  assert.equal(posterDay.shiftData.shift.name, 'K3');
+  assert.equal(posterDay.isWorked, true);
+  assert.equal(posterDay.isOff, false);
+  assert.equal(newAccepterDay.shiftData.shift.name, 'J3');
+  assert.equal(newAccepterDay.isWorked, true);
+
+  const saved = await Substitution.findById(demand._id);
+  assert.equal(saved.status, 'accepted');
+  assert.equal(saved.accepterShift.day, at(0));
+
+  // Une permutation peut recevoir une modification et un ajustement d'horaires, pour chacun
+  const modification = { type: 'modification', entryType: 'pres', shiftId: shiftK._id, teamId: team2._id };
+  await registerEntry(poster._id, at(0), modification);
+  await registerEntry(accepter._id, at(0), {
+    type: 'hourPatch', shiftId: shiftJ._id, teamId: team1._id, startTime: '09:00', endTime: '17:00',
+  });
 });

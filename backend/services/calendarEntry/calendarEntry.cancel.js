@@ -6,69 +6,44 @@
 import { Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import { findOrThrow } from '../../utils/mongo.js';
-import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
-import Substitution from '../../models/Substitution.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { AppError } from '../../error/AppError.js';
-import { cancelRequest } from '../substitution/request.cancel.js';
-import { withdrawFromRequest } from '../substitution/request.withdraw.js';
 
-export async function cancelModifications (userId, date) {
-    const modifications = await Modification.find({ userId, date, active: true });
-    modifications.forEach((modification) => {
-        modification.active = false;
-        modification.save();
-    });
-}
+const ENTRY_MODELS = { assignment: Assignment, modification: Modification, hourPatch: HourPatch };
+const ALL_KINDS = Object.keys(ENTRY_MODELS);
 
-async function cancelAssignments (userId, date) {
-    const assignments = await Assignment.find({ userId, date, active: true });
-    assignments.forEach((assignment) => {
-        cancelSingleAssignment(assignment);
-    });
-}
-
-async function cancelSingleAssignment (assignment) {
-    if (assignment.subType !== "substitution") {
-        assignment.active = false;
-        await assignment.save();
-        //cancelSubstitutionAssignment(assignment);
+/**
+ * Désactive les entrées actives d'un utilisateur pour un jour. Seule porte d'écriture de ces annulations : elle attend
+ * chaque écriture, l'appelant recalcule la vacation juste après.
+ * @param {string} userId
+ * @param {string} date - jour `YYYY-MM-DD`
+ * @param {Array<'assignment'|'modification'|'hourPatch'>} kinds
+ * @param {Object} [opts]
+ * @param {Date} [opts.since] - seulement les entrées créées à cet instant ou après (ce qui suit un remplacement)
+ * @param {boolean} [opts.keepSubstitutions] - ne touche pas aux affectations `substitution` : elles ne s'annulent qu'avec leur demande
+ * @param {ClientSession} [opts.session]
+ */
+export async function deactivateEntries (userId, date, kinds, { since, keepSubstitutions = false, session } = {}) {
+    // L'une après l'autre : dans une transaction, des opérations concurrentes sur la même session peuvent échouer
+    // (NoSuchTransaction), voir known issue #48
+    for (const kind of kinds) {
+        const filter = { userId, date, active: true };
+        if (since) filter.createdAt = { $gte: since };
+        if (keepSubstitutions && kind === 'assignment') filter.subType = { $ne: 'substitution' };
+        await ENTRY_MODELS[kind].updateMany(filter, { active: false }, { session });
     }
 }
 
-async function cancelSubstitutionAssignment (assignment) {
-    const demand = await Substitution.findById(assignment.substitution.id);
-    const isPoster = sameId(demand?.posterId, assignment?.userId);
-    if (isPoster) {
-        cancelRequest(demand._id);
-    } else {
-        withdrawFromRequest(demand._id, assignment.userId.toString());
-    }
-}
-
-export async function cancelHourPatches (userId, date) {
-    const hourPatches = await HourPatch.find({ userId, date, active: true });
-    hourPatches.forEach((hourPatch) => {
-        hourPatch.active = false;
-        hourPatch.save();
-    });
-}
-
+/** Retour au planning initial : désactive modifications, ajustements d'horaires et affectations (sauf remplacements) du jour */
 export async function restoreInitialShift (userId, date) {
-    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-    const initialShift = await computeUserShifts([date], userId);
-
-    cancelModifications(userId, date);
-    cancelAssignments(userId, date);
-    cancelHourPatches(userId, date);
+    await deactivateEntries(userId, date, ALL_KINDS, { keepSubstitutions: true });
 
     const userShift = await computeUserShifts([date], userId);
 
     return { userShift, updatedDemands: null, type: "restoration" };
 }
 
-// calendarEntryService.js
 /**
  * Désactive les entrées de calendrier créées par une substitution (et celles qui les suivent) pour l'auteur
  * et l'accepteur.
@@ -99,10 +74,7 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
 
         const cancelAfter = async (userId, subEntry) => {
             if (!subEntry) return;
-            const sinceSubstitution = { userId, date: dateStr, active: true, createdAt: { $gte: subEntry.createdAt } };
-            await Assignment.updateMany(sinceSubstitution, { active: false }, { session });
-            await Modification.updateMany(sinceSubstitution, { active: false }, { session });
-            await HourPatch.updateMany(sinceSubstitution, { active: false }, { session });
+            await deactivateEntries(userId, dateStr, ALL_KINDS, { since: subEntry.createdAt, session });
         };
 
         await cancelAfter(posterId, posterSubEntry);
@@ -130,19 +102,6 @@ export async function cancelSubstitutionEntries (demandId, { posterId, accepterI
     }
 }
 
-export async function undoMods (userId, date) {
-    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-    const initialShift = await computeUserShifts([date], userId);
-
-    cancelModifications(userId, date);
-    cancelAssignments(userId, date);
-    cancelHourPatches(userId, date);
-
-    const userShift = await computeUserShifts([date], userId);
-
-    return { userShift, updatedDemands: null, type: "restoration" };
-}
-
 export async function deleteAssignment (userId, date) {
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const latestAssignment = await Assignment.findOne({ userId, date, active: true }).sort({ createdAt: -1 });
@@ -154,19 +113,8 @@ export async function deleteAssignment (userId, date) {
         throw new AppError('Vous ne pouvez pas directement supprimer une vacation qui est un remplacement, annulez d\'abord la demande', 400);
     }
 
-    latestAssignment.active = false;
-    await latestAssignment.save();
-
-    await Promise.all([
-        Modification.updateMany(
-            { userId, date, active: true, createdAt: { $gte: latestAssignment.createdAt } },
-            { active: false }
-        ),
-        HourPatch.updateMany(
-            { userId, date, active: true, createdAt: { $gte: latestAssignment.createdAt } },
-            { active: false }
-        ),
-    ]);
+    // L'affectation et ce qui l'a suivie (modifications, ajustements d'horaires)
+    await deactivateEntries(userId, date, ALL_KINDS, { since: latestAssignment.createdAt });
 
     const userShift = await computeUserShifts([date], userId);
 

@@ -10,7 +10,5 @@ router.post('/register-entry', verifyToken, calendarEntryController.registerEntr
 router.post('/undo-mods', verifyToken, calendarEntryController.undoMods);
 router.post('/delete-assignment', verifyToken, calendarEntryController.remove);
 router.post('/:userId', verifyToken, calendarEntryController.getUserEntries);
-router.get('/:id', verifyToken, calendarEntryController.getModification);
-
 
 export default router;

@@ -89,7 +89,8 @@ const undoMods = async (req, res, next) => {
             throw new AppError('La date est invalide', 400);
         }
 
-        const result = await calendarEntryService.undoMods(userId, date);
+        // Même opération que le retour au planning initial (deux routes, une seule fonction)
+        const result = await calendarEntryService.restoreInitialShift(userId, date);
 
         res.json({
             message: 'Modifications annulées avec succès',
@@ -131,46 +132,10 @@ const remove = async (req, res, next) => {
     }
 };
 
-// Supprimer une modification
-const deleteModification = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.userId;
-
-        const result = await calendarEntryService.removeModification(id, userId);
-
-        console.log(result);
-        res.json({
-            message: 'Modification supprimée avec succès',
-            ...result
-        });
-
-    } catch (error) {
-        next(error);
-    }
-};
-
-// Obtenir une modification spécifique
-const getModification = async (req, res, next) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.userId;
-
-        const modification = await calendarEntryService.getModificationById(id, userId);
-
-        res.json(modification);
-
-    } catch (error) {
-        next(error);
-    }
-};
-
 export {
     registerEntry,
     restoreInitialShift,
     getUserEntries,
-    deleteModification,
-    getModification,
     undoMods,
     remove
 };

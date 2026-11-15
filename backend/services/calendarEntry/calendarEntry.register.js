@@ -11,7 +11,7 @@ import User from '../../models/User.js';
 import Substitution from '../../models/Substitution.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { AppError } from '../../error/AppError.js';
-import { cancelModifications, cancelHourPatches } from './calendarEntry.cancel.js';
+import { deactivateEntries } from './calendarEntry.cancel.js';
 
 const isSameShift = (userShift, data) =>
     sameId(userShift?.[0]?.shiftData?.shift?._id, data.shiftId);
@@ -71,7 +71,7 @@ async function registerModification (user, date, data, { userShift, latestAssign
         await latestModification.save();
     }
 
-    await cancelHourPatches(user._id, date);
+    await deactivateEntries(user._id, date, ['hourPatch']);
 
     const entry = new CalendarEntry({
         type: data.type,
@@ -104,8 +104,7 @@ async function registerAssignment (user, date, data, { substitution, latestAssig
         await latestAssignment.save();
     }
 
-    await cancelModifications(user._id, date);
-    await cancelHourPatches(user._id, date);
+    await deactivateEntries(user._id, date, ['modification', 'hourPatch']);
 
 
     const entry = new CalendarEntry({
@@ -224,44 +223,6 @@ async function registerHourPatch (user, date, data, { latestAssignment, latestHo
 
     await entry.save();
     return { userShift: await recomputeShift(), updatedDemands: null, type: 'creation' };
-}
-
-
-
-async function registerMDDA (userId, date, data) {
-    const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-    const userShift = await computeUserShifts([date], userId);
-
-    if (!isSameShift(userShift, data)) {
-        throw new AppError('Impossible de créer une MDDA car le shift ne correspond pas', 422);
-    }
-
-    const teamFromShift = userShift[0]?.shiftData?.team;
-    const teamId = data.teamId
-        ?? data.team
-        ?? teamFromShift?._id
-        ?? teamFromShift;
-
-    if (!teamId) {
-        throw new AppError('Impossible de créer une MDDA : équipe introuvable', 422);
-    }
-
-    const mdda = new HourPatch({
-        userId,
-        subType: 'mdda',
-        date,
-        adjustedTime: {
-            adjustedStart: 1,
-            adjustedEnd: 2,
-        },
-        centerId: user.centerId,
-        shiftData: {
-            shift: data.shiftId,
-            selectedVariation: data.selectedVariation ?? userShift[0]?.shiftData?.selectedVariation?._id ?? null,
-            team: teamId,
-        },
-    });
-    await mdda.save();
 }
 
 /**

@@ -1,6 +1,6 @@
 # Revue : entrées de calendrier, calcul des vacations d'un utilisateur, remplacements (chaînés compris)
 
-Date de la revue : 2026-11-14. **Revue en lecture seule : aucun code n'a été modifié.** Tout ce qui suit est une proposition en attente de décision.
+Date de la revue : 2026-11-14. Revue faite en lecture seule ; les points corrigés depuis (S1 à S3, S5 à S7, S12, et la partie lecture de S10) ont été retirés. Ce qui reste est une proposition en attente de décision.
 
 Périmètre lu en entier : `services/calendarEntry/*`, `controllers/calendarEntry.controller.js`, `routes/calendarEntry.routes.js`,
 `services/planning/planning.userShifts.js`, `services/substitution/request.{accept,cancel,cascade,creation,delete,expiry,list,withdraw}.js`,
@@ -18,10 +18,9 @@ Gravité : **P0** données fausses ou faille de sécurité, **P1** fonctionnalit
 | # | Gr. | Où | En une ligne |
 |---|-----|----|--------------|
 | S4 | P0 | `routes/substitution.routes.js` | N'importe quel membre du centre peut annuler ou supprimer la demande de n'importe qui |
-| S7 | P1 | `calendarEntry.cancel.js` | Les annulations sont lancées sans attendre : la vacation renvoyée au client est calculée avant leur écriture |
 | S8 | P1 | `request.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
 | S9 | P1 | `request.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
-| S10 | P1 | `calendarEntry.read.js`, contrôleur | `getUserEntries` ne trouve jamais rien (vérifié), `getModification` appelle une fonction inexistante |
+| S10 | P1 | `planningModificationService.registerModification`, `DemandModal` | Choisir une variation d'une demande poste sur une route inexistante (404) : décision de conception à prendre |
 | S11 | P1 | `request.cancel.js` / `cascade.js` | Annuler une demande déjà terminée réécrit son statut sans rien défaire |
 
 L'analyse des remplacements chaînés est en section 3, la proposition d'interface en section 4, les noms en section 5, les simplifications en section 6.
@@ -38,11 +37,6 @@ l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` q
 planning. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
 `POST /detect-team-change-conflicts` prend `userId` dans le corps sans aucun garde de centre : il révèle les demandes et dates d'un autre utilisateur.
 
-**S7 (P1). Écritures lancées sans attendre.** `cancelModifications`, `cancelHourPatches` et `cancelAssignments` utilisent `forEach(... save())` sans `await`.
-`restoreInitialShift` et `undoMods` appellent les trois sans `await`, puis enchaînent `computeUserShifts`, donc le `userShift` renvoyé peut encore montrer
-l'ancien état, et une erreur devient un rejet non géré. `registerModification`/`registerAssignment` font `await cancelHourPatches(...)` qui retourne avant que les
-sauvegardes ne soient terminées. Piste : `await Model.updateMany({ userId, date, active: true }, { active: false })` (ce que fait déjà l'annulation de remplacement).
-
 **S8 (P1). `reason` est perdu dans les cascades.** `cancelCascade` appelle `cancelRequestWithSession(child._id, { visited, session, cancelledRequests })` sans
 `reason`. Quand la racine est annulée avec `system-cancelled` (changement de rotation, d'équipe), les enfants en cascade reçoivent `cancelled`. Le paramètre est aussi
 mal nommé : c'est un **statut** final, pas une raison.
@@ -53,12 +47,11 @@ ce jour-là (un utilisateur qui tient un autre remplacement ce jour peut en acce
 expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` existe dans le modèle et n'est lu nulle part (donc une demande réservée est ouverte à tous), et
 `isTrueSwitch` n'est jamais stocké (champ de schéma mort). Le serveur est le seul endroit digne de confiance face à une course ou à un client falsifié.
 
-**S10 (P1). Lectures des entrées de calendrier.**
-- `getUserEntries` filtre `date: new Date(date)` sur un champ **String**. Mongoose convertit le Date en `"Fri Nov 13 2026 01:00:00 GMT+0100 ..."` *(vérifié)*, qui n'égale jamais
-  `YYYY-MM-DD` : l'endpoint renvoie toujours une liste vide. La route est `POST /calendar-entry/:userId` mais le contrôleur ignore le paramètre et utilise le jeton.
-- `deleteModification` et `getModification` appellent `calendarEntryService.removeModification` et `getModificationById`, qui n'existent pas (`GET /calendar-entry/:id` répond 500).
-- Le front `planningModificationService.registerModification` poste sur `/calendar-entry/register-modification` avec `type: 'selectedVariation'` : cette route n'existe pas (404),
-  donc choisir une variation depuis `DemandModal` échoue. Le champ de résultat `updatedDemand(s)` que le front attend vaut toujours `null` côté serveur (six endroits).
+**S10 (P1, reste à décider). Choisir une variation depuis `DemandModal`.** Le front `planningModificationService.registerModification` poste sur
+`/calendar-entry/register-modification` avec `type: 'selectedVariation'` : cette route n'existe pas (404), donc le choix d'une variation depuis `DemandModal` échoue. Ce n'est pas
+qu'une route à renommer : l'ancien flux mettait à jour la variation **de la demande** (`posterShift.selectedVariation`) et renvoyait `updatedDemand`, que le serveur ne produit plus (toujours `null`).
+Envoyer une modification `variation` via `register-entry` changerait le planning du demandeur sans toucher la demande, que la compatibilité lit. Décision à prendre : un endpoint dédié
+« variation d'une demande » (poseur seulement, demande ouverte), ou retirer le sélecteur.
 
 **S11 (P1). Annuler une demande terminée.** `cancelRequestWithSession` n'a aucun garde d'état (l'acceptation en a un). Annuler une demande `completed`, `expired` ou `cancelled` réécrit
 son statut en `cancelled` ; les entrées et transactions ne sont défaites que si le statut était `accepted`, donc une demande terminée (points déjà transférés) devient `cancelled`
@@ -95,10 +88,7 @@ avec ses transactions et ses entrées intactes.
 
 ### 2.3 Enregistrement des entrées de calendrier (`calendarEntry.register.js` et `.cancel.js`)
 
-- `registerMDDA` n'est jamais appelée ni exportée (`adjustedStart: 1, adjustedEnd: 2` en dur) : coquille morte à côté du vrai `registerHourPatch`.
-- `cancelSubstitutionAssignment` (et l'appel commenté dans `cancelSingleAssignment`) est mort ; c'est aussi la seule raison pour laquelle `calendarEntry.cancel.js` importe `request.cancel.js` et
-  `request.withdraw.js`, qui importent `request.cascade.js`, qui importe `calendarEntry.cancel.js` : un vrai **cycle d'imports** (fonctionne aujourd'hui parce que seules des fonctions sont utilisées à l'appel).
-- `restoreInitialShift` et `undoMods` sont la même fonction en double (et gardent toutes deux des variables `user` et `initialShift` inutilisées). Les noms de route `/restore-initial` et `/undo-mods` existent tous deux.
+- Les deux routes `/restore-initial` et `/undo-mods` (et leurs deux contrôleurs) font la même chose ; elles appellent maintenant la même fonction de service, il reste à en garder une côté API et front.
 - `comment: data?.subType === "congé" ? 'congé' : ""` lit `data.subType`, alors que le front envoie `data.entryType` (le champ du modèle est `subType`) : le commentaire n'est jamais posé, et le littéral est un texte français utilisé comme code.
 - `data.team` (affectation) et `data.teamId` (modification, patch d'horaires) sont deux noms pour une même entrée ; `registerHourPatch` accepte les deux plus deux replis (`teamFromShift?._id ?? teamFromShift`, `baseShift.team`...).
 - `registerEntry` charge `substitution`, les trois dernières entrées et les vacations pour chaque gestionnaire alors que chacun n'en utilise qu'une partie.
@@ -189,34 +179,30 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 
 **Conversions aller-retour à supprimer (chaîne de jour ↔ `Date` ↔ chaîne).**
 `posterDayOf(demand)` (chaîne) → `new Date(...)` pour la date de transaction → retour ; `cancelSubstitutionEntries({ date })` est documentée comme un `Date`, reçoit une chaîne, applique `toDateKey(date)` pour obtenir une chaîne et
-passe ensuite quand même le `date` brut à `computeUserShifts` ; `getUserEntries` construit un `Date` pour un champ chaîne (bug S10) ; `registerEntry` passe le `date` brut pour certaines requêtes et `toDay(date)` pour d'autres ;
-`acceptRequest` appelle `computeUserShifts(posterDayOf(request))` (une chaîne, pas un tableau) à un endroit et `[posterDayOf(request)]` à l'autre. Une seule règle supprimerait tout cela : **un jour est toujours une chaîne `YYYY-MM-DD`
+passe ensuite quand même le `date` brut à `computeUserShifts` ; `registerEntry` passe le `date` brut pour certaines requêtes et `toDay(date)` pour d'autres. Une seule règle supprimerait tout cela : **un jour est toujours une chaîne `YYYY-MM-DD`
 dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou bibliothèque** (c'est déjà la règle Temporal du projet, elle n'est simplement pas appliquée dans ces fichiers).
 
 ---
 
 ## 6. Simplification (sans changer le comportement)
 
-1. **Un seul écrivain pour « désactiver des entrées ».** `cancelModifications`, `cancelHourPatches`, `cancelAssignments`, `cancelSingleAssignment`, `cancelAfter`, le `Promise.all` de `deleteAssignment` :
-   tous sont `updateMany({ userId, date, active: true, ...filter }, { active: false }, { session })`. Un seul helper avec une liste de `kind` et un `since` optionnel retire ~60 lignes et corrige S7.
-2. **Une seule fonction pour `restoreInitialShift` / `undoMods`**, sans `user`/`initialShift` inutilisés, et supprimer `cancelSubstitutionAssignment`, `registerMDDA`, le code commenté : cela retire aussi le cycle d'imports.
-3. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » au lieu de contrôles écrits dans chaque gestionnaire (affectation, modification et ajustement d'horaires les ont désormais chacun).
-4. **`getActiveEntriesByDates`** : trois requêtes, c'est correct ; le regroupement peut être un seul `groupBy` sur `a.date` sans branche `typeof`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
-5. **`computeUserShifts`** : le pipeline `resolveAssignment` / `applyModification` / `applyHourPatch` est lisible ; les deux choses qui le rendent difficile sont la double forme de `baseShift` et les trois endroits qui décident `isOff`.
+1. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » au lieu de contrôles écrits dans chaque gestionnaire (affectation, modification et ajustement d'horaires les ont désormais chacun).
+2. **`getActiveEntriesByDates`** : trois requêtes, c'est correct ; le regroupement peut être un seul `groupBy` sur `a.date` sans branche `typeof`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
+3. **`computeUserShifts`** : le pipeline `resolveAssignment` / `applyModification` / `applyHourPatch` est lisible ; les deux choses qui le rendent difficile sont la double forme de `baseShift` et les trois endroits qui décident `isOff`.
    Une enveloppe `base = { shift, team }` renommée, et `isOff` / `isWorked` affectés dans `resolveAssignment` et une étape finale, feraient de l'état de chaque jour une fonction de (base, dernière affectation, dernière modification, dernier patch).
-6. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
+4. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
    Une petite table `canTransition(from, to)` contrôlée aux trois points d'entrée corrige S11 et fait de S9 (contrôles de date) une règle de plus au même endroit.
-7. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).
-8. **Étapes après commit** (`computeUserShifts`, catégorisation, mails) enveloppées au mieux (best-effort) dans un seul helper, pour qu'un échec après commit ne réponde jamais une erreur pour une action faite.
+5. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).
+6. **Étapes après commit** (`computeUserShifts`, catégorisation, mails) enveloppées au mieux (best-effort) dans un seul helper, pour qu'un échec après commit ne réponde jamais une erreur pour une action faite.
 
 ---
 
 ## 7. Ordre suggéré (si vous décidez d'agir)
 
 1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur).
-2. Justesse des données : S7 (await/updateMany), S8 (`finalStatus` transmis), S11 (garde d'état), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
-3. Routes et appels morts : S10, `getUserDemands`, `register-modification`.
+2. Justesse des données : S8 (`finalStatus` transmis), S11 (garde d'état), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
+3. Routes et appels morts : `getUserDemands`, puis la variation d'une demande (S10).
 4. Modèle de chaîne : `parentId`, puis la chaîne dans l'API et l'interface de la section 4.
 5. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
 
-Rien de ce qui précède n'a été appliqué. Dites-moi quels points prendre et dans quel ordre.
+Les points déjà corrigés ont été retirés de ce document. Dites-moi quels points restants prendre et dans quel ordre.

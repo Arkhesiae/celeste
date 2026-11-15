@@ -248,6 +248,7 @@ const isOff = computed(() =>
 const fetchEntries = async () => {
   const res = await planningModificationService.fetchEntries(authStore.userData.userId, toDateKey(props.selectedDate));
   entries.value = res;
+  return res;   // les appelants font `entries.value = await fetchEntries()`
 }
 
 const addCustomEntry = async (type) => {

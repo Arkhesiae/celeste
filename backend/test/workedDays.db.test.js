@@ -22,6 +22,8 @@ import { computeUserShifts } from '../services/planning/planning.userShifts.js';
 import { toShiftsMap } from '../services/planning/planning.shiftsMap.js';
 import { createDemand } from '../services/substitution/request.creation.js';
 import { addSubstitutionEntries, registerEntry } from '../services/calendarEntry/calendarEntry.register.js';
+import { getUserEntries } from '../services/calendarEntry/calendarEntry.read.js';
+import { cancelSubstitutionEntries, deleteAssignment, restoreInitialShift } from '../services/calendarEntry/calendarEntry.cancel.js';
 import { swapShifts } from '../services/substitution/request.accept.js';
 import Substitution from '../models/Substitution.js';
 
@@ -148,6 +150,34 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
   assert.equal(await Substitution.countDocuments({ posterId: poster._id }), 1);
 
   await registerEntry(accepter._id, at(0), { ...modification, entryType: 'disp' });  // et se mettre en dispo
+
+  // S10 : l'historique d'un jour est trouvé (le champ `date` est une chaîne) et ne contient que ce jour
+  const history = await getUserEntries(accepter._id, at(0));
+  assert.ok(history.length >= 3);   // remplacement, ajustement d'horaires, dispo
+  assert.ok(history.every((entry) => entry.date === at(0)));
+  assert.equal((await getUserEntries(accepter._id, at(1))).length, 0);
+
+  // S7 : le retour à la vacation initiale attend ses écritures, le jour renvoyé est déjà sans la dispo ; le remplacement reste
+  const { userShift: [restored] } = await restoreInitialShift(accepter._id, at(0));
+  assert.equal(restored.isOff, false);
+  assert.equal(restored.isWorked, true);
+  assert.equal(restored.shiftData.shift.name, 'J2');
+  assert.equal(await Modification.countDocuments({ userId: accepter._id, date: at(0), active: true }), 0);
+  assert.equal(await Assignment.countDocuments({ userId: accepter._id, date: at(0), active: true, subType: 'substitution' }), 1);
+
+  // Annuler le remplacement désactive ses entrées et celles qui les suivent, pour les deux
+  await cancelSubstitutionEntries(demand._id, { posterId: poster._id, accepterId: accepter._id, date: at(0) });
+  assert.equal(await Assignment.countDocuments({ userId: { $in: [poster._id, accepter._id] }, date: at(0), active: true }), 0);
+  const [back] = await computeUserShifts([at(0)], poster._id);
+  assert.equal(back.isOff, false);
+  assert.equal(back.isWorked, true);
+
+  // Supprimer une affectation désactive aussi les modifications qui l'ont suivie
+  await Assignment.create({ userId: poster._id, centerId: center._id, date: at(0), subType: 'training', startTime: '09:00', endTime: '17:00' });
+  await Modification.create({ userId: poster._id, centerId: center._id, date: at(0), subType: 'pres', shiftData: { shift: work._id, team: team._id } });
+  await deleteAssignment(poster._id, at(0));
+  assert.equal(await Assignment.countDocuments({ userId: poster._id, date: at(0), active: true }), 0);
+  assert.equal(await Modification.countDocuments({ userId: poster._id, date: at(0), active: true }), 0);
 });
 
 test('permutation : chacun prend la vacation de l’autre, et peut la modifier (S5, S6)', async (t) => {

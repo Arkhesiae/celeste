@@ -54,8 +54,13 @@ export async function withdrawFromRequestWithSession(requestId, userId, { visite
 }
 
 
+/** Seules ces demandes peuvent être annulées : une demande terminée, expirée ou déjà annulée ne change plus d'état */
+export const CANCELLABLE_STATUSES = ['open', 'accepted'];
+
 /**
- * Annule une demande de substitution (récursif, réutilise la session si fournie)
+ * Annule une demande de substitution (récursif, réutilise la session si fournie).
+ * Une demande qui n'est plus annulable (terminée, expirée, déjà annulée) est laissée telle quelle, ce qui épargne les
+ * demandes déjà finies d'une cascade ; un appelant qui doit la refuser contrôle `CANCELLABLE_STATUSES` avant (voir `cancelRequest`).
  * @param {string} requestId
  * @param {Object} opts
  * @param {Set} opts.visited
@@ -67,6 +72,8 @@ export async function cancelRequestWithSession(requestId, { visited = new Set(),
     visited.add(key);
 
     const request = await findOrThrow(Substitution, requestId, { message: 'Demande non trouvée', session });
+    if (!CANCELLABLE_STATUSES.includes(request.status)) return cancelledRequests;
+
     await cancelCascade(requestId, { session, visited, cancelledRequests });
 
     if (request.status === 'accepted') {

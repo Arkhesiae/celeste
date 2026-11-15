@@ -25,6 +25,7 @@ import { addSubstitutionEntries, registerEntry } from '../services/calendarEntry
 import { getUserEntries } from '../services/calendarEntry/calendarEntry.read.js';
 import { cancelSubstitutionEntries, deleteAssignment, restoreInitialShift } from '../services/calendarEntry/calendarEntry.cancel.js';
 import { swapShifts } from '../services/substitution/request.accept.js';
+import { cancelRequest } from '../services/substitution/request.cancel.js';
 import Substitution from '../models/Substitution.js';
 
 const URI = process.env.TEST_WORKED_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_worked';
@@ -178,6 +179,17 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
   await deleteAssignment(poster._id, at(0));
   assert.equal(await Assignment.countDocuments({ userId: poster._id, date: at(0), active: true }), 0);
   assert.equal(await Modification.countDocuments({ userId: poster._id, date: at(0), active: true }), 0);
+
+  // S11 : une demande terminée, expirée ou déjà annulée ne s'annule plus et garde son statut ; la cascade l'épargne
+  await Substitution.updateOne({ _id: chained._id }, { status: 'completed' });   // demande enfant déjà terminée
+  await cancelRequest(demand._id);                                                // la racine (acceptée) s'annule
+  assert.equal((await Substitution.findById(demand._id)).status, 'cancelled');
+  assert.equal((await Substitution.findById(chained._id)).status, 'completed');   // l'enfant terminé n'est pas réécrit
+  await assert.rejects(cancelRequest(demand._id), { status: 400 });               // déjà annulée
+  await assert.rejects(cancelRequest(chained._id), { status: 400 });              // terminée
+  await Substitution.updateOne({ _id: chained._id }, { status: 'expired' });
+  await assert.rejects(cancelRequest(chained._id), { status: 400 });              // expirée
+  assert.equal((await Substitution.findById(chained._id)).status, 'expired');
 });
 
 test('permutation : chacun prend la vacation de l’autre, et peut la modifier (S5, S6)', async (t) => {

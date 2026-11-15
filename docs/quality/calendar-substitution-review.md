@@ -21,7 +21,6 @@ Gravité : **P0** données fausses ou faille de sécurité, **P1** fonctionnalit
 | S8 | P1 | `request.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
 | S9 | P1 | `request.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
 | S10 | P1 | `planningModificationService.registerModification`, `DemandModal` | Choisir une variation d'une demande poste sur une route inexistante (404) : décision de conception à prendre |
-| S11 | P1 | `request.cancel.js` / `cascade.js` | Annuler une demande déjà terminée réécrit son statut sans rien défaire |
 
 L'analyse des remplacements chaînés est en section 3, la proposition d'interface en section 4, les noms en section 5, les simplifications en section 6.
 
@@ -52,10 +51,6 @@ expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` e
 qu'une route à renommer : l'ancien flux mettait à jour la variation **de la demande** (`posterShift.selectedVariation`) et renvoyait `updatedDemand`, que le serveur ne produit plus (toujours `null`).
 Envoyer une modification `variation` via `register-entry` changerait le planning du demandeur sans toucher la demande, que la compatibilité lit. Décision à prendre : un endpoint dédié
 « variation d'une demande » (poseur seulement, demande ouverte), ou retirer le sélecteur.
-
-**S11 (P1). Annuler une demande terminée.** `cancelRequestWithSession` n'a aucun garde d'état (l'acceptation en a un). Annuler une demande `completed`, `expired` ou `cancelled` réécrit
-son statut en `cancelled` ; les entrées et transactions ne sont défaites que si le statut était `accepted`, donc une demande terminée (points déjà transférés) devient `cancelled`
-avec ses transactions et ses entrées intactes.
 
 
 **Autres points**
@@ -111,11 +106,17 @@ Prenons : A poste S1, B accepte, B poste S2 (enfant de S1), C accepte, C poste S
 
 ### 3.2 Ce qui peut mal tourner
 1. **Rentrée d'un agent remplacé** : corrigée (demande, modification et ajustement d'horaires refusés sur un jour remplacé) ; le point ne reste que comme test de non-régression.
-2. **`dependsOn` est trop large et utilisé comme parent unique.** `createDemand` stocke **toutes** les demandes acceptées de ce jour impliquant le demandeur comme demandeur *ou* accepteur. Le bon parent de S2 est la seule demande
-   dont l'`accepterId` est le nouveau demandeur (la vacation transmise à B). Avec la règle large, un utilisateur qui a à la fois donné et reçu le même jour a plusieurs parents, l'annulation de l'un d'eux annule l'enfant, et le
-   contrôle de cycle du hook `pre('save')` est faux pour les tableaux : `this.dependsOn` est toujours vrai (un tableau), `findById(tableau)` est converti en `$in` et ne renvoie que **le premier** résultat,
-   `seen.has(current.dependsOn.toString())` compare une chaîne d'ids jointe (jamais un id) dès 2 parents, et le hook exécute une requête par niveau à **chaque** sauvegarde (acceptation, annulation, `seenBy`...) hors session.
-   La détection de cycle n'est donc pas fiable. Un seul `parentId` (nullable) rendrait le contrôle trivial et l'interface simple (section 4).
+2. **`dependsOn` : un tableau est le bon modèle (une demande a jusqu'à deux parents), mais il est mal rempli.** Exemple : A↔B (S1), C↔D (S2), puis C↔A (S3). La vacation de C vient de S2 et celle de A vient de S1 :
+   S3 dépend légitimement de **deux** demandes, une par côté. Un parent unique ne suffirait donc pas pour les permutations. Trois problèmes *(lecture du code, non rejoués)* :
+   - **Côté demandeur trop large.** `createDemand` stocke **toutes** les demandes acceptées de ce jour où le demandeur est demandeur *ou* accepteur. Le seul vrai parent est la demande qui lui a donné sa vacation actuelle,
+     celle de son entrée `substitution` active la plus récente.
+   - **Côté accepteur jamais ajouté.** L'accepteur n'est connu qu'à l'acceptation, et rien ne complète alors `dependsOn`. Dans l'exemple, S3 ne dépend que de S2 : annuler S1 ne cascade pas sur S3, qui reste `accepted`.
+     Les entrées de A sont bien défaites par horodatage, mais la demande S3 et l'entrée de C (qui tient la vacation que A ne tient plus) restent : état incohérent.
+   - **Contrôle de cycle faux pour un tableau** (hook `pre('save')`) : `this.dependsOn` est toujours vrai, `findById(tableau)` est converti en `$in` et ne renvoie que **le premier** résultat,
+     `seen.has(current.dependsOn.toString())` compare une chaîne d'ids jointe (jamais un id) dès 2 parents, et le hook exécute une requête par niveau à **chaque** sauvegarde (acceptation, annulation, `seenBy`...) hors session.
+
+   Piste : poser à la création le parent du côté demandeur (la demande de son entrée `substitution` active la plus récente), ajouter à l'acceptation celui du côté accepteur (même règle), soit deux au plus.
+   Un parent est toujours déjà `accepted` quand l'enfant le référence : le graphe est sans cycle par construction, le hook peut être supprimé.
 3. **Une chaîne peut revenir sur une personne.** Le S2 de B peut être accepté par A (le premier demandeur) : les entrées sont cohérentes (la plus récente de A est l'entrée d'accepteur) mais A porte une transaction S1 (A paie B) et S2 (B paie A),
    et l'affichage de la chaîne est une boucle. Probablement permis volontairement ; cela doit être explicite dans l'interface (4.2) et dans les points.
 4. **Deux parents pour une vacation après un retrait + nouvelle acceptation.** B retire S1, D l'accepte : `reminderSentAt` est remis à zéro, les entrées sont neuves, mais les enfants `dependsOn` de S1 sont annulés ; correct. Si en revanche le S2 de B était ouvert (non cascadé puisque `status` ouvert est annulé aussi),
@@ -123,15 +124,15 @@ Prenons : A poste S1, B accepte, B poste S2 (enfant de S1), C accepte, C poste S
 5. **Les horodatages comme ordre.** La justesse du défaire dépend de `createdAt` strictement croissant par utilisateur et par jour, et de `$gte` (qui retire aussi une entrée de la même milliseconde).
    Les entrées d'une demande sont créées dans une transaction pour deux utilisateurs différents, donc elles ne se télescopent pas, mais une entrée manuelle créée dans la même milliseconde qu'une acceptation serait désactivée.
    `cancelAfter` désactive aussi **toute** entrée plus récente de l'utilisateur (modifications, patchs, affectations), même sans lien avec la demande ; c'est voulu pour les enfants de S2 mais c'est une surprise pour, par exemple, un patch d'horaires ajouté par C après son acceptation.
-6. **Points.** Les transactions sont planifiées par demande à l'acceptation (`createScheduledTransaction`) ; l'annulation les retire (`cancelRequestTransactions`). Avec S11 (statut réécrit sur des demandes terminées) et l'écart de date (S9), une chaîne annulée après coup laisse
+6. **Points.** Les transactions sont planifiées par demande à l'acceptation (`createScheduledTransaction`) ; l'annulation les retire (`cancelRequestTransactions`). Avec l'écart de date (S9), une chaîne annulée après coup laisse
    des transferts que le planning ne justifie plus.
-7. **Expiration d'une chaîne.** `processAndCompleteDemands` termine chaque demande acceptée indépendamment une fois le jour passé (`deleted: true`) ; une annulation tardive de la racine tombe alors sur S11.
+7. **Expiration d'une chaîne.** `processAndCompleteDemands` termine chaque demande acceptée indépendamment une fois le jour passé (`deleted: true`) ; une annulation tardive de la racine est maintenant refusée (400), et la cascade épargne les demandes déjà terminées.
 8. **L'ordre de `cancelledRequests` est un contrat caché.** La racine est le **dernier** élément (`cancelledRequests[cancelledRequests.length - 1]` dans `cancelRequest`), les enfants viennent d'abord ; dans `withdrawFromRequest` le tableau ne contient que des enfants.
    Le prochain changement de l'ordre de parcours casse en silence la demande déclarée racine et les personnes notifiées.
 
 ### 3.3 Vérifications à transformer en tests
 A→B→C puis A annule ; A→B→C puis B retire ; A→B→A ; A remplacé poste ou ajoute `pres` ; A→B où B avait une formation ou une affectation `absence` ce jour-là (entrée désactivée, jamais restaurée) ;
-annulation d'une permutation acceptée (les deux jours reviennent à l'état d'avant) ; annulation d'une demande déjà terminée (S11) ; acceptation simultanée de la même demande par deux utilisateurs.
+annulation d'une permutation acceptée (les deux jours reviennent à l'état d'avant) ; acceptation simultanée de la même demande par deux utilisateurs.
 
 ---
 
@@ -143,7 +144,8 @@ annulation d'une permutation acceptée (les deux jours reviennent à l'état d'a
 Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, retiré ou annulé).
 
 **Proposition (à valider avant tout travail).**
-1. **Données.** Remplacer le tableau `dependsOn` par un seul `parentId` (la demande par laquelle le demandeur a obtenu la vacation), garder un `rootId` dérivé. La chaîne d'un jour est alors `racine → ... → feuille`, et le « titulaire final »
+1. **Données.** Garder `dependsOn` comme tableau de deux parents au plus (côté demandeur, côté accepteur), rempli comme décrit en 3.2 point 2. Pour des remplacements simples la chaîne d'un jour reste `racine → ... → feuille`
+   (un seul parent par demande) ; une permutation relie deux chaînes, l'affichage part alors de la demande ouverte et remonte les deux côtés. Le « titulaire final »
    est l'accepteur du dernier nœud accepté (ou le demandeur du nœud si la dernière demande est encore ouverte, affiché « en attente »). L'exposer dans `getRequests` sous la forme `chain: [{ demandId, posterId, accepterId, status }]` (identifiants seulement, noms résolus par le store d'utilisateurs existant), ou via un petit endpoint
    `GET /substitution/:id/chain`.
 2. **Entrée de calendrier.** Ajouter `substitution: { id, role: 'poster' | 'accepter' }` aux entrées de `history`, pour qu'un jour puisse afficher « remplacé par B » et ouvrir la demande.
@@ -191,7 +193,7 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 3. **`computeUserShifts`** : le pipeline `resolveAssignment` / `applyModification` / `applyHourPatch` est lisible ; les deux choses qui le rendent difficile sont la double forme de `baseShift` et les trois endroits qui décident `isOff`.
    Une enveloppe `base = { shift, team }` renommée, et `isOff` / `isWorked` affectés dans `resolveAssignment` et une étape finale, feraient de l'état de chaque jour une fonction de (base, dernière affectation, dernière modification, dernier patch).
 4. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
-   Une petite table `canTransition(from, to)` contrôlée aux trois points d'entrée corrige S11 et fait de S9 (contrôles de date) une règle de plus au même endroit.
+   Une petite table `canTransition(from, to)` contrôlée aux points d'entrée (l'annulation en a déjà un : `CANCELLABLE_STATUSES`) ferait de S9 (contrôles de date) une règle de plus au même endroit.
 5. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).
 6. **Étapes après commit** (`computeUserShifts`, catégorisation, mails) enveloppées au mieux (best-effort) dans un seul helper, pour qu'un échec après commit ne réponde jamais une erreur pour une action faite.
 
@@ -200,9 +202,9 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 ## 7. Ordre suggéré (si vous décidez d'agir)
 
 1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur).
-2. Justesse des données : S8 (`finalStatus` transmis), S11 (garde d'état), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
+2. Justesse des données : S8 (`finalStatus` transmis), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
 3. Routes et appels morts : `getUserDemands`, puis la variation d'une demande (S10).
-4. Modèle de chaîne : `parentId`, puis la chaîne dans l'API et l'interface de la section 4.
+4. Modèle de chaîne : remplir `dependsOn` correctement (deux parents au plus, dont celui du côté accepteur à l'acceptation), supprimer le hook de cycle, puis la chaîne dans l'API et l'interface de la section 4.
 5. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
 
 Les points déjà corrigés ont été retirés de ce document. Dites-moi quels points restants prendre et dans quel ordre.

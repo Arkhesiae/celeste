@@ -1,9 +1,10 @@
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
-import { inTransaction } from '../../utils/mongo.js';
+import Substitution from '../../models/Substitution.js';
+import { findOrThrow, inTransaction } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
 import { notifyDemandCancelledByUser } from '../email/demand/demand.changeNotifications.js';
-import { cancelRequestWithSession } from './request.cascade.js';
+import { CANCELLABLE_STATUSES, cancelRequestWithSession } from './request.cascade.js';
 
 
 /**
@@ -17,6 +18,10 @@ export async function cancelRequest (requestId, { actorId } = {}) {
     try {
         let cancelledRequests;
         await inTransaction(async (session) => {
+            const request = await findOrThrow(Substitution, requestId, { message: 'Demande non trouvée', session });
+            if (!CANCELLABLE_STATUSES.includes(request.status)) {
+                throw new AppError("Cette demande n'est plus annulable", 400);
+            }
             cancelledRequests = await cancelRequestWithSession(requestId, { session });
         });
 

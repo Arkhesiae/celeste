@@ -1,254 +1,244 @@
-# Review: calendar entries, user shift computation, substitutions (chained included)
+# Revue : entrées de calendrier, calcul des vacations d'un utilisateur, remplacements (chaînés compris)
 
-Review date: 2026-11-14. **Read-only review: no code was changed.** Everything below is a proposal waiting for a decision.
+Date de la revue : 2026-11-14. **Revue en lecture seule : aucun code n'a été modifié.** Tout ce qui suit est une proposition en attente de décision.
 
-Scope read in full: `services/calendarEntry/*`, `controllers/calendarEntry.controller.js`, `routes/calendarEntry.routes.js`,
+Périmètre lu en entier : `services/calendarEntry/*`, `controllers/calendarEntry.controller.js`, `routes/calendarEntry.routes.js`,
 `services/planning/planning.userShifts.js`, `services/substitution/request.{accept,cancel,cascade,creation,delete,expiry,list,withdraw}.js`,
 `services/substitution/substitution.userPool.js`, `models/Substitution.js`, `models/CalendarEntry.js`, `controllers/substitution.controller.js`,
-`routes/substitution.routes.js`, and the front calendar / modal call sites that touch them.
+`routes/substitution.routes.js`, et les appels côté front (calendrier, modales) qui les utilisent.
 
-**How sure am I.** Items marked *(verified)* were reproduced with a small script (Mongoose cast, schema). The others come from reading the code and
-tracing the calls; nothing was run against a database for this review, so each one should be confirmed with a test before the fix.
-Severity: **P0** wrong data or security hole, **P1** feature broken or inconsistent state reachable by a normal user, **P2** fragile or misleading.
-
----
-
-## 1. Summary of the most important findings
-
-| # | Sev | Where | One line |
-|---|-----|-------|----------|
-| S1 | P0 | `request.creation.js`, `substitution.controller.js` `createDemand` | A replaced agent can post a new demand on the shift they gave away: two people end up working it |
-| S2 | P0 | `calendarEntry.register.js` `registerModification` | A `pres` modification brings a replaced agent back on a shift now held by someone else |
-| S4 | P0 | `routes/substitution.routes.js` | Any member of the center can cancel or delete anybody's demand |
-| S5 | P1 | `calendarEntry.register.js` `addSubstitutionEntries` | A switch never gives the poster the accepter's shift |
-| S6 | P1 | `request.accept.js` `acceptRequestWithSession` | Accepting a switch throws (`userShiftData.shift`, `.teamObject` do not exist) |
-| S7 | P1 | `calendarEntry.cancel.js` | Cancellations are fire-and-forget: the shift returned to the client is computed before they are written |
-| S8 | P1 | `request.cascade.js` | Cascaded children never receive the `reason` (`system-cancelled` becomes `cancelled`) |
-| S9 | P1 | `request.accept.js` | No server-side compatibility check, no date check, `reservedForUserId` ignored |
-| S10 | P1 | `calendarEntry.read.js`, controller | `getUserEntries` never matches (verified), `getModification` calls a missing function |
-| S11 | P1 | `request.cancel.js` / `cascade.js` | Cancelling an already finished demand rewrites its status without undoing anything |
-
-The chained-substitution analysis is in section 3, the interface proposal in section 4, naming in section 5, simplifications in section 6.
+**Niveau de certitude.** Les points marqués *(vérifié)* ont été reproduits avec un petit script (cast Mongoose, schéma). Les autres viennent de la lecture du code et
+du suivi des appels ; rien n'a été exécuté sur une base de données pour cette revue, donc chacun doit être confirmé par un test avant correction.
+Gravité : **P0** données fausses ou faille de sécurité, **P1** fonctionnalité cassée ou état incohérent atteignable par un utilisateur normal, **P2** fragile ou trompeur.
 
 ---
 
-## 2. Bugs and inconsistencies
+## 1. Synthèse des constats les plus importants
 
-### 2.1 Substitution flow
+| # | Gr. | Où | En une ligne |
+|---|-----|----|--------------|
+| S2 | P0 | `calendarEntry.register.js` `registerModification` | Une modification `pres` remet un agent remplacé sur une vacation désormais tenue par quelqu'un d'autre |
+| S4 | P0 | `routes/substitution.routes.js` | N'importe quel membre du centre peut annuler ou supprimer la demande de n'importe qui |
+| S5 | P1 | `calendarEntry.register.js` `addSubstitutionEntries` | Une permutation ne donne jamais au demandeur la vacation de l'accepteur |
+| S6 | P1 | `request.accept.js` `acceptRequestWithSession` | Accepter une permutation lève une erreur (`userShiftData.shift`, `.teamObject` n'existent pas) |
+| S7 | P1 | `calendarEntry.cancel.js` | Les annulations sont lancées sans attendre : la vacation renvoyée au client est calculée avant leur écriture |
+| S8 | P1 | `request.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
+| S9 | P1 | `request.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
+| S10 | P1 | `calendarEntry.read.js`, contrôleur | `getUserEntries` ne trouve jamais rien (vérifié), `getModification` appelle une fonction inexistante |
+| S11 | P1 | `request.cancel.js` / `cascade.js` | Annuler une demande déjà terminée réécrit son statut sans rien défaire |
 
-**S1 (P0). A replaced agent can post a demand on a shift they no longer hold.**
-`createDemand` only checks `computedShift.shiftData.shift` exists. For the poster of an accepted substitution `resolveAssignment` deliberately keeps the base
-shift in `shiftData.shift` (to display it struck out) and sets `isOff: true`, so the check passes. `createDemand` never looks at `isOff`, nor at
-`isWorked`, nor at `shift.type`: a **rest** shift is also a `shift` document, so a demand can be posted on a rest day too (the UI hides it through
-`GET /substitution/check-shift`, the server does not).
-Scenario: A posts S1, B accepts. A posts S4 for the same day, D accepts it. B and D now both work A's shift; `dependsOn` of S4 even contains S1.
-Fix direction: in `createDemand`, require `computedShift.isWorked && !computedShift.isOff` (and the shift to be `work`).
-
-**S2 (P0). A modification brings a replaced agent back.** `registerModification` checks `isSameShift(userShift, data)` against `shiftData.shift`, which is the
-kept base shift for a replaced poster, so it passes. Then `applyModification` case `pres` sets `isOff: false`, so A is "present" again while B holds the shift.
-Other modifications on such a day (`vic`, `variation`, `disp`) are accepted too, and an accepter (B) can add `disp` without the substitution being touched, so
-nobody works the shift while the demand stays `accepted`. `registerAssignment` blocks active substitutions, `registerModification` and `registerHourPatch` do not.
-Fix direction: same guard as `registerAssignment` (`latestAssignment.subType === 'substitution'` or an open/accepted `Substitution` that day), or a
-dedicated message "annulez d'abord la demande".
-
-**S4 (P0). Missing actor checks.** `POST /:id/cancel` and `DELETE /:id/delete` are only behind `authorizeDemandAccess` (same center). Nothing checks that
-the caller is the poster (or an admin). `cancelRequest` only uses `actorId` for the notification. `DELETE /:id/delete` runs the WIP `deleteDemand`
-(file header says "not operational"): it flags `deleted` without touching the calendar entries, so on an accepted demand the replacement stays in the
-planning. `POST /:id/send-email` lets any member send mail to the center's administrators for any demand (and puts user names into raw HTML).
-`POST /detect-team-change-conflicts` takes `userId` from the body without any center guard: it discloses another user's demands and dates.
-
-**S5 (P1). A switch never gives the poster the accepter's shift.** `addSubstitutionEntries` always writes `accepterEntry` with the poster's shift and
-`posterEntry` with `shiftData: null`, whatever `demand.type` is. For an exchange, the poster should receive `demand.accepterShift` (the accepter's own shift
-that day), otherwise after a swap one shift is worked twice and the other not at all. `savedEntry` aside, `accepterShift` is stored in the demand and used
-nowhere else for this. (Confirm the intended meaning of a switch: from `substitution.switches.js` it is "same day, different shift".)
-
-**S6 (P1). Accepting a switch cannot work as written.** `acceptRequestWithSession` reads `userShifts[0]` (an entry of `computeUserShifts`, which has
-`shiftData.shift` and `shiftData.team`) as `userShiftData.shift._id` and `userShiftData.teamObject._id`. Neither `shift` nor `teamObject` exists on that
-result (`teamObject` is only produced for demands in `compatibility.categorize.js`), so this throws a TypeError, caught in `acceptRequest` as a generic
-`AppError` whose message is `"Erreur lors de l'acceptation de la permutation" + error` (the raw error text reaches the client, against the error convention).
-It probably hides S5.
-
-**S7 (P1). Fire-and-forget writes.** `cancelModifications`, `cancelHourPatches` and `cancelAssignments` use `forEach(... save())` without awaiting.
-`restoreInitialShift` and `undoMods` call all three without `await`, then immediately `computeUserShifts`, so the returned `userShift` can still show the
-old state, and an error becomes an unhandled rejection. `registerModification`/`registerAssignment` `await cancelHourPatches(...)` which returns before the
-saves are done. Fix direction: `await Model.updateMany({ userId, date, active: true }, { active: false })` (what the substitution cancel already does).
-
-**S8 (P1). `reason` is lost in cascades.** `cancelCascade` calls `cancelRequestWithSession(child._id, { visited, session, cancelledRequests })` without
-`reason`. When the root is cancelled with `system-cancelled` (rotation change, team change), the cascaded children get `cancelled`. The parameter is also
-misnamed: it is a final **status**, not a reason.
-
-**S9 (P1). Acceptance is not re-validated on the server.** `acceptRequestWithSession` checks status, self-acceptance and an open demand of the accepter that day,
-and nothing else: no rest/workload compatibility (the whole `compatibility.*` stack only runs for display), no check that the accepter is not already working
-that day (a user holding another substitution that day can accept a second one), no date check (a demand of a past day not yet expired by the 30-minute job
-can still be accepted, cancelled, withdrawn), `reservedForUserId` exists in the model and is read nowhere (so a reserved demand is open to everyone), and
-`isTrueSwitch` is never stored (dead schema field). The server is the only place that can be trusted for a race or a tampered client.
-
-**S10 (P1). Calendar entry reads.**
-- `getUserEntries` filters `date: new Date(date)` on a **String** field. Mongoose casts the Date to `"Fri Nov 13 2026 01:00:00 GMT+0100 ..."` *(verified)*, which never
-  equals `YYYY-MM-DD`: the endpoint always returns an empty list. The route is `POST /calendar-entry/:userId` but the controller ignores the parameter and uses the token.
-- `deleteModification` and `getModification` call `calendarEntryService.removeModification` and `getModificationById`, which do not exist (`GET /calendar-entry/:id` answers 500).
-- The front `planningModificationService.registerModification` posts to `/calendar-entry/register-modification` with `type: 'selectedVariation'`: that route does not exist (404),
-  so choosing a variation from `DemandModal` fails. The result field `updatedDemand(s)` that the front looks for is always `null` on the server (six places).
-
-**S11 (P1). Cancelling a finished demand.** `cancelRequestWithSession` has no state guard (accept has one). Cancelling a `completed`, `expired` or `cancelled` demand rewrites
-its status to `cancelled`; entries and transactions are only undone when the status was `accepted`, so a completed demand (points already transferred) becomes `cancelled`
-with its transactions and entries untouched.
-
-
-**Other points**
-- Non-atomic writes in `registerEntry` (no transaction): `registerHourPatch` deactivates the previous patch **before** the validations that can answer 422; a 422 leaves the day without its patch.
-  `registerModification` deactivates the old modification, then cancels patches, then saves.
-- `acceptRequest`, `withdrawFromRequest` and `cancelRequest` recompute shifts after the commit; a failure there (`computeUserShifts`, `categorizeRequests`) answers 500
-  although the action is committed and cannot be retried (the user sees an error, the data changed). The post-commit steps should be best-effort.
-- `createDemand` controller: after `res.status(201).json(...)` the notification code (populate, pool computation) can throw and calls `next(err)` on an answered response.
-- `getUserDemands` reads `req.user.posterId` (always undefined, the token has `userId`) so `GET /substitution/user` always answers 404; the front does not call it. Dead route.
-- `detect-team-change-conflicts` filters `status: { $in: ['open', 'pending', 'accepted'] }`; `pending` is not a status of the model.
-- Expiry: `processPastDemands` and `processAndCompleteDemands` set `deleted: true` for `expired` and `completed` demands, so `deleted` means both "archived" and "deleted by hand".
-  `getAllCenterDemands` filters `deleted: false`, so an admin never sees the history.
-- `updatedAt`, `createdAt` are set by hand (`request.updatedAt = new Date()`, `createdAt: new Date()`) although the schema has `timestamps: true`.
-
-### 2.2 User shift computation (`planning.userShifts.js`)
-
-- **Stale entries can break a whole batch.** `applyHourPatch` adds hours to `resolvedShift.startTime`; if a patch is still active on a day that became a rest day or an assignment day
-  (rotation or team change) `startTime` is `undefined` and `addHours` throws a TypeError. `computeUserShifts` runs the days in a `Promise.all`, so one bad day fails the whole month.
-  Modifications are protected by `isModificationConsistent` (same shift id), hour patches are not. Same for a `variation` modification whose variation was deleted
-  (`modShiftData.selectedVariation.startTime` on `null`).
-- `checkHourPatchCoherence` tests `latestModification.subType === 'absence'`, which cannot happen (the modification enum is `disp, vic, variation, pres`). Dead check.
-- `isSameShift` returns `undefined` (not a boolean) when an id is missing, and `registerEntry`'s own `isSameShift(userShift, data)` has the same name and another signature (section 5).
-- `getActiveEntriesByDates` carries branches that cannot happen: `typeof a.date === 'string' ? a.date.slice(0, 10) : a.date` (the field is always a string), the
-  `|| { assignments: [] ... }` fallback in `computeUserShifts` (the map is pre-filled for every date), and a populate chain that is repeated three times for a `shiftData` that is a
-  sub-document, not a reference (`populate({ path: 'shiftData', populate: 'shift' })` is a no-op next to the `shiftData.shift` populate).
-- `baseShift` has two shapes: in `applyEntries`/`resolveAssignment` it is `{ shift, team }`; in `computeUserShifts` it is the rotation `Shift` document, and the final `{ ...resolvedShift, baseShift }` overwrites the first with the second.
-  Readers of `result.baseShift` (`calendarEntry.register.js` `current?.baseShift?.team`) therefore read `team` on a `Shift` document, which has none (the fallback chain there is dead and misleading).
-- Only the **latest** assignment, modification and hour patch are used (`.at(-1)`). That relies on the writers keeping a single active one; `cancelSubstitutionEntries` and `deleteAssignment`
-  use `createdAt >= ...` instead. Both conventions work together only if timestamps never collide (see 3.3).
-
-### 2.3 Calendar entry registration (`calendarEntry.register.js` and `.cancel.js`)
-
-- `registerMDDA` is never called nor exported (hard-coded `adjustedStart: 1, adjustedEnd: 2`): dead stub next to the real `registerHourPatch`.
-- `cancelSubstitutionAssignment` (and the commented call in `cancelSingleAssignment`) is dead; it is also the only reason `calendarEntry.cancel.js` imports `request.cancel.js` and
-  `request.withdraw.js`, which import `request.cascade.js`, which imports `calendarEntry.cancel.js`: a real **import cycle** (works today because only functions are used at call time).
-- `restoreInitialShift` and `undoMods` are the same function twice (and both keep unused `user` and `initialShift` variables). The route names `/restore-initial` and `/undo-mods` both exist.
-- `comment: data?.subType === "congé" ? 'congé' : ""` reads `data.subType`, while the front sends `data.entryType` (the model field is `subType`): the comment is never set, and the literal is French text used as a code.
-- `data.team` (assignment) and `data.teamId` (modification, hour patch) are two names for one input; `registerHourPatch` accepts both plus two fallbacks (`teamFromShift?._id ?? teamFromShift`, `baseShift.team`...).
-- `registerEntry` loads `substitution`, the three latest entries and the shifts for every handler although each handler uses a subset.
-- `getUserEntries` also has a "Date" for a day string (`new Date(date)`), and `findLatestAssignment` in `addSubstitutionEntries` ignores substitution entries on purpose (see 3.2).
-- `savedEntry` is written (`demand` entries) and **never read**: nothing restores the entry that `addSubstitutionEntries` deactivated. If C had an assignment that day, accepting a replacement deactivates it,
-  and cancelling or withdrawing the replacement does not bring it back (`cancelSubstitutionEntries` only deactivates what is newer). Either use `savedEntry` to reactivate, or refuse the acceptance.
+L'analyse des remplacements chaînés est en section 3, la proposition d'interface en section 4, les noms en section 5, les simplifications en section 6.
 
 ---
 
-## 3. Chained substitutions
+## 2. Bugs et incohérences
 
-Take A posts S1, B accepts, B posts S2 (child of S1), C accepts, C posts S3, D accepts.
+### 2.1 Flux des remplacements
 
-### 3.1 What works
-- `dependsOn` + `cancelCascade` cancels the descendants first, then the parent (depth-first), inside one transaction; `visited` stops loops.
-- Calendar entries are unwound by timestamp (`createdAt >= subEntry.createdAt`): cancelling S2 removes B's S2 poster entry and C's S2 accepter entry, so B's earlier S1 accepter entry becomes the latest again and B works.
-  This is also why `addSubstitutionEntries` must not deactivate a previous `substitution` assignment (the filter `subType: { $ne: 'substitution' }`): the chain relies on the older entries staying active underneath.
-- Withdrawal by B from S1 cancels S2/S3 and reopens S1.
-- Mails after commit for cascaded demands (`notifyDemandChanges`).
+**S2 (P0). Une modification remet un agent remplacé en poste.** `registerModification` compare `isSameShift(userShift, data)` à `shiftData.shift`, qui est la vacation de base
+conservée pour un demandeur remplacé, donc le contrôle passe. Ensuite `applyModification`, cas `pres`, met `isOff: false` : A est de nouveau « présent » alors que B tient la vacation.
+Les autres modifications sur un tel jour (`vic`, `variation`, `disp`) sont aussi acceptées, et un accepteur (B) peut ajouter `disp` sans que le remplacement soit touché, de sorte que
+personne ne travaille la vacation alors que la demande reste `accepted`. `registerAssignment` bloque les remplacements actifs, `registerModification` et `registerHourPatch` non.
+Piste de correction : le même garde-fou que `registerAssignment` (`latestAssignment.subType === 'substitution'` ou une `Substitution` ouverte/acceptée ce jour-là), ou un
+message dédié « annulez d'abord la demande ».
 
-### 3.2 What can go wrong
-1. **S1/S2 above**: a replaced agent can re-enter the chain (new demand or `pres`), creating two holders of the same shift.
-2. **`dependsOn` is too broad and used as a single parent.** `createDemand` stores **every** accepted demand of that day involving the poster as poster *or* accepter. The correct parent of S2 is the one demand
-   whose `accepterId` is the new poster (the shift passed to B). With the broad rule, a user who both gave and received on the same day gets several parents, a cancel of any of them cancels the child, and the
-   cycle check in the `pre('save')` hook is wrong for arrays: `this.dependsOn` is always truthy (an array), `findById(array)` is cast to `$in` and returns **only the first** match,
-   `seen.has(current.dependsOn.toString())` compares a joined string of ids (never an id) for 2+ parents, and the hook runs one query per level on **every** save (accept, cancel, `seenBy`...) outside the session.
-   Cycle detection is therefore unreliable. A single `parentId` (nullable) would make the check trivial and the UI easy (section 4).
-3. **A chain can loop back on a person.** B's S2 can be accepted by A (the first poster): entries are consistent (A's newest entry is the accepter entry) but A holds a transaction S1 (A pays B) and S2 (B pays A),
-   and the display of the chain is a loop. Probably allowed on purpose; it should be explicit in the UI (4.2) and in the points.
-4. **Two parents of one shift after a withdraw + re-accept.** B withdraws S1, D accepts it: `reminderSentAt` is reset, entries are new, but S1's `dependsOn` children are cancelled; fine. If instead B's S2 was open (not cascaded because `status` open is cancelled too)
-   the cancellation of an *open* child sends nothing to the people who had shown interest (`interested`): minor.
-5. **Timestamps as ordering.** Correctness of the unwinding depends on `createdAt` being strictly increasing per user and day, and on `$gte` (which also removes an entry of the same millisecond).
-   Entries of one demand are created in one transaction for two different users, so they do not collide, but a manual entry created in the same millisecond as an acceptance would be deactivated.
-   `cancelAfter` also deactivates **every** newer entry of the user (modifications, patches, assignments) even ones unrelated to the demand; this is deliberate for S2 children but is a surprise for e.g. a hour patch added by C after accepting.
-6. **Points.** Transactions are scheduled per demand at acceptance (`createScheduledTransaction`); the cancellation removes them (`cancelRequestTransactions`). With S11 (status rewritten on finished demands) and the date gap (S9) a cancelled-after-the-fact chain leaves
-   transfers that the planning no longer justifies.
-7. **Expiry of a chain.** `processAndCompleteDemands` completes each accepted demand independently once the day has passed (`deleted: true`); a late cancel of the root then hits S11.
-8. **`cancelledRequests` order is a hidden contract.** The root is the **last** element (`cancelledRequests[cancelledRequests.length - 1]` in `cancelRequest`), the children come first; in `withdrawFromRequest` the array holds only children.
-   The next change to the traversal order silently breaks which demand is reported as the root and who is notified.
+**S4 (P0). Contrôles de l'acteur manquants.** `POST /:id/cancel` et `DELETE /:id/delete` sont seulement derrière `authorizeDemandAccess` (même centre). Rien ne vérifie que
+l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` que pour la notification. `DELETE /:id/delete` exécute `deleteDemand`, en chantier
+(l'en-tête du fichier dit « non opérationnel ») : il pose le drapeau `deleted` sans toucher aux entrées de calendrier, donc sur une demande acceptée le remplacement reste dans le
+planning. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
+`POST /detect-team-change-conflicts` prend `userId` dans le corps sans aucun garde de centre : il révèle les demandes et dates d'un autre utilisateur.
 
-### 3.3 Verifications worth turning into tests
-A→B→C then A cancels; A→B→C then B withdraws; A→B→A; replaced A posts or adds `pres`; A→B where B had a training or an `absence` assignment that day (entry deactivated, never restored);
-switch acceptance end to end (S5, S6); cancel of an already completed demand (S11); concurrent accept of the same demand by two users.
+**S5 (P1). Une permutation ne donne jamais au demandeur la vacation de l'accepteur.** `addSubstitutionEntries` écrit toujours `accepterEntry` avec la vacation du demandeur et
+`posterEntry` avec `shiftData: null`, quel que soit `demand.type`. Pour un échange, le demandeur devrait recevoir `demand.accepterShift` (la vacation propre de l'accepteur
+ce jour-là), sinon après un échange une vacation est travaillée deux fois et l'autre pas du tout. `savedEntry` mis à part, `accepterShift` est stocké dans la demande et
+n'est utilisé nulle part ailleurs pour cela. (À confirmer : le sens voulu d'une permutation ; d'après `substitution.switches.js` c'est « même jour, vacation différente ».)
+
+**S6 (P1). Accepter une permutation ne peut pas fonctionner tel que c'est écrit.** `acceptRequestWithSession` lit `userShifts[0]` (une entrée de `computeUserShifts`, qui a
+`shiftData.shift` et `shiftData.team`) comme `userShiftData.shift._id` et `userShiftData.teamObject._id`. Ni `shift` ni `teamObject` n'existent sur ce
+résultat (`teamObject` n'est produit que pour les demandes dans `compatibility.categorize.js`), donc cela lève une TypeError, attrapée dans `acceptRequest` et transformée en
+`AppError` générique dont le message est `"Erreur lors de l'acceptation de la permutation" + error` (le texte brut de l'erreur arrive au client, contre la convention d'erreurs).
+Cela masque probablement S5.
+
+**S7 (P1). Écritures lancées sans attendre.** `cancelModifications`, `cancelHourPatches` et `cancelAssignments` utilisent `forEach(... save())` sans `await`.
+`restoreInitialShift` et `undoMods` appellent les trois sans `await`, puis enchaînent `computeUserShifts`, donc le `userShift` renvoyé peut encore montrer
+l'ancien état, et une erreur devient un rejet non géré. `registerModification`/`registerAssignment` font `await cancelHourPatches(...)` qui retourne avant que les
+sauvegardes ne soient terminées. Piste : `await Model.updateMany({ userId, date, active: true }, { active: false })` (ce que fait déjà l'annulation de remplacement).
+
+**S8 (P1). `reason` est perdu dans les cascades.** `cancelCascade` appelle `cancelRequestWithSession(child._id, { visited, session, cancelledRequests })` sans
+`reason`. Quand la racine est annulée avec `system-cancelled` (changement de rotation, d'équipe), les enfants en cascade reçoivent `cancelled`. Le paramètre est aussi
+mal nommé : c'est un **statut** final, pas une raison.
+
+**S9 (P1). L'acceptation n'est pas re-validée côté serveur.** `acceptRequestWithSession` vérifie le statut, l'auto-acceptation et une demande ouverte de l'accepteur ce jour-là,
+et rien d'autre : pas de compatibilité repos/charge (toute la pile `compatibility.*` ne tourne que pour l'affichage), pas de vérification que l'accepteur ne travaille pas déjà
+ce jour-là (un utilisateur qui tient un autre remplacement ce jour peut en accepter un second), pas de contrôle de date (une demande d'un jour passé que le job de 30 minutes n'a pas encore
+expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` existe dans le modèle et n'est lu nulle part (donc une demande réservée est ouverte à tous), et
+`isTrueSwitch` n'est jamais stocké (champ de schéma mort). Le serveur est le seul endroit digne de confiance face à une course ou à un client falsifié.
+
+**S10 (P1). Lectures des entrées de calendrier.**
+- `getUserEntries` filtre `date: new Date(date)` sur un champ **String**. Mongoose convertit le Date en `"Fri Nov 13 2026 01:00:00 GMT+0100 ..."` *(vérifié)*, qui n'égale jamais
+  `YYYY-MM-DD` : l'endpoint renvoie toujours une liste vide. La route est `POST /calendar-entry/:userId` mais le contrôleur ignore le paramètre et utilise le jeton.
+- `deleteModification` et `getModification` appellent `calendarEntryService.removeModification` et `getModificationById`, qui n'existent pas (`GET /calendar-entry/:id` répond 500).
+- Le front `planningModificationService.registerModification` poste sur `/calendar-entry/register-modification` avec `type: 'selectedVariation'` : cette route n'existe pas (404),
+  donc choisir une variation depuis `DemandModal` échoue. Le champ de résultat `updatedDemand(s)` que le front attend vaut toujours `null` côté serveur (six endroits).
+
+**S11 (P1). Annuler une demande terminée.** `cancelRequestWithSession` n'a aucun garde d'état (l'acceptation en a un). Annuler une demande `completed`, `expired` ou `cancelled` réécrit
+son statut en `cancelled` ; les entrées et transactions ne sont défaites que si le statut était `accepted`, donc une demande terminée (points déjà transférés) devient `cancelled`
+avec ses transactions et ses entrées intactes.
+
+
+**Autres points**
+- Écritures non atomiques dans `registerEntry` (pas de transaction) : `registerHourPatch` désactive le patch précédent **avant** les validations qui peuvent répondre 422 ; un 422 laisse le jour sans son patch.
+  `registerModification` désactive l'ancienne modification, puis annule les patchs, puis enregistre.
+- `acceptRequest`, `withdrawFromRequest` et `cancelRequest` recalculent les vacations après le commit ; un échec à ce moment (`computeUserShifts`, `categorizeRequests`) répond 500
+  alors que l'action est validée et ne peut plus être rejouée (l'utilisateur voit une erreur, les données ont changé). Les étapes après commit devraient être au mieux (best-effort).
+- Contrôleur `createDemand` : après `res.status(201).json(...)`, le code de notification (populate, calcul du pool) peut lever une erreur et appelle `next(err)` sur une réponse déjà envoyée.
+- `getUserDemands` lit `req.user.posterId` (toujours indéfini, le jeton contient `userId`), donc `GET /substitution/user` répond toujours 404 ; le front ne l'appelle pas. Route morte.
+- `detect-team-change-conflicts` filtre `status: { $in: ['open', 'pending', 'accepted'] }` ; `pending` n'est pas un statut du modèle.
+- Expiration : `processPastDemands` et `processAndCompleteDemands` posent `deleted: true` pour les demandes `expired` et `completed`, donc `deleted` signifie à la fois « archivé » et « supprimé à la main ».
+  `getAllCenterDemands` filtre `deleted: false`, donc un admin ne voit jamais l'historique.
+- `updatedAt`, `createdAt` sont posés à la main (`request.updatedAt = new Date()`, `createdAt: new Date()`) alors que le schéma a `timestamps: true`.
+
+### 2.2 Calcul des vacations d'un utilisateur (`planning.userShifts.js`)
+
+- **Des entrées périmées peuvent casser tout un lot.** `applyHourPatch` ajoute des heures à `resolvedShift.startTime` ; si un patch est encore actif un jour devenu jour de repos ou d'affectation
+  (changement de rotation ou d'équipe), `startTime` est `undefined` et `addHours` lève une TypeError. `computeUserShifts` traite les jours dans un `Promise.all`, donc un seul mauvais jour fait échouer tout le mois.
+  Les modifications sont protégées par `isModificationConsistent` (même id de vacation), les patchs d'horaires non. Idem pour une modification `variation` dont la variation a été supprimée
+  (`modShiftData.selectedVariation.startTime` sur `null`).
+- `checkHourPatchCoherence` teste `latestModification.subType === 'absence'`, ce qui ne peut pas arriver (l'enum des modifications est `disp, vic, variation, pres`). Contrôle mort.
+- `isSameShift` renvoie `undefined` (pas un booléen) quand un id manque, et le `isSameShift(userShift, data)` de `registerEntry` porte le même nom avec une autre signature (section 5).
+- `getActiveEntriesByDates` contient des branches impossibles : `typeof a.date === 'string' ? a.date.slice(0, 10) : a.date` (le champ est toujours une chaîne), le
+  repli `|| { assignments: [] ... }` dans `computeUserShifts` (la table est pré-remplie pour chaque date), et une chaîne de populate répétée trois fois pour un `shiftData` qui est un
+  sous-document, pas une référence (`populate({ path: 'shiftData', populate: 'shift' })` ne fait rien à côté du populate de `shiftData.shift`).
+- `baseShift` a deux formes : dans `applyEntries`/`resolveAssignment` c'est `{ shift, team }` ; dans `computeUserShifts` c'est le document `Shift` de la rotation, et le `{ ...resolvedShift, baseShift }` final écrase la première par la seconde.
+  Les lecteurs de `result.baseShift` (`calendarEntry.register.js` `current?.baseShift?.team`) lisent donc `team` sur un document `Shift`, qui n'en a pas (la chaîne de repli y est morte et trompeuse).
+- Seuls la **dernière** affectation, modification et dernier patch sont utilisés (`.at(-1)`). Cela suppose que les écrivains gardent une seule entrée active ; `cancelSubstitutionEntries` et `deleteAssignment`
+  utilisent `createdAt >= ...` à la place. Les deux conventions ne fonctionnent ensemble que si les horodatages ne se télescopent jamais (voir 3.3).
+
+### 2.3 Enregistrement des entrées de calendrier (`calendarEntry.register.js` et `.cancel.js`)
+
+- `registerMDDA` n'est jamais appelée ni exportée (`adjustedStart: 1, adjustedEnd: 2` en dur) : coquille morte à côté du vrai `registerHourPatch`.
+- `cancelSubstitutionAssignment` (et l'appel commenté dans `cancelSingleAssignment`) est mort ; c'est aussi la seule raison pour laquelle `calendarEntry.cancel.js` importe `request.cancel.js` et
+  `request.withdraw.js`, qui importent `request.cascade.js`, qui importe `calendarEntry.cancel.js` : un vrai **cycle d'imports** (fonctionne aujourd'hui parce que seules des fonctions sont utilisées à l'appel).
+- `restoreInitialShift` et `undoMods` sont la même fonction en double (et gardent toutes deux des variables `user` et `initialShift` inutilisées). Les noms de route `/restore-initial` et `/undo-mods` existent tous deux.
+- `comment: data?.subType === "congé" ? 'congé' : ""` lit `data.subType`, alors que le front envoie `data.entryType` (le champ du modèle est `subType`) : le commentaire n'est jamais posé, et le littéral est un texte français utilisé comme code.
+- `data.team` (affectation) et `data.teamId` (modification, patch d'horaires) sont deux noms pour une même entrée ; `registerHourPatch` accepte les deux plus deux replis (`teamFromShift?._id ?? teamFromShift`, `baseShift.team`...).
+- `registerEntry` charge `substitution`, les trois dernières entrées et les vacations pour chaque gestionnaire alors que chacun n'en utilise qu'une partie.
+- `getUserEntries` a aussi un « Date » pour une chaîne de jour (`new Date(date)`), et `findLatestAssignment` dans `addSubstitutionEntries` ignore volontairement les entrées de remplacement (voir 3.2).
+- `savedEntry` est écrit (entrées de `demand`) et **jamais lu** : rien ne restaure l'entrée que `addSubstitutionEntries` a désactivée. Si C avait une affectation ce jour-là, accepter un remplacement la désactive,
+  et annuler ou retirer le remplacement ne la rétablit pas (`cancelSubstitutionEntries` ne désactive que ce qui est plus récent). Soit utiliser `savedEntry` pour réactiver, soit refuser l'acceptation.
 
 ---
 
-## 4. Interface: letting everyone see the final outcome
+## 3. Remplacements chaînés
 
-**What a user sees today.** `getRequests` returns the open/accepted demands of the center for a period; each demand knows its poster and its accepter, nothing about its neighbours in the chain.
-`computeUserShifts` keeps a `history` for the day (`type`, `shiftData`, `wasOverride`) but drops `substitution.id`, so the front cannot link an entry to a demand or to the other person.
-`DemandChip` and `DemandModal` show the **direct** accepter (avatar, name, phone, e-mail). So A sees "replaced by B" and B's contact data, although C is the one who will actually work.
-Nobody is told when the chain below them changes (B's S2 accepted, withdrawn or cancelled).
+Prenons : A poste S1, B accepte, B poste S2 (enfant de S1), C accepte, C poste S3, D accepte.
 
-**Proposal (to validate before any work).**
-1. **Data.** Replace the array `dependsOn` by a single `parentId` (the demand through which the poster obtained the shift), keep a derived `rootId`. A day's chain is then `root → ... → leaf`, and the "final holder"
-   is the accepter of the last accepted node (or the node's poster if the last demand is still open, shown as "pending"). Expose it on `getRequests` as `chain: [{ demandId, posterId, accepterId, status }]` (counts and ids only, names resolved by the existing user store), or on a small endpoint
+### 3.1 Ce qui fonctionne
+- `dependsOn` + `cancelCascade` annule les descendants d'abord, puis le parent (en profondeur), dans une seule transaction ; `visited` arrête les boucles.
+- Les entrées de calendrier sont défaites par horodatage (`createdAt >= subEntry.createdAt`) : annuler S2 retire l'entrée de demandeur de B pour S2 et l'entrée d'accepteur de C pour S2, donc l'entrée d'accepteur de B pour S1 redevient la plus récente et B travaille.
+  C'est aussi pourquoi `addSubstitutionEntries` ne doit pas désactiver une affectation `substitution` précédente (le filtre `subType: { $ne: 'substitution' }`) : la chaîne repose sur les entrées plus anciennes qui restent actives dessous.
+- Le retrait de B de S1 annule S2/S3 et rouvre S1.
+- Mails après commit pour les demandes en cascade (`notifyDemandChanges`).
+
+### 3.2 Ce qui peut mal tourner
+1. **S2 ci-dessus** : un agent remplacé peut rentrer de nouveau dans la chaîne (`pres`), ce qui crée deux titulaires de la même vacation.
+2. **`dependsOn` est trop large et utilisé comme parent unique.** `createDemand` stocke **toutes** les demandes acceptées de ce jour impliquant le demandeur comme demandeur *ou* accepteur. Le bon parent de S2 est la seule demande
+   dont l'`accepterId` est le nouveau demandeur (la vacation transmise à B). Avec la règle large, un utilisateur qui a à la fois donné et reçu le même jour a plusieurs parents, l'annulation de l'un d'eux annule l'enfant, et le
+   contrôle de cycle du hook `pre('save')` est faux pour les tableaux : `this.dependsOn` est toujours vrai (un tableau), `findById(tableau)` est converti en `$in` et ne renvoie que **le premier** résultat,
+   `seen.has(current.dependsOn.toString())` compare une chaîne d'ids jointe (jamais un id) dès 2 parents, et le hook exécute une requête par niveau à **chaque** sauvegarde (acceptation, annulation, `seenBy`...) hors session.
+   La détection de cycle n'est donc pas fiable. Un seul `parentId` (nullable) rendrait le contrôle trivial et l'interface simple (section 4).
+3. **Une chaîne peut revenir sur une personne.** Le S2 de B peut être accepté par A (le premier demandeur) : les entrées sont cohérentes (la plus récente de A est l'entrée d'accepteur) mais A porte une transaction S1 (A paie B) et S2 (B paie A),
+   et l'affichage de la chaîne est une boucle. Probablement permis volontairement ; cela doit être explicite dans l'interface (4.2) et dans les points.
+4. **Deux parents pour une vacation après un retrait + nouvelle acceptation.** B retire S1, D l'accepte : `reminderSentAt` est remis à zéro, les entrées sont neuves, mais les enfants `dependsOn` de S1 sont annulés ; correct. Si en revanche le S2 de B était ouvert (non cascadé puisque `status` ouvert est annulé aussi),
+   l'annulation d'un enfant *ouvert* n'envoie rien aux personnes qui avaient manifesté leur intérêt (`interested`) : mineur.
+5. **Les horodatages comme ordre.** La justesse du défaire dépend de `createdAt` strictement croissant par utilisateur et par jour, et de `$gte` (qui retire aussi une entrée de la même milliseconde).
+   Les entrées d'une demande sont créées dans une transaction pour deux utilisateurs différents, donc elles ne se télescopent pas, mais une entrée manuelle créée dans la même milliseconde qu'une acceptation serait désactivée.
+   `cancelAfter` désactive aussi **toute** entrée plus récente de l'utilisateur (modifications, patchs, affectations), même sans lien avec la demande ; c'est voulu pour les enfants de S2 mais c'est une surprise pour, par exemple, un patch d'horaires ajouté par C après son acceptation.
+6. **Points.** Les transactions sont planifiées par demande à l'acceptation (`createScheduledTransaction`) ; l'annulation les retire (`cancelRequestTransactions`). Avec S11 (statut réécrit sur des demandes terminées) et l'écart de date (S9), une chaîne annulée après coup laisse
+   des transferts que le planning ne justifie plus.
+7. **Expiration d'une chaîne.** `processAndCompleteDemands` termine chaque demande acceptée indépendamment une fois le jour passé (`deleted: true`) ; une annulation tardive de la racine tombe alors sur S11.
+8. **L'ordre de `cancelledRequests` est un contrat caché.** La racine est le **dernier** élément (`cancelledRequests[cancelledRequests.length - 1]` dans `cancelRequest`), les enfants viennent d'abord ; dans `withdrawFromRequest` le tableau ne contient que des enfants.
+   Le prochain changement de l'ordre de parcours casse en silence la demande déclarée racine et les personnes notifiées.
+
+### 3.3 Vérifications à transformer en tests
+A→B→C puis A annule ; A→B→C puis B retire ; A→B→A ; A remplacé poste ou ajoute `pres` ; A→B où B avait une formation ou une affectation `absence` ce jour-là (entrée désactivée, jamais restaurée) ;
+acceptation d'une permutation de bout en bout (S5, S6) ; annulation d'une demande déjà terminée (S11) ; acceptation simultanée de la même demande par deux utilisateurs.
+
+---
+
+## 4. Interface : permettre à chacun de voir le résultat final
+
+**Ce que voit un utilisateur aujourd'hui.** `getRequests` renvoie les demandes ouvertes/acceptées du centre pour une période ; chaque demande connaît son demandeur et son accepteur, rien de ses voisines dans la chaîne.
+`computeUserShifts` garde un `history` pour le jour (`type`, `shiftData`, `wasOverride`) mais abandonne `substitution.id`, donc le front ne peut pas relier une entrée à une demande ni à l'autre personne.
+`DemandChip` et `DemandModal` montrent l'accepteur **direct** (avatar, nom, téléphone, e-mail). A voit donc « remplacé par B » et les coordonnées de B, alors que C est celui qui travaillera réellement.
+Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, retiré ou annulé).
+
+**Proposition (à valider avant tout travail).**
+1. **Données.** Remplacer le tableau `dependsOn` par un seul `parentId` (la demande par laquelle le demandeur a obtenu la vacation), garder un `rootId` dérivé. La chaîne d'un jour est alors `racine → ... → feuille`, et le « titulaire final »
+   est l'accepteur du dernier nœud accepté (ou le demandeur du nœud si la dernière demande est encore ouverte, affiché « en attente »). L'exposer dans `getRequests` sous la forme `chain: [{ demandId, posterId, accepterId, status }]` (identifiants seulement, noms résolus par le store d'utilisateurs existant), ou via un petit endpoint
    `GET /substitution/:id/chain`.
-2. **Calendar entry.** Add `substitution: { id, role: 'poster' | 'accepter' }` to `history` entries, so a day can show "remplacé par B" and open the demand.
-3. **Day block / modal for the original poster A.** A compact line "A → B → C" with one marker per link: accepted, open (waiting), cancelled. The last holder is highlighted and is the only contact card shown; intermediate people keep their name only.
-   For A the day still says "remplacé" while the chain is open at the end ("en attente d'un remplaçant"): A knows that B is currently still responsible until someone accepts S2.
-4. **For B (middle).** B sees "Vous avez repris la vacation de A, remplacée par C" and the poster-side actions of S2 (cancel, change points); the withdraw from S1 button warns that it cancels S2.
-5. **Notifications.** After commit, tell the other holders of the chain (not only the people of the changed link) when a link changes: C accepts S2 (A is informed that the final holder is C), C withdraws (A and B are informed that B works again),
-   B withdraws from S1 (A is told S1 is open again and that S2 was cancelled). The current mails are intentionally generic; a "chain" mail would only say who is now on the shift.
-6. **Guard rails the UI should reflect.** The "remplacé" day must not offer "poster une demande" or the `pres` action (S1, S2); the chain should refuse a loop unless confirmed.
+2. **Entrée de calendrier.** Ajouter `substitution: { id, role: 'poster' | 'accepter' }` aux entrées de `history`, pour qu'un jour puisse afficher « remplacé par B » et ouvrir la demande.
+3. **Bloc du jour / modale pour le demandeur d'origine A.** Une ligne compacte « A → B → C » avec un marqueur par maillon : accepté, ouvert (en attente), annulé. Le dernier titulaire est mis en évidence et est la seule fiche de contact affichée ; les personnes intermédiaires gardent leur nom seulement.
+   Pour A, le jour affiche toujours « remplacé » tant que la chaîne est ouverte à son extrémité (« en attente d'un remplaçant ») : A sait que B reste responsable jusqu'à ce que quelqu'un accepte S2.
+4. **Pour B (au milieu).** B voit « Vous avez repris la vacation de A, remplacée par C » et les actions côté demandeur de S2 (annuler, changer les points) ; le bouton de retrait de S1 avertit qu'il annule S2.
+5. **Notifications.** Après commit, prévenir les autres titulaires de la chaîne (pas seulement les personnes du maillon modifié) quand un maillon change : C accepte S2 (A est informé que le titulaire final est C), C se retire (A et B sont informés que B travaille de nouveau),
+   B se retire de S1 (A apprend que S1 est de nouveau ouverte et que S2 a été annulée). Les mails actuels sont volontairement génériques ; un mail « chaîne » dirait seulement qui est désormais sur la vacation.
+6. **Garde-fous que l'interface doit refléter.** Le jour « remplacé » ne doit pas proposer « poster une demande » ni l'action `pres` (S2) ; la chaîne doit refuser une boucle sauf confirmation.
 
 ---
 
-## 5. Naming (important: several names say the opposite of what the value is)
+## 5. Noms (important : plusieurs noms disent le contraire de ce qu'est la valeur)
 
-| Name | Where | Problem | Suggestion |
-|------|-------|---------|-----------|
-| `shiftAssignment` | `request.creation.js` | holds `computedShift.shiftData`, neither a shift nor an assignment | `shiftData` |
-| `userShift` | `registerEntry`, `cancel*`, `acceptRequest` | it is an **array** of days; the singular name hides it (`userShift[0]` everywhere) | `userDays` (array) / `userDay` (one) |
-| `userShifts`, `userShiftData` | `request.accept.js` | array / one day entry, again | `userDays`, `userDay` |
-| `posterShift`, `accepterShift` (on `Substitution`) | model, all services | not a shift: `{ shift, day, date, teamId, selectedVariation }`; `posterShift.shift` stutters | `posterSlot` / `posterDay` or `poster: { shift, day, teamId, variation }` |
-| `posterShift` / `accepterShift` (return of `addSubstitutionEntries`, `cancelSubstitutionEntries`) | `calendarEntry.*` | **same name, different shape**: here a computed day, `null` in a transaction (and destructured then ignored in `withdraw`) | `posterDay`, `accepterDay` |
-| `baseShift` | `planning.userShifts.js` | `{ shift, team }` inside, a `Shift` document at the end (2.2) | `base` / `rotationDay` for the wrapper, `rotationShift` for the document |
-| `NewShiftSchema` | `models/Substitution.js` | legacy "new" | `SlotSchema` |
-| `isSameShift` | `register.js` and `planning.userShifts.js` | same name, two signatures, one returns `undefined` | `sameShiftId` / `isSameShiftAs` |
-| `type` | four meanings: entry discriminator (`assignment`, ...), result `type` (`creation`, `modification`, `restoration`), day `type` (`shift`, `empty`, or the assignment subtype), demand `type` (`switch`, `hybrid`, `substitution`) | `type` cannot be read without its file | `kind` for the discriminator, `action`/`outcome` for the result, `dayKind` for the computed day |
-| `substitution` | demand `type`, assignment `subType`, the model name and `Substitution.type` | a "replacement" and the whole collection share a word; files say `request`, functions say `demand`, variables say `sub`, `request`, `demand`, `substitution` | decide: `demand` for the entity, `replacement` for the kind |
-| `subType` / `entryType` | model / front payload | same concept, two names | `subType` end to end |
-| `team` / `teamId` | `data.team`, `data.teamId`, `shiftData.team`, `posterShift.teamId` | a `Team` reference called both | `teamId` for ids, `team` only for documents |
-| `reason` | `cancelRequestWithSession` | it is a final **status** | `finalStatus` |
-| `initialCancel` | `request.cancel.js` | it is the root demand that was cancelled | `rootRequest` |
-| `date` | everywhere in `calendarEntry.*`, `registerEntry(userId, date, data)` | it is a `YYYY-MM-DD` **string** (the schema type is String), while `Substitution.posterShift.date` is a real `Date`; `toDay`, `toDateKey`, `posterDayOf`, `new Date(...)` convert both ways | `day` for the string, `date` only for a `Date` |
-| `isTrueSwitch` | request body | never stored, `type` already says it | drop |
-| `userId` in `getUserDemands` | `req.user.posterId` | the token holds `userId` | `req.user.userId` |
+| Nom | Où | Problème | Suggestion |
+|-----|----|----------|-----------|
+| `userShift` | `registerEntry`, `cancel*`, `acceptRequest` | c'est un **tableau** de jours ; le nom singulier le cache (`userShift[0]` partout) | `userDays` (tableau) / `userDay` (un seul) |
+| `userShifts`, `userShiftData` | `request.accept.js` | tableau / une entrée de jour, encore | `userDays`, `userDay` |
+| `posterShift`, `accepterShift` (sur `Substitution`) | modèle, tous les services | ce n'est pas une vacation : `{ shift, day, date, teamId, selectedVariation }` ; `posterShift.shift` bégaie | `posterSlot` / `posterDay` ou `poster: { shift, day, teamId, variation }` |
+| `posterShift` / `accepterShift` (retour de `addSubstitutionEntries`, `cancelSubstitutionEntries`) | `calendarEntry.*` | **même nom, autre forme** : ici un jour calculé, `null` dans une transaction (et déstructuré puis ignoré dans `withdraw`) | `posterDay`, `accepterDay` |
+| `baseShift` | `planning.userShifts.js` | `{ shift, team }` à l'intérieur, un document `Shift` à la fin (2.2) | `base` / `rotationDay` pour l'enveloppe, `rotationShift` pour le document |
+| `NewShiftSchema` | `models/Substitution.js` | « new » hérité | `SlotSchema` |
+| `isSameShift` | `register.js` et `planning.userShifts.js` | même nom, deux signatures, l'une renvoie `undefined` | `sameShiftId` / `isSameShiftAs` |
+| `type` | quatre sens : discriminant d'entrée (`assignment`, ...), `type` de résultat (`creation`, `modification`, `restoration`), `type` de jour (`shift`, `empty`, ou le sous-type d'affectation), `type` de demande (`switch`, `hybrid`, `substitution`) | `type` ne se lit pas sans son fichier | `kind` pour le discriminant, `action`/`outcome` pour le résultat, `dayKind` pour le jour calculé |
+| `substitution` | `type` de demande, `subType` d'affectation, nom du modèle et `Substitution.type` | un « remplacement » et toute la collection partagent un mot ; les fichiers disent `request`, les fonctions `demand`, les variables `sub`, `request`, `demand`, `substitution` | trancher : `demand` pour l'entité, `replacement` pour le genre |
+| `subType` / `entryType` | modèle / charge utile du front | même concept, deux noms | `subType` de bout en bout |
+| `team` / `teamId` | `data.team`, `data.teamId`, `shiftData.team`, `posterShift.teamId` | une référence `Team` appelée des deux façons | `teamId` pour les ids, `team` seulement pour les documents |
+| `reason` | `cancelRequestWithSession` | c'est un **statut** final | `finalStatus` |
+| `initialCancel` | `request.cancel.js` | c'est la demande racine qui a été annulée | `rootRequest` |
+| `date` | partout dans `calendarEntry.*`, `registerEntry(userId, date, data)` | c'est une **chaîne** `YYYY-MM-DD` (le type du schéma est String), alors que `Substitution.posterShift.date` est un vrai `Date` ; `toDay`, `toDateKey`, `posterDayOf`, `new Date(...)` convertissent dans les deux sens | `day` pour la chaîne, `date` seulement pour un `Date` |
+| `isTrueSwitch` | corps de requête | jamais stocké, `type` le dit déjà | supprimer |
+| `userId` dans `getUserDemands` | `req.user.posterId` | le jeton contient `userId` | `req.user.userId` |
 
-**Back-and-forth conversions to remove (day string ↔ `Date` ↔ string).**
-`posterDayOf(demand)` (string) → `new Date(...)` for the transaction date → back; `cancelSubstitutionEntries({ date })` is documented as a `Date`, receives a string, applies `toDateKey(date)` to get a string and
-then still passes the raw `date` to `computeUserShifts`; `getUserEntries` builds a `Date` for a string field (bug S10); `registerEntry` passes the raw `date` for some queries and `toDay(date)` for others;
-`acceptRequest` calls `computeUserShifts(posterDayOf(request))` (a string, not an array) in one place and `[posterDayOf(request)]` in the other. One rule would remove all of it: **a day is always a `YYYY-MM-DD` string
-inside the services; a `Date` appears only at a Mongo or library boundary** (this is already the project's Temporal rule, it is just not applied in these files).
-
----
-
-## 6. Simplification (without changing behaviour)
-
-1. **One writer for "deactivate entries".** `cancelModifications`, `cancelHourPatches`, `cancelAssignments`, `cancelSingleAssignment`, `cancelAfter`, `deleteAssignment`'s `Promise.all`:
-   all are `updateMany({ userId, date, active: true, ...filter }, { active: false }, { session })`. One helper with a `kind` list and an optional `since` removes ~60 lines and fixes S7.
-2. **One function for `restoreInitialShift` / `undoMods`**, no unused `user`/`initialShift`, and drop `cancelSubstitutionAssignment`, `registerMDDA`, the commented code: this also removes the import cycle.
-3. **`registerEntry`**: load only what each handler needs; one validation point for "the day must not be involved in an active substitution" (S2) instead of a check in only one of the three handlers.
-4. **`getActiveEntriesByDates`**: three queries are fine; the grouping can be one `groupBy` on `a.date` with no `typeof` branch, and the populate paths reduced to the ones that exist (`shiftData.shift` with `variations`, `shiftData.selectedVariation`, `shiftData.team`).
-5. **`computeUserShifts`**: the `resolveAssignment` / `applyModification` / `applyHourPatch` pipeline is readable; the two things that make it hard are the double shape of `baseShift` and the three places that decide `isOff`.
-   A `base = { shift, team }` wrapper renamed, and `isOff` / `isWorked` assigned in `resolveAssignment` and one final step, would make each day's state a function of (base, latest assignment, latest modification, latest patch).
-6. **Demand state machine.** The legal transitions (`open → accepted | cancelled | expired`, `accepted → open (withdraw) | cancelled | completed`) are implicit in `if (status === ...)` scattered over accept, cancel, withdraw, expiry.
-   A small table `canTransition(from, to)` checked in the three entry points fixes S11 and makes S9 (date checks) one more rule in the same place.
-7. **Result shape.** Drop `updatedDemands: null` (6 places), the always-`null` `posterShift`/`accepterShift` in transaction mode, and return `{ root, cascaded }` instead of an array whose last item is special (3.2, point 8).
-8. **Post-commit steps** (`computeUserShifts`, categorization, mails) wrapped as best effort in one helper, so that a failure after commit never answers an error for a done action.
+**Conversions aller-retour à supprimer (chaîne de jour ↔ `Date` ↔ chaîne).**
+`posterDayOf(demand)` (chaîne) → `new Date(...)` pour la date de transaction → retour ; `cancelSubstitutionEntries({ date })` est documentée comme un `Date`, reçoit une chaîne, applique `toDateKey(date)` pour obtenir une chaîne et
+passe ensuite quand même le `date` brut à `computeUserShifts` ; `getUserEntries` construit un `Date` pour un champ chaîne (bug S10) ; `registerEntry` passe le `date` brut pour certaines requêtes et `toDay(date)` pour d'autres ;
+`acceptRequest` appelle `computeUserShifts(posterDayOf(request))` (une chaîne, pas un tableau) à un endroit et `[posterDayOf(request)]` à l'autre. Une seule règle supprimerait tout cela : **un jour est toujours une chaîne `YYYY-MM-DD`
+dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou bibliothèque** (c'est déjà la règle Temporal du projet, elle n'est simplement pas appliquée dans ces fichiers).
 
 ---
 
-## 7. Suggested order (if you decide to act)
+## 6. Simplification (sans changer le comportement)
 
-1. Guards, small and safe: S4 (actor check), S1, S2 (no demand or modification on a replaced day).
-2. Data correctness: S7 (await/updateMany), S8 (`finalStatus` forwarded), S11 (state guard), S9 (server compatibility, date, reservation), restoring `savedEntry` or refusing the acceptance.
-3. Switch: S5 and S6 together, with an end-to-end test on the scratch database.
-4. Dead routes and calls: S10, `getUserDemands`, `register-modification`.
-5. Chain model: `parentId`, then the chain in the API and the UI of section 4.
-6. Renames and the day/`Date` clean-up (section 5), done last because they touch most files.
+1. **Un seul écrivain pour « désactiver des entrées ».** `cancelModifications`, `cancelHourPatches`, `cancelAssignments`, `cancelSingleAssignment`, `cancelAfter`, le `Promise.all` de `deleteAssignment` :
+   tous sont `updateMany({ userId, date, active: true, ...filter }, { active: false }, { session })`. Un seul helper avec une liste de `kind` et un `since` optionnel retire ~60 lignes et corrige S7.
+2. **Une seule fonction pour `restoreInitialShift` / `undoMods`**, sans `user`/`initialShift` inutilisés, et supprimer `cancelSubstitutionAssignment`, `registerMDDA`, le code commenté : cela retire aussi le cycle d'imports.
+3. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » (S2) au lieu d'un contrôle dans un seul des trois gestionnaires.
+4. **`getActiveEntriesByDates`** : trois requêtes, c'est correct ; le regroupement peut être un seul `groupBy` sur `a.date` sans branche `typeof`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
+5. **`computeUserShifts`** : le pipeline `resolveAssignment` / `applyModification` / `applyHourPatch` est lisible ; les deux choses qui le rendent difficile sont la double forme de `baseShift` et les trois endroits qui décident `isOff`.
+   Une enveloppe `base = { shift, team }` renommée, et `isOff` / `isWorked` affectés dans `resolveAssignment` et une étape finale, feraient de l'état de chaque jour une fonction de (base, dernière affectation, dernière modification, dernier patch).
+6. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
+   Une petite table `canTransition(from, to)` contrôlée aux trois points d'entrée corrige S11 et fait de S9 (contrôles de date) une règle de plus au même endroit.
+7. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).
+8. **Étapes après commit** (`computeUserShifts`, catégorisation, mails) enveloppées au mieux (best-effort) dans un seul helper, pour qu'un échec après commit ne réponde jamais une erreur pour une action faite.
 
-Nothing above has been applied. Tell me which items to take and in which order.
+---
+
+## 7. Ordre suggéré (si vous décidez d'agir)
+
+1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur), S2 (pas de modification sur un jour remplacé).
+2. Justesse des données : S7 (await/updateMany), S8 (`finalStatus` transmis), S11 (garde d'état), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
+3. Permutation : S5 et S6 ensemble, avec un test de bout en bout sur la base de test.
+4. Routes et appels morts : S10, `getUserDemands`, `register-modification`.
+5. Modèle de chaîne : `parentId`, puis la chaîne dans l'API et l'interface de la section 4.
+6. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
+
+Rien de ce qui précède n'a été appliqué. Dites-moi quels points prendre et dans quel ordre.

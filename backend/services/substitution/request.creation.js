@@ -18,7 +18,7 @@ const maximumTransactionPoints = (points, acceptedSwitches) => {
     return maxPoints;
 }
 
-export async function createDemand (data) {
+export async function createDemand(data) {
     const {
         posterId,
         posterShift,
@@ -39,9 +39,20 @@ export async function createDemand (data) {
     const givenDay = toCalendarDay(posterShift.date);
     if (!givenDay) throw new AppError('Date de vacation invalide', 400);
     const [computedShift] = await computeUserShifts([givenDay.toString()], posterId);
-    const shiftAssignment = computedShift.shiftData;
+    const shiftData = computedShift.shiftData;
 
-    if (!shiftAssignment?.shift) {
+    // Seul un jour réellement travaillé peut être posté : ni un jour de repos, ni un jour facultatif non confirmé,
+    // ni une vacation déjà cédée (le remplacé garde la vacation affichée barrée mais ne la travaille plus)
+    if (!computedShift.isWorked) {
+        throw new AppError(
+            computedShift.isOff
+                ? "Vous n'êtes pas en poste ce jour-là (déjà remplacé ?), annulez d'abord la demande en cours"
+                : 'Vous ne travaillez pas ce jour-là',
+            422
+        );
+    }
+
+    if (!shiftData?.shift) {
         throw new AppError("L'utilisateur n'a pas de shift défini pour cette date", 400);
     }
 
@@ -64,8 +75,8 @@ export async function createDemand (data) {
 
     // Validate selected variation if provided
     const selectedVariationId = posterShift.selectedVariation ?? null;
-    if (selectedVariationId && shiftAssignment.shift.variations?.length > 0) {
-        const validVariation = shiftAssignment.shift.variations.some(
+    if (selectedVariationId && shiftData.shift.variations?.length > 0) {
+        const validVariation = shiftData.shift.variations.some(
             (v) => (v._id ?? v).toString() === (selectedVariationId._id ?? selectedVariationId).toString()
         );
         if (!validVariation) {
@@ -94,7 +105,7 @@ export async function createDemand (data) {
     const dependsOn = sameDayAcceptedSubstitutions.map((s) => s._id);
 
     // Create demand
-    const teamId = shiftAssignment.team?._id ?? shiftAssignment.team;
+    const teamId = shiftData.team?._id ?? shiftData.team;
     if (!teamId) {
         throw new AppError("Équipe introuvable pour cette vacation", 400);
     }
@@ -102,7 +113,7 @@ export async function createDemand (data) {
     const demand = new Substitution({
         posterId,
         posterShift: {
-            shift: shiftAssignment.shift._id,
+            shift: shiftData.shift._id,
             selectedVariation: selectedVariationId
                 ? (selectedVariationId._id ?? selectedVariationId)
                 : null,

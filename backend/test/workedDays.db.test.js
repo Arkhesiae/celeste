@@ -20,6 +20,9 @@ import '../models/Variation.js';
 import { Assignment, Modification } from '../models/CalendarEntry.js';
 import { computeUserShifts } from '../services/planning/planning.userShifts.js';
 import { toShiftsMap } from '../services/planning/planning.shiftsMap.js';
+import { createDemand } from '../services/substitution/request.creation.js';
+import { addSubstitutionEntries } from '../services/calendarEntry/calendarEntry.register.js';
+import Substitution from '../models/Substitution.js';
 
 const URI = process.env.TEST_WORKED_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_worked';
 let available = false;
@@ -91,4 +94,47 @@ test('isWorked : VIC passé / à venir, jour facultatif, affectation, congé et 
   });
   assert.equal(map.get(at(5)).assignment, 'training');
   assert.equal(map.get(at(5)).shift, null);
+});
+
+test('createDemand : refusé sur un repos, un jour facultatif ou une vacation déjà cédée (S1)', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+
+  // Cycle de 3 jours qui commence aujourd'hui : J (travail), O (travail facultatif), R (repos)
+  const today = Temporal.Now.plainDateISO('Europe/Paris');
+  const at = (offset) => today.add({ days: offset }).toString();
+  const center = await Center.create({
+    name: 'C2', OACI: 'TEST2', type: 'app', timeZone: 'Europe/Paris',
+    cycleAnchorDate: new Date(`${today}T00:00:00Z`), cycleAnchorDay: today.toString(),
+  });
+  const team = await Team.create({ name: '2', center: center._id, cycleOffset: 0, cycleStartDate: new Date(`${today}T00:00:00Z`) });
+  const work = await Shift.create({ name: 'J2', order: 0, type: 'work', default: { startTime: '08:00', endTime: '16:00', points: 10 } });
+  const optional = await Shift.create({ name: 'O2', order: 1, type: 'work', optional: true, default: { startTime: '08:00', endTime: '16:00', points: 10 } });
+  const rest = await Shift.create({ name: 'R2', order: 2, type: 'rest', default: { startTime: null, endTime: null, points: 0 } });
+  await Rotation.create({
+    name: 'rot2', centerId: center._id, days: [work._id, optional._id, rest._id],
+    activationDates: [new Date(`${today}T00:00:00Z`)], activationDays: [today.toString()],
+  });
+  const makeUser = (email) => User.create({
+    name: 'Test', lastName: email, email, password: 'x', centerId: center._id,
+    teams: [{ teamId: team._id, fromDate: new Date('2020-01-01T00:00:00Z'), fromDay: '2020-01-01', toDate: null, toDay: null }],
+  });
+  const poster = await makeUser('poster@example.com');
+  const accepter = await makeUser('accepter@example.com');
+  const post = (userId, offset) => createDemand({ posterId: userId, posterShift: { date: at(offset) }, points: 0, acceptedSwitches: [] });
+  const refused = { status: 422 };
+
+  await assert.rejects(post(poster._id, 1), refused);  // facultatif non confirmé
+  await assert.rejects(post(poster._id, 2), refused);  // repos
+
+  // A poste le jour de travail, B accepte : A est remplacé
+  const demand = await post(poster._id, 0);
+  demand.accepterId = accepter._id;
+  demand.status = 'accepted';
+  await demand.save();
+  await addSubstitutionEntries(demand);
+
+  await assert.rejects(post(poster._id, 0), refused);   // A ne tient plus la vacation
+  const chained = await post(accepter._id, 0);          // B, qui la tient, peut la reposter (chaîne)
+  assert.equal(chained.status, 'open');
+  assert.equal(await Substitution.countDocuments({ posterId: poster._id }), 1);
 });

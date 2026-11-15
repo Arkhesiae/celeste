@@ -217,7 +217,6 @@ const applyPreset = (key) => {
 const handleSubmit = async (demand) => {
   try {
     subInProgress.value = true;
-    const posterId = authStore.userData.userId;
     const posterShift = {
       date: demand.date,
       shift: demand.selectedShift.shift,
@@ -226,11 +225,9 @@ const handleSubmit = async (demand) => {
     };
 
     const requestData = {
-      posterId,
       posterShift,
       comment: demand.comment,
       points: demand.points,
-      status: 'open',
       acceptedSwitches: demand.acceptedSwitches,
       isTrueSwitch: demand.isTrueSwitch
     };

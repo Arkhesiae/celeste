@@ -24,7 +24,6 @@ export async function createDemand (data) {
         posterShift,
         comment,
         points,
-        status = 'open',
         acceptedSwitches,
         isTrueSwitch
     } = data;
@@ -113,7 +112,7 @@ export async function createDemand (data) {
         },
         comment: comment || '',
         points,
-        status,
+        status: 'open',
         centerId: user.centerId,
         createdAt: new Date(),
         deleted: false,

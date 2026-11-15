@@ -7,7 +7,7 @@ import { formatDateFr } from '../utils/dates/format.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { sameId } from '../utils/ids.js';
-import { isValidDateRange } from '../utils/validation.js';
+import { assertDay, assertObject, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 import * as planningService from '../services/planning/index.js';
 import * as substitutionService from '../services/substitution/index.js';
@@ -200,15 +200,19 @@ const detectTeamChangeConflicts = async (req, res, next) => {
 
 const createDemand = async (req, res, next) => {
     try {
-        if (!req.body.posterShift.date) {
-            throw new AppError('La date est requise', 400);
-        }
+        const { posterShift, comment, points = 0, acceptedSwitches = [], isTrueSwitch } = req.body;
 
-        if (!req.body.posterShift || !req.body.posterId) {
-            throw new AppError('Paramètres manquants', 400);
-        }
+        assertObject(posterShift, 'Vacation');
+        assertDay(posterShift.date, 'Date de la vacation');
 
-        const demand = await substitutionService.createDemand(req.body);
+        const demand = await substitutionService.createDemand({
+            posterId: req.user.userId,
+            posterShift: { date: posterShift.date, selectedVariation: posterShift.selectedVariation },
+            comment,
+            points,
+            acceptedSwitches,
+            isTrueSwitch,
+        });
         res.status(201).json(demand);
 
         // Notifications en arrière-plan, après la réponse

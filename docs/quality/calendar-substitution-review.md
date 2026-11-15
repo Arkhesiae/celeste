@@ -19,7 +19,6 @@ Severity: **P0** wrong data or security hole, **P1** feature broken or inconsist
 |---|-----|-------|----------|
 | S1 | P0 | `request.creation.js`, `substitution.controller.js` `createDemand` | A replaced agent can post a new demand on the shift they gave away: two people end up working it |
 | S2 | P0 | `calendarEntry.register.js` `registerModification` | A `pres` modification brings a replaced agent back on a shift now held by someone else |
-| S3 | P0 | `substitution.controller.js` `createDemand`, `POST /substitution/` | The poster comes from the request body, not from the token, and there is no center guard |
 | S4 | P0 | `routes/substitution.routes.js` | Any member of the center can cancel or delete anybody's demand |
 | S5 | P1 | `calendarEntry.register.js` `addSubstitutionEntries` | A switch never gives the poster the accepter's shift |
 | S6 | P1 | `request.accept.js` `acceptRequestWithSession` | Accepting a switch throws (`userShiftData.shift`, `.teamObject` do not exist) |
@@ -51,14 +50,6 @@ Other modifications on such a day (`vic`, `variation`, `disp`) are accepted too,
 nobody works the shift while the demand stays `accepted`. `registerAssignment` blocks active substitutions, `registerModification` and `registerHourPatch` do not.
 Fix direction: same guard as `registerAssignment` (`latestAssignment.subType === 'substitution'` or an open/accepted `Substitution` that day), or a
 dedicated message "annulez d'abord la demande".
-
-**S3 (P0). The poster is read from the body.** `createDemand` controller calls `substitutionService.createDemand(req.body)` and the service uses
-`posterId` from the body. Any logged-in user can post demands for any user id (the center used is the victim's). Also: `status` comes from the body
-(a client can create a demand directly `accepted` or `completed`), `points` and `acceptedSwitches` are not validated (`acceptedSwitches` undefined makes
-`maximumTransactionPoints` throw a TypeError, a missing `points` gives `NaN` and then a schema error, both end as generic 500), and
-`req.body.posterShift.date` is read before the existence of `posterShift` is checked. The project rule "the target always in the URL, caller from the token"
-is not applied here. Fix direction: `posterId = req.user.userId`, whitelist the body (`posterShift.date`, `selectedVariation`, `points`, `acceptedSwitches`, `comment`, `isTrueSwitch`),
-force `status: 'open'`.
 
 **S4 (P0). Missing actor checks.** `POST /:id/cancel` and `DELETE /:id/delete` are only behind `authorizeDemandAccess` (same center). Nothing checks that
 the caller is the poster (or an admin). `cancelRequest` only uses `actorId` for the notification. `DELETE /:id/delete` runs the WIP `deleteDemand`
@@ -253,7 +244,7 @@ inside the services; a `Date` appears only at a Mongo or library boundary** (thi
 
 ## 7. Suggested order (if you decide to act)
 
-1. Guards, small and safe: S3, S4 (token poster, actor check), S1, S2 (no demand or modification on a replaced day).
+1. Guards, small and safe: S4 (actor check), S1, S2 (no demand or modification on a replaced day).
 2. Data correctness: S7 (await/updateMany), S8 (`finalStatus` forwarded), S11 (state guard), S9 (server compatibility, date, reservation), restoring `savedEntry` or refusing the acceptance.
 3. Switch: S5 and S6 together, with an end-to-end test on the scratch database.
 4. Dead routes and calls: S10, `getUserDemands`, `register-modification`.

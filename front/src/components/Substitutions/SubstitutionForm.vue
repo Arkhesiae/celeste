@@ -161,39 +161,25 @@
                 </template>
               </div>
 
-              <div v-if="acceptedSwitchesWithPoints.length > 0" class="d-flex flex-column ga-4 my-8">
-                <div v-for="switchDay in acceptedSwitches" :key="switchDay" class="d-flex flex-column cursor-pointer"
-                  @click="editPoints(switchDay)">
-                  <div class="d-flex align-center justify-space-between ga-2">
-                    <div class="d-flex align-center ga-2">
-                      <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70" />
-                      <span class="text-body-medium font-weight-bold">{{ getSwitchName(switchDay) }}</span>
-                    </div>
-                    <div class="d-flex align-center ga-2">
-                      <span class="text-body-medium font-weight-bold">{{ pointsPerSwitch[switchDay] }}</span>
-                      <v-icon icon="mdi-pencil" size="12" color="onSurface" class="opacity-50" />
-                    </div>
-                  </div>
-                  <v-divider class="mt-4" />
-                </div>
+              <div v-if="acceptedSwitchesWithPoints.length > 0" class="d-flex flex-column ga-6 my-8">
+                <PointsSlider
+                  v-for="switchDay in acceptedSwitches"
+                  :key="switchDay"
+                  v-model="pointsPerSwitch[switchDay]"
+                  :label="getSwitchName(switchDay)"
+                  icon="mdi-swap-horizontal"
+                  :max="MAX_POINTS"
+                  size="small"
+                />
               </div>
 
-              <div v-if="dialogMode !== 'switch'" class="d-flex justify-start flex-column align-start mt-4">
-                <div v-if="acceptedSwitchesWithPoints.length > 0" class="mb-4 pl-4">
-                  <span class="text-body-small opacity-50">Remplacement</span>
-                </div>
-                <v-number-input v-model="demand.points" class="text-primary flex-grow-1" width="100%" :class="{
-                  'excess': demand.points > defaultPoints + 3,
-                  'low': demand.points < defaultPoints - 3
-                }" :min="0" reverse control-variant="split" label="" rounded="xl" bg-color="surfaceContainer"
-                  color="blue" glow :hide-input="false" inset base-color="transparent" variant="outlined" />
-                <div style="height: 20px;">
-                  <v-slide-y-transition>
-                    <div v-if="demand.points !== defaultPoints">
-                      <span class="text-body-small opacity-50">Points par défaut : {{ defaultPoints }}</span>
-                    </div>
-                  </v-slide-y-transition>
-                </div>
+              <div v-if="dialogMode !== 'switch'" class="mt-4">
+                <PointsSlider
+                  v-model="demand.points"
+                  :label="acceptedSwitchesWithPoints.length > 0 ? 'Remplacement' : 'Points'"
+                  :max="MAX_POINTS"
+                  :reference="defaultPoints"
+                />
               </div>
             </v-form>
           </template>
@@ -223,9 +209,6 @@
     </template>
   </GenericDialog>
 
-  <PointsDialog v-model="showPointsDialog" :points="switchPoints" :switch="switchToEdit" @update:points="updatePoints"
-    @update:model-value="showPointsDialog = $event" />
-
   <ConfirmationDialog v-model="showConfirmationDialog" :title="'Nombre de points'"
     :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirm-text="'Poster quand même'"
     @confirm="confirmSubmit" @update:is-dialog-visible="showConfirmationDialog = $event" />
@@ -254,8 +237,8 @@ const emit = defineEmits([
 const dateUtil = useDate();
 
 const pointsPerSwitch = ref({});
-const switchPoints = ref(0);
 const defaultPoints = ref(10);
+const MAX_POINTS = 30;   // borne du curseur : trois fois les points par défaut
 const acceptedSwitches = ref([]);
 
 const acceptedSwitchesWithPoints = computed(() =>
@@ -279,8 +262,6 @@ const currentWindow = ref(0);
 const formValid = ref(false);
 const selectedVariant = ref('');
 const showConfirmationDialog = ref(false);
-const showPointsDialog = ref(false);
-const switchToEdit = ref(null);
 
 // Computed
 
@@ -384,16 +365,6 @@ const toggleSwitch = (dayId) => {
     : [...acceptedSwitches.value, dayId];
 };
 
-const editPoints = (switchDay) => {
-  switchToEdit.value = { id: switchDay, name: getSwitchName(switchDay) };
-  switchPoints.value = pointsPerSwitch.value[switchDay];
-  showPointsDialog.value = true;
-};
-
-const updatePoints = (data) => {
-  pointsPerSwitch.value = { ...pointsPerSwitch.value, [data.switchDay]: data.points };
-};
-
 const fetchCompatibleSwitches = async () => {
   if (!localDate.value) return [];
   return substitutionService.fetchCompatibleSwitches(toDateKey(localDate.value));
@@ -493,26 +464,6 @@ watch(() => props.date, (newDate) => {
 </script>
 
 <style scoped>
-:deep(.v-number-input .v-field__field input) {
-  font-size: 1.5rem;
-}
-
-:deep(.v-number-input.secondary .v-field__field input) {
-  color: rgb(var(--v-theme-secondary)) !important;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-:deep(.v-number-input.excess .v-field__field input) {
-  color: rgb(var(--v-theme-error)) !important;
-  font-size: 1.5rem;
-}
-
-:deep(.v-number-input.low .v-field__field input) {
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
 /* Vuetify n'a pas de classe d-grid */
 .switch-grid {
   display: grid;

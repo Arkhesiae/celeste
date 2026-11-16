@@ -93,6 +93,7 @@ declare module 'vue' {
     PointsCard: typeof import('./src/components/Profile/PointsCard.vue')['default']
     PointsCardMobile: typeof import('./src/components/Transaction/PointsCardMobile.vue')['default']
     PointsDialog: typeof import('./src/components/Dialogs/PointsDialog.vue')['default']
+    PointsSlider: typeof import('./src/components/Substitutions/PointsSlider.vue')['default']
     RecurringCostsCard: typeof import('./src/components/Financement/RecurringCostsCard.vue')['default']
     Replaced: typeof import('./src/components/Substitutions/DemandCards/SubCards/Replaced.vue')['default']
     ReplyDialog: typeof import('./src/components/Tickets/ReplyDialog.vue')['default']

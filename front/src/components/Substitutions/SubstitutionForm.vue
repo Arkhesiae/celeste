@@ -65,11 +65,8 @@
           </div>
 
           <div>
-            <v-card-title class="pa-0 pl-2  mb-0">
-              <h2 class="text-title-large font-weight-medium">Permutations acceptées</h2>
-            </v-card-title>
-            <v-card-subtitle class="pa-0 ma-0 pl-2 text-body-small">
-              Sélectionnez les vacations acceptées
+            <v-card-title class="pa-0 ma-0 text-title-small">Permutations acceptées </v-card-title>
+            <v-card-subtitle class="pa-0 ma-0 mb-8 text-body-small">Sélectionnez les vacations acceptées
             </v-card-subtitle>
 
             <div>
@@ -83,34 +80,55 @@
 
               <!-- Un jour du tour de service actif à la date demandée par tuile : vacation, horaires, compatibilité -->
               <div v-else class="switch-grid ga-2" role="group" aria-label="Permutations acceptées">
-                <button
-                  v-for="day in rotationDays"
-                  :key="day._id"
-                  type="button"
-                  class="tile switch-tile"
-                  :class="{ 'switch-tile--incompatible': !day.compatible }"
-                  :aria-pressed="acceptedSwitches.includes(day._id)"
-                  @click="toggleSwitch(day._id)"
-                >
-                  <span class="switch-tile__name font-weight-bold">{{ day.name }}</span>
-                  <span class="switch-tile__hours opacity-70">{{ day.hours }}</span>
-                  <span v-if="day.compatible" class="switch-tile__status d-inline-flex align-center ga-1">
-                    <v-icon icon="mdi-check-circle-outline" size="12" />Compatible
-                  </span>
-                  <span v-else class="switch-tile__status d-inline-flex align-center ga-1">
-                    <v-icon icon="mdi-alert-circle-outline" size="12" />{{ day.reason }}
-                  </span>
-                  <!-- Variantes : barrées quand la règle de repos ou de charge les refuse (jamais la couleur seule), horaires et motif en infobulle -->
-                  <span v-if="day.variations.length" class="switch-tile__variations">
-                    <span
-                      v-for="variation in day.variations"
-                      :key="variation._id"
-                      class="switch-tile__variation"
-                      :class="{ 'switch-tile__variation--blocked': !variation.compatible }"
-                      :title="variation.compatible ? variation.hours : `${variation.hours} · ${variation.reason}`"
-                    >{{ variation.name }}</span>
-                  </span>
-                </button>
+                <div v-for="day in rotationDays" :key="day._id" class="switch-cell">
+                  <button
+                    type="button"
+                    class="tile switch-tile"
+                    :class="{ 'switch-tile--incompatible': !day.compatible }"
+                    :aria-pressed="acceptedSwitches.includes(day._id)"
+                    @click="toggleSwitch(day._id)"
+                  >
+                    <span class="switch-tile__name font-weight-bold">{{ day.name }}</span>
+                    <span class="switch-tile__hours opacity-70">{{ day.hours }}</span>
+                    <!-- Un seul mot : compatible, partiellement compatible ou incompatible ; les motifs sont dans le menu du bouton voisin -->
+                    <span class="switch-tile__status d-inline-flex align-center ga-1">
+                      <v-icon :icon="day.statusIcon" size="12" />{{ day.statusLabel }}
+                    </span>
+                    <!-- Variantes : barrées quand la règle de repos ou de charge les refuse (jamais la couleur seule), horaires et motif en infobulle -->
+                    <span v-if="day.variations.length" class="switch-tile__variations">
+                      <span
+                        v-for="variation in day.variations"
+                        :key="variation._id"
+                        class="switch-tile__variation"
+                        :class="{ 'switch-tile__variation--blocked': !variation.compatible }"
+                        :title="variation.compatible ? variation.hours : `${variation.hours} · ${variation.reason}`"
+                      >{{ variation.name }}</span>
+                    </span>
+                  </button>
+
+                  <!-- Motifs : petit bouton à côté de la tuile (pas dedans), qui ouvre un menu -->
+                  <v-menu v-if="day.details.length" location="bottom end">
+                    <template #activator="{ props: menuProps }">
+                      <v-btn
+                        v-bind="menuProps"
+                        class="switch-cell__info"
+                        icon="mdi-information-outline"
+                        size="x-small"
+                        variant="text"
+                        density="comfortable"
+                        :aria-label="`Motifs pour la vacation ${day.name}`"
+                      />
+                    </template>
+                    <v-card rounded="xl" max-width="320" class="pa-3">
+                      <p class="text-label-large mb-2">{{ day.name }} · {{ day.statusLabel }}</p>
+                      <ul class="switch-reasons text-body-small">
+                        <li v-for="detail in day.details" :key="detail.label">
+                          <strong>{{ detail.label }}</strong> : {{ detail.reason }}
+                        </li>
+                      </ul>
+                    </v-card>
+                  </v-menu>
+                </div>
               </div>
             </div>
           </div>
@@ -296,21 +314,40 @@ const hoursOf = (day) => (day.startTime && day.endTime ? `${day.startTime} – $
 const rotationDays = computed(() =>
   compatibleSwitches.value
     .filter(day => day._id !== props.selectedShift?.shift?._id)
-    .map(day => ({
-      _id: day._id,
-      name: day.name,
-      hours: hoursOf(day),
-      compatible: day.compatible,
-      reason: describeLimits(day.limit),
+    .map(day => {
       // Chaque variante de la vacation, évaluée sur ses propres horaires par le serveur
-      variations: (day.variations ?? []).map(variation => ({
+      const variations = (day.variations ?? []).map(variation => ({
         _id: variation._id,
         name: variation.name,
         hours: hoursOf(variation),
         compatible: variation.compatible,
         reason: describeLimits(variation.limit),
-      })),
-    }))
+      }));
+      // « Partiellement » : compatible aux horaires par défaut, mais au moins une variante est refusée
+      const partial = day.compatible && variations.some(variation => !variation.compatible);
+      const status = !day.compatible
+        ? { label: 'Incompatible', icon: 'mdi-alert-circle-outline' }
+        : partial
+          ? { label: 'Partiellement compatible', icon: 'mdi-alert-outline' }
+          : { label: 'Compatible', icon: 'mdi-check-circle-outline' };
+
+      return {
+        _id: day._id,
+        name: day.name,
+        hours: hoursOf(day),
+        compatible: day.compatible,
+        partial,
+        statusLabel: status.label,
+        statusIcon: status.icon,
+        // Les motifs, affichés dans le menu : ceux des horaires par défaut, puis ceux de chaque variante refusée
+        details: [
+          ...(day.compatible ? [] : [{ label: 'Horaires par défaut', reason: describeLimits(day.limit) }]),
+          ...variations.filter(variation => !variation.compatible)
+            .map(variation => ({ label: `Variante ${variation.name} (${variation.hours})`, reason: variation.reason })),
+        ],
+        variations,
+      };
+    })
 );
 
 const isNextButtonDisabled = computed(() =>
@@ -482,6 +519,30 @@ watch(() => props.date, (newDate) => {
   grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
 }
 
+/* Tuile + bouton des motifs, son voisin : le bouton se superpose au coin de la tuile sans être dedans */
+.switch-cell {
+  position: relative;
+  display: flex;
+}
+
+.switch-cell > .switch-tile { flex: 1; }
+
+.switch-cell__info {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  opacity: 0.8;
+}
+
+/* Tuile sélectionnée : le fond est plein, l'icône prend la couleur « sur accent » de la tuile */
+.switch-cell:has(> .switch-tile[aria-pressed='true']) .switch-cell__info { color: rgb(var(--v-theme-onPrimary)); }
+.switch-cell:has(> .switch-tile--incompatible[aria-pressed='true']) .switch-cell__info { color: rgb(var(--v-theme-onError)); }
+
+.switch-reasons {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
 .switch-tile__name { font-size: 18px; line-height: 1.1; }
 .switch-tile__hours { font-size: 11px; }
 .switch-tile__status { font-size: 10px; line-height: 1.2; }
@@ -505,8 +566,8 @@ watch(() => props.date, (newDate) => {
 
 /* Refusée par une règle de repos ou de charge : barrée et estompée */
 .switch-tile__variation--blocked {
-  text-decoration: line-through;
-  opacity: 0.6;
+  color: rgb(var(--v-theme-error));
+  opacity: .9;
 }
 
 /* Vacation que la règle de repos / de charge interdit : toujours choisissable, mais signalée */

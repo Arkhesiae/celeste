@@ -14,6 +14,7 @@
      :focus-visible  outline offset from the tile (keyboard only)
      selected        `.tile--selected`, `[aria-checked="true"]` or `[aria-pressed="true"]`: filled with the accent
      muted           `.tile--muted`: secondary text color, for low-importance choices (e.g. rest days)
+     static          `.tile--static`: not interactive (a cell that only displays): no hover ring, press scale or pointer cursor
      disabled        `:disabled` or `[aria-disabled="true"]`
 
    Tuning (override on the element or a parent, no new class needed)
@@ -82,6 +83,18 @@
   opacity: 0.38;
   pointer-events: none;
 }
+
+/* Tuile qui n'affiche seulement : ni anneau au survol, ni réduction à l'appui, ni curseur de bouton (après les règles ci-dessus, à spécificité égale) */
+.tile--static { cursor: default; }
+
+@media (hover: hover) {
+  .tile--static:hover {
+    box-shadow: none;
+    border-color: var(--tile-border);
+  }
+}
+
+.tile--static:active { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .tile { transition: none; }

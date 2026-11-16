@@ -3,20 +3,18 @@
         :aria-pressed="selected" :style="{ height: height + 'px ' }" :class="{
         'isWorkDay': isWorkDay,
         'isRestDay': !!shiftName && !isWorkDay,
-        'isVic': isVic,
+        [dayKindClass(kind)]: !!kind,
         'is-past': inPast,
-        'isLeave': entryKind === 'leave',
-        'isEntry': entryKind === 'entry',
         'selected': selected,
         'in-period': inPeriod,
-        'today-center-highlight': isToday,
+        'day--today': isToday,
         'empty-day': !isInMonth,
     }" @click="handleClick" @keydown.enter.prevent="handleClick" @keydown.space.prevent="handleClick">
         <!-- Date number + shift name row -->
         <div class="d-flex justify-space-between align-start px-0 day-header" style="min-width: 0; overflow: hidden;">
             <!-- Day number -->
             <div class="day_label_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <span class="day-number" :class="{ 'tg-day--today': isToday, 'xs': xs }">
+                <span class="day-number" :class="{ 'today-pill': isToday, 'xs': xs }">
                     {{ date.day }}
                 </span>
             </div>
@@ -24,11 +22,11 @@
             <!-- Shift info : travail ET repos (R1, R6…) — en haut à droite -->
             <div class="shift_container align-center" :class="inPast ? 'text-disabled' : ''">
                 <!-- Affectation (formation, bureau, congé...) : son icône prend la place du nom de la vacation de base -->
-                <div v-if="icon" class="d-flex shift-name align-center" :title="shiftName">
+                <div v-if="icon" class="d-flex shift-name day-icon align-center" :title="shiftName">
                     <v-icon size="14px">{{ icon }}</v-icon>
                 </div>
-                <div v-else-if="shiftName" class="d-flex align-center shift-row" :class="presence !== 'present' ? 'offDay' : ''">
-                    <span class="shift-name" :class="{ 'xs': xs, 'absence': isAbsence }">{{ shiftName }}</span>
+                <div v-else-if="shiftName" class="d-flex align-center shift-row" :class="dayPresenceClasses(presence)">
+                    <span class="shift-name" :class="{ 'xs': xs }">{{ shiftName }}</span>
                     <div v-if="selectedVariation || presence !== 'present'" class="dot dot--2xs" />
                     <span v-if="variationLabel" class="variation-name" :class="{ 'xs': xs }">
                         {{ variationLabel }}
@@ -81,6 +79,7 @@
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useDisplay } from 'vuetify';
 import { formatHours } from '@/utils/workWindows';
+import { dayKindClass, dayPresenceClasses } from '@/utils/dayStyle';
 
 const { xs } = useDisplay();
 
@@ -128,8 +127,8 @@ const props = defineProps({
         type: String,
         default: null,
     },
-    /** Affectation du jour : 'leave' (congé) ou 'entry' (toute autre), qui donne sa couleur à la tuile */
-    entryKind: {
+    /** Nature du jour (utils/dayStyle.js dayKindOf) : 'work', 'vic', 'leave', 'entry' ou 'rest', qui donne sa couleur à la tuile (styles/day.css) */
+    kind: {
         type: String,
         default: null,
     },
@@ -206,8 +205,6 @@ const restLabel = computed(() => (props.rest
 /** Journée en VIC : la tuile prend la couleur secondaire (un jour travaillé est primaire) */
 const isVic = computed(() => props.selectedVariation === 'vic');
 
-const isAbsence = computed(() => ['unconfirmed', 'released'].includes(props.presence))
-
 /** Évite de doubler la variante déjà concaténée dans shiftName (ex. J1A). */
 const variationLabel = computed(() => {
     if (isVic.value) return 'VIC';
@@ -261,32 +258,10 @@ const handleClick = async () => {
         transform var(--motion-standard-fast-effects);
 }
 
-/* Accent : VIC = secondaire ; affectations = une couleur pour les congés, une seule pour toutes les autres */
-.isVic {
-    --tile-accent: rgb(var(--v-theme-secondary));
-    --tile-on-accent: rgb(var(--v-theme-onSecondary));
-}
-
-.isLeave {
-    --tile-accent: rgb(var(--v-theme-leave));
-    --tile-on-accent: rgb(var(--v-theme-onLeave));
-}
-
-.isEntry {
-    --tile-accent: rgb(var(--v-theme-entry));
-    --tile-on-accent: rgb(var(--v-theme-onEntry));
-}
-
-/* Teinte légère de l'accent au repos pour un jour travaillé, en VIC ou d'affectation ; sélectionnée, c'est l'accent plein (tuile) */
-.isWorkDay:not([aria-pressed='true']),
-.isVic:not([aria-pressed='true']),
-.isLeave:not([aria-pressed='true']),
-.isEntry:not([aria-pressed='true']) {
-    --tile-bg: color-mix(in srgb, var(--tile-accent) 10%, transparent);
-}
+/* Accent (travail, VIC, congé, autre affectation), teinte de repos, présence et « aujourd'hui » : classes globales de styles/day.css */
 
 /* Jour à l'intérieur de la période choisie : teinte de l'accent (les bornes sont pleines, comme une tuile sélectionnée).
-   Après la teinte de repos ci-dessus : à spécificité égale, c'est la dernière qui compte. */
+   Plus spécifique que la teinte de repos de styles/day.css. */
 .in-period:not([aria-pressed='true']) {
     --tile-bg: color-mix(in srgb, var(--tile-accent) 28%, transparent);
     --tile-border: color-mix(in srgb, var(--tile-accent) 55%, transparent);
@@ -295,11 +270,6 @@ const handleClick = async () => {
 /* Tuile sélectionnée : coins plus arrondis (le fond plein vient de la tuile, via aria-pressed) */
 .selected {
     --tile-radius: 16px;
-}
-
-/* Aujourd'hui : contour de l'accent (teinte par color-mix : le primaire est en hexadécimal à 8 chiffres, rgba(var(...), a) y est invalide) */
-.today-center-highlight:not(.selected) {
-    border: 1.5px solid color-mix(in srgb, rgb(var(--v-theme-primary)) 55%, transparent) !important;
 }
 
 .empty-day {
@@ -338,16 +308,6 @@ const handleClick = async () => {
     opacity: 0.95;
 }
 
-/* Aujourd'hui : le numéro est une pastille */
-.tg-day--today {
-    min-width: 24px;
-    padding: 2px 0;
-    text-align: center;
-    border-radius: 12px;
-    background: rgb(var(--v-theme-primary));
-    color: rgb(var(--v-theme-onPrimary));
-}
-
 .shift_container {
     display: flex;
     justify-content: flex-end;
@@ -373,7 +333,6 @@ const handleClick = async () => {
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
-    color: rgb(var(--v-theme-onSurface));
 }
 
 .shift-name.xs {
@@ -384,23 +343,6 @@ const handleClick = async () => {
 .isRestDay .shift-name {
     font-weight: 500 !important;
     opacity: 0.01;
-}
-
-/* L'icône d'affectation prend la couleur de l'accent au repos (sélectionnée, elle prend la couleur « sur accent » ci-dessous) */
-.isLeave:not(.selected) .shift-name,
-.isEntry:not(.selected) .shift-name {
-    color: var(--tile-accent);
-}
-
-/* Pas présent (dispo, jour facultatif non confirmé, remplacé) : la ligne est atténuée et rouge ; le nom l'est aussi pour une
-   dispo ou un jour non confirmé (`absence`) ; un remplacé garde la couleur normale du nom, simplement atténué */
-.offDay {
-    color: rgb(var(--v-theme-error)) !important;
-    opacity: 0.75 !important;
-}
-
-.absence {
-    color: rgb(var(--v-theme-error)) !important;
 }
 
 .variation-name {

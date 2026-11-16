@@ -1,0 +1,98 @@
+/*
+  Jour : code couleur commun du calendrier et de la grille d'équipe
+
+  Un jour a une nature (de quoi il s'agit) et une présence (l'agent y est-il). Chacune a une classe globale, que le calendrier
+  (CalendarDayBlock) et la grille d'équipe (TeamGrid) posent sur une tuile (voir tile.css) : une seule définition des couleurs.
+  Les classes se calculent avec utils/dayStyle.js (dayKindOf, dayKindClass, dayPresenceClasses).
+
+  Nature   (--tile-accent / --tile-on-accent, que la tuile utilise pour le survol, la sélection et la teinte de repos)
+    day--work     jour travaillé          primaire
+    day--vic      jour en VIC             secondaire
+    day--leave    congé                   couleur « leave » du thème
+    day--entry    autre affectation       couleur « entry » du thème
+    day--rest     repos                   texte atténué, pas de teinte
+
+  Présence
+    day-presence--away     pas présent (dispo, jour non confirmé, remplacé) : atténué
+    day-presence--absent   dispo ou jour non confirmé : texte en couleur d'erreur (un remplacé n'est pas « absent », il est remplacé)
+
+  Aujourd'hui
+    day--today             contour de l'accent sur une tuile
+    today-pill             numéro du jour en pastille (calendrier et en-tête de la grille)
+
+  Icône d'affectation
+    day-icon               prend l'accent d'un congé ou d'une affectation (pas sur une tuile sélectionnée : elle est pleine)
+
+  Réglage
+    --day-tint             force de la teinte de repos d'une tuile de jour (10 % par défaut)
+
+  Couleurs du thème : le primaire et le secondaire sont en hexadécimal à 8 chiffres, rgba(var(--v-theme-primary), a) y est
+  invalide ; on écrit rgb(var(...)) ou color-mix.
+*/
+
+:root {
+  --day-tint: 10%;
+}
+
+/* ── Nature ─────────────────────────────────────────────────────────────────── */
+.day--work {
+  --tile-accent: rgb(var(--v-theme-primary));
+  --tile-on-accent: rgb(var(--v-theme-onPrimary));
+}
+
+.day--vic {
+  --tile-accent: rgb(var(--v-theme-secondary));
+  --tile-on-accent: rgb(var(--v-theme-onSecondary));
+}
+
+.day--leave {
+  --tile-accent: rgb(var(--v-theme-leave));
+  --tile-on-accent: rgb(var(--v-theme-onLeave));
+}
+
+.day--entry {
+  --tile-accent: rgb(var(--v-theme-entry));
+  --tile-on-accent: rgb(var(--v-theme-onEntry));
+}
+
+.day--rest {
+  --tile-color: rgb(var(--v-theme-onSurfaceVariant));
+}
+
+/* Teinte légère de l'accent au repos ; sélectionnée, c'est l'accent plein (tuile) */
+.day--work:not([aria-pressed='true']),
+.day--vic:not([aria-pressed='true']),
+.day--leave:not([aria-pressed='true']),
+.day--entry:not([aria-pressed='true']) {
+  --tile-bg: color-mix(in srgb, var(--tile-accent) var(--day-tint), transparent);
+}
+
+/* ── Présence ───────────────────────────────────────────────────────────────── */
+.day-presence--away {
+  opacity: 0.75;
+}
+
+.day-presence--absent {
+  color: rgb(var(--v-theme-error));
+}
+
+/* ── Aujourd'hui ────────────────────────────────────────────────────────────── */
+.day--today:not([aria-pressed='true']) {
+  --tile-border: color-mix(in srgb, rgb(var(--v-theme-primary)) 55%, transparent);
+  border-width: 1.5px;
+}
+
+.today-pill {
+  min-width: 24px;
+  padding: 2px 0;
+  text-align: center;
+  border-radius: 12px;
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-onPrimary));
+}
+
+/* ── Icône d'affectation ────────────────────────────────────────────────────── */
+.day--leave:not([aria-pressed='true']) .day-icon,
+.day--entry:not([aria-pressed='true']) .day-icon {
+  color: var(--tile-accent);
+}

@@ -41,6 +41,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypeOf } from '@/utils/entryIcons';
+import { dayKindOf } from '@/utils/dayStyle';
 import { sameDateKey, toDateKey } from '@/utils/dateKey';
 import { useWorkIndicators } from '@/composables/useWorkIndicators';
 
@@ -97,8 +98,9 @@ const shiftDataMap = computed(() => {
       shiftName: getDisplayShiftName(value),
       selectedVariation: value?.shiftData?.selectedVariation ?? null,
       variationName: value?.shiftData?.selectedVariation?.name ?? null,
-      // Congé (`absence`) ou autre affectation : la tuile prend leur couleur et l'icône remplace le nom de la vacation
-      entryKind: entryTypeOf(value?.type) ? (value.type === 'absence' ? 'leave' : 'entry') : null,
+      // Nature du jour (couleur commune au calendrier et à la grille, styles/day.css) ; pour une affectation (congé, formation...)
+      // l'icône remplace le nom de la vacation
+      kind: dayKindOf({ type: value?.type, shiftType: shown?.type, variation: value?.shiftData?.selectedVariation }),
       icon: (() => {
         const entry = entryTypeOf(value?.type);
         return entry ? `mdi-${entry.icon}` : null;
@@ -143,12 +145,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
 </script>
 
 <style scoped>
-.offDay {
-  color: rgb(var(--v-theme-error)) !important;
-  opacity: 0.5 !important;
-
-}
-
 .week-day {
   font-size: .600rem !important;
   font-weight: 500 !important;
@@ -205,10 +201,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   display: flex;
 }
 
-
-.today-center-highlight {
-  border: 1px solid rgba(var(--v-theme-surfaceContainerHighest), 0.92) !important;
-}
 
 .empty-day {
   opacity: 0.4;

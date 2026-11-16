@@ -1,6 +1,6 @@
 <template>
   <div class="shift-card  rounded-xl  pa-4 px-4 position-relative d-flex flex-column justify-space-between"
-    :class="status === 'off' ? 'offDay' : ''">
+    :class="dayPresenceClasses(presence)">
    
     <div  class="d-flex justify-space-between align-start">
       <div class="d-flex flex-column ga-2"> 
@@ -108,6 +108,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
+import { dayPresenceClasses } from '@/utils/dayStyle';
 import { toDateKey, sameDateKey } from '@/utils/dateKey';
 
 const props = defineProps({
@@ -366,10 +367,6 @@ const confirmMdda = async ({ startTime, endTime }) => {
 .shift-card {
   min-width: 300px !important;
 
-}
-
-.offDay {
-  color: rgba(var(--v-theme-error), 0.8) !important;
 }
 
 .fade-expand-enter-active,

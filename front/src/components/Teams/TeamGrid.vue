@@ -29,11 +29,10 @@
               v-for="col in slide.columns"
               :key="col.key"
               class="tg-day"
-              :class="{ 'tg-day--today': col.isToday, 'tg-day--weekend': col.isWeekend }"
             >
               <span class="tg-day__month">{{ col.monthLabel }}</span>
               <span class="tg-day__weekday">{{ col.weekday }}</span>
-              <span class="tg-day__number">{{ col.day }}</span>
+              <span class="tg-day__number" :class="{ 'today-pill': col.isToday }">{{ col.day }}</span>
               <span
                 v-if="col.shift"
                 class="tg-day__shift"
@@ -48,21 +47,21 @@
             <div
               v-for="(cell, index) in row.slides[slideIndex]"
               :key="index"
-              class="tg-cell"
-              :class="{
-                'tg-cell--today': slide.columns[index].isToday,
-                'tg-cell--weekend': slide.columns[index].isWeekend,
-                'tg-cell--outside': !cell.inTeam,
-              }"
+              class="tg-cell tile tile--static"
+              :class="[
+                cell.entry?.classes,
+                {
+                  'day--today': slide.columns[index].isToday,
+                  'tg-cell--weekend': slide.columns[index].isWeekend && !cell.entry,
+                  'tg-cell--outside': !cell.inTeam,
+                  'tg-cell--replaced': cell.entry?.replaced,
+                },
+              ]"
+              :title="cell.entry?.title"
             >
-              <div
-                v-if="cell.entry"
-                class="tg-entry"
-                :class="[`tg-entry--${cell.entry.kind}`, { 'tg-entry--off': cell.entry.dimmed }]"
-                :title="cell.entry.title"
-              >
+              <template v-if="cell.entry">
                 <div class="tg-entry__line">
-                  <v-icon v-if="cell.entry.icon" size="14" class="tg-entry__icon">
+                  <v-icon v-if="cell.entry.icon" size="14" class="tg-entry__icon day-icon">
                     {{ cell.entry.icon }}
                   </v-icon>
                   <span class="tg-entry__label">{{ cell.entry.label }}</span>
@@ -73,7 +72,7 @@
                   </v-icon>
                   <span class="tg-entry__label">{{ cell.entry.counterpart }}</span>
                 </div>
-              </div>
+              </template>
             </div>
           </div>
         </div>
@@ -91,6 +90,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import { entryTypes } from '@/utils/entryIcons';
+import { dayKindClass, dayKindOf, dayPresenceClasses } from '@/utils/dayStyle';
 
 const props = defineProps({
   /** Membres renvoyés par GET /teams/:id/grid (période précédente + courante + suivante) */
@@ -155,19 +155,25 @@ const entryOf = (type) => entryTypes.find((e) => e.key === type);
 
 const buildCell = (day) => {
   const entry = entryOf(day.type);
-  const label = [
-    day.shiftName ?? entry?.label ?? day.type,
-    day.variation && day.variation !== 'vic' && day.variation !== 'disp' ? day.variation : null,
-  ].filter(Boolean).join(' · ');
+  // VIC écrit en toutes lettres : la couleur seule ne doit pas porter l'information ; la dispo se lit à la couleur d'erreur et au libellé
+  const variationLabel = day.variation === 'vic' ? 'VIC' : (day.variation && day.variation !== 'disp' ? day.variation : null);
+  const label = [day.shiftName ?? entry?.label ?? day.type, variationLabel].filter(Boolean).join(' · ');
 
   let counterpartIcon = 'mdi-swap-horizontal';
   if (day.counterpart && !day.counterpart.isSwitch) {
     counterpartIcon = day.presence === 'replaced' ? 'mdi-account-arrow-right-outline' : 'mdi-account-arrow-left-outline';
   }
 
+  // Même code couleur que le calendrier (utils/dayStyle.js, styles/day.css) : nature du jour, puis présence
+  const kind = dayKindOf({
+    type: day.type,
+    shiftType: day.shiftName ? (day.isRest ? 'rest' : 'work') : null,
+    variation: day.variation,
+  });
+
   return {
-    kind: entry || day.isRest ? 'entry' : 'shift',
-    dimmed: day.presence !== 'present',   // dispo, jour non confirmé ou remplacé : la cellule est atténuée
+    classes: [dayKindClass(kind), ...dayPresenceClasses(day.presence)],
+    replaced: day.presence === 'replaced',
     icon: entry ? `mdi-${entry.icon}` : null,
     label,
     counterpart: day.counterpart?.name ?? null,
@@ -296,7 +302,7 @@ const rows = computed(() => {
 .tg-day__weekday { font-size: 10px; text-transform: uppercase; }
 .tg-day__number { font-size: 14px; font-weight: 700; }
 
-/* Vacation habituelle de l'équipe ce jour-là */
+/* Vacation habituelle de l'équipe ce jour-là : comme le nom d'une vacation dans le calendrier (texte courant, repos atténué) */
 .tg-day__shift {
   margin-top: 2px;
   max-width: 100%;
@@ -305,67 +311,36 @@ const rows = computed(() => {
   white-space: nowrap;
   font-size: 10px;
   font-weight: 700;
-  color: rgb(var(--v-theme-onPrimaryContainer));
+  color: rgb(var(--v-theme-onSurface));
 }
 
 .tg-day__shift--rest { font-weight: 500; color: rgb(var(--v-theme-onSurfaceVariant)); }
 
-.tg-day--today .tg-day__number {
-  min-width: 24px;
-  padding: 2px 0;
-  text-align: center;
-  border-radius: 12px;
-  background: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-onPrimary));
-}
-
+/* Cellule = tuile globale statique (tile.css) colorée par day.css, comme une tuile du calendrier ; ici seulement sa taille */
 .tg-cell {
-  display: flex;
-  min-width: 0;
-  border-radius: 12px;
-  background: rgba(var(--v-theme-onSurface), 0.03);
-
-}
-
-.tg-cell--weekend { background: rgba(var(--v-theme-onSurface), 0.05); }
-.tg-cell--today { background: rgba(var(--v-theme-primary), 0.08); }
-/* Après les autres : hors équipe ce jour-là, la cellule n'a aucun fond */
-.tg-cell--outside { background: transparent; }
-
-.tg-entry {
-  display: flex;
+  --tile-radius: 12px;
   flex-direction: column;
   justify-content: center;
-  flex: 1;
+  gap: 0;
   min-width: 0;
+  min-height: 0;
   padding: 2px 3px;
   overflow: hidden;
-  border-radius: 12px;
   font-size: 11px;
   line-height: 1.15;
-  background: rgb(var(--v-theme-primaryContainer));
-  color: rgb(var(--v-theme-onPrimaryContainer));
 }
 
-.tg-entry--entry {
-  background: rgb(var(--v-theme-secondaryContainer));
-  color: rgb(var(--v-theme-onSecondaryContainer));
+/* Week-end : fond un peu plus soutenu pour une cellule vide */
+.tg-cell--weekend { --tile-bg: rgba(var(--v-theme-onSurface), 0.05); }
+
+/* Hors équipe ce jour-là : aucune cellule visible */
+.tg-cell--outside {
+  --tile-bg: transparent;
+  --tile-border: transparent;
 }
 
-/* Absent / remplacé : estompé et rayé, avec le nom de la personne qui le remplace */
-.tg-entry--off {
-  background: repeating-linear-gradient(
-    135deg,
-    rgba(var(--v-theme-onSurface), 0.03) 0,
-    rgba(var(--v-theme-onSurface), 0.03) 6px,
-    transparent 6px,
-    transparent 12px
-  );
-  color: rgb(var(--v-theme-onSurfaceVariant));
-  border: 1px dashed rgba(var(--v-theme-outlineVariant), 0.4);
-}
-
-.tg-entry--off .tg-entry__line:first-child .tg-entry__label { text-decoration: line-through; }
+/* Remplacé : il ne travaille plus cette vacation, son nom est barré (le nom de celui qui le remplace reste lisible) */
+.tg-cell--replaced .tg-entry__line:first-child .tg-entry__label { text-decoration: line-through; }
 
 .tg-entry__line {
   display: flex;

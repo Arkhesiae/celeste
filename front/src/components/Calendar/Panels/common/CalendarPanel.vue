@@ -371,10 +371,6 @@ watch(() => props.selectedDate, async (value) => {
   padding-bottom: calc(env(safe-area-inset-bottom) + 24px) !important;
 }
 
-.offDay {
-  color: rgba(var(--v-theme-error), 0.8) !important;
-}
-
 
 
 .category-indicator {

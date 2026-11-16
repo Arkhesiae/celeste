@@ -79,7 +79,7 @@ export default async function seedTeamDemands ({
         const entry = results[0];
         const shift = entry?.shiftData?.shift;
 
-        if (!shift || shift.type !== 'work' || entry.isOff) continue;
+        if (!shift || shift.type !== 'work' || entry.presence !== 'present') continue;
         if (shift.optional) continue;
         if (!shift.name) continue;
 
@@ -189,7 +189,7 @@ export async function seedSwitchDemands ({
     const results = await computeUserShifts(dateStr, observer._id);
     const entry = results[0];
     const shift = entry?.shiftData?.shift;
-    if (!shift || shift.type !== 'work' || entry.isOff) continue;
+    if (!shift || shift.type !== 'work' || entry.presence !== 'present') continue;
     if (shift.optional) continue;
     observerWorkDays.push({ date, dateStr, shift });
   }
@@ -211,7 +211,7 @@ export async function seedSwitchDemands ({
         const results = await computeUserShifts(dateStr, agent._id);
         const entry = results[0];
         const posterShift = entry?.shiftData?.shift;
-        if (!posterShift || posterShift.type !== 'work' || entry.isOff) continue;
+        if (!posterShift || posterShift.type !== 'work' || entry.presence !== 'present') continue;
         if (posterShift.optional) continue;
 
         // Alterner switch pur / hybrid (rempla + permutation acceptée)

@@ -160,7 +160,7 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
 
   // S7 : le retour à la vacation initiale attend ses écritures, le jour renvoyé est déjà sans la dispo ; le remplacement reste
   const { userShift: [restored] } = await restoreInitialShift(accepter._id, at(0));
-  assert.equal(restored.isOff, false);
+  assert.equal(restored.presence, 'present');
   assert.equal(restored.isWorked, true);
   assert.equal(restored.shiftData.shift.name, 'J2');
   assert.equal(await Modification.countDocuments({ userId: accepter._id, date: at(0), active: true }), 0);
@@ -170,7 +170,7 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
   await cancelSubstitutionEntries(demand._id, { posterId: poster._id, accepterId: accepter._id, date: at(0) });
   assert.equal(await Assignment.countDocuments({ userId: { $in: [poster._id, accepter._id] }, date: at(0), active: true }), 0);
   const [back] = await computeUserShifts([at(0)], poster._id);
-  assert.equal(back.isOff, false);
+  assert.equal(back.presence, 'present');
   assert.equal(back.isWorked, true);
 
   // Supprimer une affectation désactive aussi les modifications qui l'ont suivie
@@ -238,7 +238,7 @@ test('permutation : chacun prend la vacation de l’autre, et peut la modifier (
   const [posterDay, newAccepterDay] = [await dayOf(poster), await dayOf(accepter)];
   assert.equal(posterDay.shiftData.shift.name, 'K3');
   assert.equal(posterDay.isWorked, true);
-  assert.equal(posterDay.isOff, false);
+  assert.equal(posterDay.presence, 'present');
   assert.equal(newAccepterDay.shiftData.shift.name, 'J3');
   assert.equal(newAccepterDay.isWorked, true);
 

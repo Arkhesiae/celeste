@@ -30,13 +30,13 @@
                 <div v-if="icon" class="d-flex shift-name align-center" :title="shiftName">
                     <v-icon size="14px">{{ icon }}</v-icon>
                 </div>
-                <div v-else-if="shiftName" class="d-flex align-center shift-row" :class="isOff ? 'offDay' : ''">
+                <div v-else-if="shiftName" class="d-flex align-center shift-row" :class="presence !== 'present' ? 'offDay' : ''">
                     <span class="shift-name" :class="{ 'xs': xs, 'rest': !isWorkDay }">{{ shiftName }}</span>
-                    <div v-if="selectedVariation || isOff" class="mod-dot" />
+                    <div v-if="selectedVariation || presence !== 'present'" class="mod-dot" />
                     <span v-if="variationLabel" class="variation-name" :class="{ 'xs': xs }">
                         {{ variationLabel }}
                     </span>
-                    <v-icon v-else-if="isOff" size="10px">mdi-cancel</v-icon>
+                    <v-icon v-else-if="presence !== 'present'" size="10px">mdi-cancel</v-icon>
                 </div>
             </div>
         </div>
@@ -117,9 +117,10 @@ const props = defineProps({
         type: Boolean,
         default: false,
     },
-    isOff: {
-        type: Boolean,
-        default: false,
+    /** 'present' | 'released' (dispo) | 'unconfirmed' (jour facultatif non confirmé) | 'replaced' : tout sauf présent s'affiche barré */
+    presence: {
+        type: String,
+        default: 'present',
     },
     shiftName: {
         type: String,

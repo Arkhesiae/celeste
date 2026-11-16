@@ -40,34 +40,65 @@ const isSameShift = (resolvedShift, entry) =>
 
 // ── Résolution ────────────────────────────────────────────────────────
 
-const buildAssignmentHistory = (assignments) =>
+/**
+ * Ce que l'entrée de substitution dit de la vacation de l'utilisateur, ou `null` pour toute autre affectation :
+ * - `kind` : `replaced` (il cède sa vacation et n'en a plus), `replacing` (il reprend celle d'un autre), `exchanged` (permutation :
+ *   il cède la sienne et prend l'autre) ;
+ * - `demandId` : la demande, pour relier le jour à celui qui l'a remplacé ou qu'il remplace ;
+ * - `gave` : la vacation cédée, `{ shift, team, selectedVariation }`. Pour une entrée sans `gave` (créée avant ce champ) un remplacé
+ *   cède celle de la rotation, exact hors chaîne.
+ */
+const substitutionOf = (assignment, rotationDay) => {
+    if (assignment?.subType !== 'substitution') return null
+    const took = assignment.shiftData?.shift ?? null
+    const gave = assignment.substitution?.gave?.shift
+        ? assignment.substitution.gave
+        : (took ? null : { shift: rotationDay?.shift ?? null, team: rotationDay?.team ?? null, selectedVariation: null })
+    return {
+        kind: took ? (gave ? 'exchanged' : 'replacing') : 'replaced',
+        demandId: assignment.substitution?.id ?? null,
+        gave: gave?.shift ? { shift: gave.shift, team: gave.team ?? null, selectedVariation: gave.selectedVariation ?? null } : null,
+    }
+}
+
+/**
+ * Historique du jour : les affectations actives dans l'ordre où elles ont été posées. Chaque pas de substitution porte la
+ * demande et ce qui a été cédé : dans une chaîne (A remplacé par B, B par C), le pas de B dit « repris de A » puis « cédé à C ».
+ */
+const buildAssignmentHistory = (assignments, rotationDay) =>
     assignments.map((a) => ({
         type: a.subType,
         shiftData: a.shiftData,
         wasOverride: a.wasOverride,
+        substitution: substitutionOf(a, rotationDay),
     }))
 
-export const applyEntries = (baseShift, assignments, modifications, hoursPatches, { day, today }) => {
+/**
+ * @param {{ shift: Object|null, team: Object|null }} rotationDay - ce que la rotation prévoit ce jour-là
+ */
+export const applyEntries = (rotationDay, assignments, modifications, hoursPatches, { day, today }) => {
     const latestAssignment = assignments.at(-1) ?? null
     const latestModification = modifications.at(-1) ?? null
     const latestHourPatch = hoursPatches.at(-1) ?? null
 
-    let resolvedShift = resolveAssignment(baseShift, latestAssignment)
+    let resolvedShift = resolveAssignment(rotationDay, latestAssignment)
 
+    // Une modification porte sur la vacation tenue ; remplacé, l'agent n'en tient plus (`shiftData.shift` vide) : rien à modifier
     if (isSameShift(resolvedShift, latestModification)) {
         resolvedShift = applyModification(resolvedShift, latestModification)
     }
 
-    if (isUnconfirmedOptional(resolvedShift.shiftData?.shift, { latestAssignment, latestModification })) {
-        resolvedShift = { ...resolvedShift, isOff: true }
+    if (resolvedShift.presence === 'present'
+        && isUnconfirmedOptional(resolvedShift.shiftData?.shift, { latestAssignment, latestModification })) {
+        resolvedShift = { ...resolvedShift, presence: 'unconfirmed' }
     }
 
-    if (!resolvedShift.isOff) checkHourPatchCoherence(latestModification)
+    if (resolvedShift.presence === 'present') checkHourPatchCoherence(latestModification)
     resolvedShift = applyHourPatch(resolvedShift, latestHourPatch)
 
     resolvedShift = { ...resolvedShift, isWorked: computeIsWorked(resolvedShift, { latestAssignment, day, today }) }
 
-    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments) }
+    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments, rotationDay) }
 }
 
 /** Jour facultatif de la rotation que rien n'a confirmé (ni affectation, ni modification « présent ») : l'agent n'y est pas */
@@ -76,15 +107,15 @@ const isUnconfirmedOptional = (shift, { latestAssignment, latestModification } =
 
 /**
  * `isWorked` : le jour compte comme TRAVAILLÉ pour les règles de repos et de charge (compatibilité, contrôle des 7 jours).
- * Ce n'est pas `isOff`, qui dit seulement que l'agent n'est pas à la vacation affichée (remplacé, dispo, jour facultatif non
- * confirmé) et qui sert à l'affichage : un jour peut n'être pas « off » sans être travaillé (repos, congé, VIC passé).
- * - off : non ;
+ * Ce n'est pas `presence`, qui dit seulement si l'agent est à ce qu'il tient (présent, en dispo, jour facultatif non confirmé,
+ * remplacé) : un jour peut être « présent » sans être travaillé (repos, congé, VIC passé).
+ * - pas présent (dispo, non confirmé, remplacé) : non ;
  * - affectation sans vacation : travaillée si son type est dans ASSIGNMENT_WORK_SUBTYPES et qu'elle a ses horaires ;
  * - vacation de travail : travaillée, sauf un VIC dont le jour est passé (compté comme un jour off) ;
  * - tout le reste (repos, congé, arrêt maladie...) : non.
  */
 const computeIsWorked = (result, { latestAssignment, day, today }) => {
-    if (result.isOff) return false
+    if (result.presence !== 'present') return false
 
     if (latestAssignment && !latestAssignment.shiftData?.shift) {
         return ASSIGNMENT_WORK_SUBTYPES.has(latestAssignment.subType) && Boolean(result.startTime && result.endTime)
@@ -103,37 +134,36 @@ const ASSIGNMENT_WORK_SUBTYPES = new Set([
     'manager', 'english_training', 'training', 'simulation', 'other', 'test', 'office', 'stage', 'instruc', 'custom', 'vis_med',
 ])
 
-export const resolveAssignment = (baseShift, latestAssignment) => {
+export const resolveAssignment = (rotationDay, latestAssignment) => {
+    const rotationShift = rotationDay?.shift ?? null
     if (!latestAssignment) {
-        return buildShiftResult(null, baseShift.shift, baseShift.team, baseShift)
+        return buildShiftResult(null, rotationShift, rotationDay?.team ?? null)
     }
 
-    // Accepteur d'un rempla / assignation avec vacation concrète
+    const substitution = substitutionOf(latestAssignment, rotationDay)
+
+    // Vacation concrète : accepteur d'un remplacement, permutation (chacun prend celle de l'autre), affectation à une vacation
     if (latestAssignment.shiftData?.shift) {
-        return buildShiftResult(null, latestAssignment.shiftData.shift, latestAssignment.shiftData.team, baseShift, {
+        return buildShiftResult(null, latestAssignment.shiftData.shift, latestAssignment.shiftData.team, {
             isBaseShift: false,
-            isOff: false,
             shiftData: latestAssignment.shiftData,
+            baseShift: rotationShift,
+            substitution,
         })
     }
 
-    // Poster remplacé : plus en poste, mais on conserve la vacation de base pour l'affichage (J4 + état off / remplacé).
-    // Toute autre affectation (formation, congé, bureau...) n'est pas une vacation : elle remplace celle de la rotation, dont
-    // il ne reste que `baseShift` ; `isWorked` est calculé ensuite (computeIsWorked).
-    const freedBySub = latestAssignment.subType === 'substitution'
-
+    // Aucune vacation tenue : `shiftData.shift` est vide. Remplacé, l'agent a cédé la sienne (`substitution.gave`, ce qu'on barre à
+    // l'affichage) ; toute autre affectation (formation, congé, bureau...) n'est pas une vacation non plus, c'est un type à part.
+    // `isWorked` est calculé ensuite (computeIsWorked).
     return {
         type: latestAssignment.subType,
         isBaseShift: false,
-        isOff: freedBySub,
-        shiftData: {
-            shift: freedBySub ? baseShift?.shift ?? null : null,
-            selectedVariation: null,
-            team: baseShift?.team ?? null,
-        },
+        presence: substitution?.kind === 'replaced' ? 'replaced' : 'present',
+        shiftData: { shift: null, selectedVariation: null, team: rotationDay?.team ?? null },
         startTime: latestAssignment.startTime ?? null,
         endTime: latestAssignment.endTime ?? null,
-        baseShift,
+        baseShift: rotationShift,
+        substitution,
     }
 }
 
@@ -164,7 +194,7 @@ const applyModification = (resolvedShift, latestModification) => {
         case 'disp':
             return {
                 ...resolvedShift,
-                isOff: true,
+                presence: 'released',
                 shiftData: {
                     ...resolvedShift.shiftData,
                     selectedVariation: 'disp',
@@ -174,7 +204,7 @@ const applyModification = (resolvedShift, latestModification) => {
         case 'pres':
             return {
                 ...resolvedShift,
-                isOff: false,
+                presence: 'present',
                 shiftData: {
                     ...resolvedShift.shiftData,
                     selectedVariation: null,
@@ -187,7 +217,7 @@ const applyModification = (resolvedShift, latestModification) => {
 }
 
 const applyHourPatch = (resolvedShift, latestHourPatch) => {
-    if (!latestHourPatch || resolvedShift.isOff) return resolvedShift
+    if (!latestHourPatch || resolvedShift.presence !== 'present') return resolvedShift
     return {
         ...resolvedShift,
         wasPatched: true,
@@ -207,7 +237,10 @@ const getActiveEntriesByDates = async (user, dateStrs) => {
     const baseQuery = { userId: user._id, active: true, date: { $in: dateStrs } };
 
     const [assignments, modifications, hoursPatches] = await Promise.all([
-        populateShiftData(Assignment.find(baseQuery)).sort({ createdAt: 1 }).lean(),
+        populateShiftData(Assignment.find(baseQuery))
+            .populate({ path: 'substitution.gave.shift', populate: 'variations' })
+            .populate({ path: 'substitution.gave.selectedVariation' })
+            .sort({ createdAt: 1 }).lean(),
         populateShiftData(Modification.find(baseQuery)).sort({ createdAt: 1 }).lean(),
         HourPatch.find(baseQuery).sort({ createdAt: 1 }).lean(),
     ]);
@@ -234,14 +267,22 @@ const getActiveEntriesByDates = async (user, dateStrs) => {
     return byDate;
 }
 
-const buildShiftResult = (dateStr, shift, team, baseShift, overrides = {}) => ({
+/**
+ * Résultat d'un jour : ce que l'utilisateur TIENT (`shiftData`, vide s'il est remplacé ou sur une affectation), ce que la rotation
+ * prévoyait (`baseShift`, toujours le document `Shift` de la rotation, jamais ce qui a été modifié), sa `presence` et, s'il y a eu
+ * une substitution, laquelle (`substitution`).
+ * @param {Object} [overrides] - `baseShift` vaut par défaut la vacation tenue (jour sans entrée : c'est celle de la rotation)
+ */
+const buildShiftResult = (dateStr, shift, team, overrides = {}) => ({
     date: dateStr,
     type: shift ? 'shift' : "empty",
     isBaseShift: true,
+    presence: 'present',
     shiftData: { shift, selectedVariation: null, team: team },
     startTime: shift?.default?.startTime,
     endTime: shift?.default?.endTime,
-    baseShift,
+    baseShift: shift,
+    substitution: null,
     ...overrides,
 })
 
@@ -346,10 +387,11 @@ const computeUserShifts = async (dates, userId) => {
 
                 if (!assignments.length && !modifications.length && !hoursPatches.length) {
                     // Sans rien d'explicite, un jour facultatif de la rotation n'est pas travaillé
-                    const isOff = isUnconfirmedOptional(baseShift)
-                    return buildShiftResult(dateStr, baseShift, team, baseShift, {
-                        isOff,
-                        isWorked: baseShift?.type === 'work' && !isOff,
+                    const unconfirmed = isUnconfirmedOptional(baseShift)
+                    return buildShiftResult(dateStr, baseShift, team, {
+                        presence: unconfirmed ? 'unconfirmed' : 'present',
+                        isWorked: baseShift?.type === 'work' && !unconfirmed,
+                        history: [],
                     });
                 }
 
@@ -361,7 +403,7 @@ const computeUserShifts = async (dates, userId) => {
                     { day, today }
                 );
 
-                return { ...resolvedShift, date: dateStr, history: assignmentHistory, baseShift };
+                return { ...resolvedShift, date: dateStr, history: assignmentHistory };
             })
         );
         return results;

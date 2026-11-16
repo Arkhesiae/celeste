@@ -223,7 +223,7 @@ const isShift = computed(() => {
 });
 
 const disabled = computed(() => {
-  return isRestDay.value || inPast.value || isOff.value || !isShift.value
+  return isRestDay.value || inPast.value || presence.value !== 'present' || !isShift.value
 });
 
 const disabledReason = computed(() => {
@@ -233,7 +233,7 @@ const disabledReason = computed(() => {
     return 'Vous êtes remplacé ce jour'
   }
   if (!isShift.value) return 'Aucun shift valide'
-  if (isOff.value) return 'Confirmez votre présence pour poster une demande'
+  if (presence.value === 'released' || presence.value === 'unconfirmed') return 'Confirmez votre présence pour poster une demande'
   return ''
 })
 
@@ -241,8 +241,8 @@ const inPast = computed(() =>
   toDateKey(props.selectedDate) < toDateKey(new Date())
 );
 
-const isOff = computed(() =>
-  getVacation.value?.isOff
+const presence = computed(() =>
+  getVacation.value?.presence ?? 'present'
 );
 
 const fetchEntries = async () => {

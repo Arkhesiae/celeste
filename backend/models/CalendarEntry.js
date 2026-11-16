@@ -79,14 +79,6 @@ const CalendarEntrySchema = new mongoose.Schema({
 
 // });
 
-// CalendarEntrySchema.virtual('isOff').get(function () {
-//     const hasShift = this.shiftData?.shift != null || this.shiftData?.shift?.type !== "rest";
-//     if (!hasShift && !this.startTime && !this.endTime) {
-//         return true;
-//     }
-//     return false;
-// });
-
 const CalendarEntry = mongoose.model('CalendarEntry', CalendarEntrySchema)
 
 // ── Assignment ────────────────────────────────────────────────────────
@@ -122,6 +114,14 @@ const AssignmentSchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'CalendarEntry',
             default: null
+        },
+        // La vacation que l'utilisateur cède par cette demande (celle du demandeur ; pour une permutation, celle de l'accepteur
+        // lui aussi). Sans elle, « remplacé » ne dirait pas QUELLE vacation : dans une chaîne, B qui a repris J de A puis la cède
+        // à C a cédé J, pas la vacation de sa propre rotation. Absente des entrées créées avant ce champ.
+        gave: {
+            shift: { type: mongoose.Schema.Types.ObjectId, ref: 'Shift', default: undefined },
+            team: { type: mongoose.Schema.Types.ObjectId, ref: 'Team', default: undefined },
+            selectedVariation: { type: mongoose.Schema.Types.ObjectId, ref: 'Variation', default: undefined },
         },
     },
     startTime: {

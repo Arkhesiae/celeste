@@ -130,13 +130,59 @@ test("isWorked : un jour facultatif de la rotation ne l'est que s'il est confirm
   assert.equal(await worked(optional, { modifications: [{ subType: 'pres', shiftData: { shift: optional } }] }), true);
 });
 
-test("isOff : un jour facultatif non confirmé est off, même avec une variante ; une absence ne l'est pas (elle remplace la vacation)", async () => {
+test("presence : un jour facultatif non confirmé l'est, même avec une variante ; dispo = released ; une absence reste présente (elle remplace la vacation)", async () => {
   const optional = { ...work, optional: true };
   const variation = { subType: 'variation', shiftData: { shift: optional, selectedVariation: { startTime: '09:00', endTime: '17:00' } } };
-  assert.equal((await resolved(optional, { modifications: [variation] })).isOff, true);
-  assert.equal((await resolved(optional, { modifications: [{ subType: 'pres', shiftData: { shift: optional } }] })).isOff, false);
-  assert.equal((await resolved(work, { assignments: [{ subType: 'absence' }] })).isOff, false);
-  assert.equal((await resolved(work, { assignments: [{ subType: 'substitution' }] })).isOff, true);
+  const presence = async (...args) => (await resolved(...args)).presence;
+  assert.equal(await presence(optional, { modifications: [variation] }), 'unconfirmed');
+  assert.equal(await presence(optional, { modifications: [{ subType: 'pres', shiftData: { shift: optional } }] }), 'present');
+  assert.equal(await presence(work, { modifications: [{ subType: 'disp', shiftData: { shift: work } }] }), 'released');
+  assert.equal(await presence(work, { assignments: [{ subType: 'absence' }] }), 'present');
+  assert.equal(await presence(work), 'present');
+});
+
+const demandId = new mongoose.Types.ObjectId();
+const other = { _id: new mongoose.Types.ObjectId(), name: 'K4', type: 'work', default: { startTime: '10:00', endTime: '18:00' } };
+
+test("substitution : un remplacé ne tient plus de vacation (shiftData vide), la vacation cédée est dans substitution.gave", async () => {
+  // Entrée sans `gave` (créée avant ce champ) : il cède celle de la rotation
+  const legacy = await resolved(work, { assignments: [{ subType: 'substitution', substitution: { id: demandId } }] });
+  assert.equal(legacy.presence, 'replaced');
+  assert.equal(legacy.shiftData.shift, null);
+  assert.equal(legacy.isWorked, false);
+  assert.equal(legacy.baseShift, work);
+  assert.deepEqual([legacy.substitution.kind, legacy.substitution.demandId, legacy.substitution.gave.shift], ['replaced', demandId, work]);
+
+  // Chaîne : B (rotation = repos) a repris J de A puis l'a cédé à C : ce qu'il a cédé est J, pas son repos
+  const chained = await resolved(rest, { assignments: [
+    { subType: 'substitution', shiftData: { shift: work, team: null }, substitution: { id: new mongoose.Types.ObjectId() } },
+    { subType: 'substitution', substitution: { id: demandId, gave: { shift: work, team: null } } },
+  ] });
+  assert.equal(chained.presence, 'replaced');
+  assert.equal(chained.baseShift, rest);
+  assert.equal(chained.substitution.gave.shift, work);
+});
+
+test("substitution : une modification (présent, dispo...) ne rend rien à un remplacé ; celui qui tient une vacation la modifie", async () => {
+  const replaced = { subType: 'substitution', substitution: { id: demandId, gave: { shift: work } } };
+  const pres = { subType: 'pres', shiftData: { shift: work } };
+  assert.equal((await resolved(work, { assignments: [replaced], modifications: [pres] })).presence, 'replaced');
+
+  const holder = { subType: 'substitution', shiftData: { shift: work, team: null }, substitution: { id: demandId } };
+  const disp = { subType: 'disp', shiftData: { shift: work } };
+  const result = await resolved(rest, { assignments: [holder], modifications: [disp] });
+  assert.deepEqual([result.presence, result.isWorked, result.substitution.kind], ['released', false, 'replacing']);
+});
+
+test("substitution : une permutation est `exchanged` des deux côtés, chacun tient la vacation de l'autre", async () => {
+  const swapped = async (took, gave) => resolved(rest, { assignments: [{
+    subType: 'substitution', shiftData: { shift: took, team: null }, substitution: { id: demandId, gave: { shift: gave } },
+  }] });
+  const poster = await swapped(other, work);
+  assert.deepEqual([poster.presence, poster.shiftData.shift, poster.substitution.kind, poster.substitution.gave.shift], ['present', other, 'exchanged', work]);
+  assert.equal(poster.isWorked, true);
+  const accepter = await swapped(work, other);
+  assert.deepEqual([accepter.shiftData.shift, accepter.substitution.kind, accepter.substitution.gave.shift], [work, 'exchanged', other]);
 });
 
 test('isWorked : affectation = type à part, travaillée sauf congé / absence / substitution, aux horaires saisis', async () => {
@@ -150,7 +196,7 @@ test('isWorked : affectation = type à part, travaillée sauf congé / absence /
   assert.equal(map.get('2027-03-10').shift, null);
   assert.equal(map.get('2027-03-10').assignment, 'training');
   assert.equal(resolve('training').shiftData.shift, null);
-  assert.equal(resolve('substitution').shiftData.shift, rest);
+  assert.equal(resolve('substitution').shiftData.shift, null);
   assert.equal(map.get('2027-03-10').startTime, '09:00');
   for (const leave of ['sick_leave', 'maternity_leave', 'absence', 'substitution']) {
     assert.equal(toShiftsMap([resolve(leave)]).size, 0, leave);

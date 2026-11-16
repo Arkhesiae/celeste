@@ -41,12 +41,12 @@ export async function createDemand(data) {
     const [computedShift] = await computeUserShifts([givenDay.toString()], posterId);
     const shiftData = computedShift.shiftData;
 
-    // Seul un jour réellement travaillé peut être posté : ni un jour de repos, ni un jour facultatif non confirmé,
-    // ni une vacation déjà cédée (le remplacé garde la vacation affichée barrée mais ne la travaille plus)
+    // Seul un jour réellement travaillé peut être posté : ni un jour de repos, ni un jour facultatif non confirmé, ni une
+    // vacation déjà cédée (un remplacé ne tient plus rien : `shiftData.shift` est vide)
     if (!computedShift.isWorked) {
         throw new AppError(
-            computedShift.isOff
-                ? "Vous n'êtes pas en poste ce jour-là (déjà remplacé ?), annulez d'abord la demande en cours"
+            computedShift.presence === 'replaced'
+                ? 'Vous êtes remplacé ce jour-là, annulez d\'abord la demande en cours'
                 : 'Vous ne travaillez pas ce jour-là',
             422
         );

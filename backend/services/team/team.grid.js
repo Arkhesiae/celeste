@@ -119,7 +119,9 @@ export async function getTeamGrid (teamId, startDate, endDate) {
         for (const r of shifts) {
             if (!inTeamDates.has(r.date)) continue;   // jour où il n'est pas dans cette équipe : pas de cellule
             const shift = r.shiftData?.shift ?? null;
-            const isRest = !shift || shift.type === 'rest';
+            // Un remplacé ne tient plus rien, mais la grille montre quelle vacation il a cédée
+            const shownShift = shift ?? r.substitution?.gave?.shift ?? null;
+            const isRest = !shownShift || shownShift.type === 'rest';
             const isEntry = !['shift', 'empty'].includes(r.type);   // entrée de calendrier (congé, stage, remplacement...)
             const counterpart = counterpartOf(user._id, r.date);
             // Journée de repos sans rien de particulier : cellule vide
@@ -127,18 +129,18 @@ export async function getTeamGrid (teamId, startDate, endDate) {
 
             const variation = r.shiftData?.selectedVariation;
             // Vacation habituelle de l'équipe, sans rien de particulier : déjà dans l'en-tête, cellule vide
-            const isUsualShift = r.type === 'shift' && !r.isOff && !variation && !r.wasPatched && !counterpart
+            const isUsualShift = r.type === 'shift' && r.presence === 'present' && !variation && !r.wasPatched && !counterpart
                 && String(shift?._id) === teamShiftIds.get(r.date);
             if (isUsualShift) continue;
 
             days.push({
                 date: r.date,
                 type: r.type,
-                shiftName: shift?.name ?? null,
+                shiftName: shownShift?.name ?? null,
                 variation: typeof variation === 'object' ? variation?.name ?? null : variation ?? null,
                 startTime: r.startTime ?? shift?.default?.startTime ?? null,
                 endTime: r.endTime ?? shift?.default?.endTime ?? null,
-                isOff: Boolean(r.isOff),
+                presence: r.presence,
                 isRest,
                 counterpart,
             });

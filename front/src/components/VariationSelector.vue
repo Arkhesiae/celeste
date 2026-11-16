@@ -9,7 +9,7 @@
             </template>
         </v-tooltip>
 
-        <v-tooltip v-if="!isShift && !isOff" text="Modifier l'horaire" location="top">
+        <v-tooltip v-if="!isShift && presence === 'present'" text="Modifier l'horaire" location="top">
             <template #activator="{ props: tooltipProps }">
                 <v-btn v-bind="tooltipProps" icon size="small" variant="flat" color="primary" class="selected"
                     @click="emit('patch-hours')">
@@ -40,10 +40,10 @@
                     </template>
                 </v-tooltip>
 
-                <v-tooltip v-if="isShift" :text="isOff ? 'Annuler l\'absence' : 'Déclarer une absence'" location="top">
+                <v-tooltip v-if="isShift" :text="presence !== 'present' ? 'Annuler l\'absence' : 'Déclarer une absence'" location="top">
                     <template #activator="{ props: tooltipProps }">
-                        <v-btn v-bind="tooltipProps" :color="isOff ? 'error' : 'surfaceContainerHigh'"
-                            :class="isOff ? 'selected' : ''" icon rounded="lg" size="small" flat
+                        <v-btn v-bind="tooltipProps" :color="presence !== 'present' ? 'error' : 'surfaceContainerHigh'"
+                            :class="presence !== 'present' ? 'selected' : ''" icon rounded="lg" size="small" flat
                             @click="emit('register-absence')">
                             <v-icon>mdi-cancel</v-icon>
                         </v-btn>
@@ -67,7 +67,8 @@
             isRestDay: boolean
             inPast?: boolean
             isShift?: boolean
-            isOff?: boolean
+            /** present, released (dispo), unconfirmed (jour facultatif non confirmé) ou replaced (a cédé sa vacation) */
+            presence?: 'present' | 'released' | 'unconfirmed' | 'replaced'
             hasNoDemand?: boolean
             status?: string
             variations?: Variation[]
@@ -77,7 +78,7 @@
         const props = withDefaults(defineProps<Props>(), {
             inPast: false,
             isShift: false,
-            isOff: false,
+            presence: 'present',
             hasNoDemand: false,
             status: '',
             variations: () => [],

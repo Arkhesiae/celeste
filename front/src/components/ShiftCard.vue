@@ -31,6 +31,12 @@
         <span class="text-title-large font-weight-medium">Repos</span>
       </div>
 
+      <!-- Remplacé : plus de vacation tenue, on montre celle qui a été cédée, barrée -->
+      <div v-else-if="presence === 'replaced'" class="d-flex flex-column">
+        <span class="text-headline-large font-weight-medium text-disabled text-decoration-line-through">{{ shiftName }}</span>
+        <span class="text-body-small text-medium-emphasis">Remplacé</span>
+      </div>
+
       <div v-else-if="!isShift">
         <span class="text-body-large font-weight-medium ">{{ dayType }}</span>
       </div>
@@ -77,7 +83,7 @@
     </div>
 
     <Transition name="fade-expand">
-      <VariationSelector :is-rest-day="isRestDay" :in-past="inPast" :is-shift="isShift" :is-off="isOff"
+      <VariationSelector :is-rest-day="isRestDay" :in-past="inPast" :is-shift="isShift" :presence="presence"
         :has-no-demand="hasNoDemand" :status="status" :variations="variations" :selected-variation="selectedVariation"
         @register-mdda="openMddaDialog" @patch-hours="patchHours" @select-variation="selectVariationForDay"
         @register-vic="registerVIC" @register-absence="registerAbsence" />
@@ -134,7 +140,7 @@ const vacation = computed(() =>
 const isRestDay = computed(() => vacation.value?.shiftData?.shift?.type === 'rest');
 const isShift = computed(() => !!vacation.value?.shiftData?.shift);
 const wasPatched = computed(() => vacation.value?.wasPatched);
-const isOff = computed(() => vacation.value?.isOff);
+const presence = computed(() => vacation.value?.presence ?? 'present');
 const isBaseShift = computed(() => vacation.value?.isBaseShift);
 const baseShift = computed(() => vacation.value?.baseShift);
 const history = computed(() => vacation.value?.history);
@@ -277,7 +283,7 @@ const selectVariationForDay = (variation) => registerEntry({
 
 const registerAbsence = () => registerEntry({
   ...basePayload(),
-  entryType: isOff.value ? 'pres' : 'disp',
+  entryType: presence.value === 'present' ? 'disp' : 'pres',
 });
 
 const registerVIC = () => registerEntry({

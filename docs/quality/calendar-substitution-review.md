@@ -76,8 +76,6 @@ Envoyer une modification `variation` via `register-entry` changerait le planning
 - `getActiveEntriesByDates` contient des branches impossibles : `typeof a.date === 'string' ? a.date.slice(0, 10) : a.date` (le champ est toujours une chaîne), le
   repli `|| { assignments: [] ... }` dans `computeUserShifts` (la table est pré-remplie pour chaque date), et une chaîne de populate répétée trois fois pour un `shiftData` qui est un
   sous-document, pas une référence (`populate({ path: 'shiftData', populate: 'shift' })` ne fait rien à côté du populate de `shiftData.shift`).
-- `baseShift` a deux formes : dans `applyEntries`/`resolveAssignment` c'est `{ shift, team }` ; dans `computeUserShifts` c'est le document `Shift` de la rotation, et le `{ ...resolvedShift, baseShift }` final écrase la première par la seconde.
-  Les lecteurs de `result.baseShift` (`calendarEntry.register.js` `current?.baseShift?.team`) lisent donc `team` sur un document `Shift`, qui n'en a pas (la chaîne de repli y est morte et trompeuse).
 - Seuls la **dernière** affectation, modification et dernier patch sont utilisés (`.at(-1)`). Cela suppose que les écrivains gardent une seule entrée active ; `cancelSubstitutionEntries` et `deleteAssignment`
   utilisent `createdAt >= ...` à la place. Les deux conventions ne fonctionnent ensemble que si les horodatages ne se télescopent jamais (voir 3.3).
 
@@ -85,7 +83,7 @@ Envoyer une modification `variation` via `register-entry` changerait le planning
 
 - Les deux routes `/restore-initial` et `/undo-mods` (et leurs deux contrôleurs) font la même chose ; elles appellent maintenant la même fonction de service, il reste à en garder une côté API et front.
 - `comment: data?.subType === "congé" ? 'congé' : ""` lit `data.subType`, alors que le front envoie `data.entryType` (le champ du modèle est `subType`) : le commentaire n'est jamais posé, et le littéral est un texte français utilisé comme code.
-- `data.team` (affectation) et `data.teamId` (modification, patch d'horaires) sont deux noms pour une même entrée ; `registerHourPatch` accepte les deux plus deux replis (`teamFromShift?._id ?? teamFromShift`, `baseShift.team`...).
+- `data.team` (affectation) et `data.teamId` (modification, patch d'horaires) sont deux noms pour une même entrée ; `registerHourPatch` accepte les deux plus deux replis (`teamFromShift?._id ?? teamFromShift`).
 - `registerEntry` charge `substitution`, les trois dernières entrées et les vacations pour chaque gestionnaire alors que chacun n'en utilise qu'une partie.
 - `getUserEntries` a aussi un « Date » pour une chaîne de jour (`new Date(date)`), et `findLatestAssignment` dans `addSubstitutionEntries` ignore volontairement les entrées de remplacement (voir 3.2).
 - `savedEntry` est écrit (entrées de `demand`) et **jamais lu** : rien ne restaure l'entrée que `addSubstitutionEntries` a désactivée. Si C avait une affectation ce jour-là, accepter un remplacement la désactive,
@@ -166,7 +164,6 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 | `userShifts`, `userShiftData` | `request.accept.js` | tableau / une entrée de jour, encore | `userDays`, `userDay` |
 | `posterShift`, `accepterShift` (sur `Substitution`) | modèle, tous les services | ce n'est pas une vacation : `{ shift, day, date, teamId, selectedVariation }` ; `posterShift.shift` bégaie | `posterSlot` / `posterDay` ou `poster: { shift, day, teamId, variation }` |
 | `posterShift` / `accepterShift` (retour de `addSubstitutionEntries`, `cancelSubstitutionEntries`) | `calendarEntry.*` | **même nom, autre forme** : ici un jour calculé, `null` dans une transaction (et déstructuré puis ignoré dans `withdraw`) | `posterDay`, `accepterDay` |
-| `baseShift` | `planning.userShifts.js` | `{ shift, team }` à l'intérieur, un document `Shift` à la fin (2.2) | `base` / `rotationDay` pour l'enveloppe, `rotationShift` pour le document |
 | `NewShiftSchema` | `models/Substitution.js` | « new » hérité | `SlotSchema` |
 | `isSameShift` | `register.js` et `planning.userShifts.js` | même nom, deux signatures, l'une renvoie `undefined` | `sameShiftId` / `isSameShiftAs` |
 | `type` | quatre sens : discriminant d'entrée (`assignment`, ...), `type` de résultat (`creation`, `modification`, `restoration`), `type` de jour (`shift`, `empty`, ou le sous-type d'affectation), `type` de demande (`switch`, `hybrid`, `substitution`) | `type` ne se lit pas sans son fichier | `kind` pour le discriminant, `action`/`outcome` pour le résultat, `dayKind` pour le jour calculé |
@@ -190,12 +187,10 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 
 1. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » au lieu de contrôles écrits dans chaque gestionnaire (affectation, modification et ajustement d'horaires les ont désormais chacun).
 2. **`getActiveEntriesByDates`** : trois requêtes, c'est correct ; le regroupement peut être un seul `groupBy` sur `a.date` sans branche `typeof`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
-3. **`computeUserShifts`** : le pipeline `resolveAssignment` / `applyModification` / `applyHourPatch` est lisible ; les deux choses qui le rendent difficile sont la double forme de `baseShift` et les trois endroits qui décident `isOff`.
-   Une enveloppe `base = { shift, team }` renommée, et `isOff` / `isWorked` affectés dans `resolveAssignment` et une étape finale, feraient de l'état de chaque jour une fonction de (base, dernière affectation, dernière modification, dernier patch).
-4. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
+3. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
    Une petite table `canTransition(from, to)` contrôlée aux points d'entrée (l'annulation en a déjà un : `CANCELLABLE_STATUSES`) ferait de S9 (contrôles de date) une règle de plus au même endroit.
-5. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).
-6. **Étapes après commit** (`computeUserShifts`, catégorisation, mails) enveloppées au mieux (best-effort) dans un seul helper, pour qu'un échec après commit ne réponde jamais une erreur pour une action faite.
+4. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).
+5. **Étapes après commit** (`computeUserShifts`, catégorisation, mails) enveloppées au mieux (best-effort) dans un seul helper, pour qu'un échec après commit ne réponde jamais une erreur pour une action faite.
 
 ---
 

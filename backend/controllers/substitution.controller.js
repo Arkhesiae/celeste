@@ -155,9 +155,10 @@ const checkUserShift = async (req, res, next) => {
 
         const userShift = await planningService.computeUserShifts(new Date(date), userId);
         const entry = userShift[0];
-        // planningService.computeUserShifts expose shiftData.shift + isOff (absence / optionnel non confirmé)
+        // computeUserShifts : `shiftData.shift` est la vacation tenue (vide si remplacé), `presence` dit s'il y est (dispo, jour
+        // facultatif non confirmé : non)
         const shiftType = entry?.shiftData?.shift?.type;
-        const hasShift = Boolean(entry && !entry.isOff && shiftType === 'work');
+        const hasShift = Boolean(entry && entry.presence === 'present' && shiftType === 'work');
         res.status(200).json({ hasShift, shift: userShift });
     } catch (err) {
         next(err);

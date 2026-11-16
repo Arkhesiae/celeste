@@ -58,7 +58,7 @@
               <div
                 v-if="cell.entry"
                 class="tg-entry"
-                :class="[`tg-entry--${cell.entry.kind}`, { 'tg-entry--off': cell.entry.isOff }]"
+                :class="[`tg-entry--${cell.entry.kind}`, { 'tg-entry--off': cell.entry.dimmed }]"
                 :title="cell.entry.title"
               >
                 <div class="tg-entry__line">
@@ -162,12 +162,12 @@ const buildCell = (day) => {
 
   let counterpartIcon = 'mdi-swap-horizontal';
   if (day.counterpart && !day.counterpart.isSwitch) {
-    counterpartIcon = day.isOff ? 'mdi-account-arrow-right-outline' : 'mdi-account-arrow-left-outline';
+    counterpartIcon = day.presence === 'replaced' ? 'mdi-account-arrow-right-outline' : 'mdi-account-arrow-left-outline';
   }
 
   return {
     kind: entry || day.isRest ? 'entry' : 'shift',
-    isOff: day.isOff,
+    dimmed: day.presence !== 'present',   // dispo, jour non confirmé ou remplacé : la cellule est atténuée
     icon: entry ? `mdi-${entry.icon}` : null,
     label,
     counterpart: day.counterpart?.name ?? null,

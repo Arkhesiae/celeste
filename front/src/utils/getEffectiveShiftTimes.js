@@ -1,14 +1,15 @@
 /**
  * Retourne le nom à afficher pour une vacation : "nomShift" + "nomVariante" si variante sélectionnée (ex: J4B).
- * @param {Object} vacation - { shift, selectedVariation, initialShift, isOff }
+ * Un agent remplacé ne tient plus de vacation : on affiche celle qu'il a cédée (`substitution.gave`), que l'écran barre.
+ * @param {Object} vacation - un jour de `computeUserShifts` : { shiftData, presence, substitution }, ou { shift, selectedVariation }
  * @returns {string}
  */
 export function getDisplayShiftName(vacation) {
   if (!vacation) return '';
-  if (vacation.isOff && vacation.initialShift) return vacation.initialShift.name || '';
 
-  const shift = vacation.shiftData?.shift || vacation.shift;
-  const selectedVariation = vacation.shiftData?.selectedVariation ?? vacation.selectedVariation;
+  const gave = vacation.presence === 'replaced' ? vacation.substitution?.gave : null;
+  const shift = vacation.shiftData?.shift || vacation.shift || gave?.shift;
+  const selectedVariation = vacation.shiftData?.selectedVariation ?? vacation.selectedVariation ?? gave?.selectedVariation;
   if (!shift) return '';
 
   const baseName = shift.name || '';

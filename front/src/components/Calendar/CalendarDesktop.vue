@@ -89,9 +89,11 @@ const isToday = (dateStr) => {
 const shiftDataMap = computed(() => {
   const map = new Map();
   for (const [key, value] of shiftStore.persistentVacationsMap) {
+    // Remplacé, l'agent ne tient plus de vacation : la tuile montre celle qu'il a cédée (barrée)
+    const shown = value?.shiftData?.shift ?? (value?.presence === 'replaced' ? value.substitution?.gave?.shift : null);
     map.set(key, {
-      isWorkDay: !!value?.shiftData?.shift && value.shiftData.shift.type !== 'rest',
-      isOff: value?.isOff ?? false,
+      isWorkDay: !!shown && shown.type !== 'rest',
+      presence: value?.presence ?? 'present',
       shiftName: getDisplayShiftName(value),
       selectedVariation: value?.shiftData?.selectedVariation ?? null,
       variationName: value?.shiftData?.selectedVariation?.name ?? null,

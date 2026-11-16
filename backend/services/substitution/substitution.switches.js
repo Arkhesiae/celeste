@@ -1,6 +1,5 @@
 import User from '../../models/User.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
-import { toPlainDate } from '../../utils/dates/plainDate.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import Substitution from '../../models/Substitution.js';
@@ -31,15 +30,13 @@ const verifyCompatibilities = async (demands, userId) => {
     return list;
 };
 
-export async function getCompatibleSwitches (date, userId) {
-    if (!date) {
-        throw new AppError('Date manquante', 400);
-    }
-    // Jour demandé sous forme de clé YYYY-MM-DD (pas de Date) : tout le calcul qui suit raisonne en jours
-    const demandDay = toPlainDate(date)?.toString();
-    if (!demandDay) {
-        throw new AppError('Date invalide', 400);
-    }
+/**
+ * Pour chaque vacation de travail du tour de service actif ce jour-là : peut-on la prendre à la place de ce que fait l'utilisateur
+ * ce jour (horaires par défaut et chaque variante) ?
+ * @param {string} demandDay - jour demandé, au format `YYYY-MM-DD` : le format est contrôlé par l'appelant (le contrôleur), pas converti ici
+ * @param {string} userId
+ */
+export async function getCompatibleSwitches (demandDay, userId) {
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const timeZone = await getCenterTimeZone(user.centerId);   // fuseau de toutes les vacations de cet utilisateur
     const activeRotation = await findLatestRotation(user.centerId, demandDay);
@@ -47,34 +44,37 @@ export async function getCompatibleSwitches (date, userId) {
         throw new AppError('Tour de service actif non trouvé', 404);
     }
 
-    const populateRotation = await Rotation.findById(activeRotation._id).populate('days');
+    // Les jours du tour de service avec leurs variantes : chacune est évaluée (#45)
+    const populateRotation = await Rotation.findById(activeRotation._id).populate({ path: 'days', populate: { path: 'variations' } });
 
     // Planning réel de l'utilisateur autour du jour demandé (±12 jours, vacations travaillées seulement)
     const shiftMap = await generateShiftsMap([demandDay], userId);
 
+    // Évalue une vacation candidate posée à la date demandée, à la place de ce que l'utilisateur y faisait, avec les mêmes règles
+    // légales que pour une demande (repos 11h / 35h, charge 48h, 5 jours, nuits). La variante que l'utilisateur a choisie pour la
+    // vacation qu'il cède n'intervient pas : cette vacation disparaît, remplacée par la candidate. Seuls comptent ses autres
+    // jours, avec leurs horaires réels.
+    const evaluate = (shift, hours, selectedVariation = null) => {
+        const localMap = new Map(shiftMap);
+        localMap.set(demandDay, {
+            shift,
+            date: demandDay,
+            startTime: hours.startTime,
+            endTime: hours.endTime,
+            endsNextDay: hours.endsNextDay ?? false,
+            selectedVariation,
+        });
+        const { limit } = legalLimitsFor(demandDay, shiftMapToArray(localMap), timeZone);
+        return { limit, compatible: limit.length === 0 };
+    };
+
     const shifts = []
     for (const day of populateRotation.days) {
         if (day.type === 'rest') continue;
-        const localMap = new Map(shiftMap);
 
-
-        // La vacation candidate (un jour de la rotation) est posée à la date demandée, à la place de ce que
-        // l'utilisateur y faisait, avec ses horaires par défaut (les variantes ne sont pas évaluées, #45)
-        const dayData = {
-            shift: day,
-            date: demandDay,
-            startTime: day.default.startTime,
-            endTime: day.default.endTime,
-            endsNextDay: day.default.endsNextDay ?? false,
-        };
-
-        localMap.set(demandDay, dayData);
-        const shiftsSorted = shiftMapToArray(localMap);
-        // Mêmes règles légales que pour une demande (repos 11h / 35h, charge 48h, 5 jours, nuits)
-        const { limit: dayLimit } = legalLimitsFor(demandDay, shiftsSorted, timeZone);
-        const compatible = dayLimit.length === 0;
-
-        // Les jours de référence sont ceux du tour de service actif à cette date : le front les affiche tels quels
+        // Les jours de référence sont ceux du tour de service actif à cette date : le front les affiche tels quels.
+        // `limit` / `compatible` valent pour les horaires par défaut ; `variations` donne le résultat de chaque variante,
+        // pour montrer celles qui passent même quand la vacation par défaut est refusée.
         shifts.push({
             _id: day._id,
             name: day.name,
@@ -82,11 +82,19 @@ export async function getCompatibleSwitches (date, userId) {
             startTime: day.default?.startTime,
             endTime: day.default?.endTime,
             endsNextDay: day.default?.endsNextDay ?? false,
-            limit: dayLimit,
-            compatible: compatible,
+            ...evaluate(day, day.default),
+            variations: (day.variations ?? [])
+                .filter((variation) => variation.startTime && variation.endTime)
+                .map((variation) => ({
+                    _id: variation._id,
+                    name: variation.name,
+                    startTime: variation.startTime,
+                    endTime: variation.endTime,
+                    endsNextDay: variation.endsNextDay ?? false,
+                    ...evaluate(day, variation, variation),
+                })),
         });
     }
-
 
     return shifts;
 };

@@ -16,6 +16,7 @@ import Shift from '../models/Shift.js';
 import Rotation from '../models/Rotation.js';
 import User from '../models/User.js';
 import Variation from '../models/Variation.js';
+import { Modification } from '../models/CalendarEntry.js';
 import { getCompatibleSwitches } from '../services/substitution/substitution.switches.js';
 import { generateShiftsMap } from '../services/planning/planning.shiftsMap.js';
 
@@ -175,22 +176,61 @@ for (const [label, pattern] of Object.entries(patterns)) {
   });
 }
 
-test('getCompatibleSwitches : refuse une date absente et un utilisateur sans rotation active', async (t) => {
+test('getCompatibleSwitches : refuse un utilisateur sans rotation active', async (t) => {
   if (!available) return t.skip('MongoDB indisponible');
-  await assert.rejects(() => getCompatibleSwitches('', new mongoose.Types.ObjectId()), /Date manquante/);
   const ctx = await setup(patterns.semaine52, { tag: 'nor' + Math.floor(Math.random() * 90) });
   await assert.rejects(() => getCompatibleSwitches('2025-06-01', ctx.user._id), /Tour de service actif non trouvé/);
 });
 
-test('getCompatibleSwitches : une rotation à variantes est évaluée sur ses horaires par défaut seulement', { todo: true }, async (t) => {
+// Soir (14-22) puis matin (09-17) : le matin a trois variantes, dont une trop tôt après le soir de la veille
+const withVariations = async (tag) => {
+  const ctx = await setup([{ name: 'S', start: '14:00', end: '22:00' }, { name: 'M', start: '09:00', end: '17:00' }, null, null, null, null], { tag });
+  const make = (name, startTime, endTime, endsNextDay = false) => Variation.create({ name, startTime, endTime, endsNextDay, points: 10 });
+  const variations = { tot: await make('tot', '07:00', '15:00'), tard: await make('tard', '12:00', '20:00'), nuit: await make('nuit', '22:00', '06:00', true) };
+  await Shift.updateOne({ _id: ctx.shifts[1]._id }, { $set: { variations: Object.values(variations).map((v) => v._id) } });
+  // Le jour 7 est le jour 1 de la rotation (le matin), le jour 6 le soir : la veille du jour évalué
+  return { ...ctx, variations, date: addDays(ctx.anchor, 7) };
+};
+
+test('getCompatibleSwitches : chaque variante est évaluée sur ses propres horaires (#45)', async (t) => {
   if (!available) return t.skip('MongoDB indisponible');
-  // Un jour avec une variante plus tardive (ex. 07-15 / variante 11-19) : la compatibilité devrait refléter chaque variante
-  // (au moins signaler celles qui échouent). Le service ne regarde que `default`.
-  const ctx = await setup([{ name: 'M', start: '07:00', end: '15:00' }, null, null], { tag: 'var' + Math.floor(Math.random() * 90) });
-  const v = await Variation.create({ name: 'tard', startTime: '23:00', endTime: '07:00', endsNextDay: true, points: 10 });
-  await Shift.updateOne({ _id: ctx.shifts[0]._id }, { $set: { variations: [v._id] } });
-  const res = await getCompatibleSwitches(addDays(ctx.anchor, 10), ctx.user._id);
-  assert.ok(res[0].variations, 'la réponse devrait détailler la compatibilité par variante');
+  const ctx = await withVariations('var' + Math.floor(Math.random() * 90));
+  const userMap = await generateShiftsMap([new Date(`${ctx.date}T00:00:00Z`)], ctx.user._id);
+  const result = await getCompatibleSwitches(ctx.date, ctx.user._id);
+
+  const evening = result.find((r) => r.name === 'S');
+  const morning = result.find((r) => r.name === 'M');
+  assert.deepEqual(evening.variations, [], 'une vacation sans variante a une liste vide');
+  assert.equal(morning.variations.length, 3);
+
+  for (const variation of morning.variations) {
+    // Oracle : le planning réel de l'utilisateur, avec la variante comme vacation candidate à la date demandée
+    const entries = [...userMap.values()].filter((e) => e.date !== ctx.date).map(toOracleEntry);
+    entries.push(toOracleEntry({ date: ctx.date, startTime: variation.startTime, endTime: variation.endTime, endsNextDay: variation.endsNextDay }));
+    const expected = oracleOk(entries, ctx.date);
+    assert.equal([...variation.limit].sort().join(','), [...expected].sort().join(','), variation.name);
+    assert.equal(variation.compatible, expected.length === 0, variation.name);
+  }
+
+  // La variante tôt (07:00) tombe 9 h après la fin du soir de la veille : refusée, alors que les horaires par défaut (09:00) passent
+  const early = morning.variations.find((v) => v.name === 'tot');
+  assert.ok(early.limit.includes('insufficientRest'));
+  assert.ok(!morning.limit.includes('insufficientRest'));
+  assert.equal(early.startTime, '07:00');
+});
+
+test('getCompatibleSwitches : la variante choisie par l\u2019utilisateur pour la vacation qu\u2019il cède n\u2019intervient pas (#45)', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const ctx = await withVariations('own' + Math.floor(Math.random() * 90));
+  const before = JSON.parse(JSON.stringify(await getCompatibleSwitches(ctx.date, ctx.user._id)));
+
+  // L'utilisateur a choisi la variante « tôt » pour son matin de ce jour (celui qu'il cède) : la candidate la remplace, rien ne change
+  await Modification.create({
+    userId: ctx.user._id, centerId: ctx.center._id, date: ctx.date, subType: 'variation',
+    shiftData: { shift: ctx.shifts[1]._id, selectedVariation: ctx.variations.tot._id, team: ctx.team._id },
+  });
+  const after = JSON.parse(JSON.stringify(await getCompatibleSwitches(ctx.date, ctx.user._id)));
+  assert.deepEqual(after, before);
 });
 
 test('getCompatibleSwitches : les vacations sont placées dans le fuseau du centre (changement d’heure de printemps)', async (t) => {
@@ -204,4 +244,15 @@ test('getCompatibleSwitches : les vacations sont placées dans le fuseau du cent
   // 22:00 le 28 -> 09:00 le 29 : 11h d'horloge, 10h réelles à Paris (le 29 mars la nuit dure 7h)
   assert.deepEqual((await morningIn(paris)).limit, ['insufficientRest']);
   assert.deepEqual((await morningIn(utc)).limit, []);
+});
+
+test('GET /substitution/compatible-switches/:date : une date qui n’est pas AAAA-MM-JJ est refusée par le contrôleur (400)', async () => {
+  // Le service ne convertit rien : c'est le contrôleur qui contrôle le format
+  const { getCompatibleSwitches: handler } = await import('../controllers/substitution.controller.js');
+  const res = { status () { return this; }, json () {} };
+  for (const date of ['2026-02-30', '2026-03-04T10:00:00Z', 'demain', '04/03/2026', '']) {
+    let error = null;
+    await handler({ params: { date }, user: { userId: 'x' } }, res, (e) => { error = e; });
+    assert.equal(error?.status, 400, `${JSON.stringify(date)} refusée`);
+  }
 });

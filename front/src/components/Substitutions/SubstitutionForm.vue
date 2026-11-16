@@ -38,8 +38,8 @@
             <div v-if="hasVariations" class="flex-shrink-1 pl-2 text-medium-emphasis">
               <span class="text-body-small mb-2">
                 <v-icon start icon="mdi-information-outline" size="small" />
-                Choisissez une variante pour préciser l'horaire (optionnel, peut rendre plus de permutations
-                compatibles). {{ preselectedVariantHint }}
+                Choisissez une variante pour préciser l'horaire de la vacation que vous cédez (optionnel). Elle n'influe pas sur la
+                compatibilité des permutations proposées. {{ preselectedVariantHint }}
               </span>
             </div>
 
@@ -99,6 +99,16 @@
                   </span>
                   <span v-else class="switch-tile__status d-inline-flex align-center ga-1">
                     <v-icon icon="mdi-alert-circle-outline" size="12" />{{ day.reason }}
+                  </span>
+                  <!-- Variantes : barrées quand la règle de repos ou de charge les refuse (jamais la couleur seule), horaires et motif en infobulle -->
+                  <span v-if="day.variations.length" class="switch-tile__variations">
+                    <span
+                      v-for="variation in day.variations"
+                      :key="variation._id"
+                      class="switch-tile__variation"
+                      :class="{ 'switch-tile__variation--blocked': !variation.compatible }"
+                      :title="variation.compatible ? variation.hours : `${variation.hours} · ${variation.reason}`"
+                    >{{ variation.name }}</span>
                   </span>
                 </button>
               </div>
@@ -292,6 +302,14 @@ const rotationDays = computed(() =>
       hours: hoursOf(day),
       compatible: day.compatible,
       reason: describeLimits(day.limit),
+      // Chaque variante de la vacation, évaluée sur ses propres horaires par le serveur
+      variations: (day.variations ?? []).map(variation => ({
+        _id: variation._id,
+        name: variation.name,
+        hours: hoursOf(variation),
+        compatible: variation.compatible,
+        reason: describeLimits(variation.limit),
+      })),
     }))
 );
 
@@ -467,6 +485,29 @@ watch(() => props.date, (newDate) => {
 .switch-tile__name { font-size: 18px; line-height: 1.1; }
 .switch-tile__hours { font-size: 11px; }
 .switch-tile__status { font-size: 10px; line-height: 1.2; }
+
+/* Variantes de la vacation : de petites pastilles teintées du texte de la tuile (lisibles sélectionnée ou non) */
+.switch-tile__variations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.switch-tile__variation {
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.5;
+  background: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+/* Refusée par une règle de repos ou de charge : barrée et estompée */
+.switch-tile__variation--blocked {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
 
 /* Vacation que la règle de repos / de charge interdit : toujours choisissable, mais signalée */
 .switch-tile--incompatible {

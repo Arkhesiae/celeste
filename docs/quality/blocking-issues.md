@@ -4,11 +4,11 @@ Audit date: 2026-11-02; re-verified against the code on 2026-11-11 (every issue 
 Scope: `backend/` in full (static checks, route/auth review); `front/` was not audited, except where noted.
 Method: import resolution, ESLint `no-undef` pass over the backend, reading of routes/controllers/middleware, `git ls-files` review. Nothing was run against a database.
 
-This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed or closed issues (#1, #49, #26, #48, #13, #17, #19, #42 (35h rule bounded by the window: intended), #43, #44, #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
+This file lists **open issues only**. Fixed items are removed (history is in git and `docs/product/roadmap.md`); issue numbers are stable identifiers, so gaps are fixed or closed issues (#1, #49, #26, #48, #13, #17, #19, #42 (35h rule bounded by the window: intended), #43, #44, #45 (switch compatibility now evaluates every variation: fixed 2026-11-18), #46, #3, #9, #10, #12, #14-#16, #27-#29, #32-#34, #37 and the activation-center-filter part of #30).
 
 Severity is shown on each issue; sections below are ordered by when to work on them. **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug that will break a code path.
 
-Compatibility audit (2026-11-11): #45, #47, with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
+Compatibility audit (2026-11-11): #47 (#45 fixed 2026-11-18), with tests in `backend/test/` (`npm test` in `backend/`; the 11h / 35h / 48h functions agree with an independent minute-by-minute oracle on 3000 random plannings and, end to end, on four rotations on a scratch database).
 
 Changes in this revision (2026-11-11): #13 moved (the file is now `services/substitution/compatibility/compatibility.rules.js` and `compatibility.categorize.js`); #30 reduced to its remaining part (the center filter is fixed); #10 removed (cookie options are `httpOnly` / `secure` / `sameSite` in production; the 15m lifetime is covered by #39); #2 path updated (`bootstrap/seedDefaultConfig.js`); #6 moved next to #8; new entries #40 and #41 for the day-field migration.
 
@@ -45,16 +45,13 @@ Tracked files (`git ls-files`): `.env`, `front/.env.production`, `ssh_config`, `
 ---
 
 ## Next — security and correctness defects to fix this sprint
-Open authorization holes, data-corrupting bugs and the compatibility computation (#45, #47). #8 also unlocks the throttling needed by #6.
+Open authorization holes, data-corrupting bugs and the compatibility computation (#47). #8 also unlocks the throttling needed by #6.
 
 ### 20. Admin routes still without a center guard — P1
 `middleware/centerAuth.js` provides the guards (`authorizeCenterParam`, `authorizeResourceCenter`, `authorizeTargetUserCenter`...) and they cover users, teams, tickets, demands, rotations, grid/heatmap/timeline and announcement sending. Not yet covered (`routes/announcement.routes.js:25-29`, `routes/message.routes.js:9,15`):
 - Email announcements: `GET /announcement/history` and `/stats` list **all** centers' announcements to any admin (`Announcement.find()`), and `DELETE /announcement/:id` lets any admin delete any announcement. Its owner check reads `req.user._id`, but the token carries `userId`, so the check compares against `undefined` (the admin bypass hides it today).
 - Contact messages: `GET /message` and `PUT /message/:id/read` show every message to any admin (messages have no center; decide whether they are master-only).
 - The team-change preview still names people from cascaded requests of other users when someone previews their own change.
-
-### 45. Switch compatibility ignores variations — P2
-`getCompatibleSwitches` (`substitution.switches.js`) evaluates each rotation day with `day.default` hours only. A shift with variations (other start / end times) is reported with the default hours' result; the front cannot tell which variation breaks a rule. Test: `getCompatibleSwitches : une rotation à variantes ...` in `backend/test/compatibility.db.test.js` (todo).
 
 ### 47. Overlapping shifts are counted twice in the 48h total — P2
 `checkWeeklyWorkHours` (`compatibility.rules.js`) sums the minutes of overlapping shifts instead of their union (test: todo). Only matters once overlapping data exist (such a planning already fails the 11h rule on the shifts involved, but not on unrelated targets).

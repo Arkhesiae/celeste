@@ -7,7 +7,7 @@ import { formatDateFr } from '../utils/dates/format.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { sameId } from '../utils/ids.js';
-import { assertDay, assertObject, isValidDateRange } from '../utils/validation.js';
+import { assertDay, assertObject, isValidDate, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 import * as planningService from '../services/planning/index.js';
 import * as substitutionService from '../services/substitution/index.js';
@@ -356,6 +356,10 @@ const getCompatibleSwitches = async (req, res, next) => {
     try {
         const date = req.params.date;
         const userId = req.user.userId;
+        // Le service raisonne en jours `YYYY-MM-DD` et ne convertit rien : le format se contrôle ici
+        if (!isValidDate(date)) {
+            throw new AppError('Date invalide (AAAA-MM-JJ attendu)', 400);
+        }
         const compatibleShifts = await substitutionService.getCompatibleSwitches(date, userId);
         res.status(200).json(compatibleShifts);
     } catch (err) {

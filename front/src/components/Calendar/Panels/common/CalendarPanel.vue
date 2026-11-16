@@ -145,19 +145,8 @@
     </v-btn>
   </v-sheet>
 
-  <v-dialog v-model="entryDialog" max-width="500px">
-    <v-card class="rounded-xl pa-6">
-      <span class="text-title-large">Ajouter une entrée</span>
-      <div class="d-flex ga-2 mt-4 flex-wrap">
-        <v-btn v-for="entry in entryTypes" :key="entry.key" size="small" @click="addCustomEntry(entry.key)">
-          <template #prepend>
-            <v-icon>{{ "mdi-" + entry.icon }}</v-icon>
-          </template>
-          {{ entry.label }}
-        </v-btn>
-      </div>
-    </v-card>
-  </v-dialog>
+  <!-- Type en tuiles, horaires (09:00 – 17:00 par défaut) et commentaire : voir AssignmentDialog -->
+  <AssignmentDialog v-model="entryDialog" :loading="entrySaving" @submit="addCustomEntry" />
 
   <ConfirmationDialog :model-value="confirmationDialog" :title="confirmationDialogTitle"
     :text="confirmationDialogMessage" @confirm="confirmEntry" @cancel="cancelEntry" />
@@ -170,7 +159,6 @@ import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { entryTypes } from '@/utils/entryIcons';
 import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useDate } from 'vuetify';
 import { sameDateKey, toDateKey } from '@/utils/dateKey';
@@ -251,21 +239,26 @@ const fetchEntries = async () => {
   return res;   // les appelants font `entries.value = await fetchEntries()`
 }
 
-const addCustomEntry = async (type) => {
+// `validated` (congé validé ou non) reste côté écran : il n'est pas envoyé au serveur
+const addCustomEntry = async ({ entryType, startTime, endTime, comment }) => {
   const dateKey = toDateKey(props.selectedDate);
   if (!dateKey) return;
   entryToRegister.value = {
     userId: authStore.userData.userId,
     type: 'assignment',
-    entryType: type,
-    startTime: "09:00",
-    endTime: "17:00",
+    entryType,
+    startTime,
+    endTime,
+    comment,
     date: dateKey,
   }
-  registerEntry();
+  await registerEntry();
 }
 
+const entrySaving = ref(false);
+
 const registerEntry = async () => {
+  entrySaving.value = true;
   try {
     const res = await planningModificationService.registerEntry(entryToRegister.value);
     if (res.needsApproval) {
@@ -280,6 +273,8 @@ const registerEntry = async () => {
   } catch (error) {
     snackbarStore.showNotification(error.message, 'onError', 'mdi-alert-circle-outline');
     console.log(error);
+  } finally {
+    entrySaving.value = false;
   }
 }
 

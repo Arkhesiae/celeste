@@ -15,7 +15,7 @@
           :demands="demandsForDate(plainDateToDateStr(day))"
           :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
           :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
-          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))" :worked-minutes="workOf(plainDateToDateStr(day))?.workedMinutes ?? null"
+          :has-other-demands="hasOtherDemands(plainDateToDateStr(day))"
               :rest="workOf(plainDateToDateStr(day))?.rest ?? null" :window-lines="linesFor(plainDateToDateStr(day))"
               :in-period="inPeriod(plainDateToDateStr(day))" @inspect-window="emit('inspect-window', $event)" class="" :height="86" :class="{
             'top-left-corner': index === 0 && week.indexOf(day) === 0,
@@ -93,6 +93,7 @@ const shiftDataMap = computed(() => {
     const shown = value?.shiftData?.shift ?? (value?.presence === 'replaced' ? value.substitution?.gave?.shift : null);
     map.set(key, {
       isWorkDay: !!shown && shown.type !== 'rest',
+      comment: value?.comment ?? '',
       presence: value?.presence ?? 'present',
       shiftName: getDisplayShiftName(value),
       selectedVariation: value?.shiftData?.selectedVariation ?? null,

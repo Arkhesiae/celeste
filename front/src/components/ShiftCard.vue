@@ -47,9 +47,7 @@
           style="line-height: 1.2; font-size: 11px !important;">
           Dans l'équipe {{ shiftTeam }}
         </div>
-        <!-- <div v-if="comment" style="margin-top: -5px; font-size: 11px !important;">
-          <span class="py-0 text-body-small opacity-70">{{ comment }}</span>
-        </div> -->
+        <div v-if="comment" class="py-0 text-body-small opacity-70 entry-comment">{{ comment }}</div>
       </div>
     </div>
 
@@ -144,6 +142,7 @@ const presence = computed(() => vacation.value?.presence ?? 'present');
 const isBaseShift = computed(() => vacation.value?.isBaseShift);
 const baseShift = computed(() => vacation.value?.baseShift);
 const history = computed(() => vacation.value?.history);
+const comment = computed(() => vacation.value?.comment || '');
 const variations = computed(() => vacation.value?.shiftData?.shift?.variations ?? []);
 const selectedVariation = computed(() => vacation.value?.shiftData?.selectedVariation);
 const shiftTeam = computed(() => vacation.value?.shiftData?.team?.name || '');
@@ -382,5 +381,17 @@ const confirmMdda = async ({ startTime, endTime }) => {
 .fade-expand-leave-to {
   opacity: 0;
   transform: translateY(-20px) scale(1);
+}
+
+/* Commentaire de l'affectation du jour : trois lignes au plus, un mot long ne déborde pas */
+.entry-comment {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  line-height: 1.3;
+  max-width: 18rem;
 }
 </style>

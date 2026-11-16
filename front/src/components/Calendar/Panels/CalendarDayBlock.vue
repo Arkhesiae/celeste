@@ -39,13 +39,13 @@
         </div>
 
         <!-- Sous la date, hors de l'en-tête (pour ne pas rétrécir le nom de la vacation) : repos insuffisant avant la vacation de
-             ce jour, et temps travaillé (une nuit compte en entier le jour où elle commence) -->
-        <div v-if="restProblem || workedMinutes > 0" class="day-indicators">
+             ce jour, et commentaire de l'affectation du jour (une ligne, le texte complet en infobulle) -->
+        <div v-if="restProblem || comment" class="day-indicators">
             <span v-if="restProblem" class="rest-flag" role="img" :aria-label="restLabel">
                 <v-icon size="10">mdi-sleep-off</v-icon>
                 <v-tooltip activator="parent" location="top" :text="restLabel" />
             </span>
-            <span v-if="workedMinutes > 0" class="worked-time" :title="formatHours(workedMinutes)">{{ formatCompactHours(workedMinutes) }}</span>
+            <span v-if="comment" class="day-comment" :title="comment">{{ comment }}</span>
         </div>
 
         <!-- Périodes de 7 jours en défaut : une ligne pleine pour plus de 48 h de travail, en pointillé pour un repos de 35 h manquant -->
@@ -80,7 +80,7 @@
 <script setup>
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { useDisplay } from 'vuetify';
-import { formatCompactHours, formatHours } from '@/utils/workWindows';
+import { formatHours } from '@/utils/workWindows';
 
 const { xs } = useDisplay();
 
@@ -164,10 +164,10 @@ const props = defineProps({
     },
 
     // ── Contrôle du temps de travail (voir stores/workCheckStore.js) ──────────────────────────────────────────────
-    /** Minutes travaillées ce jour (null : pas de donnée) */
-    workedMinutes: {
-        type: Number,
-        default: null,
+    /** Commentaire de l'affectation du jour ('' : aucun) */
+    comment: {
+        type: String,
+        default: '',
     },
     /** Repos avant la vacation du jour : { minutes, requiredMinutes, ok } */
     rest: {
@@ -434,20 +434,25 @@ const handleClick = async () => {
     display: flex;
     align-items: center;
     gap: 3px;
-    max-width: calc(100% - 8px);
+    right: 6px;
     pointer-events: none;
 }
 
-.day-indicators .rest-flag {
+/* Les éléments qui ont une infobulle reprennent les événements (le clic remonte quand même à la tuile) */
+.day-indicators .rest-flag,
+.day-indicators .day-comment {
     pointer-events: auto;
 }
 
-.worked-time {
+/* Commentaire : une ligne, tronquée par une ellipse */
+.day-comment {
+    min-width: 0;
+    overflow: hidden;
     font-size: 10.5px;
     line-height: 1.2;
-    font-variant-numeric: tabular-nums;
     opacity: 0.7;
     white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 /* Pastille d'alerte : lisible sur toutes les teintes de la tuile, sélectionnée ou non */

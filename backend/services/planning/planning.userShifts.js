@@ -70,6 +70,7 @@ const buildAssignmentHistory = (assignments, rotationDay) =>
         type: a.subType,
         shiftData: a.shiftData,
         wasOverride: a.wasOverride,
+        comment: a.comment ?? '',
         substitution: substitutionOf(a, rotationDay),
     }))
 
@@ -148,6 +149,7 @@ export const resolveAssignment = (rotationDay, latestAssignment) => {
             isBaseShift: false,
             shiftData: latestAssignment.shiftData,
             baseShift: rotationShift,
+            comment: latestAssignment.comment ?? '',
             substitution,
         })
     }
@@ -163,6 +165,7 @@ export const resolveAssignment = (rotationDay, latestAssignment) => {
         startTime: latestAssignment.startTime ?? null,
         endTime: latestAssignment.endTime ?? null,
         baseShift: rotationShift,
+        comment: latestAssignment.comment ?? '',
         substitution,
     }
 }
@@ -269,8 +272,8 @@ const getActiveEntriesByDates = async (user, dateStrs) => {
 
 /**
  * Résultat d'un jour : ce que l'utilisateur TIENT (`shiftData`, vide s'il est remplacé ou sur une affectation), ce que la rotation
- * prévoyait (`baseShift`, toujours le document `Shift` de la rotation, jamais ce qui a été modifié), sa `presence` et, s'il y a eu
- * une substitution, laquelle (`substitution`).
+ * prévoyait (`baseShift`, toujours le document `Shift` de la rotation, jamais ce qui a été modifié), sa `presence`, s'il y a eu
+ * une substitution laquelle (`substitution`), et le commentaire de l'affectation du jour (`comment`, vide sans affectation).
  * @param {Object} [overrides] - `baseShift` vaut par défaut la vacation tenue (jour sans entrée : c'est celle de la rotation)
  */
 const buildShiftResult = (dateStr, shift, team, overrides = {}) => ({
@@ -283,6 +286,7 @@ const buildShiftResult = (dateStr, shift, team, overrides = {}) => ({
     endTime: shift?.default?.endTime,
     baseShift: shift,
     substitution: null,
+    comment: '',
     ...overrides,
 })
 

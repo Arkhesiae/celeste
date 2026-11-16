@@ -77,7 +77,7 @@ export const useShiftStore = defineStore('shift', () => {
         : new Date(entry.date).toISOString().split('T')[0];
     }
 
-    const { date, shiftData, isBaseShift, history, type, baseShift, presence, substitution, startTime, endTime, wasPatched } = entry;
+    const { date, shiftData, isBaseShift, history, type, baseShift, presence, substitution, comment, startTime, endTime, wasPatched } = entry;
 
     const endsNextDay = shiftData?.shift?.endsNextDay ?? false
     let start, end
@@ -94,6 +94,7 @@ export const useShiftStore = defineStore('shift', () => {
       endTime,
       presence,
       substitution,
+      comment,
       start,
       end,
       isBaseShift,

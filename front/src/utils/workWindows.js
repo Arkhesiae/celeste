@@ -16,13 +16,6 @@ export function formatHours (minutes) {
   return rest ? `${hours} h ${String(rest).padStart(2, '0')}` : `${hours} h`;
 }
 
-/** Minutes → « 7h45 », « 8h », « 10h30 » : la forme courte des tuiles du calendrier, où la place manque */
-export function formatCompactHours (minutes) {
-  const total = Math.max(0, Math.round(minutes));
-  const rest = total % 60;
-  return `${Math.floor(total / 60)}h${rest ? String(rest).padStart(2, '0') : ''}`;
-}
-
 const dayKeys = (from, to) => {
   const keys = [];
   for (let day = Temporal.PlainDate.from(from); Temporal.PlainDate.compare(day, to) <= 0; day = day.add({ days: 1 })) {

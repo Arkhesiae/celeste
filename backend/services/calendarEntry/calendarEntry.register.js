@@ -87,7 +87,16 @@ async function registerModification (user, date, data, { userShift, latestModifi
     return { userShift: await recomputeShift(), updatedDemands: null, type: 'modification' };
 }
 
+// Longueur maximale du commentaire d'une entrée (maxlength du modèle CalendarEntry)
+const MAX_COMMENT_LENGTH = 500;
+
 async function registerAssignment (user, date, data, { substitution, latestAssignment, recomputeShift }) {
+    // Contrôlé avant d'écraser l'affectation précédente : une saisie refusée ne doit rien changer au jour
+    const comment = typeof data.comment === 'string' ? data.comment.trim() : '';
+    if (comment.length > MAX_COMMENT_LENGTH) {
+        throw new AppError(`Le commentaire est limité à ${MAX_COMMENT_LENGTH} caractères`, 400);
+    }
+
     if (latestAssignment?.subType === 'substitution') {
         throw new AppError('Impossible de créer une entrée sur un remplacement actif, annulez d\'abord le remplacement', 422);
     }
@@ -114,7 +123,7 @@ async function registerAssignment (user, date, data, { substitution, latestAssig
                 team: data.team,
             },
         }),
-        comment: data?.subType === "congé" ? 'congé': "",
+        comment,
         userId: user._id,
         date,
         centerId: user.centerId,

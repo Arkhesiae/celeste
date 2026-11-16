@@ -22,6 +22,7 @@ declare module 'vue' {
     AlertContent: typeof import('./src/components/AlertContent.vue')['default']
     AnnouncementBanner: typeof import('./src/components/Dashboard/AnnouncementBanner.vue')['default']
     AssignCenterDialog: typeof import('./src/components/Users/AssignCenterDialog.vue')['default']
+    AssignmentDialog: typeof import('./src/components/Dialogs/AssignmentDialog.vue')['default']
     AvailableDemands: typeof import('./src/components/Remplacer/AvailableDemands.vue')['default']
     AvatarDialog: typeof import('./src/components/Profile/Parameters/AvatarDialog.vue')['default']
     BaseDialog: typeof import('./src/components/common/BaseDialog.vue')['default']

@@ -206,3 +206,24 @@ test('modifications : celui qui tient une vacation (accepteur, permutation) a sa
   await registerEntry(A._id, day, await modification(A, K, 'disp'));                                   // permutation : chacun garde la main
   assert.deepEqual(await view(A), ['released', 'K', 'exchanged', 'J', 'J', false]);
 });
+
+test('affectation : horaires et commentaire saisis sont enregistrés, rendus sur le jour, et bornés', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const { day, users: { E }, view, dayOf } = await setup();
+
+  // Un commentaire trop long est refusé avant de toucher au jour
+  await assert.rejects(registerEntry(E._id, day, {
+    type: 'assignment', entryType: 'training', startTime: '09:00', endTime: '17:00', comment: 'x'.repeat(501),
+  }), { status: 400 });
+  assert.deepEqual(await view(E), ['present', 'R', null, null, 'R', false]);
+
+  const { userShift: [result] } = await registerEntry(E._id, day, {
+    type: 'assignment', entryType: 'training', startTime: '10:00', endTime: '12:30', comment: '  Formation sécurité  ',
+  });
+  assert.deepEqual([result.type, result.startTime, result.endTime, result.comment, result.isWorked], ['training', '10:00', '12:30', 'Formation sécurité', true]);
+  assert.equal((await dayOf(E)).history[0].comment, 'Formation sécurité');
+
+  // Sans commentaire : chaîne vide ; un congé n'est pas du travail
+  const { userShift: [leave] } = await registerEntry(E._id, day, { type: 'assignment', entryType: 'absence', startTime: '09:00', endTime: '17:00' });
+  assert.deepEqual([leave.type, leave.comment, leave.isWorked], ['absence', '', false]);
+});

@@ -102,9 +102,9 @@ export const applyEntries = (rotationDay, assignments, modifications, hoursPatch
     return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments, rotationDay) }
 }
 
-/** Jour facultatif de la rotation que rien n'a confirmé (ni affectation, ni modification « présent ») : l'agent n'y est pas */
+/** Jour facultatif de la rotation que rien n'a confirmé (ni affectation, ni modification) : l'agent n'y est pas */
 const isUnconfirmedOptional = (shift, { latestAssignment, latestModification } = {}) =>
-    Boolean(shift?.optional) && !latestAssignment && latestModification?.subType !== 'pres'
+    Boolean(shift?.optional) && !latestAssignment && !["pres", "variation", "vic"].includes(latestModification?.subType)
 
 /**
  * `isWorked` : le jour compte comme TRAVAILLÉ pour les règles de repos et de charge (compatibilité, contrôle des 7 jours).
@@ -389,8 +389,8 @@ const computeUserShifts = async (dates, userId) => {
                 const { assignments, modifications, hoursPatches } = entriesByDate[dateStr]
                     || { assignments: [], modifications: [], hoursPatches: [] };
 
+                // Sans rien d'explicite, un jour facultatif de la rotation n'est pas travaillé
                 if (!assignments.length && !modifications.length && !hoursPatches.length) {
-                    // Sans rien d'explicite, un jour facultatif de la rotation n'est pas travaillé
                     const unconfirmed = isUnconfirmedOptional(baseShift)
                     return buildShiftResult(dateStr, baseShift, team, {
                         presence: unconfirmed ? 'unconfirmed' : 'present',

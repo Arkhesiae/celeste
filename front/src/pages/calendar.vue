@@ -20,10 +20,6 @@
             @open-rempla-dialog="openSubstitutionForm" @open-drawer="handleOpenDrawer" @cancel="handleCancel"
             @withdraw="handleWithdraw" />
 
-          <!-- Contrôle du temps de travail : la règle des 35 h sur la période choisie, puis la fenêtre de 7 jours -->
-          <RestRuleTile v-if="selectionMode === 'period' && workCheckStore.limits" :period="period"
-            :windows="workCheckStore.windows" :limits="workCheckStore.limits" @clear="period = null"
-            @preset="applyPreset" @inspect-window="inspectWindow" />
           <WorkWindowTile v-if="windowStart && workCheckStore.limits" :window-start="windowStart"
             :windows="workCheckStore.windows" :days-by-date="workCheckStore.daysByDate" :limits="workCheckStore.limits"
             @update:window-start="windowStart = $event" />
@@ -37,9 +33,6 @@
           <CalendarPanel v-if="selectedDate && selectionMode === 'day'" :selected-date="selectedDate"
             @open-rempla-dialog="openSubstitutionForm" @open-drawer="handleOpenDrawer" @cancel="handleCancel"
             @withdraw="handleWithdraw" />
-          <RestRuleTile v-if="selectionMode === 'period' && workCheckStore.limits" :period="period"
-            :windows="workCheckStore.windows" :limits="workCheckStore.limits" @clear="period = null"
-            @preset="applyPreset" @inspect-window="inspectWindow" />
           <WorkWindowTile v-if="windowStart && workCheckStore.limits" :window-start="windowStart"
             :windows="workCheckStore.windows" :days-by-date="workCheckStore.daysByDate" :limits="workCheckStore.limits"
             @update:window-start="windowStart = $event" />

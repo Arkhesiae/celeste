@@ -124,17 +124,23 @@ test("isWorked : un VIC l'est seulement s'il n'est pas passé", async () => {
   assert.equal(await worked(work, { modifications: [vic], on: Temporal.PlainDate.from('2027-03-11') }), true);
 });
 
-test("isWorked : un jour facultatif de la rotation ne l'est que s'il est confirmé", async () => {
+test("isWorked : un jour facultatif de la rotation ne l'est que s'il est confirmé (présent, variante ou VIC)", async () => {
   const optional = { ...work, optional: true };
-  assert.equal(await worked(optional, { modifications: [{ subType: 'variation', shiftData: { shift: optional, selectedVariation: { startTime: '09:00', endTime: '17:00' } } }] }), false);
+  const variation = { subType: 'variation', shiftData: { shift: optional, selectedVariation: { startTime: '09:00', endTime: '17:00' } } };
+  assert.equal(await worked(optional), false);                                                              // rien ne le confirme
   assert.equal(await worked(optional, { modifications: [{ subType: 'pres', shiftData: { shift: optional } }] }), true);
+  assert.equal(await worked(optional, { modifications: [variation] }), true);                               // choisir une variante, c'est y aller
+  assert.equal(await worked(optional, { modifications: [{ subType: 'vic', shiftData: { shift: optional } }] }), true);
+  assert.equal(await worked(optional, { modifications: [{ subType: 'disp', shiftData: { shift: optional } }] }), false);   // dispo : non
 });
 
-test("presence : un jour facultatif non confirmé l'est, même avec une variante ; dispo = released ; une absence reste présente (elle remplace la vacation)", async () => {
+test("presence : un jour facultatif sans rien pour le confirmer est unconfirmed ; présent, variante ou VIC le confirment ; dispo = released ; une absence reste présente (elle remplace la vacation)", async () => {
   const optional = { ...work, optional: true };
   const variation = { subType: 'variation', shiftData: { shift: optional, selectedVariation: { startTime: '09:00', endTime: '17:00' } } };
   const presence = async (...args) => (await resolved(...args)).presence;
-  assert.equal(await presence(optional, { modifications: [variation] }), 'unconfirmed');
+  assert.equal(await presence(optional), 'unconfirmed');
+  assert.equal(await presence(optional, { modifications: [variation] }), 'present');
+  assert.equal(await presence(optional, { modifications: [{ subType: 'vic', shiftData: { shift: optional } }] }), 'present');
   assert.equal(await presence(optional, { modifications: [{ subType: 'pres', shiftData: { shift: optional } }] }), 'present');
   assert.equal(await presence(work, { modifications: [{ subType: 'disp', shiftData: { shift: work } }] }), 'released');
   assert.equal(await presence(work, { assignments: [{ subType: 'absence' }] }), 'present');

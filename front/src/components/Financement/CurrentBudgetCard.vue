@@ -40,7 +40,7 @@
           <!-- Indicateur de budget utilisé -->
           <div v-if="previousCampaignsRemainder > 0" class="budget-used-indicator"
             :style="{ left: `${(previousCampaignsRemainder / (campaignAmount + previousCampaignsRemainder)) * 100}%` }">
-            <div class="indicator-dot" />
+            <div class="dot dot--outlined indicator-dot" />
             <div class="indicator-label">
               <div class="text-body-medium font-weight-bold text-onSurface opacity-50 ">
                 {{
@@ -126,14 +126,9 @@ const progressPercentage = computed(() => {
   opacity: 1;
 }
 
+/* Repère de budget utilisé (forme : styles/dot.css), centré au-dessus de son libellé */
 .indicator-dot {
-  width: 8px;
-  height: 8px;
-  background: rgba(var(--v-theme-surface), 0.9);
-  border: 1px solid rgba(var(--v-theme-onSurface), 0.5);
-  border-radius: 50%;
   margin: 0 auto 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .indicator-label {

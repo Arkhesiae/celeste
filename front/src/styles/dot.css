@@ -1,0 +1,57 @@
+/*
+  Pastille ronde (.dot)
+
+  Une pastille est un cercle plein de taille et de couleur réglables : indicateur de demande dans le calendrier, point de
+  séparation entre deux informations, marque « modifié »... Elle ne porte ni position ni marge : le composant qui l'emploie
+  les ajoute dans sa propre classe.
+
+    <div class="dot" />                                  8 px, couleur du texte atténuée
+    <div class="dot dot--xs" />                          4 px
+    <div class="dot dot--primary" />                     couleur du thème
+    <div class="dot dot--error dot--soft" />             erreur atténuée
+    <div class="dot dot--outlined" />                    pastille cerclée et ombrée (repère sur une barre)
+
+  Tailles : dot--2xs (3 px), dot--xs (4 px), dot--sm (6 px), par défaut 8 px.
+  Couleurs : dot--primary, dot--secondary, dot--error ; dot--soft atténue (30 %).
+  Pour une taille ou une couleur propre à un composant, on règle les variables sur sa classe plutôt que de refaire la pastille :
+
+    .my-dot { --dot-size: 7px; --dot-color: rgb(var(--v-theme-onBackground)); position: relative; top: 18px; }
+
+  Variables : --dot-size, --dot-color, --dot-ring (épaisseur de l'anneau), --dot-ring-color.
+  Couleurs du thème : le primaire et le secondaire sont en hexadécimal à 8 chiffres, rgba(var(--v-theme-primary), a) y est
+  invalide ; on écrit rgb(var(...)) ou color-mix.
+*/
+
+.dot {
+  --dot-size: 8px;
+  --dot-color: rgba(var(--v-theme-onSurface), 0.5);
+  --dot-ring: 0;
+  --dot-ring-color: rgb(var(--v-theme-surface));
+
+  display: block;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--dot-size);
+  height: var(--dot-size);
+  border: var(--dot-ring) solid var(--dot-ring-color);
+  border-radius: 50%;
+  background: var(--dot-color);
+}
+
+/* Tailles */
+.dot--2xs { --dot-size: 3px; }
+.dot--xs { --dot-size: 4px; }
+.dot--sm { --dot-size: 6px; }
+
+/* Couleurs */
+.dot--primary { --dot-color: rgb(var(--v-theme-primary)); }
+.dot--secondary { --dot-color: rgb(var(--v-theme-secondary)); }
+.dot--error { --dot-color: rgb(var(--v-theme-error)); }
+.dot--soft { opacity: 0.3; }
+
+/* Repère cerclé et ombré, lisible sur un fond de couleur (barre de budget) */
+.dot--outlined {
+  --dot-color: color-mix(in srgb, rgb(var(--v-theme-surface)) 90%, transparent);
+  border: 1px solid rgba(var(--v-theme-onSurface), 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-start ga-2">
-    <div v-if="dot" class="dot-big" :class="dotClass" />
+    <div v-if="dot" class="dot dot-big" :class="dotClass" />
     <v-card :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'" variant="flat" rounded="lg"
       class="demand-card pa-3 flex-1-1" @click="openDetails">
       <div class="d-flex align-center justify-space-between">
@@ -16,12 +16,12 @@
             <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
               posterTeamName }}</span>
           </div>
-          <div class="small-dot" />
+          <div class="dot dot--xs" />
           <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(posterDay(demand))
           }}</span>
 
           <template v-if="isMailingEnabled">
-            <div class="small-dot" />
+            <div class="dot dot--xs" />
             <v-icon :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
               :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'" style="opacity: 0.7;"
               size="x-small" />
@@ -426,6 +426,22 @@ const openDetails = () => {
   background-color: rgba(var(--v-theme-surfaceContainer), 0.00) !important;
 }
 
+/* Pastille d'en-tête (styles/dot.css) : 7 px, pleine, décalée ; atténuée si la demande est en attente, primaire pour son auteur */
+.dot-big {
+  --dot-size: 7px;
+  --dot-color: rgb(var(--v-theme-onBackground));
+  position: relative;
+  top: 18px;
+}
+
+.dot-big--pending {
+  opacity: 0.5;
+}
+
+.dot-big--owner {
+  --dot-color: rgb(var(--v-theme-primary));
+}
+
 .empty-accepter-avatar {
   /* Mimic v-avatar size="small" (e.g., 28px) */
   width: 20px;
@@ -438,30 +454,6 @@ const openDetails = () => {
   border: 1px dashed rgba(var(--v-theme-onBackground), 0.5);
   background: rgba(var(--v-theme-surface-variant), 0.01);
   /* Light background */
-}
-
-.dot-big {
-  width: 7px;
-  top: 18px;
-  position: relative;
-  height: 7px;
-  border-radius: 50%;
-  background-color: rgba(var(--v-theme-onBackground), 1);
-}
-
-.dot-big.dot-big--pending {
-  opacity: 0.5;
-}
-
-.dot-big.dot-big--owner {
-  background-color: rgba(var(--v-theme-primary), 1) !important;
-}
-
-.small-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: rgba(var(--v-theme-onBackground), 0.5);
 }
 
 .variable {

@@ -154,14 +154,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   opacity: .5;
 }
 
-.mod-dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background-color: rgba(var(--v-theme-onSurface), 0.5);
-
-}
-
 .shift-name {
   font-size: 10px !important;
   white-space: nowrap;
@@ -199,12 +191,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   opacity: .9;
 
   font-weight: 900 !important;
-}
-
-.indicator-dot {
-  height: 8px;
-  width: 8px;
-  border-radius: 8px;
 }
 
 .selected {

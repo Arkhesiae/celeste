@@ -148,12 +148,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   min-height: 70px;
 }
 
-.indicator-dot {
-  height: 8px;
-  width: 8px;
-  border-radius: 8px;
-}
-
 .secondary {
   background: rgb(var(--v-theme-secondary));
 }
@@ -217,14 +211,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   font-weight: 400 !important;
   opacity: 0.6;
   font-size: 14px !important;
-}
-
-.mod-dot {
-  height: 4px;
-  width: 4px;
-  border-radius: 6px;
-  background-color: rgba(var(--v-theme-onSurfaceVariant), 0.5);
-
 }
 
 .week-day {

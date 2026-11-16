@@ -1,5 +1,19 @@
 <template>
-  <v-card rounded="xl" elevation="0" color="surfaceContainer" class="work-tile pa-4">
+  <div class="work-window">
+    <!-- Bouton à bascule (MD3 expressif) : rond et discret au repos ; activé il devient un carré arrondi, change de couleur et
+         d'icône (contour → plein), et la tuile s'affiche. `aria-expanded` / `aria-controls` le relient à la tuile. -->
+    <div class="d-flex justify-space-between align-center" :class="{ 'mb-2': open }">
+      <span class="text-title font-weight-medium">Fenêtre de 7 jours</span>
+      <v-icon-btn
+        v-model:active="open" size="default" color="secondary" active-color="error"
+        :rounded="open ? '24' : '16'"
+        base-variant="flat" active-variant="flat" icon="mdi-chevron-right" active-icon="mdi-close"
+        :aria-label="open ? 'Masquer la fenêtre de 7 jours' : 'Afficher la fenêtre de 7 jours'"
+        :aria-expanded="open" aria-controls="work-window-card" />
+    </div>
+
+  <v-expand-transition>
+  <v-card v-show="open" id="work-window-card" rounded="xl" elevation="0" color="surfaceContainer" class="work-tile pa-4">
     <!-- En-tête : la période de 7 jours et de quoi la faire glisser jour par jour -->
     <div class="d-flex align-start justify-space-between ga-2 mb-3">
       <div class="d-flex flex-column">
@@ -67,6 +81,8 @@ icon="mdi-chevron-right" variant="text" size="small" aria-label="Fenêtre commen
       </div>
     </template>
   </v-card>
+  </v-expand-transition>
+  </div>
 </template>
 
 <script setup>
@@ -89,6 +105,9 @@ const props = defineProps({
   limits: { type: Object, required: true },
 });
 const emit = defineEmits(['update:windowStart']);
+
+// La tuile est visible par défaut ; le bouton de l'en-tête la masque et l'affiche
+const open = ref(true);
 
 const LETTERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const BAR_MAX_HEIGHT = 44;
@@ -151,6 +170,10 @@ const daysSummary = computed(() => windowDays.value.map((day) => `${formatDaySho
 .tabular {
   font-variant-numeric: tabular-nums;
 }
+
+
+
+
 
 /* Verdict : icône + texte, teinte du thème (jamais la teinte seule) */
 .verdict {

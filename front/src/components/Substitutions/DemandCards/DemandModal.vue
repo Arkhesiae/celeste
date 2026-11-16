@@ -545,42 +545,6 @@ const copyEmail = async () => {
   padding: 4px 16px;
 }
 
-.dot-green {
-  position: relative;
-  background-color: rgb(75, 255, 75);
-}
-
-.dot-green::after {
-  content: "";
-  z-index: -1;
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: rgb(147, 243, 147);
-  filter: blur(4px);
-}
-
-.dot-red {
-  position: relative;
-  background-color: rgb(255, 75, 75);
-}
-
-.dot-red::after {
-  content: "";
-  z-index: -1;
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: rgb(243, 147, 147);
-  filter: blur(4px);
-}
-
 .rotate-180 {
   transform: rotate(180deg);
 }

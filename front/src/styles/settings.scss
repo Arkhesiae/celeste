@@ -5,8 +5,58 @@
  */
 
  @use 'sass:string';
- @use 'vuetify/settings' with ($body-font-family: string.unquote('"Roboto", sans-serif'),
-   $heading-font-family: string.unquote('"Roboto", sans-serif'));
+ @use 'vuetify/settings' with (
+  $body-font-family: string.unquote('"Roboto", sans-serif'),
+  $heading-font-family: string.unquote('"Roboto", sans-serif'),
+  $icon-btn-named-sizes: (
+    'x-small': (
+      'height': 32px,
+      'width': 32px,
+      'narrow-width': 28px,
+      'wide-width': 40px,
+      'border-radius': 16px,
+      'border-radius-pressed': 8px,
+      'icon-size': 20px,
+    ),
+    'small': (
+      'height': 40px,
+      'width': 40px,
+      'narrow-width': 32px,
+      'wide-width': 52px,
+      'border-radius': 20px,
+      'border-radius-pressed': 8px,
+      'icon-size': 24px,
+    ),
+    'default': (
+      'height': 56px,
+      'width': 56px,
+      'narrow-width': 48px,
+      'wide-width': 72px,
+      'border-radius': 28px,
+      'border-radius-pressed': 12px,
+      'icon-size': 24px,
+    ),
+    'large': (
+      'height': 96px,
+      'width': 96px,
+      'narrow-width': 64px,
+      'wide-width': 128px,
+      'border-radius': 48px,
+      'border-radius-pressed': 16px,
+      'icon-size': 32px,
+    ),
+    'x-large': (
+      'height': 136px,
+      'width': 136px,
+      'narrow-width': 104px,
+      'wide-width': 184px,
+      'border-radius': 68px,
+      'border-radius-pressed': 16px,
+      'icon-size': 40px,
+    ),
+  ),
+);
+
 
 // https://vuetifyjs.com/features/sass-variables/`
 // @use 'vuetify/settings' with (
@@ -18,3 +68,4 @@
   --safe-area-left: env(safe-area-inset-left, 20px);
   --safe-area-right: env(safe-area-inset-right, 20px);
 }
+

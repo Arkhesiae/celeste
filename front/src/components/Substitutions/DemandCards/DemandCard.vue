@@ -18,7 +18,7 @@
           <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{ posterTeamName
           }}</span>
         </div>
-        <div class="small-dot" />
+        <div class="dot dot--xs" />
         <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(posterDay(demand))
         }}</span>
 
@@ -443,13 +443,6 @@ const handleReplace = () => {
   border: 1px solid rgba(var(--v-theme-primary), 0.1) !important;
 }
 
-.dot-big {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: rgba(var(--v-theme-onBackground), 0.5);
-}
-
 .new-dot {
   width: 6px;
   height: 6px;
@@ -474,14 +467,6 @@ const handleReplace = () => {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
   }
-}
-
-.small-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: rgba(var(--v-theme-onBackground), 0.5);
-
 }
 
 .point-chip {

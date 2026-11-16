@@ -4,6 +4,7 @@
         'isWorkDay': isWorkDay,
         'isRestDay': !!shiftName && !isWorkDay,
         'isVic': isVic,
+        'is-past': inPast,
         'isLeave': entryKind === 'leave',
         'isEntry': entryKind === 'entry',
         'selected': selected,
@@ -15,11 +16,7 @@
         <div class="d-flex justify-space-between align-start px-0 day-header" style="min-width: 0; overflow: hidden;">
             <!-- Day number -->
             <div class="day_label_container align-center" :class="inPast ? 'text-disabled' : ''">
-                <span 
-                     class="day-number"
-                    :class="{ 'tg-day--today': isToday, 'tg-day--weekend': false, 'xs': xs }"
-                    :style="isWorkDay && !inPast ? 'font-weight: 900 !important' : 'font-weight: 500'"
-                    >
+                <span class="day-number" :class="{ 'tg-day--today': isToday, 'xs': xs }">
                     {{ date.day }}
                 </span>
             </div>
@@ -31,12 +28,12 @@
                     <v-icon size="14px">{{ icon }}</v-icon>
                 </div>
                 <div v-else-if="shiftName" class="d-flex align-center shift-row" :class="presence !== 'present' ? 'offDay' : ''">
-                    <span class="shift-name" :class="{ 'xs': xs, 'rest': !isWorkDay }">{{ shiftName }}</span>
-                    <div v-if="selectedVariation || presence !== 'present'" class="mod-dot" />
+                    <span class="shift-name" :class="{ 'xs': xs, 'absence': isAbsence }">{{ shiftName }}</span>
+                    <div v-if="selectedVariation || presence !== 'present'" class="dot dot--2xs" />
                     <span v-if="variationLabel" class="variation-name" :class="{ 'xs': xs }">
                         {{ variationLabel }}
                     </span>
-                    <v-icon v-else-if="presence !== 'present'" size="10px">mdi-cancel</v-icon>
+                    <!-- <v-icon v-else-if="presence !== 'present'" size="10px">mdi-cancel</v-icon> -->
                 </div>
             </div>
         </div>
@@ -72,12 +69,9 @@
         <!-- Indicator dots (bottom-left) -->
         <div style="position: absolute; bottom: 8px; left: 8px" class="d-flex justify-center">
             <div class="d-flex justify-center ga-1">
-                <div v-if="hasAvailableSubstitutions" class="indicator-dot remplacement"
-                    style="background: rgb(var(--v-theme-primary)) !important" />
-                <div v-if="hasAvailableSwitches" class="indicator-dot permutation"
-                    style="background: rgb(var(--v-theme-primary)) !important" />
-                <div v-if="hasOtherDemands" class="indicator-dot other-demand"
-                    style="background: rgba(var(--v-theme-error), .3) !important" />
+                <div v-if="hasAvailableSubstitutions" class="dot dot--primary remplacement" />
+                <div v-if="hasAvailableSwitches" class="dot dot--primary permutation" />
+                <div v-if="hasOtherDemands" class="dot dot--error dot--soft other-demand" />
             </div>
         </div>
     </div>
@@ -212,6 +206,8 @@ const restLabel = computed(() => (props.rest
 /** Journée en VIC : la tuile prend la couleur secondaire (un jour travaillé est primaire) */
 const isVic = computed(() => props.selectedVariation === 'vic');
 
+const isAbsence = computed(() => ['unconfirmed', 'released'].includes(props.presence))
+
 /** Évite de doubler la variante déjà concaténée dans shiftName (ex. J1A). */
 const variationLabel = computed(() => {
     if (isVic.value) return 'VIC';
@@ -245,22 +241,18 @@ const handleClick = async () => {
 </script>
 
 <style scoped>
-.offDay {
-    color: rgb(var(--v-theme-error)) !important;
-    opacity: 0.75 !important;
-}
+/* Les utilitaires de la tuile (d-flex, pa-2, overflow-hidden) imposent affichage, marge intérieure et débordement :
+   ils ne sont pas répétés ici. */
 
+/* ── Tuile ───────────────────────────────────────────────────────────────────── */
 .day-block {
     /* Tuile globale (styles/tile.css) : fond, bordure, survol, focus et état sélectionné en viennent ; on ne règle ici que
        ce qui est propre au calendrier. Couleur : jour travaillé = primaire (accent par défaut de la tuile), VIC = secondaire. */
     --tile-radius: 12px;
-    width: 100% !important;
     position: relative;
-    padding-top: 6px;
+    width: 100% !important;
     min-width: 0;
     min-height: 0;   /* la hauteur vient de la prop `height`, pas des 84 px minimum de la tuile */
-    overflow: hidden;
-    display: grid;
     transition: border-radius var(--motion-expressive-default-effects),
         background var(--motion-standard-fast-effects),
         color var(--motion-standard-fast-effects),
@@ -269,13 +261,12 @@ const handleClick = async () => {
         transform var(--motion-standard-fast-effects);
 }
 
-/* VIC : l'accent de la tuile (survol, focus, fond une fois sélectionnée) passe au secondaire */
+/* Accent : VIC = secondaire ; affectations = une couleur pour les congés, une seule pour toutes les autres */
 .isVic {
     --tile-accent: rgb(var(--v-theme-secondary));
     --tile-on-accent: rgb(var(--v-theme-onSecondary));
 }
 
-/* Affectations : une couleur pour les congés, une seule pour toutes les autres */
 .isLeave {
     --tile-accent: rgb(var(--v-theme-leave));
     --tile-on-accent: rgb(var(--v-theme-onLeave));
@@ -286,12 +277,6 @@ const handleClick = async () => {
     --tile-on-accent: rgb(var(--v-theme-onEntry));
 }
 
-/* L'icône d'affectation prend la couleur de l'accent au repos (sélectionnée, elle prend la couleur « sur accent » de la tuile) */
-.isLeave:not(.selected) .shift-name,
-.isEntry:not(.selected) .shift-name {
-    color: var(--tile-accent);
-}
-
 /* Teinte légère de l'accent au repos pour un jour travaillé, en VIC ou d'affectation ; sélectionnée, c'est l'accent plein (tuile) */
 .isWorkDay:not([aria-pressed='true']),
 .isVic:not([aria-pressed='true']),
@@ -300,17 +285,77 @@ const handleClick = async () => {
     --tile-bg: color-mix(in srgb, var(--tile-accent) 10%, transparent);
 }
 
+/* Jour à l'intérieur de la période choisie : teinte de l'accent (les bornes sont pleines, comme une tuile sélectionnée).
+   Après la teinte de repos ci-dessus : à spécificité égale, c'est la dernière qui compte. */
+.in-period:not([aria-pressed='true']) {
+    --tile-bg: color-mix(in srgb, var(--tile-accent) 28%, transparent);
+    --tile-border: color-mix(in srgb, var(--tile-accent) 55%, transparent);
+}
+
+/* Tuile sélectionnée : coins plus arrondis (le fond plein vient de la tuile, via aria-pressed) */
+.selected {
+    --tile-radius: 16px;
+}
+
+/* Aujourd'hui : contour de l'accent (teinte par color-mix : le primaire est en hexadécimal à 8 chiffres, rgba(var(...), a) y est invalide) */
+.today-center-highlight:not(.selected) {
+    border: 1.5px solid color-mix(in srgb, rgb(var(--v-theme-primary)) 55%, transparent) !important;
+}
+
+.empty-day {
+    opacity: 0.45;
+}
+
+/* ── En-tête : numéro du jour, nom de la vacation ────────────────────────────── */
 .day-header {
     gap: 4px;
     width: 100%;
 }
 
-.mod-dot {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background-color: rgba(var(--v-theme-onSurface), 0.5);
-    flex-shrink: 0;
+.day_label_container {
+    display: flex;
+    justify-content: flex-start;
+}
+
+/* Poids du numéro : 500 par défaut, 900 un jour travaillé à venir, 400 un jour de repos */
+.day-number {
+    position: relative;
+    font-size: 13px !important;
+    font-weight: 500;
+    line-height: 1.1;
+}
+
+.day-number.xs {
+    font-size: 12px !important;
+}
+
+.isWorkDay:not(.is-past) .day-number {
+    font-weight: 900;
+}
+
+.isRestDay .day-number {
+    font-weight: 400;
+    opacity: 0.95;
+}
+
+/* Aujourd'hui : le numéro est une pastille */
+.tg-day--today {
+    min-width: 24px;
+    padding: 2px 0;
+    text-align: center;
+    border-radius: 12px;
+    background: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-onPrimary));
+}
+
+.shift_container {
+    display: flex;
+    justify-content: flex-end;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: 70%;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .shift-row {
@@ -329,16 +374,33 @@ const handleClick = async () => {
     text-overflow: ellipsis;
     min-width: 0;
     color: rgb(var(--v-theme-onSurface));
-    opacity: 1;
 }
 
 .shift-name.xs {
     font-size: 11px !important;
 }
 
-.shift-name.rest {
+/* Jour de repos (R1, R6…) : le nom s'efface, le numéro reste */
+.isRestDay .shift-name {
     font-weight: 500 !important;
-    opacity: 0.55;
+    opacity: 0.01;
+}
+
+/* L'icône d'affectation prend la couleur de l'accent au repos (sélectionnée, elle prend la couleur « sur accent » ci-dessous) */
+.isLeave:not(.selected) .shift-name,
+.isEntry:not(.selected) .shift-name {
+    color: var(--tile-accent);
+}
+
+/* Pas présent (dispo, jour facultatif non confirmé, remplacé) : la ligne est atténuée et rouge ; le nom l'est aussi pour une
+   dispo ou un jour non confirmé (`absence`) ; un remplacé garde la couleur normale du nom, simplement atténué */
+.offDay {
+    color: rgb(var(--v-theme-error)) !important;
+    opacity: 0.75 !important;
+}
+
+.absence {
+    color: rgb(var(--v-theme-error)) !important;
 }
 
 .variation-name {
@@ -348,7 +410,6 @@ const handleClick = async () => {
     font-weight: 600 !important;
     opacity: 0.85;
     white-space: nowrap;
-    text-overflow: ellipsis;
     min-width: 0;
 }
 
@@ -356,31 +417,7 @@ const handleClick = async () => {
     font-size: 10px !important;
 }
 
-.isWorkDay {
-    opacity: 1;
-}
-
-.isRestDay .day-number {
-    opacity: 0.95;
-    font-weight: 400 !important;
-}
-
-.isRestDay .shift-name {
-    font-weight: 500 !important;
-    opacity: 0.01;
-}
-
-.indicator-dot {
-    height: 8px;
-    width: 8px;
-    border-radius: 8px;
-}
-
-/* Tuile sélectionnée : coins plus arrondis (le fond plein vient de la tuile, via aria-pressed) */
-.selected {
-    --tile-radius: 16px;
-}
-
+/* Tuile sélectionnée : texte « sur accent » (après les règles de repos et d'absence, à spécificité égale la dernière compte) */
 .selected .shift-name,
 .selected .variation-name,
 .selected .day-number {
@@ -388,11 +425,7 @@ const handleClick = async () => {
     opacity: 1;
 }
 
-.day_label_container {
-    justify-content: flex-start;
-    display: flex;
-}
-
+/* ── Contrôle du temps de travail ────────────────────────────────────────────── */
 /* Ligne sous la date, positionnée à part : elle ne change pas la largeur de l'en-tête */
 .day-indicators {
     position: absolute;
@@ -464,50 +497,4 @@ const handleClick = async () => {
 
 .window-line.cap-start { left: 8px; border-top-left-radius: 2px; border-bottom-left-radius: 2px; }
 .window-line.cap-end { right: 8px; border-top-right-radius: 2px; border-bottom-right-radius: 2px; }
-
-/* Jour à l'intérieur de la période choisie : teinte de l'accent (les bornes sont pleines, comme une tuile sélectionnée) */
-.in-period:not([aria-pressed='true']) {
-    --tile-bg: color-mix(in srgb, var(--tile-accent) 28%, transparent);
-    --tile-border: color-mix(in srgb, var(--tile-accent) 55%, transparent);
-}
-
-.day-number {
-    position: relative;
-    font-size: 13px !important;
-    line-height: 1.1;
-}
-
-.day-number.xs {
-    font-size: 12px !important;
-}
-
-.today-center-highlight:not(.selected) {
-    border: 1.5px solid rgba(var(--v-theme-primary), 0.55) !important;
-}
-
-.empty-day {
-    opacity: 0.45;
-}
-
-
-.tg-day--today  {
-  min-width: 24px;
-  padding: 2px 0;
-  text-align: center;
-  border-radius: 12px;
-  background: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-onPrimary));
-}
-
-
-.shift_container {
-    display: flex;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    justify-content: flex-end;
-    min-width: 0;
-    flex: 1 1 auto;
-    max-width: 70%;
-}
 </style>

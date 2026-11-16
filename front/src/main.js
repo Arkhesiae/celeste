@@ -16,6 +16,7 @@ import { createApp } from 'vue'
 import './styles/fonts.css';
 import './styles/transitions.css';
 import './styles/tile.css';
+import './styles/dot.css';
 
 const app = createApp(App)
 

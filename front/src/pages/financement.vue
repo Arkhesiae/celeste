@@ -471,16 +471,6 @@ const previousCampaignsRemainder = computed(() => {
   opacity: 1;
 }
 
-.indicator-dot {
-  width: 8px;
-  height: 8px;
-  background: rgba(var(--v-theme-surface), 0.9);
-  border: 1px solid rgba(var(--v-theme-onSurface), 0.5);
-  border-radius: 50%;
-  margin: 0 auto 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
 .indicator-label {
   background: rgb(var(--v-theme-surface));
   border: 1px solid rgba(var(--v-theme-primary), 0.02);

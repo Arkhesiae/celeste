@@ -32,7 +32,7 @@
 
                 <v-tooltip v-if="isShift" text="VIC" location="top">
                     <template #activator="{ props: tooltipProps }">
-                        <v-btn v-bind="tooltipProps" icon size="small" variant="flat"
+                        <v-btn v-bind="tooltipProps"  size="small" variant="flat"
                             :color="status === 'vic' ? 'secondary' : 'surfaceContainerHigh'"
                             @click="emit('register-vic')">
                             VIC
@@ -107,7 +107,7 @@
 .chips-container {
     transition: all 0.5s ease-in-out;
 
-    padding: 4px;
+    padding: 0px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;

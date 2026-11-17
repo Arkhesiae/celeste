@@ -8,6 +8,80 @@
  @use 'vuetify/settings' with (
   $body-font-family: string.unquote('"Roboto", sans-serif'),
   $heading-font-family: string.unquote('"Roboto", sans-serif'),
+  $btn-group-named-sizes: (
+    'x-small': (
+      'gap': 18px,
+      'selected-radius': 12px,
+      'connected': ('inner-radius': 4px, 'inner-radius-pressed': 4px),
+    ),
+    'small': (
+      'gap': 12px,
+      'selected-radius': 12px,
+      'connected': ('inner-radius': 8px, 'inner-radius-pressed': 4px),
+    ),
+    'default': (
+      'gap': 8px,
+      'selected-radius': 16px,
+      'connected': ('inner-radius': 8px, 'inner-radius-pressed': 4px),
+    ),
+    'large': (
+      'gap': 8px,
+      'selected-radius': 28px,
+      'connected': ('inner-radius': 16px, 'inner-radius-pressed': 12px),
+    ),
+    'x-large': (
+      'gap': 8px,
+      'selected-radius': 28px,
+      'connected': ('inner-radius': 20px, 'inner-radius-pressed': 16px),
+    ),
+  ),
+  $button-named-sizes: (
+    'x-small': (
+      'height': 32px,
+      'typography': 'label-large',
+      'padding-inline': 12px,
+      'icon-gap': 4px,
+      'icon-size': 20px,
+      'border-radius': 16px,
+      'border-radius-pressed': 8px,
+    ),
+    'small': (
+      'height': 40px,
+      'typography': 'label-large',
+      'padding-inline': 16px,
+      'icon-gap': 8px,
+      'icon-size': 20px,
+      'border-radius': 20px,
+      'border-radius-pressed': 8px,
+    ),
+    'default': (
+      'height': 56px,
+      'typography': 'title-medium',
+      'padding-inline': 24px,
+      'icon-gap': 8px,
+      'icon-size': 24px,
+      'border-radius': 28px,
+      'border-radius-pressed': 12px,
+    ),
+    'large': (
+      'height': 96px,
+      'typography': 'headline-small',
+      'padding-inline': 48px,
+      'icon-gap': 12px,
+      'icon-size': 32px,
+      'border-radius': 48px,
+      'border-radius-pressed': 16px,
+    ),
+    'x-large': (
+      'height': 136px,
+      'typography': 'headline-large',
+      'padding-inline': 64px,
+      'icon-gap': 16px,
+      'icon-size': 40px,
+      'border-radius': 68px,
+      'border-radius-pressed': 16px,
+    ),
+  ),  
   $icon-btn-named-sizes: (
     'x-small': (
       'height': 32px,

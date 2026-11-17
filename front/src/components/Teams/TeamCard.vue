@@ -22,23 +22,6 @@
           </v-btn>
         </div>
         <div class="d-flex align-center">
-          <v-btn
-            icon="mdi-timeline-clock-outline"
-            variant="text"
-            size="small"
-            aria-label="Voir les membres sur la frise"
-            title="Membres sur la frise"
-            @click.stop="$emit('view-members', team)"
-          />
-          <v-btn
-            icon="mdi-view-week-outline"
-            variant="text"
-            size="small"
-            aria-label="Ouvrir la grille de l'équipe"
-            title="Grille de l'équipe"
-            :to="gridLink"
-            @click.stop
-          />
           <v-menu
             color="onBackground"
             rounded="lg"
@@ -136,6 +119,26 @@
           </v-chip>
         </div>
       </div>
+
+      <v-btn-group class="team-actions" connected>
+            <v-btn
+        prepend-icon="mdi-timeline-clock-outline"
+            variant="flat"
+            size="small"
+            aria-label="Voir les membres sur la frise"
+            title="Membres sur la frise"
+            @click.stop="$emit('view-members', team)"
+          >Membres</v-btn>
+           <v-btn
+            icon="mdi-view-week-outline"
+            variant="text"
+            size="small"
+            aria-label="Ouvrir la grille de l'équipe"
+            title="Grille de l'équipe"
+            :to="gridLink"
+            @click.stop
+          />
+      </v-btn-group>
     </v-card-text>
   </v-card>
 </template>
@@ -181,3 +184,13 @@ defineProps({
 
 defineEmits(['edit-team-name', 'edit-cycle', 'remove-team', 'view-members']);
 </script> 
+
+<style scoped>
+
+.team-actions{
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+}
+
+</style>

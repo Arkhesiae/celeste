@@ -139,8 +139,8 @@ export default createVuetify({
       lightTheme: {
         dark: false,
         colors: {
-          "primary": "#673ddaff",
-          "surfaceTint": "#7C4CFF",
+          "primary": "#675496ff",
+          "surfaceTint": "#675496FF",
           "onPrimary": "#FFFFFF",
           "primaryContainer": "#B4EBFF",
           "onPrimaryContainer": "#001F28",
@@ -221,6 +221,8 @@ export default createVuetify({
     //   style: {
     //     fontFamily: 'Montserrat',
     //   },
+    VBtnGroup: { size: 'default' },
+    VBtnToggle: { size: 'default' },
     // },
     VDialog : {
       scrim: '#0F1416',
@@ -228,10 +230,11 @@ export default createVuetify({
       rounded: 'xl',
       VCardActions: {
         class: "pa-0 ma-0",
+        // Taille « small » par défaut ; un `size` explicite sur le bouton l'emporte.
+        // Pas de `rounded` : le rayon et le rayon à l'appui viennent de la taille nommée (settings.scss)
         VBtn: {
-          size: 'default',
+          size: 'small',
           variant: 'flat',
-          rounded: 'xl',
         },
       },
     },

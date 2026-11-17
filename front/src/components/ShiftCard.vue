@@ -57,21 +57,21 @@
        <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2 mr-n2 mt-n2">
       <v-tooltip v-if="enableAssign && canRegisterEntry" text="Modifier" location="top">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="emit('open-entry-dialog')">
+          <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="emit('open-entry-dialog')">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
         </template>
       </v-tooltip>
       <v-tooltip v-if="showUndoMods" text="Annuler les modifications" location="top">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="undoMods">
+          <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="undoMods">
             <v-icon>mdi-undo-variant</v-icon>
           </v-btn>
         </template>
       </v-tooltip>
       <v-tooltip v-if="showDelete" text="Supprimer l'entrée" location="top">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="small" variant="text" @click="deleteAssignment">
+          <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="deleteAssignment">
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </template>

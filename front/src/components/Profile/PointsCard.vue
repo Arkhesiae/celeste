@@ -32,7 +32,8 @@
 
         <!-- Boutons d'action -->
         <div class="d-flex justify-center align-center">
-          <v-btn prepend-icon="mdi-transfer" color="secondary" variant="flat" rounded="lg" height="40"
+          <!-- Pas de `rounded` : le rayon (20 px) et le rayon à l'appui (8 px) viennent de la taille nommée « small » (settings.scss) -->
+          <v-btn prepend-icon="mdi-transfer" color="secondary" size="small" variant="flat"
             class="transaction-button" @click="$emit('transfer')">
             Transférer
           </v-btn>
@@ -41,10 +42,10 @@
         <!-- Historique des transactions -->
         <div class="mt-6 pa-0">
           <div class="d-flex justify-space-between align-center mb-3">
-            <div class="text-title-large">
+            <div class="text-title-medium">
               Dernière activité
             </div>
-            <v-btn variant="text" density="compact" color="auto"
+            <v-btn variant="text" size="x-small" color="auto"
               @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')">
               Voir tout
               <v-icon end>
@@ -123,11 +124,8 @@ onMounted(() => {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.048);
 }
 
-.transaction-button:hover {
-  transform: scale(1.07);
-  background: rgba(var(--v-theme-background), 1);
-  transition: transform 0.2s ease-in-out;
-}
+
+
 
 .points-icon {
   background: rgba(var(--v-theme-background), 1);

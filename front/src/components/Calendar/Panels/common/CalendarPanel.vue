@@ -79,11 +79,11 @@
         v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)"
         text="Proposer un échange" location="bottom">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" height="36" color="surfaceContainerHighest"
-            style="border-radius: 12px !important;" max-width="50" width="50" size="" :slim="true" :disabled="disabled"
+          <v-icon-btn v-bind="tooltipProps"  color="surfaceContainerHighest"
+            style="border-radius: 12px !important;"  size="default"  :disabled="disabled" width-variant="narrow"
             :class="{ 'opacity-10': disabled }" flat @click="$emit('openRemplaDialog', 'switch')">
             <v-icon>mdi-swap-horizontal-hidden</v-icon>
-          </v-btn>
+          </v-icon-btn>
         </template>
       </v-tooltip>
 
@@ -91,10 +91,10 @@
         v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)"
         text="Demander un remplacement" location="bottom">
         <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" height="36px" color="primary" :disabled="disabled" flat rounded="xl"
+          <v-icon-btn v-bind="tooltipProps" color="primary" size="default" :disabled="disabled" flat width-variant="wide" rounded="xl"
             :class="{ 'opacity-10': disabled }" @click="$emit('openRemplaDialog', 'substitution')">
             <v-icon>mdi-account-arrow-left-outline</v-icon>
-          </v-btn>
+          </v-icon-btn>
         </template>
       </v-tooltip>
     </div>

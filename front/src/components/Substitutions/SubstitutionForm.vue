@@ -1,11 +1,7 @@
 <template>
   <GenericDialog v-model="dialogVisible" :title="dialogTitle" max-width="600px" @close="closeDialog">
     <template #actions>
-      <v-btn v-if="currentWindow === 1" variant="flat" rounded="xl"
-        :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-right-outline'"
-        :loading="submitting" :disabled="!formValid || !selectedShift || submitting" @click="submit">
-        Poster
-      </v-btn>
+     
     </template>
 
     <template #content>
@@ -188,10 +184,11 @@
     </template>
 
     <template #footer>
-      <div class="d-flex justify-space-between pa-0">
+      <!-- `v-card-actions` dans un `v-dialog` : les boutons prennent la taille et le style par défaut de plugins/vuetify.js -->
+      <v-card-actions class="justify-space-between pa-0 ma-0">
         <template v-if="currentWindow === 0">
           <v-spacer />
-          <v-btn variant="text" rounded="xl" :disabled="isNextButtonDisabled" @click="currentWindow = 1">
+          <v-btn variant="text" :disabled="isNextButtonDisabled" @click="currentWindow = 1">
             Suivant
           </v-btn>
         </template>
@@ -199,13 +196,12 @@
           <v-btn variant="text" color="secondary" @click="currentWindow = 0">
             Retour
           </v-btn>
-          <v-btn variant="flat" rounded="xl"
-            :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-left-outline'"
+          <v-btn :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-left-outline'"
             :disabled="!formValid || !selectedShift || submitting" :loading="submitting" @click="submit">
             Poster la demande
           </v-btn>
         </template>
-      </div>
+      </v-card-actions>
     </template>
   </GenericDialog>
 

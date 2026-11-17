@@ -4,9 +4,7 @@
 :title="centerName" subtitle="Liste des équipes et leurs membres"
       :back-button="authStore.userData.adminType === 'master'">
       <template #actions>
-        <v-btn
-color="onBackground" style="border-radius: 16px !important" height="48px" class="px-4   add-team-btn"
-          prepend-icon="mdi-plus" @click="openAddTeamDialog">
+        <v-btn color="secondary" flat style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="openAddTeamDialog">
           Ajouter une équipe
         </v-btn>
       </template>
@@ -24,36 +22,11 @@ color="onBackground" style="border-radius: 16px !important" height="48px" class=
       {{ teamCountWarning }}
     </v-alert>
 
-    <v-row class="justify-space-between align-center mb-4">
-      <v-col cols="12" md="6">
-        <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
-          <v-chip variant="text" rounded="lg" value="all">
-            Toutes
-          </v-chip>
-          <v-chip variant="text" color="tertiary" rounded="lg" value="active">
-            Actives
-          </v-chip>
-          <v-chip variant="text" rounded="lg" value="inactive">
-            Inactives
-          </v-chip>
-        </v-chip-group>
-      </v-col>
-
-      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
-        <v-text-field
-v-model="searchQuery" label="Rechercher" variant="solo" flat rounded="xl" single-line hide-details
-          density="compact" class="search-field" style="max-width: 300px" clearable />
-        <v-btn
-v-if="isAdmin" color="primary" variant="text" rounded="lg" prepend-icon="mdi-sort"
-          @click="openReorderDialog">
-          <span class="text-label-medium">Réorganiser</span>
-        </v-btn>
-      </v-col>
-    </v-row>
+ 
 
     <v-row>
       <span v-if="filteredAndSortedTeams.length === 0">Aucune équipe trouvée</span>
-      <v-col v-for="team in filteredAndSortedTeams" :key="team._id" cols="12" md="6" lg="4">
+      <v-col v-for="team in filteredAndSortedTeams" :key="team._id" cols="12" md="6" lg="6">
         <TeamCard
 :team="team" :is-admin="isAdmin"
           :members-count="teamMembers(team._id).length + teamRenforts(team._id).length"

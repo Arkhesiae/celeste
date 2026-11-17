@@ -2,9 +2,7 @@
   <v-card rounded="xl" elevation="0" class="pa-4" color="surfaceContainer">
     <div class="d-flex align-start justify-space-between ga-2 mb-3">
       <div class="d-flex flex-column">
-        <span class="text-body-small text-uppercase text-disabled">
-          Charge des demandes
-        </span>
+        <span class="text-body-small text-uppercase text-disabled"> Charge des demandes </span>
         <span class="text-title-medium font-weight-medium">{{ MONTHS }} prochains mois</span>
       </div>
       <v-progress-circular v-if="loading" indeterminate size="18" width="2" color="primary" />
@@ -42,17 +40,16 @@
 
     <!-- Légende : la teinte dit ce qui domine, l'intensité dit la charge -->
     <div class="d-flex flex-wrap align-center ga-4 mt-3 text-body-small text-medium-emphasis">
-      <span class="d-flex align-center ga-1">
-        <span class="hm-swatch hm-swatch--primary" /> Demandes ouvertes
-      </span>
+      <span class="d-flex align-center ga-1"> <span class="hm-swatch hm-swatch--primary" /> Demandes ouvertes </span>
       <span class="d-flex align-center ga-1">
         <span class="hm-swatch hm-swatch--secondary" /> Seulement acceptées
       </span>
     </div>
 
     <div v-if="summary" class="text-body-small text-medium-emphasis mt-2">
-      {{ summary.open }} ouverte{{ summary.open > 1 ? 's' : '' }} · {{ summary.accepted }} acceptée{{ summary.accepted > 1 ? 's' : '' }}
-    
+      {{ summary.open }} ouverte{{ summary.open > 1 ? 's' : '' }} · {{ summary.accepted }} acceptée{{
+        summary.accepted > 1 ? 's' : ''
+      }}
     </div>
   </v-card>
 </template>
@@ -67,8 +64,13 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
 const DEFAULT_TIME_ZONE = 'Europe/Paris';
 const MONTHS = 6;
 const WEEKDAYS = [
-  { key: 'lun', label: 'L' }, { key: 'mar', label: 'M' }, { key: 'mer', label: 'M' }, { key: 'jeu', label: 'J' },
-  { key: 'ven', label: 'V' }, { key: 'sam', label: 'S' }, { key: 'dim', label: 'D' },
+  { key: 'lun', label: 'L' },
+  { key: 'mar', label: 'M' },
+  { key: 'mer', label: 'M' },
+  { key: 'jeu', label: 'J' },
+  { key: 'ven', label: 'V' },
+  { key: 'sam', label: 'S' },
+  { key: 'dim', label: 'D' },
 ];
 
 /*
@@ -98,7 +100,9 @@ const centerStore = useCenterStore();
 const substitutionStore = useSubstitutionStore();
 
 const centerId = computed(() => authStore.userData.centerId);
-const timeZone = computed(() => centerStore.centers.find((c) => c._id === centerId.value)?.timeZone || DEFAULT_TIME_ZONE);
+const timeZone = computed(
+  () => centerStore.centers.find((c) => c._id === centerId.value)?.timeZone || DEFAULT_TIME_ZONE,
+);
 const todayKey = computed(() => Temporal.Now.plainDateISO(timeZone.value).toString());
 
 // Période : du premier jour du mois en cours au dernier jour du 6e mois
@@ -109,7 +113,7 @@ const last = computed(() => {
 });
 
 const loading = ref(false);
-const days = ref([]);   // [{ date, open, accepted }]
+const days = ref([]); // [{ date, open, accepted }]
 
 /** Intensité 1..4 d'après le nombre de demandes du jour */
 const level = (count) => Math.min(Math.max(count, 1), 4);
@@ -143,11 +147,19 @@ const items = computed(() => {
   });
 });
 
-const monthLabel = (key) => Temporal.PlainDate.from(`${key}-01`).toLocaleString('fr-FR', { month: 'long', year: key.endsWith('-01') || key === first.value.toString().slice(0, 7) ? 'numeric' : undefined });
+const monthLabel = (key) =>
+  Temporal.PlainDate.from(`${key}-01`).toLocaleString('fr-FR', {
+    month: 'long',
+    year: key.endsWith('-01') || key === first.value.toString().slice(0, 7) ? 'numeric' : undefined,
+  });
 
 const cellProps = (cell) => {
   const { date, open, accepted } = cell.raw;
-  const label = Temporal.PlainDate.from(date).toLocaleString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const label = Temporal.PlainDate.from(date).toLocaleString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
   return {
     title: `${label} : ${open} ouverte${open > 1 ? 's' : ''}, ${accepted} acceptée${accepted > 1 ? 's' : ''}`,
     class: date === todayKey.value ? 'hm-today' : undefined,
@@ -158,13 +170,24 @@ const summary = computed(() => {
   if (!days.value.length) return null;
   const open = days.value.reduce((total, d) => total + d.open, 0);
   const accepted = days.value.reduce((total, d) => total + d.accepted, 0);
-  const peakDay = days.value.reduce((best, d) => (d.open + d.accepted > best.open + best.accepted ? d : best), days.value[0]);
+  const peakDay = days.value.reduce(
+    (best, d) => (d.open + d.accepted > best.open + best.accepted ? d : best),
+    days.value[0],
+  );
   return {
     open,
     accepted,
-    peak: peakDay.open + peakDay.accepted > 0
-      ? { ...peakDay, label: Temporal.PlainDate.from(peakDay.date).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }) }
-      : null,
+    peak:
+      peakDay.open + peakDay.accepted > 0
+        ? {
+            ...peakDay,
+            label: Temporal.PlainDate.from(peakDay.date).toLocaleString('fr-FR', {
+              weekday: 'short',
+              day: 'numeric',
+              month: 'short',
+            }),
+          }
+        : null,
   };
 });
 
@@ -189,13 +212,17 @@ const load = async () => {
 
 // Les demandes changent (création, acceptation, annulation) : recompter, sans enchaîner les appels
 let timer = null;
-watch(() => substitutionStore.substitutions, () => {
-  clearTimeout(timer);
-  timer = setTimeout(load, 600);
-}, { deep: false });
+watch(
+  () => substitutionStore.substitutions,
+  () => {
+    clearTimeout(timer);
+    timer = setTimeout(load, 600);
+  },
+  { deep: false },
+);
 
 onMounted(async () => {
-  if (!centerStore.centers.length) await centerStore.fetchCenters().catch(() => {});   // fuseau du centre
+  if (!centerStore.centers.length) await centerStore.fetchCenters().catch(() => {}); // fuseau du centre
   load();
 });
 
@@ -205,10 +232,14 @@ onBeforeUnmount(() => clearTimeout(timer));
 <style scoped>
 /* Pas d'en-têtes de colonnes (une date de lundi par semaine) : les mois, eux, restent affichés par les étiquettes de groupe.
    `hide-column-headers` les masquerait aussi, car VHeatmap range les deux dans la même option. */
-:deep(.v-heatmap__column-headers) { display: none; }
+:deep(.v-heatmap__column-headers) {
+  display: none;
+}
 
 /* Le calendrier est plus large que la carte : il défile horizontalement */
-.hm-scroll { overflow-x: auto; }
+.hm-scroll {
+  overflow-x: auto;
+}
 
 .hm-cell {
   display: flex;
@@ -222,10 +253,20 @@ onBeforeUnmount(() => clearTimeout(timer));
 
 /* Le nombre de demandes reste lisible sur chaque teinte (les teintes claires sont semi-transparentes sur la carte) */
 .hm-tone-0,
-.hm-tone-s1, .hm-tone-s2,
-.hm-tone-p1, .hm-tone-p2 { color: rgb(var(--v-theme-onSurface)); }
-.hm-tone-s3, .hm-tone-s4 { color: rgb(var(--v-theme-onSecondary)); }
-.hm-tone-p3, .hm-tone-p4 { color: rgb(var(--v-theme-onPrimary)); }
+.hm-tone-s1,
+.hm-tone-s2,
+.hm-tone-p1,
+.hm-tone-p2 {
+  color: rgb(var(--v-theme-onSurface));
+}
+.hm-tone-s3,
+.hm-tone-s4 {
+  color: rgb(var(--v-theme-onSecondary));
+}
+.hm-tone-p3,
+.hm-tone-p4 {
+  color: rgb(var(--v-theme-onPrimary));
+}
 
 .hm-swatch {
   display: inline-block;
@@ -233,8 +274,12 @@ onBeforeUnmount(() => clearTimeout(timer));
   height: 12px;
   border-radius: 4px;
 }
-.hm-swatch--primary { background: rgb(var(--v-theme-primary)); }
-.hm-swatch--secondary { background: rgb(var(--v-theme-secondary)); }
+.hm-swatch--primary {
+  background: rgb(var(--v-theme-primary));
+}
+.hm-swatch--secondary {
+  background: rgb(var(--v-theme-secondary));
+}
 
 /* Aujourd'hui */
 :deep(.hm-today .v-heatmap__cell-rect) {

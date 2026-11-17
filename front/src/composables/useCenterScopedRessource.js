@@ -1,5 +1,3 @@
-
-
 export function useCenterScopedResource(fetchFn) {
   const itemsByCenter = ref({});
   const loadingCenterId = ref(null);

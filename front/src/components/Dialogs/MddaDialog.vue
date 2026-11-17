@@ -1,14 +1,12 @@
 <template>
   <BaseDialog v-model="open" title="MDDA" icon="mdi-clock-fast" :max-width="420" divider>
     <div class="d-flex flex-column ga-4">
-      <p class="text-body-medium text-medium-emphasis mb-0">
-        Indiquez les horaires effectivement réalisés.
-      </p>
+      <p class="text-body-medium text-medium-emphasis mb-0">Indiquez les horaires effectivement réalisés.</p>
 
       <div
         v-if="plannedStart && plannedEnd"
         class="d-flex align-center justify-space-between pa-3 rounded-lg"
-        style="background: rgba(var(--v-theme-surfaceContainerHigh), 1);"
+        style="background: rgba(var(--v-theme-surfaceContainerHigh), 1)"
       >
         <span class="text-body-small text-medium-emphasis">Horaires prévus</span>
         <span class="text-body-medium font-weight-medium">{{ plannedStart }} – {{ plannedEnd }}</span>
@@ -45,14 +43,7 @@
     <template #actions>
       <v-btn variant="text" rounded="xl" @click="open = false">Annuler</v-btn>
       <v-spacer />
-      <v-btn
-        color="primary"
-        variant="flat"
-        rounded="xl"
-        :disabled="!canSubmit"
-        :loading="loading"
-        @click="submit"
-      >
+      <v-btn color="primary" variant="flat" rounded="xl" :disabled="!canSubmit" :loading="loading" @click="submit">
         Enregistrer
       </v-btn>
     </template>
@@ -60,7 +51,6 @@
 </template>
 
 <script setup>
-
 const open = defineModel({ type: Boolean, default: false });
 
 const props = defineProps({
@@ -85,9 +75,7 @@ const normalizeTime = (value) => {
   return `${match[1].padStart(2, '0')}:${match[2]}`;
 };
 
-const canSubmit = computed(() =>
-  Boolean(normalizeTime(startTime.value) && normalizeTime(endTime.value))
-);
+const canSubmit = computed(() => Boolean(normalizeTime(startTime.value) && normalizeTime(endTime.value)));
 
 watch(open, (isOpen) => {
   if (!isOpen) return;

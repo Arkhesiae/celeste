@@ -11,7 +11,7 @@ export const rotationService = {
    */
   async fetchRotations(centerId) {
     const response = await apiFetch(`/rotation/status/${centerId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -23,7 +23,7 @@ export const rotationService = {
    */
   async getRotationById(id) {
     const response = await apiFetch(`/rotation/${id}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -36,7 +36,7 @@ export const rotationService = {
   async createRotation(rotationData) {
     const response = await apiFetch(`/rotation/center/${rotationData.centerId}`, {
       method: 'POST',
-      body: JSON.stringify(rotationData)
+      body: JSON.stringify(rotationData),
     });
     return response;
   },
@@ -50,7 +50,7 @@ export const rotationService = {
   async updateRotation(id, rotationData) {
     const response = await apiFetch(`/rotation/${id}/update`, {
       method: 'PUT',
-      body: JSON.stringify(rotationData)
+      body: JSON.stringify(rotationData),
     });
     return response;
   },
@@ -78,7 +78,7 @@ export const rotationService = {
   async setActiveRotation(id, activationDate, confirm = false) {
     const response = await apiFetch(`/rotation/${id}/activate`, {
       method: 'POST',
-      body: JSON.stringify({ activationDate, confirmed: confirm })
+      body: JSON.stringify({ activationDate, confirmed: confirm }),
     });
     return response;
   },
@@ -94,7 +94,7 @@ export const rotationService = {
   async removeActivationDate(id, activationDate, confirm = false) {
     const response = await apiFetch(`/rotation/${id}/remove-date`, {
       method: 'POST',
-      body: JSON.stringify({ activationDate, confirmed: confirm })
+      body: JSON.stringify({ activationDate, confirmed: confirm }),
     });
     return response;
   },
@@ -105,8 +105,8 @@ export const rotationService = {
    * @returns {Promise<Array>} Liste des rotations du centre.
    */
   async getCenterRotations(centerId) {
-      const response = await apiFetch(`/centers/${centerId}/rotations`, {
-      method: 'GET'
+    const response = await apiFetch(`/centers/${centerId}/rotations`, {
+      method: 'GET',
     });
     return response;
   },
@@ -120,7 +120,7 @@ export const rotationService = {
   async updateDayInRotation(id, updatedDay) {
     const response = await apiFetch(`/rotation/${id}/day`, {
       method: 'PUT',
-      body: JSON.stringify({ updatedDay })
+      body: JSON.stringify({ updatedDay }),
     });
     return response;
   },
@@ -135,5 +135,5 @@ export const rotationService = {
       method: 'POST',
     });
     return response;
-  }
+  },
 };

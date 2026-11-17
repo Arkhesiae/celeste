@@ -31,4 +31,4 @@ export const useOtpService = () => {
     sendOtp,
     verifyOtp,
   };
-}; 
+};

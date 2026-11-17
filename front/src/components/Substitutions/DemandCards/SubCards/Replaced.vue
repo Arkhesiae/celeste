@@ -1,32 +1,18 @@
 <template>
   <v-text>
-    <div class="d-flex align-center ">
-      <v-avatar
-        size=" 24"
-        variant="tonal"
-        class="me-2"
-      >
-        <v-img
-          v-if="user?.avatar"
-          :src="`${API_URL}${user?.avatar}`"
-          alt="Avatar"
-        />
-        <v-icon
-          v-else
-          size="x-small"
-        >
-          mdi-account
-        </v-icon>
+    <div class="d-flex align-center">
+      <v-avatar size=" 24" variant="tonal" class="me-2">
+        <v-img v-if="user?.avatar" :src="`${API_URL}${user?.avatar}`" alt="Avatar" />
+        <v-icon v-else size="x-small"> mdi-account </v-icon>
       </v-avatar>
-      <span class="text-body-small font-weight-medium"> {{ props.user?.name }} {{ props.user?.lastName }} ({{ teamName }})
+      <span class="text-body-small font-weight-medium">
+        {{ props.user?.name }} {{ props.user?.lastName }} ({{ teamName }})
       </span>
     </div>
   </v-text>
 </template>
 
-
 <script setup>
-
 // import { useUserStore } from '@/stores/userStore'
 // const userStore = useUserStore();
 
@@ -37,11 +23,10 @@ const props = defineProps({
   },
   teamName: {
     type: String,
-    required: false
-  }
-})
+    required: false,
+  },
+});
 const name = computed(() => {
   return props.user?.name;
 });
-
 </script>

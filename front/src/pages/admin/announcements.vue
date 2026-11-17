@@ -1,7 +1,10 @@
 <template>
   <v-container class="announcements-admin">
     <!-- ── Header ──────────────────────────────────────────────────────────── -->
-    <MainTitle title="Annonces publiques" subtitle="Gérer les bannières affichées sur le tableau de bord des utilisateurs">
+    <MainTitle
+      title="Annonces publiques"
+      subtitle="Gérer les bannières affichées sur le tableau de bord des utilisateurs"
+    >
       <template #actions>
         <v-btn
           color="primary"
@@ -51,12 +54,7 @@
         </div>
 
         <div v-else class="announcements-list">
-          <div
-            v-for="ann in activeAnnouncements"
-            :key="ann._id"
-            class="announcement-row"
-            :class="`accent-${ann.type}`"
-          >
+          <div v-for="ann in activeAnnouncements" :key="ann._id" class="announcement-row" :class="`accent-${ann.type}`">
             <!-- Type indicator -->
             <div class="row-accent" />
 
@@ -131,11 +129,7 @@
           <p class="text-body-small text-disabled mb-0">Aucune annonce archivée</p>
         </div>
         <div v-else class="announcements-list">
-          <div
-            v-for="ann in inactiveAnnouncements"
-            :key="ann._id"
-            class="announcement-row inactive"
-          >
+          <div v-for="ann in inactiveAnnouncements" :key="ann._id" class="announcement-row inactive">
             <div class="row-accent" />
             <div class="row-body">
               <div class="row-header">
@@ -166,7 +160,6 @@
     ═══════════════════════════════════════════════════════════════════════ -->
     <v-dialog v-model="dialog" max-width="640px" :fullscreen="smAndDown" persistent>
       <v-card :rounded="smAndDown ? '' : 'xl'" color="surfaceContainerLow" flat>
-
         <!-- Dialog header -->
         <div class="dialog-header pa-6 pb-0">
           <div class="d-flex align-center ga-3 mb-1">
@@ -174,11 +167,15 @@
               <v-icon size="16">mdi-bullhorn</v-icon>
             </v-avatar>
             <span class="text-title-large font-weight-bold">
-              {{ editingId ? 'Modifier l\'annonce' : 'Nouvelle annonce' }}
+              {{ editingId ? "Modifier l'annonce" : 'Nouvelle annonce' }}
             </span>
           </div>
           <p class="text-body-small text-medium-emphasis mb-0 ml-11">
-            {{ editingId ? 'Modifiez les champs ci-dessous.' : 'L\'annonce sera visible immédiatement sur le tableau de bord.' }}
+            {{
+              editingId
+                ? 'Modifiez les champs ci-dessous.'
+                : "L'annonce sera visible immédiatement sur le tableau de bord."
+            }}
           </p>
         </div>
 
@@ -189,8 +186,8 @@
             <div class="preview-content">
               <v-icon :icon="typeConfig[form.type]?.icon" size="16" :color="typeConfig[form.type]?.color" />
               <div class="preview-text">
-                <span class="preview-title">{{ form.title || 'Titre de l\'annonce' }}</span>
-                <span class="preview-msg">{{ form.message || 'Message de l\'annonce…' }}</span>
+                <span class="preview-title">{{ form.title || "Titre de l'annonce" }}</span>
+                <span class="preview-msg">{{ form.message || "Message de l'annonce…" }}</span>
               </div>
               <v-chip v-if="form.isPermanent" size="x-small" label class="ml-1">
                 <v-icon start size="10">mdi-pin</v-icon>
@@ -228,7 +225,7 @@
             rounded="xl"
             bg-color="surfaceContainer"
             class="mb-3"
-            :rules="[v => !!v || 'Requis']"
+            :rules="[(v) => !!v || 'Requis']"
             counter="80"
             maxlength="80"
           />
@@ -243,7 +240,7 @@
             bg-color="surfaceContainer"
             rows="3"
             class="mb-4"
-            :rules="[v => !!v || 'Requis']"
+            :rules="[(v) => !!v || 'Requis']"
             counter="500"
             maxlength="500"
           />
@@ -290,7 +287,7 @@
             rounded="xl"
             bg-color="surfaceContainer"
             class="mb-3 mt-3"
-            :rules="[v => form.isGlobal || !!v || 'Sélectionnez un centre']"
+            :rules="[(v) => form.isGlobal || !!v || 'Sélectionnez un centre']"
           />
 
           <!-- Expiry date -->
@@ -310,9 +307,7 @@
         </v-card-text>
 
         <v-card-actions class="pa-6 pt-0">
-          <v-btn variant="text" color="onSurface" :disabled="store.saving" @click="closeDialog">
-            Annuler
-          </v-btn>
+          <v-btn variant="text" color="onSurface" :disabled="store.saving" @click="closeDialog"> Annuler </v-btn>
           <v-spacer />
           <v-btn
             color="primary"
@@ -342,7 +337,6 @@
 </template>
 
 <script setup>
-
 import { useAuthStore } from '@/stores/authStore';
 import { usePublicAnnouncementStore } from '@/stores/publicAnnouncementStore';
 import { useCenterStore } from '@/stores/centerStore';
@@ -358,26 +352,22 @@ const centers = computed(() => centerStore.centers ?? []);
 
 // ── Type config ───────────────────────────────────────────────────────────
 const typeConfig = {
-  info:        { icon: 'mdi-information-outline', color: 'blue',   label: 'Information' },
-  warning:     { icon: 'mdi-alert-outline',        color: 'orange', label: 'Avertissement' },
-  maintenance: { icon: 'mdi-tools',               color: 'red',    label: 'Maintenance' },
-  update:      { icon: 'mdi-update',              color: 'green',  label: 'Mise à jour' }
+  info: { icon: 'mdi-information-outline', color: 'blue', label: 'Information' },
+  warning: { icon: 'mdi-alert-outline', color: 'orange', label: 'Avertissement' },
+  maintenance: { icon: 'mdi-tools', color: 'red', label: 'Maintenance' },
+  update: { icon: 'mdi-update', color: 'green', label: 'Mise à jour' },
 };
 
 const typeOptions = [
-  { value: 'info',        label: 'Information',   icon: 'mdi-information-outline', color: 'blue' },
-  { value: 'warning',     label: 'Avertissement', icon: 'mdi-alert-outline',        color: 'orange' },
-  { value: 'maintenance', label: 'Maintenance',   icon: 'mdi-tools',               color: 'red' },
-  { value: 'update',      label: 'Mise à jour',   icon: 'mdi-update',              color: 'green' }
+  { value: 'info', label: 'Information', icon: 'mdi-information-outline', color: 'blue' },
+  { value: 'warning', label: 'Avertissement', icon: 'mdi-alert-outline', color: 'orange' },
+  { value: 'maintenance', label: 'Maintenance', icon: 'mdi-tools', color: 'red' },
+  { value: 'update', label: 'Mise à jour', icon: 'mdi-update', color: 'green' },
 ];
 
 // ── Computed lists ────────────────────────────────────────────────────────
-const activeAnnouncements = computed(() =>
-  store.allAnnouncements.filter(a => a.isActive)
-);
-const inactiveAnnouncements = computed(() =>
-  store.allAnnouncements.filter(a => !a.isActive)
-);
+const activeAnnouncements = computed(() => store.allAnnouncements.filter((a) => a.isActive));
+const inactiveAnnouncements = computed(() => store.allAnnouncements.filter((a) => !a.isActive));
 
 // ── Stats ─────────────────────────────────────────────────────────────────
 const statCards = computed(() => [
@@ -386,29 +376,29 @@ const statCards = computed(() => [
     label: 'Total',
     value: store.allAnnouncements.length,
     icon: 'mdi-bullhorn',
-    color: 'primary'
+    color: 'primary',
   },
   {
     key: 'active',
     label: 'Actives',
     value: activeAnnouncements.value.length,
     icon: 'mdi-check-circle-outline',
-    color: 'success'
+    color: 'success',
   },
   {
     key: 'permanent',
     label: 'Permanentes',
-    value: store.allAnnouncements.filter(a => a.isPermanent).length,
+    value: store.allAnnouncements.filter((a) => a.isPermanent).length,
     icon: 'mdi-pin',
-    color: 'secondary'
+    color: 'secondary',
   },
   {
     key: 'acknowledged',
     label: 'Acquittements',
     value: store.allAnnouncements.reduce((sum, a) => sum + (a.acknowledgedBy?.length ?? 0), 0),
     icon: 'mdi-account-check',
-    color: 'tertiary'
-  }
+    color: 'tertiary',
+  },
 ]);
 
 // ── Form state ─────────────────────────────────────────────────────────────
@@ -422,14 +412,12 @@ const defaultForm = () => ({
   isActive: true,
   isGlobal: true,
   centerId: authStore.userData.centerId ?? null,
-  expiresAt: null
+  expiresAt: null,
 });
 const form = ref(defaultForm());
 
-const formValid = computed(() =>
-  form.value.title?.trim() &&
-  form.value.message?.trim() &&
-  (form.value.isGlobal || !!form.value.centerId)
+const formValid = computed(
+  () => form.value.title?.trim() && form.value.message?.trim() && (form.value.isGlobal || !!form.value.centerId),
 );
 
 const deleteDialog = ref(false);
@@ -440,8 +428,11 @@ const deletingAnnouncement = ref(null);
 const formatDate = (date) => {
   if (!date) return '—';
   return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 };
 
@@ -462,9 +453,7 @@ const openEditDialog = (ann) => {
     isActive: ann.isActive,
     isGlobal: ann.isGlobal,
     centerId: ann.centerId ?? null,
-    expiresAt: ann.expiresAt
-      ? new Date(ann.expiresAt).toISOString().slice(0, 16)
-      : null
+    expiresAt: ann.expiresAt ? new Date(ann.expiresAt).toISOString().slice(0, 16) : null,
   };
   dialog.value = true;
 };
@@ -477,7 +466,7 @@ const closeDialog = () => {
 const submitForm = async () => {
   const payload = {
     ...form.value,
-    expiresAt: form.value.expiresAt ? new Date(form.value.expiresAt).toISOString() : null
+    expiresAt: form.value.expiresAt ? new Date(form.value.expiresAt).toISOString() : null,
   };
 
   if (editingId.value) {
@@ -563,10 +552,18 @@ onMounted(async () => {
   border-radius: 4px;
 }
 
-.accent-info    .row-accent { background: #42A5F5; }
-.accent-warning .row-accent { background: #FFA726; }
-.accent-maintenance .row-accent { background: #EF5350; }
-.accent-update  .row-accent { background: #66BB6A; }
+.accent-info .row-accent {
+  background: #42a5f5;
+}
+.accent-warning .row-accent {
+  background: #ffa726;
+}
+.accent-maintenance .row-accent {
+  background: #ef5350;
+}
+.accent-update .row-accent {
+  background: #66bb6a;
+}
 
 .row-body {
   flex: 1;
@@ -666,8 +663,16 @@ onMounted(async () => {
   white-space: pre-line;
 }
 
-.type-info    .preview-accent { background: #42A5F5; }
-.type-warning .preview-accent { background: #FFA726; }
-.type-maintenance .preview-accent { background: #EF5350; }
-.type-update  .preview-accent { background: #66BB6A; }
+.type-info .preview-accent {
+  background: #42a5f5;
+}
+.type-warning .preview-accent {
+  background: #ffa726;
+}
+.type-maintenance .preview-accent {
+  background: #ef5350;
+}
+.type-update .preview-accent {
+  background: #66bb6a;
+}
 </style>

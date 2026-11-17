@@ -13,7 +13,7 @@ export const userService = {
    */
   async getUsers() {
     const response = await apiFetch(`/user`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -25,7 +25,7 @@ export const userService = {
    */
   async fetchUsersByCenter(centerId) {
     const response = await apiFetch(`/user/center/${centerId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -37,7 +37,7 @@ export const userService = {
    */
   async getUserById(id) {
     const response = await apiFetch(`/user/${id}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -52,7 +52,7 @@ export const userService = {
    */
   async fetchWorkCheck(userId, from, to) {
     return apiFetch(`/user/${userId}/work-check?from=${from}&to=${to}`, {
-      method: 'GET'
+      method: 'GET',
     });
   },
 
@@ -65,7 +65,7 @@ export const userService = {
   async updateUser(id, userData) {
     const response = await apiFetch(`/user/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(userData)
+      body: JSON.stringify(userData),
     });
     return response;
   },
@@ -91,7 +91,7 @@ export const userService = {
   async updateUserPreferences(userId, preferences) {
     const response = await apiFetch(`/user/${userId}/preferences`, {
       method: 'PUT',
-      body: JSON.stringify({ preferences })
+      body: JSON.stringify({ preferences }),
     });
     return response;
   },
@@ -108,10 +108,10 @@ export const userService = {
       method: 'POST',
       body: formData,
       headers: {
-        'Authorization': `Bearer ${authStore.accessToken}`,
-      }
+        Authorization: `Bearer ${authStore.accessToken}`,
+      },
     });
-    const data = await response.json() // évite crash si pas de JSON
+    const data = await response.json(); // évite crash si pas de JSON
     return data;
   },
 
@@ -122,7 +122,7 @@ export const userService = {
    */
   async fetchUsersAndGroupByTeam(centerId) {
     const response = await apiFetch(`/user/teams/${centerId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -153,7 +153,7 @@ export const userService = {
    */
   async fetchTeamOccurrencesOfUser(userId) {
     const response = await apiFetch(`/user/${userId}/team-occurrences`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -165,7 +165,7 @@ export const userService = {
    */
   async fetchCurrentTeamOfUser(userId) {
     const response = await apiFetch(`/user/${userId}/current-team`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -227,9 +227,8 @@ export const userService = {
   async assignCenter(userId, centerId) {
     const response = await apiFetch(`/user/${userId}/assign-center`, {
       method: 'POST',
-      body: JSON.stringify({ centerId })
+      body: JSON.stringify({ centerId }),
     });
     return response;
   },
-
 };

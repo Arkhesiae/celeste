@@ -9,11 +9,7 @@
   >
     <!-- En-têtes des jours de la semaine -->
     <v-row class="mt-1 mb-8">
-      <v-col
-        v-for="day in daysOfWeek"
-        :key="day"
-        class="text-center"
-      >
+      <v-col v-for="day in daysOfWeek" :key="day" class="text-center">
         <strong>{{ day }}</strong>
       </v-col>
     </v-row>
@@ -34,28 +30,28 @@
         <v-sheet
           color="transparent"
           class="day-block d-flex justify-space-around align-center cursor-pointer overflow-visible"
-          style="width: 48px; height: 48px; border-radius: 50%; position: relative; font-weight: 400 "
+          style="width: 48px; height: 48px; border-radius: 50%; position: relative; font-weight: 400"
           :class="{
-            'isWorkDay': isWorkDay(day.date),
-            'selected': isSelected(day.date),
+            isWorkDay: isWorkDay(day.date),
+            selected: isSelected(day.date),
             'today-center-highlight': isToday(day.date),
-            'empty-day': !day.isInMonth
+            'empty-day': !day.isInMonth,
           }"
           @click="$emit('select-day', day.date)"
         >
           <PendingChip
             v-if="substitutionStore?.hasOwnPendingDemand(day.date.toISOString())"
-            style="bottom:-4px !important; "
+            style="bottom: -4px !important"
             :date="day.date"
           />
           <AccepterChip
             v-if="substitutionStore?.hasAcceptedAsAccepter(day.date.toISOString())"
-            style="bottom:-4px !important; "
+            style="bottom: -4px !important"
             :date="day.date"
           />
           <ConfirmationChip
             v-if="substitutionStore?.hasAcceptedAsPoster(day.date.toISOString())"
-            style="bottom:-4px !important; "
+            style="bottom: -4px !important"
             :date="day.date"
           />
 
@@ -68,17 +64,15 @@
           <span
             v-if="isWorkDay(day.date)"
             class="text-body-small position-absolute opacity-50"
-            style="top: 0; right: 0;"
-          >{{ getShiftName(day.date) }}</span>
-
-          <div
-            style="position: absolute; width: 100%; bottom: 0"
-            class="d-flex justify-center"
+            style="top: 0; right: 0"
+            >{{ getShiftName(day.date) }}</span
           >
+
+          <div style="position: absolute; width: 100%; bottom: 0" class="d-flex justify-center">
             <div class="d-flex justify-center">
               <div
                 v-if="substitutionStore?.hasAvailableSubstitutions(day.date.toISOString())"
-                class="indicator-dot remplacement "
+                class="indicator-dot remplacement"
                 style="background: rgb(var(--v-theme-primary)) !important"
               />
               <div
@@ -110,9 +104,8 @@ const props = defineProps({
   calendarDays: Array,
   isSelected: Function,
   isToday: Function,
-  vacationsOfUser: Object
+  vacationsOfUser: Object,
 });
-
 
 const emit = defineEmits(['select-day']);
 
@@ -138,7 +131,7 @@ const inPast = (date) => {
 }
 
 .isWorkDay {
-  opacity: .9;
+  opacity: 0.9;
   font-weight: 900 !important;
 }
 
@@ -163,4 +156,4 @@ const inPast = (date) => {
 .calendar-sheet {
   touch-action: pan-y pinch-zoom;
 }
-</style> 
+</style>

@@ -6,9 +6,9 @@
  * @returns {Date}
  */
 export function parseShiftDateTime(date, time, endsNextDay = false) {
-    const [hour, minute] = time.split(':').map(Number);
-    const d = new Date(date);
-    d.setHours(hour, minute, 0, 0);
-    if (endsNextDay) d.setDate(d.getDate() + 1);
-    return d;
+  const [hour, minute] = time.split(':').map(Number);
+  const d = new Date(date);
+  d.setHours(hour, minute, 0, 0);
+  if (endsNextDay) d.setDate(d.getDate() + 1);
+  return d;
 }

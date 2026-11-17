@@ -11,7 +11,7 @@ export const messageService = {
   async createMessage(messageData) {
     const response = await apiFetch(`/message`, {
       method: 'POST',
-      body: JSON.stringify(messageData)
+      body: JSON.stringify(messageData),
     });
     return response;
   },
@@ -28,5 +28,5 @@ export const messageService = {
       method: 'DELETE',
     });
     return response;
-  }
-}; 
+  },
+};

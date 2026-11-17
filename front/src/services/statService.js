@@ -47,5 +47,5 @@ export const statService = {
       method: 'GET',
     });
     return response;
-  }
+  },
 };

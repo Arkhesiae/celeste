@@ -8,7 +8,7 @@ import { buildWindowLines, describeWindowIssue, windowStartingAt } from '@/utils
  *
  * @param {import('vue').Ref<{ start: string|null, end: string|null }|null>} periodRef - période choisie, ou null
  */
-export function useWorkIndicators (periodRef) {
+export function useWorkIndicators(periodRef) {
   const store = useWorkCheckStore();
   const lines = computed(() => buildWindowLines(store.windows));
 
@@ -16,13 +16,15 @@ export function useWorkIndicators (periodRef) {
   const workOf = (dateStr) => store.daysByDate[dateStr] ?? null;
 
   /** Lignes à tracer sous un jour, chacune avec sa phrase d'explication */
-  const linesFor = (dateStr) => (lines.value.get(dateStr) ?? []).map((line) => {
-    const first = windowStartingAt(store.windows, line.windows[0]);
-    return {
-      ...line,
-      label: first && store.limits ? describeWindowIssue(first, line.issue, store.limits, line.windows.length - 1) : '',
-    };
-  });
+  const linesFor = (dateStr) =>
+    (lines.value.get(dateStr) ?? []).map((line) => {
+      const first = windowStartingAt(store.windows, line.windows[0]);
+      return {
+        ...line,
+        label:
+          first && store.limits ? describeWindowIssue(first, line.issue, store.limits, line.windows.length - 1) : '',
+      };
+    });
 
   /** Jour strictement à l'intérieur de la période choisie (les deux bornes sont dessinées comme sélectionnées) */
   const inPeriod = (dateStr) => {

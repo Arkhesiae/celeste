@@ -13,7 +13,7 @@ export const substitutionService = {
    * @param {string} [status] - Statut optionnel pour filtrer les demandes ('open', 'accepted', 'completed', 'cancelled')
    * @returns {Promise<Array>} Liste des demandes de substitution
    */
-  async fetchAndMarkAsSeen (dates, status) {
+  async fetchAndMarkAsSeen(dates, status) {
     // Vérifier que les dates sont définies
     if (!dates || !dates.startDate || !dates.endDate) {
       throw new Error('Les dates de début et de fin sont requises');
@@ -22,7 +22,7 @@ export const substitutionService = {
     // Préparer le corps de la requête
     const requestBody = {
       startDate: dates.startDate,
-      endDate: dates.endDate
+      endDate: dates.endDate,
     };
 
     // Ajouter le statut uniquement s'il est défini
@@ -32,7 +32,7 @@ export const substitutionService = {
 
     return apiFetch(`/substitution/center`, {
       method: 'POST',
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
     });
   },
 
@@ -43,7 +43,7 @@ export const substitutionService = {
    */
   async getSubstitutionById(id) {
     const response = await apiFetch(`/substitution/${id}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -56,7 +56,7 @@ export const substitutionService = {
   async createSubstitutionDemand(substitutionData) {
     const response = await apiFetch(`/substitution`, {
       method: 'POST',
-      body: JSON.stringify(substitutionData)
+      body: JSON.stringify(substitutionData),
     });
     return response;
   },
@@ -70,7 +70,7 @@ export const substitutionService = {
   async updateSubstitution(id, substitutionData) {
     const response = await apiFetch(`/substitution/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(substitutionData)
+      body: JSON.stringify(substitutionData),
     });
     return response;
   },
@@ -118,7 +118,7 @@ export const substitutionService = {
    */
   async getUserSubstitutions(userId) {
     const response = await apiFetch(`/user/${userId}/substitution`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -130,7 +130,7 @@ export const substitutionService = {
    */
   async checkUserShift(date) {
     const response = await apiFetch(`/substitution/check-shift/${date}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -179,7 +179,7 @@ export const substitutionService = {
   async detectTeamChangeConflicts(params) {
     const response = await apiFetch(`/substitution/detect-team-change-conflicts`, {
       method: 'POST',
-      body: JSON.stringify(params)
+      body: JSON.stringify(params),
     });
     return response;
   },
@@ -192,15 +192,14 @@ export const substitutionService = {
   async recategorizeSubstitutions(substitutionIds) {
     const response = await apiFetch(`/substitution/recategorize`, {
       method: 'POST',
-      body: JSON.stringify({ substitutionIds })
+      body: JSON.stringify({ substitutionIds }),
     });
     return response;
   },
 
-
   async fetchCompatibleSwitches(date) {
     const response = await apiFetch(`/substitution/compatible-switches/${date}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -210,7 +209,7 @@ export const substitutionService = {
    * @param {string} centerId - L'ID du centre.
    * @returns {Promise<Array>} Liste de toutes les demandes du centre.
    */
-  async fetchAllCenterDemands (centerId) {
+  async fetchAllCenterDemands(centerId) {
     const response = await apiFetch(`/substitution/center/${centerId}/all`);
     return response;
   },
@@ -220,7 +219,7 @@ export const substitutionService = {
    * @param {string} demandId - L'ID de la demande.
    * @returns {Promise<Object>} Les compatibilités de la demande.
    */
-  async fetchCompatibility (demandId) {
+  async fetchCompatibility(demandId) {
     return apiFetch(`/substitution/compatibility/${demandId}`);
   },
 
@@ -229,7 +228,7 @@ export const substitutionService = {
    * @param {string} demandId - L'ID de la demande de substitution.
    * @returns {Promise<Object>} La substitution mise à jour.
    */
-  async consultDemand (demandId) {
+  async consultDemand(demandId) {
     const response = await apiFetch(`/substitution/${demandId}/consult`, {
       method: 'POST',
     });
@@ -257,5 +256,5 @@ export const substitutionService = {
   async fetchDemandHeatmap(centerId, { startDate, endDate }) {
     const params = new URLSearchParams({ startDate, endDate });
     return apiFetch(`/substitution/center/${centerId}/heatmap?${params}`, { method: 'GET' });
-  }
+  },
 };

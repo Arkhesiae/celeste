@@ -5,83 +5,135 @@
     <div class="d-flex justify-space-between align-center" :class="{ 'mb-2': open }">
       <span class="text-title font-weight-medium">Fenêtre de 7 jours</span>
       <v-icon-btn
-        v-model:active="open" size="default" color="secondary" active-color="error"
+        v-model:active="open"
+        size="default"
+        color="secondary"
+        active-color="error"
         :rounded="open ? '24' : '16'"
-        base-variant="flat" active-variant="flat" icon="mdi-chevron-right" active-icon="mdi-close"
+        base-variant="flat"
+        active-variant="flat"
+        icon="mdi-chevron-right"
+        active-icon="mdi-close"
         :aria-label="open ? 'Masquer la fenêtre de 7 jours' : 'Afficher la fenêtre de 7 jours'"
-        :aria-expanded="open" aria-controls="work-window-card" />
+        :aria-expanded="open"
+        aria-controls="work-window-card"
+      />
     </div>
 
-  <v-expand-transition>
-  <v-card v-show="open" id="work-window-card" rounded="xl" elevation="0" color="surfaceContainer" class="work-tile pa-4">
-    <!-- En-tête : la période de 7 jours et de quoi la faire glisser jour par jour -->
-    <div class="d-flex align-start justify-space-between ga-2 mb-3">
-      <div class="d-flex flex-column">
-        <span class="text-body-small text-uppercase text-disabled">Fenêtre de 7 jours</span>
-        <span class="text-title-medium font-weight-medium">{{ rangeLabel }}</span>
-      </div>
-      <div class="d-flex align-center">
-        <v-btn
-icon="mdi-chevron-left" variant="text" size="small" aria-label="Fenêtre commençant un jour plus tôt"
-          :disabled="!previousStart" @click="emit('update:windowStart', previousStart)" />
-        <v-btn
-icon="mdi-chevron-right" variant="text" size="small" aria-label="Fenêtre commençant un jour plus tard"
-          :disabled="!nextStart" @click="emit('update:windowStart', nextStart)" />
-      </div>
-    </div>
-
-    <p v-if="!current" class="text-body-medium text-medium-emphasis mb-0">
-      Cette fenêtre déborde du mois affiché : changez de mois ou déplacez-la.
-    </p>
-
-    <template v-else>
-      <!-- Verdict en une ligne : jamais la couleur seule, toujours une icône et un texte -->
-      <div class="verdict mb-4" :class="allOk ? 'verdict--ok' : 'verdict--ko'" role="status">
-        <v-icon size="18">{{ allOk ? 'mdi-check-circle-outline' : 'mdi-alert-circle-outline' }}</v-icon>
-        <span class="text-body-medium font-weight-medium">{{ verdictText }}</span>
-      </div>
-
-      <!-- Travail cumulé : le plein est la limite de 48 h -->
-      <div class="mb-4">
-        <div class="d-flex justify-space-between align-baseline">
-          <span class="text-body-medium">Travail</span>
-          <span class="text-body-medium font-weight-medium tabular">{{ formatHours(current.workMinutes) }} <span
-              class="text-medium-emphasis">/ {{ formatHours(limits.maxWeeklyWorkMinutes) }}</span></span>
+    <v-expand-transition>
+      <v-card
+        v-show="open"
+        id="work-window-card"
+        rounded="xl"
+        elevation="0"
+        color="surfaceContainer"
+        class="work-tile pa-4"
+      >
+        <!-- En-tête : la période de 7 jours et de quoi la faire glisser jour par jour -->
+        <div class="d-flex align-start justify-space-between ga-2 mb-3">
+          <div class="d-flex flex-column">
+            <span class="text-body-small text-uppercase text-disabled">Fenêtre de 7 jours</span>
+            <span class="text-title-medium font-weight-medium">{{ rangeLabel }}</span>
+          </div>
+          <div class="d-flex align-center">
+            <v-btn
+              icon="mdi-chevron-left"
+              variant="text"
+              size="small"
+              aria-label="Fenêtre commençant un jour plus tôt"
+              :disabled="!previousStart"
+              @click="emit('update:windowStart', previousStart)"
+            />
+            <v-btn
+              icon="mdi-chevron-right"
+              variant="text"
+              size="small"
+              aria-label="Fenêtre commençant un jour plus tard"
+              :disabled="!nextStart"
+              @click="emit('update:windowStart', nextStart)"
+            />
+          </div>
         </div>
-        <v-progress-linear
-:model-value="workPercent" :color="current.workOk ? 'primary' : 'error'" height="10" rounded
-          bg-color="onSurface" bg-opacity="0.12" :aria-label="`Travail : ${formatHours(current.workMinutes)} sur ${formatHours(limits.maxWeeklyWorkMinutes)}`" />
-        <span class="text-body-small" :class="current.workOk ? 'text-medium-emphasis' : 'text-error'">
-          {{ workCaption }}
-        </span>
-      </div>
 
-      <!-- Plus long repos continu : le plein est le minimum de 35 h -->
-      <div class="mb-4">
-        <div class="d-flex justify-space-between align-baseline">
-          <span class="text-body-medium">Plus long repos continu</span>
-          <span class="text-body-medium font-weight-medium tabular">{{ formatHours(current.longestRestMinutes) }} <span
-              class="text-medium-emphasis">/ {{ formatHours(limits.weeklyRestMinutes) }} min.</span></span>
-        </div>
-        <v-progress-linear
-:model-value="restPercent" :color="current.restOk ? 'primary' : 'error'" height="10" rounded
-          bg-color="onSurface" bg-opacity="0.12" :aria-label="`Repos continu : ${formatHours(current.longestRestMinutes)}, minimum ${formatHours(limits.weeklyRestMinutes)}`" />
-        <span class="text-body-small" :class="current.restOk ? 'text-medium-emphasis' : 'text-error'">
-          {{ restCaption }}
-        </span>
-      </div>
+        <p v-if="!current" class="text-body-medium text-medium-emphasis mb-0">
+          Cette fenêtre déborde du mois affiché : changez de mois ou déplacez-la.
+        </p>
 
-      <!-- Une barre par jour : la répartition de la charge, pas seulement son total -->
-      <div class="days" role="img" :aria-label="`Temps travaillé par jour : ${daysSummary}`">
-        <div v-for="day in windowDays" :key="day.date" class="day-col" :title="`${formatDayShort(day.date)} : ${formatHours(day.workedMinutes)}`">
-          <span class="day-bar-value tabular">{{ day.workedMinutes ? formatHours(day.workedMinutes).replace(' h ', 'h').replace(' h', 'h') : '' }}</span>
-          <span class="day-bar" :style="{ height: `${day.height}px` }" :class="{ 'day-bar--empty': !day.workedMinutes }" />
-          <span class="day-bar-label text-label-small">{{ day.letter }}</span>
-        </div>
-      </div>
-    </template>
-  </v-card>
-  </v-expand-transition>
+        <template v-else>
+          <!-- Verdict en une ligne : jamais la couleur seule, toujours une icône et un texte -->
+          <div class="verdict mb-4" :class="allOk ? 'verdict--ok' : 'verdict--ko'" role="status">
+            <v-icon size="18">{{ allOk ? 'mdi-check-circle-outline' : 'mdi-alert-circle-outline' }}</v-icon>
+            <span class="text-body-medium font-weight-medium">{{ verdictText }}</span>
+          </div>
+
+          <!-- Travail cumulé : le plein est la limite de 48 h -->
+          <div class="mb-4">
+            <div class="d-flex justify-space-between align-baseline">
+              <span class="text-body-medium">Travail</span>
+              <span class="text-body-medium font-weight-medium tabular"
+                >{{ formatHours(current.workMinutes) }}
+                <span class="text-medium-emphasis">/ {{ formatHours(limits.maxWeeklyWorkMinutes) }}</span></span
+              >
+            </div>
+            <v-progress-linear
+              :model-value="workPercent"
+              :color="current.workOk ? 'primary' : 'error'"
+              height="10"
+              rounded
+              bg-color="onSurface"
+              bg-opacity="0.12"
+              :aria-label="`Travail : ${formatHours(current.workMinutes)} sur ${formatHours(limits.maxWeeklyWorkMinutes)}`"
+            />
+            <span class="text-body-small" :class="current.workOk ? 'text-medium-emphasis' : 'text-error'">
+              {{ workCaption }}
+            </span>
+          </div>
+
+          <!-- Plus long repos continu : le plein est le minimum de 35 h -->
+          <div class="mb-4">
+            <div class="d-flex justify-space-between align-baseline">
+              <span class="text-body-medium">Plus long repos continu</span>
+              <span class="text-body-medium font-weight-medium tabular"
+                >{{ formatHours(current.longestRestMinutes) }}
+                <span class="text-medium-emphasis">/ {{ formatHours(limits.weeklyRestMinutes) }} min.</span></span
+              >
+            </div>
+            <v-progress-linear
+              :model-value="restPercent"
+              :color="current.restOk ? 'primary' : 'error'"
+              height="10"
+              rounded
+              bg-color="onSurface"
+              bg-opacity="0.12"
+              :aria-label="`Repos continu : ${formatHours(current.longestRestMinutes)}, minimum ${formatHours(limits.weeklyRestMinutes)}`"
+            />
+            <span class="text-body-small" :class="current.restOk ? 'text-medium-emphasis' : 'text-error'">
+              {{ restCaption }}
+            </span>
+          </div>
+
+          <!-- Une barre par jour : la répartition de la charge, pas seulement son total -->
+          <div class="days" role="img" :aria-label="`Temps travaillé par jour : ${daysSummary}`">
+            <div
+              v-for="day in windowDays"
+              :key="day.date"
+              class="day-col"
+              :title="`${formatDayShort(day.date)} : ${formatHours(day.workedMinutes)}`"
+            >
+              <span class="day-bar-value tabular">{{
+                day.workedMinutes ? formatHours(day.workedMinutes).replace(' h ', 'h').replace(' h', 'h') : ''
+              }}</span>
+              <span
+                class="day-bar"
+                :style="{ height: `${day.height}px` }"
+                :class="{ 'day-bar--empty': !day.workedMinutes }"
+              />
+              <span class="day-bar-label text-label-small">{{ day.letter }}</span>
+            </div>
+          </div>
+        </template>
+      </v-card>
+    </v-expand-transition>
   </div>
 </template>
 
@@ -111,7 +163,7 @@ const open = ref(true);
 
 const LETTERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const BAR_MAX_HEIGHT = 44;
-const BAR_SCALE_MINUTES = 12 * 60;   // une barre pleine = 12 h
+const BAR_SCALE_MINUTES = 12 * 60; // une barre pleine = 12 h
 
 const end = computed(() => Temporal.PlainDate.from(props.windowStart).add({ days: 6 }).toString());
 const rangeLabel = computed(() => formatDayRange(props.windowStart, end.value));
@@ -143,7 +195,9 @@ const workCaption = computed(() => {
 const restCaption = computed(() => {
   const gap = current.value.longestRestMinutes - props.limits.weeklyRestMinutes;
   const margin = gap >= 0 ? `Marge de ${formatHours(gap)}` : `Il manque ${formatHours(-gap)}`;
-  const moment = current.value.longestRestFrom ? ` · ${momentLabel(current.value.longestRestFrom)} → ${momentLabel(current.value.longestRestTo)}` : '';
+  const moment = current.value.longestRestFrom
+    ? ` · ${momentLabel(current.value.longestRestFrom)} → ${momentLabel(current.value.longestRestTo)}`
+    : '';
   return margin + moment;
 });
 
@@ -153,27 +207,27 @@ const momentLabel = (value) => {
   return `${day} ${String(moment.hour).padStart(2, '0')}:${String(moment.minute).padStart(2, '0')}`;
 };
 
-const windowDays = computed(() => Array.from({ length: 7 }, (_, index) => {
-  const date = Temporal.PlainDate.from(props.windowStart).add({ days: index });
-  const workedMinutes = props.daysByDate[date.toString()]?.workedMinutes ?? 0;
-  return {
-    date: date.toString(),
-    letter: LETTERS[date.dayOfWeek - 1],
-    workedMinutes,
-    height: Math.max(3, Math.round(percent(workedMinutes, BAR_SCALE_MINUTES) * BAR_MAX_HEIGHT / 100)),
-  };
-}));
-const daysSummary = computed(() => windowDays.value.map((day) => `${formatDayShort(day.date)} ${formatHours(day.workedMinutes)}`).join(', '));
+const windowDays = computed(() =>
+  Array.from({ length: 7 }, (_, index) => {
+    const date = Temporal.PlainDate.from(props.windowStart).add({ days: index });
+    const workedMinutes = props.daysByDate[date.toString()]?.workedMinutes ?? 0;
+    return {
+      date: date.toString(),
+      letter: LETTERS[date.dayOfWeek - 1],
+      workedMinutes,
+      height: Math.max(3, Math.round((percent(workedMinutes, BAR_SCALE_MINUTES) * BAR_MAX_HEIGHT) / 100)),
+    };
+  }),
+);
+const daysSummary = computed(() =>
+  windowDays.value.map((day) => `${formatDayShort(day.date)} ${formatHours(day.workedMinutes)}`).join(', '),
+);
 </script>
 
 <style scoped>
 .tabular {
   font-variant-numeric: tabular-nums;
 }
-
-
-
-
 
 /* Verdict : icône + texte, teinte du thème (jamais la teinte seule) */
 .verdict {

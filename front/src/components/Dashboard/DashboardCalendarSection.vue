@@ -1,27 +1,56 @@
 <template>
   <div ref="calendarCard" class="mb-10">
-    <CalendarHeader :selected-month="selectedMonth" :selected-year="selectedYear" @navigate-month="navigateMonth"
-      @go-to-today="goToToday" />
+    <CalendarHeader
+      :selected-month="selectedMonth"
+      :selected-year="selectedYear"
+      @navigate-month="navigateMonth"
+      @go-to-today="goToToday"
+    />
 
-    <CalendarMobile :calendar-days="calendarDays" :loading="loading" :selected-date="selectedDate"
-      @update:selected-date="handleSelectDate" />
+    <CalendarMobile
+      :calendar-days="calendarDays"
+      :loading="loading"
+      :selected-date="selectedDate"
+      @update:selected-date="handleSelectDate"
+    />
   </div>
 
-  <v-bottom-sheet :model-value="showBottomSheet" inset scrim="true" class="safe-area-bottom"
-    @update:model-value="onBottomSheetClose">
-    <CalendarPanel v-if="selectedDate" :selected-date="selectedDate" @open-rempla-dialog="openSubstitutionForm"
-      @open-drawer="handleOpenDrawer" @cancel="handleCancel" @withdraw="handleWithdraw" />
+  <v-bottom-sheet
+    :model-value="showBottomSheet"
+    inset
+    scrim="true"
+    class="safe-area-bottom"
+    @update:model-value="onBottomSheetClose"
+  >
+    <CalendarPanel
+      v-if="selectedDate"
+      :selected-date="selectedDate"
+      @open-rempla-dialog="openSubstitutionForm"
+      @open-drawer="handleOpenDrawer"
+      @cancel="handleCancel"
+      @withdraw="handleWithdraw"
+    />
   </v-bottom-sheet>
 
-  <SubstitutionForm :submitting="subInProgress" :dialog-mode="dialogMode" :dialog-visible="showSubstitutionForm"
-    :date="selectedDate" :selected-shift="selectedVacation" @on-submit="handleSubmit"
-    @update:dialog-visible="showSubstitutionForm = $event" />
+  <SubstitutionForm
+    :submitting="subInProgress"
+    :dialog-mode="dialogMode"
+    :dialog-visible="showSubstitutionForm"
+    :date="selectedDate"
+    :selected-shift="selectedVacation"
+    @on-submit="handleSubmit"
+    @update:dialog-visible="showSubstitutionForm = $event"
+  />
 
   <!-- Drawers -->
-  <UnifiedDrawer :model-value="showDrawer" :selected-date="selectedDate" @update:model-value="showDrawer = $event"
-    @handle-replacement="handleReplacement" @handle-switch="handleSwitch" @open-details="openDemand" />
-
-
+  <UnifiedDrawer
+    :model-value="showDrawer"
+    :selected-date="selectedDate"
+    @update:model-value="showDrawer = $event"
+    @handle-replacement="handleReplacement"
+    @handle-switch="handleSwitch"
+    @open-details="openDemand"
+  />
 </template>
 
 <script setup>
@@ -54,13 +83,7 @@ const shiftStore = useShiftStore();
 const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
 
-
-const {
-  selectedMonth,
-  selectedYear,
-  navigateMonth,
-  goToToday,
-} = useCalendarNavigation();
+const { selectedMonth, selectedYear, navigateMonth, goToToday } = useCalendarNavigation();
 
 const { calendarDays } = useCalendar(selectedYear, selectedMonth);
 const { loading, fetchMonthData } = useCalendarData(calendarDays);
@@ -73,7 +96,9 @@ const selectedVacation = computed(() => {
   if (!selectedDate.value) return null;
 
   const v = vacationsOfUser.value.get(selectedDate.value.toString());
-  return v ? { shift: v.shiftData?.shift, teamObject: v.shiftData?.team, selectedVariation: v.shiftData?.selectedVariation } : null;
+  return v
+    ? { shift: v.shiftData?.shift, teamObject: v.shiftData?.team, selectedVariation: v.shiftData?.selectedVariation }
+    : null;
 });
 
 const onBottomSheetClose = (isOpen) => {
@@ -132,7 +157,7 @@ const handleSubmit = async (demand) => {
       date: demand.date,
       shift: demand.selectedShift.shift,
       teamId: demand.selectedShift.teamObject._id,
-      selectedVariation: demand.selectedShift.selectedVariation || null
+      selectedVariation: demand.selectedShift.selectedVariation || null,
     };
 
     const requestData = {
@@ -157,15 +182,11 @@ const handleOpenDrawer = (type) => {
   showDrawer.value = true;
 };
 
-
 onMounted(async () => {
   if (calendarDays.value && calendarDays.value.length > 0) {
     await fetchMonthData();
   }
 });
-
-
-
 </script>
 
 <style scoped>
@@ -176,12 +197,12 @@ onMounted(async () => {
 .calendar-card.not-visible {
   opacity: 0.01;
   transition: all 0.3s ease-in-out;
-  transform: translateY(20px) scale(0.90);
+  transform: translateY(20px) scale(0.9);
 }
 
 .calendar-card {
   opacity: 1;
-  transition: all 0.5s ease-in-out .2s;
+  transition: all 0.5s ease-in-out 0.2s;
   transform: translateY(0px) scale(1);
 }
 </style>

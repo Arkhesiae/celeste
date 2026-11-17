@@ -2,22 +2,35 @@
   <v-card rounded="xl" elevation="0" color="surfaceContainer" class="rest-tile pa-4">
     <div class="d-flex align-start justify-space-between ga-2 mb-3">
       <div class="d-flex flex-column">
-        <span class="text-body-small text-uppercase text-disabled">Repos hebdomadaire de {{ formatHours(limits.weeklyRestMinutes) }}</span>
+        <span class="text-body-small text-uppercase text-disabled"
+          >Repos hebdomadaire de {{ formatHours(limits.weeklyRestMinutes) }}</span
+        >
         <span class="text-title-medium font-weight-medium">{{ title }}</span>
       </div>
       <v-btn
-v-if="period?.start" icon="mdi-close" variant="text" size="small" aria-label="Effacer la période"
-        @click="emit('clear')" />
+        v-if="period?.start"
+        icon="mdi-close"
+        variant="text"
+        size="small"
+        aria-label="Effacer la période"
+        @click="emit('clear')"
+      />
     </div>
 
     <!-- Rien de choisi : on explique comment faire et on propose les périodes courantes -->
     <template v-if="!period?.start">
       <p class="text-body-medium text-medium-emphasis mb-3">
-        Touchez deux jours du calendrier : la tuile contrôle que chaque période de 7 jours contient un repos continu d'au
-        moins {{ formatHours(limits.weeklyRestMinutes) }}.
+        Touchez deux jours du calendrier : la tuile contrôle que chaque période de 7 jours contient un repos continu
+        d'au moins {{ formatHours(limits.weeklyRestMinutes) }}.
       </p>
       <div class="d-flex flex-wrap ga-2">
-        <v-chip v-for="preset in presets" :key="preset.key" variant="tonal" size="small" @click="emit('preset', preset.key)">
+        <v-chip
+          v-for="preset in presets"
+          :key="preset.key"
+          variant="tonal"
+          size="small"
+          @click="emit('preset', preset.key)"
+        >
           {{ preset.label }}
         </v-chip>
       </div>
@@ -45,25 +58,42 @@ v-if="period?.start" icon="mdi-close" variant="text" size="small" aria-label="Ef
       <div class="mb-3">
         <div class="d-flex justify-space-between align-baseline">
           <span class="text-body-medium">Plus court repos continu</span>
-          <span class="text-body-medium font-weight-medium tabular">{{ formatHours(verdict.rest.worst.longestRestMinutes) }} <span
-              class="text-medium-emphasis">/ {{ formatHours(limits.weeklyRestMinutes) }} min.</span></span>
+          <span class="text-body-medium font-weight-medium tabular"
+            >{{ formatHours(verdict.rest.worst.longestRestMinutes) }}
+            <span class="text-medium-emphasis">/ {{ formatHours(limits.weeklyRestMinutes) }} min.</span></span
+          >
         </div>
         <v-progress-linear
-:model-value="restPercent" :color="verdict.rest.ok ? 'primary' : 'error'" height="10" rounded
-          bg-color="onSurface" bg-opacity="0.12" :aria-label="`Plus court repos continu : ${formatHours(verdict.rest.worst.longestRestMinutes)}`" />
+          :model-value="restPercent"
+          :color="verdict.rest.ok ? 'primary' : 'error'"
+          height="10"
+          rounded
+          bg-color="onSurface"
+          bg-opacity="0.12"
+          :aria-label="`Plus court repos continu : ${formatHours(verdict.rest.worst.longestRestMinutes)}`"
+        />
         <span class="text-body-small text-medium-emphasis">
-          Période du {{ formatDayRange(verdict.rest.worst.start, verdict.rest.worst.end) }}<template
-            v-if="verdict.rest.worst.longestRestFrom"> · {{ formatLocalMoment(verdict.rest.worst.longestRestFrom) }} → {{ formatLocalMoment(verdict.rest.worst.longestRestTo) }}</template>
+          Période du {{ formatDayRange(verdict.rest.worst.start, verdict.rest.worst.end)
+          }}<template v-if="verdict.rest.worst.longestRestFrom">
+            · {{ formatLocalMoment(verdict.rest.worst.longestRestFrom) }} →
+            {{ formatLocalMoment(verdict.rest.worst.longestRestTo) }}</template
+          >
         </span>
       </div>
 
       <!-- Les périodes en défaut, cliquables : on les regarde dans la tuile de fenêtre -->
       <div v-if="failing.length" class="mb-3">
-        <span class="text-body-small text-medium-emphasis">{{ failing.length }} période{{ failing.length > 1 ? 's' : '' }} en défaut</span>
+        <span class="text-body-small text-medium-emphasis"
+          >{{ failing.length }} période{{ failing.length > 1 ? 's' : '' }} en défaut</span
+        >
         <div class="d-flex flex-column ga-1 mt-1">
           <button
-v-for="window in failing.slice(0, MAX_LISTED)" :key="window.start" type="button" class="failing-row"
-            @click="emit('inspect-window', window.start)">
+            v-for="window in failing.slice(0, MAX_LISTED)"
+            :key="window.start"
+            type="button"
+            class="failing-row"
+            @click="emit('inspect-window', window.start)"
+          >
             <span class="text-body-small">{{ formatDayRange(window.start, window.end) }}</span>
             <span class="text-body-small font-weight-medium tabular">{{ formatHours(window.longestRestMinutes) }}</span>
           </button>
@@ -74,9 +104,15 @@ v-for="window in failing.slice(0, MAX_LISTED)" :key="window.start" type="button"
       </div>
 
       <!-- La règle voisine, en passant : le plus de travail sur 7 jours dans la période -->
-      <div class="d-flex align-center ga-2 text-body-small" :class="verdict.work.ok ? 'text-medium-emphasis' : 'text-error'">
+      <div
+        class="d-flex align-center ga-2 text-body-small"
+        :class="verdict.work.ok ? 'text-medium-emphasis' : 'text-error'"
+      >
         <v-icon size="16">{{ verdict.work.ok ? 'mdi-check' : 'mdi-alert-outline' }}</v-icon>
-        <span>Travail sur 7 jours : au plus {{ formatHours(verdict.work.worst.workMinutes) }} (maximum {{ formatHours(limits.maxWeeklyWorkMinutes) }})</span>
+        <span
+          >Travail sur 7 jours : au plus {{ formatHours(verdict.work.worst.workMinutes) }} (maximum
+          {{ formatHours(limits.maxWeeklyWorkMinutes) }})</span
+        >
       </div>
     </template>
   </v-card>
@@ -85,7 +121,13 @@ v-for="window in failing.slice(0, MAX_LISTED)" :key="window.start" type="button"
 <script setup>
 import { computed } from 'vue';
 import {
-  daysInPeriod, formatDayRange, formatDayShort, formatHours, formatLocalMoment, periodVerdict, windowsForPeriod,
+  daysInPeriod,
+  formatDayRange,
+  formatDayShort,
+  formatHours,
+  formatLocalMoment,
+  periodVerdict,
+  windowsForPeriod,
 } from '@/utils/workWindows';
 
 /**
@@ -105,12 +147,14 @@ const emit = defineEmits(['clear', 'preset', 'inspect-window']);
 
 const MAX_LISTED = 4;
 const presets = [
-  { key: 'today7', label: '7 jours à partir d\'aujourd\'hui' },
+  { key: 'today7', label: "7 jours à partir d'aujourd'hui" },
   { key: 'month', label: 'Mois affiché' },
 ];
 
 const complete = computed(() => Boolean(props.period?.start && props.period?.end));
-const inScope = computed(() => (complete.value ? windowsForPeriod(props.windows, props.period.start, props.period.end) : []));
+const inScope = computed(() =>
+  complete.value ? windowsForPeriod(props.windows, props.period.start, props.period.end) : [],
+);
 const verdict = computed(() => periodVerdict(inScope.value));
 const failing = computed(() => inScope.value.filter((window) => !window.restOk));
 
@@ -121,9 +165,11 @@ const title = computed(() => {
   return `${formatDayRange(props.period.start, props.period.end)} · ${length.value} jour${length.value > 1 ? 's' : ''}`;
 });
 
-const verdictText = computed(() => (verdict.value.rest.ok
-  ? `Repos de ${formatHours(props.limits.weeklyRestMinutes)} respecté`
-  : `Repos de ${formatHours(props.limits.weeklyRestMinutes)} non respecté`));
+const verdictText = computed(() =>
+  verdict.value.rest.ok
+    ? `Repos de ${formatHours(props.limits.weeklyRestMinutes)} respecté`
+    : `Repos de ${formatHours(props.limits.weeklyRestMinutes)} non respecté`,
+);
 
 // Ce que « chaque période de 7 jours » veut dire pour cette sélection
 const scopeText = computed(() => {
@@ -134,7 +180,9 @@ const scopeText = computed(() => {
   return `${periods} : toutes celles qui tiennent dans la sélection.`;
 });
 
-const restPercent = computed(() => Math.min(100, Math.max(0, (verdict.value.rest.worst.longestRestMinutes / props.limits.weeklyRestMinutes) * 100)));
+const restPercent = computed(() =>
+  Math.min(100, Math.max(0, (verdict.value.rest.worst.longestRestMinutes / props.limits.weeklyRestMinutes) * 100)),
+);
 </script>
 
 <style scoped>

@@ -2,19 +2,15 @@
   <router-view />
 </template>
 
-
 <route lang="yaml">
-  meta:
-    layout: false
+meta:
+  layout: false
 </route>
 
-
-<script setup>  
-
+<script setup>
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-console.log('Route meta:', route.meta)
-console.log('Layout:', route.meta.layout)
-
+console.log('Route meta:', route.meta);
+console.log('Layout:', route.meta.layout);
 </script>

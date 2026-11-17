@@ -2,17 +2,28 @@
   <v-container v-if="isReady" class="d-flex fill-height">
     <v-row justify="center" align-content="center">
       <v-slide-y-reverse-transition hide-on-leave appear>
-        <v-card width="100%" class="mt-n16 pa-6 pt-10" :color="smAndDown ? 'transparent' : ''" rounded="xl"
-          elevation="0" style="max-width: 900px; z-index: 34 !important;">
-          <v-card-title class="pl-0 text-label-medium text-uppercase font-weight-bold">
-            CéLESTE
-          </v-card-title>
+        <v-card
+          width="100%"
+          class="mt-n16 pa-6 pt-10"
+          :color="smAndDown ? 'transparent' : ''"
+          rounded="xl"
+          elevation="0"
+          style="max-width: 900px; z-index: 34 !important"
+        >
+          <v-card-title class="pl-0 text-label-medium text-uppercase font-weight-bold"> CéLESTE </v-card-title>
 
           <v-row>
             <v-col cols="12" md="6">
               <div class="d-flex align-center">
-                <v-btn v-if="currentStep === 2 && smAndDown" variant="text" color="onBackground"
-                  prepend-icon="mdi-arrow-left" rounded="xl" class="back-button me-2" @click="currentStep = 1" />
+                <v-btn
+                  v-if="currentStep === 2 && smAndDown"
+                  variant="text"
+                  color="onBackground"
+                  prepend-icon="mdi-arrow-left"
+                  rounded="xl"
+                  class="back-button me-2"
+                  @click="currentStep = 1"
+                />
                 <div>
                   <v-card-title class="pa-0 text-headline-small text-md-headline-large font-weight-medium">
                     Se connecter
@@ -30,20 +41,41 @@
             <v-col cols="12" md="6">
               <v-window v-model="currentStep">
                 <v-window-item :value="1">
-                  <v-text-field v-model="email" color="tertiary" variant="outlined" label="Adresse e-mail" type="email"
-                    rounded="xl" :rules="[rules.required, rules.email]" :error-messages="emailError"
-                    :loading="isCheckingEmail" required class="mobile-input mt-2" @update:model-value="backToStep1"
-                    @input="emailError = ''" @keyup.enter="tryGoToStep2">
+                  <v-text-field
+                    v-model="email"
+                    color="tertiary"
+                    variant="outlined"
+                    label="Adresse e-mail"
+                    type="email"
+                    rounded="xl"
+                    :rules="[rules.required, rules.email]"
+                    :error-messages="emailError"
+                    :loading="isCheckingEmail"
+                    required
+                    class="mobile-input mt-2"
+                    @update:model-value="backToStep1"
+                    @input="emailError = ''"
+                    @keyup.enter="tryGoToStep2"
+                  >
                     <template v-if="email && stayConnected" #append-inner>
-                      <v-btn icon="mdi-close" variant="text" size="small" class="text-medium-emphasis"
-                        @click="clearRememberedEmail" />
+                      <v-btn
+                        icon="mdi-close"
+                        variant="text"
+                        size="small"
+                        class="text-medium-emphasis"
+                        @click="clearRememberedEmail"
+                      />
                     </template>
                   </v-text-field>
                 </v-window-item>
 
                 <v-window-item :value="2">
-                  <v-card rounded="xl" flat="" :color="smAndDown ? 'surfaceContainer' : 'background'"
-                    @click="currentStep = 1">
+                  <v-card
+                    rounded="xl"
+                    flat=""
+                    :color="smAndDown ? 'surfaceContainer' : 'background'"
+                    @click="currentStep = 1"
+                  >
                     <v-fade-transition>
                       <v-card-text class="pa-4">
                         <v-progress-circular v-if="isLoadingUserInfo" indeterminate color="primary" class="mb-4" />
@@ -54,8 +86,9 @@
                                 <v-img :src="`${API_URL}${userInfo.avatar}`" alt="Avatar de l'utilisateur" />
                               </template>
                               <template v-else>
-                                {{ userInfo?.name ? userInfo.name.charAt(0).toUpperCase() :
-                                  email.charAt(0).toUpperCase() }}
+                                {{
+                                  userInfo?.name ? userInfo.name.charAt(0).toUpperCase() : email.charAt(0).toUpperCase()
+                                }}
                               </template>
                             </v-avatar>
                             <div class="d-flex flex-column align-start ml-3">
@@ -63,7 +96,11 @@
                                 {{ userInfo?.name || email }}
                               </div>
                               <div class="text-body-small text-medium-emphasis">
-                                {{ userInfo?.center ? `${userInfo.center}` : 'Bienvenue ! Veuillez entrer votre  mot  de passe' }}
+                                {{
+                                  userInfo?.center
+                                    ? `${userInfo.center}`
+                                    : 'Bienvenue ! Veuillez entrer votre  mot  de passe'
+                                }}
                               </div>
                             </div>
                             <v-spacer />
@@ -73,30 +110,45 @@
                       </v-card-text>
                     </v-fade-transition>
                   </v-card>
-                  <v-text-field v-model="password" variant="outlined" color="primary" class="mt-3 mobile-input"
-                    label="Mot de passe" required rounded="xl" type="password" autocomplete="current-password"
-                    :rules="[rules.required]" @keyup.enter="handleLogin" />
-
+                  <v-text-field
+                    v-model="password"
+                    variant="outlined"
+                    color="primary"
+                    class="mt-3 mobile-input"
+                    label="Mot de passe"
+                    required
+                    rounded="xl"
+                    type="password"
+                    autocomplete="current-password"
+                    :rules="[rules.required]"
+                    @keyup.enter="handleLogin"
+                  />
 
                   <div
                     class="remember-me d-flex align-center justify-center mb-4 ga-3 overflow-hidden cursor-pointer position-relative"
-                    :class="{ 'active': stayConnected, 'desktop': !smAndDown }" @click="stayConnected = !stayConnected">
+                    :class="{ active: stayConnected, desktop: !smAndDown }"
+                    @click="stayConnected = !stayConnected"
+                  >
                     <div class="d-flex align-center ga-3 overflow-hidden cursor-pointer position-relative">
                       <!-- Conteneur avec largeur fixe pour l'icône pour éviter le décalage -->
-                      <div class="icon-container d-flex align-center justify-center"
-                        style="width: 24px; transition: all 0.5s ease;"
-                        :style="{ 'width': stayConnected ? '24px' : '0px' }">
+                      <div
+                        class="icon-container d-flex align-center justify-center"
+                        style="width: 24px; transition: all 0.5s ease"
+                        :style="{ width: stayConnected ? '24px' : '0px' }"
+                      >
                         <v-slide-x-reverse-transition mode="out-in">
                           <div v-if="stayConnected" key="icon">
                             <v-icon color="primary" icon="mdi-identifier" size="16" />
                           </div>
-                          <div v-else key="empty" style="width: 16px; height: 16px;" />
+                          <div v-else key="empty" style="width: 16px; height: 16px" />
                         </v-slide-x-reverse-transition>
                       </div>
                       <div class="d-flex align-center ga-3 overflow-hidden cursor-pointer position-relative">
-                        <span class="text-body-medium position-relative" style="transition: all 0.3s ease;">Se souvenir de
-                          moi</span><span class="text-body-medium position-relative"
-                          :style="{ 'opacity': stayConnected ? 0 : 1 }">?</span>
+                        <span class="text-body-medium position-relative" style="transition: all 0.3s ease"
+                          >Se souvenir de moi</span
+                        ><span class="text-body-medium position-relative" :style="{ opacity: stayConnected ? 0 : 1 }"
+                          >?</span
+                        >
                       </div>
                     </div>
                   </div>
@@ -109,27 +161,60 @@
               </v-window>
 
               <v-card-actions class="pa-0 mt-4 align-end" :class="smAndDown ? 'd-flex flex-column ' : ' justify-end'">
-                <v-btn v-if="currentStep === 1" variant="text" color="onBackground" append-icon="mdi-chevron-right"
-                  rounded="xl" class="create-account-button" @click="router.push({ path: '/creation' })">
+                <v-btn
+                  v-if="currentStep === 1"
+                  variant="text"
+                  color="onBackground"
+                  append-icon="mdi-chevron-right"
+                  rounded="xl"
+                  class="create-account-button"
+                  @click="router.push({ path: '/creation' })"
+                >
                   Créer un compte
                 </v-btn>
 
                 <div class="d-flex align-end">
-                  <v-btn v-if="currentStep === 2 && !smAndDown" variant="text" color="onBackground"
-                    prepend-icon="mdi-arrow-left" rounded="xl" class="back-button me-2" @click="currentStep = 1">
+                  <v-btn
+                    v-if="currentStep === 2 && !smAndDown"
+                    variant="text"
+                    color="onBackground"
+                    prepend-icon="mdi-arrow-left"
+                    rounded="xl"
+                    class="back-button me-2"
+                    @click="currentStep = 1"
+                  >
                     Retour
                   </v-btn>
                   <v-spacer />
 
-                  <v-btn v-if="currentStep === 1" class=" px-4" variant="flat" rounded="lg" color="onBackground"
-                    append-icon="mdi-arrow-right" :class="smAndDown ? 'login-button-mobile' : 'login-button'"
-                    :loading="loggingIn" type="button" @click="tryGoToStep2">
+                  <v-btn
+                    v-if="currentStep === 1"
+                    class="px-4"
+                    variant="flat"
+                    rounded="lg"
+                    color="onBackground"
+                    append-icon="mdi-arrow-right"
+                    :class="smAndDown ? 'login-button-mobile' : 'login-button'"
+                    :loading="loggingIn"
+                    type="button"
+                    @click="tryGoToStep2"
+                  >
                     Continuer
                   </v-btn>
 
-                  <v-btn v-if="currentStep === 2" class=" px-4" variant="flat" rounded="lg" color="onBackground"
-                    append-icon="mdi-login" :class="smAndDown ? 'login-button-mobile' : 'login-button'"
-                    :disabled="!validStep2 || loggingIn" :loading="loggingIn" type="button" @click="handleLogin">
+                  <v-btn
+                    v-if="currentStep === 2"
+                    class="px-4"
+                    variant="flat"
+                    rounded="lg"
+                    color="onBackground"
+                    append-icon="mdi-login"
+                    :class="smAndDown ? 'login-button-mobile' : 'login-button'"
+                    :disabled="!validStep2 || loggingIn"
+                    :loading="loggingIn"
+                    type="button"
+                    @click="handleLogin"
+                  >
                     Se connecter
                   </v-btn>
 
@@ -140,16 +225,24 @@
               </v-card-actions>
             </v-col>
           </v-row>
-          <img v-if="!smAndDown" src="@/assets/Orly1.png" alt="landing" class="position-absolute"
-            :class="{ 'img-mobile': smAndDown, 'img-desktop': !smAndDown }">
+          <img
+            v-if="!smAndDown"
+            src="@/assets/Orly1.png"
+            alt="landing"
+            class="position-absolute"
+            :class="{ 'img-mobile': smAndDown, 'img-desktop': !smAndDown }"
+          />
         </v-card>
       </v-slide-y-reverse-transition>
     </v-row>
-    
-    <ForgotPasswordDialog v-model="showForgotPasswordDialog" @success="handlePasswordResetSuccess"
-      @error="handlePasswordResetError" />
-    <div class="position-absolute top-0 d-flex justify-end align-center w-100" style="height: 70vh;">
-      <img v-if="smAndDown" src="@/assets/Orly1.png" class="img-mobile" :class="{ 'img-mobile-xs': xs }">
+
+    <ForgotPasswordDialog
+      v-model="showForgotPasswordDialog"
+      @success="handlePasswordResetSuccess"
+      @error="handlePasswordResetError"
+    />
+    <div class="position-absolute top-0 d-flex justify-end align-center w-100" style="height: 70vh">
+      <img v-if="smAndDown" src="@/assets/Orly1.png" class="img-mobile" :class="{ 'img-mobile-xs': xs }" />
     </div>
 
     <!-- <img  v-if="smAndDown" src="@/assets/Orly1.png" alt="landing"
@@ -157,7 +250,6 @@
   </v-container>
 </template>
 <script setup>
-;
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
@@ -174,8 +266,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 const email = ref('');
 const password = ref('');
-const currentStep = ref(null);   // 👈 Étape inconnue au départ
-const isReady = ref(false);      // 👈 Bloque le rendu tant qu’on n’a pas fini
+const currentStep = ref(null); // 👈 Étape inconnue au départ
+const isReady = ref(false); // 👈 Bloque le rendu tant qu’on n’a pas fini
 const stayConnected = ref(false);
 const isCheckingEmail = ref(false);
 const emailError = ref('');
@@ -191,8 +283,8 @@ const REMEMBERED_EMAIL_KEY = 'rememberedEmail';
 const REMEMBER_EMAIL_KEY = 'rememberEmail';
 
 const rules = {
-  required: value => !!value || 'Champ requis',
-  email: value => /.+@.+\..+/.test(value) || 'Adresse e-mail invalide'
+  required: (value) => !!value || 'Champ requis',
+  email: (value) => /.+@.+\..+/.test(value) || 'Adresse e-mail invalide',
 };
 
 /**
@@ -214,14 +306,14 @@ const loadRememberedEmail = async () => {
           return 2; // Aller directement à l'étape 2 si l'email est valide
         }
       } catch (error) {
-        console.error('Erreur lors de la vérification de l\'email:', error);
+        console.error("Erreur lors de la vérification de l'email:", error);
         return 1; // Rester à l'étape 1 en cas d'erreur
       }
     }
 
     return 1; // Par défaut, commencer à l'étape 1
   } catch (error) {
-    console.error('Erreur lors du chargement de l\'email mémorisé:', error);
+    console.error("Erreur lors du chargement de l'email mémorisé:", error);
     return 1; // En cas d'erreur, commencer à l'étape 1
   }
 };
@@ -294,7 +386,7 @@ const saveRememberedEmail = () => {
       clearRememberedEmail();
     }
   } catch (error) {
-    console.error('Erreur lors de la sauvegarde de l\'email:', error);
+    console.error("Erreur lors de la sauvegarde de l'email:", error);
   }
 };
 
@@ -308,7 +400,7 @@ const clearRememberedEmail = () => {
     email.value = '';
     stayConnected.value = false;
   } catch (error) {
-    console.error('Erreur lors de l\'effacement de l\'email mémorisé:', error);
+    console.error("Erreur lors de l'effacement de l'email mémorisé:", error);
   }
 };
 
@@ -334,7 +426,6 @@ const handleLogin = async () => {
 
     //   router.push({ path: '/dashboard', replace: true });
     //   snackbarStore.showNotification('Connexion réussie', 'onPrimary', 'mdi-check');
-
 
     // } catch (error) {
     //   console.error('Erreur lors du chargement des données:', error);
@@ -378,8 +469,6 @@ const backToStep1 = () => {
   currentStep.value = step;
   isReady.value = true; // 👈 maintenant on peut afficher
 })();
-
-
 </script>
 
 <style scoped>
@@ -387,7 +476,9 @@ const backToStep1 = () => {
 .create-account-button,
 .back-button {
   border-radius: 12px !important;
-  transition: transform 0.1s, opacity 0.2s;
+  transition:
+    transform 0.1s,
+    opacity 0.2s;
 }
 
 .login-button-mobile {
@@ -418,11 +509,8 @@ const backToStep1 = () => {
 }
 
 .img-mobile {
-
   width: 330px;
   object-fit: cover;
-
-
 }
 
 .img-mobile-xs {
@@ -434,23 +522,17 @@ const backToStep1 = () => {
 
 .remember-me {
   width: 100%;
-  color: rgba(var(--v-theme-onSurface), .8);
+  color: rgba(var(--v-theme-onSurface), 0.8);
   background-color: rgba(var(--v-theme-surfaceContainerHighest), 0.1);
   border-radius: 16px;
   border: 2px solid rgba(var(--v-theme-surfaceContainer), 0.3);
   height: 48px;
-
 }
 
 .remember-me.desktop {
-
-
   background-color: rgba(var(--v-theme-background), 0.4);
 
   border: 2px solid rgba(var(--v-theme-background), 0.6);
-
-
-
 }
 
 .remember-me.desktop.active {
@@ -461,6 +543,5 @@ const backToStep1 = () => {
 .remember-me.active {
   background-color: rgba(var(--v-theme-surfaceContainer), 1);
   color: rgba(var(--v-theme-onSurface), 1);
-
 }
 </style>

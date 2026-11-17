@@ -1,7 +1,9 @@
 <template>
   <div
-class="work-legend d-flex flex-wrap align-center text-body-small text-medium-emphasis" role="list"
-    aria-label="Légende des indicateurs de temps de travail">
+    class="work-legend d-flex flex-wrap align-center text-body-small text-medium-emphasis"
+    role="list"
+    aria-label="Légende des indicateurs de temps de travail"
+  >
     <span class="legend-item" role="listitem">
       <span class="sample sample--work" aria-hidden="true" />
       Plus de {{ formatHours(limits.maxWeeklyWorkMinutes) }} de travail sur 7 jours

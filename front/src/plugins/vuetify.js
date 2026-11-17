@@ -6,30 +6,28 @@
 
 // Styles
 
-import 'vuetify/styles'
-import { md3 } from 'vuetify/blueprints'
+import 'vuetify/styles';
+import { md3 } from 'vuetify/blueprints';
 
-import substitution_accepted_accepter from '@/assets/customIcons/demands/substitution_accepted_accepter.svg?component'
-import substitution_accepted_poster from '@/assets/customIcons/demands/substitution_accepted_poster.svg?component'
-import substitution_pending from '@/assets/customIcons/demands/substitution_pending.svg?component'
-import switch_accepted_accepter from '@/assets/customIcons/demands/switch_accepted_accepter.svg?component'
-import switch_accepted_poster from '@/assets/customIcons/demands/switch_accepted_poster.svg?component'
-import switch_pending from '@/assets/customIcons/demands/switch_pending.svg?component'
-import hybrid_accepted_as_substitution_accepter from '@/assets/customIcons/demands/hybrid_accepted_as_substitution_accepter.svg?component'
-import hybrid_accepted_as_substitution_poster from '@/assets/customIcons/demands/hybrid_accepted_as_substitution_poster.svg?component'
-import hybrid_accepted_as_switch_accepter from '@/assets/customIcons/demands/hybrid_accepted_as_switch_accepter.svg?component'
-import hybrid_accepted_as_switch_poster from '@/assets/customIcons/demands/hybrid_accepted_as_switch_poster.svg?component'
-import hybrid_pending from '@/assets/customIcons/demands/hybrid_pending.svg?component'
+import substitution_accepted_accepter from '@/assets/customIcons/demands/substitution_accepted_accepter.svg?component';
+import substitution_accepted_poster from '@/assets/customIcons/demands/substitution_accepted_poster.svg?component';
+import substitution_pending from '@/assets/customIcons/demands/substitution_pending.svg?component';
+import switch_accepted_accepter from '@/assets/customIcons/demands/switch_accepted_accepter.svg?component';
+import switch_accepted_poster from '@/assets/customIcons/demands/switch_accepted_poster.svg?component';
+import switch_pending from '@/assets/customIcons/demands/switch_pending.svg?component';
+import hybrid_accepted_as_substitution_accepter from '@/assets/customIcons/demands/hybrid_accepted_as_substitution_accepter.svg?component';
+import hybrid_accepted_as_substitution_poster from '@/assets/customIcons/demands/hybrid_accepted_as_substitution_poster.svg?component';
+import hybrid_accepted_as_switch_accepter from '@/assets/customIcons/demands/hybrid_accepted_as_switch_accepter.svg?component';
+import hybrid_accepted_as_switch_poster from '@/assets/customIcons/demands/hybrid_accepted_as_switch_poster.svg?component';
+import hybrid_pending from '@/assets/customIcons/demands/hybrid_pending.svg?component';
 
-
-import '@mdi/font/css/materialdesignicons.css' 
+import '@mdi/font/css/materialdesignicons.css';
 // import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
-
-import { aliases, mdi } from 'vuetify/iconsets/mdi'
+import { aliases, mdi } from 'vuetify/iconsets/mdi';
 // Composables
-import { createVuetify } from 'vuetify'
-import {fr} from "vuetify/locale";
+import { createVuetify } from 'vuetify';
+import { fr } from 'vuetify/locale';
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
@@ -61,157 +59,154 @@ export default createVuetify({
   },
   theme: {
     defaultTheme: 'darkTheme', // You can set the default theme (light or dark)
-    themes : {
+    themes: {
       darkTheme: {
         dark: true,
         colors: {
           // Jours d'affectation du calendrier : congé, et toutes les autres affectations (une seule teinte)
-          "leave": "#7fd1e8",
-          "onLeave": "#00363f",
-          "entry": "#f2c46d",
-          "onEntry": "#3f2e00",
-          "permutation": "#dcffbc",
-          "onPermutation": "#5c2a65",
-          "primary": "#b4b3f5ff",
-          "surfaceTint": "#87D1EA",
-          "onPrimary": "#251141ff",
-          "primaryContainer": "#004E5F",
-          "onPrimaryContainer": "#B4EBFF",
-          "secondary": "#e2ff6eff",
-          "onSecondary": "#1D333B",
-          "secondaryContainer": "#344A52",
-          "onSecondaryContainer": "#CEE6F0",
-          "tertiary": "#C2C4EB",
-          "onTertiary": "#2B2E4D",
-          "tertiaryContainer": "#414465",
-          "onTertiaryContainer": "#E0E0FF",
-          "error": "#FFB4AB",
-          "onError": "#690005",
-          "errorContainer": "#93000A",
-          "onErrorContainer": "#FFDAD6",
-          "background": "#0F1416",
-          "onBackground": "#DEE3E6",
-          "surface": "#161c1d",
-          "onSurface": "#DEE3E5",
-          "surfaceVariant": "#40484C",
-          "onSurfaceVariant": "#C0C8CC",
-          "outline": "#8A9296",
-          "outlineVariant": "#40484C",
-          "shadow": "#000000",
-          "scrim": "#000000",
-          "inverseSurface": "#DEE3E5",
-          "inverseOnSurface": "#2B3133",
-          "inversePrimary": "#03677D",
-          "primaryFixed": "#B4EBFF",
-          "onPrimaryFixed": "#001F28",
-          "primaryFixedDim": "#87D1EA",
-          "onPrimaryFixedVariant": "#004E5F",
-          "secondaryFixed": "#CEE6F0",
-          "onSecondaryFixed": "#071E25",
-          "secondaryFixedDim": "#B3CAD4",
-          "onSecondaryFixedVariant": "#344A52",
-          "tertiaryFixed": "#E0E0FF",
-          "onTertiaryFixed": "#161937",
-          "tertiaryFixedDim": "#C2C4EB",
-          "onTertiaryFixedVariant": "#414465",
-          "surfaceDim": "#0E1416",
-          "surfaceBright": "#343A3C",
-          "surfaceContainerLowest": "#090F10",
-          "surfaceContainerLow": "#171D1E",
-          "surfaceContainer": "#1B2122",
-          "surfaceContainerHigh": "#252B2C",
-          "surfaceContainerHighest": "#303637",
-          "remplacement": "#f6ccfd",
-          "onRemplacement": "#4e3e64",
-          "pendingDemand": "#d5b178",
-          "onPendingDemand": "#412b13",
-          "acceptedDemand": "#b3ebd7",
-          "onAcceptedDemand": "#033027",
-          "toDoDemand": "#4e3e64",
-          "onToDoDemand": "#a000a0",
-          "pending": "#ffbc66",
-          "new": "#28adbb",
-          "done": "#25c060",
-          "anomalySoft": "#c9a66b",
-
-        }
+          leave: '#7fd1e8',
+          onLeave: '#00363f',
+          entry: '#f2c46d',
+          onEntry: '#3f2e00',
+          permutation: '#dcffbc',
+          onPermutation: '#5c2a65',
+          primary: '#b4b3f5ff',
+          surfaceTint: '#87D1EA',
+          onPrimary: '#251141ff',
+          primaryContainer: '#004E5F',
+          onPrimaryContainer: '#B4EBFF',
+          secondary: '#e2ff6eff',
+          onSecondary: '#1D333B',
+          secondaryContainer: '#344A52',
+          onSecondaryContainer: '#CEE6F0',
+          tertiary: '#C2C4EB',
+          onTertiary: '#2B2E4D',
+          tertiaryContainer: '#414465',
+          onTertiaryContainer: '#E0E0FF',
+          error: '#FFB4AB',
+          onError: '#690005',
+          errorContainer: '#93000A',
+          onErrorContainer: '#FFDAD6',
+          background: '#0F1416',
+          onBackground: '#DEE3E6',
+          surface: '#161c1d',
+          onSurface: '#DEE3E5',
+          surfaceVariant: '#40484C',
+          onSurfaceVariant: '#C0C8CC',
+          outline: '#8A9296',
+          outlineVariant: '#40484C',
+          shadow: '#000000',
+          scrim: '#000000',
+          inverseSurface: '#DEE3E5',
+          inverseOnSurface: '#2B3133',
+          inversePrimary: '#03677D',
+          primaryFixed: '#B4EBFF',
+          onPrimaryFixed: '#001F28',
+          primaryFixedDim: '#87D1EA',
+          onPrimaryFixedVariant: '#004E5F',
+          secondaryFixed: '#CEE6F0',
+          onSecondaryFixed: '#071E25',
+          secondaryFixedDim: '#B3CAD4',
+          onSecondaryFixedVariant: '#344A52',
+          tertiaryFixed: '#E0E0FF',
+          onTertiaryFixed: '#161937',
+          tertiaryFixedDim: '#C2C4EB',
+          onTertiaryFixedVariant: '#414465',
+          surfaceDim: '#0E1416',
+          surfaceBright: '#343A3C',
+          surfaceContainerLowest: '#090F10',
+          surfaceContainerLow: '#171D1E',
+          surfaceContainer: '#1B2122',
+          surfaceContainerHigh: '#252B2C',
+          surfaceContainerHighest: '#303637',
+          remplacement: '#f6ccfd',
+          onRemplacement: '#4e3e64',
+          pendingDemand: '#d5b178',
+          onPendingDemand: '#412b13',
+          acceptedDemand: '#b3ebd7',
+          onAcceptedDemand: '#033027',
+          toDoDemand: '#4e3e64',
+          onToDoDemand: '#a000a0',
+          pending: '#ffbc66',
+          new: '#28adbb',
+          done: '#25c060',
+          anomalySoft: '#c9a66b',
+        },
       },
       lightTheme: {
         dark: false,
         colors: {
-          "primary": "#675496ff",
-          "surfaceTint": "#675496FF",
-          "onPrimary": "#FFFFFF",
-          "primaryContainer": "#B4EBFF",
-          "onPrimaryContainer": "#001F28",
-          "secondary": "#4edfaaff",
-          "onSecondary": "#FFFFFF",
-          "secondaryContainer": "#CEE6F0",
-          "onSecondaryContainer": "#071E25",
-          "tertiary": "#595C7E",
-          "onTertiary": "#FFFFFF",
-          "tertiaryContainer": "#E0E0FF",
-          "onTertiaryContainer": "#161937",
-          "error": "#682b36ff",
-          "onError": "#FFB4AB",
-          "errorContainer": "#FFDAD6",
-          "onErrorContainer": "#410002",
-          "background": "#eff0f3fe",
-          "onBackground": "#171C1F",
-          "surface": "#f0f4f6f6",
-          "onSurface": "#171D1E",
-          "surfaceVariant": "#DCE4E8",
-          "onSurfaceVariant": "#40484C",
-          "outline": "#70787C",
-          "outlineVariant": "#C0C8CC",
-          "shadow": "#000000",
-          "scrim": "#000000",
-          "inverseSurface": "#2B3133",
-          "inverseOnSurface": "#ECF2F3",
-          "inversePrimary": "#87D1EA",
-          "primaryFixed": "#B4EBFF",
-          "onPrimaryFixed": "#001F28",
-          "primaryFixedDim": "#87D1EA",
-          "onPrimaryFixedVariant": "#004E5F",
-          "secondaryFixed": "#CEE6F0",
-          "onSecondaryFixed": "#071E25",
-          "secondaryFixedDim": "#B3CAD4",
-          "onSecondaryFixedVariant": "#344A52",
-          "tertiaryFixed": "#E0E0FF",
-          "onTertiaryFixed": "#161937",
-          "tertiaryFixedDim": "#C2C4EB",
-          "onTertiaryFixedVariant": "#414465",
-          "surfaceDim": "#D5DBDC",
-          "surfaceBright": "#F5FAFC",
-          "surfaceContainerLowest":  "#DEE3E5",
-          "surfaceContainerLow": "#E3E9EA",
-          "surfaceContainer": "#E9EFF1",
-          "surfaceContainerHigh": "#E3E9EB",
-          "surfaceContainerHighest": "#DDE3E5",
-          "leave": "#00799a",
-          "onLeave": "#ffffff",
-          "entry": "#8a5a00",
-          "onEntry": "#ffffff",
-          "remplacement": "#4e3e64",
-          "onRemplacement": "#f6ccfd",
-          "permutation": "#9777a0",
-          "pendingDemand": "#4d3e25fc",
-          "onPendingDemand": "#fff2b2",
-          "acceptedDemand": "#1c4f3d",
-          "onAcceptedDemand": "#f3ffbc",
-          "toDoDemand": "#4e3e64",
-          "onToDoDemand": "#a000a0",
-          "pending": "#af6200",
-          "new": "#28adbb",
-          "done": "#25c060",
-          "anomalySoft": "#b8956c",
-        }
+          primary: '#675496ff',
+          surfaceTint: '#675496FF',
+          onPrimary: '#FFFFFF',
+          primaryContainer: '#B4EBFF',
+          onPrimaryContainer: '#001F28',
+          secondary: '#4edfaaff',
+          onSecondary: '#FFFFFF',
+          secondaryContainer: '#CEE6F0',
+          onSecondaryContainer: '#071E25',
+          tertiary: '#595C7E',
+          onTertiary: '#FFFFFF',
+          tertiaryContainer: '#E0E0FF',
+          onTertiaryContainer: '#161937',
+          error: '#682b36ff',
+          onError: '#FFB4AB',
+          errorContainer: '#FFDAD6',
+          onErrorContainer: '#410002',
+          background: '#eff0f3fe',
+          onBackground: '#171C1F',
+          surface: '#f0f4f6f6',
+          onSurface: '#171D1E',
+          surfaceVariant: '#DCE4E8',
+          onSurfaceVariant: '#40484C',
+          outline: '#70787C',
+          outlineVariant: '#C0C8CC',
+          shadow: '#000000',
+          scrim: '#000000',
+          inverseSurface: '#2B3133',
+          inverseOnSurface: '#ECF2F3',
+          inversePrimary: '#87D1EA',
+          primaryFixed: '#B4EBFF',
+          onPrimaryFixed: '#001F28',
+          primaryFixedDim: '#87D1EA',
+          onPrimaryFixedVariant: '#004E5F',
+          secondaryFixed: '#CEE6F0',
+          onSecondaryFixed: '#071E25',
+          secondaryFixedDim: '#B3CAD4',
+          onSecondaryFixedVariant: '#344A52',
+          tertiaryFixed: '#E0E0FF',
+          onTertiaryFixed: '#161937',
+          tertiaryFixedDim: '#C2C4EB',
+          onTertiaryFixedVariant: '#414465',
+          surfaceDim: '#D5DBDC',
+          surfaceBright: '#F5FAFC',
+          surfaceContainerLowest: '#DEE3E5',
+          surfaceContainerLow: '#E3E9EA',
+          surfaceContainer: '#E9EFF1',
+          surfaceContainerHigh: '#E3E9EB',
+          surfaceContainerHighest: '#DDE3E5',
+          leave: '#00799a',
+          onLeave: '#ffffff',
+          entry: '#8a5a00',
+          onEntry: '#ffffff',
+          remplacement: '#4e3e64',
+          onRemplacement: '#f6ccfd',
+          permutation: '#9777a0',
+          pendingDemand: '#4d3e25fc',
+          onPendingDemand: '#fff2b2',
+          acceptedDemand: '#1c4f3d',
+          onAcceptedDemand: '#f3ffbc',
+          toDoDemand: '#4e3e64',
+          onToDoDemand: '#a000a0',
+          pending: '#af6200',
+          new: '#28adbb',
+          done: '#25c060',
+          anomalySoft: '#b8956c',
+        },
       },
     },
   },
-  components: {
-
-  },
+  components: {},
   locale: {
     locale: 'fr', // Set default locale to French
     messages: { fr }, // Provide French translations
@@ -224,12 +219,12 @@ export default createVuetify({
     VBtnGroup: { size: 'default' },
     VBtnToggle: { size: 'default' },
     // },
-    VDialog : {
+    VDialog: {
       scrim: '#0F1416',
       class: 'pa-6',
       rounded: 'xl',
       VCardActions: {
-        class: "pa-0 ma-0",
+        class: 'pa-0 ma-0',
         // Taille « small » par défaut ; un `size` explicite sur le bouton l'emporte.
         // Pas de `rounded` : le rayon et le rayon à l'appui viennent de la taille nommée (settings.scss)
         VBtn: {
@@ -242,9 +237,6 @@ export default createVuetify({
       VDialog: {
         class: 'pa-0',
       },
- 
     },
-  
-  
   },
-})
+});

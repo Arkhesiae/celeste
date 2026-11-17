@@ -1,64 +1,127 @@
 <template>
-  <v-bottom-navigation v-if="smAndDown && isLoggedIn" elevation="0" flat class="bottom-nav" bg-color="background" grow
-    height="64" style="z-index: 2000 !important;" shift>
-    <v-btn :ripple="false" value="home" icon :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
+  <v-bottom-navigation
+    v-if="smAndDown && isLoggedIn"
+    elevation="0"
+    flat
+    class="bottom-nav"
+    bg-color="background"
+    grow
+    height="64"
+    style="z-index: 2000 !important"
+    shift
+  >
+    <v-btn
+      :ripple="false"
+      value="home"
+      icon
+      :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/dashboard'"
-      @click="router.push({ path: '/dashboard' }); hapticsImpact()">
+      @click="
+        router.push({ path: '/dashboard' });
+        hapticsImpact();
+      "
+    >
       <v-icon size="20">
         {{ isActive('/dashboard') ? 'mdi-home' : 'mdi-home-outline' }}
       </v-icon>
-      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Accueil</span>
+      <span class="text-body-medium" style="font-weight: 600; font-size: 10px !important">Accueil</span>
     </v-btn>
-    <v-btn :ripple="false" value="calendar" icon :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
+    <v-btn
+      :ripple="false"
+      value="calendar"
+      icon
+      :class="isActive('/calendar') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/calendar'"
-      @click="router.push({ path: '/calendar' }); hapticsImpact()">
+      @click="
+        router.push({ path: '/calendar' });
+        hapticsImpact();
+      "
+    >
       <v-icon size="20">
         {{ isActive('/calendar') ? 'mdi-calendar' : 'mdi-calendar-outline' }}
       </v-icon>
-      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Calendrier</span>
+      <span class="text-body-medium" style="font-weight: 600; font-size: 10px !important">Calendrier</span>
     </v-btn>
-    <v-btn :ripple="false" value="grid" icon :class="isActive(gridPath) ? 'active-item' : 'inactive-item'"
-      :active="isActive(gridPath)" @click="router.push({ path: gridPath }); hapticsImpact()">
+    <v-btn
+      :ripple="false"
+      value="grid"
+      icon
+      :class="isActive(gridPath) ? 'active-item' : 'inactive-item'"
+      :active="isActive(gridPath)"
+      @click="
+        router.push({ path: gridPath });
+        hapticsImpact();
+      "
+    >
       <v-icon size="20">
         {{ isActive(gridPath) ? 'mdi-view-week' : 'mdi-view-week-outline' }}
       </v-icon>
-      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Grille</span>
+      <span class="text-body-medium" style="font-weight: 600; font-size: 10px !important">Grille</span>
     </v-btn>
-    <v-btn :ripple="false" value="demandes" icon
+    <v-btn
+      :ripple="false"
+      value="demandes"
+      icon
       :class="isActive('/demand-page/demands') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/demand-page/demands'"
-      @click="router.push({ path: '/demand-page/demands' }); hapticsImpact()">
-      <v-badge size="x-small" rounded="lg" color="onBackground" class="font-weight-bold text-title-small" offset-x="-12"
-        offset-y="6" :content="demandsCount" :model-value="demandsCount !== 0">
+      @click="
+        router.push({ path: '/demand-page/demands' });
+        hapticsImpact();
+      "
+    >
+      <v-badge
+        size="x-small"
+        rounded="lg"
+        color="onBackground"
+        class="font-weight-bold text-title-small"
+        offset-x="-12"
+        offset-y="6"
+        :content="demandsCount"
+        :model-value="demandsCount !== 0"
+      >
         <v-icon size="20">
-          {{ isActive('/demand-page/demands') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline'
-          }}
+          {{ isActive('/demand-page/demands') ? 'mdi-account-arrow-left' : 'mdi-account-arrow-left-outline' }}
         </v-icon>
       </v-badge>
-      <span class="text-body-medium " style="font-weight: 600; font-size: 10px !important; ">Demandes</span>
+      <span class="text-body-medium" style="font-weight: 600; font-size: 10px !important">Demandes</span>
     </v-btn>
     <!-- <v-btn :ripple="false" value="notifications" icon @click="toggleNotifications" :active="router.currentRoute.value.path === '/notifications'">
       <v-icon size="large">{{ isActive('/notifications') ? 'mdi-bell' : 'mdi-bell-outline' }}</v-icon>
     </v-btn> -->
 
-
-    <v-btn :ripple="false" value="profile" active-color="onPrimary" active-class="active-item" icon
+    <v-btn
+      :ripple="false"
+      value="profile"
+      active-color="onPrimary"
+      active-class="active-item"
+      icon
       :class="isActive('/profile/' + authStore.userData.userId) ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId"
-      @click="router.push({ path: '/profile/' + authStore.userData.userId }); hapticsImpact()">
+      @click="
+        router.push({ path: '/profile/' + authStore.userData.userId });
+        hapticsImpact();
+      "
+    >
       <!-- <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false"> -->
 
       <v-badge v-model="missingPhone" color="error" icon="mdi-exclamation-thick" overlap location="top start">
-        <div class="d-flex align-center justify-center"
+        <div
+          class="d-flex align-center justify-center"
           :class="isActive('/profile/' + authStore.userData.userId) ? 'opacity-100' : 'opacity-50'"
-          style="width: 32px; height: 32px; border-radius: 50%; background-color: rgba(var(--v-theme-onBackground), 1); position: relative; top: -3px;">
+          style="
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: rgba(var(--v-theme-onBackground), 1);
+            position: relative;
+            top: -3px;
+          "
+        >
           <!-- Badge rouge "!" si téléphone manquant -->
 
-          <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
+          <v-avatar size="28" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1)">
             <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-            <v-icon v-else>
-              mdi-account
-            </v-icon>
+            <v-icon v-else> mdi-account </v-icon>
           </v-avatar>
         </div>
       </v-badge>
@@ -68,10 +131,10 @@
 </template>
 
 <script setup>
-import { useDisplay } from "vuetify";
-import { useAuthStore } from "@/stores/authStore.js";
-import { useRouter } from "vue-router";
-import { computed } from "vue";
+import { useDisplay } from 'vuetify';
+import { useAuthStore } from '@/stores/authStore.js';
+import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 import { API_URL } from '@/config/api';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -79,7 +142,6 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 const hapticsImpact = async () => {
   await Haptics.impact({ style: ImpactStyle.Light });
 };
-
 
 const missingPhone = computed(() => !authStore.userData.phone);
 
@@ -90,19 +152,21 @@ const authStore = useAuthStore();
 const substitutionStore = useSubstitutionStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 // const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
-const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
+const demandsCount = computed(
+  () =>
+    substitutionStore.availableSubstitutions.length +
+    substitutionStore.availableSwitches.length +
+    substitutionStore.otherDemands.length,
+);
 
 // Grille du centre de l'utilisateur ; un administrateur principal sans centre choisit d'abord un centre
-const gridPath = computed(() => (authStore.userData.centerId
-  ? `/center/${authStore.userData.centerId}/grid`
-  : '/center/centers'));
+const gridPath = computed(() =>
+  authStore.userData.centerId ? `/center/${authStore.userData.centerId}/grid` : '/center/centers',
+);
 
 const isActive = (path) => {
   return router.currentRoute.value.path === path;
 };
-
-
-
 
 // const toggleNotifications = () => {
 //   // Émettre un événement pour gérer les notifications
@@ -140,7 +204,7 @@ const emit = defineEmits(['toggle-notifications']);
 }
 
 .inactive-item {
-  color: rgba(var(--v-theme-onBackground), .51) !important;
+  color: rgba(var(--v-theme-onBackground), 0.51) !important;
 
   background-color: transparent !important;
 }

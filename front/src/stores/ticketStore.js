@@ -1,7 +1,5 @@
 import { defineStore } from 'pinia';
-;
 import { ticketService } from '@/services/ticketService';
-
 
 export const useTicketStore = defineStore('ticket', () => {
   // State
@@ -9,16 +7,14 @@ export const useTicketStore = defineStore('ticket', () => {
   const loading = ref(false);
 
   // Getters
-  const unreadCount = computed(() =>
-    tickets.value.filter(ticket => !ticket.isRead).length
-  );
+  const unreadCount = computed(() => tickets.value.filter((ticket) => !ticket.isRead).length);
 
   const sortedTickets = computed(() =>
-    [...tickets.value].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    [...tickets.value].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
   );
 
   // Actions
-  async function fetchTickets () {
+  async function fetchTickets() {
     loading.value = true;
     try {
       tickets.value = await ticketService.fetchTickets();
@@ -29,7 +25,7 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function createTicket (ticketData) {
+  async function createTicket(ticketData) {
     loading.value = true;
     try {
       const createdTicket = await ticketService.createTicket(ticketData);
@@ -43,7 +39,7 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function markAsRead (ticketId) {
+  async function markAsRead(ticketId) {
     try {
       const updatedTicket = await ticketService.markAsRead(ticketId);
       await fetchTickets();
@@ -52,7 +48,7 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function deleteTicket (ticketId) {
+  async function deleteTicket(ticketId) {
     try {
       await ticketService.deleteTicket(ticketId);
       await fetchTickets();
@@ -61,7 +57,7 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function updateTicketStatus (ticketId, status) {
+  async function updateTicketStatus(ticketId, status) {
     try {
       await ticketService.updateTicketStatus(ticketId, status);
       await fetchTickets();
@@ -70,17 +66,17 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function replyToTicket (ticketId, content) {
+  async function replyToTicket(ticketId, content) {
     try {
       const updatedTicket = await ticketService.sendTicketReply(ticketId, content);
-      tickets.value = tickets.value.map(ticket => ticket._id === ticketId ? updatedTicket : ticket);
+      tickets.value = tickets.value.map((ticket) => (ticket._id === ticketId ? updatedTicket : ticket));
       return updatedTicket;
     } catch (err) {
       throw err;
     }
   }
 
-  async function markReplySent (ticketId) {
+  async function markReplySent(ticketId) {
     try {
       await ticketService.markReplySent(ticketId);
       await fetchTickets();
@@ -89,7 +85,7 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function archiveTicket (ticketId) {
+  async function archiveTicket(ticketId) {
     loading.value = true;
     try {
       await ticketService.archiveTicket(ticketId);
@@ -101,7 +97,7 @@ export const useTicketStore = defineStore('ticket', () => {
     }
   }
 
-  async function restoreTicket (ticketId) {
+  async function restoreTicket(ticketId) {
     loading.value = true;
     try {
       await ticketService.restoreTicket(ticketId);
@@ -129,6 +125,6 @@ export const useTicketStore = defineStore('ticket', () => {
     updateTicketStatus,
     markReplySent,
     archiveTicket,
-    restoreTicket
+    restoreTicket,
   };
-}); 
+});

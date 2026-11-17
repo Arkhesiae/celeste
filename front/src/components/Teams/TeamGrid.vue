@@ -25,11 +25,7 @@
         <div class="tg-slide">
           <!-- En-tête : un jour par colonne -->
           <div class="tg-cells tg-cells--head">
-            <div
-              v-for="col in slide.columns"
-              :key="col.key"
-              class="tg-day"
-            >
+            <div v-for="col in slide.columns" :key="col.key" class="tg-day">
               <span class="tg-day__month">{{ col.monthLabel }}</span>
               <span class="tg-day__weekday">{{ col.weekday }}</span>
               <span class="tg-day__number" :class="{ 'today-pill': col.isToday }">{{ col.day }}</span>
@@ -38,7 +34,8 @@
                 class="tg-day__shift"
                 :class="{ 'tg-day__shift--rest': col.shift.isRest }"
                 :title="col.shiftTitle"
-              >{{ col.shift.name }}</span>
+                >{{ col.shift.name }}</span
+              >
             </div>
           </div>
 
@@ -79,9 +76,7 @@
       </SwiperSlide>
     </Swiper>
 
-    <div v-if="rows.length === 0" class="tg-empty text-medium-emphasis">
-      Aucun membre sur cette période.
-    </div>
+    <div v-if="rows.length === 0" class="tg-empty text-medium-emphasis">Aucun membre sur cette période.</div>
   </div>
 </template>
 
@@ -112,15 +107,20 @@ const emit = defineEmits(['move']);
 // Trois diapositives : [précédente, courante, suivante]. Après un glissement, le parent décale `startDate` ;
 // le contenu de la diapositive voisine devient celui de la diapositive centrale et on recentre sans animation.
 const swiper = shallowRef(null);
-const onSwiper = (instance) => { swiper.value = instance; };
+const onSwiper = (instance) => {
+  swiper.value = instance;
+};
 
 const onTransitionEnd = (instance) => {
   if (instance.activeIndex !== 1) emit('move', instance.activeIndex - 1);
 };
 
-watch(() => props.startDate, () => {
-  nextTick(() => swiper.value?.slideTo(1, 0, false));
-});
+watch(
+  () => props.startDate,
+  () => {
+    nextTick(() => swiper.value?.slideTo(1, 0, false));
+  },
+);
 
 /** Fait glisser vers la période précédente (-1) ou suivante (+1) : boutons de navigation */
 const slideBy = (direction) => swiper.value?.slideTo(1 + direction, 300);
@@ -135,7 +135,11 @@ const buildColumns = (start) => {
     return {
       key: date.toString(),
       shift,
-      shiftTitle: shift ? [shift.name, shift.startTime && shift.endTime ? `${shift.startTime}–${shift.endTime}` : null].filter(Boolean).join(' · ') : '',
+      shiftTitle: shift
+        ? [shift.name, shift.startTime && shift.endTime ? `${shift.startTime}–${shift.endTime}` : null]
+            .filter(Boolean)
+            .join(' · ')
+        : '',
       day: date.day,
       weekday: date.toLocaleString('fr-FR', { weekday: 'narrow' }),
       // Le mois est rappelé sur la première colonne et à chaque début de mois
@@ -146,9 +150,15 @@ const buildColumns = (start) => {
   });
 };
 
-const slides = computed(() => [-1, 0, 1].map((offset) => ({
-  columns: buildColumns(Temporal.PlainDate.from(props.startDate).add({ days: offset * props.span }).toString()),
-})));
+const slides = computed(() =>
+  [-1, 0, 1].map((offset) => ({
+    columns: buildColumns(
+      Temporal.PlainDate.from(props.startDate)
+        .add({ days: offset * props.span })
+        .toString(),
+    ),
+  })),
+);
 
 // ─── Lignes ──────────────────────────────────────────────────────────────────
 const entryOf = (type) => entryTypes.find((e) => e.key === type);
@@ -156,12 +166,14 @@ const entryOf = (type) => entryTypes.find((e) => e.key === type);
 const buildCell = (day) => {
   const entry = entryOf(day.type);
   // VIC écrit en toutes lettres : la couleur seule ne doit pas porter l'information ; la dispo se lit à la couleur d'erreur et au libellé
-  const variationLabel = day.variation === 'vic' ? 'VIC' : (day.variation && day.variation !== 'disp' ? day.variation : null);
+  const variationLabel =
+    day.variation === 'vic' ? 'VIC' : day.variation && day.variation !== 'disp' ? day.variation : null;
   const label = [day.shiftName ?? entry?.label ?? day.type, variationLabel].filter(Boolean).join(' · ');
 
   let counterpartIcon = 'mdi-swap-horizontal';
   if (day.counterpart && !day.counterpart.isSwitch) {
-    counterpartIcon = day.presence === 'replaced' ? 'mdi-account-arrow-right-outline' : 'mdi-account-arrow-left-outline';
+    counterpartIcon =
+      day.presence === 'replaced' ? 'mdi-account-arrow-right-outline' : 'mdi-account-arrow-left-outline';
   }
 
   // Même code couleur que le calendrier (utils/dayStyle.js, styles/day.css) : nature du jour, puis présence
@@ -179,14 +191,17 @@ const buildCell = (day) => {
     counterpart: day.counterpart?.name ?? null,
     counterpartIcon,
     title: [label, day.startTime && day.endTime ? `${day.startTime}–${day.endTime}` : null, day.counterpart?.name]
-      .filter(Boolean).join(' · '),
+      .filter(Boolean)
+      .join(' · '),
   };
 };
 
 // Une ligne n'existe que si le membre fait partie de l'équipe au moins un jour de la période COURANTE
 const rows = computed(() => {
   const first = props.startDate;
-  const last = Temporal.PlainDate.from(props.startDate).add({ days: props.span - 1 }).toString();
+  const last = Temporal.PlainDate.from(props.startDate)
+    .add({ days: props.span - 1 })
+    .toString();
 
   return props.members
     .filter((member) => member.inTeamDates.some((date) => date >= first && date <= last))
@@ -198,10 +213,12 @@ const rows = computed(() => {
         // Nom de famille seul, en majuscules (le prénom reste dans l'infobulle)
         displayName: (member.lastName || member.name || '').toUpperCase(),
         // inTeam : le membre fait partie de l'équipe ce jour-là ; sinon la cellule reste vide et sans fond
-        slides: slides.value.map(({ columns }) => columns.map((col) => {
-          const day = byDate.get(col.key);
-          return { inTeam: inTeam.has(col.key), entry: day ? buildCell(day) : null };
-        })),
+        slides: slides.value.map(({ columns }) =>
+          columns.map((col) => {
+            const day = byDate.get(col.key);
+            return { inTeam: inTeam.has(col.key), entry: day ? buildCell(day) : null };
+          }),
+        ),
       };
     });
 });
@@ -209,7 +226,7 @@ const rows = computed(() => {
 
 <style scoped>
 .team-grid {
-  --name-width: 84px;       /* largeur plafonnée de la colonne des noms */
+  --name-width: 84px; /* largeur plafonnée de la colonne des noms */
   --row-height: 56px;
   --head-height: 64px;
   display: flex;
@@ -221,7 +238,9 @@ const rows = computed(() => {
 }
 
 @media (min-width: 960px) {
-  .team-grid { --name-width: 120px; }
+  .team-grid {
+    --name-width: 120px;
+  }
 }
 
 /* Colonne des noms : reste en place, seule la partie droite défile avec le Swiper */
@@ -233,7 +252,9 @@ const rows = computed(() => {
   gap: 4px;
 }
 
-.tg-corner { height: var(--head-height); }
+.tg-corner {
+  height: var(--head-height);
+}
 
 .tg-name {
   height: var(--row-height);
@@ -256,7 +277,9 @@ const rows = computed(() => {
   white-space: nowrap;
 }
 
-.tg-name__tag { flex: 0 0 auto; }
+.tg-name__tag {
+  flex: 0 0 auto;
+}
 
 .tg-swiper {
   flex: 1;
@@ -272,13 +295,15 @@ const rows = computed(() => {
 
 .tg-cells {
   display: grid;
-  gap: 4px;                 /* écart horizontal et vertical entre les cellules */
+  gap: 4px; /* écart horizontal et vertical entre les cellules */
   grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
   height: var(--row-height);
   min-width: 0;
 }
 
-.tg-cells--head { height: var(--head-height); }
+.tg-cells--head {
+  height: var(--head-height);
+}
 
 .tg-day {
   display: flex;
@@ -299,8 +324,14 @@ const rows = computed(() => {
   color: rgb(var(--v-theme-primary));
 }
 
-.tg-day__weekday { font-size: 10px; text-transform: uppercase; }
-.tg-day__number { font-size: 14px; font-weight: 700; }
+.tg-day__weekday {
+  font-size: 10px;
+  text-transform: uppercase;
+}
+.tg-day__number {
+  font-size: 14px;
+  font-weight: 700;
+}
 
 /* Vacation habituelle de l'équipe ce jour-là : comme le nom d'une vacation dans le calendrier (texte courant, repos atténué) */
 .tg-day__shift {
@@ -314,7 +345,10 @@ const rows = computed(() => {
   color: rgb(var(--v-theme-onSurface));
 }
 
-.tg-day__shift--rest { font-weight: 500; color: rgb(var(--v-theme-onSurfaceVariant)); }
+.tg-day__shift--rest {
+  font-weight: 500;
+  color: rgb(var(--v-theme-onSurfaceVariant));
+}
 
 /* Cellule = tuile globale statique (tile.css) colorée par day.css, comme une tuile du calendrier ; ici seulement sa taille */
 .tg-cell {
@@ -331,7 +365,9 @@ const rows = computed(() => {
 }
 
 /* Week-end : fond un peu plus soutenu pour une cellule vide */
-.tg-cell--weekend { --tile-bg: rgba(var(--v-theme-onSurface), 0.05); }
+.tg-cell--weekend {
+  --tile-bg: rgba(var(--v-theme-onSurface), 0.05);
+}
 
 /* Hors équipe ce jour-là : aucune cellule visible */
 .tg-cell--outside {
@@ -340,7 +376,9 @@ const rows = computed(() => {
 }
 
 /* Remplacé : il ne travaille plus cette vacation, son nom est barré (le nom de celui qui le remplace reste lisible) */
-.tg-cell--replaced .tg-entry__line:first-child .tg-entry__label { text-decoration: line-through; }
+.tg-cell--replaced .tg-entry__line:first-child .tg-entry__label {
+  text-decoration: line-through;
+}
 
 .tg-entry__line {
   display: flex;
@@ -349,7 +387,9 @@ const rows = computed(() => {
   min-width: 0;
 }
 
-.tg-entry__icon { flex: 0 0 auto; }
+.tg-entry__icon {
+  flex: 0 0 auto;
+}
 
 .tg-entry__label {
   overflow: hidden;
@@ -358,7 +398,9 @@ const rows = computed(() => {
   font-weight: 600;
 }
 
-.tg-entry__counterpart .tg-entry__label { font-weight: 500; }
+.tg-entry__counterpart .tg-entry__label {
+  font-weight: 500;
+}
 
 .tg-empty {
   flex: 1 0 100%;

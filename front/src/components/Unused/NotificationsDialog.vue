@@ -5,45 +5,23 @@
     width="900px"
     z-index="2100"
     transition="fade-transition"
-    style="z-index: 2100 !important;"
+    style="z-index: 2100 !important"
     @update:model-value="dialogOpen = $event"
   >
-    <v-card
-      class="pa-0 pt-6"
-      :rounded="smAndDown ? '' : 'xl'"
-    >
+    <v-card class="pa-0 pt-6" :rounded="smAndDown ? '' : 'xl'">
       <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">
-          Notifications
-        </v-card-title>
-        <template
-          v-if="!smAndDown"
-          #append
-        >
-          <v-btn
-            icon="mdi-close"
-            variant="text"
-            @click="dialogOpen = false"
-          />
+        <v-card-title class="d-flex justify-space-between align-center"> Notifications </v-card-title>
+        <template v-if="!smAndDown" #append>
+          <v-btn icon="mdi-close" variant="text" @click="dialogOpen = false" />
         </template>
-        <template
-          v-else
-          #prepend
-        >
-          <v-btn
-            icon="mdi-arrow-left"
-            variant="text"
-            @click="dialogOpen = false"
-          />
+        <template v-else #prepend>
+          <v-btn icon="mdi-arrow-left" variant="text" @click="dialogOpen = false" />
         </template>
       </v-card-item>
       <v-card-text class="px-6 overflow-y-scroll">
-        <v-slide-y-transition
-          group
-          appear
-        >
+        <v-slide-y-transition group appear>
           <v-card
-            v-for="(notification) in notifications"
+            v-for="notification in notifications"
             v-if="dialogOpen"
             :key="notification.id"
             elevation="0"
@@ -68,11 +46,7 @@
               </template>
             </v-card-item>
             <v-card-text>
-              <v-chip
-                v-if="notification.link"
-                prepend-icon="mdi-open-in-new"
-                rounded="lg"
-              >
+              <v-chip v-if="notification.link" prepend-icon="mdi-open-in-new" rounded="lg">
                 {{ notification.link }}
               </v-chip>
             </v-card-text>
@@ -82,13 +56,7 @@
       </v-card-text>
       <v-card-actions class="pa-6">
         <v-spacer />
-        <v-btn
-          color="error"
-          class="text-capitalize"
-          variant="tonal"
-          rounded="lg"
-          @click="clearNotifications"
-        >
+        <v-btn color="error" class="text-capitalize" variant="tonal" rounded="lg" @click="clearNotifications">
           Tout effacer
         </v-btn>
       </v-card-actions>
@@ -97,29 +65,29 @@
 </template>
 
 <script setup>
-import { useDisplay } from "vuetify";
-import { computed } from "vue";
+import { useDisplay } from 'vuetify';
+import { computed } from 'vue';
 
 const props = defineProps({
   isDialogOpen: {
     type: Boolean,
-    required: true
+    required: true,
   },
   userId: {
     type: String,
-    required: true
+    required: true,
   },
   notifications: {
     type: Array,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const emit = defineEmits(['update:isDialogOpen', 'markAsRead', 'clearNotifications']);
 
 const dialogOpen = computed({
   get: () => props.isDialogOpen,
-  set: (value) => emit('update:isDialogOpen', value)
+  set: (value) => emit('update:isDialogOpen', value),
 });
 
 const { smAndDown } = useDisplay();
@@ -131,4 +99,4 @@ const markAsRead = (id) => {
 const clearNotifications = () => {
   emit('clearNotifications');
 };
-</script> 
+</script>

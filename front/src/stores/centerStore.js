@@ -18,7 +18,6 @@ export const useCenterStore = defineStore('center', () => {
   const adminsByCenter = ref({});
   const activeRotationsByCenter = ref({});
 
-
   // Actions
   /** Carte des centres du tableau de bord (voir centerService.fetchCentersMap). */
   const fetchCentersMap = () => centerService.fetchCentersMap();
@@ -46,7 +45,7 @@ export const useCenterStore = defineStore('center', () => {
    */
   const fetchUsersByCenter = async (centerId) => {
     try {
-      console.log("fetchUsersByCenter", centerId);
+      console.log('fetchUsersByCenter', centerId);
       loading.value = true;
       error.value = null;
       const users = await centerService.fetchUsersByCenter(centerId);
@@ -74,7 +73,7 @@ export const useCenterStore = defineStore('center', () => {
       }
       return center;
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération du centre de l\'utilisateur';
+      error.value = err.message || "Erreur lors de la récupération du centre de l'utilisateur";
       return null;
     } finally {
       loading.value = false;
@@ -109,7 +108,7 @@ export const useCenterStore = defineStore('center', () => {
       loading.value = true;
       error.value = null;
       const updatedCenter = await centerService.updateCenter(centerId, centerData);
-      const index = centers.value.findIndex(c => c._id === centerId);
+      const index = centers.value.findIndex((c) => c._id === centerId);
       if (index !== -1) {
         centers.value[index] = updatedCenter;
       }
@@ -133,7 +132,7 @@ export const useCenterStore = defineStore('center', () => {
       loading.value = true;
       error.value = null;
       await centerService.deleteCenter(centerId);
-      centers.value = centers.value.filter(c => c._id !== centerId);
+      centers.value = centers.value.filter((c) => c._id !== centerId);
       if (currentCenter.value?._id === centerId) {
         currentCenter.value = null;
       }
@@ -144,7 +143,6 @@ export const useCenterStore = defineStore('center', () => {
       loading.value = false;
     }
   };
-
 
   /**
    * Récupère les rotations actives de tous les centres.
@@ -202,7 +200,7 @@ export const useCenterStore = defineStore('center', () => {
       const response = await centerService.fetchUsersCountByCenter();
       usersCountByCenter.value = response;
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération du nombre d\'utilisateurs par centre';
+      error.value = err.message || "Erreur lors de la récupération du nombre d'utilisateurs par centre";
       throw err;
     } finally {
       loading.value = false;
@@ -220,7 +218,7 @@ export const useCenterStore = defineStore('center', () => {
       error.value = null;
       return await teamService.createTeam(teamData);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la création de l\'équipe';
+      error.value = err.message || "Erreur lors de la création de l'équipe";
       throw err;
     } finally {
       loading.value = false;
@@ -250,6 +248,6 @@ export const useCenterStore = defineStore('center', () => {
     fetchActiveRotationOfCenter,
     fetchAdminsByCenter,
     fetchUsersCountByCenter,
-    createTeam
+    createTeam,
   };
 });

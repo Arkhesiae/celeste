@@ -80,7 +80,7 @@
     <template #actions>
       <v-btn variant="text" rounded="xl" @click="open = false">Annuler</v-btn>
       <v-spacer />
-      <v-btn color="primary" variant="flat" rounded="xl"  :disabled="!canSubmit" :loading="loading" @click="submit">
+      <v-btn color="primary" variant="flat" rounded="xl" :disabled="!canSubmit" :loading="loading" @click="submit">
         Ajouter
       </v-btn>
     </template>
@@ -106,7 +106,7 @@ const emit = defineEmits(['submit']);
 
 const DEFAULT_START = '09:00';
 const DEFAULT_END = '17:00';
-const MAX_COMMENT_LENGTH = 500;   // la limite du serveur
+const MAX_COMMENT_LENGTH = 500; // la limite du serveur
 
 const type = ref(null);
 const startTime = ref(DEFAULT_START);

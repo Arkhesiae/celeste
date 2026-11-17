@@ -11,33 +11,18 @@
         max-width: 600px;
         height: 100vh;
         z-index: 2500 !important;
-        
-        
+
         overflow-y: hidden;
       "
     >
       <v-sheet class="pa-6 w-100 d-flex flex-column">
         <v-card-item class="pa-0 ma-0 mb-2">
           <v-card-title class="d-flex justify-space-between align-center" />
-          <template
-            v-if="!smAndDown"
-            #append
-          >
-            <v-btn
-              icon="mdi-close"
-              variant="text"
-              @click="$emit('update:modelValue', false)"
-            />
+          <template v-if="!smAndDown" #append>
+            <v-btn icon="mdi-close" variant="text" @click="$emit('update:modelValue', false)" />
           </template>
-          <template
-            v-else
-            #prepend
-          >
-            <v-btn
-              icon="mdi-arrow-left"
-              variant="text"
-              @click="$emit('update:modelValue', false)"
-            />
+          <template v-else #prepend>
+            <v-btn icon="mdi-arrow-left" variant="text" @click="$emit('update:modelValue', false)" />
           </template>
         </v-card-item>
 
@@ -57,13 +42,11 @@ const { smAndDown } = useDisplay();
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
 </script>
 
-<style scoped>
-
-</style> 
+<style scoped></style>

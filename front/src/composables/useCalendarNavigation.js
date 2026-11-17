@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 
-export function useCalendarNavigation () {
+export function useCalendarNavigation() {
   const today = Temporal.Now.plainDateISO();
 
   const currentMonth = ref(today.month); // 1-based
@@ -25,9 +25,6 @@ export function useCalendarNavigation () {
     selectedMonth.value = currentMonth.value;
     selectedYear.value = currentYear.value;
   };
-
-
-  
 
   return {
     selectedMonth,

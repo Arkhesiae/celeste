@@ -5,7 +5,7 @@ export const ticketService = {
     console.log(ticketData);
     const response = await apiFetch(`/ticket/create`, {
       method: 'POST',
-      body: JSON.stringify(ticketData)
+      body: JSON.stringify(ticketData),
     });
     return response;
   },
@@ -27,7 +27,7 @@ export const ticketService = {
   async updateTicketStatus(id, ticketStatus) {
     const response = await apiFetch(`/ticket/status/${id}`, {
       method: 'POST',
-      body: JSON.stringify({ ticketStatus })
+      body: JSON.stringify({ ticketStatus }),
     });
     return response;
   },
@@ -42,7 +42,7 @@ export const ticketService = {
   async sendTicketReply(ticketId, content) {
     const response = await apiFetch(`/ticket/${ticketId}/reply`, {
       method: 'POST',
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content }),
     });
     return response;
   },
@@ -66,5 +66,5 @@ export const ticketService = {
       method: 'PUT',
     });
     return response;
-  }
-}; 
+  },
+};

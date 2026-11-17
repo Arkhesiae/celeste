@@ -4,7 +4,6 @@
  */
 import { apiFetch } from '../config/api';
 
-
 export const vacationService = {
   /**
    * Récupère les jours de travail d'un utilisateur pour une période donnée
@@ -51,28 +50,24 @@ export const vacationService = {
 
     try {
       const response = await apiFetch(`/user/${userId}/get-shifts`, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({
-          dates: [
-            prevDate.toISOString(),
-            nextDate.toISOString()
-          ]
+          dates: [prevDate.toISOString(), nextDate.toISOString()],
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Échec lors de la récupération des vacations adjacentes");
+        throw new Error('Échec lors de la récupération des vacations adjacentes');
       }
 
       const data = await response;
       return {
-        prev: data.find(v => new Date(v.date).getTime() === prevDate.getTime()),
-        next: data.find(v => new Date(v.date).getTime() === nextDate.getTime())
+        prev: data.find((v) => new Date(v.date).getTime() === prevDate.getTime()),
+        next: data.find((v) => new Date(v.date).getTime() === nextDate.getTime()),
       };
     } catch (error) {
-      console.error("Erreur lors de la récupération des vacations adjacentes:", error);
+      console.error('Erreur lors de la récupération des vacations adjacentes:', error);
       return { prev: null, next: null };
     }
   },
-
-}
+};

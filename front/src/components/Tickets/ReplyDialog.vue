@@ -1,51 +1,57 @@
 <template>
   <v-dialog v-model="isOpen" :fullscreen="smAndDown" max-width="600px" persistent>
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-6 ">
-      <div class="d-flex align-center text-title-large">
-        Envoyer une réponse
-      </div>
+    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-6">
+      <div class="d-flex align-center text-title-large">Envoyer une réponse</div>
 
-      <div class="pt-4 ">
+      <div class="pt-4">
         <div class="mb-4 d-flex align-center ga-3 ml-2">
-          <div class="text-title-small">
-            Destinataire
-          </div>
+          <div class="text-title-small">Destinataire</div>
           <v-chip size="small" rounded="lg" color="surfaceContainerHigh" class="bg-surfaceContainerHigh" variant="flat">
-            <v-icon start size="small">
-              mdi-email
-            </v-icon>
+            <v-icon start size="small"> mdi-email </v-icon>
             {{ ticket?.senderEmail }}
           </v-chip>
         </div>
 
         <div class="mb-4 d-flex align-center ga-3 ml-2">
-          <div class="text-title-small ">
-            Sujet
-          </div>
+          <div class="text-title-small">Sujet</div>
           <v-chip size="small" rounded="xl" color="secondary" variant="outlined">
-            <v-icon start size="small">
-              mdi-tag
-            </v-icon>
+            <v-icon start size="small"> mdi-tag </v-icon>
             Re: {{ ticket?.title }}
           </v-chip>
         </div>
 
         <v-form ref="form" v-model="isFormValid">
           <v-textarea
-v-model="replyContent" label="Votre réponse" placeholder="Tapez votre réponse ici..." rows="2"
-            variant="solo-filled" flat rounded="xl" hide-details="auto" :rules="replyRules" counter maxlength="2000"
-            auto-grow required />
+            v-model="replyContent"
+            label="Votre réponse"
+            placeholder="Tapez votre réponse ici..."
+            rows="2"
+            variant="solo-filled"
+            flat
+            rounded="xl"
+            hide-details="auto"
+            :rules="replyRules"
+            counter
+            maxlength="2000"
+            auto-grow
+            required
+          />
         </v-form>
       </div>
 
       <div class="d-flex justify-end gap-2">
         <v-spacer />
-        <v-btn color="grey" variant="text" :disabled="isLoading" size="small" @click="closeDialog">
-          Annuler
-        </v-btn>
+        <v-btn color="grey" variant="text" :disabled="isLoading" size="small" @click="closeDialog"> Annuler </v-btn>
         <v-btn
-color="surfaceContainerHigh" class="bg-surfaceContainerHigh" variant="flat" :loading="isLoading"
-          :disabled="!isFormValid || !replyContent.trim()" prepend-icon="mdi-send" size="small" @click="sendReply">
+          color="surfaceContainerHigh"
+          class="bg-surfaceContainerHigh"
+          variant="flat"
+          :loading="isLoading"
+          :disabled="!isFormValid || !replyContent.trim()"
+          prepend-icon="mdi-send"
+          size="small"
+          @click="sendReply"
+        >
           Envoyer
         </v-btn>
       </div>
@@ -54,7 +60,6 @@ color="surfaceContainerHigh" class="bg-surfaceContainerHigh" variant="flat" :loa
 </template>
 
 <script setup>
-
 // import { ticketService } from '@/services/ticketService';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useTicketStore } from '@/stores/ticketStore';
@@ -66,19 +71,19 @@ const ticketStore = useTicketStore();
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   ticket: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'reply-sent']);
 
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: (value) => emit('update:modelValue', value),
 });
 
 const replyContent = ref('');
@@ -87,9 +92,9 @@ const isFormValid = ref(false);
 // const form = ref(null);
 
 const replyRules = [
-  v => !!v || 'Le contenu de la réponse est requis',
-  v => (v && v.length >= 10) || 'La réponse doit contenir au moins 10 caractères',
-  v => (v && v.length <= 2000) || 'La réponse ne peut pas dépasser 2000 caractères'
+  (v) => !!v || 'Le contenu de la réponse est requis',
+  (v) => (v && v.length >= 10) || 'La réponse doit contenir au moins 10 caractères',
+  (v) => (v && v.length <= 2000) || 'La réponse ne peut pas dépasser 2000 caractères',
 ];
 
 const closeDialog = () => {
@@ -111,24 +116,13 @@ const sendReply = async () => {
   try {
     await ticketStore.replyToTicket(props.ticket?._id, replyContent.value);
 
-    snackbarStore.showNotification(
-      'Réponse envoyée avec succès',
-      'success',
-      'mdi-check-circle',
-    );
-
-
+    snackbarStore.showNotification('Réponse envoyée avec succès', 'success', 'mdi-check-circle');
 
     emit('reply-sent');
     closeDialog();
-
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de la réponse:', error);
-    snackbarStore.showNotification(
-      'Erreur lors de l\'envoi de la réponse : ' + error.message,
-      'error',
-      'mdi-alert'
-    );
+    console.error("Erreur lors de l'envoi de la réponse:", error);
+    snackbarStore.showNotification("Erreur lors de l'envoi de la réponse : " + error.message, 'error', 'mdi-alert');
   } finally {
     isLoading.value = false;
   }

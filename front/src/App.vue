@@ -2,22 +2,14 @@
   <v-app class="app-container">
     <div
       class="position-absolute"
-      style="z-index: 100000000000000 !important;position:  absolute; top: 50px; left: 0;  background-color: red;"
+      style="z-index: 100000000000000 !important; position: absolute; top: 50px; left: 0; background-color: red"
     >
-      {{
-        insets }}
+      {{ insets }}
     </div>
     <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
     <router-view v-slot="{ Component, route }">
-      <transition
-        :name="route.meta.transition || ''"
-        mode="out-in"
-      >
-        <component
-          :is="Component"
-          :key="route.fullPath"
-          class="page"
-        />
+      <transition :name="route.meta.transition || ''" mode="out-in">
+        <component :is="Component" :key="route.fullPath" class="page" />
       </transition>
     </router-view>
   </v-app>
@@ -27,12 +19,10 @@
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
 
-
 const safeAreaTop = ref([]);
 const safeAreaBottom = ref([]);
 
 const { initializeCenters } = useAppInitialization();
-
 
 onMounted(async () => {
   await getSafeAreaAndApply();
@@ -81,17 +71,11 @@ onMounted(async () => {
   // }
 });
 
-
-
-
-
 const insets = ref();
-
 
 async function getSafeAreaAndApply() {
   try {
     await SafeArea.getSafeAreaInsets().then(({ insets }) => {
-
       const top = insets.top;
       const bottom = insets.bottom;
 
@@ -99,24 +83,12 @@ async function getSafeAreaAndApply() {
       safeAreaBottom.value.push(bottom);
 
       for (const [key, value] of Object.entries(insets)) {
-
         // console.log(key, value, 'key, value');
-        document.documentElement.style.setProperty(
-          `--safe-area-${key}`,
-          `${value}px`,
-        );
-        document.documentElement.style.setProperty(
-          `--safe-area-inset-${key}`,
-          `${value}px`,
-        );
-        document.documentElement.style.setProperty(
-          `safe-area-inset-${key}`,
-          `${value}px`,
-        );
+        document.documentElement.style.setProperty(`--safe-area-${key}`, `${value}px`);
+        document.documentElement.style.setProperty(`--safe-area-inset-${key}`, `${value}px`);
+        document.documentElement.style.setProperty(`safe-area-inset-${key}`, `${value}px`);
       }
-
     });
-
 
     await SafeArea.getStatusBarHeight().then(() => {
       // console.log(statusBarHeight, 'statusbarHeight');
@@ -125,7 +97,7 @@ async function getSafeAreaAndApply() {
     await SafeArea.removeAllListeners();
 
     // when safe-area changed
-    await SafeArea.addListener('safeAreaChanged', data => {
+    await SafeArea.addListener('safeAreaChanged', (data) => {
       const { insets } = data;
       // console.log(insets, 'insets');
       const top = insets.top;
@@ -135,49 +107,29 @@ async function getSafeAreaAndApply() {
 
       for (const [key, value] of Object.entries(insets)) {
         // console.log(key, value, 'key, value');
-        document.documentElement.style.setProperty(
-          `--safe-area-${key}`,
-          `${value}px`,
-        );
-        document.documentElement.style.setProperty(
-          `--safe-area-inset-${key}`,
-          `${value}px`,
-        );
-        document.documentElement.style.setProperty(
-          `safe-area-inset-${key}`,
-          `${value}px`,
-        );
+        document.documentElement.style.setProperty(`--safe-area-${key}`, `${value}px`);
+        document.documentElement.style.setProperty(`--safe-area-inset-${key}`, `${value}px`);
+        document.documentElement.style.setProperty(`safe-area-inset-${key}`, `${value}px`);
       }
     });
-
   } catch {
     insets.value = 'error';
   }
-
-
-
 }
-
-
-
 </script>
 
 <style>
-
 .app-container {
   /* Marges de sécurité pour éviter le notch et les barres de statut */
   /* padding-top: var(--safe-area-top) !important; */
 
-
   /* Layered on top of a background color */
-      /* background:
+  /* background:
         radial-gradient(ellipse 80% 40% at 20% 0%, rgba(var(--v-theme-primary), .05) 0%, rgba(var(--v-theme-background), 1) 100%),
 
         rgba(var(--v-theme-background), 1) !important; */
   padding-left: var(--safe-area-left) !important;
   padding-right: var(--safe-area-right) !important;
-
-
 }
 
 /* .app-container::before {
@@ -194,8 +146,6 @@ async function getSafeAreaAndApply() {
   background-repeat: repeat;
   background-size: 300px 300px;
 } */
-
-
 
 .debug {
   border: 1px solid red;
@@ -269,10 +219,11 @@ body,
   }
 }
 
-
 .slide-custom-enter-active,
 .slide-custom-leave-active {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    opacity 0.3s ease;
   position: relative;
   width: 100%;
   top: 0;

@@ -1,41 +1,33 @@
 <template>
   <div class="d-flex align-center ga-1">
-    <v-icon v-if="prependIcon" size="small" class="">
-      mdi-chevron-down
-    </v-icon>
+    <v-icon v-if="prependIcon" size="small" class=""> mdi-chevron-down </v-icon>
     <span :style="'color :' + getStatusColor(status) + ' !important'" class="text-title-small id font-weight-medium">{{
-      getStatusLabel(status) }}</span>
+      getStatusLabel(status)
+    }}</span>
   </div>
 </template>
 
 <script setup>
-
-
-
 const props = defineProps({
   ticketId: {
     type: String,
-    required: true
+    required: true,
   },
   status: {
     type: String,
-    required: true
+    required: true,
   },
   size: {
     type: String,
-    default: 'small'
+    default: 'small',
   },
   prependIcon: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 });
 
-
-
-
 const emit = defineEmits(['status-updated']);
-
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -62,11 +54,8 @@ const getStatusLabel = (status) => {
       return 'Traité';
     case 'closed':
       return 'Fermé';
-
   }
 };
-
-
 </script>
 
 <style scoped>

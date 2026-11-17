@@ -11,7 +11,6 @@
 </template>
 
 <script setup>
-
 import WorkdayAmplitudeGraph from '@/components/common/WorkdayAmplitudeGraph.vue';
 
 const testDays = ref([]);
@@ -44,7 +43,7 @@ const generateData = () => {
 
     const end = new Date(currentBase);
     // Using raw hours addition handles day overflow correctly
-    end.setHours(Math.floor(startH) + Math.floor(duration), ((startH % 1) * 60) + ((duration % 1) * 60));
+    end.setHours(Math.floor(startH) + Math.floor(duration), (startH % 1) * 60 + (duration % 1) * 60);
 
     // Random Name
     const type = Math.random() > 0.5 ? 'J' : 'S';
@@ -55,12 +54,11 @@ const generateData = () => {
       startDate: start.toISOString(),
       endDate: end.toISOString(),
       id: i,
-      name: name
+      name: name,
     });
   }
   testDays.value = arr;
 };
-
 
 onMounted(() => {
   generateData();

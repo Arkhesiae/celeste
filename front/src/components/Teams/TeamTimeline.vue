@@ -53,8 +53,8 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
  * bornes incluses, to null = sans fin). Les renforts se distinguent par la couleur ET par des hachures.
  */
 const props = defineProps({
-  rows: { type: Array, default: () => [] },                 // [{ key, label, badge?, segments }]
-  window: { type: Object, required: true },                 // { from, to }
+  rows: { type: Array, default: () => [] }, // [{ key, label, badge?, segments }]
+  window: { type: Object, required: true }, // { from, to }
   legend: { type: Boolean, default: true },
   emptyText: { type: String, default: 'Aucune période sur cette fenêtre.' },
 });
@@ -81,13 +81,15 @@ let observer;
 const root = ref(null);
 onMounted(() => {
   if (!root.value || typeof ResizeObserver === 'undefined') return;
-  observer = new ResizeObserver(([entry]) => { width.value = entry.contentRect.width; });
+  observer = new ResizeObserver(([entry]) => {
+    width.value = entry.contentRect.width;
+  });
   observer.observe(root.value);
 });
 onBeforeUnmount(() => observer?.disconnect());
 
 const monthTicks = computed(() => {
-  const wide = width.value >= 560;                           // assez de place pour « janv. » sinon la lettre
+  const wide = width.value >= 560; // assez de place pour « janv. » sinon la lettre
   const ticks = [];
   const first = new Date(`${props.window.from}T00:00:00Z`);
   const cursor = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth() + (first.getUTCDate() > 1 ? 1 : 0), 1));
@@ -105,40 +107,47 @@ const monthTicks = computed(() => {
 });
 
 // ── Lignes ──────────────────────────────────────────────────────────────────
-const fmt = (key) => new Date(`${key}T00:00:00Z`)
-  .toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+const fmt = (key) =>
+  new Date(`${key}T00:00:00Z`).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
 const KIND_LABEL = { permanent: 'Permanent', reinforcement: 'Renfort' };
 const periodText = (s) => (s.to ? `du ${fmt(s.from)} au ${fmt(s.to)}` : `à partir du ${fmt(s.from)}`);
 
-const preparedRows = computed(() => props.rows.map((row) => {
-  const bars = [];
-  for (const s of row.segments ?? []) {
-    const from = Math.max(dayOf(s.from), startDay.value);
-    const to = Math.min(s.to ? dayOf(s.to) : endDay.value, endDay.value);
-    if (to < from) continue;                                  // hors fenêtre
+const preparedRows = computed(() =>
+  props.rows.map((row) => {
+    const bars = [];
+    for (const s of row.segments ?? []) {
+      const from = Math.max(dayOf(s.from), startDay.value);
+      const to = Math.min(s.to ? dayOf(s.to) : endDay.value, endDay.value);
+      if (to < from) continue; // hors fenêtre
 
-    const left = pct(from);
-    const roundLeft = dayOf(s.from) >= startDay.value;        // bord plat quand le segment déborde de la fenêtre
-    const roundRight = s.to !== null && dayOf(s.to) <= endDay.value;
-    bars.push({
-      kind: s.kind,
-      title: `${KIND_LABEL[s.kind] ?? s.kind} · ${periodText(s)}`,
-      style: {
-        left: `${left}%`,
-        width: `${pct(to + 1) - left}%`,
-        borderRadius: `${roundLeft ? 7 : 0}px ${roundRight ? 7 : 0}px ${roundRight ? 7 : 0}px ${roundLeft ? 7 : 0}px`,
-      },
-    });
-  }
-  const summary = (row.segments ?? []).map((s) => `${KIND_LABEL[s.kind] ?? s.kind} ${periodText(s)}`).join(' ; ');
-  return {
-    key: row.key,
-    label: row.label,
-    badge: row.badge,
-    bars,
-    ariaLabel: `${row.label} : ${summary || 'aucune période'}`,
-  };
-}));
+      const left = pct(from);
+      const roundLeft = dayOf(s.from) >= startDay.value; // bord plat quand le segment déborde de la fenêtre
+      const roundRight = s.to !== null && dayOf(s.to) <= endDay.value;
+      bars.push({
+        kind: s.kind,
+        title: `${KIND_LABEL[s.kind] ?? s.kind} · ${periodText(s)}`,
+        style: {
+          left: `${left}%`,
+          width: `${pct(to + 1) - left}%`,
+          borderRadius: `${roundLeft ? 7 : 0}px ${roundRight ? 7 : 0}px ${roundRight ? 7 : 0}px ${roundLeft ? 7 : 0}px`,
+        },
+      });
+    }
+    const summary = (row.segments ?? []).map((s) => `${KIND_LABEL[s.kind] ?? s.kind} ${periodText(s)}`).join(' ; ');
+    return {
+      key: row.key,
+      label: row.label,
+      badge: row.badge,
+      bars,
+      ariaLabel: `${row.label} : ${summary || 'aucune période'}`,
+    };
+  }),
+);
 
 defineExpose({ keyOf });
 </script>
@@ -270,7 +279,11 @@ defineExpose({ keyOf });
 }
 
 .tl-swatch--reinforcement {
-  background: repeating-linear-gradient(135deg, rgb(var(--v-theme-secondary)) 0 4px, rgba(var(--v-theme-secondary), 0.45) 4px 7px);
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(var(--v-theme-secondary)) 0 4px,
+    rgba(var(--v-theme-secondary), 0.45) 4px 7px
+  );
 }
 
 .tl-swatch--past {

@@ -2,8 +2,8 @@
   <v-dialog v-model="isOpen" :fullscreen="smAndDown" max-width="800px">
     <v-card v-if="ticket" :rounded="smAndDown ? '' : 'xl'" class="pa-6">
       <v-card-title class="d-flex align-start pa-0 mb-4">
-        <div class="d-flex  flex-column  justify-start align-start">
-          <div class="d-flex align-center flex-wrap ga-1 ">
+        <div class="d-flex flex-column justify-start align-start">
+          <div class="d-flex align-center flex-wrap ga-1">
             <v-icon :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)" size="small" />
 
             <span class="text-truncate title">{{ ticket.title }}</span>
@@ -16,19 +16,14 @@
             </v-chip>
           </div>
 
-
           <div class="d-flex align-center">
-            <v-icon size="small" class="mr  -1">
-              mdi-identifier
-            </v-icon>
+            <v-icon size="small" class="mr -1"> mdi-identifier </v-icon>
             <span class="text-body-medium">{{ ticket._id.slice(-6) }}</span>
           </div>
           <!-- Date -->
           <div class="">
             <div class="d-flex align-center">
-              <v-icon size="x-small" class="mr-1">
-                mdi-clock-outline
-              </v-icon>
+              <v-icon size="x-small" class="mr-1"> mdi-clock-outline </v-icon>
               <span class="date">{{ formatDate(ticket.createdAt) }}</span>
             </div>
           </div>
@@ -39,8 +34,6 @@
             {{ getTicketTypeLabel(ticket.type) }}
           </v-chip>
 
-
-
           <div class="flex-0-0">
             <TicketStatus :ticket-id="ticket._id" :status="ticket.status" size="small" :prepend-icon="true" />
           </div>
@@ -49,13 +42,25 @@
 
       <!-- Actions (haut) -->
       <div class="d-flex justify-end ga-2 mb-4">
-        <v-btn v-if="ticket.archived" color="onSurface" variant="outlined" prepend-icon="mdi-archive-arrow-up"
-          size="small" @click="$emit('restore-ticket', ticket)">
+        <v-btn
+          v-if="ticket.archived"
+          color="onSurface"
+          variant="outlined"
+          prepend-icon="mdi-archive-arrow-up"
+          size="small"
+          @click="$emit('restore-ticket', ticket)"
+        >
           Restaurer
         </v-btn>
 
-        <v-btn v-if="!ticket.archived && ticket.status === 'closed'" color="onSurface" variant="outlined"
-          prepend-icon="mdi-archive" size="small" @click="$emit('archive-ticket', ticket)">
+        <v-btn
+          v-if="!ticket.archived && ticket.status === 'closed'"
+          color="onSurface"
+          variant="outlined"
+          prepend-icon="mdi-archive"
+          size="small"
+          @click="$emit('archive-ticket', ticket)"
+        >
           Archiver
         </v-btn>
       </div>
@@ -68,29 +73,34 @@
 
         <!-- Statut du ticket avec dropdown -->
 
-
         <!-- Chip "Réponse envoyée" -->
-
-
-
 
         <v-divider class="my-4" />
 
         <!-- Contenu du ticket -->
         <div class="text-title-small mb-2">Ticket</div>
-        <div class="bg-surfaceContainer pa-4 rounded-xl pre"
-          style="font-size: 0.75rem !important; line-height: 1.2 !important;">
+        <div
+          class="bg-surfaceContainer pa-4 rounded-xl pre"
+          style="font-size: 0.75rem !important; line-height: 1.2 !important"
+        >
           {{ ticket.content }}
         </div>
 
         <!-- Réponses -->
         <div v-if="ticket.replies && ticket.replies.length > 0" class="mt-6">
           <div class="d-flex flex-column ga-3">
-            <div v-for="(reply, index) in ticket.replies" :key="index" class="pa-6 rounded-xl"
-              :class="reply.isFromAdmin ? 'bg-surfaceContainerHigh ml-8' : 'bg-surfaceContainer mr-8'">
+            <div
+              v-for="(reply, index) in ticket.replies"
+              :key="index"
+              class="pa-6 rounded-xl"
+              :class="reply.isFromAdmin ? 'bg-surfaceContainerHigh ml-8' : 'bg-surfaceContainer mr-8'"
+            >
               <div class="d-flex align-center mb-2">
-                <v-icon :icon="reply.isFromAdmin ? 'mdi-star-four-points' : 'mdi-account-outline'" size="x-small"
-                  class="mr-2" />
+                <v-icon
+                  :icon="reply.isFromAdmin ? 'mdi-star-four-points' : 'mdi-account-outline'"
+                  size="x-small"
+                  class="mr-2"
+                />
                 <span class="text-body-small font-weight-medium">
                   {{ reply.isFromAdmin ? 'Administrateur' : 'Utilisateur' }}
                 </span>
@@ -99,8 +109,9 @@
                   {{ formatDate(reply.createdAt) }}
                 </span>
               </div>
-              <div class="text-body-medium pre" style="font-size: 0.75rem !important; line-height: 1.2 !important;">{{
-                reply.content }}</div>
+              <div class="text-body-medium pre" style="font-size: 0.75rem !important; line-height: 1.2 !important">
+                {{ reply.content }}
+              </div>
             </div>
           </div>
         </div>
@@ -108,21 +119,22 @@
         <!-- Bouton pour envoyer une réponse -->
         <div class="mt-4 d-flex justify-end">
           <v-spacer />
-          <v-btn size="small" color="surfaceContainerHighest" variant="flat" style="border-radius: 16px !important;"
-            @click="openReplyDialog">
-            <v-icon size="small">
-              mdi-reply-outline
-            </v-icon>
-            <span class="ml-2 font-weight-medium" style="font-size: 0.710rem !important;">Répondre</span>
+          <v-btn
+            size="small"
+            color="surfaceContainerHighest"
+            variant="flat"
+            style="border-radius: 16px !important"
+            @click="openReplyDialog"
+          >
+            <v-icon size="small"> mdi-reply-outline </v-icon>
+            <span class="ml-2 font-weight-medium" style="font-size: 0.71rem !important">Répondre</span>
           </v-btn>
         </div>
       </v-card-text>
 
       <v-card-actions class="pa-0 mt-8">
         <v-spacer />
-        <v-btn color="onSurface" variant="text" @click="$emit('close')">
-          Fermer
-        </v-btn>
+        <v-btn color="onSurface" variant="text" @click="$emit('close')"> Fermer </v-btn>
       </v-card-actions>
     </v-card>
 
@@ -151,32 +163,37 @@ const showReplyDialog = ref(false);
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
+    default: false,
   },
   ticketId: {
     type: String,
-    default: null
-  }
+    default: null,
+  },
 });
 
 const ticket = computed(() => {
-  return ticketStore.tickets.find(ticket => ticket._id === props.ticketId);
+  return ticketStore.tickets.find((ticket) => ticket._id === props.ticketId);
 });
 
-const emit = defineEmits(['update:modelValue', 'close', 'delete-ticket', 'mark-read', 'archive-ticket', 'restore-ticket']);
+const emit = defineEmits([
+  'update:modelValue',
+  'close',
+  'delete-ticket',
+  'mark-read',
+  'archive-ticket',
+  'restore-ticket',
+]);
 
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: (value) => emit('update:modelValue', value),
 });
 
 const ticketTypes = [
-  { title: 'Demande d\'assistance', value: 'assistance' },
+  { title: "Demande d'assistance", value: 'assistance' },
   { title: 'Signaler un bug', value: 'review' },
-  { title: 'Autre', value: 'other' }
+  { title: 'Autre', value: 'other' },
 ];
-
-
 
 const getTicketIcon = (type) => {
   switch (type) {
@@ -201,12 +218,9 @@ const getTicketColor = (type) => {
 };
 
 const getTicketTypeLabel = (type) => {
-  const found = ticketTypes.find(t => t.value === type);
+  const found = ticketTypes.find((t) => t.value === type);
   return found ? found.title : type;
 };
-
-
-
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', {
@@ -214,16 +228,13 @@ const formatDate = (date) => {
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
-
-
 
 const openReplyDialog = () => {
   showReplyDialog.value = true;
 };
-
 </script>
 
 <style scoped>
@@ -233,7 +244,6 @@ const openReplyDialog = () => {
 
 .title {
   font-size: 0.875rem !important;
-
 }
 
 .date {
@@ -249,10 +259,7 @@ const openReplyDialog = () => {
 
   .title {
     font-size: 0.805rem !important;
-
   }
-
-
 }
 
 .pre {

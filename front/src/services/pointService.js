@@ -3,65 +3,64 @@
  */
 import { apiFetch } from '../config/api';
 
-
 export const pointService = {
-/** 
- * Récupère les points de l'utilisateur
- * @param {string} id - L'ID de l'utilisateur
- * @returns {Promise<Object>} Les points de l'utilisateur
- */
+  /**
+   * Récupère les points de l'utilisateur
+   * @param {string} id - L'ID de l'utilisateur
+   * @returns {Promise<Object>} Les points de l'utilisateur
+   */
   getUserPoints: async (id) => {
-      const response = await apiFetch(`/user/${id}/points`, {
+    const response = await apiFetch(`/user/${id}/points`, {
       method: 'GET',
     });
-  return response;
+    return response;
   },
 
-/**
- * Effectue un transfert de points entre utilisateurs
- * @param {string} fromUserId - L'ID de l'utilisateur qui envoie les points
- * @param {string} toUserId - L'ID de l'utilisateur qui reçoit les points
- * @param {number} amount - Le montant des points à transférer
- * @param {string} description - Description optionnelle du transfert
- * @param {string} scheduledDate - Date prévue pour le virement différé (optionnel)
- * @returns {Promise<Object>} La transaction créée
- */
+  /**
+   * Effectue un transfert de points entre utilisateurs
+   * @param {string} fromUserId - L'ID de l'utilisateur qui envoie les points
+   * @param {string} toUserId - L'ID de l'utilisateur qui reçoit les points
+   * @param {number} amount - Le montant des points à transférer
+   * @param {string} description - Description optionnelle du transfert
+   * @param {string} scheduledDate - Date prévue pour le virement différé (optionnel)
+   * @returns {Promise<Object>} La transaction créée
+   */
   transferPoints: async (fromUserId, toUserId, amount, description = '', scheduledDate = null) => {
     const response = await apiFetch(`/user/${fromUserId}/points/transfer`, {
       method: 'POST',
       body: JSON.stringify({
-      toUserId,
-      amount,
-      description,
-      type: 'transfer',
-      scheduledDate
-    }),
-  });
-  return response;
+        toUserId,
+        amount,
+        description,
+        type: 'transfer',
+        scheduledDate,
+      }),
+    });
+    return response;
   },
 
-/**
- * Récupère l'historique des transactions d'un utilisateur
- * @param {string} userId - L'ID de l'utilisateur
- * @param {number} limit - Nombre maximum de transactions à récupérer
- * @returns {Promise<Array>} Liste des transactions
- */
+  /**
+   * Récupère l'historique des transactions d'un utilisateur
+   * @param {string} userId - L'ID de l'utilisateur
+   * @param {number} limit - Nombre maximum de transactions à récupérer
+   * @returns {Promise<Array>} Liste des transactions
+   */
   getTransactionHistory: async (userId, limit = 1000) => {
     const response = await apiFetch(`/user/${userId}/transactions?limit=${limit}`, {
       method: 'GET',
     });
     return response;
-      },
+  },
 
-/**
- * Récupère les transactions en attente d'un utilisateur
- * @param {string} userId - L'ID de l'utilisateur
- * @returns {Promise<Array>} Liste des transactions en attente
- */
+  /**
+   * Récupère les transactions en attente d'un utilisateur
+   * @param {string} userId - L'ID de l'utilisateur
+   * @returns {Promise<Array>} Liste des transactions en attente
+   */
   getPendingTransactions: async (userId) => {
     const response = await apiFetch(`/user/${userId}/transactions/pending`, {
       method: 'GET',
     });
     return response;
   },
-}; 
+};

@@ -1,25 +1,42 @@
 <template>
   <v-container class="pa-4">
     <MainTitle
-title="Historique des changements d'équipe" :back-button="true"
-      subtitle="Voir tous les changements d'équipe" />
+      title="Historique des changements d'équipe"
+      :back-button="true"
+      subtitle="Voir tous les changements d'équipe"
+    />
 
     <v-row class="ma-0">
       <div class="d-flex justify-center chip-container pa-2">
         <v-chip-group v-model="selectedChangeType" class="pa-0 ma-0 gap-2 d-flex justify-center">
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-medium" value="all" size="large" rounded="lg" color="primary"
-            variant="text">
+            class="pa-0 ma-0 mr-2 px-4 text-body-medium"
+            value="all"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
             Tous
           </v-chip>
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-medium" value="Changement" size="large" rounded="lg" color="primary"
-            variant="text">
+            class="pa-0 ma-0 mr-2 px-4 text-body-medium"
+            value="Changement"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
             Changements
           </v-chip>
           <v-chip
-class="pa-0 ma-0 px-4 text-body-medium" value="Renfort" size="large" rounded="lg" color="primary"
-            variant="text">
+            class="pa-0 ma-0 px-4 text-body-medium"
+            value="Renfort"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
             Renforts
           </v-chip>
         </v-chip-group>
@@ -35,43 +52,43 @@ class="pa-0 ma-0 px-4 text-body-medium" value="Renfort" size="large" rounded="lg
 
               <div v-else-if="filteredOccurrences.length > 0">
                 <v-card
-v-for="(occurrence, index) in filteredOccurrences" :key="index"
-                  :color="occurrence.status === 'pending' ? 'surfaceContainerHigh' : 'surfaceContainer'" flat
-                  rounded="lg" class="occurrence-item pa-4 d-flex justify-space-between align-center py-2 mb-2"
-                  :class="occurrence.status === 'pending' ? 'opacity-50' : ''">
+                  v-for="(occurrence, index) in filteredOccurrences"
+                  :key="index"
+                  :color="occurrence.status === 'pending' ? 'surfaceContainerHigh' : 'surfaceContainer'"
+                  flat
+                  rounded="lg"
+                  class="occurrence-item pa-4 d-flex justify-space-between align-center py-2 mb-2"
+                  :class="occurrence.status === 'pending' ? 'opacity-50' : ''"
+                >
                   <div class="d-flex align-center">
                     <v-icon :color="occurrence.type === 'Renfort' ? 'primary' : 'secondary'" class="mr-2">
                       {{ occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline' }}
                     </v-icon>
                     <div>
                       <div class="text-body-medium">
-                        {{ occurrence.type === 'Renfort' ? 'Renfort de' : 'Changement vers' }} l'équipe {{
-                        occurrence.teamName }}
+                        {{ occurrence.type === 'Renfort' ? 'Renfort de' : 'Changement vers' }} l'équipe
+                        {{ occurrence.teamName }}
                       </div>
                       <div class="text-body-small text-medium-emphasis">
                         <div v-if="occurrence.type === 'Renfort'">
-                          Du {{ formatDate(occurrenceDays(occurrence).from) }} au {{ formatDate(occurrenceDays(occurrence).to) }}
+                          Du {{ formatDate(occurrenceDays(occurrence).from) }} au
+                          {{ formatDate(occurrenceDays(occurrence).to) }}
                         </div>
-                        <div v-else>
-                          À partir du {{ formatDate(occurrenceDays(occurrence).from) }}
-                        </div>
+                        <div v-else>À partir du {{ formatDate(occurrenceDays(occurrence).from) }}</div>
                       </div>
                     </div>
                   </div>
                   <div v-if="occurrence.status === 'cancelled'">
                     <span class="text-body-small text-medium-emphasis mr-2">Annulé</span>
-                    <v-icon color="error" class="mr-2">
-                      mdi-close-circle-outline
-                    </v-icon>
+                    <v-icon color="error" class="mr-2"> mdi-close-circle-outline </v-icon>
                   </div>
                   <div
-v-else-if="occurrence.type === 'Renfort' && occurrenceDays(occurrence).to > todayKey()"
-                    class="text-body-small text-medium-emphasis">
+                    v-else-if="occurrence.type === 'Renfort' && occurrenceDays(occurrence).to > todayKey()"
+                    class="text-body-small text-medium-emphasis"
+                  >
                     En cours
                   </div>
-                  <div v-else class="text-body-small text-medium-emphasis">
-                    Effectué
-                  </div>
+                  <div v-else class="text-body-small text-medium-emphasis">Effectué</div>
                 </v-card>
               </div>
               <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
@@ -95,14 +112,15 @@ const selectedChangeType = ref('all');
 
 const occurrences = computed(() => {
   if (!teamStore.teamOccurrences?.allOccurrences) return [];
-  return teamStore.teamOccurrences.allOccurrences.filter(o => occurrenceDays(o).from <= todayKey());
+  return teamStore.teamOccurrences.allOccurrences.filter((o) => occurrenceDays(o).from <= todayKey());
 });
 const isLoading = computed(() => teamStore.isLoading);
 
 const filteredOccurrences = computed(() => {
-  const filtered = selectedChangeType.value === 'all'
-    ? occurrences.value
-    : occurrences.value.filter(o => o.type === selectedChangeType.value);
+  const filtered =
+    selectedChangeType.value === 'all'
+      ? occurrences.value
+      : occurrences.value.filter((o) => o.type === selectedChangeType.value);
 
   return filtered.sort((a, b) => {
     return (occurrenceDays(b).from ?? '').localeCompare(occurrenceDays(a).from ?? '');
@@ -113,11 +131,9 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
 };
-
-
 </script>
 
 <style scoped>

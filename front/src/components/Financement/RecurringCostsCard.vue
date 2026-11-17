@@ -1,31 +1,17 @@
 <template>
-  <v-card
-    rounded="xl"
-    elevation="0"
-    class="smooth-shadow pa-6"
-    color="surfaceContainerLow"
-  >
-    <div class="d-flex align-center justify-space-between mb-8"> 
+  <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainerLow">
+    <div class="d-flex align-center justify-space-between mb-8">
       <span
-        class="text-body-medium font-weight-medium "
-        style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;"
+        class="text-body-medium font-weight-medium"
+        style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem"
       >
-        <v-icon
-          icon="mdi-calendar-month"
-          color="secondary"
-          class="mr-2"
-          size="16"
-        />  
+        <v-icon icon="mdi-calendar-month" color="secondary" class="mr-2" size="16" />
         Coûts Récurrents
       </span>
     </div>
-  
+
     <v-list class="bg-transparent">
-      <v-list-item
-        v-for="(cout, index) in recurringCosts"
-        :key="index"
-        class="mb-2 rounded-lg"
-      >
+      <v-list-item v-for="(cout, index) in recurringCosts" :key="index" class="mb-2 rounded-lg">
         <div class="d-flex align-center ga-5">
           <v-icon
             :icon="cout.icon"
@@ -43,9 +29,7 @@
         </div>
         <template #append>
           <div class="text-right">
-            <div class="font-weight-bold">
-              {{ cout.cout }}€
-            </div>
+            <div class="font-weight-bold">{{ cout.cout }}€</div>
             <div class="text-body-small text-medium-emphasis">
               {{ cout.periodicite }}
             </div>
@@ -61,40 +45,20 @@
     <!-- Métriques importantes -->
   </v-card>
   <v-row class="my-16">
-    <v-col
-      cols="12"
-      md="6"
-    >
+    <v-col cols="12" md="6">
       <div class="text-center pa-4 rounded-xl bg-onBackground">
-        <v-icon
-          icon="mdi-account-group"
-          size="32"
-          class="mb-2"
-        />
+        <v-icon icon="mdi-account-group" size="32" class="mb-2" />
         <div class="text-title-large font-weight-bold">
           {{ userCount }}
         </div>
-        <div class="text-body-small">
-          Utilisateurs actifs
-        </div>
+        <div class="text-body-small">Utilisateurs actifs</div>
       </div>
     </v-col>
-    <v-col
-      cols="12"
-      md="6"
-    >
+    <v-col cols="12" md="6">
       <div class="text-center pa-4 rounded-xl bg-surfaceContainerHighest">
-        <v-icon
-          icon="mdi-currency-eur"
-          size="32"
-          class="mb-2"
-        />
-        <div class="text-title-large font-weight-bold">
-          {{ costPerUser }}€
-        </div>
-        <div class="text-body-small">
-          Coût par utilisateur/an
-        </div>
+        <v-icon icon="mdi-currency-eur" size="32" class="mb-2" />
+        <div class="text-title-large font-weight-bold">{{ costPerUser }}€</div>
+        <div class="text-body-small">Coût par utilisateur/an</div>
       </div>
     </v-col>
   </v-row>
@@ -104,31 +68,30 @@
 import { useFundingStore } from '@/stores/financementStore';
 import { useStatStore } from '@/stores/statStore';
 
-
-const costPercentage = computed(()=>(cout, totalAnnualCosts) => {
+const costPercentage = computed(() => (cout, totalAnnualCosts) => {
   if (!cout || !totalAnnualCosts) return 0;
-  const occurence = cout?.periodicite === 'mois' ? 12 : cout?.periodicite === 'annuel' ? 1 : cout?.periodicite === 'semestriel' ? 2 : 1;
-  const percentage = cout?.cout*occurence/totalAnnualCosts *100;
+  const occurence =
+    cout?.periodicite === 'mois' ? 12 : cout?.periodicite === 'annuel' ? 1 : cout?.periodicite === 'semestriel' ? 2 : 1;
+  const percentage = ((cout?.cout * occurence) / totalAnnualCosts) * 100;
 
-  return Math.min(1, Math.random()*.01 + 0.2 + percentage/100) ;
+  return Math.min(1, Math.random() * 0.01 + 0.2 + percentage / 100);
 });
 
 const fundingStore = useFundingStore();
 const statStore = useStatStore();
 
-const recurringCosts = computed(() => fundingStore.recurringCosts); 
+const recurringCosts = computed(() => fundingStore.recurringCosts);
 const totalAnnualCosts = computed(() => fundingStore.totalAnnualCosts);
 
-const costPerUser = computed(() => Math.round(totalAnnualCosts.value/statStore.totalUsers*100)/100);
+const costPerUser = computed(() => Math.round((totalAnnualCosts.value / statStore.totalUsers) * 100) / 100);
 
 const userCount = computed(() => statStore.totalUsers);
 
 const getStats = async () => {
   const response = await statStore.fetchStats();
-}
+};
 
 onMounted(() => {
   getStats();
-})
-
-</script> 
+});
+</script>

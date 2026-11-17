@@ -12,40 +12,66 @@
         <v-form ref="form" v-model="formValid">
           <!-- Type de modification -->
           <v-select
-v-model="modification.type" :items="modificationTypes" item-title="label" item-value="value"
-            label="Type de modification" :rules="[rules.required]" required @update:model-value="onTypeChange" />
+            v-model="modification.type"
+            :items="modificationTypes"
+            item-title="label"
+            item-value="value"
+            label="Type de modification"
+            :rules="[rules.required]"
+            required
+            @update:model-value="onTypeChange"
+          />
 
           <!-- Date -->
           <v-date-picker
-v-model="modification.date" :min="minDate" :max="maxDate" label="Date"
-            :rules="[rules.required]" required @update:model-value="onDateChange" />
+            v-model="modification.date"
+            :min="minDate"
+            :max="maxDate"
+            label="Date"
+            :rules="[rules.required]"
+            required
+            @update:model-value="onDateChange"
+          />
 
           <!-- Heures (optionnel selon le type) -->
           <div v-if="showTimeFields">
             <v-row>
               <v-col cols="6">
                 <v-text-field
-v-model="modification.startTime" label="Heure de début" type="time" :rules="timeRules"
-                  placeholder="HH:MM" />
+                  v-model="modification.startTime"
+                  label="Heure de début"
+                  type="time"
+                  :rules="timeRules"
+                  placeholder="HH:MM"
+                />
               </v-col>
               <v-col cols="6">
                 <v-text-field
-v-model="modification.endTime" label="Heure de fin" type="time" :rules="timeRules"
-                  placeholder="HH:MM" />
+                  v-model="modification.endTime"
+                  label="Heure de fin"
+                  type="time"
+                  :rules="timeRules"
+                  placeholder="HH:MM"
+                />
               </v-col>
             </v-row>
           </div>
 
           <!-- Commentaire -->
           <v-textarea
-v-model="modification.comment" label="Commentaire (optionnel)" :rules="[rules.maxLength]"
-            :maxlength="500" :counter="500" rows="3" auto-grow />
+            v-model="modification.comment"
+            label="Commentaire (optionnel)"
+            :rules="[rules.maxLength]"
+            :maxlength="500"
+            :counter="500"
+            rows="3"
+            auto-grow
+          />
 
           <!-- Avertissement sur les conflits -->
           <v-alert v-if="hasConflicts" type="warning" variant="tonal" class="mt-3">
             <strong>Attention :</strong> Vous avez des demandes de substitution ou êtes impliqué dans une substitution
-            pour cette date.
-            Les modifications de planning ne peuvent pas être créées dans ce cas.
+            pour cette date. Les modifications de planning ne peuvent pas être créées dans ce cas.
           </v-alert>
 
           <!-- Informations sur la modification -->
@@ -57,9 +83,7 @@ v-model="modification.comment" label="Commentaire (optionnel)" :rules="[rules.ma
 
       <v-card-actions class="pa-4">
         <v-spacer />
-        <v-btn color="grey" variant="text" :disabled="loading" @click="closeDialog">
-          Annuler
-        </v-btn>
+        <v-btn color="grey" variant="text" :disabled="loading" @click="closeDialog"> Annuler </v-btn>
         <v-btn color="primary" :loading="loading" :disabled="!formValid || hasConflicts" @click="submitModification">
           {{ submitButtonText }}
         </v-btn>
@@ -69,7 +93,6 @@ v-model="modification.comment" label="Commentaire (optionnel)" :rules="[rules.ma
 </template>
 
 <script setup>
-
 import { useDisplay, useDate } from 'vuetify';
 import { usePlanningModificationStore } from '@/stores/planningModificationStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -79,14 +102,10 @@ import { pickerDayKey } from '@/utils/dateKey';
 const props = defineProps({
   dialogVisible: { type: Boolean, required: true },
   date: { type: String },
-  centerId: { type: String }
+  centerId: { type: String },
 });
 
-const emit = defineEmits([
-  'onClose',
-  'onSubmit',
-  'update:dialogVisible'
-]);
+const emit = defineEmits(['onClose', 'onSubmit', 'update:dialogVisible']);
 
 // Stores et utilitaires
 const { smAndDown } = useDisplay();
@@ -108,30 +127,28 @@ const modification = ref({
   startTime: '',
   endTime: '',
   comment: '',
-  centerId: props.centerId || authStore.userData.centerId
+  centerId: props.centerId || authStore.userData.centerId,
 });
 
 // Types de modifications disponibles
 const modificationTypes = [
   { label: 'Absence', value: 'absence' },
   { label: 'Jour de congé', value: 'off_day' },
-  { label: 'Modification personnalisée', value: 'custom_modification' }
+  { label: 'Modification personnalisée', value: 'custom_modification' },
 ];
 
 // Règles de validation
 const rules = {
-  required: v => !!v || 'Ce champ est requis',
-  maxLength: v => !v || v.length <= 500 || 'Le commentaire ne peut pas dépasser 500 caractères'
+  required: (v) => !!v || 'Ce champ est requis',
+  maxLength: (v) => !v || v.length <= 500 || 'Le commentaire ne peut pas dépasser 500 caractères',
 };
 
-const timeRules = [
-  v => !v || /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v) || 'Format d\'heure invalide (HH:MM)'
-];
+const timeRules = [(v) => !v || /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(v) || "Format d'heure invalide (HH:MM)"];
 
 // Computed properties
 const isDialogVisible = computed({
   get: () => props.dialogVisible,
-  set: (value) => emit('update:dialogVisible', value)
+  set: (value) => emit('update:dialogVisible', value),
 });
 
 const dialogTitle = computed(() => {
@@ -173,17 +190,17 @@ const modificationInfo = computed(() => {
     case 'absence':
       return {
         type: 'info',
-        message: 'Une absence sera déclarée pour cette date. Vous ne serez pas disponible pour les substitutions.'
+        message: 'Une absence sera déclarée pour cette date. Vous ne serez pas disponible pour les substitutions.',
       };
     case 'off_day':
       return {
         type: 'info',
-        message: 'Un jour de congé sera déclaré pour cette date. Vous ne serez pas disponible pour les substitutions.'
+        message: 'Un jour de congé sera déclaré pour cette date. Vous ne serez pas disponible pour les substitutions.',
       };
     case 'custom_modification':
       return {
         type: 'info',
-        message: 'Une modification personnalisée sera créée. Vous pouvez spécifier des heures de début et de fin.'
+        message: 'Une modification personnalisée sera créée. Vous pouvez spécifier des heures de début et de fin.',
       };
     default:
       return null;
@@ -232,7 +249,7 @@ const resetForm = () => {
     startTime: '',
     endTime: '',
     comment: '',
-    centerId: props.centerId || authStore.userData.centerId
+    centerId: props.centerId || authStore.userData.centerId,
   };
   hasConflicts.value = false;
   if (form.value) {
@@ -248,14 +265,13 @@ const submitModification = async () => {
 
     const modificationData = {
       ...modification.value,
-      date: pickerDayKey(modification.value.date)
+      date: pickerDayKey(modification.value.date),
     };
 
     const newModification = await planningModificationStore.createModification(modificationData);
 
     emit('onSubmit', newModification);
     closeDialog();
-
   } catch (error) {
     console.error('Erreur lors de la création de la modification:', error);
     // L'erreur sera gérée par le store
@@ -265,18 +281,24 @@ const submitModification = async () => {
 };
 
 // Watchers
-watch(() => props.date, (newDate) => {
-  if (newDate) {
-    modification.value.date = newDate;
-    checkConflicts();
-  }
-});
+watch(
+  () => props.date,
+  (newDate) => {
+    if (newDate) {
+      modification.value.date = newDate;
+      checkConflicts();
+    }
+  },
+);
 
-watch(() => props.centerId, (newCenterId) => {
-  if (newCenterId) {
-    modification.value.centerId = newCenterId;
-  }
-});
+watch(
+  () => props.centerId,
+  (newCenterId) => {
+    if (newCenterId) {
+      modification.value.centerId = newCenterId;
+    }
+  },
+);
 
 // Lifecycle
 onMounted(() => {

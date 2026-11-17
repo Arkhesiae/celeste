@@ -1,14 +1,25 @@
 <template>
-  <DemandModal v-model="showDemandDetailsModal" :demand="selectedDemand" @handle-replacement="handleReplacement"
-    @handle-switch="handleSwitch" @cancel-demand="handleCancel" @withdraw-demand="handleWithdraw"
-    @update-demand="selectedDemand = $event" />
+  <DemandModal
+    v-model="showDemandDetailsModal"
+    :demand="selectedDemand"
+    @handle-replacement="handleReplacement"
+    @handle-switch="handleSwitch"
+    @cancel-demand="handleCancel"
+    @withdraw-demand="handleWithdraw"
+    @update-demand="selectedDemand = $event"
+  />
 
   <ConfirmationDialog v-model="showConfirmationDialog" :title="dialogTitle" :text="dialogText">
     <template #actions>
       <!-- Accept/Replace flow -->
       <template v-if="dialogOption === 'accept'">
-        <v-btn v-if="userHasShift && canSwitch" variant="tonal" rounded="xl" :loading="loading.confirm"
-          @click="handleConfirmSwitch">
+        <v-btn
+          v-if="userHasShift && canSwitch"
+          variant="tonal"
+          rounded="xl"
+          :loading="loading.confirm"
+          @click="handleConfirmSwitch"
+        >
           Permuter
         </v-btn>
         <v-btn color="primary" variant="flat" rounded="xl" :loading="loading.confirm" @click="handleConfirmAccept">
@@ -17,14 +28,26 @@
       </template>
 
       <!-- Switch flow -->
-      <v-btn v-else-if="dialogOption === 'switch'" color="primary" variant="flat" rounded="xl"
-        :loading="loading.confirm" @click="handleConfirmSwitch">
+      <v-btn
+        v-else-if="dialogOption === 'switch'"
+        color="primary"
+        variant="flat"
+        rounded="xl"
+        :loading="loading.confirm"
+        @click="handleConfirmSwitch"
+      >
         Permuter
       </v-btn>
 
       <!-- Cancel/Withdraw flow -->
-      <v-btn v-else-if="dialogOption === 'cancel' || dialogOption === 'withdraw'" color="primary" variant="flat"
-        rounded="xl" :loading="loading.confirm" @click="handleConfirmAction">
+      <v-btn
+        v-else-if="dialogOption === 'cancel' || dialogOption === 'withdraw'"
+        color="primary"
+        variant="flat"
+        rounded="xl"
+        :loading="loading.confirm"
+        @click="handleConfirmAction"
+      >
         {{ dialogOption === 'ca ncel' ? 'Supprimer' : 'Se désister' }}
       </v-btn>
     </template>

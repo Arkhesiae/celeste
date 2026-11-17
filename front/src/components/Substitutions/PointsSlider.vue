@@ -7,7 +7,9 @@
         <span class="text-body-medium font-weight-bold text-truncate">{{ label }}</span>
       </div>
       <div class="d-flex align-center ga-1 flex-shrink-0">
-        <span class="points-slider__value text-title-medium font-weight-bold" :class="{ 'text-error': excess }">{{ points }}</span>
+        <span class="points-slider__value text-title-medium font-weight-bold" :class="{ 'text-error': excess }">{{
+          points
+        }}</span>
         <LogoCopy />
       </div>
     </div>

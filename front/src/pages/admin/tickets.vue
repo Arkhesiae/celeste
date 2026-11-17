@@ -2,21 +2,41 @@
   <v-container>
     <MainTitle title="Tickets" :subtitle="`${ticketStore.unreadCount} ticket(s) non lu(s)`">
       <template #actions>
-        <div class="d-flex ga-2 align-center ">
+        <div class="d-flex ga-2 align-center">
           <div class="d-flex align-center ga-2 btn-group">
-            <v-btn value="active" size="small" color="surfaceContainer"
-              :class="activeView === 'active' ? 'btn-active' : ''" variant="flat" rounded="lg"
-              @click="activeView = 'active'">
+            <v-btn
+              value="active"
+              size="small"
+              color="surfaceContainer"
+              :class="activeView === 'active' ? 'btn-active' : ''"
+              variant="flat"
+              rounded="lg"
+              @click="activeView = 'active'"
+            >
               Actifs
             </v-btn>
-            <v-btn value="archived" size="small" :class="activeView === 'archived' ? 'btn-active' : ''" variant="flat"
-              color="surfaceContainer" rounded="lg" @click="activeView = 'archived'">
+            <v-btn
+              value="archived"
+              size="small"
+              :class="activeView === 'archived' ? 'btn-active' : ''"
+              variant="flat"
+              color="surfaceContainer"
+              rounded="lg"
+              @click="activeView = 'archived'"
+            >
               Archivés
             </v-btn>
           </div>
 
-          <v-btn prepend-icon="mdi-filter-variant" color="onBackground" rounded="lg" flat size="small" height="32"
-            @click="showFilters = !showFilters">
+          <v-btn
+            prepend-icon="mdi-filter-variant"
+            color="onBackground"
+            rounded="lg"
+            flat
+            size="small"
+            height="32"
+            @click="showFilters = !showFilters"
+          >
             Filtres
           </v-btn>
         </div>
@@ -31,20 +51,45 @@
             <div v-if="showFilters" class="mb-4">
               <v-row>
                 <v-col cols="12" sm="4" class="py-0">
-                  <v-select v-model="filters.type" :items="ticketTypes" label="Type de ticket" clearable
-                    variant="solo-filled" flat height="32" rounded="xl" density="comfortable" />
+                  <v-select
+                    v-model="filters.type"
+                    :items="ticketTypes"
+                    label="Type de ticket"
+                    clearable
+                    variant="solo-filled"
+                    flat
+                    height="32"
+                    rounded="xl"
+                    density="comfortable"
+                  />
                 </v-col>
                 <v-col cols="12" sm="4" class="py-0">
-                  <v-select v-model="filters.status" :items="[
-                    { title: 'Tous', value: 'all' },
-                    { title: 'En cours', value: 'in_progress' },
-                    { title: 'Traité', value: 'done' },
-                    { title: 'Fermé', value: 'closed' }
-                  ]" label="Statut" variant="solo-filled" flat rounded="xl" density="comfortable" />
+                  <v-select
+                    v-model="filters.status"
+                    :items="[
+                      { title: 'Tous', value: 'all' },
+                      { title: 'En cours', value: 'in_progress' },
+                      { title: 'Traité', value: 'done' },
+                      { title: 'Fermé', value: 'closed' },
+                    ]"
+                    label="Statut"
+                    variant="solo-filled"
+                    flat
+                    rounded="xl"
+                    density="comfortable"
+                  />
                 </v-col>
                 <v-col cols="12" sm="4" class="py-0">
-                  <v-text-field v-model="filters.search" label="Rechercher" prepend-inner-icon="mdi-magnify"
-                    variant="solo-filled" flat rounded="xl" density="comfortable" clearable />
+                  <v-text-field
+                    v-model="filters.search"
+                    label="Rechercher"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="solo-filled"
+                    flat
+                    rounded="xl"
+                    density="comfortable"
+                    clearable
+                  />
                 </v-col>
               </v-row>
             </div>
@@ -53,8 +98,13 @@
           <!-- Router view pour les sous-pages avec transition -->
           <router-view v-slot="{ Component, route }">
             <transition :name="route.meta.transition || 'fade'" mode="out-in">
-              <component :is="Component" :key="route.path" :filters="filters" :loading="ticketStore.loading"
-                @open-ticket="openTicketDetails" />
+              <component
+                :is="Component"
+                :key="route.path"
+                :filters="filters"
+                :loading="ticketStore.loading"
+                @open-ticket="openTicketDetails"
+              />
             </transition>
           </router-view>
         </v-card>
@@ -62,46 +112,38 @@
     </v-row>
 
     <!-- Dialog de détails du ticket -->
-    <TicketDetails v-model="ticketDialog" :ticket-id="selectedTicket?._id" @close="ticketDialog = false"
-      @delete-ticket="confirmDelete" @archive-ticket="handleArchive" @restore-ticket="handleRestore" />
+    <TicketDetails
+      v-model="ticketDialog"
+      :ticket-id="selectedTicket?._id"
+      @close="ticketDialog = false"
+      @delete-ticket="confirmDelete"
+      @archive-ticket="handleArchive"
+      @restore-ticket="handleRestore"
+    />
 
     <!-- Dialog de confirmation de suppression -->
     <v-dialog v-model="deleteDialog" max-width="400px">
       <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">
-          Confirmer la suppression
-        </v-card-title>
-        <v-card-text class="pa-0">
-          Êtes-vous sûr de vouloir supprimer ce ticket ?
-        </v-card-text>
+        <v-card-title class="pa-0"> Confirmer la suppression </v-card-title>
+        <v-card-text class="pa-0"> Êtes-vous sûr de vouloir supprimer ce ticket ? </v-card-text>
         <v-card-actions class="pa-0">
           <v-spacer />
-          <v-btn color="grey" variant="text" @click="deleteDialog = false">
-            Annuler
-          </v-btn>
-          <v-btn color="error" :loading="deleting" @click="confirmDeleteAction">
-            Supprimer
-          </v-btn>
+          <v-btn color="grey" variant="text" @click="deleteDialog = false"> Annuler </v-btn>
+          <v-btn color="error" :loading="deleting" @click="confirmDeleteAction"> Supprimer </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
 </template>
 
-
-
 <script setup>
-
 definePage({
   name: 'tickets',
   path: '/admin/tickets',
   meta: {
-    layout: 'alternative'
-  }
-})
-
-
-
+    layout: 'alternative',
+  },
+});
 
 import { useTicketStore } from '@/stores/ticketStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -114,7 +156,7 @@ const router = useRouter();
 const route = useRoute();
 const snackbarStore = useSnackbarStore();
 
-console.log(route.meta)
+console.log(route.meta);
 
 // États
 const ticketDialog = ref(false);
@@ -128,13 +170,13 @@ const activeView = ref('active');
 const filters = ref({
   type: null,
   status: 'all',
-  search: ''
+  search: '',
 });
 
 const ticketTypes = [
-  { title: 'Demande d\'assistance', value: 'assistance' },
+  { title: "Demande d'assistance", value: 'assistance' },
   { title: 'Signaler un bug', value: 'review' },
-  { title: 'Autre', value: 'other' }
+  { title: 'Autre', value: 'other' },
 ];
 
 // Méthodes
@@ -182,7 +224,11 @@ const handleArchive = async (ticket) => {
     snackbarStore.showNotification('Ticket archivé', 'success', 'mdi-archive');
     ticketDialog.value = false;
   } catch (error) {
-    snackbarStore.showNotification(error.message || 'Erreur lors de l\'archivage du ticket', 'error', 'mdi-alert-circle');
+    snackbarStore.showNotification(
+      error.message || "Erreur lors de l'archivage du ticket",
+      'error',
+      'mdi-alert-circle',
+    );
   }
 };
 
@@ -192,7 +238,11 @@ const handleRestore = async (ticket) => {
     snackbarStore.showNotification('Ticket restauré', 'success', 'mdi-archive-arrow-up');
     ticketDialog.value = false;
   } catch (error) {
-    snackbarStore.showNotification(error.message || 'Erreur lors de la restauration du ticket', 'error', 'mdi-alert-circle');
+    snackbarStore.showNotification(
+      error.message || 'Erreur lors de la restauration du ticket',
+      'error',
+      'mdi-alert-circle',
+    );
   }
 };
 
@@ -229,16 +279,13 @@ onMounted(async () => {
   gap: 8px;
   padding: 4px;
   border-radius: 12px;
-  background-color: rgba(var(--v-theme-surfaceContainer), .5);
+  background-color: rgba(var(--v-theme-surfaceContainer), 0.5);
 }
 
 .btn-active {
   background-color: rgba(var(--v-theme-surfaceContainerHighest), 1) !important;
   box-sizing: border-box;
-
 }
-
-
 
 /* Transition pour le router-view */
 .fade-enter-active,

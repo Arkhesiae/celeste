@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-;
 import { pointService } from '@/services/pointService';
 import { useAuthStore } from './authStore';
 
@@ -26,7 +25,7 @@ export const usePointStore = defineStore('points', () => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -52,7 +51,7 @@ export const usePointStore = defineStore('points', () => {
     try {
       isLoading.value = true;
       const data = await pointService.getTransactionHistory(authStore.userData.userId);
-      transactions.value = data.map(t => ({
+      transactions.value = data.map((t) => ({
         flow: t.sender._id === authStore.userData.userId ? 'sent' : 'received',
         amount: t.amount,
         status: t.status,
@@ -61,7 +60,10 @@ export const usePointStore = defineStore('points', () => {
         date: formatDate(t.createdAt),
         effectiveDate: formatDate(t.effectiveDate),
         userId: t.sender._id === authStore.userData.userId ? t.receiver?._id : t.sender?._id,
-        userName: t.sender._id === authStore.userData.userId ? t.receiver?.name + ' ' + t.receiver?.lastName : t.sender?.name + ' ' + t.sender?.lastName
+        userName:
+          t.sender._id === authStore.userData.userId
+            ? t.receiver?.name + ' ' + t.receiver?.lastName
+            : t.sender?.name + ' ' + t.sender?.lastName,
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions:', error);
@@ -77,11 +79,11 @@ export const usePointStore = defineStore('points', () => {
     try {
       isLoadingPending.value = true;
       const data = await pointService.getPendingTransactions(authStore.userData.userId);
-      pendingTransactions.value = data.map(t => ({
+      pendingTransactions.value = data.map((t) => ({
         amount: t.amount,
         description: t.description || 'Transaction en attente',
         date: formatDate(t.createdAt),
-        user: t.sender._id === authStore.userData.userId ? t.receiver?.name : t.sender?.name
+        user: t.sender._id === authStore.userData.userId ? t.receiver?.name : t.sender?.name,
       }));
     } catch (error) {
       console.error('Erreur lors de la récupération des transactions en attente:', error);
@@ -105,19 +107,16 @@ export const usePointStore = defineStore('points', () => {
   };
 
   const pendingTransactions = computed(() => {
-    return transactions.value.filter(t => t.status === 'pending');
+    return transactions.value.filter((t) => t.status === 'pending');
   });
 
   const processedTransactions = computed(() => {
-    return transactions.value.filter(t => t.status === 'completed');
+    return transactions.value.filter((t) => t.status === 'completed');
   });
-
-
 
   const emptyStore = () => {
     points.value = [];
     transactions.value = [];
-
   };
 
   return {
@@ -134,6 +133,6 @@ export const usePointStore = defineStore('points', () => {
     fetchUserPoints,
     fetchTransactions,
     fetchPendingTransactions,
-    emptyStore
+    emptyStore,
   };
-}); 
+});

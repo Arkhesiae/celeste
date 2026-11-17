@@ -1,7 +1,10 @@
 <template>
   <v-dialog
-v-model="localDialogVisible" :fullscreen="smAndDown" max-width="900px"
-    @update:model-value="handleDialogClose">
+    v-model="localDialogVisible"
+    :fullscreen="smAndDown"
+    max-width="900px"
+    @update:model-value="handleDialogClose"
+  >
     <v-card rounded="xl" elevation="0" class="pa-6">
       <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
         <v-card-title>
@@ -13,15 +16,24 @@ v-model="localDialogVisible" :fullscreen="smAndDown" max-width="900px"
       </v-card-item>
 
       <v-card-text class="pa-0 my-4 ma-0">
-        <span class="text-body-small">Les changements suivants seront appliqués au tour de service. En conséquence, les
-          vacations pendant cette période seront converties de la façon suivante :</span>
+        <span class="text-body-small"
+          >Les changements suivants seront appliqués au tour de service. En conséquence, les vacations pendant cette
+          période seront converties de la façon suivante :</span
+        >
 
         <v-alert
-v-if="pendingActivation.changes?.length > 1" type="info" variant="tonal" class="my-3"
-          density="compact">
+          v-if="pendingActivation.changes?.length > 1"
+          type="info"
+          variant="tonal"
+          class="my-3"
+          density="compact"
+        >
           <v-progress-linear
-:model-value="(changeIndex / totalChangesCount) * 100" color="primary" height="8"
-            rounded />
+            :model-value="(changeIndex / totalChangesCount) * 100"
+            color="primary"
+            height="8"
+            rounded
+          />
           <div class="d-flex justify-space-between mt-2">
             <span class="text-body-small">Approuvé: {{ changeIndex }} / {{ totalChangesCount }}</span>
             <span class="text-body-small">Restants: {{ totalChangesCount - changeIndex }}</span>
@@ -63,22 +75,32 @@ v-if="pendingActivation.changes?.length > 1" type="info" variant="tonal" class="
                     <div v-for="daySlot in maxRotationDays(currentChange)" :key="daySlot">
                       <div class="d-flex align-center justify-center">
                         <v-chip
-color="onBackground" size="x-small" rounded="xl"
-                          :variant="daySlot <= rotationDays(currentChange.oldRule).length ? 'flat' : 'tonal'">
+                          color="onBackground"
+                          size="x-small"
+                          rounded="xl"
+                          :variant="daySlot <= rotationDays(currentChange.oldRule).length ? 'flat' : 'tonal'"
+                        >
                           <template v-if="daySlot <= rotationDays(currentChange.oldRule).length">
-                            {{ rotationDays(currentChange.oldRule)[(daySlot - 1) %
-                              rotationDays(currentChange.oldRule).length]?.name }}
+                            {{
+                              rotationDays(currentChange.oldRule)[
+                                (daySlot - 1) % rotationDays(currentChange.oldRule).length
+                              ]?.name
+                            }}
                           </template>
-                          <template v-else>
-                            Empty
-                          </template>
+                          <template v-else> Empty </template>
                         </v-chip>
                         <v-icon icon="mdi-arrow-right" size="12" color="onBackground" />
                         <v-chip
-color="onBackground" size="x-small" rounded="xl"
-                          :variant="daySlot <= rotationDays(currentChange.newRule).length ? 'flat' : 'tonal'">
-                          {{ rotationDays(currentChange.newRule)[(daySlot - 1) %
-                            rotationDays(currentChange.newRule).length]?.name }}
+                          color="onBackground"
+                          size="x-small"
+                          rounded="xl"
+                          :variant="daySlot <= rotationDays(currentChange.newRule).length ? 'flat' : 'tonal'"
+                        >
+                          {{
+                            rotationDays(currentChange.newRule)[
+                              (daySlot - 1) % rotationDays(currentChange.newRule).length
+                            ]?.name
+                          }}
                         </v-chip>
                       </div>
                     </div>
@@ -87,39 +109,48 @@ color="onBackground" size="x-small" rounded="xl"
               </v-col>
             </v-row>
             <v-chip
-v-if="differentLength(currentChange)" color="error" variant="tonal" class="" size="x-small"
-              rounded="xl">
+              v-if="differentLength(currentChange)"
+              color="error"
+              variant="tonal"
+              class=""
+              size="x-small"
+              rounded="xl"
+            >
               Nombre de jours différent
             </v-chip>
 
             <div
-v-if="differentLength(currentChange)" class="d-flex align-center justify-center ga-2 my-2"
-              style="font-size: 11px !important;  ">
+              v-if="differentLength(currentChange)"
+              class="d-flex align-center justify-center ga-2 my-2"
+              style="font-size: 11px !important"
+            >
               Lorsqu'un tour de service ne comporte pas le même nombre de jours que le précédent, les demandes de
-              remplacement et
-              permutations pendant la période concernée seront pas converties et seront annulées. De plus, il est
-              possible que les
-              équipes n'apparaissent pas avec les bonnes vacations. Ce cas de figure très rare est déconseillé, doit
-              être évité si
-              possible.
+              remplacement et permutations pendant la période concernée seront pas converties et seront annulées. De
+              plus, il est possible que les équipes n'apparaissent pas avec les bonnes vacations. Ce cas de figure très
+              rare est déconseillé, doit être évité si possible.
             </div>
-            <div v-else class="d-flex align-center justify-center ga-2 my-2" style="font-size: 11px !important;  ">
+            <div v-else class="d-flex align-center justify-center ga-2 my-2" style="font-size: 11px !important">
               Les demandes de remplacement et permutations dans la période concernée seront également converties en
-              conséquence
-              selon le schéma ci-dessus
+              conséquence selon le schéma ci-dessus
             </div>
 
-            <div class="d-flex align-center justify-center ga-2 my-2" style="font-size: 11px !important;  ">
+            <div class="d-flex align-center justify-center ga-2 my-2" style="font-size: 11px !important">
               <v-chip
-v-if="currentChange.demandsToConvert?.length > 0"
-                :color="differentLength(currentChange) ? 'error' : 'remplacement'" variant="tonal" rounded="xl">
+                v-if="currentChange.demandsToConvert?.length > 0"
+                :color="differentLength(currentChange) ? 'error' : 'remplacement'"
+                variant="tonal"
+                rounded="xl"
+              >
                 <div class="d-flex align-center ga-1 font-weight-bold">
                   <v-icon
-:icon="differentLength(currentChange) ? 'mdi-alert-outline' : 'mdi-swap-horizontal'"
-                    size="small" :color="differentLength(currentChange) ? 'error' : 'remplacement'" />
-                  <span class="text-body-small font-weight-bold">{{ currentChange.demandsToConvert.length }} demandes de
-                    remplacement
-                    et permutations seront {{ differentLength(currentChange) ? 'annulées' : 'converties' }}</span>
+                    :icon="differentLength(currentChange) ? 'mdi-alert-outline' : 'mdi-swap-horizontal'"
+                    size="small"
+                    :color="differentLength(currentChange) ? 'error' : 'remplacement'"
+                  />
+                  <span class="text-body-small font-weight-bold"
+                    >{{ currentChange.demandsToConvert.length }} demandes de remplacement et permutations seront
+                    {{ differentLength(currentChange) ? 'annulées' : 'converties' }}</span
+                  >
                 </div>
               </v-chip>
               <v-chip v-else color="surfaceContainerHigh" variant="flat" rounded="xl">
@@ -134,44 +165,40 @@ v-if="currentChange.demandsToConvert?.length > 0"
 
         <v-card class="pa-0 my-4" flat elevation="0" color="transparent">
           <div
-class="d-flex align-center justify-center rounded-xl pa-4 "
-            style="font-size: 12px !important;  background-color: rgba(var(--v-theme-primary), 0.1);">
-            <span class="text-primary"> Des erreurs de compatibilités peuvent parfois apparaitre si les demandes ne
-              sont
-              pas compatibles avec le nouveau tour de service au regard de l'arrêté 2024, il est donc conseillé de
-              vérifier les
-              demandes après la confirmation</span>
+            class="d-flex align-center justify-center rounded-xl pa-4"
+            style="font-size: 12px !important; background-color: rgba(var(--v-theme-primary), 0.1)"
+          >
+            <span class="text-primary">
+              Des erreurs de compatibilités peuvent parfois apparaitre si les demandes ne sont pas compatibles avec le
+              nouveau tour de service au regard de l'arrêté 2024, il est donc conseillé de vérifier les demandes après
+              la confirmation</span
+            >
           </div>
         </v-card>
       </v-card-text>
 
       <v-card-actions class="pa-0">
-        <v-btn color="secondary" variant="outlined" @click="handleCancel">
-          Annuler
-        </v-btn>
+        <v-btn color="secondary" variant="outlined" @click="handleCancel"> Annuler </v-btn>
         <v-spacer />
 
         <div class="d-flex align-center ga-2">
           <v-btn v-if="changeIndex > 0" color="secondary" variant="text" size="small" @click="handlePreviousChange">
-            <v-icon start>
-              mdi-chevron-left
-            </v-icon>
+            <v-icon start> mdi-chevron-left </v-icon>
             Précédent
           </v-btn>
 
           <v-btn
-v-if="changeIndex < totalChangesCount - 1" color="primary" variant="elevated"
-            :disabled="!currentChange" @click="approveChange">
+            v-if="changeIndex < totalChangesCount - 1"
+            color="primary"
+            variant="elevated"
+            :disabled="!currentChange"
+            @click="approveChange"
+          >
             Accepter
           </v-btn>
 
-
-          <v-btn
-v-if="changeIndex === totalChangesCount - 1" color="primary" variant="tonal"
-            @click="handleConfirm">
-            <v-icon start>
-              mdi-check
-            </v-icon>
+          <v-btn v-if="changeIndex === totalChangesCount - 1" color="primary" variant="tonal" @click="handleConfirm">
+            <v-icon start> mdi-check </v-icon>
             Confirmer tous les changements
           </v-btn>
         </div>
@@ -181,7 +208,6 @@ v-if="changeIndex === totalChangesCount - 1" color="primary" variant="tonal"
 </template>
 
 <script setup>
-
 import formatDate from '@/utils/formatDate';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useDisplay } from 'vuetify';
@@ -202,18 +228,15 @@ const props = defineProps({
   },
 });
 
-
 const changeIndex = ref(0);
 
 const localDialogVisible = computed({
   get: () => props.dialogVisible,
-  set: (value) => emit("update:dialogVisible", value),
+  set: (value) => emit('update:dialogVisible', value),
 });
 
 // Computed properties
 const totalChangesCount = computed(() => props.pendingActivation?.changes?.length || 0);
-
-
 
 const currentChange = computed(() => {
   if (!props.pendingActivation?.changes || props.pendingActivation.changes.length === 0) {
@@ -223,12 +246,12 @@ const currentChange = computed(() => {
 });
 
 const rotationName = (rotationId) => {
-  const rotation = rotationStore.rotations.find(rotation => rotation._id === rotationId);
+  const rotation = rotationStore.rotations.find((rotation) => rotation._id === rotationId);
   return rotation?.name || '';
 };
 
 const rotationDays = (rotationId) => {
-  const rotation = rotationStore.rotations.find(rotation => rotation._id === rotationId);
+  const rotation = rotationStore.rotations.find((rotation) => rotation._id === rotationId);
   return rotation?.days || [];
 };
 
@@ -239,7 +262,6 @@ const differentLength = (change) => {
 const maxRotationDays = (change) => {
   return Math.max(rotationDays(change.oldRule).length, rotationDays(change.newRule).length);
 };
-
 
 const approveChange = () => {
   changeIndex.value++;
@@ -259,8 +281,6 @@ const handleConfirm = () => {
   }
 };
 
-
-
 const handlePreviousChange = () => {
   if (changeIndex.value > 0) {
     changeIndex.value--;
@@ -273,17 +293,20 @@ const handleDialogClose = (value) => {
   }
 };
 
-watch(() => props.pendingActivation?.changes, (changes) => {
-  changeIndex.value = 0;
-
-}, { immediate: true });
-
-watch(() => props.dialogVisible, (visible) => {
-  if (visible) {
+watch(
+  () => props.pendingActivation?.changes,
+  (changes) => {
     changeIndex.value = 0;
+  },
+  { immediate: true },
+);
 
-
-
-  }
-});
+watch(
+  () => props.dialogVisible,
+  (visible) => {
+    if (visible) {
+      changeIndex.value = 0;
+    }
+  },
+);
 </script>

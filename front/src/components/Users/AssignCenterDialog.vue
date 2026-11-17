@@ -1,28 +1,29 @@
 <template>
   <v-dialog :model-value="dialogVisible" max-width="500" @update:model-value="$emit('update:dialogVisible', $event)">
     <v-card class="pa-6" rounded="xl">
-      <v-card-title class="pa-0 ma-0 mb-4">
-        Changement de centre
-      </v-card-title>
+      <v-card-title class="pa-0 ma-0 mb-4"> Changement de centre </v-card-title>
       <v-card-text class="pa-0 ma-0">
         <v-select
-v-model="selectedCenter" rounded="lg" :items="centers" :reduce="center => center._id"
-          item-title="name" item-value="_id" variant="outlined" label="Sélectionner un centre" dense />
+          v-model="selectedCenter"
+          rounded="lg"
+          :items="centers"
+          :reduce="(center) => center._id"
+          item-title="name"
+          item-value="_id"
+          variant="outlined"
+          label="Sélectionner un centre"
+          dense
+        />
       </v-card-text>
       <v-card-actions class="pa-0 ma-0">
-        <v-btn text @click="$emit('update:dialogVisible', false)">
-          Annuler
-        </v-btn>
-        <v-btn text @click="handleAssignCenter">
-          Assigner
-        </v-btn>
+        <v-btn text @click="$emit('update:dialogVisible', false)"> Annuler </v-btn>
+        <v-btn text @click="handleAssignCenter"> Assigner </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-
 import { useCenterStore } from '@/stores/centerStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useUserStore } from '@/stores/userStore';
@@ -33,12 +34,12 @@ const snackbarStore = useSnackbarStore();
 const props = defineProps({
   dialogVisible: {
     type: Boolean,
-    required: true
+    required: true,
   },
   userId: {
     type: String,
-    default: null
-  }
+    default: null,
+  },
 });
 
 const emit = defineEmits(['update:dialogVisible', 'centerAssigned']);
@@ -46,14 +47,18 @@ const emit = defineEmits(['update:dialogVisible', 'centerAssigned']);
 const selectedCenter = ref(null);
 
 const centers = computed(() => centerStore.centers);
-const user = computed(() => userStore.users.find(user => user._id === props.userId) || null);
+const user = computed(() => userStore.users.find((user) => user._id === props.userId) || null);
 
 // Réinitialiser la sélection quand l'utilisateur change
-watch(() => props.userId, (newUserId) => {
-  if (newUserId) {
-    selectedCenter.value = user.value?.centerId;
-  }
-}, { immediate: true });
+watch(
+  () => props.userId,
+  (newUserId) => {
+    if (newUserId) {
+      selectedCenter.value = user.value?.centerId;
+    }
+  },
+  { immediate: true },
+);
 
 const handleAssignCenter = async () => {
   if (!selectedCenter.value || !user.value) return;
@@ -61,13 +66,13 @@ const handleAssignCenter = async () => {
   try {
     emit('centerAssigned', {
       userId: user.value._id,
-      centerId: selectedCenter.value
+      centerId: selectedCenter.value,
     });
     emit('update:dialogVisible', false);
     snackbarStore.showNotification('Centre assigné', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Error assigning center:', error);
-    snackbarStore.showNotification('Erreur lors de l\'assignation du centre', 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification("Erreur lors de l'assignation du centre", 'onError', 'mdi-alert-circle');
   }
 };
 </script>

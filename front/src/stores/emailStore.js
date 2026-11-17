@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-;
 import { useSnackbarStore } from './snackbarStore';
 import { emailService } from '@/services/emailService.js';
 
@@ -18,7 +17,6 @@ export const useEmailStore = defineStore('email', () => {
 
   // Getters
 
-
   const totalEmailsSent = computed(() => {
     return emailHistory.value.reduce((total, item) => total + (item.results?.sent || 0), 0);
   });
@@ -27,10 +25,7 @@ export const useEmailStore = defineStore('email', () => {
     return emailHistory.value.reduce((total, item) => total + (item.results?.failed || 0), 0);
   });
 
-  // Méthodes utilitaires 
-
-
-
+  // Méthodes utilitaires
 
   const fetchUserCount = async () => {
     try {
@@ -60,7 +55,7 @@ export const useEmailStore = defineStore('email', () => {
         message: announcementData.message,
         sentAt: new Date(),
         results: data.results,
-        testMode: announcementData.testMode
+        testMode: announcementData.testMode,
       });
 
       // Notification de succès
@@ -84,7 +79,7 @@ export const useEmailStore = defineStore('email', () => {
       const data = await emailService.getHistory();
       emailHistory.value = data.history || data;
     } catch (error) {
-      console.error('Erreur lors du chargement de l\'historique:', error);
+      console.error("Erreur lors du chargement de l'historique:", error);
       throw error;
     } finally {
       loading.value = false;
@@ -93,10 +88,7 @@ export const useEmailStore = defineStore('email', () => {
 
   const initializeStore = async () => {
     try {
-      await Promise.all([
-        fetchUserCount(),
-        fetchEmailHistory()
-      ]);
+      await Promise.all([fetchUserCount(), fetchEmailHistory()]);
     } catch (error) {
       console.error(error);
     }
@@ -131,6 +123,6 @@ export const useEmailStore = defineStore('email', () => {
     sendAnnouncement,
     fetchEmailHistory,
     initializeStore,
-    resetStore
+    resetStore,
   };
-}); 
+});

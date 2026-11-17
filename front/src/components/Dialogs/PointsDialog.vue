@@ -1,43 +1,42 @@
 <script setup>
 const modelValue = defineModel({
   type: Boolean,
-  required: true
+  required: true,
 });
 
 const props = defineProps({
   title: {
     type: String,
-    default: 'Modifier les points'
+    default: 'Modifier les points',
   },
   points: {
     type: Number,
-    required: true
+    required: true,
   },
   switch: {
     type: Object,
-
-  }
+  },
 });
 
-const emit = defineEmits([
-  'update:points'
-]);
+const emit = defineEmits(['update:points']);
 
 const localPoints = ref(props.points || 0);
 
-
-watch(() => props.points, (newValue) => {
-  localPoints.value = newValue || 0;
-});
+watch(
+  () => props.points,
+  (newValue) => {
+    localPoints.value = newValue || 0;
+  },
+);
 
 const rules = {
-  points: v => {
+  points: (v) => {
     if (v === '' || v === null || v === undefined) return 'Veuillez saisir un nombre';
     const num = parseInt(v);
     if (isNaN(num)) return 'Veuillez saisir un nombre valide';
     if (num < 0) return 'Les points doivent être positifs';
     return true;
-  }
+  },
 };
 
 const formValid = computed(() => {
@@ -70,14 +69,18 @@ const cancel = () => {
       <div>
         <div class="mb-4 d-flex align-center ga-2">
           <v-icon icon="mdi-swap-horizontal" size="16" class="opacity-70" />
-          <p class="text-body-medium font-weight-medium">
-            Permutation avec {{ props.switch.name }}
-          </p>
+          <p class="text-body-medium font-weight-medium">Permutation avec {{ props.switch.name }}</p>
         </div>
 
         <v-form>
-          <v-text-field v-model="localPoints" :min="0" :rules="[rules.points]" variant="underlined"
-            bg-color="transparent" class="big-number-input">
+          <v-text-field
+            v-model="localPoints"
+            :min="0"
+            :rules="[rules.points]"
+            variant="underlined"
+            bg-color="transparent"
+            class="big-number-input"
+          >
             <template #default />
           </v-text-field>
         </v-form>
@@ -85,13 +88,9 @@ const cancel = () => {
     </template>
 
     <template #footer>
-      <div class="d-flex justify-space-between ">
-        <v-btn variant="text" rounded="xl" @click="cancel">
-          Annuler
-        </v-btn>
-        <v-btn variant="flat" rounded="xl" :disabled="!formValid" @click="savePoints">
-          Sauvegarder
-        </v-btn>
+      <div class="d-flex justify-space-between">
+        <v-btn variant="text" rounded="xl" @click="cancel"> Annuler </v-btn>
+        <v-btn variant="flat" rounded="xl" :disabled="!formValid" @click="savePoints"> Sauvegarder </v-btn>
       </div>
     </template>
   </GenericDialog>

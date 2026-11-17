@@ -1,6 +1,10 @@
 <template>
-  <div v-if="!smAndDown" class="d-flex align-center justify-space-between mb-4" :class="smAndDown ? 'mx-auto' : ''"
-    :style="smAndDown ? 'max-width : 600px' : ''">
+  <div
+    v-if="!smAndDown"
+    class="d-flex align-center justify-space-between mb-4"
+    :class="smAndDown ? 'mx-auto' : ''"
+    :style="smAndDown ? 'max-width : 600px' : ''"
+  >
     <div class="d-flex align-center">
       <div class="d-flex align-center bg-surfaceContainerHighest rounded-lg pa-2 px-4">
         <span class="text-body-medium font-weight-medium mb-0">
@@ -16,11 +20,20 @@
     </div>
 
     <div class="d-flex align-center">
-      <v-btn-toggle :model-value="selectionMode" mandatory divided density="comfortable" variant="outlined" rounded="lg"
-      color="primary" aria-label="Mode de sélection" @update:model-value="emit('update:selectionMode', $event)">
-      <v-btn value="day" size="small" prepend-icon="mdi-calendar-today">Jour</v-btn>
-      <v-btn value="period" size="small" prepend-icon="mdi-calendar-range">Période</v-btn>
-    </v-btn-toggle>
+      <v-btn-toggle
+        :model-value="selectionMode"
+        mandatory
+        divided
+        density="comfortable"
+        variant="outlined"
+        rounded="lg"
+        color="primary"
+        aria-label="Mode de sélection"
+        @update:model-value="emit('update:selectionMode', $event)"
+      >
+        <v-btn value="day" size="small" prepend-icon="mdi-calendar-today">Jour</v-btn>
+        <v-btn value="period" size="small" prepend-icon="mdi-calendar-range">Période</v-btn>
+      </v-btn-toggle>
       <v-btn icon variant="text" class="mx-2" @click="emit('navigateMonth', -1)">
         <v-icon>mdi-chevron-left</v-icon>
       </v-btn>
@@ -38,8 +51,17 @@
     <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="emit('navigateMonth', 1)" />
   </div>
   <div v-if="smAndDown" class="d-flex justify-center mb-4">
-    <v-btn-toggle :model-value="selectionMode" mandatory divided density="comfortable" variant="outlined" rounded="lg"
-      color="primary" aria-label="Mode de sélection" @update:model-value="emit('update:selectionMode', $event)">
+    <v-btn-toggle
+      :model-value="selectionMode"
+      mandatory
+      divided
+      density="comfortable"
+      variant="outlined"
+      rounded="lg"
+      color="primary"
+      aria-label="Mode de sélection"
+      @update:model-value="emit('update:selectionMode', $event)"
+    >
       <v-btn value="day" size="small" prepend-icon="mdi-calendar-today">Jour</v-btn>
       <v-btn value="period" size="small" prepend-icon="mdi-calendar-range">Période</v-btn>
     </v-btn-toggle>
@@ -49,22 +71,22 @@
 <script setup>
 import { Temporal } from '@js-temporal/polyfill';
 
-import { useDisplay } from "vuetify";
+import { useDisplay } from 'vuetify';
 
 const props = defineProps({
   selectedMonth: {
     type: Number,
-    required: true
+    required: true,
   },
   selectedYear: {
     type: Number,
-    required: true
+    required: true,
   },
   /** `day` : un jour à la fois ; `period` : deux jours choisis pour contrôler une période */
   selectionMode: {
     type: String,
-    default: 'day'
-  }
+    default: 'day',
+  },
 });
 
 const emit = defineEmits(['navigateMonth', 'goToToday', 'update:selectionMode']);
@@ -72,8 +94,18 @@ const emit = defineEmits(['navigateMonth', 'goToToday', 'update:selectionMode'])
 const { smAndDown } = useDisplay();
 
 const monthNames = [
-  'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-  'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  'Janvier',
+  'Février',
+  'Mars',
+  'Avril',
+  'Mai',
+  'Juin',
+  'Juillet',
+  'Août',
+  'Septembre',
+  'Octobre',
+  'Novembre',
+  'Décembre',
 ];
 
 const selectedMonthName = computed(() => monthNames[props.selectedMonth - 1]);
@@ -111,10 +143,9 @@ const isCurrentMonthAndYear = computed(() => {
   padding: 0 16px;
 }
 
-
 .month-indicator {
   font-weight: 600;
-  font-size: 1.0rem;
+  font-size: 1rem;
   color: rgb(var(--v-theme-onSurface));
   text-align: center;
   flex: 1;

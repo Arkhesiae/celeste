@@ -5,14 +5,27 @@
       <template #actions>
         <!-- Bouton pour afficher/masquer la colonne latérale sur mobile -->
         <div v-if="smAndDown" class="d-flex position-relative flex-column align-end ga-1">
-          <v-btn color="primary" size="small" variant="text" append-icon="mdi-chevron-right"
-            @click="showRulesDialog = true">
+          <v-btn
+            color="primary"
+            size="small"
+            variant="text"
+            append-icon="mdi-chevron-right"
+            @click="showRulesDialog = true"
+          >
             Règles de travail
           </v-btn>
         </div>
         <div v-else>
-          <v-btn color="primary" flat style="border-radius: 16px !important;" class="px-6" height="48" rounded="lg"
-            prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
+          <v-btn
+            color="primary"
+            flat
+            style="border-radius: 16px !important"
+            class="px-6"
+            height="48"
+            rounded="lg"
+            prepend-icon="mdi-book-open-variant"
+            @click="showRulesDialog = true"
+          >
             Règles de travail
           </v-btn>
         </div>
@@ -40,10 +53,11 @@
       </div>
     </v-alert> -->
 
-
-
-    <div v-if="smAndDown" class="d-flex align-center justify-center flex-1-1 flex-column ga-2"
-      style="font-size: 0.75rem;">
+    <div
+      v-if="smAndDown"
+      class="d-flex align-center justify-center flex-1-1 flex-column ga-2"
+      style="font-size: 0.75rem"
+    >
       <!-- <div class="d-flex justify-center flex-column align-center ga-2 my-16">
 
         <v-icon icon="mdi-heart-outline" size="x-large" color="primary" style="opacity: 0.5;"></v-icon>
@@ -54,27 +68,41 @@
       <div class="d-flex justify-center flex-column align-center ga-2 my-8">
         <span>Des demandes sont disponibles</span>
       </div>
-      <v-btn variant="flat" rounded="pill" style="font-size: 0.75rem;" color="surfaceContainer" class="flex-0-1"
-        @click="router.push('/demand-page/standalone/available')">
+      <v-btn
+        variant="flat"
+        rounded="pill"
+        style="font-size: 0.75rem"
+        color="surfaceContainer"
+        class="flex-0-1"
+        @click="router.push('/demand-page/standalone/available')"
+      >
         <template #prepend>
-          <div class="d-flex  ga-1" style="right: 0px; top: -18px;">
-            <div class="category-indicator"
-              :title="`${substitutionStore.availableSubstitutions.length} demande(s) en attente`">
+          <div class="d-flex ga-1" style="right: 0px; top: -18px">
+            <div
+              class="category-indicator"
+              :title="`${substitutionStore.availableSubstitutions.length} demande(s) en attente`"
+            >
               <v-icon icon="mdi-account-arrow-left-outline" size="small" color="primary" />
               {{ substitutionStore.availableSubstitutions.length }}
             </div>
-            <div class="category-indicator"
-              :title="`${substitutionStore.availableSwitches.length} demande(s) permutable(s)`">
+            <div
+              class="category-indicator"
+              :title="`${substitutionStore.availableSwitches.length} demande(s) permutable(s)`"
+            >
               <v-icon icon="mdi-swap-horizontal" size="small" color="primary" />
               {{ substitutionStore.availableSwitches.length }}
             </div>
-            <div class="category-indicator"
-              :title="`${substitutionStore.potentiallyCompatibleDemands.length} demande(s) potentiellement compatible(s)`">
+            <div
+              class="category-indicator"
+              :title="`${substitutionStore.potentiallyCompatibleDemands.length} demande(s) potentiellement compatible(s)`"
+            >
               <v-icon icon="mdi-help-circle-outline" size="small" color="primary" />
               {{ substitutionStore.potentiallyCompatibleDemands.length }}
             </div>
-            <div class="category-indicator"
-              :title="`${substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length} demande(s) incompatible(s)`">
+            <div
+              class="category-indicator"
+              :title="`${substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length} demande(s) incompatible(s)`"
+            >
               <v-icon icon="mdi-close" size="small" color="primary" />
               {{ substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length }}
             </div>
@@ -82,18 +110,29 @@
         </template>
         Voir tout
       </v-btn>
-      <v-btn variant="flat" style="font-size: 0.75rem;" rounded="pill" color="surfaceContainer"
-        @click="router.push('/demand-page/standalone/own')">
+      <v-btn
+        variant="flat"
+        style="font-size: 0.75rem"
+        rounded="pill"
+        color="surfaceContainer"
+        @click="router.push('/demand-page/standalone/own')"
+      >
         Mes demandes
         <template #prepend>
-          <div class="d-flex  ga-1" style="right: 0px; top: -18px;">
-            <div v-if="pendingDemands.length > 0" class="category-indicator"
-              :title="`${pendingDemands.length} demande(s) en attente`">
+          <div class="d-flex ga-1" style="right: 0px; top: -18px">
+            <div
+              v-if="pendingDemands.length > 0"
+              class="category-indicator"
+              :title="`${pendingDemands.length} demande(s) en attente`"
+            >
               <v-icon icon="mdi-help" size="small" color="primary" />
               {{ pendingDemands.length }}
             </div>
-            <div v-if="acceptedAsPoster?.length > 0" class="category-indicator"
-              :title="`${acceptedAsPoster.length} demande(s) acceptée(s)`">
+            <div
+              v-if="acceptedAsPoster?.length > 0"
+              class="category-indicator"
+              :title="`${acceptedAsPoster.length} demande(s) acceptée(s)`"
+            >
               <v-icon icon="mdi-check" size="small" color="primary" />
               {{ acceptedAsPoster.length + acceptedAsAccepter.length }}
             </div>
@@ -102,7 +141,6 @@
       </v-btn>
     </div>
 
-
     <router-view v-if="!smAndDown" />
 
     <RulesDialog v-model="showRulesDialog" />
@@ -110,18 +148,15 @@
 </template>
 
 <route lang="yaml">
-  meta:
-    layout: default
+meta:
+  layout: default
 </route>
 
 <script setup>
+import { useSubstitutionStore } from '@/stores/substitutionStore.js';
 
-import { useSubstitutionStore } from "@/stores/substitutionStore.js";
-
-
-import { useDisplay } from "vuetify";
+import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
-
 
 // const unSeenDemands = ref(0);
 
@@ -133,17 +168,13 @@ const { smAndDown } = useDisplay();
 const router = useRouter();
 // État local
 
-
 const showRulesDialog = ref(false);
-
-
-
 
 // Données de la demande
 const pendingDemands = computed(() => [
   ...substitutionStore.ownPendingHybridSubstitutions,
   ...substitutionStore.ownPendingTrueSubstitutions,
-  ...substitutionStore.ownPendingTrueSwitches
+  ...substitutionStore.ownPendingTrueSwitches,
 ]);
 
 const acceptedAsPoster = computed(() => substitutionStore.acceptedAsPoster);
@@ -162,11 +193,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('focus', refetchOnFocus);
 });
-
-
-
-
-
 </script>
 
 <style scoped>
@@ -205,7 +231,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: .75rem;
+  font-size: 0.75rem;
 
   cursor: pointer;
   transition: all 0.2s ease;

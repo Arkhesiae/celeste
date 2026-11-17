@@ -1,13 +1,22 @@
 <template>
-  <v-sheet :rounded="rounded" :elevation="elevation" class="py-4 px-4 position-relative safe-area-bottom"
-    color="surfaceContainer">
+  <v-sheet
+    :rounded="rounded"
+    :elevation="elevation"
+    class="py-4 px-4 position-relative safe-area-bottom"
+    color="surfaceContainer"
+  >
     <div class="d-flex align-center justify-space-between mb-4 mr-2 ga-2">
       <div class="d-flex align-center ga-1">
         <div v-for="(entry, index) in substitutionsDemands" :key="index" class="position-relative">
           <v-menu min-width="200" offset="10">
             <template #activator="{ props }">
-              <v-btn v-bind="props" color="primary" icon size="x-small"
-                :variant="entry.status === 'open' ? 'tonal' : 'flat'">
+              <v-btn
+                v-bind="props"
+                color="primary"
+                icon
+                size="x-small"
+                :variant="entry.status === 'open' ? 'tonal' : 'flat'"
+              >
                 <v-icon> {{ getDemandIcon(entry, authStore.userData.userId) }}</v-icon>
               </v-btn>
             </template>
@@ -18,8 +27,12 @@
 
               <v-divider />
 
-              <v-list-item prepend-icon="mdi-close-circle-outline" title="Annuler" class="text-error"
-                base-color="error" />
+              <v-list-item
+                prepend-icon="mdi-close-circle-outline"
+                title="Annuler"
+                class="text-error"
+                base-color="error"
+              />
             </v-list>
           </v-menu>
         </div>
@@ -39,60 +52,98 @@
               <span class="text-body-small">{{ entry.createdAt }} : {{ entry.type }} {{ entry.subType }}</span>
             </div>
           </v-card>
-
         </v-menu>
         <span class="text-body-medium font-weight-bold">{{ formattedDate }}</span>
       </div>
     </div>
 
-    <ShiftCard class="bg-surfaceContainerHighest" :date="selectedDate" @open-entry-dialog="entryDialog = true"
-      @entry-registered="entryDialog = false" />
+    <ShiftCard
+      class="bg-surfaceContainerHighest"
+      :date="selectedDate"
+      @open-entry-dialog="entryDialog = true"
+      @entry-registered="entryDialog = false"
+    />
 
     <div class="d-flex justify-end ga-2 mt-4 mb-4 position-relative">
       <v-slide-y-transition>
-        <div v-if="disabled" class="text-error" style="position: absolute; top: 32px;">
-          <span style="font-size: 10px !important; opacity: 0.6;">{{ disabledReason }}</span>
+        <div v-if="disabled" class="text-error" style="position: absolute; top: 32px">
+          <span style="font-size: 10px !important; opacity: 0.6">{{ disabledReason }}</span>
         </div>
       </v-slide-y-transition>
 
       <div v-if="pendingDemand || acceptedAsPoster?.length > 0" class="d-flex flex-column ga-2 flex-grow-1">
-        <span v-if="pendingDemand" class="text-body-small text-medium-emphasis">
-          Votre demande est en attente
-        </span>
+        <span v-if="pendingDemand" class="text-body-small text-medium-emphasis"> Votre demande est en attente </span>
         <span v-else-if="acceptedAsPoster?.length > 0" class="text-body-small text-medium-emphasis">
           Vous êtes remplacé ce jour
         </span>
-        <v-btn color="error" height="36px" variant="tonal" class="flex-grow-1 d-flex flex-column rounded-xl text-none"
-          @click="$emit('cancel', lastOwnDemand)">
+        <v-btn
+          color="error"
+          height="36px"
+          variant="tonal"
+          class="flex-grow-1 d-flex flex-column rounded-xl text-none"
+          @click="$emit('cancel', lastOwnDemand)"
+        >
           Annuler ma dernière demande
         </v-btn>
       </div>
 
       <div v-if="acceptedAsAccepter?.length > 0" class="d-flex">
-        <v-btn color="error" height="36px" variant="tonal" :disabled="inPast"
-          class="flex-1-1 d-flex flex-column rounded-xl text-none" rounded="lg" @click="emit('withdraw', lastAccepted)">
+        <v-btn
+          color="error"
+          height="36px"
+          variant="tonal"
+          :disabled="inPast"
+          class="flex-1-1 d-flex flex-column rounded-xl text-none"
+          rounded="lg"
+          @click="emit('withdraw', lastAccepted)"
+        >
           Se désister
         </v-btn>
       </div>
 
       <v-tooltip
-        v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)"
-        text="Proposer un échange" location="bottom">
+        v-if="
+          !substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)
+        "
+        text="Proposer un échange"
+        location="bottom"
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon-btn v-bind="tooltipProps"  color="surfaceContainerHighest"
-            style="border-radius: 12px !important;"  size="default"  :disabled="disabled" width-variant="narrow"
-            :class="{ 'opacity-10': disabled }" flat @click="$emit('openRemplaDialog', 'switch')">
+          <v-icon-btn
+            v-bind="tooltipProps"
+            color="surfaceContainerHighest"
+            style="border-radius: 12px !important"
+            size="default"
+            :disabled="disabled"
+            width-variant="narrow"
+            :class="{ 'opacity-10': disabled }"
+            flat
+            @click="$emit('openRemplaDialog', 'switch')"
+          >
             <v-icon>mdi-swap-horizontal-hidden</v-icon>
           </v-icon-btn>
         </template>
       </v-tooltip>
 
       <v-tooltip
-        v-if="!substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)"
-        text="Demander un remplacement" location="bottom">
+        v-if="
+          !substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)
+        "
+        text="Demander un remplacement"
+        location="bottom"
+      >
         <template #activator="{ props: tooltipProps }">
-          <v-icon-btn v-bind="tooltipProps" color="primary" size="default" :disabled="disabled" flat width-variant="wide" rounded="xl"
-            :class="{ 'opacity-10': disabled }" @click="$emit('openRemplaDialog', 'substitution')">
+          <v-icon-btn
+            v-bind="tooltipProps"
+            color="primary"
+            size="default"
+            :disabled="disabled"
+            flat
+            width-variant="wide"
+            rounded="xl"
+            :class="{ 'opacity-10': disabled }"
+            @click="$emit('openRemplaDialog', 'substitution')"
+          >
             <v-icon>mdi-account-arrow-left-outline</v-icon>
           </v-icon-btn>
         </template>
@@ -100,8 +151,10 @@
     </div>
 
     <v-fade-transition mode="out-in">
-      <div v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0"
-        class="d-flex ga-1 mb-2">
+      <div
+        v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0"
+        class="d-flex ga-1 mb-2"
+      >
         <v-tooltip text="Remplacements disponibles" location="top">
           <template #activator="{ props: tooltipProps }">
             <div v-bind="tooltipProps" class="category-indicator">
@@ -128,28 +181,41 @@
         </v-tooltip>
       </div>
       <div v-else class="mb-2">
-        <span style="font-size: 12px !important; opacity: 0.6;">Aucune demande disponible</span>
+        <span style="font-size: 12px !important; opacity: 0.6">Aucune demande disponible</span>
       </div>
-
     </v-fade-transition>
 
     <v-btn
-      :class="{ 'opacity-10': availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0 }"
+      :class="{
+        'opacity-10':
+          availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0,
+      }"
       :disabled="availableSubstitutions.length === 0 && availableSwitches.length === 0 && otherDemands.length === 0"
-      width="100%" flat rounded="xl" height="64px" color="background" append-icon="mdi-chevron-right"
-      class="justify-space-between d-flex align-center text-title-small" @click="$emit('openDrawer', 'substitutions')">
+      width="100%"
+      flat
+      rounded="xl"
+      height="64px"
+      color="background"
+      append-icon="mdi-chevron-right"
+      class="justify-space-between d-flex align-center text-title-small"
+      @click="$emit('openDrawer', 'substitutions')"
+    >
       <span v-if="availableSubstitutions.length > 0 || availableSwitches.length > 0 || otherDemands.length > 0">
         Voir les demandes disponibles
       </span>
-
     </v-btn>
   </v-sheet>
 
   <!-- Type en tuiles, horaires (09:00 – 17:00 par défaut) et commentaire : voir AssignmentDialog -->
   <AssignmentDialog v-model="entryDialog" :loading="entrySaving" @submit="addCustomEntry" />
 
-  <ConfirmationDialog :model-value="confirmationDialog" :title="confirmationDialogTitle"
-    :text="confirmationDialogMessage" @confirm="confirmEntry" @cancel="cancelEntry" />
+  <ConfirmationDialog
+    :model-value="confirmationDialog"
+    :title="confirmationDialogTitle"
+    :text="confirmationDialogMessage"
+    @confirm="confirmEntry"
+    @cancel="cancelEntry"
+  />
 </template>
 
 <script setup>
@@ -171,15 +237,15 @@ const shiftStore = useShiftStore();
 const props = defineProps({
   selectedDate: {
     type: [String, null],
-    required: true
+    required: true,
   },
   rounded: {
     type: String,
-    default: 'xl'
+    default: 'xl',
   },
   elevation: {
     type: Number,
-    default: 0
+    default: 0,
   },
 });
 
@@ -207,37 +273,34 @@ const getVacation = computed(() => {
 const isRestDay = computed(() => getVacation.value?.shiftData?.shift?.type === 'rest');
 
 const isShift = computed(() => {
-  return !!getVacation.value?.shiftData?.shift
+  return !!getVacation.value?.shiftData?.shift;
 });
 
 const disabled = computed(() => {
-  return isRestDay.value || inPast.value || presence.value !== 'present' || !isShift.value
+  return isRestDay.value || inPast.value || presence.value !== 'present' || !isShift.value;
 });
 
 const disabledReason = computed(() => {
-  if (inPast.value) return 'Date passée'
-  if (isRestDay.value) return 'Jour de repos'
+  if (inPast.value) return 'Date passée';
+  if (isRestDay.value) return 'Jour de repos';
   if (substitutionStore.hasAcceptedAsPoster(props.selectedDate)) {
-    return 'Vous êtes remplacé ce jour'
+    return 'Vous êtes remplacé ce jour';
   }
-  if (!isShift.value) return 'Aucun shift valide'
-  if (presence.value === 'released' || presence.value === 'unconfirmed') return 'Confirmez votre présence pour poster une demande'
-  return ''
-})
+  if (!isShift.value) return 'Aucun shift valide';
+  if (presence.value === 'released' || presence.value === 'unconfirmed')
+    return 'Confirmez votre présence pour poster une demande';
+  return '';
+});
 
-const inPast = computed(() =>
-  toDateKey(props.selectedDate) < toDateKey(new Date())
-);
+const inPast = computed(() => toDateKey(props.selectedDate) < toDateKey(new Date()));
 
-const presence = computed(() =>
-  getVacation.value?.presence ?? 'present'
-);
+const presence = computed(() => getVacation.value?.presence ?? 'present');
 
 const fetchEntries = async () => {
   const res = await planningModificationService.fetchEntries(authStore.userData.userId, toDateKey(props.selectedDate));
   entries.value = res;
-  return res;   // les appelants font `entries.value = await fetchEntries()`
-}
+  return res; // les appelants font `entries.value = await fetchEntries()`
+};
 
 // `validated` (congé validé ou non) reste côté écran : il n'est pas envoyé au serveur
 const addCustomEntry = async ({ entryType, startTime, endTime, comment }) => {
@@ -251,9 +314,9 @@ const addCustomEntry = async ({ entryType, startTime, endTime, comment }) => {
     endTime,
     comment,
     date: dateKey,
-  }
+  };
   await registerEntry();
-}
+};
 
 const entrySaving = ref(false);
 
@@ -276,7 +339,7 @@ const registerEntry = async () => {
   } finally {
     entrySaving.value = false;
   }
-}
+};
 
 const confirmEntry = async () => {
   try {
@@ -297,7 +360,6 @@ const confirmEntry = async () => {
 
 const entryToRegister = ref(null);
 
-
 const cancelEntry = () => {
   confirmationDialog.value = false;
   entryToRegister.value = null;
@@ -307,15 +369,17 @@ const cancelEntry = () => {
 
 // ─── Substitution state ───────────────────────────────────────────────────────
 
-const pendingDemand = computed(() => [
-  ...substitutionStore.ownPendingHybridSubstitutions,
-  ...substitutionStore.ownPendingTrueSubstitutions,
-  ...substitutionStore.ownPendingTrueSwitches
-].find(d => sameDateKey(posterDay(d), props.selectedDate)));
+const pendingDemand = computed(() =>
+  [
+    ...substitutionStore.ownPendingHybridSubstitutions,
+    ...substitutionStore.ownPendingTrueSubstitutions,
+    ...substitutionStore.ownPendingTrueSwitches,
+  ].find((d) => sameDateKey(posterDay(d), props.selectedDate)),
+);
 
 const acceptedAsAccepter = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsAccepter.filter(d => sameDateKey(posterDay(d), props.selectedDate));
+  return substitutionStore.acceptedAsAccepter.filter((d) => sameDateKey(posterDay(d), props.selectedDate));
 });
 
 const lastAccepted = computed(() => {
@@ -325,7 +389,7 @@ const lastAccepted = computed(() => {
 
 const acceptedAsPoster = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsPoster.filter(d => sameDateKey(posterDay(d), props.selectedDate));
+  return substitutionStore.acceptedAsPoster.filter((d) => sameDateKey(posterDay(d), props.selectedDate));
 });
 
 const lastOwnDemand = computed(() => {
@@ -336,42 +400,39 @@ const lastOwnDemand = computed(() => {
 const substitutionsDemands = computed(() => {
   if (!props.selectedDate) return [];
 
-  const toReturn = [
-    ...acceptedAsAccepter.value,
-    ...acceptedAsPoster.value
-  ]
+  const toReturn = [...acceptedAsAccepter.value, ...acceptedAsPoster.value];
   if (pendingDemand.value) toReturn.push(pendingDemand.value);
 
   return toReturn.sort((a, b) => a.createdAt - b.createdAt);
 });
 
-
 const availableSubstitutions = computed(() =>
-  substitutionStore.availableSubstitutions.filter(d => posterDay(d) === toDateKey(props.selectedDate))
+  substitutionStore.availableSubstitutions.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
 );
 
 const availableSwitches = computed(() =>
-  substitutionStore.availableSwitches.filter(d => posterDay(d) === toDateKey(props.selectedDate))
+  substitutionStore.availableSwitches.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
 );
 
 const otherDemands = computed(() =>
-  substitutionStore.otherDemands.filter(d => posterDay(d) === toDateKey(props.selectedDate))
+  substitutionStore.otherDemands.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
 );
 
-watch(() => props.selectedDate, async (value) => {
-  if (value) {
-    entries.value = await fetchEntries();
-  }
-}, { immediate: true });
-
+watch(
+  () => props.selectedDate,
+  async (value) => {
+    if (value) {
+      entries.value = await fetchEntries();
+    }
+  },
+  { immediate: true },
+);
 </script>
 
 <style scoped>
 .safe-area-bottom {
   padding-bottom: calc(env(safe-area-inset-bottom) + 24px) !important;
 }
-
-
 
 .category-indicator {
   padding: 0 2px;

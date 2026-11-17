@@ -4,7 +4,15 @@
       v-if="modelValue && smAndDown"
       class="d-flex"
       close-on-content-click
-      style="margin-top: calc(64px + var(--safe-area-top)); height: calc(100vh - 64px - var(--safe-area-top) - var(--safe-area-bottom)); width: 100%; z-index: 4000 !important; position: fixed; top: 0; left: 0;"
+      style="
+        margin-top: calc(64px + var(--safe-area-top));
+        height: calc(100vh - 64px - var(--safe-area-top) - var(--safe-area-bottom));
+        width: 100%;
+        z-index: 4000 !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+      "
       @update:model-value="$emit('update:modelValue', $event)"
     >
       <!-- Parent Container -->
@@ -13,7 +21,7 @@
         tile
         color="background"
         flat
-        style="width: 100%; height: 100%; overflow-y: auto;"
+        style="width: 100%; height: 100%; overflow-y: auto"
       >
         <!-- User Avatar Section -->
         <v-scale-transition appear>
@@ -27,56 +35,34 @@
             @click="handleClick('/profile/' + authStore.userData.userId)"
           >
             <div class="d-flex justify-space-between align-center ga-2 pl-2">
-              <v-avatar
-                size="36"
-                color="primary"
-              >
+              <v-avatar size="36" color="primary">
                 <img
                   v-if="authStore.userData?.avatar"
                   width="36"
                   height="36"
                   :src="`${API_URL}${authStore.userData?.avatar}`"
                   alt="avatar"
-                >
-                <v-icon v-else>
-                  mdi-account
-                </v-icon>
+                />
+                <v-icon v-else> mdi-account </v-icon>
               </v-avatar>
 
-
-              <div class="d-flex flex-column ">
-                <div style="font-size: 16px !important; position: relative; top: 2px;">
-                  {{
-                    getUserInfo?.name?.charAt(0).toUpperCase() + getUserInfo?.name?.slice(1) }}
+              <div class="d-flex flex-column">
+                <div style="font-size: 16px !important; position: relative; top: 2px">
+                  {{ getUserInfo?.name?.charAt(0).toUpperCase() + getUserInfo?.name?.slice(1) }}
                 </div>
-                <div style="font-size: 16px !important; position: relative; top: -2px;">
-                  <b>{{
-                    getUserInfo?.lastName?.toUpperCase() }}</b>
+                <div style="font-size: 16px !important; position: relative; top: -2px">
+                  <b>{{ getUserInfo?.lastName?.toUpperCase() }}</b>
                 </div>
               </div>
             </div>
             <div class="d-flex justify-space-between flex-column align-center">
-              <div
-                v-if="points > 99999"
-                class="text-center text-title-large "
-              >
-                <v-icon
-                  class="mb-1"
-                  size="large"
-                >
-                  mdi-infinity
-                </v-icon>
+              <div v-if="points > 99999" class="text-center text-title-large">
+                <v-icon class="mb-1" size="large"> mdi-infinity </v-icon>
               </div>
-              <div
-                v-else
-                :key="points"
-                class="text-headline-small font-weight-bold text-center"
-              >
+              <div v-else :key="points" class="text-headline-small font-weight-bold text-center">
                 {{ points }}
               </div>
-              <div class="text-body-medium text-medium-emphasis mt-n3">
-                Points
-              </div>
+              <div class="text-body-medium text-medium-emphasis mt-n3">Points</div>
             </div>
           </v-card>
         </v-scale-transition>
@@ -88,21 +74,11 @@
           elevation="0"
           tile
           flat
-          style="width: 100%; max-width: 400px;"
+          style="width: 100%; max-width: 400px"
         >
-          <div
-            v-if="isLoggedIn"
-            class="text-body-large d-flex flex-column"
-          >
-            <v-fade-transition
-              group
-              appear
-            >
-              <div
-                v-for="(item, index) in menuItemsLogged"
-                :key="item.key"
-                class="d-flex flex-column"
-              >
+          <div v-if="isLoggedIn" class="text-body-large d-flex flex-column">
+            <v-fade-transition group appear>
+              <div v-for="(item, index) in menuItemsLogged" :key="item.key" class="d-flex flex-column">
                 <span
                   style="font-size: 14px !important"
                   class="pt-4 pb-4 cursor-pointer font-weight-medium"
@@ -111,15 +87,9 @@
                 >
                   {{ item.label }}
                 </span>
-                <v-divider
-                  v-if="index < menuItemsLogged.length - 1"
-                  style="opacity: 0.04;"
-                />
+                <v-divider v-if="index < menuItemsLogged.length - 1" style="opacity: 0.04" />
               </div>
-              <v-divider
-                v-if="authStore.userData.isAdmin"
-                style="opacity: 0.04;"
-              />
+              <v-divider v-if="authStore.userData.isAdmin" style="opacity: 0.04" />
               <div
                 v-for="(item, index) in menuItemsLoggedAdmin"
                 v-if="authStore.userData.isAdmin"
@@ -148,28 +118,22 @@
                     </v-chip>
                   </div>
                 </div>
-                <v-divider
-                  v-if="index < menuItemsLoggedAdmin.length - 1"
-                  style="opacity: 0.04;"
-                />
+                <v-divider v-if="index < menuItemsLoggedAdmin.length - 1" style="opacity: 0.04" />
               </div>
             </v-fade-transition>
 
             <v-btn
-              style="height: 48px; border-radius: 16px !important;"
+              style="height: 48px; border-radius: 16px !important"
               color="surfaceContainerHigh"
               variant="flat"
-              class="mt-3 text-error font-weight-bold "
+              class="mt-3 text-error font-weight-bold"
               @click="handleLogout"
             >
               Se déconnecter
             </v-btn>
           </div>
 
-          <div
-            v-else
-            class="text-body-large d-flex flex-column"
-          >
+          <div v-else class="text-body-large d-flex flex-column">
             <v-btn
               v-if="!isLoggedIn"
               class="my-8"
@@ -178,35 +142,20 @@
               color="onBackground"
               append-icon="mdi-arrow-right"
               width="100%"
-              style="height: 48px; border-radius: 16px !important;"
+              style="height: 48px; border-radius: 16px !important"
               @click="handleClick('/login')"
             >
               Se connecter
             </v-btn>
           </div>
 
-
-
           <!-- Footer Links Section -->
-          <v-list
-            nav
-            class="d-flex justify-space-around align-center pt-8 text-body-small"
-            bg-color="background"
-          >
-            <span
-              style="cursor: pointer"
-              @click="handleClick('/contact-admin')"
-            >Assistance</span>
+          <v-list nav class="d-flex justify-space-around align-center pt-8 text-body-small" bg-color="background">
+            <span style="cursor: pointer" @click="handleClick('/contact-admin')">Assistance</span>
             <v-divider vertical />
-            <span
-              style="cursor: pointer"
-              @click="handleClick('/patchnotes')"
-            >Patchnotes</span>
+            <span style="cursor: pointer" @click="handleClick('/patchnotes')">Patchnotes</span>
             <v-divider vertical />
-            <span
-              style="cursor: pointer"
-              @click="handleClick('/financement')"
-            >Financement</span>
+            <span style="cursor: pointer" @click="handleClick('/financement')">Financement</span>
           </v-list>
 
           <!-- Footer Links Section -->
@@ -216,24 +165,14 @@
             class="d-flex justify-space-around align-center pt-8 text-body-small"
             bg-color="background"
           >
-            <div
-              class="d-flex"
-              style="cursor: pointer"
-            >
+            <div class="d-flex" style="cursor: pointer">
               <span @click="">Icnagenda</span>
-              <v-icon class="text-medium-emphasis ml-3">
-                mdi-open-in-new
-              </v-icon>
+              <v-icon class="text-medium-emphasis ml-3"> mdi-open-in-new </v-icon>
             </div>
             <v-divider vertical />
-            <div
-              class="d-flex"
-              style="cursor: pointer"
-            >
+            <div class="d-flex" style="cursor: pointer">
               <span @click="">Olafatco</span>
-              <v-icon class="text-medium-emphasis ml-3">
-                mdi-open-in-new
-              </v-icon>
+              <v-icon class="text-medium-emphasis ml-3"> mdi-open-in-new </v-icon>
             </div>
           </v-list>
         </v-card>
@@ -249,14 +188,12 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import { useDisplay } from "vuetify";
-import { useAuthStore } from "@/stores/authStore.js";
+import { useDisplay } from 'vuetify';
+import { useAuthStore } from '@/stores/authStore.js';
 
-import { useUserStore } from "@/stores/userStore.js";
-import { API_URL } from "@/config/api.js";
-import { usePointStore } from "@/stores/pointStore.js";
-
-
+import { useUserStore } from '@/stores/userStore.js';
+import { API_URL } from '@/config/api.js';
+import { usePointStore } from '@/stores/pointStore.js';
 
 const router = useRouter();
 const { smAndDown } = useDisplay();
@@ -271,17 +208,16 @@ const isLoggedIn = computed(() => authStore.isLoggedIn);
 // const user = ref(null);
 const points = computed(() => pointStore.points);
 
- defineProps({
+defineProps({
   modelValue: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const pendingUsersCount = computed(() => {
-  return userStore.users.filter(user => user.registrationStatus === 'pending').length;
+  return userStore.users.filter((user) => user.registrationStatus === 'pending').length;
 });
-
 
 // const safeAreaTop = computed(() => {
 //   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top');
@@ -305,9 +241,22 @@ const menuItemsLogged = [
   { key: 'remplacements', label: 'Demandes', path: '/demand-page/demands', title: 'Remplacements' },
   { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
   // Grille de l'équipe ; un administrateur principal sans centre choisit d'abord un centre
-  { key: 'grid', label: 'Grille', path: authStore.userData.centerId ? '/center/' + authStore.userData.centerId + '/grid' : '/center/centers', title: 'Grille' },
+  {
+    key: 'grid',
+    label: 'Grille',
+    path: authStore.userData.centerId ? '/center/' + authStore.userData.centerId + '/grid' : '/center/centers',
+    title: 'Grille',
+  },
   { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
-  { key: 'centres', label: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre', path: authStore.userData.adminType === 'master' ? '/center/centers' : '/center/' + authStore.userData.centerId + '/teams', title: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre' },
+  {
+    key: 'centres',
+    label: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre',
+    path:
+      authStore.userData.adminType === 'master'
+        ? '/center/centers'
+        : '/center/' + authStore.userData.centerId + '/teams',
+    title: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre',
+  },
   // { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
   // { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
   // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
@@ -316,7 +265,13 @@ const menuItemsLogged = [
 
 const menuItemsLoggedAdmin = [
   { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
-  { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente', badgeCount: pendingUsersCount.value }
+  {
+    key: 'pending-users',
+    label: 'Candidatures',
+    path: '/admin/pending-users',
+    title: 'Candidatures en attente',
+    badgeCount: pendingUsersCount.value,
+  },
 ];
 
 // const menuItems = [
@@ -327,20 +282,18 @@ const menuItemsLoggedAdmin = [
 
 const handleLogout = async () => {
   await authStore.logOut();
-  await router.push({ path: "/login", replace: true });
+  await router.push({ path: '/login', replace: true });
 };
 
 const getUserInfo = computed(() => {
-  const userInfo = userStore.users.find(user => user._id === authStore.userData.userId);
+  const userInfo = userStore.users.find((user) => user._id === authStore.userData.userId);
   return userInfo;
 });
 
 const handleClick = (path) => {
   router.push({ path: path });
   emit('update:modelValue', false);
-}
-
-
+};
 </script>
 
 <style scoped>

@@ -1,4 +1,4 @@
-import { NativeBiometric } from '@capgo/capacitor-native-biometric'
+import { NativeBiometric } from '@capgo/capacitor-native-biometric';
 
 /**
  * Vérifie si la biométrie est disponible et authentifie l'utilisateur.
@@ -6,11 +6,11 @@ import { NativeBiometric } from '@capgo/capacitor-native-biometric'
  */
 export async function useBiometricLogin() {
   try {
-    const availability = await NativeBiometric.isAvailable()
+    const availability = await NativeBiometric.isAvailable();
 
     if (!availability.isAvailable) {
-      console.warn('Biométrie non disponible sur cet appareil')
-      return false
+      console.warn('Biométrie non disponible sur cet appareil');
+      return false;
     }
 
     const result = await NativeBiometric.verifyIdentity({
@@ -18,17 +18,17 @@ export async function useBiometricLogin() {
       title: 'Connexion biométrique',
       subtitle: 'Appuie sur le capteur',
       description: 'Utilise ton empreinte ou ton visage',
-    })
+    });
 
     if (result.verified) {
-      console.log('Authentification biométrique réussie')
-      return true
+      console.log('Authentification biométrique réussie');
+      return true;
     } else {
-      console.warn('Authentification biométrique refusée')
-      return false
+      console.warn('Authentification biométrique refusée');
+      return false;
     }
   } catch (error) {
-    console.error('Erreur biométrie :', error)
-    return false
+    console.error('Erreur biométrie :', error);
+    return false;
   }
 }

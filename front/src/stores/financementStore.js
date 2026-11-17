@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-;
 import { useUserStore } from './userStore';
 
 export const useFundingStore = defineStore('funding', () => {
@@ -15,15 +14,15 @@ export const useFundingStore = defineStore('funding', () => {
       description: 'Attribution du nom de domaine',
       cout: 10,
       icon: 'mdi-web',
-      color: 'primary'
+      color: 'primary',
     },
     {
       nom: 'Licences logicielles',
       description: 'Coût initial licence logiciel',
       cout: 100,
       icon: 'mdi-license',
-      color: 'secondary'
-    }
+      color: 'secondary',
+    },
   ]);
 
   // Recurring costs
@@ -34,7 +33,7 @@ export const useFundingStore = defineStore('funding', () => {
       cout: 6,
       periodicite: 'mois',
       icon: 'mdi-server-network',
-      color: 'primary'
+      color: 'primary',
     },
     {
       nom: 'Base de données',
@@ -42,7 +41,7 @@ export const useFundingStore = defineStore('funding', () => {
       cout: 3,
       periodicite: 'mois',
       icon: 'mdi-database',
-      color: 'secondary'
+      color: 'secondary',
     },
     {
       nom: 'Nom de domaine',
@@ -50,7 +49,7 @@ export const useFundingStore = defineStore('funding', () => {
       cout: 8,
       periodicite: 'annuel',
       icon: 'mdi-cloud',
-      color: 'info'
+      color: 'info',
     },
     {
       nom: 'Développement agent IA',
@@ -58,7 +57,7 @@ export const useFundingStore = defineStore('funding', () => {
       cout: 15,
       periodicite: 'mois',
       icon: 'mdi-robot',
-      color: 'success'
+      color: 'success',
     },
     {
       nom: 'Sauvegarde automatique',
@@ -66,7 +65,7 @@ export const useFundingStore = defineStore('funding', () => {
       cout: 0,
       periodicite: 'mois',
       icon: 'mdi-backup-restore',
-      color: 'warning'
+      color: 'warning',
     },
     {
       nom: 'Envoi de mail',
@@ -74,8 +73,8 @@ export const useFundingStore = defineStore('funding', () => {
       cout: 6,
       periodicite: 'mois',
       icon: 'mdi-email',
-      color: 'error'
-    }
+      color: 'error',
+    },
   ]);
 
   // Budget evolution
@@ -84,36 +83,34 @@ export const useFundingStore = defineStore('funding', () => {
       date: '2025-04-30',
       montant: 266,
       description: 'Campagne initiale',
-      active: true
+      active: true,
     },
   ]);
-
 
   const expenses = ref([
     {
       date: '2025-06-04',
       montant: 1.45,
       description: 'Mise en service Hetzner',
-
     },
     {
       date: '2025-08-04',
-      montant: 9.10,
+      montant: 9.1,
       description: 'Hebergement Juillet-Août',
     },
     {
       date: '2025-10-03',
-      montant: 9.10,
+      montant: 9.1,
       description: 'Hebergement Septembre-Octobre',
     },
     {
       date: '2025-12-03',
-      montant: 9.10,
+      montant: 9.1,
       description: 'Hebergement Novembre-Décembre',
     },
     {
       date: '2025-05-26',
-      montant: 18.70,
+      montant: 18.7,
       description: 'Allocation nom de domaine',
     },
     {
@@ -128,7 +125,7 @@ export const useFundingStore = defineStore('funding', () => {
     },
     {
       date: '2025-08-11',
-      montant: 17.20,
+      montant: 17.2,
       description: 'Utilisation Cursor AI Aout',
     },
     {
@@ -173,16 +170,14 @@ export const useFundingStore = defineStore('funding', () => {
     },
     {
       date: '2025-09-03',
-      montant: .12,
+      montant: 0.12,
       description: 'Service clouds AWS (mails) septembre',
-    }, {
+    },
+    {
       date: '2026-01-03',
       montant: 1.88,
       description: 'Service clouds AWS (mails) janvier',
     },
-
-   
-
   ]);
 
   // Current campaign if exists
@@ -200,19 +195,19 @@ export const useFundingStore = defineStore('funding', () => {
         ...campaign,
         startDate,
         endDate,
-        expenses: expenses.value.filter(exp => {
+        expenses: expenses.value.filter((exp) => {
           const d = new Date(exp.date);
           if (endDate) {
             return d >= startDate && d < endDate;
           } else {
             return d >= startDate;
           }
-        })
+        }),
       };
     });
   });
 
-  function getCampaignsStatus (campaigns) {
+  function getCampaignsStatus(campaigns) {
     const now = new Date();
     // Trie les campagnes par date de début décroissante
     const sorted = [...campaigns].sort((a, b) => parseDate(b.startDate) - parseDate(a.startDate));
@@ -223,14 +218,14 @@ export const useFundingStore = defineStore('funding', () => {
         return { ...c, status: 'a_venir' };
       }
 
-      if (!end && start <= now || start <= now && end >= now) {
+      if ((!end && start <= now) || (start <= now && end >= now)) {
         return { ...c, status: 'en_cours' };
       }
       return { ...c, status: 'termine' };
     });
   }
 
-  function parseDate (dateStr) {
+  function parseDate(dateStr) {
     // Si c'est déjà un format ISO ou reconnu, ça marche directement
     let date = new Date(dateStr);
     if (!isNaN(date)) return date;
@@ -243,10 +238,8 @@ export const useFundingStore = defineStore('funding', () => {
     return new Date(NaN);
   }
 
-  // Campaigns with status  
+  // Campaigns with status
   const campaignsWithStatus = computed(() => getCampaignsStatus(campaigns.value));
-
-
 
   // Computed properties
   // Initial budget of the current campaign (contribution + remainder of previous)
@@ -258,19 +251,16 @@ export const useFundingStore = defineStore('funding', () => {
 
   // Budget used for the current campaign
   const usedBudget = computed(() => {
-    let used = campaignExpenses.value.reduce((total, expense) => total + expense.montant, 0)
-    console.log(used)
+    let used = campaignExpenses.value.reduce((total, expense) => total + expense.montant, 0);
+    console.log(used);
     return Math.round(used * 100) / 100;
   });
 
   // Current budget (remainder of the current campaign)
   const currentBudget = computed(() => {
-    console.log(initialBudget.value, usedBudget.value)
-    return initialBudget.value - usedBudget.value
+    console.log(initialBudget.value, usedBudget.value);
+    return initialBudget.value - usedBudget.value;
   });
-
-
-
 
   const remainingTime = computed(() => {
     return Math.round(currentBudget.value / totalMonthlyCost.value);
@@ -281,7 +271,19 @@ export const useFundingStore = defineStore('funding', () => {
   });
 
   const totalAnnualCosts = computed(() => {
-    return recurringCosts.value.reduce((total, cost) => total + (cost.cout * (cost.periodicite === 'mois' ? 12 : cost.periodicite === 'annuel' ? 1 : cost.periodicite === 'semestriel' ? 2 : 1)), 0);
+    return recurringCosts.value.reduce(
+      (total, cost) =>
+        total +
+        cost.cout *
+          (cost.periodicite === 'mois'
+            ? 12
+            : cost.periodicite === 'annuel'
+              ? 1
+              : cost.periodicite === 'semestriel'
+                ? 2
+                : 1),
+      0,
+    );
   });
 
   const totalMonthlyCosts = computed(() => {
@@ -297,7 +299,7 @@ export const useFundingStore = defineStore('funding', () => {
   });
 
   const monthlyDeficit = computed(() => {
-    return totalMonthlyCost.value - (currentBudget.value / 12);
+    return totalMonthlyCost.value - currentBudget.value / 12;
   });
 
   // Methods
@@ -350,7 +352,7 @@ export const useFundingStore = defineStore('funding', () => {
   };
 
   const getBudgetProjection = (months) => {
-    return Math.max(0, currentBudget.value - (totalMonthlyCost.value * months));
+    return Math.max(0, currentBudget.value - totalMonthlyCost.value * months);
   };
 
   const getExhaustionDate = () => {
@@ -359,7 +361,7 @@ export const useFundingStore = defineStore('funding', () => {
     date.setMonth(date.getMonth() + monthsLeft);
     return date.toLocaleDateString('fr-FR', {
       year: 'numeric',
-      month: 'long'
+      month: 'long',
     });
   };
 
@@ -393,9 +395,6 @@ export const useFundingStore = defineStore('funding', () => {
     currentCampaign,
     campaignsWithStatus,
 
-
-
-
     // Methods
     updateBudget,
     updateUserCount,
@@ -408,6 +407,6 @@ export const useFundingStore = defineStore('funding', () => {
     removeBudgetEvolution,
     getBudgetProjection,
     getExhaustionDate,
-    getCostEfficiency
+    getCostEfficiency,
   };
-}); 
+});

@@ -2,8 +2,10 @@
   <div class="occurrence-card" :class="{ 'is-confirming': isConfirming }">
     <!-- Leading icon -->
     <div class="occurrence-icon" :class="occurrence.type === 'Renfort' ? 'icon--renfort' : 'icon--affectation'">
-      <v-icon size="18"
-        :icon="occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline'" />
+      <v-icon
+        size="18"
+        :icon="occurrence.type === 'Renfort' ? 'mdi-handshake-outline' : 'mdi-account-switch-outline'"
+      />
     </div>
 
     <!-- Body -->
@@ -11,23 +13,26 @@
       <span class="occurrence-title">
         <span class="occurrence-type-badge">{{ occurrence.type }}</span>
         Équipe {{ occurrence.teamName }}
-        <span class="days-chip" :class="chipVariant">
-          · Dans {{ relativeDays }} jours
-        </span>
+        <span class="days-chip" :class="chipVariant"> · Dans {{ relativeDays }} jours </span>
       </span>
       <span v-if="occurrence.type === 'Renfort'" class="occurrence-sub">
-        Du <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).from) }}</strong>
-        au <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).to) }}</strong> inclus
+        Du <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).from) }}</strong> au
+        <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).to) }}</strong> inclus
       </span>
       <span v-else class="occurrence-sub">
         À partir du <strong>{{ formattedOccurenceDate(occurrenceDays(occurrence).from) }}</strong>
       </span>
-
     </div>
 
     <div class="occurrence-right">
-      <v-btn rounded="xl" variant="text" color="onBackground" size="small" icon
-        @click.stop="handleDelete(occurrence._id)">
+      <v-btn
+        rounded="xl"
+        variant="text"
+        color="onBackground"
+        size="small"
+        icon
+        @click.stop="handleDelete(occurrence._id)"
+      >
         <v-icon>mdi-delete-outline</v-icon>
       </v-btn>
     </div>
@@ -36,7 +41,7 @@
 
 <script setup>
 import { occurrenceDays } from '@/utils/dayFields.js';
-import { useDisplay } from "vuetify";
+import { useDisplay } from 'vuetify';
 
 const props = defineProps({
   occurrence: {
@@ -63,17 +68,15 @@ const formattedOccurenceDate = computed(() => (date) => {
   return new Date(date).toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'long',
-    year: 'numeric'
+    year: 'numeric',
   });
 });
-
 
 const handleDelete = (occurrenceId) => {
   console.log('handleDelete', occurrenceId);
   emit('delete-occurrence', occurrenceId);
 };
 </script>
-
 
 <style scoped>
 .occurrence-card {
@@ -82,7 +85,7 @@ const handleDelete = (occurrenceId) => {
   gap: 12px;
   padding: 10px 12px;
   border-radius: 16px;
-  border: 0.5px solid rgba(var(--v-border-color), .01);
+  border: 0.5px solid rgba(var(--v-border-color), 0.01);
   background: rgb(var(--v-theme-surfaceContainerHigh));
   transition: border-color 0.15s ease;
   margin-bottom: 6px;
@@ -204,7 +207,10 @@ const handleDelete = (occurrenceId) => {
   align-items: center;
   justify-content: center;
   color: rgb(var(--v-theme-error));
-  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    color 0.12s;
 }
 
 .del-btn:hover {
@@ -259,7 +265,9 @@ const handleDelete = (occurrenceId) => {
 /* ── Transition ── */
 .slide-fade-enter-active,
 .slide-fade-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
 }
 
 .slide-fade-enter-from {

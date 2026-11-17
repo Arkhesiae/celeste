@@ -16,7 +16,7 @@ export const useOtpStore = defineStore('otp', () => {
       });
       return response;
     } catch (error) {
-      console.error('Erreur lors de l\'envoi de l\'OTP:', error);
+      console.error("Erreur lors de l'envoi de l'OTP:", error);
       throw error;
     }
   };
@@ -41,7 +41,7 @@ export const useOtpStore = defineStore('otp', () => {
 
       return response.verified;
     } catch (error) {
-      console.error('Erreur lors de la vérification de l\'OTP:', error);
+      console.error("Erreur lors de la vérification de l'OTP:", error);
       throw error;
     }
   };
@@ -55,7 +55,7 @@ export const useOtpStore = defineStore('otp', () => {
       const response = await otpService.verifyOTP(otp);
       return response.verified;
     } catch (err) {
-      console.error('Erreur lors de la vérification de l\'OTP:', err);
+      console.error("Erreur lors de la vérification de l'OTP:", err);
       throw err;
     }
   };
@@ -67,4 +67,4 @@ export const useOtpStore = defineStore('otp', () => {
     clearOtpRequest,
     verifyOTP,
   };
-}); 
+});

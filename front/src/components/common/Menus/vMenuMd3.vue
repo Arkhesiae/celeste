@@ -3,7 +3,6 @@
   <v-card class="md3-menu" elevation="2" rounded="lg" color="surfaceContainerLow">
     <v-list class="md3-menu__list pa-0" bg-color="transparent" density="compact">
       <template v-for="(entry, index) in items" :key="index">
-
         <template v-if="entry.type === 'divider'">
           <v-divider class="md3-menu__divider" />
           <v-list-subheader v-if="entry.label" class="md3-menu__subheader">
@@ -11,11 +10,18 @@
           </v-list-subheader>
         </template>
 
-        <v-list-item v-else class="md3-menu__item" :class="{
-          'md3-menu__item--selected': modelValue === entry.value,
-          'md3-menu__item--disabled': entry.disabled,
-        }" :disabled="entry.disabled" :ripple="!entry.disabled" rounded="lg" @click="onSelect(entry)">
-
+        <v-list-item
+          v-else
+          class="md3-menu__item"
+          :class="{
+            'md3-menu__item--selected': modelValue === entry.value,
+            'md3-menu__item--disabled': entry.disabled,
+          }"
+          :disabled="entry.disabled"
+          :ripple="!entry.disabled"
+          rounded="lg"
+          @click="onSelect(entry)"
+        >
           <template v-if="entry.icon" #prepend>
             <v-icon class="md3-menu__icon" :icon="entry.icon" />
           </template>
@@ -31,14 +37,12 @@
             <v-icon v-else-if="entry.children" class="md3-menu__submenu-arrow" icon="mdi-chevron-right" size="18" />
           </template>
         </v-list-item>
-
       </template>
     </v-list>
   </v-card>
 </template>
 
 <script setup>
-
 const props = defineProps({
   modelValue: {
     type: String,
@@ -48,17 +52,14 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-})
+});
 
-const emit = defineEmits([
-  'update:modelValue',
-  'select',
-])
+const emit = defineEmits(['update:modelValue', 'select']);
 
-function onSelect (entry) {
-  if (entry.type !== 'item' || entry.disabled) return
-  emit('update:modelValue', entry.value)
-  emit('select', entry)
+function onSelect(entry) {
+  if (entry.type !== 'item' || entry.disabled) return;
+  emit('update:modelValue', entry.value);
+  emit('select', entry);
 }
 </script>
 

@@ -9,7 +9,7 @@ const substitutionStore = useSubstitutionStore();
 const props = defineProps({
   date: {
     type: Date,
-    required: true
+    required: true,
   },
   text: { type: String },
 });
@@ -38,15 +38,12 @@ const isHybridSubstitution = computed(() => {
 });
 
 const hasMultiplePending = computed(() => {
-  const pendingCount = [
-    isTrueSwitch.value,
-    isTrueSubstitution.value,
-    isHybridSubstitution.value
-  ].filter(Boolean).length;
-  
+  const pendingCount = [isTrueSwitch.value, isTrueSubstitution.value, isHybridSubstitution.value].filter(
+    Boolean,
+  ).length;
+
   return pendingCount >= 2;
 });
-
 </script>
 
 <template>
@@ -54,42 +51,16 @@ const hasMultiplePending = computed(() => {
     rounded="lg"
     color="background"
     variant="flat"
- 
-    style="border-color: rgba(var(--v-theme-primary), 0.4);"
+    style="border-color: rgba(var(--v-theme-primary), 0.4)"
     class="text-body-small font-weight-bold px-2 overflow-visible"
     @click="router.push(`/exchange/replace`)"
   >
     <div class="mr-2">
-      <v-icon
-        v-if="hasMultiplePending"
-        color="error"
-      >
-        mdi-alert-circle-outline
-      </v-icon>
-      <v-icon
-        v-if="isTrueSwitch"
-        color="pendingDemand"
-      >
-        mdi-swap-horizontal-hidden
-      </v-icon>
-      <v-icon
-        v-if="isTrueSubstitution"
-        color="pendingDemand"
-      >
-        mdi-account-arrow-left
-      </v-icon>
-      <v-icon
-        v-if="isHybridSubstitution"
-        color="pendingDemand"
-      >
-        mdi-account-arrow-left
-      </v-icon>
-      <v-icon
-        v-if="isHybridSubstitution"
-        color="pendingDemand"
-        class="ml-n2"
-        style="top: 1px; font-size: 16px;"
-      >
+      <v-icon v-if="hasMultiplePending" color="error"> mdi-alert-circle-outline </v-icon>
+      <v-icon v-if="isTrueSwitch" color="pendingDemand"> mdi-swap-horizontal-hidden </v-icon>
+      <v-icon v-if="isTrueSubstitution" color="pendingDemand"> mdi-account-arrow-left </v-icon>
+      <v-icon v-if="isHybridSubstitution" color="pendingDemand"> mdi-account-arrow-left </v-icon>
+      <v-icon v-if="isHybridSubstitution" color="pendingDemand" class="ml-n2" style="top: 1px; font-size: 16px">
         mdi-swap-horizontal
       </v-icon>
     </div>

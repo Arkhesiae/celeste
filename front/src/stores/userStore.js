@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-;
 import { userService } from '@/services/userService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -83,7 +82,7 @@ export const useUserStore = defineStore('user', () => {
       error.value = null;
       currentUser.value = await userService.getUserById(authStore.userData.userId);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération de l\'utilisateur courant';
+      error.value = err.message || "Erreur lors de la récupération de l'utilisateur courant";
       throw err;
     } finally {
       loading.value = false;
@@ -101,9 +100,8 @@ export const useUserStore = defineStore('user', () => {
       error.value = null;
       await userService.assignCenter(userId, centerId);
       await fetchUsers();
-
     } catch (err) {
-      error.value = err.message || 'Erreur lors de l\'attribution du centre';
+      error.value = err.message || "Erreur lors de l'attribution du centre";
       throw err;
     } finally {
       loading.value = false;
@@ -121,7 +119,7 @@ export const useUserStore = defineStore('user', () => {
       await userService.approvePendingUser(userId);
       await fetchUsers();
     } catch (err) {
-      error.value = err.message || 'Erreur lors de l\'approbation de l\'utilisateur';
+      error.value = err.message || "Erreur lors de l'approbation de l'utilisateur";
       throw err;
     } finally {
       loading.value = false;
@@ -139,7 +137,7 @@ export const useUserStore = defineStore('user', () => {
       await userService.deletePendingUser(userId);
       await fetchUsers();
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la suppression de l\'utilisateur';
+      error.value = err.message || "Erreur lors de la suppression de l'utilisateur";
       throw err;
     } finally {
       loading.value = false;
@@ -157,7 +155,7 @@ export const useUserStore = defineStore('user', () => {
       await userService.makeAdmin(userId);
       await fetchUsers();
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la promotion de l\'utilisateur en administrateur';
+      error.value = err.message || "Erreur lors de la promotion de l'utilisateur en administrateur";
       throw err;
     } finally {
       loading.value = false;
@@ -248,6 +246,6 @@ export const useUserStore = defineStore('user', () => {
     removeAdmin,
     fetchUsersAndGroupByTeam,
     fetchTeamsTimeline,
-    emptyStore
+    emptyStore,
   };
 });

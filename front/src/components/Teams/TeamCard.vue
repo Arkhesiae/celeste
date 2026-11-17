@@ -1,60 +1,26 @@
 <template>
-  <v-card
-    class="px-2 ma-0"
-    rounded="xl"
-    variant="flat"
-  >
+  <v-card class="px-2 ma-0" rounded="xl" variant="flat">
     <v-card-item class="pr-0">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
           <span class="text-title-large">Equipe {{ team?.name }}</span>
-          <v-btn
-            v-if="isAdmin"
-            icon
-            variant="text"
-            size="small"
-            class="ml-2"
-            @click="$emit('edit-team-name', team)"
-          >
-            <v-icon size="small">
-              mdi-pencil
-            </v-icon>
+          <v-btn v-if="isAdmin" icon variant="text" size="small" class="ml-2" @click="$emit('edit-team-name', team)">
+            <v-icon size="small"> mdi-pencil </v-icon>
           </v-btn>
         </div>
         <div class="d-flex align-center">
-          <v-menu
-            color="onBackground"
-            rounded="lg"
-          >
+          <v-menu color="onBackground" rounded="lg">
             <template #activator="{ props }">
-              <v-btn
-                icon
-                variant="text"
-                v-bind="props"
-                @click.stop
-              >
+              <v-btn icon variant="text" v-bind="props" @click.stop>
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
             </template>
-            <v-list
-              color="onBackground"
-              bg-color="onBackground"
-              rounded="xl"
-              class="pa-4"
-            >
-              <v-list-item
-                v-if="isAdmin"
-                rounded="lg"
-                @click.stop="$emit('edit-cycle', team)"
-              >
+            <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
+              <v-list-item v-if="isAdmin" rounded="lg" @click.stop="$emit('edit-cycle', team)">
                 <v-list-item-title>Modifier le cycle</v-list-item-title>
               </v-list-item>
-              <v-list-item
-                v-if="isAdmin"
-                rounded="lg"
-                @click.stop="$emit('remove-team', team._id)"
-              >
-                <v-list-item-title style="color: rgba(var(--v-theme-onError), 1);">
+              <v-list-item v-if="isAdmin" rounded="lg" @click.stop="$emit('remove-team', team._id)">
+                <v-list-item-title style="color: rgba(var(--v-theme-onError), 1)">
                   Supprimer l'équipe
                 </v-list-item-title>
               </v-list-item>
@@ -71,13 +37,7 @@
           <span class="ml-1">
             {{ membersCount }}
           </span>
-          <v-chip
-            v-if="renfortsCount > 0"
-            class="ml-1"
-            color="onBackground"
-            size="small"
-            rounded="lg"
-          >
+          <v-chip v-if="renfortsCount > 0" class="ml-1" color="onBackground" size="small" rounded="lg">
             dont {{ renfortsCount }} renfort(s)
           </v-chip>
         </div>
@@ -98,46 +58,37 @@
         </div>
         <div>
           <strong>Début de cycle:</strong>
-          <v-chip
-            class="ml-1"
-            color="onBackground"
-            size="small"
-            rounded="lg"
-          >
+          <v-chip class="ml-1" color="onBackground" size="small" rounded="lg">
             {{ cycleStartDate }}
           </v-chip>
         </div>
         <div>
           <strong>Prochain début de cycle:</strong>
-          <v-chip
-            class="ml-1"
-            color="onBackground"
-            size="small"
-            rounded="lg"
-          >
+          <v-chip class="ml-1" color="onBackground" size="small" rounded="lg">
             {{ nextCycleDate }}
           </v-chip>
         </div>
       </div>
 
       <v-btn-group class="team-actions" connected>
-            <v-btn
-        prepend-icon="mdi-timeline-clock-outline"
-            variant="flat"
-            size="small"
-            aria-label="Voir les membres sur la frise"
-            title="Membres sur la frise"
-            @click.stop="$emit('view-members', team)"
-          >Membres</v-btn>
-           <v-btn
-            icon="mdi-view-week-outline"
-            variant="text"
-            size="small"
-            aria-label="Ouvrir la grille de l'équipe"
-            title="Grille de l'équipe"
-            :to="gridLink"
-            @click.stop
-          />
+        <v-btn
+          prepend-icon="mdi-timeline-clock-outline"
+          variant="flat"
+          size="small"
+          aria-label="Voir les membres sur la frise"
+          title="Membres sur la frise"
+          @click.stop="$emit('view-members', team)"
+          >Membres</v-btn
+        >
+        <v-btn
+          icon="mdi-view-week-outline"
+          variant="text"
+          size="small"
+          aria-label="Ouvrir la grille de l'équipe"
+          title="Grille de l'équipe"
+          :to="gridLink"
+          @click.stop
+        />
       </v-btn-group>
     </v-card-text>
   </v-card>
@@ -147,50 +98,48 @@
 defineProps({
   team: {
     type: Object,
-    required: true
+    required: true,
   },
   isAdmin: {
     type: Boolean,
-    default: false
+    default: false,
   },
   membersCount: {
     type: Number,
-    required: true
+    required: true,
   },
   renfortsCount: {
     type: Number,
-    required: true
+    required: true,
   },
   /** Date de début de cycle déjà formatée (ou « Non défini ») */
   cycleStartDate: {
     type: String,
-    default: 'Non défini'
+    default: 'Non défini',
   },
   nextCycleDate: {
     type: String,
-    required: true
+    required: true,
   },
   /** Jour courant du planning de l'équipe : { position (1-indexé), total } ou null si inconnu */
   currentDay: {
     type: Object,
-    default: null
+    default: null,
   },
   /** Destination de la grille de l'équipe */
   gridLink: {
     type: [Object, String],
-    default: undefined
-  }
+    default: undefined,
+  },
 });
 
 defineEmits(['edit-team-name', 'edit-cycle', 'remove-team', 'view-members']);
-</script> 
+</script>
 
 <style scoped>
-
-.team-actions{
+.team-actions {
   position: absolute;
   bottom: 6px;
   right: 6px;
 }
-
 </style>

@@ -1,49 +1,31 @@
 <template>
   <div>
-    <v-card
-      v-if="!currentActive"
-      color="error"
-      variant="tonal"
-      class="pa-4 mb-4"
-      rounded="xl"
-    >
+    <v-card v-if="!currentActive" color="error" variant="tonal" class="pa-4 mb-4" rounded="xl">
       <v-card-item class="px-2">
         <template #prepend>
           <v-icon icon="mdi-alert-outline" />
         </template>
-        <v-card-title class="px-0 text-body-large">
-          Aucun tour de service actif
-        </v-card-title>
+        <v-card-title class="px-0 text-body-large"> Aucun tour de service actif </v-card-title>
       </v-card-item>
       <v-card-text class="px-2 pb-0">
         <p class="text-medium-emphasis">
-          Programmez l'activation d'un tour de service. Sans tour de service, vos utilisateurs ne peuvent pas
-          publier et accepter des demandes.
+          Programmez l'activation d'un tour de service. Sans tour de service, vos utilisateurs ne peuvent pas publier et
+          accepter des demandes.
         </p>
       </v-card-text>
     </v-card>
-    <v-card
-      v-if="sortedRotations?.length>0"
-      rounded="xl"
-      elevation="0"
-      class="py-4"
-    >
-      <v-timeline
-        line-inset="4px"
-        line-color="surface-variant"
-        truncate-line="end"
-        side="end"
-        line-thickness="2"
-      >
-        <v-scroll-y-transition
-          group
-          appear
-        >
+    <v-card v-if="sortedRotations?.length > 0" rounded="xl" elevation="0" class="py-4">
+      <v-timeline line-inset="4px" line-color="surface-variant" truncate-line="end" side="end" line-thickness="2">
+        <v-scroll-y-transition group appear>
           <v-timeline-item
             v-for="rotation in sortedRotations"
             :key="rotation._id"
             size="sm"
-            :class="{ dashed: rotation.status === 'active', toBeActive: rotation.status === 'toBeActive', 'opacity-50': rotation.status === 'toBeActive' }"
+            :class="{
+              dashed: rotation.status === 'active',
+              toBeActive: rotation.status === 'toBeActive',
+              'opacity-50': rotation.status === 'toBeActive',
+            }"
             fill-dot
             :dot-color="rotation.status === 'active' ? 'primary' : 'rgba(17,24,41,0.78)'"
           >
@@ -61,10 +43,7 @@
                   Actif
                 </v-chip>
               </div>
-              <v-tooltip
-                location="top"
-                text="Supprimer la date d'activation"
-              >
+              <v-tooltip location="top" text="Supprimer la date d'activation">
                 <template #activator="{ props }">
                   <v-chip
                     class="ms-0"
@@ -94,12 +73,12 @@ import { formatDay, activationDay } from '@/utils/dayFields.js';
 defineProps({
   currentActive: {
     type: [Object, null],
-    required: true
+    required: true,
   },
   sortedRotations: {
     type: [Array, null],
-    required: true
-  }
+    required: true,
+  },
 });
 
 defineEmits(['removeActivationDate']);
@@ -125,4 +104,4 @@ defineEmits(['removeActivationDate']);
   border-left: 2px dotted rgba(40, 55, 67, 0.49);
   background: none !important;
 }
-</style> 
+</style>

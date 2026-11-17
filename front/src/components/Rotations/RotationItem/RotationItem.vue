@@ -1,10 +1,5 @@
 <template>
-  <v-card
-    class="mb-4 pa-4"
-    rounded="xl"
-    elevation="0"
-    :class="{ 'active-rotation': isActive }"
-  >
+  <v-card class="mb-4 pa-4" rounded="xl" elevation="0" :class="{ 'active-rotation': isActive }">
     <v-card-item>
       <div class="d-flex align-center">
         <template v-if="!smAndDown && isEditing">
@@ -19,12 +14,8 @@
           />
         </template>
         <template v-else>
-          <v-card-title
-            class="flex-shrink-1"
-            :class="smAndDown ? 'text-title-large' : 'text-headline-large'"
-          >
-            {{ rotation.name
-            }}
+          <v-card-title class="flex-shrink-1" :class="smAndDown ? 'text-title-large' : 'text-headline-large'">
+            {{ rotation.name }}
           </v-card-title>
         </template>
         <v-btn
@@ -41,42 +32,18 @@
       </div>
       <v-card-subtitle>Tour de service</v-card-subtitle>
       <template #append>
-        <v-chip
-          v-if="isActive"
-          class="ml-3"
-          color="primary"
-          rounded="lg"
-        >
-          Actif
-        </v-chip>
-        <v-menu
-          v-if="isAdmin"
-          location="bottom end"
-          @click.stop
-        >
+        <v-chip v-if="isActive" class="ml-3" color="primary" rounded="lg"> Actif </v-chip>
+        <v-menu v-if="isAdmin" location="bottom end" @click.stop>
           <template #activator="{ props }">
-            <v-btn
-              icon
-              v-bind="props"
-              variant="text"
-              color="default"
-            >
+            <v-btn icon v-bind="props" variant="text" color="default">
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>
-          <v-list
-            rounded="xl"
-            class="pa-4"
-            bg-color="onBackground"
-          >
+          <v-list rounded="xl" class="pa-4" bg-color="onBackground">
             <!-- <v-list-item @click="handleEdit(rotation)" prepend-icon="mdi-pencil" rounded="lg">
               <v-list-item-title>Modifier</v-list-item-title>
             </v-list-item> -->
-            <v-list-item
-              prepend-icon="mdi-content-copy"
-              rounded="lg"
-              @click="handleDuplicate(rotation)"
-            >
+            <v-list-item prepend-icon="mdi-content-copy" rounded="lg" @click="handleDuplicate(rotation)">
               <v-list-item-title>Dupliquer</v-list-item-title>
             </v-list-item>
             <v-list-item
@@ -86,22 +53,12 @@
             >
               <v-list-item-title>Programmer activation</v-list-item-title>
             </v-list-item>
-            <v-list-item
-              prepend-icon="mdi-delete"
-              color="error"
-              rounded="lg"
-              @click="$emit('delete', rotation._id)"
-            >
+            <v-list-item prepend-icon="mdi-delete" color="error" rounded="lg" @click="$emit('delete', rotation._id)">
               <v-list-item-title>Supprimer</v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-btn
-          icon
-          variant="text"
-          color="default"
-          @click.stop="$emit('toggle-expand', rotation._id)"
-        >
+        <v-btn icon variant="text" color="default" @click.stop="$emit('toggle-expand', rotation._id)">
           <v-icon :icon="isExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
         </v-btn>
       </template>
@@ -119,15 +76,8 @@
       il faut autant d'équipes que de jours.
     </v-alert>
     <v-expand-transition>
-      <div
-        v-show="isExpanded"
-        style="height: auto"
-      >
-        <DayList
-          class="cursor-pointer"
-          :rotation="rotation.days"
-          @day-click="handleDayClick"
-        />
+      <div v-show="isExpanded" style="height: auto">
+        <DayList class="cursor-pointer" :rotation="rotation.days" @day-click="handleDayClick" />
       </div>
     </v-expand-transition>
   </v-card>
@@ -141,11 +91,7 @@
   />
 
   <!-- Desktop Dialog -->
-  <v-dialog
-    v-if="!smAndDown"
-    v-model="showDayDetail"
-    max-width="400"
-  >
+  <v-dialog v-if="!smAndDown" v-model="showDayDetail" max-width="400">
     <DayDetail
       rounded="xl"
       :is-mobile="smAndDown"
@@ -157,10 +103,7 @@
   </v-dialog>
 
   <!-- Mobile Bottom Sheet -->
-  <v-bottom-sheet
-    v-if="smAndDown"
-    v-model="showDayDetail"
-  >
+  <v-bottom-sheet v-if="smAndDown" v-model="showDayDetail">
     <DayDetail
       :is-mobile="smAndDown"
       :day="selectedDay"
@@ -182,8 +125,8 @@
 
 <script setup>
 import { useDisplay } from 'vuetify';
-import { useAuthStore } from "@/stores/authStore.js";
-import { useRotationStore } from "@/stores/rotationStore";
+import { useAuthStore } from '@/stores/authStore.js';
+import { useRotationStore } from '@/stores/rotationStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const authStore = useAuthStore();
@@ -202,25 +145,27 @@ const nameInput = ref(null);
 const props = defineProps({
   rotation: {
     type: Object,
-    required: true
+    required: true,
   },
   isExpanded: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isActive: {
     type: Boolean,
-    default: false
+    default: false,
   },
   /** Nombre d'équipes du centre ; null tant qu'il est inconnu (aucun avertissement) */
   teamsCount: {
     type: Number,
-    default: null
-  }
+    default: null,
+  },
 });
 
 // Autant d'équipes que de jours dans le tour de service
-const teamCountMismatch = computed(() => props.teamsCount !== null && (props.rotation.days?.length ?? 0) !== props.teamsCount);
+const teamCountMismatch = computed(
+  () => props.teamsCount !== null && (props.rotation.days?.length ?? 0) !== props.teamsCount,
+);
 
 const emit = defineEmits(['set-activation-date', 'delete', 'toggle-expand', 'edit']);
 
@@ -233,17 +178,17 @@ const handleDayClick = (day) => {
 
 const handleQuickDayEdit = async (updatedDay) => {
   try {
-    await rotationStore.updateDayInRotation(
-      props.rotation._id,
-      updatedDay,
-      props.rotation.centerId
-    );
-    snackbarStore.showNotification("Jour modifié", "onPrimary", "mdi-check");
+    await rotationStore.updateDayInRotation(props.rotation._id, updatedDay, props.rotation.centerId);
+    snackbarStore.showNotification('Jour modifié', 'onPrimary', 'mdi-check');
     showEditDayDialog.value = false;
     showDayDetail.value = false;
   } catch (error) {
     console.error('Erreur lors de la mise à jour du jour :', error);
-    snackbarStore.showNotification(error.message || 'Erreur lors de la modification du jour', 'onError', 'mdi-alert-circle-outline');
+    snackbarStore.showNotification(
+      error.message || 'Erreur lors de la modification du jour',
+      'onError',
+      'mdi-alert-circle-outline',
+    );
   }
 };
 
@@ -252,7 +197,11 @@ const handleDuplicate = async (rotation) => {
     await rotationStore.duplicateRotation(rotation._id, rotation.centerId);
     snackbarStore.showNotification('Tour de service dupliqué avec succès', 'onPrimary', 'mdi-check');
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la duplication du tour de service', 'onError', 'mdi-alert-circle-outline');
+    snackbarStore.showNotification(
+      'Erreur lors de la duplication du tour de service',
+      'onError',
+      'mdi-alert-circle-outline',
+    );
   }
 };
 
@@ -277,12 +226,12 @@ const handleNameEdit = async (updatedRotation) => {
     }
     await rotationStore.updateRotation(props.rotation._id, {
       ...props.rotation,
-      name: newName
+      name: newName,
     });
     isEditing.value = false;
   } catch (error) {
     console.error('Erreur lors de la mise à jour du nom :', error);
-    snackbarStore.showNotification("Erreur lors de la modification du nom", "onError");
+    snackbarStore.showNotification('Erreur lors de la modification du nom', 'onError');
   }
 };
 </script>
@@ -299,7 +248,11 @@ const handleNameEdit = async (updatedRotation) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, rgba(var(--v-theme-primary), 0.15) 0%, rgba(var(--v-theme-surfaceContainerHighest), 0.25) 80%);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--v-theme-primary), 0.15) 0%,
+    rgba(var(--v-theme-surfaceContainerHighest), 0.25) 80%
+  );
   pointer-events: none;
   z-index: 0;
 }

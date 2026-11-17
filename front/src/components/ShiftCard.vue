@@ -1,90 +1,107 @@
 <template>
-  <div class="shift-card  rounded-xl  pa-4 px-4 position-relative d-flex flex-column justify-space-between"
-    :class="dayPresenceClasses(presence)">
-   
-    <div  class="d-flex justify-space-between align-start">
-      <div class="d-flex flex-column ga-2"> 
-
-         <div v-if="!isBaseShift" class="d-flex align-center ga-1 pa-0">
-      <span class="text-body-large font-weight-medium text-disabled">{{ baseShift?.name }}</span>
-      <div v-for="(entry, index) in history" :key="index" class="d-flex align-center ga-1">
-        <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8;" />
-        <span v-if="['shift', 'substitution'].includes(entry.type)" class="text-body-large font-weight-medium"
-          :class="index === history.length - 1 ? '' : 'text-disabled'">
-          {{ entry.shiftData?.shift?.name || (entry.type === 'substitution' ? 'Remplacé' : '') }}
-        </span>
-        <v-icon v-else :key="entry?.type" size="16" :class="index === history.length - 1 ? '' : 'text-disabled'">
-          {{ typeIcon(entry?.type) }}
-        </v-icon>
-        <span v-if="entry.wasOverride" class="text-body-small text-disabled">Override</span>
-      </div>
-    </div>
-
-    <div v-if="vacation.type === 'empty'">
-      <span class="text-disabled">C'est vide</span>  </div>
-    <div v-else class="d-flex align-center ga-4">
-      <span v-if="isShift && !isRestDay" class="text-headline-large font-weight-medium">
-        {{ shiftName }}
-      </span>
-
-      <div v-else-if="isRestDay" class="pb-0 mb-0">
-        <span class="text-title-large font-weight-medium">Repos</span>
-      </div>
-
-      <!-- Remplacé : plus de vacation tenue, on montre celle qui a été cédée, barrée -->
-      <div v-else-if="presence === 'replaced'" class="d-flex flex-column">
-        <span class="text-headline-large font-weight-medium text-disabled text-decoration-line-through">{{ shiftName }}</span>
-        <span class="text-body-small text-medium-emphasis">Remplacé</span>
-      </div>
-
-      <div v-else-if="!isShift">
-        <span class="text-body-large font-weight-medium ">{{ dayType }}</span>
-      </div>
-
-      <div class="d-flex flex-column justify-space-between">
-        <HourRange v-if="hours" :hours="hours" :ends-next-day="shiftEndsNextDay" :was-patched="wasPatched" />
-        <div v-if="shiftTeam" class="py-0 text-body-small opacity-70"
-          style="line-height: 1.2; font-size: 11px !important;">
-          Dans l'équipe {{ shiftTeam }}
+  <div
+    class="shift-card rounded-xl pa-4 px-4 position-relative d-flex flex-column justify-space-between"
+    :class="dayPresenceClasses(presence)"
+  >
+    <div class="d-flex justify-space-between align-start">
+      <div class="d-flex flex-column ga-2">
+        <div v-if="!isBaseShift" class="d-flex align-center ga-1 pa-0">
+          <span class="text-body-large font-weight-medium text-disabled">{{ baseShift?.name }}</span>
+          <div v-for="(entry, index) in history" :key="index" class="d-flex align-center ga-1">
+            <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8" />
+            <span
+              v-if="['shift', 'substitution'].includes(entry.type)"
+              class="text-body-large font-weight-medium"
+              :class="index === history.length - 1 ? '' : 'text-disabled'"
+            >
+              {{ entry.shiftData?.shift?.name || (entry.type === 'substitution' ? 'Remplacé' : '') }}
+            </span>
+            <v-icon v-else :key="entry?.type" size="16" :class="index === history.length - 1 ? '' : 'text-disabled'">
+              {{ typeIcon(entry?.type) }}
+            </v-icon>
+            <span v-if="entry.wasOverride" class="text-body-small text-disabled">Override</span>
+          </div>
         </div>
-        <div v-if="comment" class="py-0 text-body-small opacity-70 entry-comment">{{ comment }}</div>
+
+        <div v-if="vacation.type === 'empty'">
+          <span class="text-disabled">C'est vide</span>
+        </div>
+        <div v-else class="d-flex align-center ga-4">
+          <span v-if="isShift && !isRestDay" class="text-headline-large font-weight-medium">
+            {{ shiftName }}
+          </span>
+
+          <div v-else-if="isRestDay" class="pb-0 mb-0">
+            <span class="text-title-large font-weight-medium">Repos</span>
+          </div>
+
+          <!-- Remplacé : plus de vacation tenue, on montre celle qui a été cédée, barrée -->
+          <div v-else-if="presence === 'replaced'" class="d-flex flex-column">
+            <span class="text-headline-large font-weight-medium text-disabled text-decoration-line-through">{{
+              shiftName
+            }}</span>
+            <span class="text-body-small text-medium-emphasis">Remplacé</span>
+          </div>
+
+          <div v-else-if="!isShift">
+            <span class="text-body-large font-weight-medium">{{ dayType }}</span>
+          </div>
+
+          <div class="d-flex flex-column justify-space-between">
+            <HourRange v-if="hours" :hours="hours" :ends-next-day="shiftEndsNextDay" :was-patched="wasPatched" />
+            <div
+              v-if="shiftTeam"
+              class="py-0 text-body-small opacity-70"
+              style="line-height: 1.2; font-size: 11px !important"
+            >
+              Dans l'équipe {{ shiftTeam }}
+            </div>
+            <div v-if="comment" class="py-0 text-body-small opacity-70 entry-comment">{{ comment }}</div>
+          </div>
+        </div>
       </div>
-    </div>
 
+      <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2 mr-n2 mt-n2">
+        <v-tooltip v-if="enableAssign && canRegisterEntry" text="Modifier" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="emit('open-entry-dialog')">
+              <v-icon>mdi-pencil</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip v-if="showUndoMods" text="Annuler les modifications" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="undoMods">
+              <v-icon>mdi-undo-variant</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
+        <v-tooltip v-if="showDelete" text="Supprimer l'entrée" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="deleteAssignment">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
       </div>
-        
-
-       <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2 mr-n2 mt-n2">
-      <v-tooltip v-if="enableAssign && canRegisterEntry" text="Modifier" location="top">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="emit('open-entry-dialog')">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-        </template>
-      </v-tooltip>
-      <v-tooltip v-if="showUndoMods" text="Annuler les modifications" location="top">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="undoMods">
-            <v-icon>mdi-undo-variant</v-icon>
-          </v-btn>
-        </template>
-      </v-tooltip>
-      <v-tooltip v-if="showDelete" text="Supprimer l'entrée" location="top">
-        <template #activator="{ props: tooltipProps }">
-          <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="deleteAssignment">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-      </v-tooltip>
-    </div>
-
     </div>
 
     <Transition name="fade-expand">
-      <VariationSelector :is-rest-day="isRestDay" :in-past="inPast" :is-shift="isShift" :presence="presence"
-        :has-no-demand="hasNoDemand" :status="status" :variations="variations" :selected-variation="selectedVariation"
-        @register-mdda="openMddaDialog" @patch-hours="patchHours" @select-variation="selectVariationForDay"
-        @register-vic="registerVIC" @register-absence="registerAbsence" />
+      <VariationSelector
+        :is-rest-day="isRestDay"
+        :in-past="inPast"
+        :is-shift="isShift"
+        :presence="presence"
+        :has-no-demand="hasNoDemand"
+        :status="status"
+        :variations="variations"
+        :selected-variation="selectedVariation"
+        @register-mdda="openMddaDialog"
+        @patch-hours="patchHours"
+        @select-variation="selectVariationForDay"
+        @register-vic="registerVIC"
+        @register-absence="registerAbsence"
+      />
     </Transition>
 
     <MddaDialog
@@ -130,9 +147,7 @@ const dateKey = computed(() => toDateKey(props.date));
 
 // ─── Vacation data ────────────────────────────────────────────────────────────
 
-const vacation = computed(() =>
-  dateKey.value ? shiftStore.persistentVacationsMap.get(dateKey.value) : null
-);
+const vacation = computed(() => (dateKey.value ? shiftStore.persistentVacationsMap.get(dateKey.value) : null));
 
 // ─── Derived state ────────────────────────────────────────────────────────────
 
@@ -167,7 +182,7 @@ const showUndoMods = computed(() => {
 const showDelete = computed(() => {
   const lastEntry = history?.value?.[history.value?.length - 1];
   if (lastEntry && lastEntry.type !== 'substitution') return true;
-  return false
+  return false;
 });
 
 const hours = computed(() => {
@@ -208,13 +223,13 @@ const dayType = computed(() => {
 });
 
 const hasNoDemand = computed(() => {
-  const acceptedAsAccepter = substitutionStore.acceptedAsAccepter.filter(d => sameDateKey(posterDay(d), props.date));
-  const acceptedAsPoster = substitutionStore.acceptedAsPoster.filter(d => sameDateKey(posterDay(d), props.date));
+  const acceptedAsAccepter = substitutionStore.acceptedAsAccepter.filter((d) => sameDateKey(posterDay(d), props.date));
+  const acceptedAsPoster = substitutionStore.acceptedAsPoster.filter((d) => sameDateKey(posterDay(d), props.date));
   const pendingDemand = [
     ...substitutionStore.ownPendingHybridSubstitutions,
     ...substitutionStore.ownPendingTrueSubstitutions,
     ...substitutionStore.ownPendingTrueSwitches,
-  ].find(d => sameDateKey(posterDay(d), props.date));
+  ].find((d) => sameDateKey(posterDay(d), props.date));
   return !pendingDemand && !acceptedAsPoster?.length && !acceptedAsAccepter?.length;
 });
 
@@ -229,10 +244,7 @@ const typeIcon = (type) => {
 
 const deleteAssignment = async () => {
   try {
-    const res = await planningModificationService.deleteAssignment(
-      authStore.userData.userId,
-      dateKey.value
-    );
+    const res = await planningModificationService.deleteAssignment(authStore.userData.userId, dateKey.value);
     shiftStore.addEntry(res.userShift[0], dateKey.value);
   } catch (err) {
     console.error(err);
@@ -242,10 +254,7 @@ const deleteAssignment = async () => {
 
 const undoMods = async () => {
   try {
-    const res = await planningModificationService.undoMods(
-      authStore.userData.userId,
-      dateKey.value
-    );
+    const res = await planningModificationService.undoMods(authStore.userData.userId, dateKey.value);
     shiftStore.addEntry(res.userShift[0], dateKey.value);
   } catch (err) {
     console.error(err);
@@ -275,21 +284,24 @@ const basePayload = () => ({
   confirmCreation: true,
 });
 
-const selectVariationForDay = (variation) => registerEntry({
-  ...basePayload(),
-  entryType: 'variation',
-  selectedVariation: variation?._id ?? null,
-});
+const selectVariationForDay = (variation) =>
+  registerEntry({
+    ...basePayload(),
+    entryType: 'variation',
+    selectedVariation: variation?._id ?? null,
+  });
 
-const registerAbsence = () => registerEntry({
-  ...basePayload(),
-  entryType: presence.value === 'present' ? 'disp' : 'pres',
-});
+const registerAbsence = () =>
+  registerEntry({
+    ...basePayload(),
+    entryType: presence.value === 'present' ? 'disp' : 'pres',
+  });
 
-const registerVIC = () => registerEntry({
-  ...basePayload(),
-  entryType: 'vic',
-});
+const registerVIC = () =>
+  registerEntry({
+    ...basePayload(),
+    entryType: 'vic',
+  });
 
 const registerEntry = async (payload) => {
   try {
@@ -303,7 +315,7 @@ const registerEntry = async (payload) => {
     snackbarStore.showNotification(
       payload.type === 'hourPatch' ? 'MDDA enregistrée' : 'Modification enregistrée',
       'onPrimary',
-      payload.type === 'hourPatch' ? 'mdi-clock-fast' : 'mdi-check'
+      payload.type === 'hourPatch' ? 'mdi-clock-fast' : 'mdi-check',
     );
   } catch (error) {
     console.error(error);
@@ -317,7 +329,11 @@ const mddaLoading = ref(false);
 const openMddaDialog = () => {
   const shiftId = vacation.value?.shiftData?.shift?._id;
   if (!dateKey.value || !shiftId) {
-    snackbarStore.showNotification('Impossible de créer la MDDA : vacation introuvable', 'onError', 'mdi-alert-circle-outline');
+    snackbarStore.showNotification(
+      'Impossible de créer la MDDA : vacation introuvable',
+      'onError',
+      'mdi-alert-circle-outline',
+    );
     return;
   }
   showMddaDialog.value = true;
@@ -328,7 +344,11 @@ const confirmMdda = async ({ startTime, endTime }) => {
   const teamId = resolveTeamId(vacation.value?.shiftData?.team);
 
   if (!dateKey.value || !shiftId) {
-    snackbarStore.showNotification('Impossible de créer la MDDA : vacation introuvable', 'onError', 'mdi-alert-circle-outline');
+    snackbarStore.showNotification(
+      'Impossible de créer la MDDA : vacation introuvable',
+      'onError',
+      'mdi-alert-circle-outline',
+    );
     return;
   }
 
@@ -350,7 +370,6 @@ const confirmMdda = async ({ startTime, endTime }) => {
     mddaLoading.value = false;
   }
 };
-
 </script>
 
 <style scoped>
@@ -366,7 +385,6 @@ const confirmMdda = async ({ startTime, endTime }) => {
 
 .shift-card {
   min-width: 300px !important;
-
 }
 
 .fade-expand-enter-active,

@@ -4,11 +4,13 @@
   </div>
 </template>
 
-<route lang="json">{
+<route lang="json">
+{
   "meta": {
     "test": false
   }
-}</route>
+}
+</route>
 
 <script setup>
 import { useTicketStore } from '@/stores/ticketStore';
@@ -18,35 +20,36 @@ const ticketStore = useTicketStore();
 const props = defineProps({
   filters: {
     type: Object,
-    required: true
+    required: true,
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 defineEmits(['open-ticket']);
 
-const archivedTickets = computed(() => ticketStore.sortedTickets.filter(ticket => ticket.archived));
+const archivedTickets = computed(() => ticketStore.sortedTickets.filter((ticket) => ticket.archived));
 
 const filteredTickets = computed(() => {
   let tickets = archivedTickets.value.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   if (props.filters.type) {
-    tickets = tickets.filter(ticket => ticket.type === props.filters.type);
+    tickets = tickets.filter((ticket) => ticket.type === props.filters.type);
   }
 
   if (props.filters.status !== 'all') {
-    tickets = tickets.filter(ticket => ticket.status === props.filters.status);
+    tickets = tickets.filter((ticket) => ticket.status === props.filters.status);
   }
 
   if (props.filters.search) {
     const search = props.filters.search.toLowerCase();
-    tickets = tickets.filter(ticket =>
-      ticket.title.toLowerCase().includes(search) ||
-      ticket.content.toLowerCase().includes(search) ||
-      ticket.senderEmail.toLowerCase().includes(search)
+    tickets = tickets.filter(
+      (ticket) =>
+        ticket.title.toLowerCase().includes(search) ||
+        ticket.content.toLowerCase().includes(search) ||
+        ticket.senderEmail.toLowerCase().includes(search),
     );
   }
 

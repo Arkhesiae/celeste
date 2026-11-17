@@ -1,82 +1,92 @@
 <template>
   <v-list v-if="!loading" bg-color="transparent" class="ticket-list pa-0 ma-0">
     <div v-for="(ticket, index) in tickets">
-    <v-list-item  rounded="lg" 
-      class="py-3 ticket-item" @click="$emit('open-ticket', ticket)">
-      <div class="d-flex align-center justify-space-between    ga-1">
-        <div class="d-flex align-start  ga-1 flex-column min-width-0  ">
-          <div class="d-flex align-center  w-100  ga-1">
-            <div class=" d-flex align-center w-100 flex-wrap ga-1">
-              <div class="d-flex align-center w-100 ga-1">
-                <div class="d-flex align-center ga-1 icon-container">
-                  <v-icon size="12" :icon="getTicketIcon(ticket.type)" color="primary" />
+      <v-list-item rounded="lg" class="py-3 ticket-item" @click="$emit('open-ticket', ticket)">
+        <div class="d-flex align-center justify-space-between ga-1">
+          <div class="d-flex align-start ga-1 flex-column min-width-0">
+            <div class="d-flex align-center w-100 ga-1">
+              <div class="d-flex align-center w-100 flex-wrap ga-1">
+                <div class="d-flex align-center w-100 ga-1">
+                  <div class="d-flex align-center ga-1 icon-container">
+                    <v-icon size="12" :icon="getTicketIcon(ticket.type)" color="primary" />
+                  </div>
+                  <span class="title text-body-large">{{ ticket.title }}</span>
+
+                  <div v-if="ticket.replySent" class="">
+                    <v-chip size="x-small" color="done" prepend-icon="mdi-check" variant="tonal" rounded="lg">
+                      Réponse
+                    </v-chip>
+                  </div>
                 </div>
-                <span class=" title text-body-large ">{{ ticket.title }}</span>
 
+                <!-- Chips avec responsive design -->
+                <div class="d-flex align-center ga-1">
+                  <div class="pr-16 align-center d-flex ga-1">
+                    <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg" color="primary">
+                      Local
+                    </v-chip>
 
-                <div v-if="ticket.replySent" class="">
-                  <v-chip size="x-small" color="done" prepend-icon="mdi-check" variant="tonal" rounded="lg">
-                    Réponse
-                  </v-chip>
-                </div>
-              </div>
-
-
-              <!-- Chips avec responsive design -->
-              <div class="d-flex align-center ga-1 ">
-                <div class="pr-16 align-center d-flex  ga-1">
-                  <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg" color="primary">
-                    Local
-                  </v-chip>
-
-                  <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
-                    {{ ticket.centerId?.name }}
-                  </v-chip>
+                    <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
+                      {{ ticket.centerId?.name }}
+                    </v-chip>
+                  </div>
                 </div>
               </div>
             </div>
+            <div class="subtitle-container mt-1">
+              <div class="d-flex align-center opacity-50 text-email">
+                <v-icon size="small" class="mr-1"> mdi-email-outline </v-icon>
+                {{ ticket.senderEmail }}
+              </div>
+            </div>
           </div>
-          <div class="subtitle-container mt-1">
-            <div class="d-flex align-center opacity-50 text-email">
-              <v-icon size="small" class="mr-1">
-                mdi-email-outline
-              </v-icon>
-              {{ ticket.senderEmail }}
+
+          <div
+            class="d-flex align-end justify-space-between flex-0-0 h-100 flex-column ga-1"
+            :class="smAndDown ? 'mr-2' : ''"
+          >
+            <TicketStatus v-if="!smAndDown" :ticket-id="ticket._id" :status="ticket.status" :prepend-icon="true" />
+
+            <MobileStatusChip
+              v-if="smAndDown"
+              :status="ticket.status"
+              :ticket-id="ticket._id"
+              @click.stop="openSelector(ticket._id)"
+            />
+
+            <div class="d-flex align-center ga-0">
+              <v-chip
+                size="x-small"
+                variant="tonal"
+                class="opacity-50"
+                color="onSurface"
+                :prepend-icon="xs ? undefined : 'mdi-clock-outline'"
+                rounded="lg"
+              >
+                {{ xs ? formatDateExtraShort(ticket.createdAt) : formatDateShort(ticket.createdAt) }}
+              </v-chip>
             </div>
           </div>
         </div>
-
-
-        <div class="d-flex align-end justify-space-between flex-0-0 h-100 flex-column ga-1"
-          :class="smAndDown ? 'mr-2' : ''">
-          <TicketStatus v-if="!smAndDown" :ticket-id="ticket._id" :status="ticket.status" :prepend-icon="true" />
-
-          <MobileStatusChip v-if="smAndDown" :status="ticket.status" :ticket-id="ticket._id"
-            @click.stop="openSelector(ticket._id)" />
-
-
-          <div class="d-flex align-center ga-0">
-            <v-chip size="x-small" variant="tonal" class="opacity-50" color="onSurface"
-              :prepend-icon="xs ? undefined : 'mdi-clock-outline'" rounded="lg">
-              {{ xs ? formatDateExtraShort(ticket.createdAt) : formatDateShort(ticket.createdAt) }}
-            </v-chip>
-          </div>
-        </div>
-      </div>
-    </v-list-item>
-    <v-divider v-if="index < tickets.length - 1" opacity="0.1"></v-divider>
+      </v-list-item>
+      <v-divider v-if="index < tickets.length - 1" opacity="0.1"></v-divider>
     </div>
     <v-list-item v-if="tickets.length === 0" class="text-center py-4">
-      <v-list-item-title class="text-grey">
-        Aucun ticket trouvé
-      </v-list-item-title>
+      <v-list-item-title class="text-grey"> Aucun ticket trouvé </v-list-item-title>
     </v-list-item>
   </v-list>
   <v-progress-circular v-else indeterminate color="primary" class="ma-4" />
   <!-- Selector -->
   <v-dialog v-model="showSelector" width="300">
-    <EntitySelector v-model="selectedTicketStatus" title="Mettre à jour le statut" :items="statusOptions"
-      item-subtitle="subtitle" item-key="value" item-title="label" @update:model-value="updateStatus" />
+    <EntitySelector
+      v-model="selectedTicketStatus"
+      title="Mettre à jour le statut"
+      :items="statusOptions"
+      item-subtitle="subtitle"
+      item-key="value"
+      item-title="label"
+      @update:model-value="updateStatus"
+    />
   </v-dialog>
 
   <!-- Progress Circular -->
@@ -89,17 +99,15 @@ const { smAndDown, xs } = useDisplay();
 
 const ticketStore = useTicketStore();
 
-
-
 defineProps({
   tickets: {
     type: Array,
-    required: true
+    required: true,
   },
   loading: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 defineEmits(['open-ticket', 'mark-read']);
@@ -111,13 +119,13 @@ const showSelector = ref(false);
 const openSelector = (ticketId) => {
   selectedTicket.value = ticketId;
   showSelector.value = true;
-  selectedTicketStatus.value = { value: ticketStore.tickets.find(ticket => ticket._id === ticketId).status }
+  selectedTicketStatus.value = { value: ticketStore.tickets.find((ticket) => ticket._id === ticketId).status };
 };
 
 const statusOptions = [
   { value: 'new', label: 'A traiter', subtitle: 'Nouveau ticket' },
   { value: 'in_progress', label: 'En cours', subtitle: 'En cours de traitement' },
-  { value: 'closed', label: 'Fermé', subtitle: 'Fermé' }
+  { value: 'closed', label: 'Fermé', subtitle: 'Fermé' },
 ];
 
 const updateStatus = async (newStatus) => {
@@ -131,11 +139,10 @@ const updateStatus = async (newStatus) => {
 };
 
 const ticketTypes = [
-  { title: 'Demande d\'assistance', value: 'assistance' },
+  { title: "Demande d'assistance", value: 'assistance' },
   { title: 'Signaler un bug', value: 'review' },
-  { title: 'Autre', value: 'other' }
+  { title: 'Autre', value: 'other' },
 ];
-
 
 const getTicketIcon = (type) => {
   switch (type) {
@@ -200,19 +207,16 @@ const formatDateShort = (date) => {
     day: '2-digit',
     month: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 };
 
 const formatDateExtraShort = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', {
     day: '2-digit',
-    month: '2-digit'
+    month: '2-digit',
   });
 };
-
-
-
 </script>
 
 <style scoped>
@@ -225,7 +229,6 @@ const formatDateExtraShort = (date) => {
 
 .ticket-item:hover {
   background-color: rgba(var(--v-theme-surface-variant), 0.1);
-
 }
 
 .unread {
@@ -273,12 +276,9 @@ const formatDateExtraShort = (date) => {
     line-height: 1.2 !important;
   }
 
-
-
   .id {
     font-size: 0.75rem !important;
   }
-
 }
 
 .min-width-0 {

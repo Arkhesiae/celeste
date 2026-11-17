@@ -1,16 +1,12 @@
 <template>
   <v-container ref="containerRef" :class="smAndDown ? 'mb-n16' : ''">
     <Transition name="title-transition" appear>
-      <WelcomeTitle :user-name="userName">
-
-      </WelcomeTitle>
+      <WelcomeTitle :user-name="userName"> </WelcomeTitle>
     </Transition>
 
-    
     <!-- <Transition name="donations-transition" appear>
       <Donations></Donations>
     </Transition> -->
-
 
     <SetupAlerts />
 
@@ -22,33 +18,44 @@
       </v-col>
     </v-row>
     <!-- Grille principale -->
-    <v-row >
-      <v-col cols="12" md="auto" lg="auto" xl="auto" style="min-width: 0; width: 0;"
-        class="flex-grow-1 ga-4 d-flex flex-column">
+    <v-row>
+      <v-col
+        cols="12"
+        md="auto"
+        lg="auto"
+        xl="auto"
+        style="min-width: 0; width: 0"
+        class="flex-grow-1 ga-4 d-flex flex-column"
+      >
         <VacationCards />
         <DemandCards @open-details="openDemand" />
       </v-col>
 
       <v-col :class="smAndDown ? '' : 'right-col'">
         <div class="d-flex justify-space-between align-start flex-column mb-4 flex-grow-1 ga-4">
-          <span class="text-title-large font-weight-medium pa-0">
-            Mon centre
-          </span>
+          <span class="text-title-large font-weight-medium pa-0"> Mon centre </span>
         </div>
 
         <LocalRecommendationsCard />
 
         <ActiveRotationCard />
 
-       
-
-
-
-        <v-card rounded="xl" elevation="0" class="pa-4" :class="smAndDown ? 'pb-16 mx-n3' : ''"
-          color="surfaceContainer">
+        <v-card
+          rounded="xl"
+          elevation="0"
+          class="pa-4"
+          :class="smAndDown ? 'pb-16 mx-n3' : ''"
+          color="surfaceContainer"
+        >
           <div class="d-flex ga-10 flex-column">
-            <PointsCard v-if="!smAndDown" color="transparent" class="pa-0" :points="stats.points" :transactions="[]"
-              @transfer="transferDialog = true" />
+            <PointsCard
+              v-if="!smAndDown"
+              color="transparent"
+              class="pa-0"
+              :points="stats.points"
+              :transactions="[]"
+              @transfer="transferDialog = true"
+            />
 
             <DashboardCalendarSection />
           </div>
@@ -56,31 +63,33 @@
           <!-- <DashboardTeamCard /> -->
         </v-card>
 
-         <DemandHeatmapCard class="my-4" />
+        <DemandHeatmapCard class="my-4" />
 
-         <!-- <CentersMapCard class="my-4 mb-16" /> -->
-
+        <!-- <CentersMapCard class="my-4 mb-16" /> -->
       </v-col>
-
     </v-row>
 
-    <v-bottom-sheet v-if="smAndDown" :model-value="pointSectionVisible"
-      @update:model-value="pointSectionVisible = $event">
+    <v-bottom-sheet
+      v-if="smAndDown"
+      :model-value="pointSectionVisible"
+      @update:model-value="pointSectionVisible = $event"
+    >
       <PointsCard class="pa-4" :points="stats.points" :transactions="[]" @transfer="transferDialog = true" />
     </v-bottom-sheet>
 
-    <TransferDialog :dialog-visible="transferDialog" :user-id="authStore.userData.userId"
-      @update:dialog-visible="transferDialog = $event" />
+    <TransferDialog
+      :dialog-visible="transferDialog"
+      :user-id="authStore.userData.userId"
+      @update:dialog-visible="transferDialog = $event"
+    />
 
     <DemandDependencies ref="demandDeps" />
   </v-container>
 </template>
 
-
-
 <script setup>
-import { useAuthStore } from "@/stores/authStore.js";
-import { useDisplay } from "vuetify";
+import { useAuthStore } from '@/stores/authStore.js';
+import { useDisplay } from 'vuetify';
 
 const authStore = useAuthStore();
 const demandDeps = ref(null);
@@ -89,12 +98,11 @@ const pointSectionVisible = ref(false);
 
 const { smAndDown } = useDisplay();
 
-
 // Stats
 const stats = ref({
   remplacements: 0,
   permutations: 0,
-  points: 0
+  points: 0,
 });
 
 const transferDialog = ref(false);
@@ -138,18 +146,27 @@ onUnmounted(() => {
 }
 
 .highlight-shadow {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.096),
+    0 0 0 1px rgba(255, 255, 255, 0.007),
+    0 4px 8px rgba(0, 0, 0, 0.148);
 }
 
 .new-demand-button.highlight-shadow {
   backface-visibility: hidden;
   transform: translateZ(0);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.026), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 4px rgba(0, 0, 0, 0.018);
+  box-shadow:
+    0 4px 10px rgba(0, 0, 0, 0.026),
+    0 0 0 1px rgba(255, 255, 255, 0.007),
+    0 4px 4px rgba(0, 0, 0, 0.018);
 }
 
 .new-demand-button.highlight-shadow:hover {
   transform: scale(1.05) translateZ(0);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.148);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.096),
+    0 0 0 1px rgba(255, 255, 255, 0.007),
+    0 4px 8px rgba(0, 0, 0, 0.148);
   transition: transform 0.2s ease-in-out;
 }
 
@@ -169,7 +186,6 @@ onUnmounted(() => {
 .donations-transition-enter-active,
 .donations-transition-leave-active {
   transition: all 1s ease;
-
 }
 
 .donations-transition-enter-from,

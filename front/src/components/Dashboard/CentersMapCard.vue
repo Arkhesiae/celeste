@@ -10,7 +10,12 @@
 
     <!-- Carte : Leaflet est chargé à la demande (il n'alourdit pas le reste du tableau de bord) -->
     <div class="cm-frame">
-      <div ref="mapElement" class="cm-map" role="application" aria-label="Carte des centres et de leurs demandes à venir" />
+      <div
+        ref="mapElement"
+        class="cm-map"
+        role="application"
+        aria-label="Carte des centres et de leurs demandes à venir"
+      />
       <div v-if="mapError" class="cm-overlay text-body-medium text-medium-emphasis">
         La carte n'a pas pu être chargée.
       </div>
@@ -32,7 +37,9 @@
         <div class="d-flex flex-column min-width-0">
           <span class="text-title-small text-truncate">
             {{ selected.name }}
-            <v-chip v-if="selected.isOwn" size="x-small" color="primary" variant="tonal" class="ml-1">Votre centre</v-chip>
+            <v-chip v-if="selected.isOwn" size="x-small" color="primary" variant="tonal" class="ml-1"
+              >Votre centre</v-chip
+            >
           </span>
           <span class="text-body-small text-medium-emphasis">{{ selected.OACI }}</span>
         </div>
@@ -48,7 +55,9 @@
     </v-expand-transition>
 
     <div v-if="!selected && centers.length" class="text-body-small text-medium-emphasis mt-2">
-      {{ totals.open }} ouverte{{ totals.open > 1 ? 's' : '' }} · {{ totals.accepted }} prise{{ totals.accepted > 1 ? 's' : '' }}
+      {{ totals.open }} ouverte{{ totals.open > 1 ? 's' : '' }} · {{ totals.accepted }} prise{{
+        totals.accepted > 1 ? 's' : ''
+      }}
       dans {{ centers.length }} centre{{ centers.length > 1 ? 's' : '' }}
     </div>
   </v-card>
@@ -65,7 +74,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
  * variables du thème (`--v-theme-*`, classes cm-*) : ils suivent donc le thème Material 3, clair ou sombre, sans code
  * de couleur ici. Les positions des centres sont calculées par le serveur à partir de leur nom.
  */
-const LOCATION_POLL_MS = 8000;      // la position des centres est cherchée en arrière-plan : on revient la chercher
+const LOCATION_POLL_MS = 8000; // la position des centres est cherchée en arrière-plan : on revient la chercher
 const LOCATION_POLL_MAX = 6;
 
 const centerStore = useCenterStore();
@@ -131,7 +140,10 @@ const fitToCenters = () => {
   if (centers.value.length === 1) {
     map.setView([centers.value[0].latitude, centers.value[0].longitude], 6);
   } else {
-    map.fitBounds(L.latLngBounds(centers.value.map((center) => [center.latitude, center.longitude])), { padding: [36, 36], maxZoom: 7 });
+    map.fitBounds(L.latLngBounds(centers.value.map((center) => [center.latitude, center.longitude])), {
+      padding: [36, 36],
+      maxZoom: 7,
+    });
   }
   hasFitted = true;
 };
@@ -159,7 +171,15 @@ const initMap = async () => {
     L = leaflet.default ?? leaflet;
     if (!mapElement.value) return;
 
-    map = L.map(mapElement.value, { zoomControl: false, attributionControl: false, minZoom: 3, maxZoom: 9, worldCopyJump: true, center: [46.6, 2.5], zoom: 5 });
+    map = L.map(mapElement.value, {
+      zoomControl: false,
+      attributionControl: false,
+      minZoom: 3,
+      maxZoom: 9,
+      worldCopyJump: true,
+      center: [46.6, 2.5],
+      zoom: 5,
+    });
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     await addLand();
     markersLayer = L.layerGroup().addTo(map);
@@ -197,7 +217,7 @@ const schedulePoll = () => {
     pollCount++;
     pollTimer = setTimeout(async () => {
       const wasFitted = hasFitted;
-      hasFitted = false;                // de nouveaux centres localisés : recadrer
+      hasFitted = false; // de nouveaux centres localisés : recadrer
       await load();
       if (!centers.value.length) hasFitted = wasFitted;
     }, LOCATION_POLL_MS);
@@ -205,10 +225,14 @@ const schedulePoll = () => {
 };
 
 // Les demandes changent (création, acceptation, annulation) : recompter, sans enchaîner les appels
-watch(() => substitutionStore.substitutions, () => {
-  clearTimeout(refreshTimer);
-  refreshTimer = setTimeout(load, 800);
-}, { deep: false });
+watch(
+  () => substitutionStore.substitutions,
+  () => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(load, 800);
+  },
+  { deep: false },
+);
 
 onMounted(async () => {
   await initMap();
@@ -234,7 +258,7 @@ onBeforeUnmount(() => {
 .cm-map {
   height: 340px;
   width: 100%;
-  background: rgb(var(--v-theme-background));   /* la mer */
+  background: rgb(var(--v-theme-background)); /* la mer */
   font-family: inherit;
 }
 .cm-overlay {
@@ -256,20 +280,31 @@ onBeforeUnmount(() => {
   height: 12px;
   border-radius: 50%;
 }
-.cm-swatch--open { background: rgb(var(--v-theme-primary)); }
-.cm-swatch--taken { background: rgb(var(--v-theme-secondary)); }
-.cm-swatch--idle { background: rgb(var(--v-theme-surfaceVariant)); }
+.cm-swatch--open {
+  background: rgb(var(--v-theme-primary));
+}
+.cm-swatch--taken {
+  background: rgb(var(--v-theme-secondary));
+}
+.cm-swatch--idle {
+  background: rgb(var(--v-theme-surfaceVariant));
+}
 
 .cm-selected {
   border-radius: 16px;
   background: rgb(var(--v-theme-surfaceContainerHigh));
 }
-.min-width-0 { min-width: 0; }
+.min-width-0 {
+  min-width: 0;
+}
 </style>
 
 <!-- Éléments créés par Leaflet (hors du composant) : styles non « scoped », préfixés cm- -->
 <style>
-.cm-icon { background: transparent; border: 0; }
+.cm-icon {
+  background: transparent;
+  border: 0;
+}
 
 .cm-pin {
   display: flex;
@@ -281,18 +316,46 @@ onBeforeUnmount(() => {
   font-weight: 600;
   line-height: 1;
   box-shadow: 0 1px 4px color-mix(in srgb, rgb(var(--v-theme-shadow)) 40%, transparent);
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition:
+    transform 150ms ease,
+    box-shadow 150ms ease;
   cursor: pointer;
 }
-.cm-pin--open { background: rgb(var(--v-theme-primary)); color: rgb(var(--v-theme-onPrimary)); }
-.cm-pin--taken { background: rgb(var(--v-theme-secondary)); color: rgb(var(--v-theme-onSecondary)); }
-.cm-pin--idle { background: rgb(var(--v-theme-surfaceVariant)); color: rgb(var(--v-theme-onSurfaceVariant)); }
+.cm-pin--open {
+  background: rgb(var(--v-theme-primary));
+  color: rgb(var(--v-theme-onPrimary));
+}
+.cm-pin--taken {
+  background: rgb(var(--v-theme-secondary));
+  color: rgb(var(--v-theme-onSecondary));
+}
+.cm-pin--idle {
+  background: rgb(var(--v-theme-surfaceVariant));
+  color: rgb(var(--v-theme-onSurfaceVariant));
+}
 /* Le centre de l'utilisateur : un anneau */
-.cm-pin--own { outline: 3px solid rgb(var(--v-theme-onSurface)); outline-offset: 1px; }
-.cm-pin--selected { transform: scale(1.15); box-shadow: 0 2px 10px color-mix(in srgb, rgb(var(--v-theme-shadow)) 55%, transparent); }
-@media (hover: hover) { .cm-pin:hover { transform: scale(1.1); } }
-@media (prefers-reduced-motion: reduce) { .cm-pin { transition: none; } }
-.leaflet-marker-icon:focus-visible .cm-pin { outline: 3px solid rgb(var(--v-theme-primary)); outline-offset: 2px; }
+.cm-pin--own {
+  outline: 3px solid rgb(var(--v-theme-onSurface));
+  outline-offset: 1px;
+}
+.cm-pin--selected {
+  transform: scale(1.15);
+  box-shadow: 0 2px 10px color-mix(in srgb, rgb(var(--v-theme-shadow)) 55%, transparent);
+}
+@media (hover: hover) {
+  .cm-pin:hover {
+    transform: scale(1.1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm-pin {
+    transition: none;
+  }
+}
+.leaflet-marker-icon:focus-visible .cm-pin {
+  outline: 3px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
 
 /* Terre : pays en SVG, aux couleurs du thème (les classes CSS l'emportent sur les attributs SVG de Leaflet) */
 .cm-land {
@@ -311,14 +374,23 @@ onBeforeUnmount(() => {
   font-size: 12px;
   box-shadow: none;
 }
-.cm-tooltip.leaflet-tooltip-top::before { border-top-color: rgb(var(--v-theme-inverseSurface)); }
+.cm-tooltip.leaflet-tooltip-top::before {
+  border-top-color: rgb(var(--v-theme-inverseSurface));
+}
 
-.leaflet-bar { border: 0; box-shadow: 0 1px 4px color-mix(in srgb, rgb(var(--v-theme-shadow)) 35%, transparent); border-radius: 12px; overflow: hidden; }
+.leaflet-bar {
+  border: 0;
+  box-shadow: 0 1px 4px color-mix(in srgb, rgb(var(--v-theme-shadow)) 35%, transparent);
+  border-radius: 12px;
+  overflow: hidden;
+}
 .leaflet-bar a,
 .leaflet-bar a:hover {
   background: rgb(var(--v-theme-surfaceContainerHighest, var(--v-theme-surface)));
   color: rgb(var(--v-theme-onSurface));
   border-bottom-color: rgb(var(--v-theme-outlineVariant));
 }
-.leaflet-container { font-family: inherit; }
+.leaflet-container {
+  font-family: inherit;
+}
 </style>

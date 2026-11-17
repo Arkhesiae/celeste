@@ -1,31 +1,29 @@
 <script setup>
-;
-
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true
+    required: true,
   },
   type: {
     type: String,
-    required: true
+    required: true,
   },
   time: {
     type: String,
-    default: ''
-  }
+    default: '',
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'update:time', 'save', 'close']);
 
 const localDialogVisible = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: (value) => emit('update:modelValue', value),
 });
 
 const localTime = computed({
   get: () => props.time,
-  set: (value) => emit('update:time', value)
+  set: (value) => emit('update:time', value),
 });
 
 const closeTimePicker = () => {
@@ -41,14 +39,12 @@ const saveTimePicker = () => {
   <v-dialog v-model="localDialogVisible" persistent max-width="500px">
     <v-card rounded="xl" elevation="0" color="surfaceContainerHigh">
       <v-card-item class="pa-6">
-        <div class="d-flex align-center justify-space-between ">
+        <div class="d-flex align-center justify-space-between">
           <div>
             <div class="text-title-large font-weight-medium">
               {{ type === 'startTime' ? 'Heure de début' : 'Heure de fin' }}
             </div>
-            <div class="text-medium-emphasis text-body-medium mt-1">
-              Sélectionnez l'heure pour cette vacation
-            </div>
+            <div class="text-medium-emphasis text-body-medium mt-1">Sélectionnez l'heure pour cette vacation</div>
           </div>
           <v-btn icon="mdi-close" variant="text" @click="closeTimePicker" />
         </div>
@@ -56,15 +52,31 @@ const saveTimePicker = () => {
 
       <v-card-text class="d-flex justify-center pa-0 pt-0">
         <v-time-picker
-v-model="localTime" color="primary" bg-color="transparent" format="24hr" scrollable title=""
-          locale="fr" rounded="xl" :allowed-minutes="[0, 30, 15, 45]" elevation="0" width="100%" />
+          v-model="localTime"
+          color="primary"
+          bg-color="transparent"
+          format="24hr"
+          scrollable
+          title=""
+          locale="fr"
+          rounded="xl"
+          :allowed-minutes="[0, 30, 15, 45]"
+          elevation="0"
+          width="100%"
+        />
       </v-card-text>
 
       <v-card-actions class="pa-6">
         <v-spacer />
         <v-btn
-color="primary" variant="text" rounded="xl" class="ml-4" :slim="true" size="large"
-          @click="saveTimePicker">
+          color="primary"
+          variant="text"
+          rounded="xl"
+          class="ml-4"
+          :slim="true"
+          size="large"
+          @click="saveTimePicker"
+        >
           Enregistrer
         </v-btn>
       </v-card-actions>

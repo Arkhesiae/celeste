@@ -3,13 +3,10 @@
     <template #activator="{ props }">
       <v-tooltip location="bottom" text="Profil">
         <template #activator="{ props: tooltipProps }">
-          <v-btn icon color="primary" variant="tonal" class="mr-2"
-            v-bind="{ ...props, ...tooltipProps }">
+          <v-btn icon color="primary" variant="tonal" class="mr-2" v-bind="{ ...props, ...tooltipProps }">
             <v-avatar size="40" class="" variant="tonal" color="primary">
               <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-              <v-icon v-else>
-                mdi-account
-              </v-icon>
+              <v-icon v-else> mdi-account </v-icon>
             </v-avatar>
           </v-btn>
         </template>
@@ -20,11 +17,9 @@
       <v-list class="bg-onBackground">
         <v-list-item>
           <template #prepend>
-            <v-avatar size="32" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1);">
+            <v-avatar size="32" class="" variant="tonal" style="background-color: rgba(var(--v-theme-background), 1)">
               <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-              <v-icon v-else>
-                mdi-account
-              </v-icon>
+              <v-icon v-else> mdi-account </v-icon>
             </v-avatar>
           </template>
           <v-list-item-title class="text-title-large">
@@ -41,12 +36,10 @@
         <v-list-item>
           <div class="d-flex justify-space-between align-center">
             <div class="d-flex align-center pa-2">
-              <LogoCopy color="background" style="height:30px ; width:30px" />
+              <LogoCopy color="background" style="height: 30px; width: 30px" />
               <div class="d-flex justify-space-between flex-column align-center ml-3">
-                <div v-if="points > 99999" class="text-center text-body-large ">
-                  <v-icon class="mb-1" size="x-large">
-                    mdi-infinity
-                  </v-icon>
+                <div v-if="points > 99999" class="text-center text-body-large">
+                  <v-icon class="mb-1" size="x-large"> mdi-infinity </v-icon>
                 </div>
                 <v-list-item-title v-else class="text-headline-small font-weight-bold mb-0 pa-0">
                   {{ points }}
@@ -58,9 +51,7 @@
             </div>
             <div class="d-flex align-center">
               <v-icon color="onPrimary" icon="mdi-crowd" />
-              <v-list-item-title class="text-body-large font-weight-bold ml-2">
-                Équipe
-              </v-list-item-title>
+              <v-list-item-title class="text-body-large font-weight-bold ml-2"> Équipe </v-list-item-title>
               <v-list-item-subtitle class="ml-2">
                 {{ currentTeam?.name || 'Non assigné' }}
                 {{ currentTeam?.type === 'Renfort' ? '(Renfort)' : '' }}
@@ -74,8 +65,12 @@
 
       <!-- Actions -->
       <v-list class="bg-onBackground pa-2">
-        <v-list-item class="hover-effect" rounded="lg" prepend-icon="mdi-account-cog"
-          @click="$emit('navigate-profile')">
+        <v-list-item
+          class="hover-effect"
+          rounded="lg"
+          prepend-icon="mdi-account-cog"
+          @click="$emit('navigate-profile')"
+        >
           <v-list-item-title>Profil</v-list-item-title>
         </v-list-item>
         <v-list-item class="hover-effect" rounded="lg" prepend-icon="mdi-cog" @click="router.push('/user-params')">
@@ -90,8 +85,13 @@
       </v-list>
 
       <div class="d-flex justify-end">
-        <v-btn prepend-icon="mdi-information-outline" variant="text" color="background" class="text-body-medium"
-          @click="$emit('navigate-contact')">
+        <v-btn
+          prepend-icon="mdi-information-outline"
+          variant="text"
+          color="background"
+          class="text-body-medium"
+          @click="$emit('navigate-contact')"
+        >
           Assistance
         </v-btn>
       </div>
@@ -102,7 +102,7 @@
 <script setup>
 import { API_URL } from '@/config/api';
 import { usePointStore } from '@/stores/pointStore';
-import { useAuthStore } from "@/stores/authStore.js";
+import { useAuthStore } from '@/stores/authStore.js';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -113,34 +113,27 @@ const pointStore = usePointStore();
 defineProps({
   username: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
     type: String,
-    required: true
+    required: true,
   },
   avatar: {
     type: String,
-    default: null
+    default: null,
   },
   currentTeam: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 // Emits
-defineEmits([
-  'navigate-profile',
-  'navigate-parameter',
-  'logout',
-  'navigate-contact'
-]);
+defineEmits(['navigate-profile', 'navigate-parameter', 'logout', 'navigate-contact']);
 
 const points = computed(() => pointStore.points);
 const hasPhone = computed(() => authStore.userData.phone);
-
-
 </script>
 
 <style scoped>

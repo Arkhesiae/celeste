@@ -5,15 +5,26 @@
     <MainTitle title="Patch Notes" subtitle="Historique des versions">
       <template #actions>
         <v-btn
-v-if="!smAndDown" height="48px"
-          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow" flat
-          style="border-radius: 16px !important" prepend-icon="mdi-github" @click="openGitHub">
+          v-if="!smAndDown"
+          height="48px"
+          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow"
+          flat
+          style="border-radius: 16px !important"
+          prepend-icon="mdi-github"
+          @click="openGitHub"
+        >
           Voir sur GitHub
         </v-btn>
         <v-btn
-v-else size="small" height="32px"
-          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow" flat
-          style="border-radius: 16px !important" prepend-icon="mdi-github" @click="openGitHub">
+          v-else
+          size="small"
+          height="32px"
+          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow"
+          flat
+          style="border-radius: 16px !important"
+          prepend-icon="mdi-github"
+          @click="openGitHub"
+        >
           Voir sur GitHub
         </v-btn>
       </template>
@@ -26,21 +37,30 @@ v-else size="small" height="32px"
         <!-- Desktop : navigation latérale -->
         <template v-if="!smAndDown">
           <EntitySelector
-:items="filteredVersions" item-key="id" item-title="version" :item-subtitle="'releaseDate'"
-            :item-status="'status'" :model-value="selectedVersion" title="Versions" max-height="70vh"
-            @update:model-value="selectVersion">
+            :items="filteredVersions"
+            item-key="id"
+            item-title="version"
+            :item-subtitle="'releaseDate'"
+            :item-status="'status'"
+            :model-value="selectedVersion"
+            title="Versions"
+            max-height="70vh"
+            @update:model-value="selectVersion"
+          >
             <template #statusChip="{ item }">
               <v-chip v-if="item.status === 'future'" size="x-small" color="warning" variant="tonal" rounded="lg">
                 Future
               </v-chip>
               <v-chip
-v-else-if="item.status === 'current'" size="x-small" color="onBackground" variant="flat"
-                rounded="lg">
+                v-else-if="item.status === 'current'"
+                size="x-small"
+                color="onBackground"
+                variant="flat"
+                rounded="lg"
+              >
                 Actuelle
               </v-chip>
-              <v-chip v-else size="x-small" color="grey" variant="tonal" rounded="lg">
-                Passée
-              </v-chip>
+              <v-chip v-else size="x-small" color="grey" variant="tonal" rounded="lg"> Passée </v-chip>
             </template>
             <template #itemDetails="{ item }">
               <v-expand-transition>
@@ -61,39 +81,58 @@ v-else-if="item.status === 'current'" size="x-small" color="onBackground" varian
         <!-- Mobile : carte compacte + dialog -->
         <template v-else>
           <VersionSelector
-:model-value="selectedVersion" :width="400"
+            :model-value="selectedVersion"
+            :width="400"
             :title="selectedVersion?.version || 'Sélectionner une version'"
             :subtitle="selectedVersion?.releaseDate || ''"
-            :default-text="selectedVersion?.version || 'Sélectionner une version'">
+            :default-text="selectedVersion?.version || 'Sélectionner une version'"
+          >
             <template #statusChip>
               <v-chip
-v-if="selectedVersion?.status === 'future'" size="x-small" color="warning" variant="tonal"
-                rounded="lg">
+                v-if="selectedVersion?.status === 'future'"
+                size="x-small"
+                color="warning"
+                variant="tonal"
+                rounded="lg"
+              >
                 Future
               </v-chip>
               <v-chip
-v-else-if="selectedVersion?.status === 'current'" size="x-small" color="onBackground"
-                variant="flat" rounded="lg">
+                v-else-if="selectedVersion?.status === 'current'"
+                size="x-small"
+                color="onBackground"
+                variant="flat"
+                rounded="lg"
+              >
                 Actuelle
               </v-chip>
             </template>
             <template #dialog>
               <EntitySelector
-:items="filteredVersions" item-key="id" item-title="version"
-                :item-subtitle="'releaseDate'" :item-status="'status'" :model-value="selectedVersion"
-                title="Sélectionner une version" max-height="40vh" @update:model-value="selectVersionFromDialog">
+                :items="filteredVersions"
+                item-key="id"
+                item-title="version"
+                :item-subtitle="'releaseDate'"
+                :item-status="'status'"
+                :model-value="selectedVersion"
+                title="Sélectionner une version"
+                max-height="40vh"
+                @update:model-value="selectVersionFromDialog"
+              >
                 <template #statusChip="{ item }">
                   <v-chip v-if="item.status === 'future'" size="x-small" color="warning" variant="tonal" rounded="lg">
                     Future
                   </v-chip>
                   <v-chip
-v-else-if="item.status === 'current'" size="x-small" color="onBackground" variant="flat"
-                    rounded="lg">
+                    v-else-if="item.status === 'current'"
+                    size="x-small"
+                    color="onBackground"
+                    variant="flat"
+                    rounded="lg"
+                  >
                     Actuelle
                   </v-chip>
-                  <v-chip v-else size="x-small" color="grey" variant="tonal" rounded="lg">
-                    Passée
-                  </v-chip>
+                  <v-chip v-else size="x-small" color="grey" variant="tonal" rounded="lg"> Passée </v-chip>
                 </template>
                 <template #itemDetails="{ item }">
                   <v-expand-transition>
@@ -118,17 +157,20 @@ v-else-if="item.status === 'current'" size="x-small" color="onBackground" varian
       <!-- Détails de la version -->
       <v-col cols="12" md="8" lg="9">
         <v-card
-v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" elevation="0"
-          class="smooth-shadow pa-2 pt-16" color="transparent">
+          v-if="selectedVersion"
+          :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
+          rounded="xl"
+          elevation="0"
+          class="smooth-shadow pa-2 pt-16"
+          color="transparent"
+        >
           <!-- En-tête de la version -->
           <div class="d-flex align-center justify-space-between mb-6">
             <div>
               <div class="d-flex align-center mb-2">
                 <span class="text-headline-large font-weight-bold">{{ selectedVersion.version }}</span>
               </div>
-              <div class="text-medium-emphasis">
-                Sortie le {{ selectedVersion.releaseDate }}
-              </div>
+              <div class="text-medium-emphasis">Sortie le {{ selectedVersion.releaseDate }}</div>
             </div>
             <v-btn icon="mdi-share-variant" variant="tonal" rounded="lg" color="primary" @click="shareVersion" />
           </div>
@@ -144,14 +186,14 @@ v-if="selectedVersion" :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'" rounded="xl" 
           <div v-if="selectedVersion.improvements?.length > 0" class="mb-6">
             <div class="d-flex align-center mb-4">
               <v-icon icon="mdi-plus-circle" color="success" size="16" class="mr-3" />
-              <h3 class="text-title-large font-weight-medium">
-                Améliorations
-              </h3>
+              <h3 class="text-title-large font-weight-medium">Améliorations</h3>
             </div>
             <v-list class="bg-transparent">
               <v-list-item
-v-for="(improvement, index) in selectedVersion.improvements" :key="index"
-                class="mb-2 rounded-lg improvement-item">
+                v-for="(improvement, index) in selectedVersion.improvements"
+                :key="index"
+                class="mb-2 rounded-lg improvement-item"
+              >
                 <template #prepend>
                   <v-icon icon="mdi-plus" color="success" size="20" />
                 </template>
@@ -169,14 +211,14 @@ v-for="(improvement, index) in selectedVersion.improvements" :key="index"
           <div v-if="selectedVersion.bugFixes?.length > 0" class="mb-6">
             <div class="d-flex align-center mb-4">
               <v-icon icon="mdi-bug-check" color="pendingDemand" size="16" class="mr-3" />
-              <h3 class="text-title-large font-weight-medium">
-                Corrections de bugs
-              </h3>
+              <h3 class="text-title-large font-weight-medium">Corrections de bugs</h3>
             </div>
             <v-list class="bg-transparent">
               <v-list-item
-v-for="(bugFix, index) in selectedVersion.bugFixes" :key="index"
-                class="mb-2 rounded-lg bugfix-item">
+                v-for="(bugFix, index) in selectedVersion.bugFixes"
+                :key="index"
+                class="mb-2 rounded-lg bugfix-item"
+              >
                 <template #prepend>
                   <v-icon icon="mdi-bug" color="pendingDemand" size="20" />
                 </template>
@@ -194,14 +236,14 @@ v-for="(bugFix, index) in selectedVersion.bugFixes" :key="index"
           <div v-if="selectedVersion.technicalNotes?.length > 0" class="mb-6">
             <div class="d-flex align-center mb-4">
               <v-icon icon="mdi-cog" color="info" size="16" class="mr-3" />
-              <h3 class="text-title-large font-weight-medium">
-                Notes techniques
-              </h3>
+              <h3 class="text-title-large font-weight-medium">Notes techniques</h3>
             </div>
             <v-list class="bg-transparent">
               <v-list-item
-v-for="(note, index) in selectedVersion.technicalNotes" :key="index"
-                class="mb-2 rounded-lg technical-note-item">
+                v-for="(note, index) in selectedVersion.technicalNotes"
+                :key="index"
+                class="mb-2 rounded-lg technical-note-item"
+              >
                 <template #prepend>
                   <v-icon icon="mdi-information" color="info" size="20" />
                 </template>
@@ -217,13 +259,17 @@ v-for="(note, index) in selectedVersion.technicalNotes" :key="index"
 
           <!-- Liens -->
           <div v-if="selectedVersion.links?.length > 0" class="mb-6">
-            <h3 class="text-title-large font-weight-medium mb-3">
-              Liens utiles
-            </h3>
+            <h3 class="text-title-large font-weight-medium mb-3">Liens utiles</h3>
             <div class="d-flex flex-wrap gap-2">
               <v-btn
-v-for="link in selectedVersion.links" :key="link.url" :href="link.url" target="_blank"
-                variant="tonal" color="primary" prepend-icon="mdi-open-in-new">
+                v-for="link in selectedVersion.links"
+                :key="link.url"
+                :href="link.url"
+                target="_blank"
+                variant="tonal"
+                color="primary"
+                prepend-icon="mdi-open-in-new"
+              >
                 {{ link.label }}
               </v-btn>
             </div>
@@ -234,12 +280,8 @@ v-for="link in selectedVersion.links" :key="link.url" :href="link.url" target="_
         <v-card v-else rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-file-document-outline" size="64" color="medium-emphasis" class="mb-4" />
-            <h3 class="text-title-large font-weight-medium mb-2">
-              Sélectionnez une version
-            </h3>
-            <p class="text-medium-emphasis">
-              Choisissez une version dans la liste pour voir ses détails
-            </p>
+            <h3 class="text-title-large font-weight-medium mb-2">Sélectionnez une version</h3>
+            <p class="text-medium-emphasis">Choisissez une version dans la liste pour voir ses détails</p>
           </div>
         </v-card>
       </v-col>
@@ -248,7 +290,6 @@ v-for="link in selectedVersion.links" :key="link.url" :href="link.url" target="_
 </template>
 
 <script setup>
-
 import { useDisplay } from 'vuetify';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { usePatchnotesStore } from '@/stores/patchnotesStore';
@@ -264,10 +305,8 @@ const selectedFilter = ref('all');
 const selectedVersion = ref(null);
 const dialogOpen = ref(false); // Pour le dialog mobile
 
-function parseReleaseDate (dateStr) {
+function parseReleaseDate(dateStr) {
   // Si c'est déjà un format ISO ou reconnu, ça marche directement
-
-
 
   // Sinon, on tente le format dd/mm/yyyy
   const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dateStr);
@@ -280,7 +319,7 @@ function parseReleaseDate (dateStr) {
   return new Date(NaN);
 }
 
-function getStatus (versions) {
+function getStatus(versions) {
   const today = new Date();
   // Trie les versions par date décroissante
   const sorted = [...versions].sort((a, b) => parseReleaseDate(b.releaseDate) - parseReleaseDate(a.releaseDate));
@@ -306,7 +345,7 @@ const filteredVersions = computed(() => {
   if (selectedFilter.value === 'all') {
     return computedVersions.value;
   } else {
-    return computedVersions.value.filter(v => v.status === selectedFilter.value);
+    return computedVersions.value.filter((v) => v.status === selectedFilter.value);
   }
 });
 
@@ -325,7 +364,6 @@ const selectVersionFromDialog = (version) => {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
-
 const openGitHub = () => {
   window.open('https://github.com/Arkhesiae/celeste', '_blank');
 };
@@ -335,7 +373,7 @@ const shareVersion = () => {
     navigator.share({
       title: `Patch Notes ${selectedVersion.value.version}`,
       text: `Découvrez les nouveautés de la version ${selectedVersion.value.version}`,
-      url: window.location.href
+      url: window.location.href,
     });
   } else {
     // Fallback pour les navigateurs qui ne supportent pas l'API Share

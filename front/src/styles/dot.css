@@ -39,15 +39,29 @@
 }
 
 /* Tailles */
-.dot--2xs { --dot-size: 3px; }
-.dot--xs { --dot-size: 4px; }
-.dot--sm { --dot-size: 6px; }
+.dot--2xs {
+  --dot-size: 3px;
+}
+.dot--xs {
+  --dot-size: 4px;
+}
+.dot--sm {
+  --dot-size: 6px;
+}
 
 /* Couleurs */
-.dot--primary { --dot-color: rgb(var(--v-theme-primary)); }
-.dot--secondary { --dot-color: rgb(var(--v-theme-secondary)); }
-.dot--error { --dot-color: rgb(var(--v-theme-error)); }
-.dot--soft { opacity: 0.3; }
+.dot--primary {
+  --dot-color: rgb(var(--v-theme-primary));
+}
+.dot--secondary {
+  --dot-color: rgb(var(--v-theme-secondary));
+}
+.dot--error {
+  --dot-color: rgb(var(--v-theme-error));
+}
+.dot--soft {
+  opacity: 0.3;
+}
 
 /* Repère cerclé et ombré, lisible sur un fond de couleur (barre de budget) */
 .dot--outlined {

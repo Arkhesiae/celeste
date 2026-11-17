@@ -1,57 +1,33 @@
 <template>
-  <v-dialog
-    :model-value="dialogVisible"
-    max-width="600"
-    @update:model-value="$emit('update:dialogVisible', $event)"
-  >
-    <v-card
-      v-if="user"
-      rounded="xl"
-      variant="flat"
-      class="pa-6"
-    >
+  <v-dialog :model-value="dialogVisible" max-width="600" @update:model-value="$emit('update:dialogVisible', $event)">
+    <v-card v-if="user" rounded="xl" variant="flat" class="pa-6">
       <v-card-title class="d-flex justify-space-between align-center pa-0">
         <div class="d-flex align-center">
-          <v-avatar
-            color="primary"
-            size="60"
-            class="mr-3"
-          >
+          <v-avatar color="primary" size="60" class="mr-3">
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-headline-small">
-              {{ user.name }} {{ user.lastName.toUpperCase() }}
-            </div>
+            <div class="text-headline-small">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
             <div class="text-body-large text-medium-emphasis">
               {{ user.email }}
             </div>
           </div>
         </div>
-        <v-btn
-          variant="text"
-          icon
-          @click="$emit('update:dialogVisible', false)"
-        >
+        <v-btn variant="text" icon @click="$emit('update:dialogVisible', false)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
 
       <v-card-text class="pa-0 mt-6">
         <v-row>
-          <v-col
-            cols="12"
-            md="6"
-          >
-            <div class="text-body-large mb-2">
-              Informations
-            </div>
+          <v-col cols="12" md="6">
+            <div class="text-body-large mb-2">Informations</div>
             <v-list>
               <v-list-item>
                 <template #prepend>
                   <v-icon>mdi-account-check-outline</v-icon>
                 </template>
-             
+
                 <v-list-item-subtitle>
                   <v-chip
                     rounded="lg"
@@ -67,15 +43,10 @@
                 <template #prepend>
                   <v-icon>mdi-airport</v-icon>
                 </template>
-       
+
                 <v-list-item-subtitle>
-                  <v-chip
-                    color="onBackground"
-                    rounded="lg"
-                    size="small"
-                    class="mr-2"
-                  >
-                    {{ getCenterName?.name || "No center" }}
+                  <v-chip color="onBackground" rounded="lg" size="small" class="mr-2">
+                    {{ getCenterName?.name || 'No center' }}
                   </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
@@ -90,16 +61,13 @@
           </v-col>
         </v-row>
         <v-row>
-          <v-col
-            cols="12"
-            md="6"
-          >
-            <v-card 
-              v-if="!user.isAdmin && isMasterAdmin" 
-              flat 
-              class="pa-4" 
-              color="surfaceContainerHighest" 
-              rounded="xl" 
+          <v-col cols="12" md="6">
+            <v-card
+              v-if="!user.isAdmin && isMasterAdmin"
+              flat
+              class="pa-4"
+              color="surfaceContainerHighest"
+              rounded="xl"
               @click="$emit('makeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -107,12 +75,12 @@
                 <v-list-item-title>Octroyer statut admin</v-list-item-title>
               </div>
             </v-card>
-            <v-card 
-              v-if="user.isAdmin && isMasterAdmin" 
-              flat 
-              class="pa-4" 
-              color="surfaceContainerHighest" 
-              rounded="xl" 
+            <v-card
+              v-if="user.isAdmin && isMasterAdmin"
+              flat
+              class="pa-4"
+              color="surfaceContainerHighest"
+              rounded="xl"
               @click="$emit('removeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -121,34 +89,28 @@
               </div>
             </v-card>
           </v-col>
-          <v-col
-            cols="12"
-            md="6"
-          >
-            <v-card 
-              v-if="isMasterAdmin" 
-              flat 
-              class="pa-4" 
-              color="surfaceContainerHighest" 
-              rounded="xl" 
+          <v-col cols="12" md="6">
+            <v-card
+              v-if="isMasterAdmin"
+              flat
+              class="pa-4"
+              color="surfaceContainerHighest"
+              rounded="xl"
               @click="$emit('assignCenter', userId)"
-            > 
+            >
               <div class="d-flex align-center ga-3">
                 <v-icon>mdi-airport</v-icon>
                 <v-list-item-title>Modifier le centre</v-list-item-title>
               </div>
             </v-card>
           </v-col>
-          <v-col
-            cols="12"
-            md="12"
-          >
-            <v-card 
-              v-if="isLocalAdmin || isMasterAdmin" 
-              flat 
-              class="pa-4" 
-              color="error" 
-              rounded="xl" 
+          <v-col cols="12" md="12">
+            <v-card
+              v-if="isLocalAdmin || isMasterAdmin"
+              flat
+              class="pa-4"
+              color="error"
+              rounded="xl"
               @click="$emit('delete', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -175,12 +137,12 @@ const userStore = useUserStore();
 const props = defineProps({
   userId: {
     type: String,
-    required: true
+    required: true,
   },
   dialogVisible: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 
 defineEmits(['update:dialogVisible', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
@@ -189,10 +151,10 @@ const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.use
 const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 
 const user = computed(() => {
-  return userStore.users.find(user => user._id === props.userId) || null;
+  return userStore.users.find((user) => user._id === props.userId) || null;
 });
 
 const getCenterName = computed(() => {
-  return centerStore.centers.find(center => center._id === user.value.centerId) || null;
+  return centerStore.centers.find((center) => center._id === user.value.centerId) || null;
 });
-</script> 
+</script>

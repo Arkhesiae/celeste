@@ -17,11 +17,12 @@ export function formatPairsForDate({ pairs, baseShiftName, shiftName, totalDeman
   for (const { fetcherVariation, demandVariations } of pairs) {
     const fetcherFullName = fetcherVariation?.isDefault ? shiftName : shiftName + (fetcherVariation?.name || '');
     const demandNames = (demandVariations || [])
-      .map(v => baseShiftName + (v?.name || ''))
+      .map((v) => baseShiftName + (v?.name || ''))
       .sort()
       .join(', ');
     const key = demandNames || fullDemandKey;
-    const allDemandVariations = totalDemandVariations != null && (demandVariations?.length ?? 0) >= totalDemandVariations;
+    const allDemandVariations =
+      totalDemandVariations != null && (demandVariations?.length ?? 0) >= totalDemandVariations;
 
     if (!byDemandSet.has(key)) {
       byDemandSet.set(key, { demandNames, fetcherNames: [], allDemandVariations });

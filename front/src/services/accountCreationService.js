@@ -13,7 +13,7 @@ export const accountCreationService = {
   async createAccount(userData) {
     const response = await apiFetch(`/user/create`, {
       method: 'POST',
-      body: JSON.stringify(userData)
+      body: JSON.stringify(userData),
     });
     return response;
   },
@@ -26,7 +26,7 @@ export const accountCreationService = {
   async checkEmailAvailability(email) {
     const response = await apiFetch(`/user/check-email`, {
       method: 'POST',
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
     return response;
   },
@@ -39,7 +39,7 @@ export const accountCreationService = {
   async activateAccount(token) {
     const response = await apiFetch(`/auth/activate`, {
       method: 'POST',
-      body: JSON.stringify({ token })
+      body: JSON.stringify({ token }),
     });
     return response;
   },
@@ -54,5 +54,5 @@ export const accountCreationService = {
       method: 'GET',
     });
     return response;
-  }
+  },
 };

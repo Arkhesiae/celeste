@@ -8,11 +8,11 @@ const groupDaysByWeeks = (days) => {
   return weeks;
 };
 
-export function useCalendar (selectedYear, selectedMonth) {
+export function useCalendar(selectedYear, selectedMonth) {
   const calendarDays = computed(() => {
     const firstDayOfMonth = Temporal.PlainDate.from({
       year: selectedYear.value,
-      month: selectedMonth.value, 
+      month: selectedMonth.value,
       day: 1,
     });
 
@@ -39,7 +39,6 @@ export function useCalendar (selectedYear, selectedMonth) {
 
     return groupDaysByWeeks([...leadingDays, ...currentMonthDays, ...trailingDays]);
   });
-  
 
   return { calendarDays };
 }

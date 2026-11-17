@@ -1,6 +1,5 @@
 <template>
   <v-navigation-drawer
-  
     v-if="!smAndDown && isLoggedIn"
     floating
     expand-on-hover
@@ -9,8 +8,11 @@
     open-delay="200"
     color="transparent"
     rail-width="106"
-    
-    style="transition: all .25s ease-in-out; display: flex !important; box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.0) !important;"
+    style="
+      transition: all 0.25s ease-in-out;
+      display: flex !important;
+      box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0) !important;
+    "
     @update:model-value="$emit('update:navExpanded', $event)"
   >
     <v-list
@@ -36,7 +38,7 @@
         title="Demandes"
         value="replace"
         @click="router.push({ path: '/exchange/replace' })"
-      > 
+      >
         <template #append>
           <v-chip
             v-if="demandsCount > 0"
@@ -44,7 +46,7 @@
             size="x-small"
             variant="flat"
             rounded="lg"
-            class="font-weight-bold ml-2 "
+            class="font-weight-bold ml-2"
           >
             <span class="font-weight-bold">{{ demandsCount }}</span>
           </v-chip>
@@ -95,7 +97,7 @@
         @click="router.push({ path: '/financement' })"
       />
       <v-divider opacity=".01" />
-      <v-list-item 
+      <v-list-item
         v-if="authStore.userData.isAdmin"
         rounded="xl"
         :class="isActive('/users') ? 'active-item' : 'inactive-item'"
@@ -105,7 +107,7 @@
         @click="router.push({ path: '/users' })"
       />
       <v-list-item
-        v-if="authStore.userData.isAdmin" 
+        v-if="authStore.userData.isAdmin"
         rounded="xl"
         :class="isActive('/admin/pending-users') ? 'active-item' : 'inactive-item'"
         :prepend-icon="isActive('/admin/pending-users') ? 'mdi-account-clock' : 'mdi-account-clock-outline'"
@@ -125,11 +127,11 @@
       <v-list-item
         v-else
         rounded="xl"
-        :class="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'active-item' : 'inactive-item'"
-        :prepend-icon="isActive('/center/'+authStore.userData.centerId+'/teams') ? 'mdi-airport' : 'mdi-airport'"
+        :class="isActive('/center/' + authStore.userData.centerId + '/teams') ? 'active-item' : 'inactive-item'"
+        :prepend-icon="isActive('/center/' + authStore.userData.centerId + '/teams') ? 'mdi-airport' : 'mdi-airport'"
         title="Mon centre"
         value="my-center"
-        @click="router.push({ path: '/center/'+authStore.userData.centerId+'/teams' })"
+        @click="router.push({ path: '/center/' + authStore.userData.centerId + '/teams' })"
       />
     </v-list>
   </v-navigation-drawer>
@@ -137,24 +139,27 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import { useDisplay } from "vuetify";
-import { useAuthStore } from "@/stores/authStore.js";
+import { useDisplay } from 'vuetify';
+import { useAuthStore } from '@/stores/authStore.js';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 // import { useNotificationStore } from '@/stores/notificationStore';
-
 
 const substitutionStore = useSubstitutionStore();
 const router = useRouter();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
-
+const demandsCount = computed(
+  () =>
+    substitutionStore.availableSubstitutions.length +
+    substitutionStore.availableSwitches.length +
+    substitutionStore.otherDemands.length,
+);
 
 // Grille du centre de l'utilisateur ; un administrateur principal sans centre choisit d'abord un centre
-const gridPath = computed(() => (authStore.userData.centerId
-  ? `/center/${authStore.userData.centerId}/grid`
-  : '/center/centers'));
+const gridPath = computed(() =>
+  authStore.userData.centerId ? `/center/${authStore.userData.centerId}/grid` : '/center/centers',
+);
 
 const isActive = (path) => {
   return router.currentRoute.value.path === path;
@@ -163,10 +168,10 @@ const isActive = (path) => {
 defineProps({
   navExpanded: {
     type: Boolean,
-    required: true
-  }
-  });
-</script> 
+    required: true,
+  },
+});
+</script>
 
 <style scoped>
 .active-item {
@@ -175,7 +180,7 @@ defineProps({
   background-color: transparent !important;
 }
 .inactive-item {
-  color: rgba(var(--v-theme-background), .51) !important;
+  color: rgba(var(--v-theme-background), 0.51) !important;
   font-weight: 400 !important;
   background-color: transparent !important;
 }
@@ -183,18 +188,15 @@ defineProps({
   background-color: transparent !important;
 }
 
-:deep(.v-list-item) .v-list-item__prepend{
+:deep(.v-list-item) .v-list-item__prepend {
   transition: transform 0.2s ease-out;
   transform-origin: left;
-} 
+}
 
-:deep(.v-list-item):hover .v-list-item__prepend{
+:deep(.v-list-item):hover .v-list-item__prepend {
   transform: scale(1.15);
-
 }
 .user-safe-area {
   padding-top: env(safe-area-inset-top) !important;
 }
 </style>
-
-

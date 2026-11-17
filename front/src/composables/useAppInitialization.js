@@ -11,8 +11,6 @@ import { useRotationStore } from '@/stores/rotationStore';
 import { useInitializationStore } from '@/stores/initializationStore';
 import { useTheme } from 'vuetify';
 
-
-
 export function useAppInitialization() {
   const authStore = useAuthStore();
   const userStore = useUserStore();
@@ -25,7 +23,6 @@ export function useAppInitialization() {
   const substitutionStore = useSubstitutionStore();
   const rotationStore = useRotationStore();
   const initializationStore = useInitializationStore();
-
 
   const initializeAuth = async () => {
     if (authStore.isAuthReady) return;
@@ -69,7 +66,7 @@ export function useAppInitialization() {
     await Promise.all([
       teamStore.fetchCurrentTeamOfUser(userId),
       teamStore.fetchTeamOccurrencesOfUser(userId),
-      teamStore.fetchCenterTeams(centerId)
+      teamStore.fetchCenterTeams(centerId),
     ]);
 
     initializationStore.updateInitializationState('team', true);
@@ -83,14 +80,14 @@ export function useAppInitialization() {
     const nextMonth = Temporal.PlainYearMonth.from(today).add({ months: 1 });
     const dates = {
       startDate: today.subtract({ months: 1 }).with({ day: 1 }).toString(),
-      endDate: nextMonth.toPlainDate({ day: nextMonth.daysInMonth }).toString()
-    }
+      endDate: nextMonth.toPlainDate({ day: nextMonth.daysInMonth }).toString(),
+    };
     await shiftStore.fetchShiftsWithSubstitutions(dates);
     initializationStore.updateInitializationState('shifts', true);
 
     await substitutionStore.fetchAllDemands({
       startDate: today.toString(),
-      endDate: today.add({ years: 1 }).toString()
+      endDate: today.add({ years: 1 }).toString(),
     });
 
     initializationStore.updateInitializationState('substitutions', true);
@@ -105,10 +102,7 @@ export function useAppInitialization() {
   };
 
   const initializePersonalData = async () => {
-    await Promise.all([
-      pointStore.fetchUserPoints(),
-      pointStore.fetchTransactions(),
-    ]);
+    await Promise.all([pointStore.fetchUserPoints(), pointStore.fetchTransactions()]);
 
     initializationStore.updateInitializationState('personal', true);
   };
@@ -120,15 +114,12 @@ export function useAppInitialization() {
     initializationStore.updateInitializationState('tickets', true);
   };
 
-
-
   const initializeApp = async () => {
     try {
       initializationStore.setLoading(true);
 
       await initializeAuth();
       const parallelTasks = [];
-
 
       if (authStore.isLoggedIn) {
         parallelTasks.push(
@@ -138,15 +129,14 @@ export function useAppInitialization() {
           initializeShiftsAndSubstitutions(),
           initializeRotations(),
           initializePersonalData(),
-          initializeTickets()
+          initializeTickets(),
         );
       }
 
       await Promise.all(parallelTasks);
       initializationStore.setAppReady(true);
-
     } catch (error) {
-      console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
+      console.error("❌ Erreur lors de l'initialisation de l'application :", error);
       authStore.logOut();
       throw error;
     } finally {
@@ -160,6 +150,6 @@ export function useAppInitialization() {
     initializeApp,
     initializeCenters,
     initializationState: initializationStore.initializationState,
-    isLoading: initializationStore.isLoading
+    isLoading: initializationStore.isLoading,
   };
-} 
+}

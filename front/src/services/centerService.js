@@ -11,7 +11,7 @@ export const centerService = {
    */
   async fetchCenters() {
     const response = await apiFetch(`/center`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -32,7 +32,7 @@ export const centerService = {
    */
   async fetchUsersByCenter(centerId) {
     const response = await apiFetch(`/user/center/${centerId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -44,17 +44,17 @@ export const centerService = {
    */
   async getUserCenterById(userId) {
     const userResponse = await apiFetch(`/user/${userId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     const user = await userResponse;
     const centerId = user.centerId;
 
     if (!centerId) {
-      throw new Error('L\'utilisateur n\'appartient à aucun centre.');
+      throw new Error("L'utilisateur n'appartient à aucun centre.");
     }
 
     const centerResponse = await apiFetch(`/center/${centerId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return centerResponse;
   },
@@ -90,7 +90,7 @@ export const centerService = {
    */
   async fetchActiveRotations() {
     const response = await apiFetch(`/center/all-active-rotations`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -102,7 +102,7 @@ export const centerService = {
    */
   async fetchActiveRotationOfCenter(centerId) {
     const response = await apiFetch(`/center/${centerId}/active-rotation`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -112,8 +112,8 @@ export const centerService = {
    * @returns {Promise<Object>} Les administrateurs du centre.
    */
   async fetchAdminsByCenter() {
-      const response = await apiFetch(`/center/admins`, {
-      method: 'GET'
+    const response = await apiFetch(`/center/admins`, {
+      method: 'GET',
     });
     return response;
   },
@@ -122,10 +122,10 @@ export const centerService = {
    * Récupère le nombre d'utilisateurs par centre.
    * @returns {Promise<Object>} Le nombre d'utilisateurs par centre.
    */
-  async fetchUsersCountByCenter() { 
+  async fetchUsersCountByCenter() {
     const response = await apiFetch(`/center/users/count`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
-  } 
+  },
 };

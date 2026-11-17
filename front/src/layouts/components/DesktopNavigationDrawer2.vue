@@ -9,15 +9,10 @@
     class="px-2 pt-16"
     elevation="0"
     flat
-    style="transition: all .25s ease-in-out; display: flex !important;"
+    style="transition: all 0.25s ease-in-out; display: flex !important"
     @update:model-value="$emit('update:navExpanded', $event)"
   >
-    <v-list
-      variant="text"
-      active-class="active-item"
-      nav
-      class="pl-4 mt-16"
-    >
+    <v-list variant="text" active-class="active-item" nav class="pl-4 mt-16">
       <!-- Regular navigation items -->
       <v-list-item
         v-for="navItem in navigationItems"
@@ -34,15 +29,9 @@
         </template>
 
         <template #prepend>
-          <v-icon
-            size="16"
-            :icon="isActive(navItem?.path) ? navItem?.iconActive : navItem?.iconInactive"
-          />
+          <v-icon size="16" :icon="isActive(navItem?.path) ? navItem?.iconActive : navItem?.iconInactive" />
         </template>
-        <template
-          v-if="navItem?.badgeCount"
-          #append
-        >
+        <template v-if="navItem?.badgeCount" #append>
           <v-chip
             v-if="demandsCount > 0"
             color="background"
@@ -71,15 +60,9 @@
         @click="router.push({ path: adminItem?.path })"
       >
         <template #prepend>
-          <v-icon
-            size="16"
-            :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive"
-          />
+          <v-icon size="16" :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive" />
         </template>
-        <template
-          v-if="adminItem?.badgeCount"
-          #append
-        >
+        <template v-if="adminItem?.badgeCount" #append>
           <v-chip
             v-if="adminItem?.badgeCount > 0"
             color="pending"
@@ -106,15 +89,9 @@
         @click="router.push({ path: adminItem?.path })"
       >
         <template #prepend>
-          <v-icon
-            size="16"
-            :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive"
-          />
+          <v-icon size="16" :icon="isActive(adminItem?.path) ? adminItem?.iconActive : adminItem?.iconInactive" />
         </template>
-        <template
-          v-if="adminItem?.badgeCount"
-          #append
-        >
+        <template v-if="adminItem?.badgeCount" #append>
           <v-chip
             v-if="adminItem?.badgeCount > 0"
             color="pending"
@@ -133,8 +110,8 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import { useDisplay } from "vuetify";
-import { useAuthStore } from "@/stores/authStore.js";
+import { useDisplay } from 'vuetify';
+import { useAuthStore } from '@/stores/authStore.js';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useUserStore } from '@/stores/userStore';
 
@@ -145,8 +122,12 @@ const router = useRouter();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const demandsCount = computed(() => substitutionStore.availableSubstitutions.length + substitutionStore.availableSwitches.length + substitutionStore.otherDemands.length);
-
+const demandsCount = computed(
+  () =>
+    substitutionStore.availableSubstitutions.length +
+    substitutionStore.availableSwitches.length +
+    substitutionStore.otherDemands.length,
+);
 
 const isActive = (path) => {
   return router.currentRoute.value.path === path;
@@ -156,22 +137,25 @@ const isAdmin = computed(() => authStore.userData.isAdmin);
 
 // Grille du centre de l'utilisateur : la page ouvre l'équipe de l'utilisateur (voir pages/center/[centerId]/grid.vue).
 // Un administrateur principal sans centre n'en a pas : il choisit d'abord un centre.
-const gridItems = computed(() => (authStore.userData.centerId
-  ? [{
-    path: `/center/${authStore.userData.centerId}/grid`,
-    title: 'Grille',
-    value: 'grid',
-    iconActive: 'mdi-view-week',
-    iconInactive: 'mdi-view-week-outline'
-  }]
-  : []));
+const gridItems = computed(() =>
+  authStore.userData.centerId
+    ? [
+        {
+          path: `/center/${authStore.userData.centerId}/grid`,
+          title: 'Grille',
+          value: 'grid',
+          iconActive: 'mdi-view-week',
+          iconInactive: 'mdi-view-week-outline',
+        },
+      ]
+    : [],
+);
 
 const isMaster = computed(() => authStore.userData.adminType === 'master');
 
 const pendingUsersCount = computed(() => {
-  return userStore.users.filter(user => user.registrationStatus === 'pending').length;
+  return userStore.users.filter((user) => user.registrationStatus === 'pending').length;
 });
-
 
 // Navigation items configuration
 const navigationItems = computed(() => [
@@ -188,7 +172,7 @@ const navigationItems = computed(() => [
     title: 'Calendrier',
     value: 'rep',
     iconActive: 'mdi-calendar',
-    iconInactive: 'mdi-calendar-outline'
+    iconInactive: 'mdi-calendar-outline',
   },
   ...gridItems.value,
   {
@@ -196,21 +180,21 @@ const navigationItems = computed(() => [
     title: 'Tours de service',
     value: 'tservice',
     iconActive: 'mdi-file-plus',
-    iconInactive: 'mdi-file-plus-outline'
+    iconInactive: 'mdi-file-plus-outline',
   },
   {
     path: '/patchnotes',
     title: 'Patchnotes',
     value: 'patchnotes',
     iconActive: 'mdi-update',
-    iconInactive: 'mdi-update'
+    iconInactive: 'mdi-update',
   },
   {
     path: '/financement',
     title: 'Financement',
     value: 'financement',
     iconActive: 'mdi-currency-eur',
-    iconInactive: 'mdi-currency-eur'
+    iconInactive: 'mdi-currency-eur',
   },
   {
     path: `/center/${authStore.userData.centerId}/teams`,
@@ -218,19 +202,18 @@ const navigationItems = computed(() => [
     value: 'my-center',
     iconActive: 'mdi-airport',
     iconInactive: 'mdi-airport',
-    condition: !isMaster.value
-  }, {
+    condition: !isMaster.value,
+  },
+  {
     path: '/users',
     title: 'Utilisateurs',
     value: 'users',
     iconActive: 'mdi-account-group',
     iconInactive: 'mdi-account-group-outline',
-
   },
 ]);
 
 const adminNavigationItems = computed(() => [
-
   {
     path: '/admin/pending-users',
     title: 'Candidatures',
@@ -238,9 +221,8 @@ const adminNavigationItems = computed(() => [
     iconActive: 'mdi-account-clock',
     iconInactive: 'mdi-account-clock-outline',
 
-    badgeCount: pendingUsersCount.value
+    badgeCount: pendingUsersCount.value,
   },
-
 ]);
 
 const masterNavigationItems = computed(() => [
@@ -250,14 +232,14 @@ const masterNavigationItems = computed(() => [
     value: 'centers',
     iconActive: 'mdi-home',
     iconInactive: 'mdi-home-outline',
-  }
+  },
 ]);
 
 defineProps({
   navExpanded: {
     type: Boolean,
-    required: true
-  }
+    required: true,
+  },
 });
 </script>
 
@@ -269,7 +251,7 @@ defineProps({
 }
 
 .inactive-item {
-  color: rgba(var(--v-theme-onBackground), .51) !important;
+  color: rgba(var(--v-theme-onBackground), 0.51) !important;
   font-weight: 400 !important;
   background-color: transparent !important;
 }

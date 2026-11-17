@@ -18,28 +18,28 @@
         class="team-select"
       />
 
-      <v-btn-toggle v-if="spans.length > 1" v-model="span" mandatory density="comfortable" rounded="xl" variant="outlined" color="primary" divided>
-        <v-btn v-for="option in spans" :key="option" :value="option">
-          {{ option }} j
-        </v-btn>
+      <v-btn-toggle
+        v-if="spans.length > 1"
+        v-model="span"
+        mandatory
+        density="comfortable"
+        rounded="xl"
+        variant="outlined"
+        color="primary"
+        divided
+      >
+        <v-btn v-for="option in spans" :key="option" :value="option"> {{ option }} j </v-btn>
       </v-btn-toggle>
 
       <v-spacer />
 
       <v-btn icon="mdi-chevron-left" variant="text" aria-label="Période précédente" @click="slide(-1)" />
-      <v-btn variant="tonal" rounded="xl" @click="goToToday">
-        Aujourd'hui
-      </v-btn>
+      <v-btn variant="tonal" rounded="xl" @click="goToToday"> Aujourd'hui </v-btn>
       <v-btn icon="mdi-chevron-right" variant="text" aria-label="Période suivante" @click="slide(1)" />
     </div>
 
     <!-- Balayer à gauche / à droite change la période (Swiper) ; la colonne des noms reste fixe -->
-    <v-card
-      rounded="xl"
-      variant="flat"
-      class="grid-card"
-      color="transparent"
-    >
+    <v-card rounded="xl" variant="flat" class="grid-card" color="transparent">
       <v-progress-linear v-if="loading" indeterminate color="primary" />
       <TeamGrid
         v-if="startDate"
@@ -85,8 +85,10 @@ const { smAndDown } = useDisplay();
 const spans = computed(() => (smAndDown.value ? [MOBILE_SPAN] : SPANS));
 
 const initialSpan = Number(route.query.span);
-const span = ref(smAndDown.value ? MOBILE_SPAN : (SPANS.includes(initialSpan) ? initialSpan : 12));
-watch(smAndDown, (mobile) => { if (mobile) span.value = MOBILE_SPAN; });
+const span = ref(smAndDown.value ? MOBILE_SPAN : SPANS.includes(initialSpan) ? initialSpan : 12);
+watch(smAndDown, (mobile) => {
+  if (mobile) span.value = MOBILE_SPAN;
+});
 
 const gridRef = ref(null);
 const selectedTeamId = ref(typeof route.query.team === 'string' ? route.query.team : null);
@@ -99,9 +101,13 @@ const grid = ref(null);
 const loading = ref(false);
 const errorMessage = ref('');
 
-const endDate = computed(() => (startDate.value
-  ? Temporal.PlainDate.from(startDate.value).add({ days: span.value - 1 }).toString()
-  : null));
+const endDate = computed(() =>
+  startDate.value
+    ? Temporal.PlainDate.from(startDate.value)
+        .add({ days: span.value - 1 })
+        .toString()
+    : null,
+);
 
 const rangeLabel = computed(() => {
   if (!startDate.value) return '';
@@ -114,7 +120,9 @@ const slide = (direction) => gridRef.value?.slideBy(direction);
 
 // Décale la période affichée (appelé à la fin d'un glissement)
 const move = (direction) => {
-  startDate.value = Temporal.PlainDate.from(startDate.value).add({ days: direction * span.value }).toString();
+  startDate.value = Temporal.PlainDate.from(startDate.value)
+    .add({ days: direction * span.value })
+    .toString();
 };
 
 const goToToday = () => {
@@ -131,7 +139,9 @@ const loadGrid = async () => {
   try {
     // Trois périodes d'un coup (précédente, courante, suivante) pour que le glissement ait déjà ses données
     const first = Temporal.PlainDate.from(startDate.value).subtract({ days: span.value }).toString();
-    const last = Temporal.PlainDate.from(startDate.value).add({ days: 2 * span.value - 1 }).toString();
+    const last = Temporal.PlainDate.from(startDate.value)
+      .add({ days: 2 * span.value - 1 })
+      .toString();
     const data = await teamStore.fetchTeamGrid(selectedTeamId.value, first, last);
     if (current === requestId) grid.value = data;
   } catch (error) {
@@ -149,7 +159,7 @@ watch(span, () => {
 });
 
 watch(selectedTeamId, (id) => {
-  grid.value = null;   // ne pas afficher les membres de l'équipe précédente pendant le chargement
+  grid.value = null; // ne pas afficher les membres de l'équipe précédente pendant le chargement
   router.replace({ query: { ...route.query, team: id } });
 });
 
@@ -172,7 +182,9 @@ onMounted(async () => {
     selectedTeamId.value = teams.value.some((t) => t._id === own) ? own : (teams.value[0]?._id ?? null);
   }
   goToToday();
-  timer = setInterval(() => { today.value = Temporal.Now.plainDateISO(timeZone.value).toString(); }, 60000);
+  timer = setInterval(() => {
+    today.value = Temporal.Now.plainDateISO(timeZone.value).toString();
+  }, 60000);
 });
 
 onBeforeUnmount(() => clearInterval(timer));

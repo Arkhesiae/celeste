@@ -1,8 +1,11 @@
 <template>
   <div class="transition-wrapper d-flex">
     <AppBar
-:show-buttons="inScreen" :is-mobile-drawer-open="mobileDrawer" @toggle-mobile-drawer="toggleMobileDrawer"
-      @toggle-drawer="toggleDrawer" />
+      :show-buttons="inScreen"
+      :is-mobile-drawer-open="mobileDrawer"
+      @toggle-mobile-drawer="toggleMobileDrawer"
+      @toggle-drawer="toggleDrawer"
+    />
 
     <DesktopNavigationDrawer2 v-model:nav-expanded="navExpanded" />
 
@@ -11,9 +14,9 @@
     <LoginButtons v-if="isDev" />
 
     <v-main>
-        <router-view v-slot="{ Component, route }">
-          <transition :name="'fade-one'" mode="out-in">
-            <!-- <transition 
+      <router-view v-slot="{ Component, route }">
+        <transition :name="'fade-one'" mode="out-in">
+          <!-- <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
             @enter="onEnter"
@@ -23,11 +26,10 @@
             :name="route.meta.transition || ''"
             > -->
 
-            <component :is="Component" :key="route.fullPath" />
-          </transition>
-        </router-view>  
-     
-     
+          <component :is="Component" :key="route.fullPath" />
+        </transition>
+      </router-view>
+
       <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
     </v-main>
 
@@ -45,9 +47,6 @@ import LoginButtons from './components/LoginButtons.vue';
 import GlobalSnackbar from './components/GlobalSnackbar.vue';
 import BottomNavigation from './components/BottomNavigation.vue';
 import AdditionnalSnackbar from './components/AdditionnalSnackbar.vue';
-
-
-
 
 const isDev = ref(import.meta.env.DEV);
 // const initializationStore = useInitializationStore();
@@ -84,7 +83,6 @@ const toggleDrawer = () => {
 
 //   el.style.width = `calc(100% - ${paddingLeft + paddingRight}px)`;
 
-
 //   return { paddingTop, paddingLeft, paddingRight, paddingBottom };
 // };
 
@@ -120,7 +118,6 @@ const toggleDrawer = () => {
 
 // const onEnter = (el, done) => {
 
-
 //   const vLayoutLeftVar = getComputedStyle(document.querySelector('.v-main'))
 //     .getPropertyValue('--v-layout-left')
 
@@ -150,8 +147,6 @@ const toggleDrawer = () => {
 // const onAfterLeave = (el) => {
 //   resetPosition(el)
 // }
-
-
 </script>
 
 <style scoped>
@@ -160,7 +155,6 @@ const toggleDrawer = () => {
 }
 
 .v-container {
-
   padding-top: env(safe-area-inset-top) !important;
 }
 
@@ -204,7 +198,7 @@ a {
 .slide-left-leave-active,
 .slide-right-enter-active,
 .slide-right-leave-active {
-  transition: transform .4s ease-out;
+  transition: transform 0.4s ease-out;
 }
 
 .slide-left-enter-from {
@@ -230,12 +224,10 @@ a {
 
 .fade-enter-from,
 .fade-leave-to {
-
   opacity: 0;
 }
 
 .loading-screen {
-
   position: relative;
 
   top: 0;
@@ -244,7 +236,6 @@ a {
   width: 100% !important;
   height: 100% !important;
   background-color: rgb(var(--v-theme-background));
-
 }
 
 .wrapper {
@@ -252,10 +243,7 @@ a {
   width: 100%;
   height: 100%;
   background-color: rgba(var(--v-theme-background), 1) !important;
-
-
 }
-
 
 .fade-one-enter-active,
 .fade-one-leave-active {

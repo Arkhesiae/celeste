@@ -1,7 +1,11 @@
 <template>
   <v-card
-:class="['expandable-selector', { 'expanded': isExpanded }]" rounded="xl" width="200px"
-    class="pa-4 position-absolute" elevation="0">
+    :class="['expandable-selector', { expanded: isExpanded }]"
+    rounded="xl"
+    width="200px"
+    class="pa-4 position-absolute"
+    elevation="0"
+  >
     <v-row class="d-flex pa-1 align-center" @click="toggleExpand">
       <!-- Selected value column -->
 
@@ -16,9 +20,7 @@
       <!-- Chevron icon, aligned to the right -->
       <v-col class="d-flex justify-end">
         <v-btn icon size="sm" variant="outlined" class="text-medium-emphasis">
-          <v-icon :class="{ 'rotate-180': isExpanded }" size="24px">
-            mdi-menu-down
-          </v-icon>
+          <v-icon :class="{ 'rotate-180': isExpanded }" size="24px"> mdi-menu-down </v-icon>
         </v-btn>
       </v-col>
     </v-row>
@@ -43,8 +45,6 @@
 </template>
 
 <script setup>
-;
-
 // State variables
 const isExpanded = ref(false);
 const selectedValue = ref('Select an option');
@@ -56,7 +56,7 @@ const toggleExpand = () => {
 };
 
 const filteredChoices = computed(() => {
-  return choices.value.filter(choice => choice !== selectedValue.value);
+  return choices.value.filter((choice) => choice !== selectedValue.value);
 });
 
 const selectValue = (choice) => {

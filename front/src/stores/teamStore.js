@@ -19,7 +19,6 @@ export const useTeamStore = defineStore('team', () => {
   const teamOccurrences = ref([]);
   const userTeamTimeline = ref(null); // { window, teams: [{ teamId, teamName, segments }] }
 
-
   // Actions
   /**
    * Récupère toutes les équipes d'un centre spécifique.
@@ -38,7 +37,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       centerTeams.value = await teamService.getTeams(centerId, { publicList });
       currentCenter.value = centerId;
-      return centerTeams.value
+      return centerTeams.value;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des équipes du centre';
       throw err;
@@ -55,7 +54,7 @@ export const useTeamStore = defineStore('team', () => {
       loading.value = true;
       error.value = null;
       teams.value = await teamService.getAllTeams();
-      return teams.value
+      return teams.value;
     } catch (err) {
       console.error('Erreur lors de la récupération des équipes:', err);
       throw err;
@@ -93,8 +92,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       currentTeam.value = await userService.fetchCurrentTeamOfUser(userId);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération de l\'équipe actuelle';
-
+      error.value = err.message || "Erreur lors de la récupération de l'équipe actuelle";
     } finally {
       loading.value = false;
     }
@@ -110,7 +108,7 @@ export const useTeamStore = defineStore('team', () => {
       error.value = null;
       teamOccurrences.value = await userService.fetchTeamOccurrencesOfUser(userId);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération des occurrences d\'équipe';
+      error.value = err.message || "Erreur lors de la récupération des occurrences d'équipe";
       throw err;
     } finally {
       loading.value = false;
@@ -147,13 +145,12 @@ export const useTeamStore = defineStore('team', () => {
       return result;
       // Fetch substitutions and vacations ?
     } catch (err) {
-      error.value = err.message || 'Erreur lors de l\'attribution de l\'utilisateur à l\'équipe';
+      error.value = err.message || "Erreur lors de l'attribution de l'utilisateur à l'équipe";
       throw err;
     } finally {
       loading.value = false;
     }
   };
-
 
   const deleteTeamOccurrence = async (userId, occurrenceId, confirmed = false) => {
     try {
@@ -167,7 +164,7 @@ export const useTeamStore = defineStore('team', () => {
       // Fetch substitutions and vacations ?
     } catch (err) {
       console.error('Erreur détaillée:', err);
-      error.value = err.message || 'Erreur lors de la suppression de l\'occurrence d\'équipe';
+      error.value = err.message || "Erreur lors de la suppression de l'occurrence d'équipe";
       throw err;
     } finally {
       loading.value = false;
@@ -186,7 +183,7 @@ export const useTeamStore = defineStore('team', () => {
       await teamService.createTeam({ centerId, name: teamName });
       await fetchCenterTeams(centerId);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de l\'ajout de l\'équipe';
+      error.value = err.message || "Erreur lors de l'ajout de l'équipe";
       throw err;
     } finally {
       loading.value = false;
@@ -204,7 +201,7 @@ export const useTeamStore = defineStore('team', () => {
       await teamService.deleteTeam(teamId);
       await fetchCenterTeams(currentCenter.value);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la suppression de l\'équipe';
+      error.value = err.message || "Erreur lors de la suppression de l'équipe";
       throw err;
     } finally {
       loading.value = false;
@@ -223,7 +220,7 @@ export const useTeamStore = defineStore('team', () => {
       await teamService.renameTeam(teamId, { name: teamName });
       await fetchCenterTeams(currentCenter.value);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la mise à jour du nom de l\'équipe';
+      error.value = err.message || "Erreur lors de la mise à jour du nom de l'équipe";
       throw err;
     } finally {
       loading.value = false;
@@ -240,7 +237,7 @@ export const useTeamStore = defineStore('team', () => {
       loading.value = true;
       error.value = null;
       const result = await teamService.updateTeamCyclePosition(teamId, position);
-      if (result.needsApproval) return result;   // rien n'a changé : l'appelant affiche l'impact
+      if (result.needsApproval) return result; // rien n'a changé : l'appelant affiche l'impact
       await fetchCenterTeams(currentCenter.value);
       return result;
     } catch (err) {
@@ -262,7 +259,7 @@ export const useTeamStore = defineStore('team', () => {
       await teamService.updateTeamsOrder(teamIds);
       await fetchCenterTeams(currentCenter.value);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la mise à jour de l\'ordre des équipes';
+      error.value = err.message || "Erreur lors de la mise à jour de l'ordre des équipes";
       throw err;
     } finally {
       loading.value = false;
@@ -311,4 +308,3 @@ export const useTeamStore = defineStore('team', () => {
     emptyStore,
   };
 });
-

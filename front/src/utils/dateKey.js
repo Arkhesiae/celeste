@@ -7,7 +7,7 @@ const DATE_KEY_RE = /^\d{4}-\d{2}-\d{2}/;
  * Normalise une date (ISO, YYYY-MM-DD, Date, Temporal, objet date-like) en clé calendrier YYYY-MM-DD.
  * Retourne null si la valeur ne représente pas une date valide.
  */
-export function toDateKey (value) {
+export function toDateKey(value) {
   if (value == null || value === '') return null;
 
   if (typeof value === 'string') {
@@ -32,7 +32,7 @@ export function toDateKey (value) {
  * Jour choisi dans un sélecteur de date (Vuetify rend un `Date` à minuit LOCAL, ou une chaîne) -> clé YYYY-MM-DD du jour
  * affiché. Un `toISOString()` décalerait d'un jour dans un fuseau à l'est de l'UTC.
  */
-export function pickerDayKey (value) {
+export function pickerDayKey(value) {
   if (value instanceof Date) {
     if (Number.isNaN(value.getTime())) return null;
     const pad = (n) => String(n).padStart(2, '0');
@@ -41,14 +41,14 @@ export function pickerDayKey (value) {
   return toDateKey(value);
 }
 
-export function sameDateKey (a, b) {
+export function sameDateKey(a, b) {
   const ka = toDateKey(a);
   const kb = toDateKey(b);
   return Boolean(ka && kb && ka === kb);
 }
 
 /** Compare des ids Mongo (string | ObjectId | {_id}) */
-export function sameId (a, b) {
+export function sameId(a, b) {
   const idOf = (v) => {
     if (v == null) return null;
     if (typeof v === 'object' && v._id != null) return String(v._id);

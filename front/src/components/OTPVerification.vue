@@ -4,10 +4,7 @@
       <v-card-title class="pl-0 text-headline-small">
         {{ title }}
       </v-card-title>
-      <p
-        v-if="email"
-        class="text-body-medium text-medium-emphasis mb-6"
-      >
+      <p v-if="email" class="text-body-medium text-medium-emphasis mb-6">
         Un code de vérification a été envoyé à {{ email }}
       </p>
 
@@ -20,28 +17,17 @@
       />
 
       <div class="d-flex justify-center align-center mb-4">
-        <v-btn
-          variant="text"
-          :disabled="timer > 0 || loading"
-          class="text-body-small"
-          @click="resendOtp"
-        >
+        <v-btn variant="text" :disabled="timer > 0 || loading" class="text-body-small" @click="resendOtp">
           {{ timer > 0 ? `Renvoyer le code (${timer}s)` : 'Renvoyer le code' }}
         </v-btn>
       </div>
 
-      <p
-        v-if="timer > 0"
-        class="text-body-small text-medium-emphasis"
-      >
-        Le code expirera dans 10 minutes
-      </p>
+      <p v-if="timer > 0" class="text-body-small text-medium-emphasis">Le code expirera dans 10 minutes</p>
 
       <v-alert
         v-if="error"
         type="error"
         icon="mdi-shield"
-        
         rounded="lg"
         color="secondary"
         variant="tonal"
@@ -56,34 +42,33 @@
 </template>
 
 <script setup>
-
 import { useOtpStore } from '@/stores/otpStore';
 
 const props = defineProps({
   email: {
     type: String,
-    required: true
+    required: true,
   },
   title: {
     type: String,
-    default: 'Vérification de votre email'
+    default: 'Vérification de votre email',
   },
   description: {
     type: String,
-    default: 'Un code de vérification a été envoyé à votre adresse email'
+    default: 'Un code de vérification a été envoyé à votre adresse email',
   },
   email: {
     type: String,
-    required: true
+    required: true,
   },
   length: {
     type: Number,
-    default: 6
+    default: 6,
   },
   duration: {
     type: Number,
-    default: 60
-  }
+    default: 60,
+  },
 });
 
 const emit = defineEmits(['verified', 'error', 'resend']);
@@ -120,7 +105,7 @@ const sendOtp = async () => {
     startTimer();
     emit('resend');
   } catch (err) {
-    error.value = err.message || 'Erreur lors de l\'envoi du code';
+    error.value = err.message || "Erreur lors de l'envoi du code";
     emit('error', err);
   } finally {
     loading.value = false;
@@ -161,16 +146,18 @@ const onOtpChange = (value) => {
   }
 };
 
-watch(() => props.email, () => {
-  otpValue.value = '';
-  error.value = '';
-  if (timer.value <= 0) {
-    sendOtp();
-  }
-});
+watch(
+  () => props.email,
+  () => {
+    otpValue.value = '';
+    error.value = '';
+    if (timer.value <= 0) {
+      sendOtp();
+    }
+  },
+);
 
 onMounted(() => {
-  
   sendOtp();
 });
 
@@ -186,4 +173,4 @@ onUnmounted(() => {
   max-width: 400px;
   margin: 0 auto;
 }
-</style> 
+</style>

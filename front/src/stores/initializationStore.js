@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 
-
 export const useInitializationStore = defineStore('initialization', () => {
   const isLoading = ref(false);
   const initializationState = ref({
@@ -11,26 +10,26 @@ export const useInitializationStore = defineStore('initialization', () => {
     shifts: false,
     personal: false,
     users: false,
-    tickets: false
+    tickets: false,
   });
 
   const isAppReady = ref(false);
   const lastLoaded = ref('');
   const pendingRoute = ref('');
 
-  function setLoading (value) {
+  function setLoading(value) {
     isLoading.value = value;
   }
 
-  function setAppReady (value) {
+  function setAppReady(value) {
     isAppReady.value = value;
   }
 
-  function getPendingRoute () {
+  function getPendingRoute() {
     return pendingRoute.value;
   }
 
-  function setPendingRoute (route) {
+  function setPendingRoute(route) {
     pendingRoute.value = route;
   }
 
@@ -44,12 +43,12 @@ export const useInitializationStore = defineStore('initialization', () => {
         rotations: false,
         shifts: false,
         personal: false,
-        users: false
+        users: false,
       };
     }
   });
 
-  function updateInitializationState (key, value) {
+  function updateInitializationState(key, value) {
     initializationState.value[key] = value;
     lastLoaded.value = key;
   }
@@ -63,6 +62,6 @@ export const useInitializationStore = defineStore('initialization', () => {
     initializationState,
     setLoading,
     updateInitializationState,
-    lastLoaded
+    lastLoaded,
   };
-}); 
+});

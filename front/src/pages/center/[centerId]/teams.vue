@@ -1,70 +1,80 @@
 <template>
   <v-container>
     <MainTitle
-:title="centerName" subtitle="Liste des équipes et leurs membres"
-      :back-button="authStore.userData.adminType === 'master'">
+      :title="centerName"
+      subtitle="Liste des équipes et leurs membres"
+      :back-button="authStore.userData.adminType === 'master'"
+    >
       <template #actions>
-        <v-btn color="secondary" flat style="border-radius: 16px !important" prepend-icon="mdi-plus" @click="openAddTeamDialog">
+        <v-btn
+          color="secondary"
+          flat
+          style="border-radius: 16px !important"
+          prepend-icon="mdi-plus"
+          @click="openAddTeamDialog"
+        >
           Ajouter une équipe
         </v-btn>
       </template>
     </MainTitle>
 
-
-    <v-alert
-      v-if="teamCountWarning"
-      type="warning"
-      variant="tonal"
-      rounded="xl"
-      class="mb-4"
-      icon="mdi-alert-outline"
-    >
+    <v-alert v-if="teamCountWarning" type="warning" variant="tonal" rounded="xl" class="mb-4" icon="mdi-alert-outline">
       {{ teamCountWarning }}
     </v-alert>
-
- 
 
     <v-row>
       <span v-if="filteredAndSortedTeams.length === 0">Aucune équipe trouvée</span>
       <v-col v-for="team in filteredAndSortedTeams" :key="team._id" cols="12" md="6" lg="6">
         <TeamCard
-:team="team" :is-admin="isAdmin"
+          :team="team"
+          :is-admin="isAdmin"
           :members-count="teamMembers(team._id).length + teamRenforts(team._id).length"
-          :renforts-count="teamRenforts(team._id).length" :cycle-start-date="getCycleStartLabel(team)" :next-cycle-date="getNextCycleDate(team)"
-          :current-day="getCurrentCycleDay(team)" :grid-link="{ path: `/center/${centerId}/grid`, query: { team: team._id } }"
-          @edit-team-name="openEditTeamNameDialog" @edit-cycle="openCycleDialog"
-          @remove-team="removeTeam" @view-members="openMembersPanel" />
+          :renforts-count="teamRenforts(team._id).length"
+          :cycle-start-date="getCycleStartLabel(team)"
+          :next-cycle-date="getNextCycleDate(team)"
+          :current-day="getCurrentCycleDay(team)"
+          :grid-link="{ path: `/center/${centerId}/grid`, query: { team: team._id } }"
+          @edit-team-name="openEditTeamNameDialog"
+          @edit-cycle="openCycleDialog"
+          @remove-team="removeTeam"
+          @view-members="openMembersPanel"
+        />
       </v-col>
     </v-row>
 
     <!-- Dialog pour ajouter une équipe -->
     <v-dialog v-model="addTeamDialog" max-width="500">
       <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">
-          Ajouter une équipe
-        </v-card-title>
+        <v-card-title class="pa-0"> Ajouter une équipe </v-card-title>
         <v-card-text class="pa-0 mt-4">
           <v-text-field v-model="newTeamName" label="Nom de l'équipe" variant="outlined" flat rounded="xl" required />
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn text color="primary" @click="addTeamDialog = false">
-            Annuler
-          </v-btn>
-          <v-btn text color="primary" @click="addNewTeam">
-            Enregistrer
-          </v-btn>
+          <v-btn text color="primary" @click="addTeamDialog = false"> Annuler </v-btn>
+          <v-btn text color="primary" @click="addNewTeam"> Enregistrer </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog pour la position de l'équipe dans le cycle -->
-    <base-dialog v-model="cycleDialog"  :title="`Position de l'équipe ${selectedTeam?.name ?? ''}`" max-width="600" persistent>
-      <p class="text-body-medium mb-4">
-        Aujourd'hui, à quel jour du tour de service cette équipe se trouve-t-elle ?
-      </p>
-      <v-alert v-if="!rotationLength" type="info" color="secondary" variant="tonal" density="compact" rounded="xl" class="mb-4">
-        Aucun tour de service actif : les jours sont numérotés d'après le nombre d'équipes ({{ cycleDays.length }}).
-        Les vacations apparaîtront quand un tour sera activé.
+    <base-dialog
+      v-model="cycleDialog"
+      :title="`Position de l'équipe ${selectedTeam?.name ?? ''}`"
+      max-width="600"
+      persistent
+    >
+      <p class="text-body-medium mb-4">Aujourd'hui, à quel jour du tour de service cette équipe se trouve-t-elle ?</p>
+      <v-alert
+        v-if="!rotationLength"
+        type="info"
+        color="secondary"
+        variant="tonal"
+        density="compact"
+        rounded="xl"
+        class="mb-4"
+      >
+        Aucun tour de service actif : les jours sont numérotés d'après le nombre d'équipes ({{ cycleDays.length }}). Les
+        vacations apparaîtront quand un tour sera activé.
       </v-alert>
       <CycleDayPicker
         v-if="cycleDays.length"
@@ -74,23 +84,13 @@
         :current-position="currentCyclePosition"
         :time-zone="centerTimeZone"
       />
-      <v-alert
-        v-if="swapTarget"
-        type="warning"
-        variant="tonal"
-        density="compact"
-        rounded="lg"
-        class="mt-4"
-      >
+      <v-alert v-if="swapTarget" type="warning" variant="tonal" density="compact" rounded="lg" class="mt-4">
         Ce jour est celui de l'équipe {{ swapTarget }} : les deux équipes échangeront leurs positions.
       </v-alert>
       <template #actions>
         <v-spacer />
-        <v-btn variant="text" @click="closeCycleDialog">
-          Annuler
-        </v-btn>
+        <v-btn variant="text" @click="closeCycleDialog"> Annuler </v-btn>
         <v-btn
-       
           :loading="cycleSaving"
           :disabled="!selectedCycleDay || selectedCycleDay === currentCyclePosition"
           @click="saveCyclePosition(!!swapTarget)"
@@ -111,21 +111,20 @@
     <!-- Dialog pour modifier le nom de l'équipe -->
     <v-dialog v-model="editTeamNameDialog" max-width="360">
       <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0">
-          Modifier le nom de l'équipe
-        </v-card-title>
+        <v-card-title class="pa-0"> Modifier le nom de l'équipe </v-card-title>
         <v-card-text class="pa-0 my-6">
           <v-text-field
-v-model="editedTeamName" variant="underlined" flat rounded="xl" label="Nom de l'équipe"
-            required />
+            v-model="editedTeamName"
+            variant="underlined"
+            flat
+            rounded="xl"
+            label="Nom de l'équipe"
+            required
+          />
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn text @click="editTeamNameDialog = false">
-            Annuler
-          </v-btn>
-          <v-btn text color="primary" @click="renameTeam">
-            Enregistrer
-          </v-btn>
+          <v-btn text @click="editTeamNameDialog = false"> Annuler </v-btn>
+          <v-btn text color="primary" @click="renameTeam"> Enregistrer </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -144,12 +143,19 @@ v-model="editedTeamName" variant="underlined" flat rounded="xl" label="Nom de l'
             Glissez-déposez les équipes pour modifier leur ordre. L'ordre sera sauvegardé automatiquement.
           </div>
           <VueDraggable
-v-model="orderedTeams" :animation="150" ghost-class="ghost" target=".sort-target"
-            class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded">
+            v-model="orderedTeams"
+            :animation="150"
+            ghost-class="ghost"
+            target=".sort-target"
+            class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded"
+          >
             <TransitionGroup type="transition" tag="div" name="fade" class="sort-target">
               <div
-v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg pa-2"
-                style="background-color: rgba(var(--v-theme-background), 1)">
+                v-for="item in orderedTeams"
+                :key="item._id"
+                class="cursor-move my-4 rounded-lg pa-2"
+                style="background-color: rgba(var(--v-theme-background), 1)"
+              >
                 <v-icon>mdi-drag</v-icon>
                 {{ item.name }}
               </div>
@@ -157,17 +163,22 @@ v-for="item in orderedTeams" :key="item._id" class="cursor-move my-4 rounded-lg 
           </VueDraggable>
         </v-card-text>
         <v-card-actions class="pa-0">
-          <v-btn color="primary" variant="text" @click="closeReorderDialog">
-            Fermer
-          </v-btn>
+          <v-btn color="primary" variant="text" @click="closeReorderDialog"> Fermer </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Panneau latéral pour les membres -->
     <v-navigation-drawer
-v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-index: 3000;"
-      width="460" floating temporary>
+      v-if="!smAndDown"
+      v-model="membersPanel"
+      location="right"
+      order="-6"
+      style="z-index: 3000"
+      width="460"
+      floating
+      temporary
+    >
       <v-card-title class="d-flex justify-space-between align-center pa-4">
         <span class="text-title-large">Equipe {{ selectedTeamForMembers?.name }}</span>
         <v-btn variant="text" icon @click="membersPanel = false">
@@ -176,9 +187,11 @@ v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-in
       </v-card-title>
       <v-card-text>
         <TeamMembersList
-:members="teamMembers(selectedTeamForMembers?._id)"
+          :members="teamMembers(selectedTeamForMembers?._id)"
           :renforts="teamRenforts(selectedTeamForMembers?._id)"
-          :timeline="timelineOfTeam(selectedTeamForMembers?._id)" :timeline-window="timelineWindow" />
+          :timeline="timelineOfTeam(selectedTeamForMembers?._id)"
+          :timeline-window="timelineWindow"
+        />
       </v-card-text>
     </v-navigation-drawer>
 
@@ -193,9 +206,11 @@ v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-in
         </v-card-title>
         <v-card-text>
           <TeamMembersList
-:members="teamMembers(selectedTeamForMembers?._id)"
+            :members="teamMembers(selectedTeamForMembers?._id)"
             :renforts="teamRenforts(selectedTeamForMembers?._id)"
-            :timeline="timelineOfTeam(selectedTeamForMembers?._id)" :timeline-window="timelineWindow" />
+            :timeline="timelineOfTeam(selectedTeamForMembers?._id)"
+            :timeline-window="timelineWindow"
+          />
         </v-card-text>
       </v-card>
     </v-bottom-sheet>
@@ -203,20 +218,17 @@ v-if="!smAndDown" v-model="membersPanel" location="right" order="-6" style="z-in
 </template>
 
 <script setup>
-
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { useRoute } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { VueDraggable } from 'vue-draggable-plus'
+import { VueDraggable } from 'vue-draggable-plus';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
 import { Temporal } from '@js-temporal/polyfill';
 import { toDateKey } from '@/utils/dateKey';
-
-
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
@@ -234,7 +246,7 @@ const { smAndDown } = useDisplay();
 
 // Ajout de la computed property pour le nom du centre
 const centerName = computed(() => {
-  const center = centerStore.centers.find(c => c._id === centerId);
+  const center = centerStore.centers.find((c) => c._id === centerId);
   return center ? center.name : centerId;
 });
 
@@ -265,16 +277,14 @@ const filteredAndSortedTeams = computed(() => {
   let filtered = teams.value;
 
   if (selectedFilter.value === 'active') {
-    filtered = filtered.filter(team => team.cycleStartDate);
+    filtered = filtered.filter((team) => team.cycleStartDate);
   } else if (selectedFilter.value === 'inactive') {
-    filtered = filtered.filter(team => !team.cycleStartDate);
+    filtered = filtered.filter((team) => !team.cycleStartDate);
   }
 
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
-    filtered = filtered.filter(team =>
-      team.name.toLowerCase().includes(query)
-    );
+    filtered = filtered.filter((team) => team.name.toLowerCase().includes(query));
   }
 
   if (sortBy.value === 'order') {
@@ -295,7 +305,7 @@ const filteredAndSortedTeams = computed(() => {
 });
 
 const teamMembers = computed(() => (teamId) => {
-  return usersGroupedByTeam.value.find(team => team.teamId === teamId)?.users || [];
+  return usersGroupedByTeam.value.find((team) => team.teamId === teamId)?.users || [];
 });
 
 // Frise des équipes (membres passés, actuels et à venir sur ~1 an) ; null tant que non chargée
@@ -304,7 +314,7 @@ const timelineOfTeam = (teamId) =>
   userStore.teamsTimeline?.teams?.find((team) => String(team.teamId) === String(teamId)) ?? null;
 
 const teamRenforts = computed(() => (teamId) => {
-  return usersGroupedByTeam.value.find(team => team.teamId === teamId)?.renforts || [];
+  return usersGroupedByTeam.value.find((team) => team.teamId === teamId)?.renforts || [];
 });
 
 const openAddTeamDialog = () => {
@@ -317,12 +327,12 @@ const addNewTeam = async () => {
 
   try {
     await teamStore.addTeam(centerId, newTeamName.value);
-    snackbarStore.showNotification('Equipe ajoutée', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Equipe ajoutée', 'onPrimary', 'mdi-check');
     addTeamDialog.value = false;
     newTeamName.value = '';
   } catch (error) {
-    console.error('Erreur lors de l\'ajout de l\'équipe:', error);
-    snackbarStore.showNotification('Erreur lors de l\'ajout de l\'équipe : ' + error.message, 'onError');
+    console.error("Erreur lors de l'ajout de l'équipe:", error);
+    snackbarStore.showNotification("Erreur lors de l'ajout de l'équipe : " + error.message, 'onError');
   }
 };
 
@@ -331,10 +341,10 @@ const removeTeam = async (teamId) => {
 
   try {
     await teamStore.deleteTeam(teamId);
-    snackbarStore.showNotification('Équipe supprimée', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification('Équipe supprimée', 'onPrimary', 'mdi-check');
   } catch (error) {
-    console.error('Erreur lors de la suppression de l\'équipe:', error);
-    snackbarStore.showNotification('Erreur lors de la suppression de l\'équipe : ' + error.message, 'onError');
+    console.error("Erreur lors de la suppression de l'équipe:", error);
+    snackbarStore.showNotification("Erreur lors de la suppression de l'équipe : " + error.message, 'onError');
   }
 };
 
@@ -371,7 +381,9 @@ const cycleOccupants = computed(() => {
   return occupants;
 });
 
-const currentCyclePosition = computed(() => (selectedTeam.value ? getCurrentCycleDay(selectedTeam.value)?.position ?? null : null));
+const currentCyclePosition = computed(() =>
+  selectedTeam.value ? (getCurrentCycleDay(selectedTeam.value)?.position ?? null) : null,
+);
 
 // Équipe qui occupe le jour choisi : elle échangera sa place avec l'équipe éditée
 const swapTarget = computed(() => cycleOccupants.value[selectedCycleDay.value] ?? null);
@@ -413,11 +425,17 @@ const saveCyclePosition = async (swap, confirmed = false) => {
       result.cancelled || result.withdrawn || result.deactivated
         ? `Position mise à jour : ${result.cancelled} demande(s) annulée(s), ${result.withdrawn} retrait(s), ${result.deactivated} entrée(s) désactivée(s)`
         : 'Position dans le cycle mise à jour',
-      'onPrimary', "mdi-check");
+      'onPrimary',
+      'mdi-check',
+    );
     cycleDialog.value = false;
     selectedTeam.value = null;
   } catch (error) {
-    snackbarStore.showNotification('Erreur lors de la mise à jour de la position : ' + error.message, 'onError', "mdi-alert-circle-outline");
+    snackbarStore.showNotification(
+      'Erreur lors de la mise à jour de la position : ' + error.message,
+      'onError',
+      'mdi-alert-circle-outline',
+    );
     // Conflit de dernière minute (une autre personne a modifié le cycle) : recharger pour afficher les occupants à jour
     if (error.code === 'CYCLE_POSITION_TAKEN') teamStore.fetchCenterTeams(centerId);
   } finally {
@@ -436,22 +454,22 @@ const renameTeam = async () => {
 
   try {
     await teamStore.renameTeam(selectedTeamForEdit.value._id, editedTeamName.value);
-    snackbarStore.showNotification('Nom de l\'équipe mis à jour', 'onPrimary', "mdi-check");
+    snackbarStore.showNotification("Nom de l'équipe mis à jour", 'onPrimary', 'mdi-check');
     editTeamNameDialog.value = false;
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du nom de l\'équipe:', error);
-    snackbarStore.showNotification('Erreur lors de la mise à jour du nom de l\'équipe : ' + error.message, 'onError');
+    console.error("Erreur lors de la mise à jour du nom de l'équipe:", error);
+    snackbarStore.showNotification("Erreur lors de la mise à jour du nom de l'équipe : " + error.message, 'onError');
   }
 };
 
 const onDragEnd = async () => {
   try {
     // Mettre à jour l'ordre des équipes dans le store
-    await teamStore.updateTeamsOrder(orderedTeams.value.map(team => team._id));
-    snackbarStore.showNotification('Ordre des équipes mis à jour', 'onPrimary', "mdi-sort");
+    await teamStore.updateTeamsOrder(orderedTeams.value.map((team) => team._id));
+    snackbarStore.showNotification('Ordre des équipes mis à jour', 'onPrimary', 'mdi-sort');
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de l\'ordre des équipes:', error);
-    snackbarStore.showNotification('Erreur lors de la mise à jour de l\'ordre des équipes', 'onError');
+    console.error("Erreur lors de la mise à jour de l'ordre des équipes:", error);
+    snackbarStore.showNotification("Erreur lors de la mise à jour de l'ordre des équipes", 'onError');
   }
 };
 
@@ -466,7 +484,7 @@ const closeReorderDialog = async () => {
 };
 
 // Fuseau horaire du centre (Temporal) : « aujourd'hui » et les jours de cycle en dépendent
-const centerTimeZone = computed(() => centerStore.centers.find(c => c._id === centerId)?.timeZone || 'Europe/Paris');
+const centerTimeZone = computed(() => centerStore.centers.find((c) => c._id === centerId)?.timeZone || 'Europe/Paris');
 
 // Jours du tour de service actif ; 0 si aucun tour n'est actif
 const rotationLength = computed(() => centerStore.activeRotationsByCenter[centerId]?.days?.length ?? 0);
@@ -519,8 +537,10 @@ const getCurrentCycleDay = (team) => {
 const teamCountWarning = computed(() => {
   const total = centerStore.activeRotationsByCenter[centerId]?.days?.length;
   if (!total || teams.value.length === total) return '';
-  return `Le centre a ${teams.value.length} équipe(s) pour un tour de service actif de ${total} jour(s) : `
-    + 'il faut autant d\'équipes que de jours pour que chaque jour du tour soit assuré.';
+  return (
+    `Le centre a ${teams.value.length} équipe(s) pour un tour de service actif de ${total} jour(s) : ` +
+    "il faut autant d'équipes que de jours pour que chaque jour du tour soit assuré."
+  );
 });
 
 const openMembersPanel = (team) => {
@@ -552,7 +572,10 @@ onMounted(async () => {
 }
 
 .add-team-btn {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.048);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.096),
+    0 0 0 1px rgba(255, 255, 255, 0.007),
+    0 4px 8px rgba(0, 0, 0, 0.048);
 }
 
 .gap-1 {
@@ -570,7 +593,7 @@ onMounted(async () => {
 /* Styles pour le glisser-déposer */
 .ghost {
   opacity: 0.8;
-  border: 1px dashed rgba(var(--v-theme-onBackground), .1) !important;
+  border: 1px dashed rgba(var(--v-theme-onBackground), 0.1) !important;
 }
 
 div .sortable-drag {

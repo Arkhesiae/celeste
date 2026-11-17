@@ -16,8 +16,16 @@
         <span class="cdp-tile__name font-weight-bold">{{ day.name || '—' }}</span>
         <span class="cdp-tile__hours opacity-70">{{ day.hours || (day.isRest ? 'Repos' : '') }}</span>
 
-        <span v-if="currentPosition === day.position" class="cdp-tile__badge cdp-tile__badge--current position-absolute d-inline-flex align-center ga-1 px-2 text-truncate font-weight-bold">Actuel</span>
-        <span v-else-if="occupants[day.position]" class="cdp-tile__badge position-absolute d-inline-flex align-center ga-1 px-2 text-truncate font-weight-bold" :title="`Occupé par l'équipe ${occupants[day.position]}`">
+        <span
+          v-if="currentPosition === day.position"
+          class="cdp-tile__badge cdp-tile__badge--current position-absolute d-inline-flex align-center ga-1 px-2 text-truncate font-weight-bold"
+          >Actuel</span
+        >
+        <span
+          v-else-if="occupants[day.position]"
+          class="cdp-tile__badge position-absolute d-inline-flex align-center ga-1 px-2 text-truncate font-weight-bold"
+          :title="`Occupé par l'équipe ${occupants[day.position]}`"
+        >
           <v-icon size="11">mdi-swap-horizontal</v-icon>
           {{ occupants[day.position] }}
         </span>
@@ -26,9 +34,7 @@
 
     <!-- Aperçu : ce que l'équipe ferait sur les prochains jours avec ce choix -->
     <div v-if="preview.length" class="mt-4">
-      <div class="text-label-medium text-medium-emphasis mb-1">
-        Aperçu des {{ preview.length }} prochains jours
-      </div>
+      <div class="text-label-medium text-medium-emphasis mb-1">Aperçu des {{ preview.length }} prochains jours</div>
       <div class="cdp-preview d-flex ga-1 pb-1 overflow-x-auto">
         <div
           v-for="item in preview"
@@ -90,9 +96,16 @@ const preview = computed(() => {
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
 }
 
-.cdp-tile__position { font-size: 10px; }
-.cdp-tile__name { font-size: 18px; line-height: 1.1; }
-.cdp-tile__hours { font-size: 11px; }
+.cdp-tile__position {
+  font-size: 10px;
+}
+.cdp-tile__name {
+  font-size: 18px;
+  line-height: 1.1;
+}
+.cdp-tile__hours {
+  font-size: 11px;
+}
 
 .cdp-tile__badge {
   top: 6px;
@@ -121,10 +134,20 @@ const preview = computed(() => {
   line-height: 1.15;
 }
 
-.cdp-preview__day--today { background: rgba(var(--v-theme-primary), 0.15); }
-.cdp-preview__day--rest { color: rgb(var(--v-theme-onSurfaceVariant)); }
+.cdp-preview__day--today {
+  background: rgba(var(--v-theme-primary), 0.15);
+}
+.cdp-preview__day--rest {
+  color: rgb(var(--v-theme-onSurfaceVariant));
+}
 
-.cdp-preview__weekday { font-size: 9px; }
-.cdp-preview__date { font-size: 12px; }
-.cdp-preview__shift { font-size: 11px; }
+.cdp-preview__weekday {
+  font-size: 9px;
+}
+.cdp-preview__date {
+  font-size: 12px;
+}
+.cdp-preview__shift {
+  font-size: 11px;
+}
 </style>

@@ -3,24 +3,16 @@
     <!-- En-tête avec titre et informations admin -->
     <v-row class="my-16">
       <v-col cols="12">
-        <v-card
-          class="pa-6"
-          rounded="xl"
-          variant="flat"
-          color="surface"
-        >
+        <v-card class="pa-6" rounded="xl" variant="flat" color="surface">
           <div class="d-flex align-center justify-space-between">
             <div>
-              <div class="align-center ga-2 font-weight-bold d-flex ">
-                <v-icon
-                  icon="mdi-shield-crown"
-                  size="20"
-                />
-                <span class="text-title-large font-weight-bold "> Panneau d'Administration </span>
+              <div class="align-center ga-2 font-weight-bold d-flex">
+                <v-icon icon="mdi-shield-crown" size="20" />
+                <span class="text-title-large font-weight-bold"> Panneau d'Administration </span>
               </div>
               <p class="text-body-medium opacity-50 mb-0">
-                Bienvenue {{ authStore.userData.name }}, {{ adminType === 'master' ? 'Administrateur Principal' :
-                  'Administrateur Local' }}
+                Bienvenue {{ authStore.userData.name }},
+                {{ adminType === 'master' ? 'Administrateur Principal' : 'Administrateur Local' }}
               </p>
             </div>
           </div>
@@ -30,13 +22,7 @@
 
     <!-- Statistiques rapides -->
     <v-row class="mb-6">
-      <v-col
-        v-for="stat in quickStats"
-        :key="stat.key"
-        cols="12"
-        :sm="stat.key === 'totalUsers' ? 12 : 6"
-        md="4"
-      >
+      <v-col v-for="stat in quickStats" :key="stat.key" cols="12" :sm="stat.key === 'totalUsers' ? 12 : 6" md="4">
         <v-card
           class="pa-4 opacity-100 px-6"
           rounded="xl"
@@ -46,16 +32,8 @@
           @click="navigateTo(stat.path)"
         >
           <div class="d-flex align-center">
-            <v-avatar
-              :color="actionNeeded(stat) ? 'pending' : 'onBackground'"
-              variant="tonal"
-              size="24"
-              class="mr-4"
-            >
-              <v-icon
-                :icon="stat.icon"
-                size="12"
-              />
+            <v-avatar :color="actionNeeded(stat) ? 'pending' : 'onBackground'" variant="tonal" size="24" class="mr-4">
+              <v-icon :icon="stat.icon" size="12" />
             </v-avatar>
             <div>
               <div class="text-title-large font-weight-bold">
@@ -88,10 +66,7 @@
           :color="smAndDown ? 'transparent' : 'surface'"
           height="100%"
         >
-          <div
-            class="d-flex align-center mb-4 "
-            :class="smAndDown ? 'px-4' : ''"
-          >
+          <div class="d-flex align-center mb-4" :class="smAndDown ? 'px-4' : ''">
             <div>
               <span class="text-body-large font-weight-bold">{{ section.title }}</span>
               <p class="text-body-medium opacity-50 mb-0">
@@ -112,10 +87,7 @@
               rounded="xl"
               @click="navigateTo(item.path)"
             >
-              <div
-                class="d-flex align-center justify-space-between"
-                :class="smAndDown ? 'py-6' : 'py-4'"
-              >
+              <div class="d-flex align-center justify-space-between" :class="smAndDown ? 'py-6' : 'py-4'">
                 <div>
                   <div class="title">
                     {{ item.title }}
@@ -124,11 +96,7 @@
                     {{ item.subtitle }}
                   </div>
                 </div>
-                <v-icon
-                  icon="mdi-chevron-right"
-                  size="16"
-                  color="primary"
-                />
+                <v-icon icon="mdi-chevron-right" size="16" color="primary" />
               </div>
               <!-- <template v-slot:prepend>
             
@@ -148,59 +116,56 @@
 </template>
 
 <script setup>
-
 definePage({
   name: 'admin-panel',
   path: '/admin/admin-panel',
   meta: {
-    layout: 'default'
-  }
-})
+    layout: 'default',
+  },
+});
 
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/authStore'
-import { useUserStore } from '@/stores/userStore'
-import { useCenterStore } from '@/stores/centerStore'
-import { useTicketStore } from '@/stores/ticketStore'
-import { useDisplay } from 'vuetify'
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/authStore';
+import { useUserStore } from '@/stores/userStore';
+import { useCenterStore } from '@/stores/centerStore';
+import { useTicketStore } from '@/stores/ticketStore';
+import { useDisplay } from 'vuetify';
 
-
-const router = useRouter()
-const authStore = useAuthStore()
-const userStore = useUserStore()
-const centerStore = useCenterStore()
-const ticketStore = useTicketStore()
-const { smAndDown } = useDisplay()
+const router = useRouter();
+const authStore = useAuthStore();
+const userStore = useUserStore();
+const centerStore = useCenterStore();
+const ticketStore = useTicketStore();
+const { smAndDown } = useDisplay();
 
 const route = useRoute();
 
-console.log(route.meta)
-
+console.log(route.meta);
 
 // Navigation guard - vérifier les droits d'admin
 if (!authStore.userData.isAdmin) {
-  router.push('/dashboard')
+  router.push('/dashboard');
 }
 
-const adminType = computed(() => authStore.userData.adminType)
+const adminType = computed(() => authStore.userData.adminType);
 
 const actionNeeded = (stat) => {
   if (stat.key === 'pendingUsers') {
-    return stats.value.pendingUsers > 0
+    return stats.value.pendingUsers > 0;
   }
   if (stat.key === 'pendingTickets') {
-    return stats.value.pendingTickets > 0
+    return stats.value.pendingTickets > 0;
   }
-  return false
-}
+  return false;
+};
 
 // Statistiques
 const stats = ref({
   totalUsers: 0,
   pendingUsers: 0,
   pendingTickets: 0,
-  totalCenters: 0
-})
+  totalCenters: 0,
+});
 
 // Statistiques rapides pour v-for
 const quickStats = computed(() => [
@@ -209,7 +174,7 @@ const quickStats = computed(() => [
     value: stats.value.totalUsers,
     label: 'Utilisateurs',
     icon: 'mdi-account-group',
-    color: 'primary'
+    color: 'primary',
   },
   {
     key: 'pendingUsers',
@@ -217,7 +182,7 @@ const quickStats = computed(() => [
     label: 'En attente',
     icon: 'mdi-account-clock',
     path: '/admin/pending-users',
-    color: 'warning'
+    color: 'warning',
   },
   {
     key: 'pendingTickets',
@@ -225,7 +190,7 @@ const quickStats = computed(() => [
     label: 'Tickets',
     icon: 'mdi-account-question',
     path: '/admin/tickets',
-    color: 'info'
+    color: 'info',
   },
   // {
   //   key: 'totalCenters',
@@ -234,7 +199,7 @@ const quickStats = computed(() => [
   //   icon: 'mdi-airport',
   //   color: 'success'
   // }
-])
+]);
 
 // Sections principales pour v-for
 const mainSections = computed(() => [
@@ -254,18 +219,18 @@ const mainSections = computed(() => [
         key: 'pendingUsers',
         iconColor: 'warning',
         path: '/admin/pending-users',
-        requiresMaster: false
+        requiresMaster: false,
       },
       {
         id: 'all-users',
         title: 'Tous les utilisateurs',
-       
+
         icon: 'mdi-account-multiple',
         iconColor: 'primary',
         path: '/users',
-        requiresMaster: false
-      }
-    ]
+        requiresMaster: false,
+      },
+    ],
   },
   {
     id: 'centers',
@@ -278,32 +243,32 @@ const mainSections = computed(() => [
       {
         id: 'all-centers',
         title: 'Tous les centres',
-    
+
         icon: 'mdi-office-building-marker',
         iconColor: 'success',
         path: '/center/centers',
-        requiresMaster: true
+        requiresMaster: true,
       },
       {
         id: 'teams',
         title: adminType.value === 'master' ? 'Équipes par centre' : 'Mon centre',
-       
+
         icon: 'mdi-account-group',
         iconColor: 'info',
         path: `/center/${authStore.userData.centerId}/teams`,
-        requiresMaster: false
+        requiresMaster: false,
       },
 
       {
         id: 'center-demands',
         title: 'Demandes du centre',
-       
+
         icon: 'mdi-swap-horizontal',
         iconColor: 'remplacement',
         path: '/admin/demands',
-        requiresMaster: false
-      }
-    ]
+        requiresMaster: false,
+      },
+    ],
   },
   {
     id: 'support',
@@ -325,19 +290,19 @@ const mainSections = computed(() => [
         badge: {
           content: stats.value.pendingTickets,
           show: stats.value.pendingTickets > 0,
-          color: 'error'
-        }
+          color: 'error',
+        },
       },
       {
         id: 'emails',
         title: 'Gestion des emails',
-       
+
         icon: 'mdi-email',
         iconColor: 'primary',
         path: '/admin/emails',
-        requiresMaster: false
-      }
-    ]
+        requiresMaster: false,
+      },
+    ],
   },
   {
     id: 'system',
@@ -349,12 +314,12 @@ const mainSections = computed(() => [
     items: [
       {
         id: 'rules',
-        title: 'Règles de l\'application',
-       
+        title: "Règles de l'application",
+
         icon: 'mdi-server-security',
         iconColor: 'error',
         path: '/admin/rules',
-        requiresMaster: false
+        requiresMaster: false,
       },
       {
         id: 'announcements',
@@ -363,7 +328,7 @@ const mainSections = computed(() => [
         icon: 'mdi-bullhorn',
         iconColor: 'primary',
         path: '/admin/announcements',
-        requiresMaster: false
+        requiresMaster: false,
       },
       //   {
       //     id: 'account-recovery',
@@ -374,9 +339,9 @@ const mainSections = computed(() => [
       //     path: '/admin/account-recovery',
       //     requiresMaster: true
       //   }
-    ]
-  }
-])
+    ],
+  },
+]);
 
 // Actions rapides pour v-for
 // const quickActions = computed(() => [
@@ -416,39 +381,36 @@ const mainSections = computed(() => [
 
 // Fonction de navigation
 const navigateTo = (path) => {
-  router.push(path)
-}
+  router.push(path);
+};
 
 // Charger les statistiques
 const loadStats = async () => {
   try {
     // Charger les utilisateurs
     if (authStore.userData.adminType === 'master') {
-      await userStore.fetchUsers()
-      await centerStore.fetchCenters()
+      await userStore.fetchUsers();
+      await centerStore.fetchCenters();
     } else {
-      await userStore.fetchUsersByCenter(authStore.userData.centerId)
+      await userStore.fetchUsersByCenter(authStore.userData.centerId);
     }
 
     // Charger les tickets
-    await ticketStore.fetchTickets()
+    await ticketStore.fetchTickets();
 
     // Calculer les statistiques
-    stats.value.totalUsers = userStore.users.length
-    stats.value.pendingUsers = userStore.users.filter(user => user.registrationStatus === 'pending').length
-    stats.value.pendingTickets = ticketStore.tickets.filter(ticket => ticket.status != 'closed').length
-    stats.value.totalCenters = centerStore.centers.length
-
+    stats.value.totalUsers = userStore.users.length;
+    stats.value.pendingUsers = userStore.users.filter((user) => user.registrationStatus === 'pending').length;
+    stats.value.pendingTickets = ticketStore.tickets.filter((ticket) => ticket.status != 'closed').length;
+    stats.value.totalCenters = centerStore.centers.length;
   } catch (error) {
-    console.error('Erreur lors du chargement des statistiques:', error)
+    console.error('Erreur lors du chargement des statistiques:', error);
   }
-}
-
-
+};
 
 onMounted(() => {
-  loadStats()
-})
+  loadStats();
+});
 </script>
 
 <style scoped>
@@ -482,7 +444,6 @@ onMounted(() => {
   }
 }
 
-
 .action-needed {
   position: relative;
   /* border-radius: 24px !important; */
@@ -497,7 +458,6 @@ onMounted(() => {
   font-weight: 500 !important;
   color: rgba(var(--v-theme-onBackground), 1) !important;
 }
-
 
 .subtitle {
   font-size: 11px !important;

@@ -11,7 +11,7 @@ export const emailService = {
    */
   async getTemplates() {
     const response = await apiFetch(`/announcement/templates`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -22,7 +22,7 @@ export const emailService = {
    */
   async getUserCount() {
     const response = await apiFetch(`/announcement/users-count`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -38,7 +38,7 @@ export const emailService = {
     const url = isGlobal ? `/announcement/send` : `/announcement/center/${centerId}/send`;
     const response = await apiFetch(url, {
       method: 'POST',
-      body: JSON.stringify(content)
+      body: JSON.stringify(content),
     });
     return response;
   },
@@ -51,7 +51,7 @@ export const emailService = {
   async getHistory(params = {}) {
     const queryParams = new URLSearchParams(params);
     const response = await apiFetch(`/announcement/history?${queryParams}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -62,7 +62,7 @@ export const emailService = {
    */
   async getStats() {
     const response = await apiFetch(`/announcement/stats`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -88,7 +88,7 @@ export const emailService = {
   async getTemplatePreview(templateType, data) {
     const response = await apiFetch(`/announcement/templates/${templateType}/preview`, {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     return response;
   },
@@ -117,7 +117,7 @@ export const emailService = {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   },
 
@@ -131,7 +131,7 @@ export const emailService = {
       ...announcement,
       formattedSentAt: this.formatDate(announcement.sentAt),
       successRate: this.calculateSuccessRate(announcement.results),
-      senderName: this.formatSenderName(announcement.sentBy)
+      senderName: this.formatSenderName(announcement.sentBy),
     };
   },
 
@@ -146,7 +146,7 @@ export const emailService = {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   },
 
@@ -168,5 +168,5 @@ export const emailService = {
   formatSenderName(sentBy) {
     if (!sentBy) return 'N/A';
     return `${sentBy.name} ${sentBy.lastName}`;
-  }
-}; 
+  },
+};

@@ -1,10 +1,6 @@
 <template>
   <v-container>
-    <SimpleTitle
-      title="Disponibles"
-      back-button
-      subtitle="Consulter les demandes disponibles"
-    />
+    <SimpleTitle title="Disponibles" back-button subtitle="Consulter les demandes disponibles" />
     <div class="mt-16">
       <AvailableDemands
         @handle-replacement="handleReplacement"
@@ -18,7 +14,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref } from 'vue';
 
 const demandDeps = ref(null);
 
@@ -100,6 +96,5 @@ const openDemand = (demand) => {
   background-color: rgba(var(--v-theme-on-surface), 0.1);
   display: flex;
   gap: 8px;
-
 }
 </style>

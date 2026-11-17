@@ -19,11 +19,11 @@ export const useBiometrics = () => {
         reason: 'Veuillez vous authentifier',
         title: 'Authentification',
         subtitle: 'Utilisez votre biométrie pour vous connecter',
-        description: 'Placez votre doigt sur le capteur'
+        description: 'Placez votre doigt sur le capteur',
       });
       return result.verified;
     } catch (error) {
-      console.error('Erreur lors de l\'authentification biométrique:', error);
+      console.error("Erreur lors de l'authentification biométrique:", error);
       return false;
     }
   };
@@ -33,7 +33,7 @@ export const useBiometrics = () => {
       await NativeBiometric.setCredentials({
         username,
         password,
-        server: 'remplacer.app'
+        server: 'remplacer.app',
       });
       return true;
     } catch (error) {
@@ -45,7 +45,7 @@ export const useBiometrics = () => {
   const getCredentials = async () => {
     try {
       const credentials = await NativeBiometric.getCredentials({
-        server: 'remplacer.app'
+        server: 'remplacer.app',
       });
       return credentials;
     } catch (error) {
@@ -58,6 +58,6 @@ export const useBiometrics = () => {
     isBiometricsAvailable,
     authenticate,
     saveCredentials,
-    getCredentials
+    getCredentials,
   };
-}; 
+};

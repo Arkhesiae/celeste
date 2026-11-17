@@ -1,68 +1,94 @@
 <template>
   <div class="d-flex align-start ga-2">
     <div v-if="dot" class="dot dot-big" :class="dotClass" />
-    <v-card :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'" variant="flat" rounded="lg"
-      class="demand-card pa-3 flex-1-1" @click="openDetails">
+    <v-card
+      :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'"
+      variant="flat"
+      rounded="lg"
+      class="demand-card pa-3 flex-1-1"
+      @click="openDetails"
+    >
       <div class="d-flex align-center justify-space-between">
         <div class="d-flex align-center mr-3 ga-2">
-          <v-icon v-if="isOwner" size="12" color="primary">
-            mdi-account-star-outline
-          </v-icon>
-          <span style="font-weight: 800; font-size: .75rem;" :class="{ 'text-primary': isOwner }">{{ posterName
+          <v-icon v-if="isOwner" size="12" color="primary"> mdi-account-star-outline </v-icon>
+          <span style="font-weight: 800; font-size: 0.75rem" :class="{ 'text-primary': isOwner }">{{
+            posterName
           }}</span>
-          <div v-if="!isOwner"
-            style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
-            class="d-flex align-center justify-center">
-            <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
-              posterTeamName }}</span>
+          <div
+            v-if="!isOwner"
+            style="
+              height: 14px;
+              width: 14px;
+              border-radius: 50%;
+              border: 1px solid rgba(var(--v-theme-primary), 0.02);
+              background-color: rgba(var(--v-theme-primary), 0.1);
+            "
+            class="d-flex align-center justify-center"
+          >
+            <span class="text-truncate" style="font-size: 0.625rem; font-weight: 700; opacity: 0.8">{{
+              posterTeamName
+            }}</span>
           </div>
           <div class="dot dot--xs" />
-          <span class="text-body-small font-weight-medium text-medium-emphasis">{{ formatDate(posterDay(demand))
+          <span class="text-body-small font-weight-medium text-medium-emphasis">{{
+            formatDate(posterDay(demand))
           }}</span>
 
           <template v-if="isMailingEnabled">
             <div class="dot dot--xs" />
-            <v-icon :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
-              :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'" style="opacity: 0.7;"
-              size="x-small" />
+            <v-icon
+              :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
+              :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'"
+              style="opacity: 0.7"
+              size="x-small"
+            />
           </template>
 
-          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8;">
+          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8">
             mdi-comment-text-outline
           </v-icon>
 
           <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2">
-            <LogoCopy color="onBackground" style="top:-2px; position: relative; transform: scale(0.87);" />
-            <span :class="pointClass" style="font-size: .875rem; font-weight: 600;">{{ totalPoints }}</span>
-            <v-icon v-if="hasVariablePoints && !demand.accepterId" color="primary" style="position: relative; top: 0px;"
-              icon="mdi-tune" />
+            <LogoCopy color="onBackground" style="top: -2px; position: relative; transform: scale(0.87)" />
+            <span :class="pointClass" style="font-size: 0.875rem; font-weight: 600">{{ totalPoints }}</span>
+            <v-icon
+              v-if="hasVariablePoints && !demand.accepterId"
+              color="primary"
+              style="position: relative; top: 0px"
+              icon="mdi-tune"
+            />
           </v-chip>
         </div>
 
-
-
         <div class="d-flex align-center">
-          <div class="d-flex align-center " style="position: relative; width: 20px;">
+          <div class="d-flex align-center" style="position: relative; width: 20px">
             <v-icon size="x-small"> {{ getDemandIcon(demand, authStore.userData.userId) }}</v-icon>
           </div>
         </div>
       </div>
 
-
-
-      <div class="d-flex align-center  ga-2 my-1">
+      <div class="d-flex align-center ga-2 my-1">
         <div class="d-flex align-center ga-1 flex-wrap">
           <div v-if="firstShift" class="d-flex align-center ga-2">
-            <span :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }" style="font-size: .875rem; opacity: 0.7;">{{
-              firstShift }}</span>
+            <span :style="{ fontWeight: isFirstShiftBold ? '800' : '500' }" style="font-size: 0.875rem; opacity: 0.7">{{
+              firstShift
+            }}</span>
             <!-- <span v-if="firstShiftHours" class="text-body-small font-weight-medium text-medium-emphasis"
               style="font-size: .70rem;">{{ firstShiftHours.startTime }} - {{ firstShiftHours.endTime }}</span> -->
           </div>
-          <v-icon v-if="isAccepted" size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary"
-            style="opacity: 0.8;" />
+          <v-icon
+            v-if="isAccepted"
+            size="x-small"
+            icon="mdi-arrow-right-drop-circle-outline"
+            color="primary"
+            style="opacity: 0.8"
+          />
           <div v-if="secondShift" class="d-flex align-center ga-2">
-            <span :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }" style="font-size: .875rem; opacity: 0.7">{{
-              secondShift }}</span>
+            <span
+              :style="{ fontWeight: isSecondShiftBold ? '800' : '500' }"
+              style="font-size: 0.875rem; opacity: 0.7"
+              >{{ secondShift }}</span
+            >
             <!-- <span v-if="secondShiftHours" class="text-body-small font-weight-medium text-medium-emphasis"
               style="font-size: .70rem;">{{ secondShiftHours.startTime }} - {{ secondShiftHours.endTime }}</span> -->
           </div>
@@ -76,38 +102,46 @@
 
       <div class="d-flex align-center flex-shrink-0 justify-space-between">
         <div class="d-flex align-center ga-1">
-          <v-icon size="x-small" icon="mdi-eye-outline" color="onBackground" style="opacity: 0.8;" />
-          <span class="text-medium-emphasis" style="font-size: .70rem; font-weight: 600;">{{ demand?.seenBy?.length || 0
+          <v-icon size="x-small" icon="mdi-eye-outline" color="onBackground" style="opacity: 0.8" />
+          <span class="text-medium-emphasis" style="font-size: 0.7rem; font-weight: 600">{{
+            demand?.seenBy?.length || 0
           }}</span>
         </div>
-
 
         <div class="d-flex align-center ml-4">
           <template v-if="accepter">
             <v-avatar size="20" color="surfaceContainer" class="mr-1">
               <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
-              <v-icon v-else size="16">
-                mdi-account-check-outline
-              </v-icon>
+              <v-icon v-else size="16"> mdi-account-check-outline </v-icon>
             </v-avatar>
             <div class="d-flex align-center text-left ga-1">
-              <span class="font-weight-bold text-truncate" :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: .75rem;">
+              <span
+                class="font-weight-bold text-truncate"
+                :class="isAccepter ? 'text-primary' : ''"
+                style="max-width: 100px; font-size: 0.75rem"
+              >
                 {{ accepterName }}
               </span>
-              <div v-if="!isAccepter"
-                style="height: 14px; width: 14px; border-radius: 50%; border: 1px solid rgba(var(--v-theme-primary), .02); background-color: rgba(var(--v-theme-primary), .1);"
-                class="d-flex align-center justify-center">
-                <span class="text-truncate" style="font-size: .6250rem; font-weight: 700; opacity: .8;">{{
-                  accepterTeamName }}</span>
+              <div
+                v-if="!isAccepter"
+                style="
+                  height: 14px;
+                  width: 14px;
+                  border-radius: 50%;
+                  border: 1px solid rgba(var(--v-theme-primary), 0.02);
+                  background-color: rgba(var(--v-theme-primary), 0.1);
+                "
+                class="d-flex align-center justify-center"
+              >
+                <span class="text-truncate" style="font-size: 0.625rem; font-weight: 700; opacity: 0.8">{{
+                  accepterTeamName
+                }}</span>
               </div>
             </div>
           </template>
           <template v-else>
             <div class="empty-accepter-avatar mr-1">
-              <v-icon size="12" color="text-medium-emphasis">
-                mdi-account-question-outline
-              </v-icon>
+              <v-icon size="12" color="text-medium-emphasis"> mdi-account-question-outline </v-icon>
             </div>
           </template>
         </div>
@@ -124,9 +158,8 @@ import { useUserStore } from '@/stores/userStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useDisplay } from 'vuetify';
-import { API_URL } from '@/config/api'
+import { API_URL } from '@/config/api';
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
-
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
@@ -137,23 +170,23 @@ const isMailingEnabled = computed(() => substitutionStore.isMailingEnabled);
 const props = defineProps({
   demand: {
     type: Object,
-    required: true
+    required: true,
   },
   isPoster: {
     type: Boolean,
     required: false,
-    default: false
+    default: false,
   },
   small: {
     type: Boolean,
     required: false,
-    default: false
+    default: false,
   },
   dot: {
     type: Boolean,
     required: false,
-    default: true
-  }
+    default: true,
+  },
 });
 
 const emit = defineEmits(['accept', 'decline', 'openDetails']);
@@ -186,13 +219,12 @@ const poster = computed(() => {
 });
 
 const posterName = computed(() => {
-  return poster.value?.name + ' ' + poster.value?.lastName.split(' ').map(word => word[0] + '.') || 'Demandeur';
+  return poster.value?.name + ' ' + poster.value?.lastName.split(' ').map((word) => word[0] + '.') || 'Demandeur';
 });
 
 const accepterName = computed(() => {
-  return accepter.value?.name + ' ' + accepter.value?.lastName.split(' ').map(word => word[0] + '.') || 'Accepteur';
+  return accepter.value?.name + ' ' + accepter.value?.lastName.split(' ').map((word) => word[0] + '.') || 'Accepteur';
 });
-
 
 const isOwner = computed(() => {
   return props.demand?.posterId === authStore.userData.userId;
@@ -220,22 +252,18 @@ const accepterTeamName = computed(() => {
 });
 
 const destinationTeamName = computed(() => {
-  const teamId =
-    props.demand?.accepterShift
-      ? isAccepter.value
-        ? props.demand.posterShift.teamId
-        : props.demand.accepterShift.teamId
-      : isAccepter.value
-        ? props.demand?.posterShift?.teamId
-        : null;
+  const teamId = props.demand?.accepterShift
+    ? isAccepter.value
+      ? props.demand.posterShift.teamId
+      : props.demand.accepterShift.teamId
+    : isAccepter.value
+      ? props.demand?.posterShift?.teamId
+      : null;
 
   if (!teamId) return 'N/A';
 
-  return typeof teamId === 'object'
-    ? teamId.name
-    : getTeamById(teamId)?.name || 'N/A';
+  return typeof teamId === 'object' ? teamId.name : getTeamById(teamId)?.name || 'N/A';
 });
-
 
 // const getDayName = (dayId) => {
 //   const rotation = rotationStore.rotations.find(rotation =>
@@ -251,23 +279,23 @@ const destinationTeamName = computed(() => {
 const firstShift = computed(() => {
   if (isOwner.value) {
     const ps = props.demand?.posterShift;
-    return ps?.shift?.name
+    return ps?.shift?.name;
   } else if (isAccepter.value && props.demand?.accepterShift) {
     const as = props.demand?.accepterShift;
-    return as?.shift?.name
+    return as?.shift?.name;
   }
-  return ''
+  return '';
 });
 
 const secondShift = computed(() => {
   if (isOwner.value && props.demand?.accepterShift) {
     const as = props.demand?.accepterShift;
-    return as?.shift?.name
+    return as?.shift?.name;
   } else if (isAccepter.value) {
     const ps = props.demand?.posterShift;
-    return ps?.shift?.name
+    return ps?.shift?.name;
   }
-  return ''
+  return '';
 });
 
 const firstShiftHours = computed(() => {
@@ -295,96 +323,92 @@ const secondShiftHours = computed(() => {
 });
 
 const isFirstShiftBold = computed(() => {
-  return isOwner.value && !isAccepted.value
+  return isOwner.value && !isAccepted.value;
 });
 
 const isSecondShiftBold = computed(() => {
-  return true
+  return true;
 });
 
-const isSwitch = (demand) => demand?.type === 'switch'
-const isHybrid = (demand) => demand?.type === 'hybrid'
+const isSwitch = (demand) => demand?.type === 'switch';
+const isHybrid = (demand) => demand?.type === 'hybrid';
 
 const hasVariablePoints = computed(() => {
-  const demand = props.demand
-  if (!demand) return false
+  const demand = props.demand;
+  if (!demand) return false;
 
   if (isSwitch(demand)) {
-    const points = demand.acceptedSwitches.map(s => s.points)
-    return !points.every(p => p === points[0]) // true if values differ
+    const points = demand.acceptedSwitches.map((s) => s.points);
+    return !points.every((p) => p === points[0]); // true if values differ
   }
 
-  if (isHybrid(demand)) return true
+  if (isHybrid(demand)) return true;
 
-  return false
-})
+  return false;
+});
 
 const totalPoints = computed(() => {
-  const demand = props.demand
-  if (!demand) return 0
+  const demand = props.demand;
+  if (!demand) return 0;
 
   if (!demand.accepterId) {
     if (isSwitch(demand)) {
-      return hasVariablePoints.value ? '' : '0'
+      return hasVariablePoints.value ? '' : '0';
     }
 
-    if (isHybrid(demand)) return demand.points
+    if (isHybrid(demand)) return demand.points;
 
-    return demand.points || 0
+    return demand.points || 0;
   } else {
     if (isSwitch(demand) || isHybrid(demand)) {
       if (demand.accepterShift) {
-        const points = demand.acceptedSwitches.find(s => s.id === demand.accepterShift.shift)
-        return points ? points.points : 0
-      }
-      else {
-        return demand.points
+        const points = demand.acceptedSwitches.find((s) => s.id === demand.accepterShift.shift);
+        return points ? points.points : 0;
+      } else {
+        return demand.points;
       }
     }
-    return demand.points || 0
+    return demand.points || 0;
   }
-})
+});
 
 const pointClass = computed(() => {
   if (hasVariablePoints.value && !props.demand.accepterId) {
-    return 'variable'
+    return 'variable';
   }
-  return ''
-})
+  return '';
+});
 
 const dotClass = computed(() => {
   return {
     'dot-big--pending': props.demand?.status === 'open',
     'dot-big--owner': isOwner.value,
-  }
-})
+  };
+});
 
 const labelOption = computed(() => {
   if (props.demand?.accepterShift && isAccepted.value) {
-    return "Je permute dans équipe " + destinationTeamName.value;
+    return 'Je permute dans équipe ' + destinationTeamName.value;
   }
 
   if (isAccepter.value && isAccepted.value && !props.demand?.accepterShift) {
-    return "Je remplace dans équipe " + destinationTeamName.value;
+    return 'Je remplace dans équipe ' + destinationTeamName.value;
   }
 
   if (isOwner.value && isAccepted.value && !props.demand?.accepterShift) {
-    return "Je suis remplacé";
+    return 'Je suis remplacé';
   }
 
   if (isOwner.value && (props.demand?.status === 'open' || !props.demand?.accepterId)) {
-    return "En attente...";
+    return 'En attente...';
   }
 
-  return "Statut inconnu";
+  return 'Statut inconnu';
 });
-
 
 const openDetails = () => {
   emit('openDetails', props.demand);
 };
-
-
 </script>
 
 <style scoped>
@@ -393,7 +417,7 @@ const openDetails = () => {
   box-sizing: border-box;
   border-radius: 16px !important;
   transition: transform 0.2s ease-in-out;
-  background-color: rgba(var(--v-theme-surfaceContainer), 0.00) !important;
+  background-color: rgba(var(--v-theme-surfaceContainer), 0) !important;
   cursor: pointer;
 }
 
@@ -407,7 +431,7 @@ const openDetails = () => {
 }
 
 .to-do-demand-card {
-  background-color: rgba(var(--v-theme-primary), 0.20) !important;
+  background-color: rgba(var(--v-theme-primary), 0.2) !important;
   color: rgba(var(--v-theme-primary), 1) !important;
 }
 
@@ -423,7 +447,7 @@ const openDetails = () => {
 }
 
 .demand-card.demand-card__mobile {
-  background-color: rgba(var(--v-theme-surfaceContainer), 0.00) !important;
+  background-color: rgba(var(--v-theme-surfaceContainer), 0) !important;
 }
 
 /* Pastille d'en-tête (styles/dot.css) : 7 px, pleine, décalée ; atténuée si la demande est en attente, primaire pour son auteur */
@@ -469,6 +493,6 @@ const openDetails = () => {
   opacity: 0.9 !important;
   /* padding: 1px 6px !important; */
   background: rgba(var(--v-theme-surfaceContainer), 0.0005) !important;
-  font-size: .650rem !important;
+  font-size: 0.65rem !important;
 }
 </style>

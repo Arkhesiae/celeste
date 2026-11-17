@@ -13,15 +13,14 @@
 </template>
 
 <script setup>
-import ContactAdminForm from "@/components/Forms/ContactAdminForm.vue";
+import ContactAdminForm from '@/components/Forms/ContactAdminForm.vue';
 // import { useDisplay } from 'vuetify';
 
 // const { smAndDown } = useDisplay();
 
 defineOptions({
-  name: "ContactAdmin"
+  name: 'ContactAdmin',
 });
 </script>
-
 
 <style scoped></style>

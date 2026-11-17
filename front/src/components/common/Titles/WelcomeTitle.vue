@@ -2,38 +2,43 @@
   <div class="d-flex ga-6 align-center my-16" :class="smAndDown ? 'justify-center' : 'justify-start'">
     <v-avatar :size="avatarSize" class="" variant="tonal" color="primary">
       <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-      <v-icon v-else>
-        mdi-account
-      </v-icon>
+      <v-icon v-else> mdi-account </v-icon>
     </v-avatar>
     <div class="d-flex flex-column" :class="smAndDown ? 'align-center' : 'align-start'">
       <div class="d-flex align-center">
-        <span :style="{ fontSize: titleFontSize + 'px !important' }"
-          class="text-headline-large d-inline-block font-weight-medium font-weight-bold">Bienvenue </span>
-        <span :style="{ fontSize: titleFontSize + 'px !important' }"
-          class="text-headline-large d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold">{{ userName
-          }}</span>
+        <span
+          :style="{ fontSize: titleFontSize + 'px !important' }"
+          class="text-headline-large d-inline-block font-weight-medium font-weight-bold"
+          >Bienvenue
+        </span>
+        <span
+          :style="{ fontSize: titleFontSize + 'px !important' }"
+          class="text-headline-large d-inline-block font-weight-medium ml-2 gradient title-name font-weight-bold"
+          >{{ userName }}</span
+        >
       </div>
-      <span :style="{ fontSize: subtitleFontSize + 'px !important' }"
-        style="font-weight: 600; text-overflow: ellipsis;  overflow: hidden; white-space: nowrap;" class="opacity-50">
-        Tableau de bord </span>
+      <span
+        :style="{ fontSize: subtitleFontSize + 'px !important' }"
+        style="font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap"
+        class="opacity-50"
+      >
+        Tableau de bord
+      </span>
     </div>
-
-
   </div>
 </template>
 
 <script setup>
-import { useDisplay } from 'vuetify'
+import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api';
-import { useAuthStore } from '@/stores/authStore.js'
+import { useAuthStore } from '@/stores/authStore.js';
 
-const authStore = useAuthStore()
-const { smAndDown } = useDisplay()
+const authStore = useAuthStore();
+const { smAndDown } = useDisplay();
 
 const avatarSize = computed(() => {
-  return smAndDown.value ? 32 : 48
-})
+  return smAndDown.value ? 32 : 48;
+});
 
 defineProps({
   userName: {
@@ -44,127 +49,117 @@ defineProps({
     type: Boolean,
     required: false,
   },
-})
+});
 
-const titleRef = ref(null)
-const placeholder = ref(null)
-const actionsRef = ref(null)
-const isSticky = ref(false)
-const headerHeight = ref(0)
-const headerWidth = ref('100%')
-const titleMaxWidth = ref(0)
-const scrolledValue = ref(1)
-const safeMarginTop = ref(0)
-
+const titleRef = ref(null);
+const placeholder = ref(null);
+const actionsRef = ref(null);
+const isSticky = ref(false);
+const headerHeight = ref(0);
+const headerWidth = ref('100%');
+const titleMaxWidth = ref(0);
+const scrolledValue = ref(1);
+const safeMarginTop = ref(0);
 
 const safeAreaTop = computed(() => {
-  return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top') || '0px'
-})
-
+  return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top') || '0px';
+});
 
 const titleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 20 : 32 // Equivalent to text-headline-small/text-headline-large
-  const minSize = smAndDown.value ? 10 : 10
-  const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value)
+  const baseSize = smAndDown.value ? 20 : 32; // Equivalent to text-headline-small/text-headline-large
+  const minSize = smAndDown.value ? 10 : 10;
+  const scaledSize = minSize + (baseSize - minSize) * scrolledValue.value;
 
-  return scaledSize
-})
+  return scaledSize;
+});
 
 const subtitleFontSize = computed(() => {
-  const baseSize = smAndDown.value ? 10 : 12
-  const minSize = smAndDown.value ? 8 : 8
-  const scaledSize = minSize + (baseSize - minSize) * (scrolledValue.value)
-  return scaledSize
-})
+  const baseSize = smAndDown.value ? 10 : 12;
+  const minSize = smAndDown.value ? 8 : 8;
+  const scaledSize = minSize + (baseSize - minSize) * scrolledValue.value;
+  return scaledSize;
+});
 // Update width when window resizes
-function updateHeaderWidth () {
+function updateHeaderWidth() {
   if (placeholder.value) {
-    headerWidth.value = `${placeholder.value.offsetWidth}px`
+    headerWidth.value = `${placeholder.value.offsetWidth}px`;
   }
-
 }
 
-function updateTitleMaxWidth () {
+function updateTitleMaxWidth() {
   nextTick(() => {
     if (titleRef.value && actionsRef.value && placeholder.value) {
-      const totalWidth = placeholder.value.offsetWidth
-      const actionsWidth = actionsRef.value.offsetWidth
+      const totalWidth = placeholder.value.offsetWidth;
+      const actionsWidth = actionsRef.value.offsetWidth;
       // 32px de padding horizontal (px-4) de chaque côté + 8px de gap
-      const padding = 32 * 2 + 8
+      const padding = 32 * 2 + 8;
       // On laisse au moins 16px de marge de sécurité
-      titleMaxWidth.value = Math.max(0, totalWidth - actionsWidth - padding)
+      titleMaxWidth.value = Math.max(0, totalWidth - actionsWidth - padding);
     }
-  })
+  });
 }
 
-
-const resizeObserver = ref(null)
-const observer = ref(null)
+const resizeObserver = ref(null);
+const observer = ref(null);
 
 onMounted(() => {
   // Set initial height and width
-  headerHeight.value = titleRef.value?.offsetHeight || 0
-  updateHeaderWidth()
-  updateTitleMaxWidth()
+  headerHeight.value = titleRef.value?.offsetHeight || 0;
+  updateHeaderWidth();
+  updateTitleMaxWidth();
 
-  safeMarginTop.value = 64 + parseInt(safeAreaTop.value?.replace('px', ''))
-  console.log(safeMarginTop.value)
-
+  safeMarginTop.value = 64 + parseInt(safeAreaTop.value?.replace('px', ''));
+  console.log(safeMarginTop.value);
 
   // Observe intersection to toggle sticky state
   observer.value = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        console.log(entry.intersectionRatio)
-        const titlePadding = 60
-        const initialTop = safeMarginTop.value
-        const threshold = (initialTop - titlePadding) * -1
-        const threshold2 = (initialTop - headerHeight.value) * -1
+    (entries) => {
+      entries.forEach((entry) => {
+        console.log(entry.intersectionRatio);
+        const titlePadding = 60;
+        const initialTop = safeMarginTop.value;
+        const threshold = (initialTop - titlePadding) * -1;
+        const threshold2 = (initialTop - headerHeight.value) * -1;
 
-        const maxScrolledValue = 1
-        const minScrolledValue = 0.6
+        const maxScrolledValue = 1;
+        const minScrolledValue = 0.6;
 
-        const A = (minScrolledValue - maxScrolledValue) / (threshold2 - threshold)
-        const B = (maxScrolledValue + minScrolledValue - A * (threshold2 + threshold)) / 2
+        const A = (minScrolledValue - maxScrolledValue) / (threshold2 - threshold);
+        const B = (maxScrolledValue + minScrolledValue - A * (threshold2 + threshold)) / 2;
 
-        scrolledValue.value = Math.min(1, Math.max(0.6, (-entry.boundingClientRect.top) * A + B))
-        isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0
-      })
+        scrolledValue.value = Math.min(1, Math.max(0.6, -entry.boundingClientRect.top * A + B));
+        isSticky.value = entry.boundingClientRect.top - safeMarginTop.value + titlePadding <= 0;
+      });
     },
     {
       threshold: Array.from({ length: 101 }, (_, i) => i * 0.01),
       rootMargin: `-${safeMarginTop.value}px 0px 0px 0px `,
-      root: null
-    }
-  )
+      root: null,
+    },
+  );
 
   if (placeholder.value) {
-    observer.value.observe(placeholder.value)
+    observer.value.observe(placeholder.value);
   }
 
   // Ajoute le ResizeObserver
   if (placeholder.value) {
     resizeObserver.value = new ResizeObserver(() => {
-      updateHeaderWidth()
-      updateTitleMaxWidth()
-    })
-    resizeObserver.value.observe(placeholder.value)
+      updateHeaderWidth();
+      updateTitleMaxWidth();
+    });
+    resizeObserver.value.observe(placeholder.value);
   }
 
-
-  headerHeight.value = titleRef.value?.offsetHeight || 0
-
-
-})
+  headerHeight.value = titleRef.value?.offsetHeight || 0;
+});
 
 onUnmounted(() => {
   if (resizeObserver.value) {
-    resizeObserver.value.disconnect()
+    resizeObserver.value.disconnect();
   }
-  observer.value.disconnect()
-
-
-})
+  observer.value.disconnect();
+});
 
 const headerStyle = reactive({
   position: computed(() => (isSticky.value ? 'fixed' : 'relative')),
@@ -175,10 +170,7 @@ const headerStyle = reactive({
   zIndex: '10',
 
   borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-on-surface), 0.001)' : 'none')),
-
-})
-
-
+});
 </script>
 
 <style scoped>
@@ -193,15 +185,11 @@ const headerStyle = reactive({
 
 } */
 
-
-
-
 .gradient {
-
   fill: transparent;
   color: #000;
   font-weight: 900 !important;
-  background: linear-gradient(to right, rgb(var(--v-theme-primary)) 20%, rgb(var(--v-theme-background))80%);
+  background: linear-gradient(to right, rgb(var(--v-theme-primary)) 20%, rgb(var(--v-theme-background)) 80%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -213,7 +201,6 @@ const headerStyle = reactive({
   position: relative;
   z-index: 0;
   overflow: visible !important;
-
 }
 
 .block:after,
@@ -224,8 +211,14 @@ const headerStyle = reactive({
   top: -1.5px;
   opacity: 0.81;
   border-radius: 24px;
-  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-      rgba(159, 159, 248, 0.22), #ffccdd);
+  background: linear-gradient(
+    45deg,
+    #ffc0d4,
+    rgba(237, 202, 255, 0.94),
+    rgba(250, 152, 248, 0.05),
+    rgba(159, 159, 248, 0.22),
+    #ffccdd
+  );
   background-size: 400%;
   width: calc(100% + 3px);
   height: calc(100% + 3px);
@@ -264,5 +257,4 @@ img.logo-xs {
   transform-origin: bottom right;
   transform: scale(0.8) translateX(20px);
 }
-
 </style>

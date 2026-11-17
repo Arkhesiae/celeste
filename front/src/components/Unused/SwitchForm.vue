@@ -1,40 +1,21 @@
 <template>
-  <v-dialog
-    v-model="isDialogVisible"
-    max-width="600px"
-    :fullscreen="mobile"
-  >
-    <v-card
-      rounded="xl"
-      elevation="8"
-      class="pa-2"
-    >
+  <v-dialog v-model="isDialogVisible" max-width="600px" :fullscreen="mobile">
+    <v-card rounded="xl" elevation="8" class="pa-2">
       <!-- Titre principal -->
 
       <v-card-title class="d-flex justify-space-between align-center">
-        <div class="text-headline-small ">
+        <div class="text-headline-small">
           {{ dialogTitle }}
         </div>
 
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          @click="close"
-        />
+        <v-btn icon="mdi-close" variant="text" @click="close" />
       </v-card-title>
 
       <v-card-text class="overflow-auto">
         {{ userShift?.shift?.name }}
-        <v-form
-          ref="addForm"
-          v-model="formValid"
-        >
-          <div class="d-flex  justify-space-between">
-            <v-icon
-              icon="mdi-calendar"
-              class="mr-4 mt-4"
-              @click=""
-            />
+        <v-form ref="addForm" v-model="formValid">
+          <div class="d-flex justify-space-between">
+            <v-icon icon="mdi-calendar" class="mr-4 mt-4" @click="" />
             <v-text-field
               v-model="formattedDate"
               rounded="lg"
@@ -47,12 +28,7 @@
               @blur="formatDateForDisplay"
               @focus="formatDateForInput"
             />
-            <div
-              v-if="dialogModeValue === 'Renfort'"
-              class="text-headline-large ma-3"
-            >
-              -
-            </div>
+            <div v-if="dialogModeValue === 'Renfort'" class="text-headline-large ma-3">-</div>
           </div>
           <v-date-picker
             v-model="selectedDate"
@@ -64,16 +40,9 @@
             locale="fr"
             @update:model-value="updateFormattedDate"
           />
-          <v-textarea
-            v-model="demand.comment"
-            rounded="xl"
-            no-resize
-            label="Commentaire"
-            outlined
-          />
+          <v-textarea v-model="demand.comment" rounded="xl" no-resize label="Commentaire" outlined />
 
-
-          <div class="d-flex justify-start align-center ">
+          <div class="d-flex justify-start align-center">
             <v-number-input
               v-model="demand.points"
               hide-input
@@ -88,28 +57,15 @@
             <input
               v-model="demand.points"
               type="number"
-              class="rounded-xl text-display-large font-weight-bold  pa-4"
-              style="  width: 150px; color: #85cde6"
-            >
+              class="rounded-xl text-display-large font-weight-bold pa-4"
+              style="width: 150px; color: #85cde6"
+            />
           </div>
         </v-form>
       </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn 
-          variant="text" 
-          color="secondary" 
-          rounded="xl"
-          @click="close"
-        >
-          Annuler
-        </v-btn>
-        <v-btn 
-          variant="tonal" 
-          rounded="xl" 
-          color="primary"
-          :disabled="!formValid"
-          @click="submit"
-        >
+        <v-btn variant="text" color="secondary" rounded="xl" @click="close"> Annuler </v-btn>
+        <v-btn variant="tonal" rounded="xl" color="primary" :disabled="!formValid" @click="submit">
           Poster la demande
         </v-btn>
       </v-card-actions>
@@ -117,35 +73,23 @@
   </v-dialog>
 
   <!-- Confirmation Dialog -->
-  <v-dialog
-    v-model="showConfirmationDialog"
-    max-width="400px"
-  >
-    <v-card
-      rounded="xl"
-      elevation="0"
-      class="pa-2"
-    >
+  <v-dialog v-model="showConfirmationDialog" max-width="400px">
+    <v-card rounded="xl" elevation="0" class="pa-2">
       <v-card-item prepend-icon="mdi-alert-outline">
         <v-card-title>Conflit de changement</v-card-title>
       </v-card-item>
 
-      <v-card-text>
-        Ecraser le changement du {{ toDisplayFormat(selectedDate) }} ?
-      </v-card-text>
+      <v-card-text> Ecraser le changement du {{ toDisplayFormat(selectedDate) }} ? </v-card-text>
       <v-card-actions class="justify-space-between">
-        <v-btn
-          variant="text"
-          color="secondary"
-          @click="showConfirmationDialog = false"
-        >
-          Annuler
-        </v-btn>
+        <v-btn variant="text" color="secondary" @click="showConfirmationDialog = false"> Annuler </v-btn>
         <v-btn
           variant="tonal"
           rounded="lg"
           color="primary"
-          @click="submit() ; showConfirmationDialog=false"
+          @click="
+            submit();
+            showConfirmationDialog = false;
+          "
         >
           Valider
         </v-btn>
@@ -153,27 +97,21 @@
     </v-card>
   </v-dialog>
 
-  <v-snackbar
-    v-model="snackbarVisible"
-    close-delay="5000"
-    location="top"
-
-    color="primary"
-  >
+  <v-snackbar v-model="snackbarVisible" close-delay="5000" location="top" color="primary">
     {{ snackbarMessage }}
   </v-snackbar>
 </template>
 
 <script>
-import {ref, watch, computed} from "vue";
-import {useDisplay} from "vuetify";
-import {useDate} from 'vuetify';
-import { pickerDayKey as toUTCNormalized } from "@/utils/dateKey";
-import {useAuthStore} from "@/stores/authStore.js";
-import {useRemplacementStore} from "@/stores/remplacementStore.js";
+import { ref, watch, computed } from 'vue';
+import { useDisplay } from 'vuetify';
+import { useDate } from 'vuetify';
+import { pickerDayKey as toUTCNormalized } from '@/utils/dateKey';
+import { useAuthStore } from '@/stores/authStore.js';
+import { useRemplacementStore } from '@/stores/remplacementStore.js';
 
 export default {
-  name: "TeamDialog",
+  name: 'TeamDialog',
   props: {
     dialogMode: {
       type: String,
@@ -186,101 +124,92 @@ export default {
     date: {
       type: String,
       default: null,
-
     },
   },
-  emits: ["onClose", "onSubmit", "update:dialogModeValue", "update:dialogVisible"],
-  setup(props, {emit}) {
+  emits: ['onClose', 'onSubmit', 'update:dialogModeValue', 'update:dialogVisible'],
+  setup(props, { emit }) {
     // Déclaration de la snackbar
     const snackbarVisible = ref(false);
     const snackbarMessage = ref('');
-    const {mobile} = useDisplay()
+    const { mobile } = useDisplay();
     // Modèles réactifs
     const demand = ref({
-      shift: null ,
+      shift: null,
       date: null,
-      comment: "",
+      comment: '',
       points: 0,
     });
     const authStore = useAuthStore();
     const remplacementStore = useRemplacementStore();
-    const userShift = ref("");
+    const userShift = ref('');
     const userId = computed(() => authStore.userData.userId);
 
     // Fonction pour récupérer le shift de l'utilisateur sélectionné
     const fetchUserShift = async () => {
       if (userId.value && selectedDate.value) {
         try {
-
-          const response = await fetch(
-            `http://192.168.1.36:3000/users/${userId.value}/get-vacations`,
-            {
-              method: "POST",
-              headers: {"Content-Type": "application/json"},
-              body: JSON.stringify({dates: toUTCNormalized(selectedDate.value)}),
-            }
-          );
+          const response = await fetch(`http://192.168.1.36:3000/users/${userId.value}/get-vacations`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dates: toUTCNormalized(selectedDate.value) }),
+          });
           if (!response.ok) {
-            throw new Error("Échec lors de la récupération des vacations");
+            throw new Error('Échec lors de la récupération des vacations');
           }
           const data = await response.json();
-          userShift.value = data[0] || "Inconnu";
+          userShift.value = data[0] || 'Inconnu';
         } catch (err) {
-          console.error(err.message || "Erreur inconnue lors de la récupération du shift.");
+          console.error(err.message || 'Erreur inconnue lors de la récupération du shift.');
         } finally {
-
         }
       }
     };
 
     const dialogModeValue = computed({
       get: () => props.dialogMode,
-      set: (value) => emit("update:dialogModeValue", value),
+      set: (value) => emit('update:dialogModeValue', value),
     });
 
     const isDialogVisible = computed({
       get: () => props.dialogVisible,
-      set: (value) => emit("update:dialogVisible", value),
+      set: (value) => emit('update:dialogVisible', value),
     });
 
     const dialogTitle = computed(() =>
-      dialogModeValue.value === "Rempla"
-        ? "Demander un remplacement"
-        : "Demande de permutation"
+      dialogModeValue.value === 'Rempla' ? 'Demander un remplacement' : 'Demande de permutation',
     );
 
-
     const showConfirmationDialog = ref(false);
-    const teamData = ref({teamId: null, fromDate: null, toDate: null});
+    const teamData = ref({ teamId: null, fromDate: null, toDate: null });
     const menu = ref(false); // pour le sélecteur de date
     const formValid = ref(false);
     const date = useDate();
     const formattedDate = ref('');
-    const selectedDate  =   ref('')
+    const selectedDate = ref('');
 
     const toDisplayFormat = (input) => {
       if (input) {
-        return date.format(input, "fullDate")
+        return date.format(input, 'fullDate');
       }
-    }
+    };
 
     // Formate la date pour l'affichage (blur d'un champ)
     const formatDateForDisplay = () => {
       if (selectedDate.value) {
-        formattedDate.value = date.format(selectedDate.value, "fullDate");
+        formattedDate.value = date.format(selectedDate.value, 'fullDate');
       }
     };
 
     // Formate la date pour la saisie (focus d'un champ)
     const formatDateForInput = () => {
       if (selectedDate.value) {
-        formattedDate.value = date.format(selectedDate.value, "keyboardDate");
+        formattedDate.value = date.format(selectedDate.value, 'keyboardDate');
       }
     };
 
     // Validateur simple requis
     const rules = {
-      required: (value) => !!value || "Ce champ est requis.",
+      required: (value) => !!value || 'Ce champ est requis.',
     };
 
     // Synchronisation lors de la sélection dans le v-date-picker
@@ -288,7 +217,6 @@ export default {
       selectedDate.value = val;
       formatDateForDisplay(); // Formater pour affichage
     };
-
 
     // Remise à zéro du formulaire lors de fermeture du dialogue
     watch(
@@ -301,14 +229,14 @@ export default {
         } else {
           resetForm();
         }
-      }
+      },
     );
 
     watch(selectedDate, async (newVal) => {
-      if(newVal){
-        await fetchUserShift()
+      if (newVal) {
+        await fetchUserShift();
       }
-    }, );
+    });
 
     const resetForm = () => {
       selectedDate.value = null;
@@ -317,26 +245,26 @@ export default {
 
     // Soumission des données
     const submit = async () => {
-        try {
-          demand.value.date = toUTCNormalized(selectedDate.value);
-          const newDemand = {
-            ...demand.value,
-            posterId: userId.value,
-            shift: userShift.value.shift,
-          };
-          await remplacementStore.createDemand(newDemand);
-          // Réinitialiser le formulaire après l'envoi
-          demand.value = {shift: "", date: null, comment: "", points: 0};
-          // Affiche une snackbar pour indiquer le succès
-          snackbarMessage.value = "Demande de remplacement postée"
-          snackbarVisible.value = true;
-          close()
-          resetForm()
-          await remplacementStore.fetchDemandsByPosterId(userId.value);
-        } catch (err) {
-          snackbarMessage.value = err.message;
-          snackbarVisible.value = true;
-        }
+      try {
+        demand.value.date = toUTCNormalized(selectedDate.value);
+        const newDemand = {
+          ...demand.value,
+          posterId: userId.value,
+          shift: userShift.value.shift,
+        };
+        await remplacementStore.createDemand(newDemand);
+        // Réinitialiser le formulaire après l'envoi
+        demand.value = { shift: '', date: null, comment: '', points: 0 };
+        // Affiche une snackbar pour indiquer le succès
+        snackbarMessage.value = 'Demande de remplacement postée';
+        snackbarVisible.value = true;
+        close();
+        resetForm();
+        await remplacementStore.fetchDemandsByPosterId(userId.value);
+      } catch (err) {
+        snackbarMessage.value = err.message;
+        snackbarVisible.value = true;
+      }
     };
 
     const close = () => {

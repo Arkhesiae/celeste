@@ -11,7 +11,7 @@ import { entryTypeOf } from '@/utils/entryIcons';
  *   type : `shift`, `empty` ou le type de l'affectation (`absence`, `training`...) ; shiftType : `work` ou `rest` de la
  *   vacation montrée (la cédée pour un remplacé) ; variation : la variante choisie, `'vic'` pour un VIC
  */
-export function dayKindOf ({ type, shiftType = null, variation = null } = {}) {
+export function dayKindOf({ type, shiftType = null, variation = null } = {}) {
   if (entryTypeOf(type)) return type === 'absence' ? 'leave' : 'entry';
   if (shiftType === 'work') return variation === 'vic' ? 'vic' : 'work';
   if (shiftType === 'rest') return 'rest';
@@ -26,7 +26,7 @@ export const dayKindClass = (kind) => (kind ? `day--${kind}` : '');
  * non confirmé (un remplacé est atténué sans être « absent »).
  * @param {'present'|'released'|'unconfirmed'|'replaced'} [presence]
  */
-export function dayPresenceClasses (presence = 'present') {
+export function dayPresenceClasses(presence = 'present') {
   if (presence === 'present') return [];
   return presence === 'released' || presence === 'unconfirmed'
     ? ['day-presence--away', 'day-presence--absent']

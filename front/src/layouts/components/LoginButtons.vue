@@ -1,14 +1,11 @@
 <template>
   <div>
-    <div
-      class="position-fixed ma-2 d-flex align-end"
-      style="bottom: 0; right: 0 ; z-index: 99"
-    >
+    <div class="position-fixed ma-2 d-flex align-end" style="bottom: 0; right: 0; z-index: 99">
       <v-btn
         color="background"
         flat
         class="mr-2 auto-login-btn"
-        :class="{ 'selected': selectedRole === 'master' }"
+        :class="{ selected: selectedRole === 'master' }"
         icon="mdi-star-four-points"
         @click="autoLogin('master')"
       >
@@ -29,25 +26,21 @@
         color="background"
         flat
         class="mr-2 auto-login-btn"
-        :class="{ 'selected': selectedRole === 'admin' }"
+        :class="{ selected: selectedRole === 'admin' }"
         icon="mdi-shield-crown-outline"
         @click="autoLogin('admin')"
       >
         Local
       </v-btn>
 
-      <v-menu
-        v-model="showTeamUsers"
-        :close-on-content-click="false"
-        location="top"
-      >
+      <v-menu v-model="showTeamUsers" :close-on-content-click="false" location="top">
         <template #activator="{ props }">
           <v-btn
             v-bind="props"
             color="background"
             flat
             class="mr-2 auto-login-btn"
-            :class="{ 'selected': !selectedRole && authStore.isLoggedIn }"
+            :class="{ selected: !selectedRole && authStore.isLoggedIn }"
             icon="mdi-account-outline"
             @click="openTeamUsersMenu"
           >
@@ -59,19 +52,11 @@
           <v-card-title class="d-flex align-center text-body-1">
             Agents test
             <v-spacer />
-            <v-btn
-              icon="mdi-refresh"
-              variant="text"
-              size="small"
-              :loading="loadingUsers"
-              @click="fetchTeamUsers"
-            />
+            <v-btn icon="mdi-refresh" variant="text" size="small" :loading="loadingUsers" @click="fetchTeamUsers" />
           </v-card-title>
           <v-divider />
           <v-card-text class="pa-0">
-            <div v-if="loadingUsers" class="pa-4 text-center text-medium-emphasis">
-              Chargement…
-            </div>
+            <div v-if="loadingUsers" class="pa-4 text-center text-medium-emphasis">Chargement…</div>
             <div v-else-if="!teamUsers.length" class="pa-4 text-center text-medium-emphasis">
               Aucun agent. Lance d’abord Seed LFBB.
             </div>
@@ -99,15 +84,10 @@
         </v-card>
       </v-menu>
 
-      <v-btn
-        icon="mdi-logout"
-        color="error"
-        @click="handleLogout"
-      />
+      <v-btn icon="mdi-logout" color="error" @click="handleLogout" />
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { useRouter } from 'vue-router';
@@ -137,13 +117,9 @@ const CREDENTIALS_BY_ROLE = {
 
 const TEST_USER_PASSWORD = import.meta.env.VITE_USER_PASS || 'user';
 
+const notifyError = (message) => snackbarStore.showNotification(message, 'onError', 'mdi-alert-circle');
 
-const notifyError = (message) =>
-  snackbarStore.showNotification(message, 'onError', 'mdi-alert-circle');
-
-const notifySuccess = (message) =>
-  snackbarStore.showNotification(message, 'onSuccess', 'mdi-check-circle');
-
+const notifySuccess = (message) => snackbarStore.showNotification(message, 'onSuccess', 'mdi-check-circle');
 
 const performLogin = async (credentials, errorLabel) => {
   try {
@@ -169,9 +145,7 @@ const handleLogout = async () => {
 const selectedRole = computed(() => authStore.userData?.adminType);
 
 const sortedTeamUsers = computed(() =>
-  [...teamUsers.value].sort((a, b) =>
-    String(a.email).localeCompare(String(b.email), 'fr', { numeric: true })
-  )
+  [...teamUsers.value].sort((a, b) => String(a.email).localeCompare(String(b.email), 'fr', { numeric: true })),
 );
 
 const userDisplayName = (user) => {
@@ -180,8 +154,6 @@ const userDisplayName = (user) => {
 };
 
 const userInitial = (user) => (user.name || user.email || '?').charAt(0).toUpperCase();
-
-
 
 const autoLogin = (role) => performLogin(CREDENTIALS_BY_ROLE[role], role);
 
@@ -235,17 +207,16 @@ const seedDefaultConfig = async () => {
 };
 </script>
 
-
 <style scoped>
-  .auto-login-btn {
-    border-radius: 16px !important;
-    padding: 8px 16px !important;
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    border: 1px solid rgba(var(--v-theme-surface), 0.8) !important;
-  }
+.auto-login-btn {
+  border-radius: 16px !important;
+  padding: 8px 16px !important;
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  border: 1px solid rgba(var(--v-theme-surface), 0.8) !important;
+}
 
-  .auto-login-btn.selected {
-    border: 1px solid rgba(var(--v-theme-primary), 1) !important;
-  }
+.auto-login-btn.selected {
+  border: 1px solid rgba(var(--v-theme-primary), 1) !important;
+}
 </style>

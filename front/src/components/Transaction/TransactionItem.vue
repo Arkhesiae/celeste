@@ -3,23 +3,13 @@
     color="surfaceContainer"
     flat
     :style="{ opacity: opacity }"
-   
-    class="transaction-item pa-2 px-3  d-flex align-center justify-space-between"
+    class="transaction-item pa-2 px-3 d-flex align-center justify-space-between"
   >
-    <div
-      v-if="!isMobile"
-      class="d-flex align-center flex-shrink-1"
-    >
+    <div v-if="!isMobile" class="d-flex align-center flex-shrink-1">
       <div class="d-flex align-center justify-center avatar-container mr-2">
-        <v-avatar
-          size="36"
-          class=""
-        >
+        <v-avatar size="36" class="">
           <template v-if="avatar">
-            <v-img
-              :src="`${API_URL}${avatar}`"
-              alt="avatar"
-            />
+            <v-img :src="`${API_URL}${avatar}`" alt="avatar" />
           </template>
           <template v-else>
             <span class="avatar-fallback text-body-medium">{{ getInitials(transaction.userName) }}</span>
@@ -35,31 +25,21 @@
         </div>
       </div>
     </div>
-    <div
-      v-else
-      class="d-flex flex-column align-start flex-shrink-1 "
-    >
+    <div v-else class="d-flex flex-column align-start flex-shrink-1">
       <div class="d-flex align-center ga-2 justify-start">
-        <v-avatar
-          size="16"
-          class=""
-        >
+        <v-avatar size="16" class="">
           <template v-if="avatar">
-            <v-img
-              :src="`${API_URL}${avatar}`"
-              alt="avatar"
-            />
+            <v-img :src="`${API_URL}${avatar}`" alt="avatar" />
           </template>
           <template v-else>
-            <span
-              class="avatar-fallback text-title-small"
-              style="font-size: 8px !important;"
-            >{{ getInitials(transaction.userName) }}</span>
+            <span class="avatar-fallback text-title-small" style="font-size: 8px !important">{{
+              getInitials(transaction.userName)
+            }}</span>
           </template>
         </v-avatar>
-        <span class="font-weight-bold text-title-small ">{{ transaction.userName }}</span>
+        <span class="font-weight-bold text-title-small">{{ transaction.userName }}</span>
       </div>
-     
+
       <div class="text-body-small text-medium-emphasis">
         {{ transaction.description }}
       </div>
@@ -86,20 +66,10 @@
         >
           En attente
         </v-chip>
-        <v-chip
-          v-if="transaction.status === 'cancelled'"
-          color="error"
-          rounded="lg"
-          size="x-small"
-          class="ml-2"
-          label
-        >
+        <v-chip v-if="transaction.status === 'cancelled'" color="error" rounded="lg" size="x-small" class="ml-2" label>
           Annulée
         </v-chip>
-        <span
-          class="text-body-large"
-          style="font-weight: 900;"
-        >
+        <span class="text-body-large" style="font-weight: 900">
           {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
         </span>
       </div>
@@ -109,7 +79,6 @@
 </template>
 
 <script setup>
-
 import { useUserStore } from '@/stores/userStore';
 import { useAuthStore } from '@/stores/authStore';
 import { API_URL } from '@/config/api';
@@ -140,7 +109,7 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 
 const avatar = computed(() => {
-  const user = userStore.users.find(user => user._id === props.transaction.userId);
+  const user = userStore.users.find((user) => user._id === props.transaction.userId);
   return user ? user.avatar : '';
 });
 
@@ -152,7 +121,7 @@ const props = defineProps({
   opacity: {
     type: String,
     default: '1',
-  }
+  },
 });
 
 const userId = computed(() => {
@@ -161,23 +130,27 @@ const userId = computed(() => {
 
 const isSender = computed(() => {
   console.log(props.transaction, props.transaction);
-  console.log( userId.value);
+  console.log(userId.value);
   return props.transaction.senderId === userId.value;
 });
 
 const senderName = computed(() => {
-  const sender = userStore.users.find(user => user.id === props.transaction.senderId);
+  const sender = userStore.users.find((user) => user.id === props.transaction.senderId);
   return sender ? `${sender.name} ${sender.lastName}` : 'Utilisateur';
 });
 
 const receiverName = computed(() => {
-  const receiver = userStore.users.find(user => user.id === props.transaction.receiverId);
+  const receiver = userStore.users.find((user) => user.id === props.transaction.receiverId);
   return receiver ? `${receiver.name} ${receiver.lastName}` : 'Utilisateur';
 });
 
 function getInitials(name) {
   if (!name) return '';
-  return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase();
 }
 
 function formatDate(date) {
@@ -191,7 +164,6 @@ function formatDate(date) {
 .transaction-item {
   border-radius: 16px !important;
   border-bottom: none;
-
 }
 .avatar-fallback {
   background: #bdbdbd;
@@ -209,6 +181,6 @@ function formatDate(date) {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: rgba(var(--v-theme-onBackground), .12);
+  background-color: rgba(var(--v-theme-onBackground), 0.12);
 }
-</style> 
+</style>

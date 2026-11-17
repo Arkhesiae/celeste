@@ -11,8 +11,8 @@
     </p>
     <p class="text-body-small text-medium-emphasis mb-4">
       Si vous continuez, les demandes ci-dessous sont annulées (ou l'accepteur est retiré), les entrées de calendrier
-      liées à une vacation sont désactivées, et les personnes concernées sont prévenues par email.
-      Les absences et formations sans vacation sont conservées.
+      liées à une vacation sont désactivées, et les personnes concernées sont prévenues par email. Les absences et
+      formations sans vacation sont conservées.
     </p>
 
     <!-- Une ligne compacte par membre : nom + compteurs ; un clic déroule le détail -->
@@ -28,10 +28,22 @@
           @keydown.space.prevent="toggle(member.userId)"
         >
           <span class="text-body-medium font-weight-bold text-truncate flex-grow-1">{{ member.name }}</span>
-          <v-chip v-if="member.substitutions.length" size="x-small" rounded="lg" variant="tonal" prepend-icon="mdi-swap-horizontal">
+          <v-chip
+            v-if="member.substitutions.length"
+            size="x-small"
+            rounded="lg"
+            variant="tonal"
+            prepend-icon="mdi-swap-horizontal"
+          >
             {{ member.substitutions.length }}
           </v-chip>
-          <v-chip v-if="member.entries.length" size="x-small" rounded="lg" variant="tonal" prepend-icon="mdi-calendar-remove-outline">
+          <v-chip
+            v-if="member.entries.length"
+            size="x-small"
+            rounded="lg"
+            variant="tonal"
+            prepend-icon="mdi-calendar-remove-outline"
+          >
             {{ member.entries.length }}
           </v-chip>
           <v-icon size="20" class="cic-chevron" :class="{ 'cic-chevron--open': isOpen(member.userId) }">
@@ -42,15 +54,11 @@
         <v-expand-transition>
           <div v-show="isOpen(member.userId)" class="px-3 pb-2">
             <div v-for="sub in member.substitutions" :key="sub.id" class="text-body-small">
-              <v-icon size="14" class="mr-1">
-                mdi-swap-horizontal
-              </v-icon>
+              <v-icon size="14" class="mr-1"> mdi-swap-horizontal </v-icon>
               {{ formatDay(sub.date) }} · {{ typeLabel(sub.type) }} · {{ actionLabel(sub) }}
             </div>
             <div v-for="entry in member.entries" :key="entry.id" class="text-body-small">
-              <v-icon size="14" class="mr-1">
-                mdi-calendar-remove-outline
-              </v-icon>
+              <v-icon size="14" class="mr-1"> mdi-calendar-remove-outline </v-icon>
               {{ formatDay(entry.date) }} · {{ entryLabel(entry) }} désactivée
             </div>
           </div>
@@ -60,12 +68,8 @@
 
     <template #actions>
       <v-spacer />
-      <v-btn variant="text" @click="modelValue = false">
-        Annuler
-      </v-btn>
-      <v-btn variant="text" color="error" :loading="loading" @click="emit('confirm')">
-        Forcer le changement
-      </v-btn>
+      <v-btn variant="text" @click="modelValue = false"> Annuler </v-btn>
+      <v-btn variant="text" color="error" :loading="loading" @click="emit('confirm')"> Forcer le changement </v-btn>
     </template>
   </base-dialog>
 </template>
@@ -98,28 +102,51 @@ const typeLabel = (type) => TYPE_LABELS[type] ?? 'Demande';
 
 const actionLabel = (sub) => {
   if (sub.action === 'withdraw') return "retrait de l'accepteur";
-  return sub.cascade ? 'annulée (dépend d\'une autre demande)' : 'annulée';
+  return sub.cascade ? "annulée (dépend d'une autre demande)" : 'annulée';
 };
 
-const entryLabel = (entry) => entryTypes.find((e) => e.key === entry.subType)?.label
-  ?? { modification: 'Modification', assignment: 'Affectation', hourpatch: 'Ajustement d\'horaires' }[entry.type?.toLowerCase()]
-  ?? 'Entrée';
+const entryLabel = (entry) =>
+  entryTypes.find((e) => e.key === entry.subType)?.label ??
+  { modification: 'Modification', assignment: 'Affectation', hourpatch: "Ajustement d'horaires" }[
+    entry.type?.toLowerCase()
+  ] ??
+  'Entrée';
 
-const formatDay = (key) => (key
-  ? Temporal.PlainDate.from(key).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
-  : '—');
+const formatDay = (key) =>
+  key
+    ? Temporal.PlainDate.from(key).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
+    : '—';
 </script>
 
 <style scoped>
-.cic-list { max-height: 280px; overflow-y: auto; }
+.cic-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
 
-.cic-member { border-bottom: 1px solid rgba(var(--v-theme-outlineVariant), 0.4); }
-.cic-member:last-child { border-bottom: 0; }
+.cic-member {
+  border-bottom: 1px solid rgba(var(--v-theme-outlineVariant), 0.4);
+}
+.cic-member:last-child {
+  border-bottom: 0;
+}
 
-.cic-row { border-radius: 12px; transition: background var(--motion-standard-fast-effects); }
-.cic-row:hover { background: rgba(var(--v-theme-onSurface), 0.05); }
-.cic-row:focus-visible { outline: 2px solid rgb(var(--v-theme-primary)); outline-offset: -2px; }
+.cic-row {
+  border-radius: 12px;
+  transition: background var(--motion-standard-fast-effects);
+}
+.cic-row:hover {
+  background: rgba(var(--v-theme-onSurface), 0.05);
+}
+.cic-row:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: -2px;
+}
 
-.cic-chevron { transition: transform var(--motion-standard-fast-effects); }
-.cic-chevron--open { transform: rotate(180deg); }
+.cic-chevron {
+  transition: transform var(--motion-standard-fast-effects);
+}
+.cic-chevron--open {
+  transform: rotate(180deg);
+}
 </style>

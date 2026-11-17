@@ -8,18 +8,14 @@
         right: () => handleGesture('right'),
         start: handleGestureStart,
         move: handleGestureMove,
-        end: handleGestureEnd
+        end: handleGestureEnd,
       }"
       class="calendar-windows-container"
     >
       <!-- Fenêtre précédente -->
-      <div
-        class="calendar-window"
-        style="border: 1px solid green;"
-        :class="{ 'active': currentWindow === 0 }"
-      >
-        <CalendarMonth 
-          :calendar-days="previousMonthDays" 
+      <div class="calendar-window" style="border: 1px solid green" :class="{ active: currentWindow === 0 }">
+        <CalendarMonth
+          :calendar-days="previousMonthDays"
           :days-of-week="daysOfWeek"
           :is-selected="isSelected"
           :is-today="isToday"
@@ -29,13 +25,9 @@
       </div>
 
       <!-- Fenêtre actuelle -->
-      <div
-        class="calendar-window"
-        style="border: 1px solid blue;"
-        :class="{ 'active': currentWindow === 1 }"
-      >
-        <CalendarMonth 
-          :calendar-days="currentMonthDays" 
+      <div class="calendar-window" style="border: 1px solid blue" :class="{ active: currentWindow === 1 }">
+        <CalendarMonth
+          :calendar-days="currentMonthDays"
           :days-of-week="daysOfWeek"
           :is-selected="isSelected"
           :is-today="isToday"
@@ -45,13 +37,9 @@
       </div>
 
       <!-- Fenêtre suivante -->
-      <div
-        class="calendar-window"
-        style="border: 1px solid red;"
-        :class="{ 'active': currentWindow === 2 }"
-      >
-        <CalendarMonth 
-          :calendar-days="nextMonthDays" 
+      <div class="calendar-window" style="border: 1px solid red" :class="{ active: currentWindow === 2 }">
+        <CalendarMonth
+          :calendar-days="nextMonthDays"
           :days-of-week="daysOfWeek"
           :is-selected="isSelected"
           :is-today="isToday"
@@ -63,29 +51,16 @@
 
     <!-- Indicateurs de navigation -->
     <div class="calendar-indicators">
-      <v-btn 
-        icon="mdi-chevron-left" 
-        variant="text" 
-        size="small"
-        :disabled="isAnimating"
-        @click="navigateMonth(-1)"
-      />
+      <v-btn icon="mdi-chevron-left" variant="text" size="small" :disabled="isAnimating" @click="navigateMonth(-1)" />
       <div class="month-indicator">
         {{ currentMonthName }}
       </div>
-      <v-btn 
-        icon="mdi-chevron-right" 
-        variant="text" 
-        size="small"
-        :disabled="isAnimating"
-        @click="navigateMonth(1)"
-      />
+      <v-btn icon="mdi-chevron-right" variant="text" size="small" :disabled="isAnimating" @click="navigateMonth(1)" />
     </div>
   </div>
 </template>
 
 <script setup>
-
 // import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import CalendarMonth from './CalendarMonth.vue';
@@ -121,7 +96,7 @@ const gestureState = ref({
   deltaX: 0,
   deltaY: 0,
   velocity: 0,
-  startTime: 0
+  startTime: 0,
 });
 
 // Computed properties pour les données des shifts
@@ -169,8 +144,18 @@ const nextMonthDays = computed(() => {
 // Nom du mois actuel
 const currentMonthName = computed(() => {
   const months = [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    'Janvier',
+    'Février',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juillet',
+    'Août',
+    'Septembre',
+    'Octobre',
+    'Novembre',
+    'Décembre',
   ];
   return months[currentMonth.value];
 });
@@ -185,15 +170,15 @@ const generateCalendarDays = (year, month) => {
   const days = [];
   const currentDate = new Date(startDate);
 
-  while (currentDate <= lastDay || days.length < 6) { // 6 semaines max
+  while (currentDate <= lastDay || days.length < 6) {
+    // 6 semaines max
     const week = [];
     for (let i = 0; i < 7; i++) {
-   
       const date = new Date(currentDate);
       date.setUTCHours(0, 0, 0, 0);
       week.push({
         date: date,
-        isInMonth: currentDate.getMonth() === month
+        isInMonth: currentDate.getMonth() === month,
       });
       currentDate.setUTCDate(currentDate.getUTCDate() + 1);
     }
@@ -206,10 +191,10 @@ const generateCalendarDays = (year, month) => {
 // Fonction principale de gestion des gestes
 const handleGesture = (direction) => {
   if (isAnimating.value) return;
-  
+
   // Vérifier si le geste est valide
   if (!isValidGesture(direction)) return;
-  
+
   if (direction === 'left') {
     navigateMonth(1); // Swipe vers la gauche = mois suivant
   } else if (direction === 'right') {
@@ -220,32 +205,32 @@ const handleGesture = (direction) => {
 // Validation du geste
 const isValidGesture = (direction) => {
   const { deltaX, deltaY, velocity } = gestureState.value;
-  
+
   // Seuil minimum pour déclencher le geste
   const minSwipeDistance = 100;
   const maxVerticalSwipe = 100;
   const minVelocity = 0.3;
-  
+
   // Vérifier la distance horizontale
   if (Math.abs(deltaX) < minSwipeDistance) return false;
-  
+
   // Vérifier que le geste est principalement horizontal
   if (Math.abs(deltaY) > maxVerticalSwipe) return false;
-  
+
   // Vérifier la cohérence de la direction
   if (direction === 'left' && deltaX > 0) return false;
   if (direction === 'right' && deltaX < 0) return false;
-  
+
   // Vérifier la vélocité (optionnel)
   if (Math.abs(velocity) < minVelocity) return false;
-  
+
   return true;
 };
 
 // Gestion du début du geste
 const handleGestureStart = (wrapperEvent) => {
   const { touchstartX, touchstartY } = wrapperEvent;
-  
+
   gestureState.value = {
     isActive: true,
     startX: touchstartX,
@@ -255,9 +240,9 @@ const handleGestureStart = (wrapperEvent) => {
     deltaX: 0,
     deltaY: 0,
     velocity: 0,
-    startTime: Date.now()
+    startTime: Date.now(),
   };
-  
+
   // Ajouter la classe pour désactiver les transitions pendant le swipe
   if (containerRef.value) {
     containerRef.value.classList.add('swiping');
@@ -267,22 +252,22 @@ const handleGestureStart = (wrapperEvent) => {
 // Gestion du mouvement du geste
 const handleGestureMove = (wrapperEvent) => {
   if (!gestureState.value.isActive) return;
-  
+
   const { touchmoveX, touchmoveY } = wrapperEvent;
   const currentTime = Date.now();
-  
+
   // Mettre à jour l'état du geste
   gestureState.value.currentX = touchmoveX;
   gestureState.value.currentY = touchmoveY;
   gestureState.value.deltaX = touchmoveX - gestureState.value.startX;
   gestureState.value.deltaY = touchmoveY - gestureState.value.startY;
-  
+
   // Calculer la vélocité
   const timeDelta = currentTime - gestureState.value.startTime;
   if (timeDelta > 0) {
     gestureState.value.velocity = gestureState.value.deltaX / timeDelta;
   }
-  
+
   // Appliquer une transformation en temps réel pour un effet de suivi
   const container = containerRef.value;
   if (container && Math.abs(gestureState.value.deltaX) > 20) {
@@ -295,19 +280,19 @@ const handleGestureMove = (wrapperEvent) => {
 // Gestion de la fin du geste
 const handleGestureEnd = () => {
   if (!gestureState.value.isActive) return;
-  
+
   // Déterminer la direction du geste
   const { deltaX, deltaY } = gestureState.value;
   const isHorizontalSwipe = Math.abs(deltaX) > Math.abs(deltaY);
-  
+
   if (isHorizontalSwipe && Math.abs(deltaX) > 50) {
     const direction = deltaX > 0 ? 'right' : 'left';
     handleGesture(direction);
   }
-  
+
   // Réinitialiser l'état du geste
   gestureState.value.isActive = false;
-  
+
   // Réinitialiser la transformation et retirer la classe swiping
   if (containerRef.value) {
     containerRef.value.style.transform = '';
@@ -318,14 +303,14 @@ const handleGestureEnd = () => {
 // Navigation entre les mois
 const navigateMonth = async (direction) => {
   if (isAnimating.value) return;
-  
+
   isAnimating.value = true;
-  
+
   if (direction === 1) {
     // Swipe vers la gauche (mois suivant)
     currentWindow.value = 2;
     await nextTick();
-    
+
     setTimeout(() => {
       currentWindow.value = 1;
       currentMonth.value = (currentMonth.value + 1) % 12;
@@ -339,7 +324,7 @@ const navigateMonth = async (direction) => {
     // Swipe vers la droite (mois précédent)
     currentWindow.value = 0;
     await nextTick();
-    
+
     setTimeout(() => {
       currentWindow.value = 1;
       currentMonth.value = (currentMonth.value - 1 + 12) % 12;
@@ -383,9 +368,6 @@ const navigateMonth = async (direction) => {
   transform: scale(1);
 }
 
-
-
-
 /* Styles pour le touch */
 .calendar-windows-container {
   touch-action: pan-y pinch-zoom;
@@ -400,7 +382,4 @@ const navigateMonth = async (direction) => {
 .calendar-windows-container.swiping {
   transition: none;
 }
-
-
-
-</style> 
+</style>

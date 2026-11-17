@@ -12,18 +12,18 @@ export const teamService = {
   async getTeams(centerId, { publicList = false } = {}) {
     // `publicList` : liste publique (id et nom seulement) pour le formulaire d'inscription, avant qu'un compte n'existe
     const response = await apiFetch(publicList ? `/team/public/${centerId}` : `/team/${centerId}`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
 
-   /**
+  /**
    * Récupère toutes les équipes.
    * @returns {Promise<Array>} Liste des équipes.
    */
   async getAllTeams() {
     const response = await apiFetch(`/team`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -34,12 +34,11 @@ export const teamService = {
    * @returns {Promise<Object>} Les données de l'équipe.
    */
   async getTeamById(id) {
-      const response = await apiFetch(`/team/${id}`, {
-      method: 'GET'
+    const response = await apiFetch(`/team/${id}`, {
+      method: 'GET',
     });
     return response;
   },
-
 
   /**
    * Crée une nouvelle équipe.
@@ -49,7 +48,7 @@ export const teamService = {
   async createTeam({ centerId, ...teamData }) {
     const response = await apiFetch(`/team/center/${centerId}`, {
       method: 'POST',
-      body: JSON.stringify(teamData)
+      body: JSON.stringify(teamData),
     });
     return response;
   },
@@ -63,7 +62,7 @@ export const teamService = {
   async renameTeam(id, teamData) {
     const response = await apiFetch(`/team/${id}/name`, {
       method: 'PUT',
-      body: JSON.stringify(teamData)
+      body: JSON.stringify(teamData),
     });
     return response;
   },
@@ -89,7 +88,7 @@ export const teamService = {
   async assignToTeam(userId, teamData) {
     const response = await apiFetch(`/user/${userId}/assign-team`, {
       method: 'POST',
-      body: JSON.stringify(teamData)
+      body: JSON.stringify(teamData),
     });
     return response;
   },
@@ -99,12 +98,14 @@ export const teamService = {
    * (409) si des demandes ou entrées de calendrier seraient annulées.
    */
   async deleteTeamOccurrence(userId, occurrenceId, confirmed = false) {
-    const response = await apiFetch(`/user/${userId}/team-occurrences/${occurrenceId}${confirmed ? '?confirmed=true' : ''}`, {
-      method: 'DELETE',
-    });
+    const response = await apiFetch(
+      `/user/${userId}/team-occurrences/${occurrenceId}${confirmed ? '?confirmed=true' : ''}`,
+      {
+        method: 'DELETE',
+      },
+    );
     return response;
   },
-
 
   /**
    * Récupère les membres d'une équipe.
@@ -113,7 +114,7 @@ export const teamService = {
    */
   async getTeamMembers(teamId) {
     const response = await apiFetch(`/team/${teamId}/members`, {
-      method: 'GET'
+      method: 'GET',
     });
     return response;
   },
@@ -129,7 +130,7 @@ export const teamService = {
   async updateTeamCyclePosition(teamId, { day, date, swap = false, confirmed = false }) {
     return apiFetch(`/team/${teamId}/cycle-position`, {
       method: 'PUT',
-      body: JSON.stringify({ day, date, swap, confirmed })
+      body: JSON.stringify({ day, date, swap, confirmed }),
     });
   },
 
@@ -153,8 +154,8 @@ export const teamService = {
   async updateTeamsOrder(teamIds) {
     const response = await apiFetch(`/team/order`, {
       method: 'PUT',
-      body: JSON.stringify({ teamIds })
+      body: JSON.stringify({ teamIds }),
     });
     return response;
-  }
+  },
 };

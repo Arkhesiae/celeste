@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 
-
 /**
  * Store Pinia pour gérer l'état des notifications snackbar.
  * @module snackbarStore
@@ -18,8 +17,8 @@ export const useSnackbarStore = defineStore('snackbar', () => {
   // Actions
 
   const pushQueue = (newText) => {
-    messageQueue.value.push(newText)
-  }
+    messageQueue.value.push(newText);
+  };
 
   /**
    * Affiche un message de succès.
@@ -69,14 +68,14 @@ export const useSnackbarStore = defineStore('snackbar', () => {
       icon: newIcon,
       timeout: newTimeout,
       iconColor: newColor,
-    })
+    });
     showAdditionalSnackbar(newText, newColor, newIcon, newTimeout);
     message.value = newText;
     color.value = newColor;
     icon.value = newIcon;
     timeout.value = newTimeout;
     show.value = true;
-  }
+  };
 
   const showAdditionalSnackbar = (newText, newColor = 'success', newIcon = 'mdi-check-circle', newTimeout = 3000) => {
     additionalMessageQueue.value.push({
@@ -84,8 +83,8 @@ export const useSnackbarStore = defineStore('snackbar', () => {
       icon: newIcon,
       timeout: newTimeout,
       iconColor: newColor,
-    })
-  }
+    });
+  };
 
   /**
    * Cache le snackbar.
@@ -98,7 +97,7 @@ export const useSnackbarStore = defineStore('snackbar', () => {
     const id = Date.now();
     messageQueue.value.push({ id, message, type });
     setTimeout(() => {
-      messageQueue.value = messageQueue.value.filter(msg => msg.id !== id);
+      messageQueue.value = messageQueue.value.filter((msg) => msg.id !== id);
     }, 3000);
   };
 
@@ -110,13 +109,13 @@ export const useSnackbarStore = defineStore('snackbar', () => {
     messageQueue,
     show,
     timeout,
-    // Actions  
+    // Actions
     showSuccess,
     showError,
     showInfo,
     pushQueue,
     showNotification,
     showAdditionalSnackbar,
-    hide
+    hide,
   };
 });

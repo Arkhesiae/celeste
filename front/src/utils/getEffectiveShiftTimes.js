@@ -9,7 +9,8 @@ export function getDisplayShiftName(vacation) {
 
   const gave = vacation.presence === 'replaced' ? vacation.substitution?.gave : null;
   const shift = vacation.shiftData?.shift || vacation.shift || gave?.shift;
-  const selectedVariation = vacation.shiftData?.selectedVariation ?? vacation.selectedVariation ?? gave?.selectedVariation;
+  const selectedVariation =
+    vacation.shiftData?.selectedVariation ?? vacation.selectedVariation ?? gave?.selectedVariation;
   if (!shift) return '';
 
   const baseName = shift.name || '';
@@ -44,7 +45,7 @@ export function getEffectiveShiftTimes(shift, selectedVariation = null) {
       return {
         startTime: selectedVariation.startTime,
         endTime: selectedVariation.endTime,
-        endsNextDay: selectedVariation.endsNextDay ?? false
+        endsNextDay: selectedVariation.endsNextDay ?? false,
       };
     }
     // Sinon chercher dans shift.variations
@@ -55,7 +56,7 @@ export function getEffectiveShiftTimes(shift, selectedVariation = null) {
         return {
           startTime: variation.startTime,
           endTime: variation.endTime,
-          endsNextDay: variation.endsNextDay ?? false
+          endsNextDay: variation.endsNextDay ?? false,
         };
       }
     }
@@ -64,6 +65,6 @@ export function getEffectiveShiftTimes(shift, selectedVariation = null) {
   return {
     startTime: defaultTimes.startTime,
     endTime: defaultTimes.endTime,
-    endsNextDay: defaultTimes.endsNextDay ?? false
+    endsNextDay: defaultTimes.endsNextDay ?? false,
   };
 }

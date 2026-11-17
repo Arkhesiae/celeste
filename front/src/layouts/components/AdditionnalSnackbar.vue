@@ -8,13 +8,9 @@
     rounded="lg"
     class="additional-snackbar"
   >
-    <template #text="{item}">
+    <template #text="{ item }">
       <div class="d-flex align-center">
-        <v-icon
-          :icon="item.icon"
-          :color="item.iconColor"
-          class="me-2"
-        />
+        <v-icon :icon="item.icon" :color="item.iconColor" class="me-2" />
         {{ item.message }}
       </div>
     </template>
@@ -25,7 +21,7 @@
 import { useSnackbarStore } from '@/stores/snackbarStore';
 
 const snackbarStore = useSnackbarStore();
-</script> 
+</script>
 
 <style scoped>
 .additional-snackbar {

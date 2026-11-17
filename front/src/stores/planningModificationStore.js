@@ -1,4 +1,3 @@
-;
 import { defineStore } from 'pinia';
 import { planningModificationService } from '@/services/planningModificationService';
 import { useAuthStore } from '@/stores/authStore';
@@ -10,7 +9,7 @@ import { useAuthStore } from '@/stores/authStore';
  * - La récupération des modifications d'un utilisateur
  * - La gestion des statuts (pending, approved, rejected)
  * - Le suivi des modifications par centre (pour les admins)
- * 
+ *
  * @module planningModificationStore
  */
 export const usePlanningModificationStore = defineStore('planningModification', () => {
@@ -28,37 +27,37 @@ export const usePlanningModificationStore = defineStore('planningModification', 
   // Modifications en attente d'approbation
   const pendingModifications = computed(() => {
     if (!userId.value) return [];
-    return modifications.value.filter(mod => mod.status === 'pending');
+    return modifications.value.filter((mod) => mod.status === 'pending');
   });
 
   // Modifications approuvées
   const approvedModifications = computed(() => {
     if (!userId.value) return [];
-    return modifications.value.filter(mod => mod.status === 'approved');
+    return modifications.value.filter((mod) => mod.status === 'approved');
   });
 
   // Modifications rejetées
   const rejectedModifications = computed(() => {
     if (!userId.value) return [];
-    return modifications.value.filter(mod => mod.status === 'rejected');
+    return modifications.value.filter((mod) => mod.status === 'rejected');
   });
 
   // Absences
   const absences = computed(() => {
     if (!userId.value) return [];
-    return modifications.value.filter(mod => mod.type === 'absence');
+    return modifications.value.filter((mod) => mod.type === 'absence');
   });
 
   // Jours de congé
   const offDays = computed(() => {
     if (!userId.value) return [];
-    return modifications.value.filter(mod => mod.type === 'off_day');
+    return modifications.value.filter((mod) => mod.type === 'off_day');
   });
 
   // Modifications personnalisées
   const customModifications = computed(() => {
     if (!userId.value) return [];
-    return modifications.value.filter(mod => mod.type === 'custom_modification');
+    return modifications.value.filter((mod) => mod.type === 'custom_modification');
   });
 
   // =============== ACTIONS ===============
@@ -144,7 +143,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
       const updatedModification = await planningModificationService.updateModification(id, modificationData);
 
       // Mettre à jour la modification dans le store
-      const index = modifications.value.findIndex(mod => mod._id === id);
+      const index = modifications.value.findIndex((mod) => mod._id === id);
       if (index !== -1) {
         modifications.value[index] = updatedModification;
       }
@@ -171,7 +170,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
       await planningModificationService.deleteModification(id);
 
       // Supprimer la modification du store
-      modifications.value = modifications.value.filter(mod => mod._id !== id);
+      modifications.value = modifications.value.filter((mod) => mod._id !== id);
     } catch (err) {
       error.value = err.message || 'Erreur lors de la suppression de la modification';
       throw err;
@@ -195,7 +194,7 @@ export const usePlanningModificationStore = defineStore('planningModification', 
       const updatedModification = await planningModificationService.updateModificationStatus(id, status, comment);
 
       // Mettre à jour la modification dans le store
-      const index = modifications.value.findIndex(mod => mod._id === id);
+      const index = modifications.value.findIndex((mod) => mod._id === id);
       if (index !== -1) {
         modifications.value[index] = updatedModification;
       }
@@ -279,6 +278,6 @@ export const usePlanningModificationStore = defineStore('planningModification', 
     updateModificationStatus,
     fetchModification,
     checkSubstitutionConflicts,
-    emptyStore
+    emptyStore,
   };
 });

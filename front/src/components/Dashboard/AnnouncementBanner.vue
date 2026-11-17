@@ -2,8 +2,12 @@
   <div class="announcement-banners">
     <!-- ── Permanent banners (always visible, no dismiss) ────────────────── -->
     <TransitionGroup name="banner-slide" tag="div">
-      <div v-for="ann in PAstore.permanentAnnouncements" :key="ann._id" class="announcement-banner permanent"
-        :class="`type-${ann.type}`">
+      <div
+        v-for="ann in PAstore.permanentAnnouncements"
+        :key="ann._id"
+        class="announcement-banner permanent"
+        :class="`type-${ann.type}`"
+      >
         <div class="banner-accent" />
         <div class="banner-content">
           <div class="banner-icon">
@@ -23,8 +27,12 @@
 
     <!-- ── Non-permanent banner (most recent unacknowledged) ─────────────── -->
     <Transition name="banner-slide">
-      <div v-if="currentBanner" :key="currentBanner._id" class="announcement-banner dismissible"
-        :class="`type-${currentBanner.type}`">
+      <div
+        v-if="currentBanner"
+        :key="currentBanner._id"
+        class="announcement-banner dismissible"
+        :class="`type-${currentBanner.type}`"
+      >
         <div class="banner-accent" />
         <div class="banner-content">
           <div class="banner-icon">
@@ -35,9 +43,14 @@
             <span class="banner-message">{{ currentBanner.message }}</span>
           </div>
 
-
-          <v-btn size="small" variant="tonal" rounded="xl" class="ack-btn" :loading="acknowledging"
-            @click="handleAcknowledge">
+          <v-btn
+            size="small"
+            variant="tonal"
+            rounded="xl"
+            class="ack-btn"
+            :loading="acknowledging"
+            @click="handleAcknowledge"
+          >
             J'ai compris
           </v-btn>
         </div>
@@ -62,7 +75,7 @@ const typeIcon = (type) => {
     info: 'mdi-information-outline',
     warning: 'mdi-alert-outline',
     maintenance: 'mdi-tools',
-    update: 'mdi-update'
+    update: 'mdi-update',
   };
   return icons[type] ?? 'mdi-bullhorn-outline';
 };
@@ -146,35 +159,35 @@ onMounted(() => {
 
 /* ── Type variants ───────────────────────────────────────────────────────── */
 .type-info .banner-accent {
-  background: #42A5F5;
+  background: #42a5f5;
 }
 
 .type-info .banner-icon {
-  color: #42A5F5;
+  color: #42a5f5;
 }
 
 .type-warning .banner-accent {
-  background: #FFA726;
+  background: #ffa726;
 }
 
 .type-warning .banner-icon {
-  color: #FFA726;
+  color: #ffa726;
 }
 
 .type-maintenance .banner-accent {
-  background: #EF5350;
+  background: #ef5350;
 }
 
 .type-maintenance .banner-icon {
-  color: #EF5350;
+  color: #ef5350;
 }
 
 .type-update .banner-accent {
-  background: #66BB6A;
+  background: #66bb6a;
 }
 
 .type-update .banner-icon {
-  color: #66BB6A;
+  color: #66bb6a;
 }
 
 /* ── Permanent chip ──────────────────────────────────────────────────────── */

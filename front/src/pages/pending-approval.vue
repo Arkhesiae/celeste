@@ -1,51 +1,25 @@
 <template>
   <v-container class="d-flex fill-height">
-    <v-row
-      justify="center"
-      align-content="center"
-    >
-      <v-col
-        cols="12"
-        md="8"
-        lg="6"
-      >
-        <v-card
-          class="pa-6"
-          rounded="xl"
-          elevation="0"
-        >
-          <v-card-title class=" mb-4">
-            En attente d'approbation
-          </v-card-title>
-          
+    <v-row justify="center" align-content="center">
+      <v-col cols="12" md="8" lg="6">
+        <v-card class="pa-6" rounded="xl" elevation="0">
+          <v-card-title class="mb-4"> En attente d'approbation </v-card-title>
+
           <v-card-text>
             <div class="d-flex flex-column align-center mb-6">
-              <v-icon
-                icon="mdi-clock-outline"
-                size="24"
-                color="warning"
-                class="mb-4"
-              />
-              
-              <p class="text-body-large  mb-4">
-                Votre compte est en attente d'approbation par un administrateur.
-                Vous recevrez une notification dès que votre compte sera approuvé.
+              <v-icon icon="mdi-clock-outline" size="24" color="warning" class="mb-4" />
+
+              <p class="text-body-large mb-4">
+                Votre compte est en attente d'approbation par un administrateur. Vous recevrez une notification dès que
+                votre compte sera approuvé.
               </p>
-              
+
               <p class="text-body-medium text-center text-medium-emphasis">
                 Si vous avez des questions, n'hésitez pas à contacter votre administrateur.
               </p>
             </div>
 
-            <v-btn
-              block
-              color="error"
-              rounded="xl"
-              variant="tonal"
-              class="mt-4"
-              height="48"
-              @click="handleLogout"
-            >
+            <v-btn block color="error" rounded="xl" variant="tonal" class="mt-4" height="48" @click="handleLogout">
               Se déconnecter
             </v-btn>
           </v-card-text>
@@ -66,4 +40,4 @@ const handleLogout = async () => {
   await authStore.logOut();
   router.push('/login');
 };
-</script> 
+</script>

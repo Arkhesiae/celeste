@@ -12,11 +12,11 @@ export const useRotationStore = defineStore('rotation', () => {
   const activeRotation = ref(null); // Tour de service actif
   const loading = ref(true);
 
-  const rotationsByCenterId = ref({})  // { [centerId]: rotation[] }
+  const rotationsByCenterId = ref({}); // { [centerId]: rotation[] }
 
   const getRotationsForCenter = (centerId) => {
-    return rotationsByCenterId.value[centerId] ?? []
-  }
+    return rotationsByCenterId.value[centerId] ?? [];
+  };
 
   /**
    * Récupère les tours de service pour un centre spécifique.
@@ -32,29 +32,32 @@ export const useRotationStore = defineStore('rotation', () => {
       //  if (rotationsByCenterId.value[centerId]) return
       loading.value = true;
       const data = await rotationService.fetchRotations(centerId);
-      rotationsByCenterId.value[centerId] = data
+      rotationsByCenterId.value[centerId] = data;
     } catch (error) {
       console.error('Erreur lors de la récupération des tours de service :', error);
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   };
 
   /**
- * Supprime ou confirme la suppression d'une date d'activation d'un tour de service.
- * @param {string} rotationId - L'identifiant du tour de service.
- * @param {string} date - La date d'activation à supprimer.
- * @param {string} centerId - L'ID du centre pour rafraîchir les données.
- * @param {Object} options - Options supplémentaires.
- * @param {boolean} options.confirm - Si true, confirme et applique la suppression.
- */
+   * Supprime ou confirme la suppression d'une date d'activation d'un tour de service.
+   * @param {string} rotationId - L'identifiant du tour de service.
+   * @param {string} date - La date d'activation à supprimer.
+   * @param {string} centerId - L'ID du centre pour rafraîchir les données.
+   * @param {Object} options - Options supplémentaires.
+   * @param {boolean} options.confirm - Si true, confirme et applique la suppression.
+   */
   const removeActivationDate = async (rotationId, date, centerId, { confirm = false } = {}) => {
     try {
       const result = await rotationService.removeActivationDate(rotationId, date, confirm);
       await fetchRotations(centerId);
       return result;
     } catch (error) {
-      console.error(`Erreur lors de la ${confirm ? 'confirmation de la ' : ''}suppression de la date d'activation :`, error);
+      console.error(
+        `Erreur lors de la ${confirm ? 'confirmation de la ' : ''}suppression de la date d'activation :`,
+        error,
+      );
       throw error;
     }
   };
@@ -86,12 +89,10 @@ export const useRotationStore = defineStore('rotation', () => {
       await fetchRotations(centerId);
       return result;
     } catch (error) {
-      console.error(`Erreur lors de l'${confirm ? 'confirmation de l\'' : ''}activation du tour de service :`, error);
+      console.error(`Erreur lors de l'${confirm ? "confirmation de l'" : ''}activation du tour de service :`, error);
       throw error;
     }
   };
-
-
 
   /**
    * Supprime un tour de service.
@@ -129,9 +130,7 @@ export const useRotationStore = defineStore('rotation', () => {
     try {
       const result = await rotationService.updateDayInRotation(rotationId, updatedDay);
       if (result?.rotation) {
-        rotations.value = rotations.value.map(r =>
-          r._id === rotationId ? result.rotation : r
-        );
+        rotations.value = rotations.value.map((r) => (r._id === rotationId ? result.rotation : r));
       } else {
         await fetchRotations(centerId);
       }
@@ -160,8 +159,6 @@ export const useRotationStore = defineStore('rotation', () => {
     rotations.value = [];
     sortedRotations.value = [];
     activeRotation.value = null;
-
-
   };
 
   return {
@@ -180,6 +177,5 @@ export const useRotationStore = defineStore('rotation', () => {
     duplicateRotation,
     updateRotation,
     emptyStore,
- 
   };
 });

@@ -1,28 +1,34 @@
 <template>
   <v-dialog v-model="dialog" max-width="500px" transition="dialog-bottom-transition">
     <v-card class="rounded-xl pa-2">
-      <v-card-title class="text-headline-small pa-6 pb-2">
-        Mot de passe oublié
-      </v-card-title>
+      <v-card-title class="text-headline-small pa-6 pb-2"> Mot de passe oublié </v-card-title>
 
       <v-card-text class="pa-6 pt-4">
         <p class="text-body-medium text-medium-emphasis mb-4">
-          Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe.
-          Si cet email existe, vous recevrez un lien de réinitialisation de votre mot de passe.
+          Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe. Si cet email
+          existe, vous recevrez un lien de réinitialisation de votre mot de passe.
         </p>
         <v-form ref="form" v-model="valid" @submit.prevent="submit">
           <v-text-field
-v-model="email" :rules="emailRules" label="Adresse e-mail" required type="email"
-            prepend-inner-icon="mdi-email-outline" variant="solo-filled" flat color="primary" rounded="xl"
-            bg-color="surface" hide-details="auto" />
+            v-model="email"
+            :rules="emailRules"
+            label="Adresse e-mail"
+            required
+            type="email"
+            prepend-inner-icon="mdi-email-outline"
+            variant="solo-filled"
+            flat
+            color="primary"
+            rounded="xl"
+            bg-color="surface"
+            hide-details="auto"
+          />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6 pt-2">
         <v-spacer />
-        <v-btn color="primary" variant="text" rounded="xl" @click="closeDialog">
-          Annuler
-        </v-btn>
+        <v-btn color="primary" variant="text" rounded="xl" @click="closeDialog"> Annuler </v-btn>
         <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid" @click="submit">
           <v-icon icon="mdi-send" class="me-1" />
           Réinitialiser
@@ -33,75 +39,71 @@ v-model="email" :rules="emailRules" label="Adresse e-mail" required type="email"
 </template>
 
 <script setup>
-
-import { authService } from '@/services/authService'
+import { authService } from '@/services/authService';
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['update:modelValue', 'success', 'error'])
+const emit = defineEmits(['update:modelValue', 'success', 'error']);
 
-const form = ref(null)
-const valid = ref(false)
-const loading = ref(false)
-const email = ref('')
+const form = ref(null);
+const valid = ref(false);
+const loading = ref(false);
+const email = ref('');
 
-const emailRules = [
-  v => !!v || 'L\'email est requis',
-  v => /.+@.+\..+/.test(v) || 'L\'email doit être valide'
-]
+const emailRules = [(v) => !!v || "L'email est requis", (v) => /.+@.+\..+/.test(v) || "L'email doit être valide"];
 
 const dialog = computed({
   get: () => props.modelValue,
   set: (value) => {
-    emit('update:modelValue', value)
+    emit('update:modelValue', value);
     if (!value) {
-      resetForm()
+      resetForm();
     }
-  }
-})
+  },
+});
 
 const resetPassword = async (email) => {
   try {
-    await authService.requestPasswordReset(email)
-    return true
+    await authService.requestPasswordReset(email);
+    return true;
   } catch (error) {
-    throw new Error(error.message || 'Une erreur est survenue lors de la demande de réinitialisation')
+    throw new Error(error.message || 'Une erreur est survenue lors de la demande de réinitialisation');
   }
-}
+};
 
 const resetForm = () => {
-  email.value = ''
-  form.value?.reset()
-}
+  email.value = '';
+  form.value?.reset();
+};
 
 const closeDialog = () => {
-  dialog.value = false
-}
+  dialog.value = false;
+};
 
 const submit = async () => {
   // Validate form before submitting
-  const { valid: formValid } = await form.value.validate()
+  const { valid: formValid } = await form.value.validate();
 
   if (!formValid) {
-    return
+    return;
   }
 
-  loading.value = true
+  loading.value = true;
   try {
-    await resetPassword(email.value)
-    emit('success', 'Un email de réinitialisation a été envoyé')
-    closeDialog()
+    await resetPassword(email.value);
+    emit('success', 'Un email de réinitialisation a été envoyé');
+    closeDialog();
   } catch (error) {
-    emit('error', error.message || 'Une erreur est survenue')
+    emit('error', error.message || 'Une erreur est survenue');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

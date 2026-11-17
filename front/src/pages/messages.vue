@@ -4,8 +4,15 @@
       <template #actions>
         <div class="d-flex ga-2 align-center">
           <v-btn
-color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl " flat height="32"
-            size="small" @click="openNewMessageDialog">
+            color="surfaceContainerHigh"
+            variant="flat"
+            prepend-icon="mdi-plus"
+            rounded="xl "
+            flat
+            height="32"
+            size="small"
+            @click="openNewMessageDialog"
+          >
             Nouveau message
           </v-btn>
           <!-- <v-btn
@@ -25,7 +32,6 @@ color="surfaceContainerHigh" variant="flat" prepend-icon="mdi-plus" rounded="xl 
 </template>
 
 <script setup>
-
 import { useMessageStore } from '@/stores/messageStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useRouter } from 'vue-router';
@@ -38,14 +44,6 @@ const snackbarStore = useSnackbarStore();
 
 // États
 const messageDialog = ref(false);
-
-
-
-
-
-
-
-
 
 const openNewMessageDialog = () => {
   messageDialog.value = true;

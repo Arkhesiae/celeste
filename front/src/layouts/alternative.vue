@@ -6,11 +6,8 @@
   </v-main>
 </template>
 
-
 <script setup>
 // Layout minimaliste sans app bar ni navigation
 </script>
 
-<style scoped>
-
-</style> 
+<style scoped></style>

@@ -1,13 +1,7 @@
-<script setup>
-
-</script>
-
-
+<script setup></script>
 
 <template>
   <LoginComponent />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

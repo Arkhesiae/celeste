@@ -4,35 +4,50 @@
  * Configures SASS variables and Vuetify overwrites
  */
 
- @use 'sass:string';
- @use 'vuetify/settings' with (
+@use 'sass:string';
+@use 'vuetify/settings' with (
   $body-font-family: string.unquote('"Roboto", sans-serif'),
   $heading-font-family: string.unquote('"Roboto", sans-serif'),
   $btn-group-named-sizes: (
     'x-small': (
       'gap': 18px,
       'selected-radius': 12px,
-      'connected': ('inner-radius': 4px, 'inner-radius-pressed': 4px),
+      'connected': (
+        'inner-radius': 4px,
+        'inner-radius-pressed': 4px,
+      ),
     ),
     'small': (
       'gap': 12px,
       'selected-radius': 12px,
-      'connected': ('inner-radius': 8px, 'inner-radius-pressed': 4px),
+      'connected': (
+        'inner-radius': 8px,
+        'inner-radius-pressed': 4px,
+      ),
     ),
     'default': (
       'gap': 8px,
       'selected-radius': 16px,
-      'connected': ('inner-radius': 8px, 'inner-radius-pressed': 4px),
+      'connected': (
+        'inner-radius': 8px,
+        'inner-radius-pressed': 4px,
+      ),
     ),
     'large': (
       'gap': 8px,
       'selected-radius': 28px,
-      'connected': ('inner-radius': 16px, 'inner-radius-pressed': 12px),
+      'connected': (
+        'inner-radius': 16px,
+        'inner-radius-pressed': 12px,
+      ),
     ),
     'x-large': (
       'gap': 8px,
       'selected-radius': 28px,
-      'connected': ('inner-radius': 20px, 'inner-radius-pressed': 16px),
+      'connected': (
+        'inner-radius': 20px,
+        'inner-radius-pressed': 16px,
+      ),
     ),
   ),
   $button-named-sizes: (
@@ -81,7 +96,7 @@
       'border-radius': 68px,
       'border-radius-pressed': 16px,
     ),
-  ),  
+  ),
   $icon-btn-named-sizes: (
     'x-small': (
       'height': 32px,
@@ -128,9 +143,8 @@
       'border-radius-pressed': 16px,
       'icon-size': 40px,
     ),
-  ),
+  )
 );
-
 
 // https://vuetifyjs.com/features/sass-variables/`
 // @use 'vuetify/settings' with (
@@ -142,4 +156,3 @@
   --safe-area-left: env(safe-area-inset-left, 20px);
   --safe-area-right: env(safe-area-inset-right, 20px);
 }
-

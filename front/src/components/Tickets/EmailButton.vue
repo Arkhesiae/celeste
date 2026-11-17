@@ -1,29 +1,19 @@
 <template>
   <div>
     <!-- Version bouton pour TicketDetails -->
-    <v-btn 
+    <v-btn
       v-if="variant === 'button'"
-      color="surfaceContainerHigh" 
-      variant="flat" 
-      rounded="xl" 
+      color="surfaceContainerHigh"
+      variant="flat"
+      rounded="xl"
       :height="height"
       :size="size"
       @click="copyToClipboard"
     >
       <div class="d-flex align-center">
-        <v-icon
-          size="small"
-          class="mr-1"
-        >
-          mdi-email-outline
-        </v-icon>
+        <v-icon size="small" class="mr-1"> mdi-email-outline </v-icon>
         {{ email }}
-        <v-icon
-          size="small"
-          class="ml-1"
-        >
-          mdi-content-copy
-        </v-icon>
+        <v-icon size="small" class="ml-1"> mdi-content-copy </v-icon>
       </div>
     </v-btn>
 
@@ -39,32 +29,30 @@ const snackbarStore = useSnackbarStore();
 const props = defineProps({
   email: {
     type: String,
-    required: true
+    required: true,
   },
   variant: {
     type: String,
     default: 'button',
-    validator: (value) => ['button', 'span'].includes(value)
+    validator: (value) => ['button', 'span'].includes(value),
   },
   height: {
     type: String,
-    default: '32'
+    default: '32',
   },
   size: {
     type: String,
-    default: 'small'
-  }
+    default: 'small',
+  },
 });
 
 const copyToClipboard = async () => {
   try {
-
-      await navigator.clipboard.writeText(props.email);
-      snackbarStore.showNotification('Email copié dans le presse-papiers', 'success', 'mdi-check');
-    
+    await navigator.clipboard.writeText(props.email);
+    snackbarStore.showNotification('Email copié dans le presse-papiers', 'success', 'mdi-check');
   } catch (error) {
     console.error('Erreur lors de la copie :', error);
-    snackbarStore.showNotification('Erreur lors de la copie de l\'email', 'error', 'mdi-alert-circle');
+    snackbarStore.showNotification("Erreur lors de la copie de l'email", 'error', 'mdi-alert-circle');
   }
 };
 </script>

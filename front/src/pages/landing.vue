@@ -1,43 +1,51 @@
 <template>
-  <v-container fluid >
+  <v-container fluid>
     <v-row justify="center" style="min-height: 800px">
       <v-col cols="12" sm="12" md="12" lg="12" class="py-16">
         <div class="d-flex align-center" :class="mdAndUp ? 'justify-space-between' : 'justify-center'">
-          <v-card variant="text" class="mt-16" style="z-index: 34 !important;">
+          <v-card variant="text" class="mt-16" style="z-index: 34 !important">
             <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
-              <div class="text-label-medium subtitle-animation">
-                Votre site de rempla
-              </div>
+              <div class="text-label-medium subtitle-animation">Votre site de rempla</div>
               <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
 
-              <div class="font-weight-medium d-flex flex-wrap mt-4 text-display-large" :class="[
-                mdAndUp ? 'text-display-large' : 'text-display-medium ',
-                { 'justify-center': !mdAndUp }
-              ]">
-                <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">Bienvenue</span>
+              <div
+                class="font-weight-medium d-flex flex-wrap mt-4 text-display-large"
+                :class="[mdAndUp ? 'text-display-large' : 'text-display-medium ', { 'justify-center': !mdAndUp }]"
+              >
+                <span class="title-animation" style="margin-right: 1rem; font-weight: 900 !important">Bienvenue</span>
 
-                <span class="title-animation" style="margin-right: 1rem ; font-weight: 900 !important;">sur</span>
+                <span class="title-animation" style="margin-right: 1rem; font-weight: 900 !important">sur</span>
                 <span class="gradient font-weight-bold title-animation">Céleste</span>
               </div>
-              <div class="text-title-large mt-5 subtitle-animation">
-                Votre nouvelle plateforme de remplacements
-              </div>
+              <div class="text-title-large mt-5 subtitle-animation">Votre nouvelle plateforme de remplacements</div>
             </v-card-text>
 
             <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
-              <div class="block d-flex button-animation " style="animation-delay: 1.1s;">
-                <v-btn prepend-icon="mdi-lightning-bolt" elevation="1" style="border-radius: 16px !important;" height="48px "
-                  class="px-8" variant="flat" color="primary" @click="router.push({ path: '/get-started' })">
+              <div class="block d-flex button-animation" style="animation-delay: 1.1s">
+                <v-btn
+                  prepend-icon="mdi-lightning-bolt"
+                  elevation="1"
+                  style="border-radius: 16px !important"
+                  height="48px "
+                  class="px-8"
+                  variant="flat"
+                  color="primary"
+                  @click="router.push({ path: '/get-started' })"
+                >
                   Get started
                 </v-btn>
               </div>
-              <div class="d-flex button-animation soft-glow" style="animation-delay: 1.3s; z-index: 34 !important;">
-                <v-btn class="px-8 pr-8" variant="flat" style="border-radius: 200px !important;" height="48px"
-                  color="surfaceContainer" @click="router.push({ path: '/login' })">
+              <div class="d-flex button-animation soft-glow" style="animation-delay: 1.3s; z-index: 34 !important">
+                <v-btn
+                  class="px-8 pr-8"
+                  variant="flat"
+                  style="border-radius: 200px !important"
+                  height="48px"
+                  color="surfaceContainer"
+                  @click="router.push({ path: '/login' })"
+                >
                   <template #append>
-                    <v-icon color="primary">
-                      mdi-arrow-right
-                    </v-icon>
+                    <v-icon color="primary"> mdi-arrow-right </v-icon>
                   </template>
                   Se connecter
                 </v-btn>
@@ -49,20 +57,25 @@
       </v-col>
     </v-row>
 
-    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch" width="100%"
-      style="min-height: 200px ; width: 100%;">
+    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch" width="100%" style="min-height: 200px; width: 100%">
       <v-col v-for="(card, index) in cards" :key="index" cols="12" md="4">
-        <div :ref="el => { if (el) cardRefs[index] = el }" style="min-height: 200px;">
+        <div
+          :ref="
+            (el) => {
+              if (el) cardRefs[index] = el;
+            }
+          "
+          style="min-height: 200px"
+        >
           <transition name="card">
             <div v-show="card.isVisible">
-              <v-card height="100%" rounded="xl" flat
-                class="flex-column d-flex pa-8 bg-surfaceContainer">
+              <v-card height="100%" rounded="xl" flat class="flex-column d-flex pa-8 bg-surfaceContainer">
                 <v-scale-transition>
                   <v-icon color="primary" class="mt-4 mb-4 align-self-center">
                     {{ card.icon }}
                   </v-icon>
                 </v-scale-transition>
-                
+
                 <v-slide-y-transition>
                   <span class="text-body-large mt-2 font-weight-bold">{{ card.title }}</span>
                 </v-slide-y-transition>
@@ -79,22 +92,31 @@
     <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
       <v-fade-transition group appear>
         <v-col key="center" cols="12" md="4">
-          <v-card ref="statsRef" color="transparent" flat height="100%" rounded="xl"
-            class="flex-column align-center d-flex pa-4">
+          <v-card
+            ref="statsRef"
+            color="transparent"
+            flat
+            height="100%"
+            rounded="xl"
+            class="flex-column align-center d-flex pa-4"
+          >
             <span class="text-display-large mt-2 font-weight-bold text-primary">{{ Math.floor(animatedCenters) }}</span>
             <span class="text-body-large text-medium-emphasis">centres</span>
           </v-card>
         </v-col>
         <v-col key="controllers" cols="12" md="4">
           <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-display-large mt-2 font-weight-bold text-onSurface">{{ Math.floor(animatedNumber) }}</span>
+            <span class="text-display-large mt-2 font-weight-bold text-onSurface">{{
+              Math.floor(animatedNumber)
+            }}</span>
             <span class="text-body-large text-medium-emphasis">contrôleurs</span>
           </v-card>
         </v-col>
         <v-col key="replace" cols="12" md="4">
           <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7;">{{ Math.floor(animatedReplacements)
-              }}</span>
+            <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7">{{
+              Math.floor(animatedReplacements)
+            }}</span>
             <span class="text-body-large text-medium-emphasis">remplacements</span>
           </v-card>
         </v-col>
@@ -115,15 +137,14 @@
 </template>
 
 <script setup>
-import { useDisplay } from 'vuetify'
+import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useStatStore } from '@/stores/statStore';
 
 const statStore = useStatStore();
 
-
-const emit = defineEmits(["update-topbar"]);
+const emit = defineEmits(['update-topbar']);
 const { mdAndUp } = useDisplay();
 const router = useRouter();
 const inScreen = ref(false);
@@ -133,21 +154,23 @@ const cards = ref([
   {
     icon: 'mdi-responsive',
     title: 'Une gestion fluide, sur tous les écrans',
-    description: "Une plateforme entièrement repensée pour s'adapter à vos besoins, quel que soit l'appareil grâce à une interface responsive et intuitive",
-    isVisible: false
+    description:
+      "Une plateforme entièrement repensée pour s'adapter à vos besoins, quel que soit l'appareil grâce à une interface responsive et intuitive",
+    isVisible: false,
   },
   {
     icon: 'mdi-shield-check-outline',
     title: 'Sécurité et fiabilité',
-    description: "Votre tranquillité d'esprit est notre priorité. Avec des protocoles de sécurité renforcés et une plateforme fiable, remplacez en toute sérénité",
-    isVisible: false
+    description:
+      "Votre tranquillité d'esprit est notre priorité. Avec des protocoles de sécurité renforcés et une plateforme fiable, remplacez en toute sérénité",
+    isVisible: false,
   },
   {
     icon: 'mdi-calendar-sync',
     title: 'Gestion dynamique des horaires',
     description: 'Finis les problèmes de tours de service. Remplacez ou échangez vos vacations en quelques clics',
-    isVisible: false
-  }
+    isVisible: false,
+  },
 ]);
 
 let observer = null;
@@ -156,12 +179,12 @@ const setupIntersectionObserver = async () => {
   const options = {
     root: null,
     rootMargin: '-100px',
-    threshold: [0.1, 0.5]
+    threshold: [0.1, 0.5],
   };
 
   observer = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-      const index = cardRefs.value.findIndex(ref => ref === entry.target);
+      const index = cardRefs.value.findIndex((ref) => ref === entry.target);
 
       if (index !== -1) {
         // Utiliser le ratio d'intersection le plus élevé
@@ -184,17 +207,16 @@ const setupIntersectionObserver = async () => {
 
 const setupTopbarObserver = async () => {
   await nextTick();
-  console.log('Initialisation de l\'observateur de la barre supérieure');
+  console.log("Initialisation de l'observateur de la barre supérieure");
 
   const topbarOptions = {
     root: null,
     rootMargin: '0px',
-    threshold: 0.1
+    threshold: 0.1,
   };
 
   const topbarObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
-
       inScreen.value = entry.isIntersecting;
       emit('update-topbar', inScreen.value);
     });
@@ -219,7 +241,7 @@ const animatedReplacements = ref(0);
 const animationIntervals = {
   controllers: null,
   centers: null,
-  replacements: null
+  replacements: null,
 };
 const statsRef = ref(null);
 
@@ -234,7 +256,7 @@ const startAnimation = (target, current, key, duration) => {
 
   animationIntervals[key] = setInterval(() => {
     if (current.value < target) {
-      current.value = Math.min(current.value += increment, target);
+      current.value = Math.min((current.value += increment), target);
     } else {
       clearInterval(animationIntervals[key]);
     }
@@ -243,7 +265,7 @@ const startAnimation = (target, current, key, duration) => {
 
 const getStats = async () => {
   await statStore.fetchStats();
-}
+};
 
 const setupStatsObserver = async () => {
   await nextTick();
@@ -251,13 +273,13 @@ const setupStatsObserver = async () => {
   const options = {
     root: null,
     rootMargin: '0px',
-    threshold: 0.1
+    threshold: 0.1,
   };
 
   const statsObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        console.log("ae")
+        console.log('ae');
         startAnimation(statStore.totalUsers, animatedNumber, 'controllers', 1000);
         startAnimation(statStore.totalCenters, animatedCenters, 'centers', 1500);
         startAnimation(statStore.totalSubstitutions, animatedReplacements, 'replacements', 2000);
@@ -265,7 +287,7 @@ const setupStatsObserver = async () => {
         animatedNumber.value = 0;
         animatedCenters.value = 0;
         animatedReplacements.value = 0;
-        Object.values(animationIntervals).forEach(interval => {
+        Object.values(animationIntervals).forEach((interval) => {
           if (interval) clearInterval(interval);
         });
       }
@@ -276,10 +298,10 @@ const setupStatsObserver = async () => {
 
   const element = statsRef.value?.$el || statsRef.value;
   if (element) {
-    console.log("Observing stats section", element);
+    console.log('Observing stats section', element);
     statsObserver.observe(element);
   } else {
-    console.warn("Stats ref is not available");
+    console.warn('Stats ref is not available');
   }
 
   return statsObserver;
@@ -304,22 +326,24 @@ onUnmounted(() => {
   if (statsObserver) {
     statsObserver.disconnect();
   }
-  Object.values(animationIntervals).forEach(interval => {
+  Object.values(animationIntervals).forEach((interval) => {
     if (interval) clearInterval(interval);
   });
 });
 
-
 onMounted(() => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, {
-    threshold: 0.1
-  });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    },
+    {
+      threshold: 0.1,
+    },
+  );
 
   const buttonSection = document.querySelector('.button-section');
   if (buttonSection) {
@@ -331,7 +355,6 @@ onMounted(() => {
     observer.observe(statsSection);
   }
 });
-
 </script>
 
 <style scoped>
@@ -339,11 +362,13 @@ onMounted(() => {
   fill: transparent;
   color: #000;
   font-weight: 900 !important;
-  background: linear-gradient(to right,
-      color-mix(in srgb, rgb(var(--v-theme-primary)) 00%, transparent),
-      color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent),
-      color-mix(in srgb, rgb(var(--v-theme-primary)) 100%, transparent),
-      color-mix(in srgb, rgb(var(--v-theme-primary)) 00%, transparent));
+  background: linear-gradient(
+    to right,
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 00%, transparent),
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent),
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 100%, transparent),
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 00%, transparent)
+  );
   background-size: 200% auto;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -360,8 +385,6 @@ onMounted(() => {
     background-position: 200% center;
   }
 }
-
-
 
 @keyframes steam {
   0% {
@@ -381,8 +404,6 @@ onMounted(() => {
   filter: blur(0px);
 }
 
-
-
 @keyframes buttonEntrance {
   0% {
     opacity: 0;
@@ -394,7 +415,6 @@ onMounted(() => {
     transform: scale(1);
   }
 }
-
 
 @keyframes titleEntrance {
   0% {
@@ -411,18 +431,15 @@ onMounted(() => {
 @keyframes subtitleEntrance {
   0% {
     opacity: 0;
-
   }
 
   100% {
     opacity: 1;
-
   }
 }
 
 .title-move {
   transition: all 8s cubic-bezier(0.55, 0, 0.1, 1);
-
 }
 
 .title-enter-active,
@@ -433,7 +450,6 @@ onMounted(() => {
 .title-enter-from,
 .title-leave-to {
   opacity: 0 !important;
-
 }
 
 .soft-glow {
@@ -443,18 +459,21 @@ onMounted(() => {
 
 .soft-glow::before {
   content: '';
-  position: absolute; 
+  position: absolute;
   top: 50%;
   left: 50%;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent) 0%, transparent 100%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent) 0%,
+    transparent 100%
+  );
   transform: translate(-50%, -50%);
   filter: blur(10px);
   z-index: -1;
 }
-
 
 .button-animation {
   animation: buttonEntrance 0.6s ease forwards;
@@ -463,15 +482,16 @@ onMounted(() => {
 }
 
 .title-animation {
-  animation: titleEntrance 0.6s ease forwards, animatedTextGradient 10s linear infinite;
-  animation-delay: .5s;
+  animation:
+    titleEntrance 0.6s ease forwards,
+    animatedTextGradient 10s linear infinite;
+  animation-delay: 0.5s;
   opacity: 0;
 }
 
-
 .subtitle-animation {
   animation: titleEntrance 0.6s ease forwards;
-  animation-delay: .6s;
+  animation-delay: 0.6s;
   opacity: 0;
 }
 
@@ -512,9 +532,6 @@ onMounted(() => {
   transform: scale(1.1);
   transition: all 0.3s ease;
 }
-
-
-
 
 .card-enter-active {
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);

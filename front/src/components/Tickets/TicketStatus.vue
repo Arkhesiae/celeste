@@ -1,17 +1,25 @@
 <template>
   <v-menu>
     <template #activator="{ props }">
-      <v-chip v-bind="props" size="x-small" :variant="isDarkTheme ? 'outlined' : 'tonal'" rounded="lg"
-        :color="getStatusColor(status)" class="cursor-pointer" @click.stop>
-        <v-icon v-if="prependIcon" size="small" class="mr-1">
-          mdi-chevron-down
-        </v-icon>
+      <v-chip
+        v-bind="props"
+        size="x-small"
+        :variant="isDarkTheme ? 'outlined' : 'tonal'"
+        rounded="lg"
+        :color="getStatusColor(status)"
+        class="cursor-pointer"
+        @click.stop
+      >
+        <v-icon v-if="prependIcon" size="small" class="mr-1"> mdi-chevron-down </v-icon>
         {{ getStatusLabel(status) }}
       </v-chip>
     </template>
     <v-list>
-      <v-list-item v-for="statusOption in statusOptions" :key="statusOption.value"
-        @click="updateStatus(statusOption.value)">
+      <v-list-item
+        v-for="statusOption in statusOptions"
+        :key="statusOption.value"
+        @click="updateStatus(statusOption.value)"
+      >
         <v-list-item-title>{{ statusOption.label }}</v-list-item-title>
       </v-list-item>
     </v-list>
@@ -32,20 +40,20 @@ const isDarkTheme = computed(() => theme.global.current.value.dark);
 const props = defineProps({
   ticketId: {
     type: String,
-    required: true
+    required: true,
   },
   status: {
     type: String,
-    required: true
+    required: true,
   },
   size: {
     type: String,
-    default: 'small'
+    default: 'small',
   },
   prependIcon: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 });
 
 const emit = defineEmits(['status-updated']);
@@ -53,7 +61,7 @@ const emit = defineEmits(['status-updated']);
 const statusOptions = [
   { value: 'new', label: 'A traiter' },
   { value: 'in_progress', label: 'En cours' },
-  { value: 'closed', label: 'Fermé' }
+  { value: 'closed', label: 'Fermé' },
 ];
 
 const getStatusColor = (status) => {
@@ -77,7 +85,6 @@ const getStatusLabel = (status) => {
       return 'En cours';
     case 'closed':
       return 'Fermé';
-
   }
 };
 

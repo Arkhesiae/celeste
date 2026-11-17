@@ -1,6 +1,5 @@
-import { useRotationStore } from "@/stores/rotationStore";
-import { useAuthStore } from "@/stores/authStore";
-
+import { useRotationStore } from '@/stores/rotationStore';
+import { useAuthStore } from '@/stores/authStore';
 
 // useCenterRotations.js
 export function useCenterRotations() {
@@ -16,7 +15,7 @@ export function useCenterRotations() {
   const fetchForCenter = async (centerId) => {
     loading.value = true;
     try {
-      await rotationStore.fetchRotations(centerId);   // store does the API call
+      await rotationStore.fetchRotations(centerId); // store does the API call
       selectedCenterId.value = centerId;
     } finally {
       loading.value = false;

@@ -8,12 +8,11 @@
   >
     <v-card class="base-dialog__card" :class="{ 'base-dialog__card--centered': hasIcon }">
       <v-card-item class="base-dialog__header">
-        <template v-if="hasIcon" >
-          <v-icon size="24">{{icon}}</v-icon>
+        <template v-if="hasIcon">
+          <v-icon size="24">{{ icon }}</v-icon>
         </template>
 
         <v-card-title name="title">{{ title }}</v-card-title>
-      
       </v-card-item>
 
       <v-card-text class="base-dialog__body">
@@ -72,11 +71,10 @@ const hasIcon = computed(() => !!props.icon || !!slots.icon);
 }
 
 .base-dialog__card--centered .base-dialog__header :deep(.v-card-item__content) {
-  gap:16px !important;
+  gap: 16px !important;
   flex-direction: column;
   align-items: center;
   display: flex !important;
-
 }
 
 /* Title → body gap: 16px */
@@ -95,7 +93,7 @@ const hasIcon = computed(() => !!props.icon || !!slots.icon);
 
 /* Actions: 24px sides/bottom, 8px between buttons */
 .base-dialog__actions {
-  padding: 0 24px 24px  !important;
+  padding: 0 24px 24px !important;
   gap: 8px !important;
 }
 

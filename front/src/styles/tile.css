@@ -61,14 +61,18 @@
   }
 }
 
-.tile:active { transform: scale(var(--tile-pressed-scale)); }
+.tile:active {
+  transform: scale(var(--tile-pressed-scale));
+}
 
 .tile:focus-visible {
   outline: 2px solid var(--tile-accent);
   outline-offset: 2px;
 }
 
-.tile--muted { --tile-color: rgb(var(--v-theme-onSurfaceVariant)); }
+.tile--muted {
+  --tile-color: rgb(var(--v-theme-onSurfaceVariant));
+}
 
 .tile--selected,
 .tile[aria-checked='true'],
@@ -85,7 +89,9 @@
 }
 
 /* Tuile qui n'affiche seulement : ni anneau au survol, ni réduction à l'appui, ni curseur de bouton (après les règles ci-dessus, à spécificité égale) */
-.tile--static { cursor: default; }
+.tile--static {
+  cursor: default;
+}
 
 @media (hover: hover) {
   .tile--static:hover {
@@ -94,9 +100,15 @@
   }
 }
 
-.tile--static:active { transform: none; }
+.tile--static:active {
+  transform: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .tile { transition: none; }
-  .tile:active { transform: none; }
+  .tile {
+    transition: none;
+  }
+  .tile:active {
+    transform: none;
+  }
 }

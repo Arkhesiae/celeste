@@ -5,29 +5,12 @@
   </div>
 
   <!-- Repli : liste simple des membres à la date du jour (frise indisponible) -->
-  <v-list
-    v-else
-    bg-color="onBackground"
-    rounded="xl"
-  >
-    <v-list-item
-      v-for="user in members"
-      :key="user._id"
-      color="primary"
-      rounded="lg"
-      bg-color="onBackground"
-    >
-      <v-list-item-title>
-        {{ user.name }} {{ user.lastName.toUpperCase() }}
-      </v-list-item-title>
+  <v-list v-else bg-color="onBackground" rounded="xl">
+    <v-list-item v-for="user in members" :key="user._id" color="primary" rounded="lg" bg-color="onBackground">
+      <v-list-item-title> {{ user.name }} {{ user.lastName.toUpperCase() }} </v-list-item-title>
     </v-list-item>
-    <v-list-item
-      v-for="user in renforts"
-      :key="user._id"
-    >
-      <v-list-item-title>
-        {{ user.name }} {{ user.lastName.toUpperCase() }} (Renfort)
-      </v-list-item-title>
+    <v-list-item v-for="user in renforts" :key="user._id">
+      <v-list-item-title> {{ user.name }} {{ user.lastName.toUpperCase() }} (Renfort) </v-list-item-title>
     </v-list-item>
   </v-list>
 </template>
@@ -38,22 +21,22 @@ import { computed } from 'vue';
 const props = defineProps({
   members: {
     type: Array,
-    required: true
+    required: true,
   },
   renforts: {
     type: Array,
-    required: true
+    required: true,
   },
   // Entrée de la frise pour cette équipe : { members: [{ userId, name, lastName, segments }] } (voir userStore.teamsTimeline)
   timeline: {
     type: Object,
-    default: null
+    default: null,
   },
   // Fenêtre de la frise : { from, to }
   timelineWindow: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 const todayKey = () => new Date().toLocaleDateString('sv-SE');

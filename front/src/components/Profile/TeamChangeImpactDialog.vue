@@ -1,6 +1,11 @@
 <template>
-  <v-dialog :model-value="modelValue" :fullscreen="smAndDown" max-width="900px" persistent
-    @update:model-value="emit('update:modelValue', $event)">
+  <v-dialog
+    :model-value="modelValue"
+    :fullscreen="smAndDown"
+    max-width="900px"
+    persistent
+    @update:model-value="emit('update:modelValue', $event)"
+  >
     <v-card rounded="xl" elevation="0" class="pa-6">
       <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
         <v-card-title>Confirmer le changement d'équipe</v-card-title>
@@ -8,8 +13,8 @@
 
       <v-card-text class="pa-0 my-4 ma-0">
         <span class="text-body-small">
-          Ce changement modifie l'équipe sur {{ changes.length > 1 ? 'les périodes' : 'la période' }} ci-dessous.
-          Les demandes et entrées de calendrier listées seront annulées.
+          Ce changement modifie l'équipe sur {{ changes.length > 1 ? 'les périodes' : 'la période' }} ci-dessous. Les
+          demandes et entrées de calendrier listées seront annulées.
         </span>
 
         <!-- Frise : équipe propriétaire avant / après, périodes modifiées en surbrillance -->
@@ -32,8 +37,14 @@
           </div>
         </div>
 
-        <v-card v-for="(change, i) in changes" :key="i" class="pa-4 my-4" rounded="xl" elevation="0"
-          color="surfaceContainer">
+        <v-card
+          v-for="(change, i) in changes"
+          :key="i"
+          class="pa-4 my-4"
+          rounded="xl"
+          elevation="0"
+          color="surfaceContainer"
+        >
           <div class="d-flex align-center flex-wrap ga-2">
             <v-chip size="x-small" color="error" variant="flat" rounded="xl">{{ i + 1 }}</v-chip>
             <span class="text-body-small">{{ periodLabel(change) }}</span>
@@ -45,27 +56,32 @@
 
           <v-divider class="my-3" />
 
-          <div class="text-label-large font-weight-bold mb-1">
-            Demandes ({{ change.substitutions.length }})
-          </div>
+          <div class="text-label-large font-weight-bold mb-1">Demandes ({{ change.substitutions.length }})</div>
           <div v-if="!change.substitutions.length" class="text-body-small text-medium-emphasis">
             Aucune demande concernée
           </div>
           <v-list v-else density="compact" class="pa-0 impact-list" bg-color="transparent">
             <v-list-item v-for="sub in change.substitutions" :key="sub.id" class="px-0">
               <template #prepend>
-                <v-chip size="x-small" rounded="xl" variant="tonal" class="mr-2"
-                  :color="sub.action === 'withdraw' ? 'warning' : 'error'">
+                <v-chip
+                  size="x-small"
+                  rounded="xl"
+                  variant="tonal"
+                  class="mr-2"
+                  :color="sub.action === 'withdraw' ? 'warning' : 'error'"
+                >
                   {{ actionLabel(sub) }}
                 </v-chip>
               </template>
               <v-list-item-title class="text-body-small">
                 {{ typeLabel(sub.type) }} du {{ formatKey(sub.date) }}
-                <span v-if="sub.accepterDate && sub.accepterDate !== sub.date"> / {{ formatKey(sub.accepterDate) }}</span>
+                <span v-if="sub.accepterDate && sub.accepterDate !== sub.date">
+                  / {{ formatKey(sub.accepterDate) }}</span
+                >
               </v-list-item-title>
               <v-list-item-subtitle class="text-label-small">
-                {{ sub.poster }}<template v-if="sub.accepter"> → {{ sub.accepter }}</template>
-                · {{ sub.status === 'accepted' ? 'acceptée' : 'ouverte' }}
+                {{ sub.poster }}<template v-if="sub.accepter"> → {{ sub.accepter }}</template> ·
+                {{ sub.status === 'accepted' ? 'acceptée' : 'ouverte' }}
               </v-list-item-subtitle>
             </v-list-item>
           </v-list>
@@ -73,9 +89,7 @@
           <div class="text-label-large font-weight-bold mt-4 mb-1">
             Entrées de calendrier ({{ change.entries.length }})
           </div>
-          <div v-if="!change.entries.length" class="text-body-small text-medium-emphasis">
-            Aucune entrée concernée
-          </div>
+          <div v-if="!change.entries.length" class="text-body-small text-medium-emphasis">Aucune entrée concernée</div>
           <div v-else class="d-flex flex-wrap ga-1 impact-list">
             <v-chip v-for="entry in change.entries" :key="entry.id" size="x-small" rounded="xl" variant="tonal">
               {{ formatKey(entry.date) }} · {{ entryLabel(entry) }}
@@ -122,11 +136,18 @@ const changes = computed(() => props.approval?.changes ?? []);
 
 const teamName = (id) => (id ? `Équipe ${props.approval?.teams?.[id] ?? '?'}` : 'Aucune équipe');
 
-const formatKey = (key) => key
-  ? new Date(`${key}T00:00:00Z`).toLocaleDateString('fr-FR', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
-  : '';
+const formatKey = (key) =>
+  key
+    ? new Date(`${key}T00:00:00Z`).toLocaleDateString('fr-FR', {
+        timeZone: 'UTC',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : '';
 
-const periodLabel = ({ from, to }) => (to ? `Du ${formatKey(from)} au ${formatKey(to)}` : `À partir du ${formatKey(from)}`);
+const periodLabel = ({ from, to }) =>
+  to ? `Du ${formatKey(from)} au ${formatKey(to)}` : `À partir du ${formatKey(from)}`;
 
 // ── Libellés ────────────────────────────────────────────────────────────────
 
@@ -165,37 +186,40 @@ const windowDays = computed(() => {
 
 const pct = (day) => ((day - windowDays.value.start) / (windowDays.value.end - windowDays.value.start + 1)) * 100;
 
-const barsOf = (segments = []) => segments
-  .map((segment) => {
-    const from = Math.max(dayOf(segment.from), windowDays.value.start);
-    const to = Math.min(segment.to ? dayOf(segment.to) : windowDays.value.end, windowDays.value.end);
-    if (to < from) return null;
+const barsOf = (segments = []) =>
+  segments
+    .map((segment) => {
+      const from = Math.max(dayOf(segment.from), windowDays.value.start);
+      const to = Math.min(segment.to ? dayOf(segment.to) : windowDays.value.end, windowDays.value.end);
+      if (to < from) return null;
 
-    const left = pct(from);
-    const width = pct(to + 1) - left;
-    return {
-      name: teamName(segment.teamId).replace('Équipe ', ''),
-      title: `${teamName(segment.teamId)} · ${periodLabel(segment)}`,
-      style: { left: `${left}%`, width: `${width}%` },
-    };
-  })
-  .filter(Boolean);
+      const left = pct(from);
+      const width = pct(to + 1) - left;
+      return {
+        name: teamName(segment.teamId).replace('Équipe ', ''),
+        title: `${teamName(segment.teamId)} · ${periodLabel(segment)}`,
+        style: { left: `${left}%`, width: `${width}%` },
+      };
+    })
+    .filter(Boolean);
 
 const rows = computed(() => [
   { key: 'before', label: 'Avant', bars: barsOf(props.approval?.segments?.before) },
   { key: 'after', label: 'Après', bars: barsOf(props.approval?.segments?.after) },
 ]);
 
-const bands = computed(() => changes.value.map((change, i) => {
-  const from = dayOf(change.from);
-  const to = change.to ? dayOf(change.to) : windowDays.value.end;
-  const left = pct(from);
-  return {
-    index: i + 1,
-    left: `${left}%`,
-    style: { left: `${left}%`, width: `${pct(to + 1) - left}%` },
-  };
-}));
+const bands = computed(() =>
+  changes.value.map((change, i) => {
+    const from = dayOf(change.from);
+    const to = change.to ? dayOf(change.to) : windowDays.value.end;
+    const left = pct(from);
+    return {
+      index: i + 1,
+      left: `${left}%`,
+      style: { left: `${left}%`, width: `${pct(to + 1) - left}%` },
+    };
+  }),
+);
 
 const keyOfDay = (day) => new Date(day * DAY_MS).toISOString().slice(0, 10);
 const axis = computed(() => ({
@@ -203,8 +227,9 @@ const axis = computed(() => ({
   end: formatKey(keyOfDay(windowDays.value.end)),
 }));
 
-const timelineLabel = computed(() =>
-  `Frise des équipes avant et après le changement, ${changes.value.length} période(s) modifiée(s)`);
+const timelineLabel = computed(
+  () => `Frise des équipes avant et après le changement, ${changes.value.length} période(s) modifiée(s)`,
+);
 </script>
 
 <style scoped>
@@ -261,7 +286,11 @@ const timelineLabel = computed(() =>
   position: absolute;
   top: 0;
   bottom: 0;
-  background: repeating-linear-gradient(135deg, rgba(var(--v-theme-error), 0.35) 0 6px, rgba(var(--v-theme-error), 0.15) 6px 12px);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(var(--v-theme-error), 0.35) 0 6px,
+    rgba(var(--v-theme-error), 0.15) 6px 12px
+  );
   outline: 1px solid rgb(var(--v-theme-error));
   outline-offset: -2px;
   pointer-events: none;

@@ -11,19 +11,35 @@
       </div>
 
       <v-form ref="birthDateForm" v-model="birthDateValid" @submit.prevent="handleSubmit">
-        <v-text-field v-model="birthDate" flat :rules="birthDateRules" label="Date de naissance" required type="date"
-          prepend-inner-icon="mdi-calendar" variant="solo-filled" color="primary" rounded="xl" bg-color="surface"
-          hide-details="auto" :max="maxDate" />
+        <v-text-field
+          v-model="birthDate"
+          flat
+          :rules="birthDateRules"
+          label="Date de naissance"
+          required
+          type="date"
+          prepend-inner-icon="mdi-calendar"
+          variant="solo-filled"
+          color="primary"
+          rounded="xl"
+          bg-color="surface"
+          hide-details="auto"
+          :max="maxDate"
+        />
       </v-form>
     </template>
 
     <template #footer>
       <div class="d-flex justify-space-between align-center">
-        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
-          Annuler
-        </v-btn>
-        <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!birthDateValid"
-          @click="handleSubmit">
+        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close"> Annuler </v-btn>
+        <v-btn
+          color="primary"
+          variant="tonal"
+          rounded="xl"
+          :loading="loading"
+          :disabled="!birthDateValid"
+          @click="handleSubmit"
+        >
           Enregistrer
         </v-btn>
       </div>
@@ -34,61 +50,61 @@
 <script setup>
 import { pickerDayKey } from '@/utils/dateKey';
 import { birthDayOf, formatDay } from '@/utils/dayFields.js';
-import { useAuthStore } from '@/stores/authStore'
-import { profileService } from '@/services/profileService'
+import { useAuthStore } from '@/stores/authStore';
+import { profileService } from '@/services/profileService';
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
-const modelValue = defineModel({ type: Boolean, default: false })
-const emit = defineEmits(['success', 'error'])
+const modelValue = defineModel({ type: Boolean, default: false });
+const emit = defineEmits(['success', 'error']);
 
-const birthDateForm = ref(null)
-const birthDateValid = ref(false)
-const loading = ref(false)
-const birthDate = ref('')
+const birthDateForm = ref(null);
+const birthDateValid = ref(false);
+const loading = ref(false);
+const birthDate = ref('');
 
-const maxDate = computed(() => new Date().toISOString().split('T')[0])
+const maxDate = computed(() => new Date().toISOString().split('T')[0]);
 
 const birthDateRules = [
-  v => !!v || 'La date de naissance est requise',
-  v => new Date(v) <= new Date() || 'La date de naissance ne peut pas être dans le futur',
-]
+  (v) => !!v || 'La date de naissance est requise',
+  (v) => new Date(v) <= new Date() || 'La date de naissance ne peut pas être dans le futur',
+];
 
 watch(modelValue, (value) => {
-  if (!value) resetForm()
-})
+  if (!value) resetForm();
+});
 
 const resetForm = () => {
-  birthDate.value = ''
-  birthDateForm.value?.reset()
-}
+  birthDate.value = '';
+  birthDateForm.value?.reset();
+};
 
 const close = () => {
-  modelValue.value = false
-}
+  modelValue.value = false;
+};
 
 const formatBirthDate = (date) => {
-  if (!date) return null
-  return formatDay(date)
-}
+  if (!date) return null;
+  return formatDay(date);
+};
 
 const handleSubmit = async () => {
-  const { valid } = await birthDateForm.value.validate()
-  if (!valid) return
+  const { valid } = await birthDateForm.value.validate();
+  if (!valid) return;
 
-  loading.value = true
+  loading.value = true;
   try {
-    const birthDay = pickerDayKey(birthDate.value)
-    await profileService.updateBirthDate(birthDay)
-    authStore.userData.birthDate = birthDay
-    authStore.userData.birthDay = birthDay
-    close()
+    const birthDay = pickerDayKey(birthDate.value);
+    await profileService.updateBirthDate(birthDay);
+    authStore.userData.birthDate = birthDay;
+    authStore.userData.birthDay = birthDay;
+    close();
   } catch (error) {
     // TODO: handle error
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

@@ -2,27 +2,28 @@
   <v-slide-group :model-value="modelValue" mandatory @update:model-value="$emit('update:modelValue', $event)">
     <!-- Sort menu as first item -->
 
-
     <!-- Filter chips -->
     <v-slide-group-item
-v-for="filter in filters" :key="filter.value" v-slot="{ isSelected, toggle }"
-      :value="filter.value">
+      v-for="filter in filters"
+      :key="filter.value"
+      v-slot="{ isSelected, toggle }"
+      :value="filter.value"
+    >
       <v-chip
-class="justify-center font-weight-medium ga-2 align-center chip-custom"
-        :class="[
-        'chip-custom mr-2',
-        isSelected && 'chip-selected',
-        isSelected && filter.color && 'chip-error'
-      ]" variant="tonal" rounded="pill" :selected="isSelected"
-        @click="toggle">
+        class="justify-center font-weight-medium ga-2 align-center chip-custom"
+        :class="['chip-custom mr-2', isSelected && 'chip-selected', isSelected && filter.color && 'chip-error']"
+        variant="tonal"
+        rounded="pill"
+        :selected="isSelected"
+        @click="toggle"
+      >
         <div class="d-flex align-center ga-1">
-    
-            <v-icon v-if="isSelected">mdi-check</v-icon>
-         
+          <v-icon v-if="isSelected">mdi-check</v-icon>
+
           {{ filter.label }}
         </div>
         <template v-if="filter.count" #append>
-          <span class="font-weight-bold" style="font-size: .685rem !important;">
+          <span class="font-weight-bold" style="font-size: 0.685rem !important">
             {{ filter.count }}
           </span>
         </template>
@@ -51,24 +52,24 @@ class="justify-center font-weight-medium ga-2 align-center chip-custom"
 const props = defineProps({
   modelValue: {
     type: String,
-    required: true
+    required: true,
   },
   filters: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   sortOptions: {
     type: Array,
-    default: () => []
+    default: () => [],
   },
   sortLabel: {
     type: String,
-    default: 'Trier par'
+    default: 'Trier par',
   },
   initialSort: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
 const emit = defineEmits(['update:modelValue', 'update:sort']);
@@ -86,7 +87,7 @@ const onSortChange = (option) => {
   margin-top: 2px;
   background-color: rgba(var(--v-theme-surfaceContainerHigh), 1) !important;
   color: rgba(var(--v-theme-onBackground), 0.7) !important;
-  font-size: .75rem !important;
+  font-size: 0.75rem !important;
 }
 
 .chip-custom.chip-selected {

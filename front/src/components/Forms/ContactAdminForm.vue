@@ -8,19 +8,27 @@
               <!-- <div class="text-title-small mb-2">Administrateur à contacter</div> -->
               <v-chip-group v-model="formData.adminType" mandatory color="surface" base-color="surface" class="mb-2">
                 <v-chip
-v-for="admin in adminsChip" :key="admin.type" :value="admin.type" variant="flat" rounded="lg"
-                  class="ma-1">
+                  v-for="admin in adminsChip"
+                  :key="admin.type"
+                  :value="admin.type"
+                  variant="flat"
+                  rounded="lg"
+                  class="ma-1"
+                >
                   <v-icon start :color="admin.type === 'master' ? 'primary' : 'secondary'">
                     {{ admin.type === 'master' ? 'mdi-star-four-points' : 'mdi-shield-account' }}
                   </v-icon>
                   {{ admin.name }}
                   <v-tooltip
-                    :text="admin.type === 'master' ? 'Votre ticket sera envoyé à l\'administrateur principal' : 'Votre ticket sera envoyé à votre administrateur local mais sera également visible par l\'administrateur principal'"
-                    location="top">
+                    :text="
+                      admin.type === 'master'
+                        ? 'Votre ticket sera envoyé à l\'administrateur principal'
+                        : 'Votre ticket sera envoyé à votre administrateur local mais sera également visible par l\'administrateur principal'
+                    "
+                    location="top"
+                  >
                     <template #activator="{ props }">
-                      <v-icon v-bind="props" end size="small" class="ml-1">
-                        mdi-information-outline
-                      </v-icon>
+                      <v-icon v-bind="props" end size="small" class="ml-1"> mdi-information-outline </v-icon>
                     </template>
                   </v-tooltip>
                 </v-chip>
@@ -32,36 +40,60 @@ v-for="admin in adminsChip" :key="admin.type" :value="admin.type" variant="flat"
 
             <div class="my-6">
               <VersionSelector
-:has-data="!!centers && centers.length > 0" :model-value="formData.center"
+                :has-data="!!centers && centers.length > 0"
+                :model-value="formData.center"
                 :title="formData.center ? formData.center.name : 'Selectionnez un centre'"
-                :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'">
+                :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'"
+              >
                 <template #dialog>
                   <EntitySelector
-title="" :model-value="formData.center" :items="centers" item-title="name"
-                    item-subtitle="OACI" item-key="_id" item-status="status" item-prefix="Centre"
-                    @update:model-value="formData.center = $event" />
+                    title=""
+                    :model-value="formData.center"
+                    :items="centers"
+                    item-title="name"
+                    item-subtitle="OACI"
+                    item-key="_id"
+                    item-status="status"
+                    item-prefix="Centre"
+                    @update:model-value="formData.center = $event"
+                  />
                 </template>
               </VersionSelector>
               <div
-v-if="formData.adminType && formData.adminType !== 'master' && !formData.center"
-                class="text-body-small text-error mt-4">
+                v-if="formData.adminType && formData.adminType !== 'master' && !formData.center"
+                class="text-body-small text-error mt-4"
+              >
                 Le centre est obligatoire pour un administrateur local
               </div>
             </div>
             <v-select
-v-model="formData.type" :items="ticketTypes" placeholder="Type de ticket"
-              :rules="[v => !!v || 'Le type de ticket est requis']" required flat variant="solo" rounded="xl"
-              class="my-4 " density="default">
+              v-model="formData.type"
+              :items="ticketTypes"
+              placeholder="Type de ticket"
+              :rules="[(v) => !!v || 'Le type de ticket est requis']"
+              required
+              flat
+              variant="solo"
+              rounded="xl"
+              class="my-4"
+              density="default"
+            >
               <template #item="{ props, item }">
                 <v-list-item v-bind="props" :title="item.title" />
               </template>
 
-
               <template #selection="{ props, item }">
-                <v-list-item style="font-weight: 700;" base-color="onSurface" v-bind="props" :title="item.title">
+                <v-list-item style="font-weight: 700" base-color="onSurface" v-bind="props" :title="item.title">
                   <template #prepend>
                     <v-icon
-                      :icon="item.value === 'assistance' ? 'mdi-help-circle' : item.value === 'review' ? 'mdi-bug' : 'mdi-email'" />
+                      :icon="
+                        item.value === 'assistance'
+                          ? 'mdi-help-circle'
+                          : item.value === 'review'
+                            ? 'mdi-bug'
+                            : 'mdi-email'
+                      "
+                    />
                   </template>
                 </v-list-item>
               </template>
@@ -69,27 +101,53 @@ v-model="formData.type" :items="ticketTypes" placeholder="Type de ticket"
           </v-col>
           <v-col cols="12" md="12">
             <v-text-field
-v-model="formData.email" label="Email" :rules="[v => !!v || 'L\'email est requis']" required
-              variant="outlined" rounded="xl" class="mb-4" />
+              v-model="formData.email"
+              label="Email"
+              :rules="[(v) => !!v || 'L\'email est requis']"
+              required
+              variant="outlined"
+              rounded="xl"
+              class="mb-4"
+            />
 
             <v-text-field
-v-model="formData.subject" label="Sujet" :rules="[v => !!v || 'Le sujet est requis']" required
-              variant="solo-filled" flat rounded="xl" class="mb-4" />
-
-
+              v-model="formData.subject"
+              label="Sujet"
+              :rules="[(v) => !!v || 'Le sujet est requis']"
+              required
+              variant="solo-filled"
+              flat
+              rounded="xl"
+              class="mb-4"
+            />
 
             <v-textarea
-v-model="formData.message" label="Ticket" :rules="[v => !!v || 'Le ticket est requis']" required
-              variant="solo-filled" flat rounded="xl" rows="5" class="mb-4" />
+              v-model="formData.message"
+              label="Ticket"
+              :rules="[(v) => !!v || 'Le ticket est requis']"
+              required
+              variant="solo-filled"
+              flat
+              rounded="xl"
+              rows="5"
+              class="mb-4"
+            />
           </v-col>
         </v-row>
       </v-card-text>
 
       <v-card-actions class="px-6 py-0 mb-16 justify-end">
         <v-btn
-color="onBackground" type="submit" :block="smAndDown ? true : false" :loading="loading"
-          :disabled="!canSubmit || loading" :rounded="smAndDown ? 'xl' : 'lg'" :height="smAndDown ? '48' : '32'"
-          variant="flat" class="px-4">
+          color="onBackground"
+          type="submit"
+          :block="smAndDown ? true : false"
+          :loading="loading"
+          :disabled="!canSubmit || loading"
+          :rounded="smAndDown ? 'xl' : 'lg'"
+          :height="smAndDown ? '48' : '32'"
+          variant="flat"
+          class="px-4"
+        >
           Envoyer
         </v-btn>
       </v-card-actions>
@@ -98,7 +156,6 @@ color="onBackground" type="submit" :block="smAndDown ? true : false" :loading="l
 </template>
 
 <script setup>
-
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useUserStore } from '@/stores/userStore';
 import { ticketService } from '@/services/ticketService';
@@ -110,8 +167,8 @@ const { smAndDown } = useDisplay();
 const props = defineProps({
   admins: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const centerStore = useCenterStore();
@@ -123,16 +180,16 @@ const loading = ref(false);
 
 const admins = ref([
   { name: 'Admin Principal', type: 'master' },
-  { name: 'Admin Local', type: 'local' }
+  { name: 'Admin Local', type: 'local' },
 ]);
 
 const adminsChip = computed(() => {
   if (props.admins === 'both' || !props.admins) {
     return admins.value;
   } else if (props.admins === 'master') {
-    return admins.value.filter(admin => admin.type === 'master');
+    return admins.value.filter((admin) => admin.type === 'master');
   } else if (props.admins === 'local') {
-    return admins.value.filter(admin => admin.type === 'local');
+    return admins.value.filter((admin) => admin.type === 'local');
   }
 });
 
@@ -151,9 +208,9 @@ const canSubmit = computed(() => {
 });
 
 const ticketTypes = [
-  { title: 'Demande d\'assistance', value: 'assistance' },
+  { title: "Demande d'assistance", value: 'assistance' },
   { title: 'Signaler un bug', value: 'review' },
-  { title: 'Autre', value: 'other' }
+  { title: 'Autre', value: 'other' },
 ];
 
 const formData = reactive({
@@ -162,7 +219,7 @@ const formData = reactive({
   subject: '',
   email: '',
   message: '',
-  center: null
+  center: null,
 });
 
 const handleSubmit = async () => {
@@ -176,7 +233,11 @@ const handleSubmit = async () => {
 
   // Si l'admin n'est pas master, le centre est obligatoire
   if (formData.adminType !== 'master' && !formData.center) {
-    snackbarStore.showNotification('Le centre est obligatoire pour un administrateur local', 'error', 'mdi-alert-circle');
+    snackbarStore.showNotification(
+      'Le centre est obligatoire pour un administrateur local',
+      'error',
+      'mdi-alert-circle',
+    );
     return;
   }
 
@@ -188,18 +249,14 @@ const handleSubmit = async () => {
       subject: formData.subject,
       email: formData.email,
       message: formData.message,
-      centerId: formData.center?._id
+      centerId: formData.center?._id,
     });
 
     snackbarStore.showNotification('Ticket envoyé !', 'onPrimary', 'mdi-email-fast-outline');
     resetForm();
   } catch (error) {
-    console.error('Erreur lors de l\'envoi du ticket:', error);
-    snackbarStore.showNotification(
-      error.message || 'Erreur lors de l\'envoi du ticket',
-      'error',
-      'mdi-alert-circle'
-    );
+    console.error("Erreur lors de l'envoi du ticket:", error);
+    snackbarStore.showNotification(error.message || "Erreur lors de l'envoi du ticket", 'error', 'mdi-alert-circle');
   } finally {
     loading.value = false;
   }

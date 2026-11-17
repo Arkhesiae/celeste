@@ -37,7 +37,7 @@ export const publicAnnouncementService = {
   async create(data) {
     return apiFetch('/public-announcement', {
       method: 'POST',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
   },
 
@@ -49,7 +49,7 @@ export const publicAnnouncementService = {
   async update(id, data) {
     return apiFetch(`/public-announcement/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
   },
 
@@ -59,5 +59,5 @@ export const publicAnnouncementService = {
    */
   async remove(id) {
     return apiFetch(`/public-announcement/${id}`, { method: 'DELETE' });
-  }
+  },
 };

@@ -1,12 +1,9 @@
 // router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
-import { routes } from 'vue-router/auto-routes'
+import { routes } from 'vue-router/auto-routes';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useInitializationStore } from '@/stores/initializationStore';
-import { setupLayouts } from 'virtual:generated-layouts'
-
-
-
+import { setupLayouts } from 'virtual:generated-layouts';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -22,7 +19,7 @@ const router = createRouter({
       '/parameter',
       '/profile/[userId]/change-history',
       '/profile/[userId]/transaction-history',
-      '/profile/[userId]/points'
+      '/profile/[userId]/points',
     ];
 
     if (forceTopRoutes.includes(to.name)) {
@@ -31,11 +28,18 @@ const router = createRouter({
 
     // Comportement par défaut : défilement vers le haut
     return { top: 0 };
-  }
+  },
 });
 
-const noAuth = ['/login', '/(account-creation)/creation', '/landing', '/(account-creation)/get-started', '/reset-password', '/(account-creation)/account-recovery']
-const both = ['/contact-admin', '/loading']
+const noAuth = [
+  '/login',
+  '/(account-creation)/creation',
+  '/landing',
+  '/(account-creation)/get-started',
+  '/reset-password',
+  '/(account-creation)/account-recovery',
+];
+const both = ['/contact-admin', '/loading'];
 
 // Configuration des transitions
 // const transitionConfigs = {
@@ -64,55 +68,50 @@ router.beforeEach(async (to, from) => {
   const initializationStore = useInitializationStore();
 
   if (!authStore.isAuthReady) {
-    console.log('==> Initialisation de l\'authentification')
+    console.log("==> Initialisation de l'authentification");
     await authStore.initializeAuth();
   }
 
   if (to.path === '/') {
     if (authStore.isLoggedIn) {
-      return "/dashboard";
+      return '/dashboard';
     } else {
-      return "/landing";
+      return '/landing';
     }
   }
 
   if (authStore.isLoggedIn) {
     if (!initializationStore.isAppReady && to.path !== '/loading') {
       initializationStore.setPendingRoute(to.path);
-      return "/loading";
+      return '/loading';
     }
 
     if (authStore.userData.status === 'pending' && to.path !== '/pending-approval') {
-      return "/pending-approval";
+      return '/pending-approval';
     }
 
     if (noAuth.includes(to.name) && !both.includes(to.name)) {
-      return "/";
+      return '/';
     }
 
     if (to.path.startsWith('/admin') || to.path === '/admin-panel') {
       if (!authStore.userData.isAdmin) {
-        return "/";
+        return '/';
       }
     }
   } else {
     if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
-      return "/login";
+      return '/login';
     }
   }
 });
 
-
-
-
-
-
 if (import.meta.hot) {
   import.meta.hot.accept((newModule) => {
     if (newModule) {
-      console.log('updated : count is now ', newModule.count)
+      console.log('updated : count is now ', newModule.count);
     }
-  })
+  });
 }
 
 // Gestion des erreurs de chargement dynamique

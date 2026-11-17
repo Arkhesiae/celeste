@@ -4,10 +4,10 @@
     elevation="0"
     class="pa-2 overflow-hidden d-flex flex-column"
     color="surfaceContainer"
-    style="max-height: 100%;"
+    style="max-height: 100%"
   >
     <div v-if="title" class="title-container mb-4 pl-2 pt-2">
-      <span  class="global-title">{{ title }}</span>
+      <span class="global-title">{{ title }}</span>
     </div>
     <div class="version-list-container flex-grow-1 overflow-hidden">
       <div
@@ -18,11 +18,11 @@
         <div
           v-for="item in items"
           :key="item[itemKey]"
-          class="version-item  pa-3 rounded-lg cursor-pointer transition-all"
+          class="version-item pa-3 rounded-lg cursor-pointer transition-all"
           :class="[
             modelValue?.[itemKey] === item[itemKey] ? 'selected-version' : 'version-hover',
             itemStatus && item[itemStatus] === 'future' ? 'future-version' : '',
-            itemStatus && item[itemStatus] === 'current' ? 'current-version' : ''
+            itemStatus && item[itemStatus] === 'current' ? 'current-version' : '',
           ]"
           @click="selectItem(item)"
         >
@@ -32,10 +32,7 @@
               <span class="subtitle">{{ itemSubtitle ? item[itemSubtitle] : '' }}</span>
             </div>
             <div class="d-flex align-center">
-              <slot
-                name="statusChip"
-                :item="item"
-              >
+              <slot name="statusChip" :item="item">
                 <v-chip
                   v-if="itemStatus && item[itemStatus] === 'future'"
                   size="x-small"
@@ -58,28 +55,17 @@
             </div>
           </div>
           <div>
-            <slot
-              name="itemDetails"
-              :item="item"
-            />
+            <slot name="itemDetails" :item="item" />
           </div>
         </div>
       </div>
-      <div
-        class="scroll-indicator-top"
-        :class="{ 'hidden': isScrolledToTop }"
-      />
-      <div
-        class="scroll-indicator-bottom"
-        :class="{ 'hidden': isScrolledToBottom }"
-      />
+      <div class="scroll-indicator-top" :class="{ hidden: isScrolledToTop }" />
+      <div class="scroll-indicator-bottom" :class="{ hidden: isScrolledToBottom }" />
     </div>
   </v-card>
 </template>
 
 <script setup>
-
-
 const props = defineProps({
   items: { type: Array, required: true },
   itemKey: { type: String, required: true },
@@ -88,7 +74,7 @@ const props = defineProps({
   prefix: { type: String, default: '' },
   itemStatus: { type: String, default: '' },
   title: { type: String, default: 'Sélectionner un élément' },
-  maxHeight: { type: String, default: '40vh' }
+  maxHeight: { type: String, default: '40vh' },
 });
 
 const modelValue = defineModel();
@@ -204,7 +190,6 @@ onMounted(() => {
   background-color: color-mix(in srgb, rgb(var(--v-theme-primary)) 80%, transparent);
   border-radius: 20px !important;
   color: color-mix(in srgb, rgb(var(--v-theme-onPrimary)) 80%, transparent);
-
 }
 
 .cursor-pointer {

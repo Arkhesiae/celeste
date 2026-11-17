@@ -17,18 +17,33 @@
       <div class="d-flex justify-center chip-container pa-2">
         <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 ga-2 d-flex justify-center">
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-medium " value="all" size="large" rounded="lg" color="primary"
-            variant="text">
+            class="pa-0 ma-0 mr-2 px-4 text-body-medium"
+            value="all"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
             Toutes
           </v-chip>
           <v-chip
-class="pa-0 ma-0 mr-2 px-4 text-body-medium " value="received" size="large" rounded="lg" color="primary"
-            variant="text">
+            class="pa-0 ma-0 mr-2 px-4 text-body-medium"
+            value="received"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
             Reçues
           </v-chip>
           <v-chip
-class="pa-0 ma-0 px-4 text-body-medium " value="sent" size="large" rounded="lg" color="primary"
-            variant="text">
+            class="pa-0 ma-0 px-4 text-body-medium"
+            value="sent"
+            size="large"
+            rounded="lg"
+            color="primary"
+            variant="text"
+          >
             Envoyées
           </v-chip>
         </v-chip-group>
@@ -45,8 +60,10 @@ class="pa-0 ma-0 px-4 text-body-medium " value="sent" size="large" rounded="lg" 
 
               <div v-else-if="filteredTransactions.length > 0" class="ga-2 d-flex flex-column">
                 <TransactionItem
-v-for="(transaction, index) in filteredTransactions" :key="index"
-                  :transaction="transaction" />
+                  v-for="(transaction, index) in filteredTransactions"
+                  :key="index"
+                  :transaction="transaction"
+                />
               </div>
               <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
                 Aucune transaction trouvée
@@ -60,16 +77,16 @@ v-for="(transaction, index) in filteredTransactions" :key="index"
       <v-col cols="12" md="4">
         <v-card rounded="xl" elevation="0" color="background">
           <v-card-text class="pa-1">
-            <h2 class="text-headline-small mb-6">
-              Transactions en attente
-            </h2>
+            <h2 class="text-headline-small mb-6">Transactions en attente</h2>
 
             <v-progress-circular v-if="isLoadingPending" indeterminate color="primary" class="mx-auto my-4" />
 
             <div v-else-if="pendingTransactions.length > 0" class="ga-2 d-flex flex-column">
               <TransactionItem
-v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="'pending-' + index"
-                :transaction="transaction" />
+                v-for="(transaction, index) in pendingTransactions.slice(0, 2)"
+                :key="'pending-' + index"
+                :transaction="transaction"
+              />
             </div>
             <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
               Aucune transaction en attente
@@ -89,16 +106,16 @@ import TransactionItem from '@/components/Transaction/TransactionItem.vue';
 const pointStore = usePointStore();
 const selectedTransactionType = ref('all');
 
-
 const transactions = computed(() => pointStore.transactions);
 const pendingTransactions = computed(() => pointStore.pendingTransactions);
 const isLoading = computed(() => pointStore.isLoading);
 const isLoadingPending = computed(() => pointStore.isLoadingPending);
 
 const filteredTransactions = computed(() => {
-  const filtered = selectedTransactionType.value === 'all'
-    ? transactions.value
-    : transactions.value.filter(t => t.flow === selectedTransactionType.value);
+  const filtered =
+    selectedTransactionType.value === 'all'
+      ? transactions.value
+      : transactions.value.filter((t) => t.flow === selectedTransactionType.value);
 
   const sorted = filtered.sort((b, a) => {
     const dateA = a.effectiveDate;
@@ -126,7 +143,6 @@ const filteredTransactions = computed(() => {
 // };
 
 onMounted(() => {
-
   pointStore.fetchTransactions();
 });
 </script>
@@ -136,15 +152,11 @@ onMounted(() => {
   background-color: rgba(var(--v-theme-surface), 1);
   margin-bottom: 16px;
   border-radius: 20px;
-
 }
-
-
 
 .transaction-item:last-child {
   border-bottom: none;
 }
-
 
 .fade-enter-active,
 .fade-leave-active {
@@ -154,6 +166,5 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-
 }
 </style>

@@ -1,8 +1,8 @@
 <script setup>
-import UserList from "@/components/Users/UserList.vue";
+import UserList from '@/components/Users/UserList.vue';
 
 defineOptions({
-  name: "Users"
+  name: 'Users',
 });
 </script>
 
@@ -10,6 +10,4 @@ defineOptions({
   <UserList />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

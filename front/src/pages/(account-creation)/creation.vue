@@ -1,70 +1,43 @@
 <template>
   <v-container class="d-flex fill-height">
-    <v-row
-      justify="center"
-      align-content="center"
-    >
-      <v-col
-        cols="12"
-        class="d-flex justify-center align-center"
-      > 
-        <v-slide-y-reverse-transition
-          hide-on-leave
-          appear
-        >
+    <v-row justify="center" align-content="center">
+      <v-col cols="12" class="d-flex justify-center align-center">
+        <v-slide-y-reverse-transition hide-on-leave appear>
           <v-card
             width="100%"
             class="mt-n16 pa-6 pt-10"
             :color="smAndDown ? 'transparent px-0 ' : ' '"
             :rounded="smAndDown ? '0' : 'xl'"
             elevation="0"
-            style="max-width: 900px;"
+            style="max-width: 900px"
           >
-            <v-card-title class="pl-0 text-label-medium font-weight-bold">
-              CéLESTE
-            </v-card-title>
+            <v-card-title class="pl-0 text-label-medium font-weight-bold"> CéLESTE </v-card-title>
 
             <v-row>
-              <v-col
-                cols="12"
-                md="6"
-              >
-                <v-scroll-y-transition
-                  appear
-                  hide-on-leave
-                >
-                  <div v-if="step < 6 || step === 7 ">
-                    <v-card-title class="pl-0 text-headline-large">
-                      Créer mon compte
-                    </v-card-title>
+              <v-col cols="12" md="6">
+                <v-scroll-y-transition appear hide-on-leave>
+                  <div v-if="step < 6 || step === 7">
+                    <v-card-title class="pl-0 text-headline-large"> Créer mon compte </v-card-title>
                     <span class="text-body-medium text-medium-emphasis pl-0">
-                      Accéder à toutes vos demandes de remplacements, permutations et bien d'autres nouvelles fonctionnalités !
+                      Accéder à toutes vos demandes de remplacements, permutations et bien d'autres nouvelles
+                      fonctionnalités !
                     </span>
                     <a
                       class="text-body-small d-flex align-center"
                       style="color: rgb(var(--v-theme-pendingDemand)); text-decoration: none; cursor: pointer"
                       @click="router.push('/account-recovery')"
                     >
-                    
                       J'ai déjà un compte et je souhaite le récupérer ?
-                    
                     </a>
                   </div>
                   <div v-else-if="step === 6">
-                    <v-card-title class=" pl-0 text-headline-large">
-                      Collecte des données
-                    </v-card-title>
-                    <span class="text-body-medium text-medium-emphasis pl-0">
-                      Où vont mes données ?
-                    </span>
+                    <v-card-title class="pl-0 text-headline-large"> Collecte des données </v-card-title>
+                    <span class="text-body-medium text-medium-emphasis pl-0"> Où vont mes données ? </span>
                   </div>
                 </v-scroll-y-transition>
               </v-col>
 
-              <v-col
-                cols="12"
-                :md="step === 8 ? 12 : 6"
-              >
+              <v-col cols="12" :md="step === 8 ? 12 : 6">
                 <v-form ref="form">
                   <v-window v-model="step">
                     <!-- Étape 1: Organisme -->
@@ -124,24 +97,14 @@
                       />
                       <span class="text-body-small text-grey-darken-1">Veuillez entrer votre adresse e-mail</span>
                       <v-slide-y-transition>
-                        <v-alert
-                          v-if="showLegacyAlert"
-                          color="error"
-                          rounded="lg"
-                          variant="tonal"
-                          class="mt-2"
-                        >
-                          <p class="text-body-small">
-                            Cette adresse email correspond à un compte <b>REMPLACER.OVH</b>
-                          </p>
+                        <v-alert v-if="showLegacyAlert" color="error" rounded="lg" variant="tonal" class="mt-2">
+                          <p class="text-body-small">Cette adresse email correspond à un compte <b>REMPLACER.OVH</b></p>
                           <a
                             class="text-body-small d-flex align-center"
                             style="color: rgb(var(--v-theme-onBackground)); text-decoration: none; cursor: pointer"
                             @click="router.push('/account-recovery')"
                           >
-                    
                             Récupérer mon compte <v-icon>mdi-chevron-right</v-icon>
-                    
                           </a>
                         </v-alert>
                       </v-slide-y-transition>
@@ -158,7 +121,6 @@
                         variant="outlined"
                         hint="Le mot de passe doit contenir 8 caractères au minimum"
                         :rules="[rules.min(8)]"
-
                         @update:model-value="validateStep(3)"
                       />
                       <v-text-field
@@ -169,7 +131,6 @@
                         label="Confirmez mot de passe"
                         type="password"
                         :rules="[rules.matchPassword]"
-
                         @update:model-value="validateStep(3)"
                       />
                     </v-window-item>
@@ -184,7 +145,6 @@
                         variant="solo-filled"
                         rounded="xl"
                         :rules="[rules.required]"
-
                         @update:model-value="validateStep(4)"
                       />
                       <v-text-field
@@ -195,7 +155,6 @@
                         variant="solo-filled"
                         rounded="xl"
                         :rules="[rules.required]"
-
                         @update:model-value="validateStep(4)"
                       />
                     </v-window-item>
@@ -226,7 +185,8 @@
                         @update:model-value="validateStep(6)"
                       />
                       <span class="text-body-small text-grey-darken-1">
-                        Toutes les données collectées ne sont utilisées qu'à des fins de statistiques pour le bon fonctionnement du site.
+                        Toutes les données collectées ne sont utilisées qu'à des fins de statistiques pour le bon
+                        fonctionnement du site.
                       </span>
                       <a
                         class="text-body-small d-flex align-center text-primary"
@@ -250,7 +210,6 @@
                           v-else
                           :email="user.email"
                           title="Vérification de votre email"
-                    
                           @verified="onOtpVerified"
                         />
                       </v-fade-transition>
@@ -260,31 +219,18 @@
                     <v-window-item :value="8">
                       <div class="text-center pt-6">
                         <div class="success-animation mb-6">
-                          <v-avatar
-                            size="64"
-                            color="onPrimary"
-                            class="success-circle"
-                          >
-                            <v-avatar
-                              size="50"
-                              color="onPrimary"
-                            >
-                              <v-icon
-                                size="40"
-                                color="onBackground"
-                              >
-                                mdi-check
-                              </v-icon>
+                          <v-avatar size="64" color="onPrimary" class="success-circle">
+                            <v-avatar size="50" color="onPrimary">
+                              <v-icon size="40" color="onBackground"> mdi-check </v-icon>
                             </v-avatar>
                           </v-avatar>
                         </div>
 
-                        <p class="text-body-large text-label-medium">
-                          Votre compte a été créé
-                        </p>
+                        <p class="text-body-large text-label-medium">Votre compte a été créé</p>
 
                         <p class="text-body-small text-medium-emphasis mb-8">
-                          Bienvenue {{ user.name }}. Vous pouvez maintenant vous connecter pour accéder à toutes les fonctionnalités.
+                          Bienvenue {{ user.name }}. Vous pouvez maintenant vous connecter pour accéder à toutes les
+                          fonctionnalités.
                         </p>
                       </div>
                     </v-window-item>
@@ -292,14 +238,7 @@
 
                   <!-- Boutons -->
                   <v-card-actions class="mt-6 pa-0">
-                    <v-btn
-                      v-if="step > 1 && step < 8"
-                      variant="text"
-                      color="onSurface"
-                      @click="step--"
-                    >
-                      Retour
-                    </v-btn>
+                    <v-btn v-if="step > 1 && step < 8" variant="text" color="onSurface" @click="step--"> Retour </v-btn>
 
                     <v-spacer />
 
@@ -339,10 +278,7 @@
                     </v-btn>
 
                     <v-scale-transition>
-                      <div
-                        v-if="step === 7 && otpValid"
-                        class="block d-flex"
-                      >
+                      <div v-if="step === 7 && otpValid" class="block d-flex">
                         <v-btn
                           :disabled="(!stepValid[6] || isSubmitting) && !isDev"
                           color="surface"
@@ -371,48 +307,23 @@
         </v-slide-y-reverse-transition>
 
         <!-- Side Panel for additional information -->
-        <v-navigation-drawer
-          v-model="sidePanelOpen"
-          order="10"
-          location="right"
-          temporary
-
-          width="500"
-          floating
-        >
-          <v-card
-            flat
-            class="h-100 pa-4"
-          >
+        <v-navigation-drawer v-model="sidePanelOpen" order="10" location="right" temporary width="500" floating>
+          <v-card flat class="h-100 pa-4">
             <v-card-text class="pa-4">
               <div v-if="activeSidePanel === 'contact'">
                 <div class="d-flex justify-start align-center">
-                  <v-btn
-                    icon="mdi-arrow-left"
-                    variant="text"
-                    rounded="xl"
-                    @click="sidePanelOpen = false"
-                  />
-                  <p class="text-headline-small font-weight-bold ">
-                    Contacter un administrateur
-                  </p>
+                  <v-btn icon="mdi-arrow-left" variant="text" rounded="xl" @click="sidePanelOpen = false" />
+                  <p class="text-headline-small font-weight-bold">Contacter un administrateur</p>
                 </div>
                 <p class="text-medium-emphasis mb-4">
-                  Vous ne trouvez pas votre organisme dans la liste ? Contactez un administrateur pour ajouter votre organisme à notre plateforme.
+                  Vous ne trouvez pas votre organisme dans la liste ? Contactez un administrateur pour ajouter votre
+                  organisme à notre plateforme.
                 </p>
-                <ContactAdminForm
-                  admins="master"
-                  color="transparent"
-                />
+                <ContactAdminForm admins="master" color="transparent" />
               </div>
 
-              <div
-                v-else-if="activeSidePanel === 'privacy'"
-                class="privacy-content"
-              >
-                <p class="text-headline-small font-weight-bold mb-4">
-                  Utilisation des données
-                </p>
+              <div v-else-if="activeSidePanel === 'privacy'" class="privacy-content">
+                <p class="text-headline-small font-weight-bold mb-4">Utilisation des données</p>
 
                 <v-expansion-panels
                   variant="accordion"
@@ -471,14 +382,14 @@
 </template>
 
 <script setup>
-import { useCenterStore } from "@/stores/centerStore.js";
-import { useTeamStore } from "@/stores/teamStore.js";
-import { accountCreationService } from "@/services/accountCreationService.js";
+import { useCenterStore } from '@/stores/centerStore.js';
+import { useTeamStore } from '@/stores/teamStore.js';
+import { accountCreationService } from '@/services/accountCreationService.js';
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
-import { useSnackbarStore } from "@/stores/snackbarStore.js";
+import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import OTPVerification from '@/components/OTPVerification.vue';
-import ContactAdminForm from "@/components/Forms/ContactAdminForm.vue";
+import ContactAdminForm from '@/components/Forms/ContactAdminForm.vue';
 
 const router = useRouter();
 const centerStore = useCenterStore();
@@ -487,30 +398,30 @@ const teamStore = useTeamStore();
 
 // Form data
 const user = ref({
-  email: "",
-  password: "",
-  confirmPassword: "",
-  name: "",
-  lastName: "",
-  centerId: "",
-  team: "",
-  zone: "east", // Default value
+  email: '',
+  password: '',
+  confirmPassword: '',
+  name: '',
+  lastName: '',
+  centerId: '',
+  team: '',
+  zone: 'east', // Default value
 });
 
 // OTP state
-const otp = ref("");
+const otp = ref('');
 const otpValid = ref(false);
 
 // Responsive display
-const {smAndDown} = useDisplay();
+const { smAndDown } = useDisplay();
 const isDev = ref(import.meta.env.DEV);
 
 // UI state
 const step = ref(1);
 const acceptedTerms = ref(false);
 const emailExists = ref(false);
-const stepValid = ref({1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false});
-const stepErrors = ref({1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: ""});
+const stepValid = ref({ 1: false, 2: false, 3: false, 4: false, 5: false, 6: false, 7: false, 8: false });
+const stepErrors = ref({ 1: '', 2: '', 3: '', 4: '', 5: '', 6: '', 7: '', 8: '' });
 // const form = ref(null);
 
 // Loading states
@@ -553,8 +464,6 @@ const itemProps = (item) => ({
   subtitle: item.OACI,
 });
 
-
-
 const fetchCenterTeams = async () => {
   if (!user.value.centerId) return;
 
@@ -562,8 +471,8 @@ const fetchCenterTeams = async () => {
   try {
     await teamStore.fetchCenterTeams(user.value.centerId, { publicList: true }); // pas encore connecté
   } catch (error) {
-    stepErrors.value[5] = "Erreur lors de la récupération des équipes";
-    console.error("Erreur lors de la récupération des équipes", "error");
+    stepErrors.value[5] = 'Erreur lors de la récupération des équipes';
+    console.error('Erreur lors de la récupération des équipes', 'error');
   } finally {
     loadingTeams.value = false;
   }
@@ -573,39 +482,33 @@ const fetchCenterTeams = async () => {
 const onCenterSelect = () => {
   validateStep(1);
   fetchCenterTeams();
-  user.value.team = ""; // Reset team when center changes
+  user.value.team = ''; // Reset team when center changes
 };
 
 const onEmailChange = () => {
   emailExists.value = false;
   otpValid.value = false;
-  stepErrors.value[2] = "";
+  stepErrors.value[2] = '';
 };
 
 const onOtpVerified = () => {
   otpValid.value = true;
-}
+};
 
 const handleCreateAccount = async () => {
   isSubmitting.value = true;
   try {
-    
     // Si l'OTP est valide, créer le compte
     await accountCreationService.createAccount(user.value);
 
     // Si la création du compte réussit, passer à l'étape 8 (confirmation)
     setTimeout(() => {
       step.value = 8;
-    
     }, 1000);
   } catch (error) {
-    snackbarStore.showNotification(
-     "Erreur lors de la création du compte",
-      "error",
-      "mdi-alert-circle"
-    );
-    console.error("Erreur lors de la création du compte:", error);
-    stepErrors.value[7] = "Erreur lors de la création du compte";
+    snackbarStore.showNotification('Erreur lors de la création du compte', 'error', 'mdi-alert-circle');
+    console.error('Erreur lors de la création du compte:', error);
+    stepErrors.value[7] = 'Erreur lors de la création du compte';
   } finally {
     isSubmitting.value = false;
   }
@@ -618,16 +521,15 @@ const navigateToLogin = () => {
 // Validation rules
 const rules = {
   email: (value) => {
-    if (!value) return "Adresse email requise";
+    if (!value) return 'Adresse email requise';
     // Regex plus simple et performante pour valider les emails
     const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g;
-    return emailRegex.test(value) || "Adresse email invalide";
+    return emailRegex.test(value) || 'Adresse email invalide';
   },
   min: (min) => (value) => value?.length >= min || `Doit contenir au moins ${min} caractères`,
-  matchPassword: (value) => value === user.value.password || "Les mots de passe ne correspondent pas",
-  required: (value) => !!value || "Champ requis"
+  matchPassword: (value) => value === user.value.password || 'Les mots de passe ne correspondent pas',
+  required: (value) => !!value || 'Champ requis',
 };
-
 
 // Step validation
 const validateStep = async (stepNum) => {
@@ -636,7 +538,7 @@ const validateStep = async (stepNum) => {
   switch (stepNum) {
     case 1: // Organisme
       isValid = !!user.value.centerId;
-      stepErrors.value[1] = isValid ? "" : "Veuillez sélectionner un organisme";
+      stepErrors.value[1] = isValid ? '' : 'Veuillez sélectionner un organisme';
       break;
 
     case 2: // Email
@@ -644,10 +546,10 @@ const validateStep = async (stepNum) => {
       // Check for email validity
       if (rules.email(user.value.email) !== true) {
         isValid = false;
-        stepErrors.value[2] = "Adresse e-mail invalide";
+        stepErrors.value[2] = 'Adresse e-mail invalide';
         break;
       }
-     
+
       // Check if email already exists
       checkingEmail.value = true;
       try {
@@ -655,14 +557,14 @@ const validateStep = async (stepNum) => {
         if (!data.available || data.legacy) {
           emailExists.value = true;
           isValid = false;
-          stepErrors.value[2] = "Adresse e-mail déjà utilisée";
+          stepErrors.value[2] = 'Adresse e-mail déjà utilisée';
         }
         if (data.legacy) {
           showLegacyAlert.value = true;
         }
       } catch (error) {
         console.error("Erreur lors de la vérification de l'email :", error);
-        stepErrors.value[2] = "Une erreur est survenue. Veuillez réessayer";
+        stepErrors.value[2] = 'Une erreur est survenue. Veuillez réessayer';
         isValid = false;
       } finally {
         checkingEmail.value = false;
@@ -671,43 +573,43 @@ const validateStep = async (stepNum) => {
 
     case 3: // Mot de passe
       const passwordValid = rules.min(8)(user.value.password) === true;
-      const passwordMatch = user.value.password && user.value.confirmPassword &&
-        rules.matchPassword(user.value.confirmPassword) === true;
+      const passwordMatch =
+        user.value.password && user.value.confirmPassword && rules.matchPassword(user.value.confirmPassword) === true;
 
       isValid = passwordValid && passwordMatch;
 
       if (!passwordValid) {
-        stepErrors.value[3] = "Le mot de passe doit contenir au moins 8 caractères";
+        stepErrors.value[3] = 'Le mot de passe doit contenir au moins 8 caractères';
       } else if (!passwordMatch) {
-        stepErrors.value[3] = "Les mots de passe ne correspondent pas";
+        stepErrors.value[3] = 'Les mots de passe ne correspondent pas';
       } else {
-        stepErrors.value[3] = "";
+        stepErrors.value[3] = '';
       }
       break;
 
     case 4: // Informations personnelles
       isValid = !!user.value.name && !!user.value.lastName;
-      stepErrors.value[4] = isValid ? "" : "Veuillez remplir tous les champs";
+      stepErrors.value[4] = isValid ? '' : 'Veuillez remplir tous les champs';
       break;
 
     case 5: // Equipe et zone
       isValid = !!user.value.team && !!user.value.zone;
-      stepErrors.value[5] = isValid ? "" : "Veuillez compléter toutes les informations";
+      stepErrors.value[5] = isValid ? '' : 'Veuillez compléter toutes les informations';
       break;
 
     case 6: // Conditions
       isValid = acceptedTerms.value;
-      stepErrors.value[6] = isValid ? "" : "Veuillez accepter les conditions";
+      stepErrors.value[6] = isValid ? '' : 'Veuillez accepter les conditions';
       break;
 
     case 7: // OTP Verification
       isValid = otp.value.length === 6 && otpValid.value;
-      stepErrors.value[7] = isValid ? "" : "Code OTP invalide";
+      stepErrors.value[7] = isValid ? '' : 'Code OTP invalide';
       break;
 
     case 8: // Confirmation de création du compte
       isValid = true;
-      stepErrors.value[8] = isValid ? "" : "Erreur lors de la confirmation de la création du compte";
+      stepErrors.value[8] = isValid ? '' : 'Erreur lors de la confirmation de la création du compte';
       break;
 
     default:
@@ -717,9 +619,6 @@ const validateStep = async (stepNum) => {
   stepValid.value[stepNum] = isValid;
   return isValid;
 };
-
-
-
 </script>
 
 <style scoped>
@@ -737,8 +636,14 @@ const validateStep = async (stepNum) => {
   left: -2px;
   top: -2px;
   border-radius: 24px;
-  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-  rgba(159, 159, 248, 0.22), #ffccdd);
+  background: linear-gradient(
+    45deg,
+    #ffc0d4,
+    rgba(237, 202, 255, 0.94),
+    rgba(250, 152, 248, 0.05),
+    rgba(159, 159, 248, 0.22),
+    #ffccdd
+  );
   background-size: 400%;
   width: calc(100% + 4px);
   height: calc(100% + 4px);

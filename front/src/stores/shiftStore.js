@@ -1,4 +1,3 @@
-;
 import { defineStore } from 'pinia';
 import { Temporal } from '@js-temporal/polyfill';
 import { vacationService } from '@/services/vacationService';
@@ -13,13 +12,13 @@ import { useSubstitutionStore } from '@/stores/substitutionStore';
  * - La récupération des vacations d'un utilisateur
  * - La gestion de la période de visualisation
  * - Le suivi des vacations adjacentes
- * 
+ *
  * @module shiftStore
  */
 export const useShiftStore = defineStore('shift', () => {
   const period = ref({
     startDate: null,
-    endDate: null
+    endDate: null,
   });
   const loading = ref(false);
   const error = ref(null);
@@ -31,15 +30,13 @@ export const useShiftStore = defineStore('shift', () => {
   // Cache persistant pour les vacations
   const persistentVacationsMap = ref(new Map([]));
 
-
-
   /**
-  * Ajoute ou remplace une entrée dans la Map persistante
-  * Déclenche un callback uniquement si l'entrée est modifiée (overwrite)
-  *
-  * @param {string} dateKey - La clé de date (YYYY-MM-DD)
-  * @param {object} newValue - L'objet shift à insérer
-  */
+   * Ajoute ou remplace une entrée dans la Map persistante
+   * Déclenche un callback uniquement si l'entrée est modifiée (overwrite)
+   *
+   * @param {string} dateKey - La clé de date (YYYY-MM-DD)
+   * @param {object} newValue - L'objet shift à insérer
+   */
   const setEntryWithDetection = (dateKey, newValue) => {
     const map = persistentVacationsMap.value;
 
@@ -62,28 +59,37 @@ export const useShiftStore = defineStore('shift', () => {
   const triggerRecategorize = (dateKey) => {
     const substitutionStore = useSubstitutionStore();
     substitutionStore.recategorizeSubstitutions(dateKey);
-  }
-
-
-
+  };
 
   const addEntry = (entry, dateKey = null, targetMap = null) => {
     if (!entry) return;
 
     if (!dateKey) {
       if (!entry.date) return;
-      dateKey = typeof entry.date === 'string'
-        ? entry.date.split('T')[0]
-        : new Date(entry.date).toISOString().split('T')[0];
+      dateKey =
+        typeof entry.date === 'string' ? entry.date.split('T')[0] : new Date(entry.date).toISOString().split('T')[0];
     }
 
-    const { date, shiftData, isBaseShift, history, type, baseShift, presence, substitution, comment, startTime, endTime, wasPatched } = entry;
+    const {
+      date,
+      shiftData,
+      isBaseShift,
+      history,
+      type,
+      baseShift,
+      presence,
+      substitution,
+      comment,
+      startTime,
+      endTime,
+      wasPatched,
+    } = entry;
 
-    const endsNextDay = shiftData?.shift?.endsNextDay ?? false
-    let start, end
+    const endsNextDay = shiftData?.shift?.endsNextDay ?? false;
+    let start, end;
     if (startTime && endTime) {
       start = parseShiftDateTime(date || dateKey, startTime, false);
-      end = parseShiftDateTime(date || dateKey, endTime, endsNextDay);      
+      end = parseShiftDateTime(date || dateKey, endTime, endsNextDay);
     }
 
     const newValue = {
@@ -99,7 +105,7 @@ export const useShiftStore = defineStore('shift', () => {
       end,
       isBaseShift,
       history: history,
-      wasPatched
+      wasPatched,
     };
 
     const map = targetMap ?? persistentVacationsMap.value;
@@ -135,7 +141,6 @@ export const useShiftStore = defineStore('shift', () => {
     return shifts;
   };
 
-
   const fetchShiftsWithSubstitutions = async (dates) => {
     if (!userId.value) {
       return;
@@ -148,13 +153,13 @@ export const useShiftStore = defineStore('shift', () => {
         if (period.value.startDate && period.value.endDate) {
           dates = {
             startDate: period.value.startDate,
-            endDate: period.value.endDate
+            endDate: period.value.endDate,
           };
         } else {
           const today = Temporal.Now.plainDateISO();
           dates = {
             startDate: today.subtract({ days: 30 }).toString(),
-            endDate: today.add({ days: 30 }).toString()
+            endDate: today.add({ days: 30 }).toString(),
           };
         }
       }
@@ -171,7 +176,7 @@ export const useShiftStore = defineStore('shift', () => {
 
       period.value = {
         startDate: dates.startDate,
-        endDate: dates.endDate
+        endDate: dates.endDate,
       };
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des vacations';
@@ -244,6 +249,6 @@ export const useShiftStore = defineStore('shift', () => {
     // Watchers
     setEntryWithDetection,
     addEntry,
-    emptyStore
+    emptyStore,
   };
-}); 
+});

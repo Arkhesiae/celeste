@@ -3,30 +3,36 @@
     <MainTitle title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
       <template #actions>
         <v-select
-v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
-          :item-props="center => ({
-            title: center.name,
-            subtitle: center.oaci
-          })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="" flat
-          min-width="200px" max-width="300px" clearable @update:model-value="handleCenterChange" />
+          v-if="authStore.userData.adminType === 'master'"
+          v-model="selectedCenterId"
+          :items="centers"
+          :item-props="
+            (center) => ({
+              title: center.name,
+              subtitle: center.oaci,
+            })
+          "
+          item-value="_id"
+          label="Sélectionner un centre"
+          variant="solo-filled"
+          rounded="xl"
+          class=""
+          flat
+          min-width="200px"
+          max-width="300px"
+          clearable
+          @update:model-value="handleCenterChange"
+        />
       </template>
     </MainTitle>
 
     <v-row class="justify-space-between align-center mb-4">
       <v-col cols="12" md="6">
         <v-chip-group v-model="selectedFilter" column variant="flat" color="onBackground">
-          <v-chip variant="text" rounded="lg" value="all">
-            Tous
-          </v-chip>
-          <v-chip variant="text" color="tertiary" rounded="lg" value="admin">
-            Administrateurs
-          </v-chip>
-          <v-chip variant="text" rounded="lg" value="user">
-            Utilisateurs
-          </v-chip>
-          <v-chip variant="text" rounded="lg" value="pending">
-            En attente
-          </v-chip>
+          <v-chip variant="text" rounded="lg" value="all"> Tous </v-chip>
+          <v-chip variant="text" color="tertiary" rounded="lg" value="admin"> Administrateurs </v-chip>
+          <v-chip variant="text" rounded="lg" value="user"> Utilisateurs </v-chip>
+          <v-chip variant="text" rounded="lg" value="pending"> En attente </v-chip>
         </v-chip-group>
       </v-col>
 
@@ -52,40 +58,55 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
       <div v-if="isLoading || !showUserList">
         <Loading />
       </div>
-      <v-col
-        v-else-if="!sortedAndFilteredUsers.length"
-        cols="12"
-        class="text-medium-emphasis"
-      >
+      <v-col v-else-if="!sortedAndFilteredUsers.length" cols="12" class="text-medium-emphasis">
         Aucun utilisateur trouvé
       </v-col>
       <v-col
-v-for="user in sortedAndFilteredUsers" v-else :key="user._id" cols="12" md="6" lg="4"
-        :class="smAndDown ? 'pa-0' : ''">
+        v-for="user in sortedAndFilteredUsers"
+        v-else
+        :key="user._id"
+        cols="12"
+        md="6"
+        lg="4"
+        :class="smAndDown ? 'pa-0' : ''"
+      >
         <UserCard
-:user="user" @click="openUserDialog(user._id)" @approve="approveUser" @make-admin="makeAdmin"
-          @remove-admin="removeAdmin" @assign-center="openCenterDialog" @delete="deleteUser" />
+          :user="user"
+          @click="openUserDialog(user._id)"
+          @approve="approveUser"
+          @make-admin="makeAdmin"
+          @remove-admin="removeAdmin"
+          @assign-center="openCenterDialog"
+          @delete="deleteUser"
+        />
       </v-col>
     </v-row>
 
-
     <!-- User Details Dialog -->
     <UserCardDetails
-:user-id="selectedUser" :dialog-visible="userDialog" @update:dialog-visible="userDialog = $event"
-      @make-admin="makeAdmin" @remove-admin="removeAdmin" @assign-center="openCenterDialog" @delete="deleteUser" />
+      :user-id="selectedUser"
+      :dialog-visible="userDialog"
+      @update:dialog-visible="userDialog = $event"
+      @make-admin="makeAdmin"
+      @remove-admin="removeAdmin"
+      @assign-center="openCenterDialog"
+      @delete="deleteUser"
+    />
     <!-- 
     Center Assignment Dialog -->
     <AssignCenterDialog
-:dialog-visible="centerDialog" :user-id="selectedUser"
-      @update:dialog-visible="centerDialog = $event" @center-assigned="assignCenter" />
+      :dialog-visible="centerDialog"
+      :user-id="selectedUser"
+      @update:dialog-visible="centerDialog = $event"
+      @center-assigned="assignCenter"
+    />
   </v-container>
 </template>
 
 <script setup>
-
-import { useCenterStore } from "@/stores/centerStore";
-import { useUserStore } from "@/stores/userStore";
-import { useSnackbarStore } from "@/stores/snackbarStore";
+import { useCenterStore } from '@/stores/centerStore';
+import { useUserStore } from '@/stores/userStore';
+import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useDisplay } from 'vuetify';
@@ -139,7 +160,7 @@ const filteredUsers = computed(() => {
 
   // Filtrer par type d'admin
   if (authStore.userData.adminType !== 'master') {
-    filtered = filtered.filter(user => user.centerId === authStore.userData.centerId);
+    filtered = filtered.filter((user) => user.centerId === authStore.userData.centerId);
   }
 
   if (selectedFilter.value === 'admin') {
@@ -154,13 +175,7 @@ const filteredUsers = computed(() => {
     const query = searchQuery.value.toLowerCase().trim();
     filtered = filtered.filter((user) => {
       const center = getCenterById(user.centerId);
-      const haystack = [
-        user.name,
-        user.lastName,
-        user.email,
-        center?.name,
-        center?.OACI || center?.oaci,
-      ]
+      const haystack = [user.name, user.lastName, user.email, center?.name, center?.OACI || center?.oaci]
         .filter(Boolean)
         .join(' ')
         .toLowerCase();
@@ -190,11 +205,11 @@ const sortedAndFilteredUsers = computed(() => {
 });
 
 const getCenterById = (centerId) => {
-  return centers.value.find(center => center._id === centerId) || null;
+  return centers.value.find((center) => center._id === centerId) || null;
 };
 
 const openCenterDialog = (userId) => {
-  console.log(userId)
+  console.log(userId);
   selectedUser.value = userId;
   centerDialog.value = true;
 };
@@ -204,7 +219,7 @@ const assignCenter = async ({ userId, centerId }) => {
     await userStore.assignCenter(userId, centerId);
   } catch (error) {
     console.error('Error assigning center:', error);
-    snackbarStore.showNotification('Erreur lors de l\'assignation du centre', 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification("Erreur lors de l'assignation du centre", 'onError', 'mdi-alert-circle');
   }
 };
 
@@ -226,7 +241,7 @@ const makeAdmin = async (user) => {
     snackbarStore.showNotification('Statut admin octroyé', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Error making user admin:', error);
-    snackbarStore.showNotification('Erreur lors de l\'octroi du statut admin', 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification("Erreur lors de l'octroi du statut admin", 'onError', 'mdi-alert-circle');
   }
 };
 
@@ -236,7 +251,11 @@ const removeAdmin = async (user) => {
     snackbarStore.showNotification('Statut admin retiré', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Error removing user admin:', error);
-    snackbarStore.showNotification('Erreur lors de la suppression du statut admin ' + error.message, 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification(
+      'Erreur lors de la suppression du statut admin ' + error.message,
+      'onError',
+      'mdi-alert-circle',
+    );
   }
 };
 
@@ -246,12 +265,12 @@ const approveUser = async (user) => {
     snackbarStore.showNotification('Utilisateur approuvé', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Error approving user:', error);
-    snackbarStore.showNotification('Erreur lors de l\'approbation', 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification("Erreur lors de l'approbation", 'onError', 'mdi-alert-circle');
   }
 };
 
 const openUserDialog = (userId) => {
-  console.log(userId)
+  console.log(userId);
   selectedUser.value = userId;
   userDialog.value = true;
 };
@@ -271,8 +290,6 @@ const handleCenterChange = async (centerId) => {
   }
 };
 
-
-
 onMounted(async () => {
   isLoading.value = true;
   try {
@@ -291,7 +308,11 @@ onMounted(async () => {
     }, 500);
   } catch (error) {
     console.error('Error fetching initial data:', error);
-    snackbarStore.showNotification('Erreur lors du chargement des données : ' + error.message, 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification(
+      'Erreur lors du chargement des données : ' + error.message,
+      'onError',
+      'mdi-alert-circle',
+    );
   }
 });
 </script>

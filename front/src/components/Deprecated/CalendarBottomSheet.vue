@@ -24,17 +24,17 @@ const emit = defineEmits(['update:modelValue', 'openRemplaDialog', 'openDrawer',
 defineProps({
   modelValue: {
     type: Boolean,
-    required: true
+    required: true,
   },
   formattedDate: {
     type: String,
-    required: true
+    required: true,
   },
 
   selectedDate: {
     type: [Date, String, null],
-    required: true
-  }
+    required: true,
+  },
 });
 
 const handleOpenRemplaDialog = (type) => {
@@ -44,10 +44,6 @@ const handleOpenRemplaDialog = (type) => {
 const handleOpenDrawer = (type) => {
   emit('openDrawer', type);
 };
-
 </script>
 
-<style scoped>
-
-
-</style>
+<style scoped></style>

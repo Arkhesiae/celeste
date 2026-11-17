@@ -1,41 +1,20 @@
 <template>
   <div class="d-flex justify-center align-center">
-    <v-btn 
-      variant="text" 
-      class="text-body-medium nav-link" 
-      @click="$emit('navigate-contact')"
-    >
-      Assistance
-    </v-btn>
-    
-    <v-btn 
-      variant="text" 
-      class="text-body-medium nav-link" 
-      @click="$emit('open-icnagenda')"
-    >
+    <v-btn variant="text" class="text-body-medium nav-link" @click="$emit('navigate-contact')"> Assistance </v-btn>
+
+    <v-btn variant="text" class="text-body-medium nav-link" @click="$emit('open-icnagenda')">
       Icnagenda
-      <v-icon class="ml-3 text-medium-emphasis">
-        mdi-open-in-new
-      </v-icon>
+      <v-icon class="ml-3 text-medium-emphasis"> mdi-open-in-new </v-icon>
     </v-btn>
-    
-    <v-btn 
-      variant="text" 
-      class="text-body-medium nav-link" 
-      @click="$emit('open-olafatco')"
-    >
+
+    <v-btn variant="text" class="text-body-medium nav-link" @click="$emit('open-olafatco')">
       Olafatco
-      <v-icon class="ml-3 text-medium-emphasis">
-        mdi-open-in-new
-      </v-icon>
+      <v-icon class="ml-3 text-medium-emphasis"> mdi-open-in-new </v-icon>
     </v-btn>
   </div>
-  
+
   <v-scroll-y-reverse-transition>
-    <div
-      v-if="!showButtons"
-      class="d-flex"
-    >
+    <div v-if="!showButtons" class="d-flex">
       <!-- <div class="block d-flex">
         <v-btn 
           prepend-icon="mdi-lightning-bolt" 
@@ -47,10 +26,10 @@
         </v-btn>
       </div> -->
       <div class="d-flex mx-5">
-        <v-btn 
-          variant="flat" 
-          rounded="lg" 
-          color="onBackground" 
+        <v-btn
+          variant="flat"
+          rounded="lg"
+          color="onBackground"
           append-icon="mdi-arrow-right"
           @click="$emit('navigate-login')"
         >
@@ -68,18 +47,12 @@
 defineProps({
   showButtons: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 // Emits
-defineEmits([
-  'navigate-contact',
-  'navigate-get-started',
-  'navigate-login',
-  'open-icnagenda',
-  'open-olafatco'
-]);
+defineEmits(['navigate-contact', 'navigate-get-started', 'navigate-login', 'open-icnagenda', 'open-olafatco']);
 </script>
 
 <style scoped>
@@ -90,14 +63,21 @@ defineEmits([
   opacity: 1 !important;
 }
 
-.block:after, .block:before {
+.block:after,
+.block:before {
   content: '';
   position: absolute;
   left: -1.5px;
   top: -1.5px;
   border-radius: 10px;
-  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-  rgba(159, 159, 248, 0.22), #ffccdd);
+  background: linear-gradient(
+    45deg,
+    #ffc0d4,
+    rgba(237, 202, 255, 0.94),
+    rgba(250, 152, 248, 0.05),
+    rgba(159, 159, 248, 0.22),
+    #ffccdd
+  );
   background-size: 400%;
   width: calc(100% + 3px);
   height: calc(100% + 3px);
@@ -130,4 +110,4 @@ defineEmits([
   background-color: transparent !important;
   opacity: 0 !important;
 }
-</style> 
+</style>

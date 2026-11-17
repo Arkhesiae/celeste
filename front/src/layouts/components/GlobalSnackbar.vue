@@ -7,15 +7,11 @@
     rounded="lg"
     :location="smAndDown ? 'top center' : 'bottom left'"
     :height="smAndDown ? '32px' : '48px'"
-
   >
-    <template #text="{item}">
+    <template #text="{ item }">
       <div class="d-flex align-center ga-1 rounded-xl">
         <!-- <v-icon :icon="item.icon" :color="item.iconColor" class="" /> -->
-        <span
-          class="text-title-small small-text "
-          style="font-size: 12px !important;"
-        >{{ item.message }}</span>
+        <span class="text-title-small small-text" style="font-size: 12px !important">{{ item.message }}</span>
       </div>
     </template>
   </v-snackbar-queue>
@@ -31,20 +27,16 @@ const { smAndDown } = useDisplay();
 // const safeAreaTop = computed(() => {
 //   return getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top').replace('px', '')
 // })
-
-
-
-</script> 
+</script>
 
 <style>
-.adjustedMarginSnackbar{
-  margin-top: calc(var(--safe-area-top,0px) + 0px) !important;
+.adjustedMarginSnackbar {
+  margin-top: calc(var(--safe-area-top, 0px) + 0px) !important;
   /* padding-top: 100px !important; */
 }
 .small-text {
   font-size: 0.75rem !important;
 }
-
 
 .error::before {
   content: '';
@@ -53,7 +45,7 @@ const { smAndDown } = useDisplay();
   left: 0;
   width: 100%;
   height: 100%;
-  background:  linear-gradient(135deg, rgba(var(--v-theme-error), 0.8), rgba(var(--v-theme-onError), 0.8)) !important;
+  background: linear-gradient(135deg, rgba(var(--v-theme-error), 0.8), rgba(var(--v-theme-onError), 0.8)) !important;
   border-radius: 10px;
 }
 
@@ -65,7 +57,10 @@ const { smAndDown } = useDisplay();
   left: 2px;
   width: calc(100% - 4px);
   height: calc(100% - 4px);
-  background:  linear-gradient(135deg, rgba(var(--v-theme-onBackground), 0), rgba(var(--v-theme-onBackground), 0)) !important;
- 
+  background: linear-gradient(
+    135deg,
+    rgba(var(--v-theme-onBackground), 0),
+    rgba(var(--v-theme-onBackground), 0)
+  ) !important;
 }
 </style>

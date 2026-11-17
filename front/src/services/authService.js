@@ -16,7 +16,7 @@ export const authService = {
       method: 'POST',
       credentials: 'include',
       body: JSON.stringify(credentials),
-      allowRetry: false
+      allowRetry: false,
     });
     return response;
   },
@@ -29,7 +29,7 @@ export const authService = {
     const response = await apiFetch(`/auth/logout`, {
       method: 'POST',
       credentials: 'include',
-      allowRetry: false
+      allowRetry: false,
     });
     return response;
   },
@@ -40,12 +40,12 @@ export const authService = {
    * @returns {Promise<Object>} Les nouveaux tokens.
    */
   async refreshToken() {
-      const response = await apiFetch(`/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-        allowRetry: false
-      });
-      return response;
+    const response = await apiFetch(`/auth/refresh`, {
+      method: 'POST',
+      credentials: 'include',
+      allowRetry: false,
+    });
+    return response;
   },
 
   /**
@@ -56,7 +56,7 @@ export const authService = {
   async requestPasswordReset(email) {
     const response = await apiFetch(`/auth/reset-password-request`, {
       method: 'POST',
-      body: JSON.stringify({ email })
+      body: JSON.stringify({ email }),
     });
     return response;
   },
@@ -70,7 +70,7 @@ export const authService = {
   async resetPassword(token, newPassword) {
     const response = await apiFetch(`/auth/reset-password`, {
       method: 'POST',
-      body: JSON.stringify({ token, newPassword })
+      body: JSON.stringify({ token, newPassword }),
     });
     return response;
   },
@@ -83,7 +83,7 @@ export const authService = {
   async verifyCurrentPassword(currentPassword) {
     const response = await apiFetch(`/auth/verify-password`, {
       method: 'POST',
-      body: JSON.stringify({ currentPassword })
+      body: JSON.stringify({ currentPassword }),
     });
     return response;
   },
@@ -96,8 +96,8 @@ export const authService = {
   async updatePassword(newPassword) {
     const response = await apiFetch(`/auth/update-password`, {
       method: 'POST',
-      body: JSON.stringify({ newPassword })
+      body: JSON.stringify({ newPassword }),
     });
     return response;
-  }
+  },
 };

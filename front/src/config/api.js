@@ -10,7 +10,6 @@ export const API_URL = import.meta.env.VITE_API_URL;
 // File d'attente pour les requêtes en attente de refresh token
 let refreshPromise = null;
 
-
 /**
  * Fetch API avec retry automatique après refresh token
  * @param {string} url
@@ -20,7 +19,6 @@ export const apiFetch = async (url, options = {}) => {
   const response = await doFetch(url, options);
   return handleResponse(response, () => doFetch(url, options), options.allowRetry ?? true);
 };
-
 
 /**
  * Fetch brut avec headers d'authentification
@@ -34,7 +32,6 @@ const doFetch = (url, options = {}) => {
     headers: getAuthHeaders(),
   });
 };
-
 
 /**
  * Gère les réponses API avec distinction des conflits métier (409)
@@ -55,25 +52,21 @@ export const handleResponse = async (response, retryFn, retry = true) => {
 
   if (response.status === 401 && data.code === 'INVALID_ACCESS_TOKEN' && retryFn && retry) {
     console.warn('==> 401 Unauthorized, retrying...');
-    return handle401(retryFn);  
+    return handle401(retryFn);
   }
-
 
   // Cas d’erreur classique
   if (!response.ok) {
     console.error('API Error:', data);
     const customError = new Error(data.message || data.error || 'Une erreur est survenue');
     customError.status = response.status;
-    customError.code = data.code;   // code métier éventuel (ex. CYCLE_POSITION_TAKEN)
+    customError.code = data.code; // code métier éventuel (ex. CYCLE_POSITION_TAKEN)
     throw customError;
   }
 
   // Succès normal
   return data;
 };
-
-
-
 
 /**
  * Gère les erreurs 401 avec rafraîchissement du token
@@ -92,7 +85,6 @@ const handle401 = async (retryFn) => {
   return handleResponse(response, retryFn, false);
 };
 
-
 const refreshToken = async (authStore) => {
   try {
     const data = await authService.refreshToken();
@@ -106,8 +98,6 @@ const refreshToken = async (authStore) => {
   }
 };
 
-
-
 /**
  * Fonction utilitaire pour obtenir les headers d'authentification
  * @returns {Object} Les headers d'authentification
@@ -115,7 +105,7 @@ const refreshToken = async (authStore) => {
 export const getAuthHeaders = () => {
   const authStore = useAuthStore();
   return {
-    'Authorization': `Bearer ${authStore.accessToken}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${authStore.accessToken}`,
+    'Content-Type': 'application/json',
   };
-}; 
+};

@@ -1,36 +1,18 @@
 <template>
-  <v-card
-    rounded="xl"
-    elevation="0"
-    class="smooth-shadow pa-6"
-    color="surfaceContainerLow"
-  >
-    <div class="d-flex align-center justify-space-between mb-4"> 
+  <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainerLow">
+    <div class="d-flex align-center justify-space-between mb-4">
       <span
         class="text-body-medium font-weight-medium mb-4"
-        style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem;"
+        style="font-family: 'Roboto', sans-serif; font-weight: 700 !important ; font-size: 1.2rem"
       >
-        <v-icon
-          icon="mdi-cog"
-          color="primary"
-          class="mr-2"
-          size="16"
-        />  
+        <v-icon icon="mdi-cog" color="primary" class="mr-2" size="16" />
         Coûts Fixes
       </span>
     </div>
     <v-list class="bg-transparent">
-      <v-list-item
-        v-for="(cout, index) in fixedCosts"
-        :key="index"
-        class="mb-2 rounded-lg"
-      >
+      <v-list-item v-for="(cout, index) in fixedCosts" :key="index" class="mb-2 rounded-lg">
         <template #prepend>
-          <v-icon
-            :icon="cout.icon"
-            :color="cout.color"
-            size="20"
-          />
+          <v-icon :icon="cout.icon" :color="cout.color" size="20" />
         </template>
         <v-list-item-title class="font-weight-medium">
           {{ cout.nom }}
@@ -57,6 +39,5 @@ import { computed } from 'vue';
 
 const fundingStore = useFundingStore();
 
-const fixedCosts = computed(() => fundingStore.fixedCosts); 
-
-</script> 
+const fixedCosts = computed(() => fundingStore.fixedCosts);
+</script>

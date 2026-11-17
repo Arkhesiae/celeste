@@ -9,7 +9,7 @@ import { Temporal } from '@js-temporal/polyfill';
  */
 
 /** Minutes → « 7 h 45 », « 8 h », « 35 h » */
-export function formatHours (minutes) {
+export function formatHours(minutes) {
   const total = Math.max(0, Math.round(minutes));
   const hours = Math.floor(total / 60);
   const rest = total % 60;
@@ -25,12 +25,12 @@ const dayKeys = (from, to) => {
 };
 
 /** Les deux jours d'une sélection dans l'ordre chronologique */
-export function orderedPeriod (a, b) {
+export function orderedPeriod(a, b) {
   return Temporal.PlainDate.compare(a, b) <= 0 ? { start: a, end: b } : { start: b, end: a };
 }
 
 /** Nombre de jours d'une période, bornes comprises */
-export function daysInPeriod (start, end) {
+export function daysInPeriod(start, end) {
   return Temporal.PlainDate.from(start).until(Temporal.PlainDate.from(end), { largestUnit: 'days' }).days + 1;
 }
 
@@ -44,11 +44,11 @@ export function daysInPeriod (start, end) {
  *   par jour : les lignes qui le traversent ; `capStart` / `capEnd` : la ligne commence / finit ce jour-là ;
  *   `windows` : débuts des périodes en défaut qui contiennent ce jour (la première sert à l'inspecter)
  */
-export function buildWindowLines (windows) {
+export function buildWindowLines(windows) {
   const lines = new Map();
   for (const issue of ['work', 'rest']) {
     const failing = windows.filter((window) => (issue === 'work' ? !window.workOk : !window.restOk));
-    const covering = new Map();   // jour → débuts des périodes en défaut qui le contiennent
+    const covering = new Map(); // jour → débuts des périodes en défaut qui le contiennent
     for (const window of failing) {
       for (const day of dayKeys(window.start, window.end)) {
         if (!covering.has(day)) covering.set(day, []);
@@ -74,7 +74,7 @@ export function buildWindowLines (windows) {
  *   - sélection de 7 jours ou moins : celles qui la contiennent en entier (7 pour un seul jour, une seule pour 7 jours) ;
  *   - sélection de plus de 7 jours : toutes celles qui tiennent dans la sélection.
  */
-export function windowsForPeriod (windows, start, end) {
+export function windowsForPeriod(windows, start, end) {
   const length = daysInPeriod(start, end);
   const first = length <= 7 ? Temporal.PlainDate.from(end).subtract({ days: 6 }) : Temporal.PlainDate.from(start);
   const last = length <= 7 ? Temporal.PlainDate.from(start) : Temporal.PlainDate.from(end).subtract({ days: 6 });
@@ -88,8 +88,12 @@ export function windowsForPeriod (windows, start, end) {
  * Verdict sur un ensemble de périodes : la règle des 35 h et celle des 48 h, chacune avec la période la plus défavorable.
  * @returns {{ evaluated: number, rest: { ok: boolean, worst: Object|null }, work: { ok: boolean, worst: Object|null } }}
  */
-export function periodVerdict (windows) {
-  const worstBy = (key, direction) => windows.reduce((worst, window) => (worst === null || direction * (window[key] - worst[key]) < 0 ? window : worst), null);
+export function periodVerdict(windows) {
+  const worstBy = (key, direction) =>
+    windows.reduce(
+      (worst, window) => (worst === null || direction * (window[key] - worst[key]) < 0 ? window : worst),
+      null,
+    );
   const worstRest = worstBy('longestRestMinutes', 1);
   const worstWork = worstBy('workMinutes', -1);
   return {
@@ -103,12 +107,12 @@ export function periodVerdict (windows) {
 export const windowStartingAt = (windows, start) => windows.find((window) => window.start === start);
 
 /** `lun. 8 mars` */
-export function formatDayShort (day) {
+export function formatDayShort(day) {
   return Temporal.PlainDate.from(day).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 /** `8 → 14 mars` (ou `28 févr. → 6 mars` quand le mois change) */
-export function formatDayRange (start, end) {
+export function formatDayRange(start, end) {
   const a = Temporal.PlainDate.from(start);
   const b = Temporal.PlainDate.from(end);
   const sameMonth = a.year === b.year && a.month === b.month;
@@ -117,7 +121,7 @@ export function formatDayRange (start, end) {
 }
 
 /** Heure d'une date-heure locale `2027-03-12T16:00` → « ven. 16:00 » */
-export function formatLocalMoment (value) {
+export function formatLocalMoment(value) {
   if (!value) return '';
   const moment = Temporal.PlainDateTime.from(value);
   return `${moment.toPlainDate().toLocaleString('fr-FR', { weekday: 'short' })} ${String(moment.hour).padStart(2, '0')}:${String(moment.minute).padStart(2, '0')}`;
@@ -130,10 +134,13 @@ export function formatLocalMoment (value) {
  * @param {{ maxWeeklyWorkMinutes: number, weeklyRestMinutes: number }} limits
  * @param {number} [others] - nombre d'autres périodes en défaut sur la même ligne
  */
-export function describeWindowIssue (window, issue, limits, others = 0) {
+export function describeWindowIssue(window, issue, limits, others = 0) {
   const range = formatDayRange(window.start, window.end);
-  const text = issue === 'work'
-    ? `${range} : ${formatHours(window.workMinutes)} de travail sur 7 jours (maximum ${formatHours(limits.maxWeeklyWorkMinutes)})`
-    : `${range} : repos continu le plus long de ${formatHours(window.longestRestMinutes)} sur 7 jours (minimum ${formatHours(limits.weeklyRestMinutes)})`;
-  return others > 0 ? `${text}, et ${others} autre${others > 1 ? 's' : ''} période${others > 1 ? 's' : ''} voisine${others > 1 ? 's' : ''}` : text;
+  const text =
+    issue === 'work'
+      ? `${range} : ${formatHours(window.workMinutes)} de travail sur 7 jours (maximum ${formatHours(limits.maxWeeklyWorkMinutes)})`
+      : `${range} : repos continu le plus long de ${formatHours(window.longestRestMinutes)} sur 7 jours (minimum ${formatHours(limits.weeklyRestMinutes)})`;
+  return others > 0
+    ? `${text}, et ${others} autre${others > 1 ? 's' : ''} période${others > 1 ? 's' : ''} voisine${others > 1 ? 's' : ''}`
+    : text;
 }

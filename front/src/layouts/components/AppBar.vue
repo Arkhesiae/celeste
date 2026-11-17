@@ -15,10 +15,14 @@
       <ThemeSwitch class="mr-2" />
 
       <template v-if="isLoggedIn && isAdmin">
-        <AdminSection :is-admin="isAdmin" :admin-type="authStore.userData.adminType" :message-count="ticketCount"
+        <AdminSection
+          :is-admin="isAdmin"
+          :admin-type="authStore.userData.adminType"
+          :message-count="ticketCount"
           @navigate-rules="router.push({ path: '/admin/rules' })"
           @navigate-tickets="router.push({ path: '/admin/tickets' })"
-          @navigate-email="router.push({ path: '/admin/emails' })" />
+          @navigate-email="router.push({ path: '/admin/emails' })"
+        />
       </template>
 
       <template v-if="smAndDown">
@@ -28,10 +32,14 @@
       <template v-else>
         <!-- Navigation accueil -->
         <template v-if="!isLoggedIn">
-          <HomeNavigation :show-buttons="showButtons" @navigate-contact="navigateToContact"
+          <HomeNavigation
+            :show-buttons="showButtons"
+            @navigate-contact="navigateToContact"
             @navigate-get-started="router.push({ path: '/get-started' })"
-            @navigate-login="router.push({ path: '/login' })" @open-icnagenda="openIcnagenda"
-            @open-olafatco="openOlafatco" />
+            @navigate-login="router.push({ path: '/login' })"
+            @open-icnagenda="openIcnagenda"
+            @open-olafatco="openOlafatco"
+          />
         </template>
 
         <v-spacer />
@@ -39,9 +47,17 @@
         <!-- Menu utilisateur -->
         <div v-if="isLoggedIn">
           <v-badge :model-value="missingPhone" location="bottom left" color="error" icon="mdi-exclamation-thick">
-            <UserMenu :username="username" :email="authStore.userData.email" :avatar="authStore.avatar" :points="points"
-              :current-team="currentTeam" @navigate-profile="navigateToProfile"
-              @navigate-parameter="navigateToParameter" @logout="handleLogout" @navigate-contact="navigateToContact" />
+            <UserMenu
+              :username="username"
+              :email="authStore.userData.email"
+              :avatar="authStore.avatar"
+              :points="points"
+              :current-team="currentTeam"
+              @navigate-profile="navigateToProfile"
+              @navigate-parameter="navigateToParameter"
+              @logout="handleLogout"
+              @navigate-contact="navigateToContact"
+            />
           </v-badge>
         </div>
       </template>
@@ -54,24 +70,24 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import { useDisplay } from "vuetify";
+import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useDisplay } from 'vuetify';
 
 // Stores
-import { useAuthStore } from "@/stores/authStore.js";
-import { useTeamStore } from "@/stores/teamStore.js";
+import { useAuthStore } from '@/stores/authStore.js';
+import { useTeamStore } from '@/stores/teamStore.js';
 import { usePointStore } from '@/stores/pointStore.js';
 import { useTicketStore } from '../../stores/ticketStore';
-import AppBarTitle from "./AppBar/AppBarTitle.vue";
-import AdminSection from "./AppBar/AdminSection.vue";
-import HomeNavigation from "./AppBar/HomeNavigation.vue";
-import UserMenu from "./AppBar/UserMenu.vue";
-import ThemeSwitch from "./AppBar/ThemeSwitch.vue";
+import AppBarTitle from './AppBar/AppBarTitle.vue';
+import AdminSection from './AppBar/AdminSection.vue';
+import HomeNavigation from './AppBar/HomeNavigation.vue';
+import UserMenu from './AppBar/UserMenu.vue';
+import ThemeSwitch from './AppBar/ThemeSwitch.vue';
 
 // Constants
-const HOME_PATH = "/landing";
-const PARAMETER_PATH = "/parameter";
+const HOME_PATH = '/landing';
+const PARAMETER_PATH = '/parameter';
 
 // Props
 defineProps({
@@ -85,12 +101,14 @@ defineProps({
   },
 });
 
-const ticketCount = computed(() => ticketStore.tickets.filter(ticket => ticket.status !== 'done' && ticket.status !== 'closed').length);
+const ticketCount = computed(
+  () => ticketStore.tickets.filter((ticket) => ticket.status !== 'done' && ticket.status !== 'closed').length,
+);
 
 const missingPhone = computed(() => !authStore.userData?.phone);
 
 // Emits
-const emit = defineEmits(["toggle-mobile-drawer", "toggle-drawer"]);
+const emit = defineEmits(['toggle-mobile-drawer', 'toggle-drawer']);
 
 // Composables
 const { smAndDown } = useDisplay();
@@ -103,12 +121,11 @@ const teamStore = useTeamStore();
 const pointStore = usePointStore();
 const ticketStore = useTicketStore();
 
-
 // Computed properties
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const isAdmin = computed(() => authStore.userData.isAdmin);
-const isHomepage = computed(() => route.name === "/landing");
-const isDashboard = computed(() => route.name === "/dashboard");
+const isHomepage = computed(() => route.name === '/landing');
+const isDashboard = computed(() => route.name === '/dashboard');
 const username = computed(() => authStore.userData.name);
 const currentTeam = computed(() => teamStore.currentTeam);
 const points = computed(() => pointStore.points);
@@ -118,9 +135,8 @@ const handleTitleClick = () => {
   router.push({ path: HOME_PATH });
 };
 
-
 const toggleMobileDrawer = () => {
-  emit("toggle-mobile-drawer");
+  emit('toggle-mobile-drawer');
 };
 
 const toggleDrawer = () => {
@@ -151,7 +167,6 @@ const openIcnagenda = () => {
 const openOlafatco = () => {
   window.open('https://olafatco.dsna.aviation-civile.gouv.fr/gerer-la-licence', '_blank');
 };
-
 </script>
 
 <style>

@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
       setUser(data);
       isLoggedIn.value = true;
     } catch (err) {
-      console.error('Erreur d\'initialisation de l\'authentification:', err.message);
+      console.error("Erreur d'initialisation de l'authentification:", err.message);
       logOut();
     } finally {
       isAuthReady.value = true;
@@ -116,7 +116,7 @@ export const useAuthStore = defineStore('auth', () => {
       const data = await userService.updateAvatar(userId, formData);
       userData.value.avatar = data.avatar;
     } catch (err) {
-      console.error('Erreur lors de la mise à jour de l\'avatar:', err.message);
+      console.error("Erreur lors de la mise à jour de l'avatar:", err.message);
       throw err;
     }
   };

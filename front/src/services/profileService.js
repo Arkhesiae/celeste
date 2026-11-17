@@ -9,7 +9,7 @@ export const profileService = {
   async updateEmail(newEmail) {
     const response = await apiFetch(`/user/update-email`, {
       method: 'POST',
-      body: JSON.stringify({ email: newEmail })
+      body: JSON.stringify({ email: newEmail }),
     });
     return response;
   },
@@ -22,7 +22,7 @@ export const profileService = {
   async updatePhone(newPhone) {
     const response = await apiFetch(`/user/update-phone`, {
       method: 'POST',
-      body: JSON.stringify({ phone: newPhone })
+      body: JSON.stringify({ phone: newPhone }),
     });
     return response;
   },
@@ -46,8 +46,8 @@ export const profileService = {
   async updateBirthDate(newBirthDate) {
     const response = await apiFetch(`/user/update-birthDate`, {
       method: 'POST',
-      body: JSON.stringify({ birthDate: newBirthDate })
+      body: JSON.stringify({ birthDate: newBirthDate }),
     });
     return response;
-  }
-}; 
+  },
+};

@@ -1,20 +1,21 @@
 <template>
   <!-- Badge d'admin -->
   <div class="d-flex align-center ga-2 mx-2">
-    <v-badge color="primary" location="bottom center" :offset-y="smAndDown ? 0 : -0"
-      :model-value="messageCount > 0 || pendingUsersCount > 0" rounded="lg">
+    <v-badge
+      color="primary"
+      location="bottom center"
+      :offset-y="smAndDown ? 0 : -0"
+      :model-value="messageCount > 0 || pendingUsersCount > 0"
+      rounded="lg"
+    >
       <template #badge>
         <div class="d-flex align-center ga-3">
           <div v-if="messageCount > 0">
-            <v-icon size="x-small" class="mr-1">
-              mdi-account-question-outline
-            </v-icon>
+            <v-icon size="x-small" class="mr-1"> mdi-account-question-outline </v-icon>
             <span class="text-badge">{{ messageCount }}</span>
           </div>
           <div v-if="pendingUsersCount > 0">
-            <v-icon size="x-small" class="mr-1">
-              mdi-account-clock-outline
-            </v-icon>
+            <v-icon size="x-small" class="mr-1"> mdi-account-clock-outline </v-icon>
             <span class="text-badge">{{ pendingUsersCount }}</span>
           </div>
         </div>
@@ -26,16 +27,19 @@
           </v-icon>
         </div>
       </v-btn>
-
     </v-badge>
     <div v-if="!smAndDown">
       <!-- Bouton règles -->
 
-      <v-btn v-if="isAdmin" icon variant="text" color="onBackground" class="text-body-medium"
-        @click="$emit('navigate-rules')">
-        <v-icon size="small">
-          mdi-server-security
-        </v-icon>
+      <v-btn
+        v-if="isAdmin"
+        icon
+        variant="text"
+        color="onBackground"
+        class="text-body-medium"
+        @click="$emit('navigate-rules')"
+      >
+        <v-icon size="small"> mdi-server-security </v-icon>
       </v-btn>
 
       <!-- Lien vers les tickets pour admin master -->
@@ -65,16 +69,16 @@ const router = useRouter();
 defineProps({
   isAdmin: {
     type: Boolean,
-    default: false
+    default: false,
   },
   adminType: {
     type: String,
-    default: ''
+    default: '',
   },
   messageCount: {
     type: Number,
-    default: 0
-  }
+    default: 0,
+  },
 });
 
 const isAdminPanel = computed(() => {
@@ -82,7 +86,7 @@ const isAdminPanel = computed(() => {
 });
 
 const pendingUsersCount = computed(() => {
-  return userStore.users.filter(user => user.registrationStatus === 'pending').length;
+  return userStore.users.filter((user) => user.registrationStatus === 'pending').length;
 });
 // Emits
 defineEmits(['navigate-rules', 'navigate-tickets', 'navigate-email']);
@@ -95,7 +99,6 @@ const navigateToAdminPanel = () => {
 .text-badge {
   font-size: 0.6rem !important;
   font-weight: 600 !important;
-
 }
 
 .btn-admin {

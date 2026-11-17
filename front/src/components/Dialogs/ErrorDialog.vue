@@ -1,33 +1,32 @@
-<script setup
-        lang="ts">
-        import { useDisplay } from "vuetify";
+<script setup lang="ts">
+import { useDisplay } from 'vuetify';
 
-        interface Props {
-          isDialogVisible: boolean;
-          errorMessage?: string;
-          errorIcon?: string;
-          errorTitle?: string;
-          errorDescription?: string;
-        }
+interface Props {
+  isDialogVisible: boolean;
+  errorMessage?: string;
+  errorIcon?: string;
+  errorTitle?: string;
+  errorDescription?: string;
+}
 
-        const props = defineProps<Props>();
-        const emit = defineEmits<{
-          (e: 'onClose'): void;
-          (e: 'onSubmit'): void;
-          (e: 'update:dialogModeValue', value: any): void;
-          (e: 'update:dialogVisible', value: boolean): void;
-        }>();
+const props = defineProps<Props>();
+const emit = defineEmits<{
+  (e: 'onClose'): void;
+  (e: 'onSubmit'): void;
+  (e: 'update:dialogModeValue', value: any): void;
+  (e: 'update:dialogVisible', value: boolean): void;
+}>();
 
-        const { mobile } = useDisplay();
+const { mobile } = useDisplay();
 
-        const localDialogVisible = computed({
-          get: () => props.isDialogVisible,
-          set: (value) => emit('update:dialogVisible', value),
-        });
+const localDialogVisible = computed({
+  get: () => props.isDialogVisible,
+  set: (value) => emit('update:dialogVisible', value),
+});
 
-        const closeDialog = () => {
-          localDialogVisible.value = false;
-        };
+const closeDialog = () => {
+  localDialogVisible.value = false;
+};
 </script>
 
 <template>
@@ -38,7 +37,10 @@
           <v-icon :size="mobile ? 'x-large' : 'large'" :class="{ 'mb-4': mobile }" :icon="errorIcon"></v-icon>
         </template>
 
-        <v-card-title class="text-title-large text-onBackground text-wrap" :class="{ 'text-center': mobile, 'ml-4': !mobile }">
+        <v-card-title
+          class="text-title-large text-onBackground text-wrap"
+          :class="{ 'text-center': mobile, 'ml-4': !mobile }"
+        >
           {{ errorTitle }}
         </v-card-title>
       </v-card-item>

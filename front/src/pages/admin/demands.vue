@@ -3,12 +3,25 @@
     <MainTitle title="Demandes du centre" subtitle="Consulter et gérer toutes les demandes du centre">
       <template #actions>
         <v-select
-v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :items="centers"
-          :item-props="center => ({
-            title: center.name,
-            subtitle: center.oaci
-          })" item-value="_id" label="Sélectionner un centre" variant="solo-filled" rounded="xl" class="" flat
-          min-width="200px" max-width="300px" @update:model-value="handleCenterChange" />
+          v-if="authStore.userData.adminType === 'master'"
+          v-model="selectedCenterId"
+          :items="centers"
+          :item-props="
+            (center) => ({
+              title: center.name,
+              subtitle: center.oaci,
+            })
+          "
+          item-value="_id"
+          label="Sélectionner un centre"
+          variant="solo-filled"
+          rounded="xl"
+          class=""
+          flat
+          min-width="200px"
+          max-width="300px"
+          @update:model-value="handleCenterChange"
+        />
       </template>
     </MainTitle>
 
@@ -22,12 +35,8 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
       <v-col v-if="!isLoading && demands.length === 0" cols="12">
         <v-card class="pa-8 text-center" rounded="xl" elevation="0">
           <v-icon icon="mdi-information-outline" size="48" color="onSurface" opacity="0.3" />
-          <p class="text-title-large mt-4 mb-0">
-            Aucune demande trouvée
-          </p>
-          <p class="text-body-medium opacity-70">
-            Il n'y a actuellement aucune demande dans ce centre
-          </p>
+          <p class="text-title-large mt-4 mb-0">Aucune demande trouvée</p>
+          <p class="text-body-medium opacity-70">Il n'y a actuellement aucune demande dans ce centre</p>
         </v-card>
       </v-col>
     </v-row>
@@ -35,7 +44,6 @@ v-if="authStore.userData.adminType === 'master'" v-model="selectedCenterId" :ite
 </template>
 
 <script setup>
-
 import { useCenterStore } from '@/stores/centerStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
@@ -47,8 +55,8 @@ defineOptions({
   meta: {
     requiresAuth: true,
     requiresAdmin: true,
-    layout: 'default'
-  }
+    layout: 'default',
+  },
 });
 
 const centerStore = useCenterStore();

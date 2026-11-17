@@ -1,6 +1,5 @@
 <template>
   <base-dialog v-model="modelValue" :title="props.title" max-width="400" :z-index="2600" :icon="props.icon">
-
     {{ props.text }}
 
     <template #actions>
@@ -18,41 +17,43 @@
 </template>
 
 <script setup lang="ts">
+const modelValue = defineModel<boolean>({ default: false });
 
-const modelValue = defineModel<boolean>({ default: false })
-
-const props = withDefaults(defineProps<{
-  title: string
-  text: string
-  icon?: string
-  confirmText?: string
-  cancelText?: string
-  isConfirmDisabled?: boolean
-  iconColor?: string
-  confirmColor?: string
-}>(), {
-  icon: '',
-  confirmText: 'Confirmer',
-  cancelText: 'Annuler',
-  isConfirmDisabled: false,
-  iconColor: 'primary',
-  confirmColor: 'primary',
-})
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    text: string;
+    icon?: string;
+    confirmText?: string;
+    cancelText?: string;
+    isConfirmDisabled?: boolean;
+    iconColor?: string;
+    confirmColor?: string;
+  }>(),
+  {
+    icon: '',
+    confirmText: 'Confirmer',
+    cancelText: 'Annuler',
+    isConfirmDisabled: false,
+    iconColor: 'primary',
+    confirmColor: 'primary',
+  },
+);
 
 const emit = defineEmits<{
-  confirm: []
-  cancel: []
-}>()
+  confirm: [];
+  cancel: [];
+}>();
 
 const handleConfirm = (): void => {
-  emit('confirm')
-  modelValue.value = false
-}
+  emit('confirm');
+  modelValue.value = false;
+};
 
 const handleCancel = (): void => {
-  emit('cancel')
-  modelValue.value = false
-}
+  emit('cancel');
+  modelValue.value = false;
+};
 </script>
 
 <style scoped>

@@ -9,18 +9,11 @@
     <v-card-item class="pa-0 pt-2">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
-          <v-avatar
-            color="primary"
-            variant="tonal"
-            size="40"
-            class="mr-2"
-          >
+          <v-avatar color="primary" variant="tonal" size="40" class="mr-2">
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
           <div>
-            <div class="text-body-large">
-              {{ user.name }} {{ user.lastName.toUpperCase() }}
-            </div>
+            <div class="text-body-large">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
             <div class="text-body-small text-medium-emphasis">
               {{ user.email }}
             </div>
@@ -29,93 +22,45 @@
       </v-card-title>
     </v-card-item>
     <v-card-text class="pa-0 my-2 d-flex justify-start">
-      <div
-        v-if="user.isAdmin"
-        class="d-flex mr-2"
-        :class="user.adminType === 'master' ? 'block' : ''"
-      >
-        <v-chip
-          rounded="lg"
-          variant="flat"
-          color="surface"
-          size="small"
-        >
-          <v-icon
-            v-if="user.isAdmin && user.adminType === 'master'"
-            class="mr-2"
-            color="primary"
-          >
+      <div v-if="user.isAdmin" class="d-flex mr-2" :class="user.adminType === 'master' ? 'block' : ''">
+        <v-chip rounded="lg" variant="flat" color="surface" size="small">
+          <v-icon v-if="user.isAdmin && user.adminType === 'master'" class="mr-2" color="primary">
             mdi-star-four-points
           </v-icon>
-          <v-icon
-            v-else
-            class="mr-2"
-            color="secondary"
-          >
-            mdi-shield-crown-outline
-          </v-icon>
+          <v-icon v-else class="mr-2" color="secondary"> mdi-shield-crown-outline </v-icon>
           Admin
         </v-chip>
       </div>
 
-      <v-chip
-        color="primary"
-        rounded="xl"
-        variant="flat"
-        size="small"
-        class="mr-2"
-      >
-        {{ getCenterById(user.centerId)?.name || "No center" }}
+      <v-chip color="primary" rounded="xl" variant="flat" size="small" class="mr-2">
+        {{ getCenterById(user.centerId)?.name || 'No center' }}
       </v-chip>
       <div class="d-flex justify-space-between align-center flex-column position-absolute bottom-0 right-0 mr-6 mb-4">
         <div v-if="user.points > 99999">
-          <v-icon
-            class="mb-1"
-            size="x-large"
-          >
-            mdi-infinity
-          </v-icon>
+          <v-icon class="mb-1" size="x-large"> mdi-infinity </v-icon>
         </div>
         <div
           v-else
           class="text-title-large font-weight-bold"
           :class="user.points || user.points === 0 ? '' : 'blurred'"
         >
-          {{
-            user.points || user.points === 0 ? user.points :
-            "XX" }}
+          {{ user.points || user.points === 0 ? user.points : 'XX' }}
         </div>
-        <div class="text-body-small font-weight-bold text-disabled text-uppercase mt-n2">
-          Points
-        </div>
+        <div class="text-body-small font-weight-bold text-disabled text-uppercase mt-n2">Points</div>
       </div>
-      <v-chip
-        color="primary"
-        rounded="lg"
-        size="small"
-        class="mr-2"
-      >
+      <v-chip color="primary" rounded="lg" size="small" class="mr-2">
         {{ getTeamName(user.currentTeam?.teamId) }}
       </v-chip>
 
-      <v-chip
-        v-if="user.status === 'pending'"
-        :color="user.status === 'pending' ? 'warning' : 'success'"
-        size="small"
-      >
+      <v-chip v-if="user.status === 'pending'" :color="user.status === 'pending' ? 'warning' : 'success'" size="small">
         {{ user.status === 'pending' ? 'En attente' : 'Approuvé' }}
       </v-chip>
     </v-card-text>
   </v-card>
-  <v-divider
-    v-if="smAndDown"
-    opacity="0.05"
-    class="ma-0 pa-0"
-  />
+  <v-divider v-if="smAndDown" opacity="0.05" class="ma-0 pa-0" />
 </template>
 
 <script setup>
-
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterStore } from '@/stores/centerStore';
@@ -129,8 +74,8 @@ const teamStore = useTeamStore();
 defineProps({
   user: {
     type: Object,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const emit = defineEmits(['click', 'approve', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
@@ -139,15 +84,15 @@ const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.use
 // const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 
 const getCenterById = (centerId) => {
-  return centerStore.centers.find(center => center._id === centerId) || null;
+  return centerStore.centers.find((center) => center._id === centerId) || null;
 };
 
 const getTeamName = (team) => {
-  if (!team) return "Aucune équipe";
+  if (!team) return 'Aucune équipe';
   if (isMasterAdmin.value) {
-    return "Equipe " + teamStore.teams.find(t => t._id === team)?.name || team;
+    return 'Equipe ' + teamStore.teams.find((t) => t._id === team)?.name || team;
   } else {
-    return "Equipe " + teamStore.centerTeams.find(t => t._id === team)?.name || team;
+    return 'Equipe ' + teamStore.centerTeams.find((t) => t._id === team)?.name || team;
   }
 };
 </script>
@@ -167,8 +112,14 @@ const getTeamName = (team) => {
   left: -1.5px;
   top: -1.5px;
   border-radius: 10px;
-  background: linear-gradient(45deg, #ffc0d4, rgba(237, 202, 255, 0.94), rgba(250, 152, 248, 0.05),
-      rgba(159, 159, 248, 0.22), #ffccdd);
+  background: linear-gradient(
+    45deg,
+    #ffc0d4,
+    rgba(237, 202, 255, 0.94),
+    rgba(250, 152, 248, 0.05),
+    rgba(159, 159, 248, 0.22),
+    #ffccdd
+  );
   background-size: 400%;
   width: calc(100% + 3px);
   height: calc(100% + 3px);

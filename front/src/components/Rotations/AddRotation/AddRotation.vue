@@ -1,5 +1,4 @@
 <script setup>
-
 import { useDisplay } from 'vuetify';
 import WorkshiftSummary from './WorkshiftSummary.vue';
 import GenericDialog from '../../common/GenericDialog.vue';
@@ -11,17 +10,11 @@ const props = defineProps({
   },
   rotation: {
     type: Object,
-    default: null
-  }
+    default: null,
+  },
 });
 
-const emit = defineEmits([
-  'rotationSubmit',
-  'update:modelValue',
-  'rotationEditSubmit',
-  'rotationEditCancel',
-  'close'
-]);
+const emit = defineEmits(['rotationSubmit', 'update:modelValue', 'rotationEditSubmit', 'rotationEditCancel', 'close']);
 
 const { smAndDown } = useDisplay();
 
@@ -39,25 +32,27 @@ const newRotation = ref({
 const currentWindow = ref(0);
 
 // Initialiser les données si on est en mode édition
-watch(() => props.rotation, (newValue) => {
-  if (newValue) {
-    newRotation.value = { ...newValue };
-    console.log("newRotation.value", newRotation.value);
-    currentWindow.value = 0; // Passer directement à la fenêtre de configuration des jours
-  } else {
-    // Réinitialiser le formulaire si on ferme le dialogue
-    newRotation.value = {
-      name: '',
-      centerId: null,
-      days: [],
-    };
-    currentWindow.value = 0;
-  }
-}, { immediate: true });
+watch(
+  () => props.rotation,
+  (newValue) => {
+    if (newValue) {
+      newRotation.value = { ...newValue };
+      console.log('newRotation.value', newRotation.value);
+      currentWindow.value = 0; // Passer directement à la fenêtre de configuration des jours
+    } else {
+      // Réinitialiser le formulaire si on ferme le dialogue
+      newRotation.value = {
+        name: '',
+        centerId: null,
+        days: [],
+      };
+      currentWindow.value = 0;
+    }
+  },
+  { immediate: true },
+);
 
-const nameRules = [
-  v => !!v || 'Le nom est requis',
-];
+const nameRules = [(v) => !!v || 'Le nom est requis'];
 
 const isNextButtonDisabled = computed(() => {
   return !newRotation.value.name;
@@ -102,8 +97,8 @@ const handleAddRestDay = () => {
       points: 0,
       startTime: null,
       endTime: null,
-      endsNextDay: false
-    }
+      endsNextDay: false,
+    },
   });
   updateRestDayNames();
   updateOrder();
@@ -117,11 +112,13 @@ const handleRemoveDay = (index) => {
 
 // Nouvelle fonction pour mettre à jour les noms des jours de repos
 const updateRestDayNames = () => {
-  newRotation.value.days.filter(day => day.type === 'rest').forEach((day, index) => {
-    if (day.type === 'rest') {
-      day.name = `R${index + 1}`; // Mettre à jour le nom avec l'index correct
-    }
-  });
+  newRotation.value.days
+    .filter((day) => day.type === 'rest')
+    .forEach((day, index) => {
+      if (day.type === 'rest') {
+        day.name = `R${index + 1}`; // Mettre à jour le nom avec l'index correct
+      }
+    });
 };
 
 const addDay = () => {
@@ -162,8 +159,11 @@ const close = () => {
 
 <template>
   <GenericDialog
-v-model="localDialogVisible" :title="props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS'"
-    max-width="900" @close="close">
+    v-model="localDialogVisible"
+    :title="props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS'"
+    max-width="900"
+    @close="close"
+  >
     <template #content>
       <v-window v-model="currentWindow" class="pt-1 pa-0">
         <!-- Première fenêtre -->
@@ -178,8 +178,15 @@ v-model="localDialogVisible" :title="props.rotation ? 'Modifier le TDS' : 'Ajout
             </v-col>
             <v-col cols="12" md="6">
               <v-text-field
-v-model="newRotation.name" label="Nom du tour de service" variant="outlined" class="mb-8"
-                bg-color="surface" rounded="lg" :rules="nameRules" placeholder="Ex: Tour de service principal" />
+                v-model="newRotation.name"
+                label="Nom du tour de service"
+                variant="outlined"
+                class="mb-8"
+                bg-color="surface"
+                rounded="lg"
+                :rules="nameRules"
+                placeholder="Ex: Tour de service principal"
+              />
             </v-col>
           </v-row>
         </v-window-item>
@@ -191,12 +198,14 @@ v-model="newRotation.name" label="Nom du tour de service" variant="outlined" cla
               <v-card-item class="pa-0 mb-6">
                 <span class="text-label-medium font-weight-medium">{{ newRotation.name }}</span>
                 <v-card-title class="d-flex justify-space-between align-center">
-                  <div class="text-headline-small font-weight-medium">
-                    Configuration des jours
-                  </div>
+                  <div class="text-headline-small font-weight-medium">Configuration des jours</div>
                 </v-card-title>
                 <v-card-subtitle class="text-medium-emphasis">
-                  {{ props.rotation ? 'Modifiez les vacations et les périodes de repos' : 'Ajoutez les vacations et les périodes de repos pour votre tour de service' }}
+                  {{
+                    props.rotation
+                      ? 'Modifiez les vacations et les périodes de repos'
+                      : 'Ajoutez les vacations et les périodes de repos pour votre tour de service'
+                  }}
                 </v-card-subtitle>
               </v-card-item>
             </v-col>
@@ -204,13 +213,15 @@ v-model="newRotation.name" label="Nom du tour de service" variant="outlined" cla
               <!-- Résumé schématique -->
               <v-fade-transition>
                 <v-card
-v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded="xl"
-                  elevation="0">
+                  v-if="newRotation.days.length > 0"
+                  color="background"
+                  class="mb-8 pa-4"
+                  rounded="xl"
+                  elevation="0"
+                >
                   <v-card-item>
                     <div class="d-flex justify-space-between align-center">
-                      <v-card-title class="text-body-large font-weight-medium">
-                        Tour de service
-                      </v-card-title>
+                      <v-card-title class="text-body-large font-weight-medium"> Tour de service </v-card-title>
                       <v-chip class="ml-4" color="onBackground" size="small" rounded="lg">
                         {{ newRotation.days.length }} jour{{ newRotation.days.length > 1 ? 's' : '' }}
                       </v-chip>
@@ -220,23 +231,38 @@ v-if="newRotation.days.length > 0" color="background" class="mb-8 pa-4" rounded=
                     </div>
                   </v-card-item>
                   <WorkshiftSummary
-:days="newRotation.days" :is-expanded="isSummaryExpanded"
-                    @on-delete-day="handleRemoveDay" @on-edit-day="handleEditDay" />
+                    :days="newRotation.days"
+                    :is-expanded="isSummaryExpanded"
+                    @on-delete-day="handleRemoveDay"
+                    @on-edit-day="handleEditDay"
+                  />
                 </v-card>
               </v-fade-transition>
             </v-col>
           </v-row>
           <div class="d-flex" :class="smAndDown ? 'justify-space-between flex-column' : 'justify-end'">
             <v-btn
-color="onBackground" prepend-icon="mdi-plus" class="" :rounded="smAndDown ? 'xl' : 'lg'"
-              :height="smAndDown ? 48 : 36" :block="smAndDown" @click="addDay">
+              color="onBackground"
+              prepend-icon="mdi-plus"
+              class=""
+              :rounded="smAndDown ? 'xl' : 'lg'"
+              :height="smAndDown ? 48 : 36"
+              :block="smAndDown"
+              @click="addDay"
+            >
               Ajouter une vacation
             </v-btn>
 
             <v-btn
-color="secondary" :class="!smAndDown ? 'ml-2' : 'mt-2'" variant="tonal" prepend-icon="mdi-sleep"
-              :rounded="smAndDown ? 'xl' : 'lg'" :height="smAndDown ? 48 : 36" :block="smAndDown"
-              @click="handleAddRestDay">
+              color="secondary"
+              :class="!smAndDown ? 'ml-2' : 'mt-2'"
+              variant="tonal"
+              prepend-icon="mdi-sleep"
+              :rounded="smAndDown ? 'xl' : 'lg'"
+              :height="smAndDown ? 48 : 36"
+              :block="smAndDown"
+              @click="handleAddRestDay"
+            >
               Ajouter un repos
             </v-btn>
           </div>
@@ -266,9 +292,13 @@ color="secondary" :class="!smAndDown ? 'ml-2' : 'mt-2'" variant="tonal" prepend-
 
   <!-- Add Day Dialog -->
   <AddOrEditDay
-:model-value="showAddDayDialog"
-    :day-number="newRotation.days.filter(day => day.type === 'work').length + 1" :day="dayToEdit"
-    :mode="dayToEdit ? 'edit' : 'add'" @on-submit="handleSubmitDay" @update:model-value="showAddDayDialog = $event" />
+    :model-value="showAddDayDialog"
+    :day-number="newRotation.days.filter((day) => day.type === 'work').length + 1"
+    :day="dayToEdit"
+    :mode="dayToEdit ? 'edit' : 'add'"
+    @on-submit="handleSubmitDay"
+    @update:model-value="showAddDayDialog = $event"
+  />
 </template>
 
 <style scoped>

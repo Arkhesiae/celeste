@@ -1,8 +1,8 @@
 <script setup>
-import CentersComponent from "@/components/Centers/CentersComponent.vue";
+import CentersComponent from '@/components/Centers/CentersComponent.vue';
 
 defineOptions({
-  name: "Centers"
+  name: 'Centers',
 });
 </script>
 
@@ -10,6 +10,4 @@ defineOptions({
   <CentersComponent />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

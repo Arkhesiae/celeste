@@ -1,21 +1,38 @@
 <template>
   <v-dialog v-model="localDialogVisible" max-width="500">
     <v-card rounded="xl" class="pa-6">
-      <v-card-title class="pa-0">
-        Faire un virement
-      </v-card-title>
-      <v-card-text class="pa-0 py-6 ">
+      <v-card-title class="pa-0"> Faire un virement </v-card-title>
+      <v-card-text class="pa-0 py-6">
         <v-form @submit.prevent="confirmTransfer">
           <div class="d-flex align-center w-100 flex-column ga-6">
             <div class="d-flex align-center w-100">
-              <v-number-input v-model="transferAmount" variant="underlined" elevation="0" reverse
-                control-variant="split" label="" rounded="xl" :hide-input="false" :min="0"
-                :rules="[v => v > 0 || 'Le montant doit être supérieur à 0']" />
+              <v-number-input
+                v-model="transferAmount"
+                variant="underlined"
+                elevation="0"
+                reverse
+                control-variant="split"
+                label=""
+                rounded="xl"
+                :hide-input="false"
+                :min="0"
+                :rules="[(v) => v > 0 || 'Le montant doit être supérieur à 0']"
+              />
             </div>
             <div class="d-flex align-center w-100">
-              <v-autocomplete v-model="transferRecipient" :items="availableUsers" :item-title="getUserFullName"
-                item-value="_id" label="Destinataire" elevation="0" color="surfaceContainerHighest" rounded="xl"
-                :loading="isLoadingUsers" :rules="[v => !!v || 'Le destinataire est requis']" class="mb-4">
+              <v-autocomplete
+                v-model="transferRecipient"
+                :items="availableUsers"
+                :item-title="getUserFullName"
+                item-value="_id"
+                label="Destinataire"
+                elevation="0"
+                color="surfaceContainerHighest"
+                rounded="xl"
+                :loading="isLoadingUsers"
+                :rules="[(v) => !!v || 'Le destinataire est requis']"
+                class="mb-4"
+              >
                 <template #item="{ props, item }">
                   <v-list-item v-bind="props" :title="getUserFullName(item)" :subtitle="getUserSubtitle(item)">
                     <template #prepend>
@@ -29,8 +46,6 @@
             </div>
           </div>
 
-
-
           <!-- <v-checkbox
             v-model="isDelayedTransfer"
             label="Virement différé"
@@ -38,42 +53,43 @@
             class="mb-4"
           ></v-checkbox> -->
 
-          <v-text-field v-if="isDelayedTransfer" v-model="transferDate" type="date" label="Date du virement"
-            variant="solo" elevation="0"
-            :rules="[v => !!v || 'La date est requise', v => isFutureDate(v) || 'La date doit être dans le futur']"
-            :min="minDate" />
+          <v-text-field
+            v-if="isDelayedTransfer"
+            v-model="transferDate"
+            type="date"
+            label="Date du virement"
+            variant="solo"
+            elevation="0"
+            :rules="[(v) => !!v || 'La date est requise', (v) => isFutureDate(v) || 'La date doit être dans le futur']"
+            :min="minDate"
+          />
         </v-form>
       </v-card-text>
       <v-card-actions class="pa-0">
-        <v-btn color="secondary" text :disabled="isLoading" @click="closeDialog">
-          Annuler
-        </v-btn>
-        <v-btn color="primary" text :loading="isLoading" @click="confirmTransfer">
-          Confirmer
-        </v-btn>
+        <v-btn color="secondary" text :disabled="isLoading" @click="closeDialog"> Annuler </v-btn>
+        <v-btn color="primary" text :loading="isLoading" @click="confirmTransfer"> Confirmer </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-
-import { userService } from "@/services/userService.js";
-import { useSnackbarStore } from "@/stores/snackbarStore.js";
-import { useAuthStore } from "@/stores/authStore.js";
-import { usePointStore } from "@/stores/pointStore.js";
-import { useCenterStore } from "@/stores/centerStore.js";
+import { userService } from '@/services/userService.js';
+import { useSnackbarStore } from '@/stores/snackbarStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
+import { usePointStore } from '@/stores/pointStore.js';
+import { useCenterStore } from '@/stores/centerStore.js';
 const pointStore = usePointStore();
 const centerStore = useCenterStore();
 const props = defineProps({
   dialogVisible: {
     type: Boolean,
-    required: true
+    required: true,
   },
   userId: {
     type: String,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const emit = defineEmits(['update:dialogVisible', 'transfer-success']);
@@ -91,12 +107,15 @@ const transferDate = ref('');
 const minDate = new Date().toISOString().split('T')[0];
 
 // Synchroniser la variable locale avec la prop
-watch(() => props.dialogVisible, (newValue) => {
-  localDialogVisible.value = newValue;
-  if (newValue) {
-    fetchAvailableUsers();
-  }
-});
+watch(
+  () => props.dialogVisible,
+  (newValue) => {
+    localDialogVisible.value = newValue;
+    if (newValue) {
+      fetchAvailableUsers();
+    }
+  },
+);
 
 // Émettre les changements de la variable locale vers le parent
 watch(localDialogVisible, (newValue) => {
@@ -117,7 +136,7 @@ const fetchAvailableUsers = async () => {
     }
 
     // Filtrer l'utilisateur courant de la liste
-    availableUsers.value = users.filter(user => user._id !== props.userId);
+    availableUsers.value = users.filter((user) => user._id !== props.userId);
   } catch (error) {
     snackbarStore.showNotification('Erreur lors de la récupération des utilisateurs', 'onError', 'mdi-alert-circle');
   } finally {
@@ -150,16 +169,15 @@ const confirmTransfer = async () => {
     const scheduledDate = isDelayedTransfer.value ? transferDate.value : null;
     await pointStore.transferPoints(props.userId, transferRecipient.value, transferAmount.value, '', scheduledDate);
     snackbarStore.showNotification(
-      isDelayedTransfer.value
-        ? 'Virement différé programmé avec succès'
-        : 'Transfert de points effectué',
-      'onPrimary', 'mdi-check'
+      isDelayedTransfer.value ? 'Virement différé programmé avec succès' : 'Transfert de points effectué',
+      'onPrimary',
+      'mdi-check',
     );
     closeDialog();
-    console.log("Success");
+    console.log('Success');
     emit('transfer-success');
   } catch (error) {
-    console.log("error", error);
+    console.log('error', error);
     snackbarStore.showNotification(error.message, 'onError', 'mdi-alert-circle');
   } finally {
     isLoading.value = false;
@@ -181,7 +199,7 @@ const isFutureDate = (date) => {
 };
 
 const getCenterName = (centerId) => {
-  const center = centerStore.centers.find(center => center._id === centerId);
+  const center = centerStore.centers.find((center) => center._id === centerId);
   return center?.name;
 };
 
@@ -200,7 +218,6 @@ const getUserFullName = (user) => {
 
 <style scoped>
 :deep(.v-number-input .v-field__field input) {
-
   font-size: 50px;
   font-weight: 600;
 }

@@ -1,27 +1,38 @@
 <template>
-  <v-overlay :model-value="modelValue" scrim="rgba(0, 0, 0, 0.5)" content-class="overlay"
-    class="position-relative align-end justify-end" @update:model-value="handleClose">
+  <v-overlay
+    :model-value="modelValue"
+    scrim="rgba(0, 0, 0, 0.5)"
+    content-class="overlay"
+    class="position-relative align-end justify-end"
+    @update:model-value="handleClose"
+  >
     <v-slide-x-reverse-transition appear>
       <div v-if="modelValue" class="d-flex flex-column drawer-container">
-        <div ref="headerRef" :style="{
-          paddingTop: 'calc(var(--safe-area-top,0px) + 8px) !important',
-          paddingLeft: smAndDown ? '4px !important' : '24px !important',
-        }" :class="[
+        <div
+          ref="headerRef"
+          :style="{
+            paddingTop: 'calc(var(--safe-area-top,0px) + 8px) !important',
+            paddingLeft: smAndDown ? '4px !important' : '24px !important',
+          }"
+          :class="[
             'pb-2 pr-2  d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
-            isScrolled ? 'bg-surfaceContainerHigh' : ''
-          ]">
+            isScrolled ? 'bg-surfaceContainerHigh' : '',
+          ]"
+        >
           <div class="d-flex align-center justify-space-between flex-grow-1">
             <div class="d-flex align-center">
               <v-btn v-if="smAndDown" icon="mdi-arrow-left" variant="text" class="mr-1" @click="handleClose" />
 
-              <span :class="{
-                'text-title-large': !smAndDown,
-                'text-body-large': smAndDown
-              }" class=" font-weight-medium">
+              <span
+                :class="{
+                  'text-title-large': !smAndDown,
+                  'text-body-large': smAndDown,
+                }"
+                class="font-weight-medium"
+              >
                 {{ formattedDate }}
               </span>
             </div>
-
 
             <v-btn v-if="!smAndDown" icon="mdi-close" variant="text" @click="handleClose" />
           </div>
@@ -33,11 +44,14 @@
 
         <v-row class="px-6">
           <v-col cols="12">
-            <AvailableDemands :selected-date="selectedDate" @handle-replacement="handleReplacement"
-              @handle-switch="handleSwitch" @open-details="openDemand" />
+            <AvailableDemands
+              :selected-date="selectedDate"
+              @handle-replacement="handleReplacement"
+              @handle-switch="handleSwitch"
+              @open-details="openDemand"
+            />
           </v-col>
         </v-row>
-
       </div>
     </v-slide-x-reverse-transition>
   </v-overlay>
@@ -47,17 +61,16 @@
 import formatDate from '@/utils/formatDate';
 import { useDisplay } from 'vuetify';
 
-
 const { smAndDown } = useDisplay();
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    required: true
+    required: true,
   },
   selectedDate: {
     type: [String, null],
-    required: true
+    required: true,
   },
 });
 
@@ -67,25 +80,24 @@ const isScrolled = ref(false);
 
 // Methods
 const handleClose = () => {
-  emit('update:modelValue', false)
-}
+  emit('update:modelValue', false);
+};
 
 const handleReplacement = (demand) => {
-  emit('handle-replacement', demand)
-}
+  emit('handle-replacement', demand);
+};
 
 const handleSwitch = (demand) => {
-  emit('handle-switch', demand)
-}
+  emit('handle-switch', demand);
+};
 
 const openDemand = (demand) => {
-  emit('open-details', demand)
-}
+  emit('open-details', demand);
+};
 
 const formattedDate = computed(() => {
-  return formatDate(props.selectedDate)
-})
-
+  return formatDate(props.selectedDate);
+});
 </script>
 
 <style scoped>

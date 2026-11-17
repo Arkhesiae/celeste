@@ -1,12 +1,11 @@
 <template>
   <v-card :class="smAndDown ? 'points-card-mobile' : 'points-card'" elevation="0" class="">
     <v-card-text class="pa-0 height-transition" style="height: 100%">
-
-      <div class="d-flex flex-column justify-space-between height-transition" style=" height: 100% ">
+      <div class="d-flex flex-column justify-space-between height-transition" style="height: 100%">
         <!-- En-tête avec l'icône et le menu -->
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="points-icon d-flex justify-center align-center">
-            <Logo color="primary" style="margin-top: -2px; margin-left: 2px; " />
+            <Logo color="primary" style="margin-top: -2px; margin-left: 2px" />
           </div>
           <!-- <v-btn icon variant="text">
             <v-icon>mdi-dots-horizontal</v-icon>
@@ -16,25 +15,27 @@
         <!-- Section des points -->
         <div class="points-section justify-center align-center flex-column mb-6">
           <transition v-if="points || points === 0" name="slide-points" mode="out-in">
-            <div v-if="points > 99999" class="text-center text-title-large ">
-              <v-icon class="mb-1" size="x-large">
-                mdi-infinity
-              </v-icon>
+            <div v-if="points > 99999" class="text-center text-title-large">
+              <v-icon class="mb-1" size="x-large"> mdi-infinity </v-icon>
             </div>
             <div v-else :key="points" class="text-display-medium font-weight-bold text-center">
               {{ points }}
             </div>
           </transition>
-          <div class="text-body-large text-center mb-1 mt-n1" style="opacity: 0.5;">
-            points
-          </div>
+          <div class="text-body-large text-center mb-1 mt-n1" style="opacity: 0.5">points</div>
         </div>
 
         <!-- Boutons d'action -->
         <div class="d-flex justify-center align-center">
           <!-- Pas de `rounded` : le rayon (20 px) et le rayon à l'appui (8 px) viennent de la taille nommée « small » (settings.scss) -->
-          <v-btn prepend-icon="mdi-transfer" color="secondary" size="small" variant="flat"
-            class="transaction-button" @click="$emit('transfer')">
+          <v-btn
+            prepend-icon="mdi-transfer"
+            color="secondary"
+            size="small"
+            variant="flat"
+            class="transaction-button"
+            @click="$emit('transfer')"
+          >
             Transférer
           </v-btn>
         </div>
@@ -42,33 +43,38 @@
         <!-- Historique des transactions -->
         <div class="mt-6 pa-0">
           <div class="d-flex justify-space-between align-center mb-3">
-            <div class="text-title-medium">
-              Dernière activité
-            </div>
-            <v-btn variant="text" size="x-small" color="auto"
-              @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')">
+            <div class="text-title-medium">Dernière activité</div>
+            <v-btn
+              variant="text"
+              size="x-small"
+              color="auto"
+              @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')"
+            >
               Voir tout
-              <v-icon end>
-                mdi-chevron-right
-              </v-icon>
+              <v-icon end> mdi-chevron-right </v-icon>
             </v-btn>
           </div>
           <v-progress-circular v-if="isLoading" indeterminate color="primary" class="mx-auto my-4" />
           <div v-else-if="transactions.length > 0" class="ga-2 d-flex flex-column">
-            <TransactionItem v-for="(transaction, index) in processedTransactions.slice(0, 2)" :key="index"
-              color="surfaceContainerHigh" :transaction="transaction" />
+            <TransactionItem
+              v-for="(transaction, index) in processedTransactions.slice(0, 2)"
+              :key="index"
+              color="surfaceContainerHigh"
+              :transaction="transaction"
+            />
           </div>
-          <div v-else class="text-center opacity-50 text-body-medium mt-4">
-            Aucune transaction récente
-          </div>
+          <div v-else class="text-center opacity-50 text-body-medium mt-4">Aucune transaction récente</div>
 
           <!-- Transactions en attente -->
           <div v-if="pendingTransactions.length > 0" class="mt-4 ga-2 d-flex flex-column">
-            <div class="text-title-small opacity-50 mb-2">
-              Prochaines transactions en attente
-            </div>
-            <TransactionItem v-for="(transaction, index) in pendingTransactions.slice(0, 2)" :key="index" opacity="0.7"
-              color="surfaceContainer" :transaction="transaction" />
+            <div class="text-title-small opacity-50 mb-2">Prochaines transactions en attente</div>
+            <TransactionItem
+              v-for="(transaction, index) in pendingTransactions.slice(0, 2)"
+              :key="index"
+              opacity="0.7"
+              color="surfaceContainer"
+              :transaction="transaction"
+            />
           </div>
         </div>
       </div>
@@ -92,17 +98,15 @@ const pendingTransactions = computed(() => pointStore.pendingTransactions);
 const processedTransactions = computed(() => pointStore.processedTransactions);
 const isLoading = computed(() => pointStore.isLoading);
 
-
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('fr-FR', {
     day: '2-digit',
     month: '2-digit',
-    year: 'numeric'
+    year: 'numeric',
   });
 };
 
 onMounted(() => {
-
   // pointStore.fetchUserPoints();
   try {
     // pointStore.fetchTransactions();
@@ -117,15 +121,12 @@ onMounted(() => {
   transition: height 0.4s ease-in-out !important;
 }
 
-
-
-
 .transaction-button {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.096), 0 0 0 1px rgba(255, 255, 255, 0.007), 0 4px 8px rgba(0, 0, 0, 0.048);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.096),
+    0 0 0 1px rgba(255, 255, 255, 0.007),
+    0 4px 8px rgba(0, 0, 0, 0.048);
 }
-
-
-
 
 .points-icon {
   background: rgba(var(--v-theme-background), 1);
@@ -135,19 +136,14 @@ onMounted(() => {
   border-radius: 118px;
 }
 
-
-
 .transaction-item:last-child {
   border-bottom: none;
 }
-
 
 .slide-points-enter-active,
 .slide-points-leave-active {
   transition: all 0.4s ease-in-out;
   /* Adjust duration and easing as needed */
-
-
 }
 
 .slide-points-enter-from {

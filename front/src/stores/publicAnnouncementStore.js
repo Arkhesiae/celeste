@@ -46,14 +46,13 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   const acknowledge = async (id) => {
     try {
       await publicAnnouncementService.acknowledge(id);
-      nonPermanentAnnouncements.value = nonPermanentAnnouncements.value.filter(a => a._id !== id);
+      nonPermanentAnnouncements.value = nonPermanentAnnouncements.value.filter((a) => a._id !== id);
     } catch (error) {
-      console.error('[PublicAnnouncement] Erreur lors de l\'acquittement:', error);
+      console.error("[PublicAnnouncement] Erreur lors de l'acquittement:", error);
     }
   };
 
   // ── Admin actions ────────────────────────────────────────────────────────
-
 
   const fetchAll = async (params = {}) => {
     try {
@@ -88,7 +87,7 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
     try {
       saving.value = true;
       const data = await publicAnnouncementService.update(id, formData);
-      const idx = allAnnouncements.value.findIndex(a => a._id === id);
+      const idx = allAnnouncements.value.findIndex((a) => a._id === id);
       if (idx !== -1) allAnnouncements.value[idx] = data.announcement;
       snackbarStore.showNotification('Annonce mise à jour', 'success', 'mdi-check-circle');
       return data.announcement;
@@ -100,12 +99,11 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
     }
   };
 
-
   const remove = async (id) => {
     try {
       saving.value = true;
       await publicAnnouncementService.remove(id);
-      allAnnouncements.value = allAnnouncements.value.filter(a => a._id !== id);
+      allAnnouncements.value = allAnnouncements.value.filter((a) => a._id !== id);
       snackbarStore.showNotification('Annonce supprimée', 'success', 'mdi-trash-can');
     } catch (error) {
       snackbarStore.showNotification('Erreur lors de la suppression : ' + error.message, 'error', 'mdi-alert-circle');
@@ -141,6 +139,6 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
     create,
     update,
     remove,
-    resetStore
+    resetStore,
   };
 });

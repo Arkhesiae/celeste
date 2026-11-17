@@ -10,23 +10,35 @@
       <div v-if="loadingVacations">
         <v-row v-for="week in 6" :key="`skel-${week}`" class="px-4 d-flex justify-space-between align-center my-1 ga-1">
           <v-col v-for="day in 7" :key="`skel-day-${day}`" class="ma-0 pa-0 d-flex justify-space-around align-center">
-            <v-skeleton-loader type="list-item-two-line" :height="64" width="100%" style="border-radius: 12px;" />
+            <v-skeleton-loader type="list-item-two-line" :height="64" width="100%" style="border-radius: 12px" />
           </v-col>
         </v-row>
       </div>
 
       <div v-else>
-        <v-row v-for="(week, index) in calendarDays" :key="index"
-          class="px-4 d-flex justify-space-between align-center my-1 ga-1">
+        <v-row
+          v-for="(week, index) in calendarDays"
+          :key="index"
+          class="px-4 d-flex justify-space-between align-center my-1 ga-1"
+        >
           <v-col v-for="day in week" :key="day.toString()" class="ma-0 d-flex justify-space-around align-center">
-            <CalendarDayBlock :date="day.date" :is-in-month="day.isInMonth" :is-today="isToday(plainDateToDateStr(day))"
-              :selected="isSelected(plainDateToDateStr(day))" v-bind="getShiftData(plainDateToDateStr(day))"
+            <CalendarDayBlock
+              :date="day.date"
+              :is-in-month="day.isInMonth"
+              :is-today="isToday(plainDateToDateStr(day))"
+              :selected="isSelected(plainDateToDateStr(day))"
+              v-bind="getShiftData(plainDateToDateStr(day))"
               :demands="demandsForDate(plainDateToDateStr(day))"
               :has-available-substitutions="hasAvailableSubstitutions(plainDateToDateStr(day))"
               :has-available-switches="hasAvailableSwitches(plainDateToDateStr(day))"
               :has-other-demands="hasOtherDemands(plainDateToDateStr(day))"
-              :rest="workOf(plainDateToDateStr(day))?.rest ?? null" :window-lines="linesFor(plainDateToDateStr(day))"
-              :in-period="inPeriod(plainDateToDateStr(day))" @inspect-window="emit('inspect-window', $event)" :height="64" @select="selectDate" />
+              :rest="workOf(plainDateToDateStr(day))?.rest ?? null"
+              :window-lines="linesFor(plainDateToDateStr(day))"
+              :in-period="inPeriod(plainDateToDateStr(day))"
+              @inspect-window="emit('inspect-window', $event)"
+              :height="64"
+              @select="selectDate"
+            />
           </v-col>
         </v-row>
       </div>
@@ -69,7 +81,7 @@ const selectDate = (date) => {
 
 const plainDateToDateStr = (plainDate) => {
   return plainDate?.date?.toString();
-}
+};
 
 const toDateStr = (date) => toDateKey(date);
 
@@ -112,15 +124,18 @@ const shiftDataMap = computed(() => {
 
 const getShiftData = (dateStr) => shiftDataMap.value.get(dateStr) ?? {};
 
-const hasAvailableSubstitutions = (dateStr) => dateStr ? substitutionStore.availableSubstitutions.some(substitution =>
-  sameDateKey(posterDay(substitution), dateStr)
-) : false;
-const hasAvailableSwitches = (dateStr) => dateStr ? substitutionStore.availableSwitches.some(substitution =>
-  sameDateKey(posterDay(substitution), dateStr)
-) : false;
-const hasOtherDemands = (dateStr) => dateStr ? substitutionStore.otherDemands.some(substitution =>
-  sameDateKey(posterDay(substitution), dateStr)
-) : false;
+const hasAvailableSubstitutions = (dateStr) =>
+  dateStr
+    ? substitutionStore.availableSubstitutions.some((substitution) => sameDateKey(posterDay(substitution), dateStr))
+    : false;
+const hasAvailableSwitches = (dateStr) =>
+  dateStr
+    ? substitutionStore.availableSwitches.some((substitution) => sameDateKey(posterDay(substitution), dateStr))
+    : false;
+const hasOtherDemands = (dateStr) =>
+  dateStr
+    ? substitutionStore.otherDemands.some((substitution) => sameDateKey(posterDay(substitution), dateStr))
+    : false;
 
 const demandsMap = computed(() => {
   const map = new Map();
@@ -140,15 +155,14 @@ const demandsMap = computed(() => {
   return map;
 });
 
-const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? []) : [];
-
+const demandsForDate = (dateStr) => (dateStr ? (demandsMap.value.get(dateStr) ?? []) : []);
 </script>
 
 <style scoped>
 .week-day {
-  font-size: .600rem !important;
+  font-size: 0.6rem !important;
   font-weight: 500 !important;
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .shift-name {
@@ -168,7 +182,7 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   align-items: center;
   font-size: 10px !important;
   font-weight: 500 !important;
-  opacity: .9;
+  opacity: 0.9;
   white-space: nowrap;
   /* overflow: hidden; */
   text-overflow: ellipsis;
@@ -183,9 +197,8 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   gap: 2px;
 }
 
-
 .isWorkDay {
-  opacity: .9;
+  opacity: 0.9;
 
   font-weight: 900 !important;
 }
@@ -201,7 +214,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   display: flex;
 }
 
-
 .empty-day {
   opacity: 0.4;
 }
@@ -209,7 +221,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
 .calendar-sheet {
   touch-action: pan-y pinch-zoom;
 }
-
 
 .chip-container {
   position: absolute;
@@ -223,7 +234,7 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
 }
 
 .shift_container {
-  opacity: .9;
+  opacity: 0.9;
   display: flex;
   white-space: nowrap;
   overflow: hidden;
@@ -231,8 +242,6 @@ const demandsForDate = (dateStr) => dateStr ? (demandsMap.value.get(dateStr) ?? 
   justify-content: center;
   min-width: 0;
 }
-
-
 
 .day_label_container span {
   position: relative;

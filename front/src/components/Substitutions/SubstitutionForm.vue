@@ -1,8 +1,6 @@
 <template>
   <GenericDialog v-model="dialogVisible" :title="dialogTitle" max-width="600px" @close="closeDialog">
-    <template #actions>
-     
-    </template>
+    <template #actions> </template>
 
     <template #content>
       <v-window v-model="currentWindow" class="pt-1 pa-0" height="100">
@@ -14,18 +12,27 @@
           <div class="my-10 mt-3 rounded-xl bg-background pa-4 px-4 position-relative d-flex flex-column ga-4">
             <div class="d-flex align-center pl-2 ga-3">
               <div class="pb-0 mb-0">
-                <span class="text-display-medium font-weight-medium" style="position: relative; top: 2px;">{{ shiftName }}</span>
+                <span class="text-display-medium font-weight-medium" style="position: relative; top: 2px">{{
+                  shiftName
+                }}</span>
               </div>
               <div class="d-flex align-start flex-column justify-space-between">
                 <div>
                   <span class="text-body-small font-weight-bold">
                     {{ displayShiftHours.startTime }} - {{ displayShiftHours.endTime }}
                   </span>
-                  <span v-if="displayShiftEndsNextDay" class="text-body-small font-weight-bold opacity-50 ml-1"
-                    style="font-size: 10px !important; top: -2px; position: relative;">+1</span>
+                  <span
+                    v-if="displayShiftEndsNextDay"
+                    class="text-body-small font-weight-bold opacity-50 ml-1"
+                    style="font-size: 10px !important; top: -2px; position: relative"
+                    >+1</span
+                  >
                 </div>
-                <div v-if="selectedShift?.teamObject?.name" class="py-0 text-body-small opacity-70"
-                  style="margin-top: -8px; font-size: 11px !important;">
+                <div
+                  v-if="selectedShift?.teamObject?.name"
+                  class="py-0 text-body-small opacity-70"
+                  style="margin-top: -8px; font-size: 11px !important"
+                >
                   Dans l'équipe {{ selectedShift?.teamObject?.name }}
                 </div>
               </div>
@@ -34,8 +41,8 @@
             <div v-if="hasVariations" class="flex-shrink-1 pl-2 text-medium-emphasis">
               <span class="text-body-small mb-2">
                 <v-icon start icon="mdi-information-outline" size="small" />
-                Choisissez une variante pour préciser l'horaire de la vacation que vous cédez (optionnel). Elle n'influe pas sur la
-                compatibilité des permutations proposées. {{ preselectedVariantHint }}
+                Choisissez une variante pour préciser l'horaire de la vacation que vous cédez (optionnel). Elle n'influe
+                pas sur la compatibilité des permutations proposées. {{ preselectedVariantHint }}
               </span>
             </div>
 
@@ -43,9 +50,16 @@
             <div class="mt-4 d-flex align-center justify-space-between align-self-end">
               <div class="d-flex align-center ga-2 chips-container">
                 <div class="d-flex align-center chips-container-alt">
-                  <v-btn v-for="v in selectedShift?.shift?.variations" :key="v._id" icon size="small" variant="flat"
+                  <v-btn
+                    v-for="v in selectedShift?.shift?.variations"
+                    :key="v._id"
+                    icon
+                    size="small"
+                    variant="flat"
                     :color="isVariationSelected(v) ? 'primary' : 'surfaceContainerHigh'"
-                    :class="isVariationSelected(v) ? 'selected' : ''" @click="selectVariation(v)">
+                    :class="isVariationSelected(v) ? 'selected' : ''"
+                    @click="selectVariation(v)"
+                  >
                     {{ v.name }}
                   </v-btn>
                 </div>
@@ -62,7 +76,8 @@
 
           <div>
             <v-card-title class="pa-0 ma-0 text-title-small">Permutations acceptées </v-card-title>
-            <v-card-subtitle class="pa-0 ma-0 mb-8 text-body-small">Sélectionnez les vacations acceptées
+            <v-card-subtitle class="pa-0 ma-0 mb-8 text-body-small"
+              >Sélectionnez les vacations acceptées
             </v-card-subtitle>
 
             <div>
@@ -98,7 +113,8 @@
                         class="switch-tile__variation"
                         :class="{ 'switch-tile__variation--blocked': !variation.compatible }"
                         :title="variation.compatible ? variation.hours : `${variation.hours} · ${variation.reason}`"
-                      >{{ variation.name }}</span>
+                        >{{ variation.name }}</span
+                      >
                     </span>
                   </button>
 
@@ -138,8 +154,16 @@
           <template v-else>
             <v-form ref="addForm">
               <div>
-                <v-textarea v-model="demand.comment" rounded="xl" no-resize label="Commentaire" variant="solo-filled"
-                  flat color="surfaceContainer" bg-color="surface" />
+                <v-textarea
+                  v-model="demand.comment"
+                  rounded="xl"
+                  no-resize
+                  label="Commentaire"
+                  variant="solo-filled"
+                  flat
+                  color="surfaceContainer"
+                  bg-color="surface"
+                />
               </div>
 
               <div class="mt-8">
@@ -188,16 +212,16 @@
       <v-card-actions class="justify-space-between pa-0 ma-0">
         <template v-if="currentWindow === 0">
           <v-spacer />
-          <v-btn variant="text" :disabled="isNextButtonDisabled" @click="currentWindow = 1">
-            Suivant
-          </v-btn>
+          <v-btn variant="text" :disabled="isNextButtonDisabled" @click="currentWindow = 1"> Suivant </v-btn>
         </template>
         <template v-else>
-          <v-btn variant="text" color="secondary" @click="currentWindow = 0">
-            Retour
-          </v-btn>
-          <v-btn :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-left-outline'"
-            :disabled="!formValid || !selectedShift || submitting" :loading="submitting" @click="submit">
+          <v-btn variant="text" color="secondary" @click="currentWindow = 0"> Retour </v-btn>
+          <v-btn
+            :prepend-icon="dialogMode === 'switch' ? 'mdi-swap-horizontal' : 'mdi-account-arrow-left-outline'"
+            :disabled="!formValid || !selectedShift || submitting"
+            :loading="submitting"
+            @click="submit"
+          >
             Poster la demande
           </v-btn>
         </template>
@@ -205,9 +229,14 @@
     </template>
   </GenericDialog>
 
-  <ConfirmationDialog v-model="showConfirmationDialog" :title="'Nombre de points'"
-    :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'" :confirm-text="'Poster quand même'"
-    @confirm="confirmSubmit" @update:is-dialog-visible="showConfirmationDialog = $event" />
+  <ConfirmationDialog
+    v-model="showConfirmationDialog"
+    :title="'Nombre de points'"
+    :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'"
+    :confirm-text="'Poster quand même'"
+    @confirm="confirmSubmit"
+    @update:is-dialog-visible="showConfirmationDialog = $event"
+  />
 </template>
 
 <script setup>
@@ -221,33 +250,29 @@ const props = defineProps({
   dialogMode: { type: String, required: true },
   date: { type: String },
   submitting: { type: Boolean, required: true },
-  selectedShift: { type: Object }
+  selectedShift: { type: Object },
 });
 
-const emit = defineEmits([
-  'onSubmit',
-  'update:dialogVisible',
-  'update:date'
-]);
+const emit = defineEmits(['onSubmit', 'update:dialogVisible', 'update:date']);
 
 const dateUtil = useDate();
 
 const pointsPerSwitch = ref({});
 const defaultPoints = ref(10);
-const MAX_POINTS = 30;   // borne du curseur : trois fois les points par défaut
+const MAX_POINTS = 30; // borne du curseur : trois fois les points par défaut
 const acceptedSwitches = ref([]);
 
 const acceptedSwitchesWithPoints = computed(() =>
-  acceptedSwitches.value.map(dayId => ({
+  acceptedSwitches.value.map((dayId) => ({
     shift: dayId,
-    points: pointsPerSwitch.value[dayId]
-  }))
+    points: pointsPerSwitch.value[dayId],
+  })),
 );
 
 const demand = ref({
   comment: '',
   points: 0,
-  acceptedSwitches: []
+  acceptedSwitches: [],
 });
 
 const compatibleSwitches = ref([]);
@@ -275,14 +300,14 @@ const shiftName = computed(() => props.selectedShift?.shift?.name || 'Aucun shif
 
 const hasVariations = computed(() => props.selectedShift?.shift?.variations?.length > 0);
 
-const formattedDate = computed(() => props.date ? dateUtil.format(props.date, 'fullDate') : '');
+const formattedDate = computed(() => (props.date ? dateUtil.format(props.date, 'fullDate') : ''));
 
 const dialogTitle = computed(() =>
-  props.dialogMode === 'substitution' ? 'Demander un remplacement' : 'Demande de permutation'
+  props.dialogMode === 'substitution' ? 'Demander un remplacement' : 'Demande de permutation',
 );
 
 const preselectedVariantHint = computed(() =>
-  props.selectedShift?.selectedVariation ? 'Variante pré-remplie depuis votre calendrier.' : ''
+  props.selectedShift?.selectedVariation ? 'Variante pré-remplie depuis votre calendrier.' : '',
 );
 
 // Jours de référence : ceux du tour de service actif à la date demandée, tels que le serveur les a évalués
@@ -290,10 +315,10 @@ const hoursOf = (day) => (day.startTime && day.endTime ? `${day.startTime} – $
 
 const rotationDays = computed(() =>
   compatibleSwitches.value
-    .filter(day => day._id !== props.selectedShift?.shift?._id)
-    .map(day => {
+    .filter((day) => day._id !== props.selectedShift?.shift?._id)
+    .map((day) => {
       // Chaque variante de la vacation, évaluée sur ses propres horaires par le serveur
-      const variations = (day.variations ?? []).map(variation => ({
+      const variations = (day.variations ?? []).map((variation) => ({
         _id: variation._id,
         name: variation.name,
         hours: hoursOf(variation),
@@ -301,7 +326,7 @@ const rotationDays = computed(() =>
         reason: describeLimits(variation.limit),
       }));
       // « Partiellement » : compatible aux horaires par défaut, mais au moins une variante est refusée
-      const partial = day.compatible && variations.some(variation => !variation.compatible);
+      const partial = day.compatible && variations.some((variation) => !variation.compatible);
       const status = !day.compatible
         ? { label: 'Incompatible', icon: 'mdi-alert-circle-outline' }
         : partial
@@ -319,24 +344,29 @@ const rotationDays = computed(() =>
         // Les motifs, affichés dans le menu : ceux des horaires par défaut, puis ceux de chaque variante refusée
         details: [
           ...(day.compatible ? [] : [{ label: 'Horaires par défaut', reason: describeLimits(day.limit) }]),
-          ...variations.filter(variation => !variation.compatible)
-            .map(variation => ({ label: `Variante ${variation.name} (${variation.hours})`, reason: variation.reason })),
+          ...variations
+            .filter((variation) => !variation.compatible)
+            .map((variation) => ({
+              label: `Variante ${variation.name} (${variation.hours})`,
+              reason: variation.reason,
+            })),
         ],
         variations,
       };
-    })
+    }),
 );
 
-const isNextButtonDisabled = computed(() =>
-  !localDate.value ||
-  !props.selectedShift ||
-  (props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length === 0)
+const isNextButtonDisabled = computed(
+  () =>
+    !localDate.value ||
+    !props.selectedShift ||
+    (props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length === 0),
 );
 
 // Methods
 
 const getSwitchName = (dayId) =>
-  compatibleSwitches.value.find(day => day._id === dayId)?.name || 'Aucun shift sélectionné';
+  compatibleSwitches.value.find((day) => day._id === dayId)?.name || 'Aucun shift sélectionné';
 
 const isVariationSelected = (variation) => selectedVariant.value === variation._id;
 
@@ -344,20 +374,23 @@ const selectVariation = (variation) => {
   selectedVariant.value = variation?._id ?? '';
 };
 
-const describeLimits = (limits) => (limits || []).map(reason => {
-  if (reason === 'insufficientRest') return 'Repos <11h après une période de service';
-  if (reason === '35limit') return 'Repos consécutifs<35h sur 7 jours glissants';
-  if (reason === '48hLimit') return 'Repos <48h sur 7 jours glissants';
-  if (reason === 'consecutiveDaysLimit') return 'Plus de 5 jours de travail consécutifs';
-  if (reason === 'nightControlRestLimit') return 'Repos <12h après un contrôle de nuit';
-  if (reason === 'consecutiveNightLimit') return 'Plus de 2 contrôles de nuit consécutifs';
-  if (reason === 'restAfterTwoNightsLimit') return 'Repos <48h après 2 contrôles de nuit consécutifs';
-  return reason;
-}).join(', ');
+const describeLimits = (limits) =>
+  (limits || [])
+    .map((reason) => {
+      if (reason === 'insufficientRest') return 'Repos <11h après une période de service';
+      if (reason === '35limit') return 'Repos consécutifs<35h sur 7 jours glissants';
+      if (reason === '48hLimit') return 'Repos <48h sur 7 jours glissants';
+      if (reason === 'consecutiveDaysLimit') return 'Plus de 5 jours de travail consécutifs';
+      if (reason === 'nightControlRestLimit') return 'Repos <12h après un contrôle de nuit';
+      if (reason === 'consecutiveNightLimit') return 'Plus de 2 contrôles de nuit consécutifs';
+      if (reason === 'restAfterTwoNightsLimit') return 'Repos <48h après 2 contrôles de nuit consécutifs';
+      return reason;
+    })
+    .join(', ');
 
 const toggleSwitch = (dayId) => {
   acceptedSwitches.value = acceptedSwitches.value.includes(dayId)
-    ? acceptedSwitches.value.filter(id => id !== dayId)
+    ? acceptedSwitches.value.filter((id) => id !== dayId)
     : [...acceptedSwitches.value, dayId];
 };
 
@@ -382,15 +415,15 @@ const buildSubmitPayload = () => ({
   date: localDate.value,
   selectedShift: {
     ...props.selectedShift,
-    selectedVariation: selectedVariant.value || null
+    selectedVariation: selectedVariant.value || null,
   },
   acceptedSwitches: acceptedSwitchesWithPoints.value,
-  isTrueSwitch: props.dialogMode === 'switch'
+  isTrueSwitch: props.dialogMode === 'switch',
 });
 
 const isZeroPoints = () =>
   props.dialogMode === 'switch'
-    ? acceptedSwitchesWithPoints.value.every(s => s.points === 0)
+    ? acceptedSwitchesWithPoints.value.every((s) => s.points === 0)
     : demand.value.points === 0;
 
 const submit = () => {
@@ -415,48 +448,52 @@ watch(
     formValid.value =
       demand.value.points >= 0 &&
       localDate.value !== '' &&
-      (
-        (props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length > 0) ||
-        (props.dialogMode !== 'switch' && demand.value.points >= 0)
-      );
+      ((props.dialogMode === 'switch' && acceptedSwitchesWithPoints.value.length > 0) ||
+        (props.dialogMode !== 'switch' && demand.value.points >= 0));
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 watch(acceptedSwitches, (newSwitches, oldSwitches) => {
   if (!oldSwitches) return;
   newSwitches
-    .filter(dayId => !oldSwitches.includes(dayId))
-    .forEach(dayId => {
+    .filter((dayId) => !oldSwitches.includes(dayId))
+    .forEach((dayId) => {
       if (!(dayId in pointsPerSwitch.value)) {
         pointsPerSwitch.value[dayId] = 0;
       }
     });
 });
 
-watch(() => props.dialogVisible, async (value) => {
-  if (value) {
-    localDate.value = props.date;
-    demand.value.points = props.dialogMode === 'substitution' ? defaultPoints.value : 0;
+watch(
+  () => props.dialogVisible,
+  async (value) => {
+    if (value) {
+      localDate.value = props.date;
+      demand.value.points = props.dialogMode === 'substitution' ? defaultPoints.value : 0;
 
-    try {
-      loadingRotations.value = true;
-      rotationError.value = null;
-      compatibleSwitches.value = await fetchCompatibleSwitches();
-    } catch (error) {
-      console.error('Erreur lors du chargement du tour de service:', error);
-      rotationError.value = 'Erreur lors du chargement du tour de service. Veuillez réessayer.';
-    } finally {
-      loadingRotations.value = false;
+      try {
+        loadingRotations.value = true;
+        rotationError.value = null;
+        compatibleSwitches.value = await fetchCompatibleSwitches();
+      } catch (error) {
+        console.error('Erreur lors du chargement du tour de service:', error);
+        rotationError.value = 'Erreur lors du chargement du tour de service. Veuillez réessayer.';
+      } finally {
+        loadingRotations.value = false;
+      }
+    } else {
+      resetForm();
     }
-  } else {
-    resetForm();
-  }
-});
+  },
+);
 
-watch(() => props.date, (newDate) => {
-  if (newDate) localDate.value = newDate;
-});
+watch(
+  () => props.date,
+  (newDate) => {
+    if (newDate) localDate.value = newDate;
+  },
+);
 </script>
 
 <style scoped>
@@ -472,7 +509,9 @@ watch(() => props.date, (newDate) => {
   display: flex;
 }
 
-.switch-cell > .switch-tile { flex: 1; }
+.switch-cell > .switch-tile {
+  flex: 1;
+}
 
 .switch-cell__info {
   position: absolute;
@@ -482,17 +521,29 @@ watch(() => props.date, (newDate) => {
 }
 
 /* Tuile sélectionnée : le fond est plein, l'icône prend la couleur « sur accent » de la tuile */
-.switch-cell:has(> .switch-tile[aria-pressed='true']) .switch-cell__info { color: rgb(var(--v-theme-onPrimary)); }
-.switch-cell:has(> .switch-tile--incompatible[aria-pressed='true']) .switch-cell__info { color: rgb(var(--v-theme-onError)); }
+.switch-cell:has(> .switch-tile[aria-pressed='true']) .switch-cell__info {
+  color: rgb(var(--v-theme-onPrimary));
+}
+.switch-cell:has(> .switch-tile--incompatible[aria-pressed='true']) .switch-cell__info {
+  color: rgb(var(--v-theme-onError));
+}
 
 .switch-reasons {
   margin: 0;
   padding-left: 1.1rem;
 }
 
-.switch-tile__name { font-size: 18px; line-height: 1.1; }
-.switch-tile__hours { font-size: 11px; }
-.switch-tile__status { font-size: 10px; line-height: 1.2; }
+.switch-tile__name {
+  font-size: 18px;
+  line-height: 1.1;
+}
+.switch-tile__hours {
+  font-size: 11px;
+}
+.switch-tile__status {
+  font-size: 10px;
+  line-height: 1.2;
+}
 
 /* Variantes de la vacation : de petites pastilles teintées du texte de la tuile (lisibles sélectionnée ou non) */
 .switch-tile__variations {
@@ -514,7 +565,7 @@ watch(() => props.date, (newDate) => {
 /* Refusée par une règle de repos ou de charge : barrée et estompée */
 .switch-tile__variation--blocked {
   color: rgb(var(--v-theme-error));
-  opacity: .9;
+  opacity: 0.9;
 }
 
 /* Vacation que la règle de repos / de charge interdit : toujours choisissable, mais signalée */
@@ -562,7 +613,8 @@ watch(() => props.date, (newDate) => {
 
 .chips-container-alt .v-btn {
   border-radius: 8px !important;
-  transition: border-radius var(--motion-expressive-fast-spatial),
+  transition:
+    border-radius var(--motion-expressive-fast-spatial),
     background-color var(--motion-expressive-fast-effects);
 }
 

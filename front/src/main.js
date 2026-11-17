@@ -5,13 +5,13 @@
  */
 
 // Plugins
-import { registerPlugins } from '@/plugins'
-import longPress from '@/directives/v-long-press.js'
+import { registerPlugins } from '@/plugins';
+import longPress from '@/directives/v-long-press.js';
 // Components
-import App from './App.vue'
+import App from './App.vue';
 
 // Composables
-import { createApp } from 'vue'
+import { createApp } from 'vue';
 
 import './styles/fonts.css';
 import './styles/transitions.css';
@@ -19,10 +19,9 @@ import './styles/tile.css';
 import './styles/day.css';
 import './styles/dot.css';
 
-const app = createApp(App)
+const app = createApp(App);
 
+app.directive('long-press', longPress);
+registerPlugins(app);
 
-app.directive('long-press', longPress)
-registerPlugins(app)
-
-app.mount('#app')
+app.mount('#app');

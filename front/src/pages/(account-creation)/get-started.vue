@@ -1,23 +1,22 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 
-
-const router = useRouter()
-const showContent = ref(false)
+const router = useRouter();
+const showContent = ref(false);
 
 onMounted(() => {
   setTimeout(() => {
-    showContent.value = true
-  }, 500)
-})
+    showContent.value = true;
+  }, 500);
+});
 
 const handleNewAccount = () => {
-  router.push('/creation')
-}
+  router.push('/creation');
+};
 
 const handleExistingAccount = () => {
-  router.push('/account-recovery')
-}
+  router.push('/account-recovery');
+};
 </script>
 
 <template>
@@ -27,19 +26,16 @@ const handleExistingAccount = () => {
         <Transition name="fade">
           <div v-if="showContent">
             <div>
-              <h1 class="animate-title">
-                Bienvenue !
-              </h1>
-              <p class="subtitle animate-subtitle">
-                Comment souhaitez-vous commencer ?
-              </p>
+              <h1 class="animate-title">Bienvenue !</h1>
+              <p class="subtitle animate-subtitle">Comment souhaitez-vous commencer ?</p>
             </div>
             <div class="options-container">
               <Transition name="slide-up" appear>
                 <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
                   <span class="text-title-large font-weight-bold">Compte Remplacer</span>
-                  <span class="text-body-medium text-medium-emphasis">Je possède déjà un compte REMPLACER.OVH et je souhaite
-                    le récupérer</span>
+                  <span class="text-body-medium text-medium-emphasis"
+                    >Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span
+                  >
                 </div>
               </Transition>
               <Transition name="slide-up" appear>
@@ -86,12 +82,14 @@ h1 {
 
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.005);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.4s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.4s;
 }
 
 .option-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.20);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .option-card h2 {

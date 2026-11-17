@@ -1,11 +1,13 @@
 <template>
-  <v-dialog v-model="localDialogVisible" transition="scroll-x-reverse-transition" max-width="500px"
-    :fullscreen="smAndDown">
+  <v-dialog
+    v-model="localDialogVisible"
+    transition="scroll-x-reverse-transition"
+    max-width="500px"
+    :fullscreen="smAndDown"
+  >
     <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
       <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center">
-          Demander une mutation
-        </v-card-title>
+        <v-card-title class="d-flex justify-space-between align-center"> Demander une mutation </v-card-title>
         <template v-if="!smAndDown" #append>
           <v-btn icon="mdi-close" variant="text" @click="close" />
         </template>
@@ -16,21 +18,37 @@
 
       <v-card-text class="px-6">
         <v-form ref="form" v-model="valid">
-          <v-select v-model="selectedCenter" :items="centers" label="Centre de destination"
-            prepend-inner-icon="mdi-office-building-outline" variant="outlined" color="primary" rounded="xl"
-            bg-color="surface" hide-details="auto" :rules="[v => !!v || 'Le centre de destination est requis']" />
+          <v-select
+            v-model="selectedCenter"
+            :items="centers"
+            label="Centre de destination"
+            prepend-inner-icon="mdi-office-building-outline"
+            variant="outlined"
+            color="primary"
+            rounded="xl"
+            bg-color="surface"
+            hide-details="auto"
+            :rules="[(v) => !!v || 'Le centre de destination est requis']"
+          />
 
-          <v-textarea v-model="reason" label="Motif de la demande" prepend-inner-icon="mdi-text-box-outline"
-            variant="outlined" color="primary" rounded="xl" bg-color="surface" hide-details="auto" class="mt-4"
-            :rules="[v => !!v || 'Le motif est requis']" />
+          <v-textarea
+            v-model="reason"
+            label="Motif de la demande"
+            prepend-inner-icon="mdi-text-box-outline"
+            variant="outlined"
+            color="primary"
+            rounded="xl"
+            bg-color="surface"
+            hide-details="auto"
+            class="mt-4"
+            :rules="[(v) => !!v || 'Le motif est requis']"
+          />
         </v-form>
       </v-card-text>
 
       <v-card-actions class="pa-6">
         <v-spacer />
-        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close">
-          Annuler
-        </v-btn>
+        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close"> Annuler </v-btn>
         <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid" @click="submit">
           Envoyer la demande
         </v-btn>
@@ -40,67 +58,62 @@
 </template>
 
 <script setup>
-
-import { useDisplay } from 'vuetify'
+import { useDisplay } from 'vuetify';
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
-const emit = defineEmits(['update:modelValue', 'success', 'error'])
+const emit = defineEmits(['update:modelValue', 'success', 'error']);
 
-const { smAndDown } = useDisplay()
-const form = ref(null)
-const valid = ref(false)
-const loading = ref(false)
-const selectedCenter = ref('')
-const reason = ref('')
+const { smAndDown } = useDisplay();
+const form = ref(null);
+const valid = ref(false);
+const loading = ref(false);
+const selectedCenter = ref('');
+const reason = ref('');
 
 // TODO: Remplacer par la liste réelle des centres
-const centers = [
-  'Centre A',
-  'Centre B',
-  'Centre C'
-]
+const centers = ['Centre A', 'Centre B', 'Centre C'];
 
 const localDialogVisible = computed({
   get: () => props.modelValue,
   set: (value) => {
-    emit('update:modelValue', value)
+    emit('update:modelValue', value);
     if (!value) {
-      resetForm()
+      resetForm();
     }
-  }
-})
+  },
+});
 
 const resetForm = () => {
-  selectedCenter.value = ''
-  reason.value = ''
-  form.value?.reset()
-}
+  selectedCenter.value = '';
+  reason.value = '';
+  form.value?.reset();
+};
 
 const close = () => {
-  localDialogVisible.value = false
-}
+  localDialogVisible.value = false;
+};
 
 const submit = async () => {
-  if (!form.value?.validate()) return
+  if (!form.value?.validate()) return;
 
-  loading.value = true
+  loading.value = true;
   try {
     // TODO: Implémenter l'appel API pour envoyer la demande de mutation
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    emit('success', 'Votre demande de mutation a été envoyée avec succès')
-    close()
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    emit('success', 'Votre demande de mutation a été envoyée avec succès');
+    close();
   } catch (error) {
-    emit('error', error.message || 'Une erreur est survenue')
+    emit('error', error.message || 'Une erreur est survenue');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>

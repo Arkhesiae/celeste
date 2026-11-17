@@ -166,7 +166,7 @@ const checkUserShift = async (req, res, next) => {
 };
 
 const detectTeamChangeConflicts = async (req, res, next) => {
-    const { userId, newTeamId, fromDate } = req.body;
+    const { userId, newTeamId, fromDate } = req.query;
 
     try {
         if (!userId || !newTeamId || !fromDate) {

@@ -50,7 +50,7 @@ router.delete('/:id/team-occurrences/:occurrenceId', hasNoPendingCenterTransfer,
 router.post('/:id/assign-team', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.assignTeamToUser);
 
 // Routes pour les shifts
-router.post('/:id/get-shifts-with-substitutions', authorizeSelfOrCenterAdmin('id'), userController.getUserShiftsWithSubstitutions);
+router.get('/:id/get-shifts-with-substitutions', authorizeSelfOrCenterAdmin('id'), userController.getUserShiftsWithSubstitutions);   // ?startDate=&endDate=
 
 // Routes pour les points et transactions
 router.get('/:id/points', authorizeSelfOrCenterAdmin('id'), userController.getPointsById);
@@ -67,14 +67,24 @@ router.post('/update-phone', userController.updatePhone);
 router.post('/update-birthDate', userController.updateBirthDate);
 router.delete('/delete-phone', userController.deletePhone);
 
-// Routes pour la gestion des utilisateurs (admin/master admin)
-router.get('/', isAdmin, resolveCenterId, userController.getAllUsers);
+// Un compte : lui-même ou l'administrateur de son centre
 router.get('/:id', authorizeSelfOrCenterAdmin('id'), userController.getUserById);
-router.post('/pending/:id/approve', isAdmin, authorizeSelfOrCenterAdmin('id'), userController.approveUser);
-router.delete('/pending/:id', isAdmin, authorizeSelfOrCenterAdmin('id'), userController.deletePendingUser);
-router.post('/:id/make-admin', isMasterAdmin, userController.makeUserAdmin);
-router.post('/:id/remove-admin', isMasterAdmin, userController.removeUserAdmin);
-router.delete('/:id', isMasterAdmin, userController.deleteUserById);
-router.post('/:id/assign-center', isMasterAdmin, userController.assignUserToCenter);
 
-export default router;
+// À partir d'ici : administrateurs (local ou principal)
+router.use(isAdmin);
+
+// Gestion des comptes du centre
+router.get('/', resolveCenterId, userController.getAllUsers);
+router.post('/pending/:id/approve', authorizeSelfOrCenterAdmin('id'), userController.approveUser);
+router.delete('/pending/:id', authorizeSelfOrCenterAdmin('id'), userController.deletePendingUser);
+
+// À partir d'ici : administrateur principal uniquement
+router.use(isMasterAdmin);
+
+// Gestion des administrateurs et des comptes, tous centres
+router.post('/:id/make-admin', userController.makeUserAdmin);
+router.post('/:id/remove-admin', userController.removeUserAdmin);
+router.delete('/:id', userController.deleteUserById);
+router.post('/:id/assign-center', userController.assignUserToCenter);
+
+export default router;

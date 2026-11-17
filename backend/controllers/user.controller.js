@@ -238,7 +238,7 @@ const assignTeamToUser = async (req, res, next) => {
 const getUserShiftsWithSubstitutions = async (req, res, next) => {
     try {
         const userId = assertId(req.params.id, 'ID utilisateur');
-        const dates = assertObject(req.body.dates, 'Dates');
+        const dates = { startDate: req.query.startDate, endDate: req.query.endDate };
 
         if (typeof dates.startDate !== 'string' || typeof dates.endDate !== 'string') {
             throw new AppError('startDate et endDate sont requis', 400);

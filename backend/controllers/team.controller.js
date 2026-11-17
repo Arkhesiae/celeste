@@ -51,7 +51,7 @@ const deleteTeam = async (req, res, next) => {
 
 // Récupérer les équipes d'un centre
 const getTeamsByCenter = async (req, res, next) => {
-    const { id } = req.params;
+    const { centerId: id } = req.params;
 
     console.log(id)
 
@@ -100,7 +100,7 @@ const getAllTeams = async (req, res, next) => {
 // Récupérer les shifts d'une équipe pour une période donnée
 const getTeamShifts = async (req, res, next) => {
     try {
-        const { dates } = req.body;
+        const { dates } = req.query;   // ?dates=AAAA-MM-JJ&dates=AAAA-MM-JJ (un ou plusieurs jours)
         const { id } = req.params;
 
         if (!dates || !id) {

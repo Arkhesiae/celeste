@@ -177,9 +177,8 @@ export const substitutionService = {
    * @returns {Promise<Object>} Liste des IDs de substitutions conflictuelles.
    */
   async detectTeamChangeConflicts(params) {
-    const response = await apiFetch(`/substitution/detect-team-change-conflicts`, {
-      method: 'POST',
-      body: JSON.stringify(params),
+    const response = await apiFetch(`/substitution/detect-team-change-conflicts?${new URLSearchParams(params)}`, {
+      method: 'GET',
     });
     return response;
   },

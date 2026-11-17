@@ -8,15 +8,18 @@ const router = express.Router();
 // Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
-// Modification du planning : refusée à un utilisateur dont la mutation vers un autre centre est en attente. La garde est posée
-// route par route (et non par un `router.use`) parce que ces chemins fixes doivent être déclarés avant `/:userId`, qui les
-// intercepterait, et que la lecture `/:userId` ne doit pas être refusée.
-router.post('/restore-initial', hasNoPendingCenterTransfer, calendarEntryController.restoreInitialShift);
-router.post('/register-entry', hasNoPendingCenterTransfer, calendarEntryController.registerEntry);
-router.post('/undo-mods', hasNoPendingCenterTransfer, calendarEntryController.undoMods);
-router.post('/delete-assignment', hasNoPendingCenterTransfer, calendarEntryController.remove);
+// ── Lecture ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-// Lecture (POST, mais ne modifie rien)
-router.post('/:userId', calendarEntryController.getUserEntries);
+// Modifications d'un jour : ?date=AAAA-MM-JJ
+router.get('/:userId', calendarEntryController.getUserEntries);
+
+// ── Modification : à partir d'ici, refusée à un utilisateur dont la mutation vers un autre centre est en attente ──
+// (l'ordre compte : les lectures sont déclarées avant cette ligne et n'y passent pas)
+router.use(hasNoPendingCenterTransfer);
+
+router.post('/restore-initial', calendarEntryController.restoreInitialShift);
+router.post('/register-entry', calendarEntryController.registerEntry);
+router.post('/undo-mods', calendarEntryController.undoMods);
+router.post('/delete-assignment', calendarEntryController.remove);
 
 export default router;

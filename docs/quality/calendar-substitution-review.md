@@ -34,7 +34,7 @@ L'analyse des remplacements chaînés est en section 3, la proposition d'interfa
 l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` que pour la notification. `DELETE /:id/delete` exécute `deleteDemand`, en chantier
 (l'en-tête du fichier dit « non opérationnel ») : il pose le drapeau `deleted` sans toucher aux entrées de calendrier, donc sur une demande acceptée le remplacement reste dans le
 planning. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
-`POST /detect-team-change-conflicts` prend `userId` dans le corps sans aucun garde de centre : il révèle les demandes et dates d'un autre utilisateur.
+`GET /detect-team-change-conflicts` prend `userId` dans le corps sans aucun garde de centre : il révèle les demandes et dates d'un autre utilisateur.
 
 **S8 (P1). `reason` est perdu dans les cascades.** `cancelCascade` appelle `cancelRequestWithSession(child._id, { visited, session, cancelledRequests })` sans
 `reason`. Quand la racine est annulée avec `system-cancelled` (changement de rotation, d'équipe), les enfants en cascade reçoivent `cancelled`. Le paramètre est aussi

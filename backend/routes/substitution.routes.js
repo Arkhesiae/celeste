@@ -9,29 +9,34 @@ const router = express.Router();
 // Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
-// ── Lecture (les POST de cette section ne modifient rien : le corps porte la période ou les ids demandés) ───────────────
+// Toute route de ce fichier qui porte un `:id` désigne une demande : son centre est contrôlé une fois pour toutes, après les
+// `router.use` déclarés plus bas (gardes de rôle, mutation en attente) et juste avant le contrôleur
+router.param('id', authorizeDemandAccess);
 
+// ── Lecture ──────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+// Demandes d'une période. POST bien que ce soit une lecture    : elle marque les demandes comme vues (effet de bord)
 router.post('/center', substitutionController.getCenterRequests);
 
 router.get('/center/:centerId/heatmap', authorizeCenterParam('centerId'), substitutionController.getDemandHeatmap);
-
 router.get('/center/:centerId/all', isAdmin, authorizeCenterParam('centerId'), substitutionController.getAllCenterDemands);
 
+// Demandes de l'utilisateur et vérifications sur son planning
 router.get('/user', substitutionController.getUserDemands);
+router.get('/check-shift/:date', substitutionController.checkUserShift);
+router.get('/compatible-switches/:date', substitutionController.getCompatibleSwitches);
 
-router.post('/:id/consult', authorizeDemandAccess, substitutionController.consultDemand);
+// Changement d'équipe : ?userId=&newTeamId=&fromDate=
+router.get('/detect-team-change-conflicts', substitutionController.detectTeamChangeConflicts);
 
+// POST bien que ce soit une lecture : le corps porte une liste d'ids, trop longue pour une URL
 router.post('/recategorize', substitutionController.recategorizeSubstitutions);
 
-router.get('/check-shift/:date', substitutionController.checkUserShift);
-
-router.get('/:id/seen-count', authorizeDemandAccess, substitutionController.getSeenCount);
-
-router.post('/detect-team-change-conflicts', substitutionController.detectTeamChangeConflicts);
-
-router.get('/compatibility/:id', authorizeDemandAccess, substitutionController.getCompatibility);
-
-router.get('/compatible-switches/:date', substitutionController.getCompatibleSwitches);
+// Une demande (:id, voir router.param)
+router.get('/compatibility/:id', substitutionController.getCompatibility);
+router.get('/:id/seen-count', substitutionController.getSeenCount);
+// POST : marque la demande comme vue (effet de bord)
+router.post('/:id/consult', substitutionController.consultDemand);
 
 // ── Modification : à partir d'ici, refusée à un utilisateur dont la mutation vers un autre centre est en attente ──
 // (l'ordre compte : les lectures sont déclarées avant cette ligne et n'y passent pas)
@@ -39,20 +44,12 @@ router.use(hasNoPendingCenterTransfer);
 
 router.post('/', substitutionController.createDemand);
 
-// router.put('/:id/status', substitutionController.updateDemandStatus);
-
-router.post('/:id/interest', authorizeDemandAccess, substitutionController.markInterest);
-
-router.post('/:id/accept', authorizeDemandAccess, substitutionController.acceptDemand);
-
-router.post('/:id/swap', authorizeDemandAccess, substitutionController.swapShifts);
-
-router.post('/:id/cancel', authorizeDemandAccess, substitutionController.cancelDemand);
-
-router.post('/:id/withdraw', authorizeDemandAccess, substitutionController.withdrawFromDemand);
-
-router.delete('/:id/delete', authorizeDemandAccess, substitutionController.deleteDemand);
-
-router.post('/:id/send-email', authorizeDemandAccess, substitutionController.sendAdminEmail);
+router.post('/:id/interest', substitutionController.markInterest);
+router.post('/:id/accept', substitutionController.acceptDemand);
+router.post('/:id/swap', substitutionController.swapShifts);
+router.post('/:id/cancel', substitutionController.cancelDemand);
+router.post('/:id/withdraw', substitutionController.withdrawFromDemand);
+router.delete('/:id/delete', substitutionController.deleteDemand);
+router.post('/:id/send-email', substitutionController.sendAdminEmail);
 
 export default router;

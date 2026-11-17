@@ -18,9 +18,8 @@ export const planningModificationService = {
   },
 
   async fetchEntries(userId, date) {
-    const response = await apiFetch(`/calendar-entry/${userId}`, {
-      method: 'POST',
-      body: JSON.stringify({ date }),
+    const response = await apiFetch(`/calendar-entry/${userId}?date=${encodeURIComponent(date)}`, {
+      method: 'GET',
     });
     return response;
   },

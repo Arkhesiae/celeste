@@ -98,10 +98,10 @@ test('mutation en attente : connexion et lectures permises, routes qui modifient
 
   assert.equal((await call('POST', '/auth/login', { body: { email: pending.email, password: 'secret-123' } })).status, 200);
   assert.equal((await call('GET', `/user/${pending._id}/points`, { user: pending })).status, 200);
-  const shifts = await call('POST', `/user/${pending._id}/get-shifts-with-substitutions`, {
-    user: pending, body: { dates: { startDate: '2026-01-01', endDate: '2026-01-07' } },
-  });
+  const shifts = await call('GET', `/user/${pending._id}/get-shifts-with-substitutions?startDate=2026-01-01&endDate=2026-01-07`, { user: pending });
   assert.equal(shifts.status, 200);
+  assert.equal((await call('GET', `/calendar-entry/${pending._id}?date=2026-01-05`, { user: pending })).status, 200);
+  assert.equal((await call('GET', `/calendar-entry/${pending._id}?date=pas-une-date`, { user: pending })).status, 400);
 
   const someId = new mongoose.Types.ObjectId();
   for (const [method, path, body] of [

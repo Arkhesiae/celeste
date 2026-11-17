@@ -8,28 +8,29 @@ const router = express.Router();
 // Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
+// Toute route de ce fichier qui porte un `:id` désigne un tour de service : son centre est contrôlé une fois pour toutes (un master
+// passe), après les gardes de rôle `router.use` et juste avant le contrôleur
+router.param('id', authorizeRotationAccess);
+
 // Lecture : tout utilisateur connecté
 router.get('/', rotationController.getAllRotations);
 router.get('/center/:centerId', rotationController.getRotationsByCenter);
-
 router.get('/status/:centerId', rotationController.getAllRotationsWithStatus);
-
 router.get('/active-at-date', rotationController.getActiveRotationAtDate);
 
-// Routes protégées par isAdmin, cloisonnées par centre (authorizeRotation*)
-router.post('/center/:centerId', isAdmin, authorizeCenterParam('centerId'), rotationController.saveRotation);
+// À partir d'ici : administrateurs (local ou principal)
+router.use(isAdmin);
 
-router.delete('/:id', isAdmin, authorizeRotationAccess, rotationController.deleteRotation);
+// Modification, cloisonnée par centre (authorizeCenterParam ici, router.param pour un tour de service)
+router.post('/center/:centerId', authorizeCenterParam('centerId'), rotationController.saveRotation);
+router.delete('/:id', rotationController.deleteRotation);
 
 // Aperçu (409 si des demandes sont touchées) ou, avec `confirmed: true` dans le corps, application du changement
-router.post('/:id/activate', isAdmin, authorizeRotationAccess, rotationController.addActivationDate);
+router.post('/:id/activate', rotationController.addActivationDate);
+router.post('/:id/remove-date', rotationController.removeActivationDate);
 
-router.post('/:id/remove-date', isAdmin, authorizeRotationAccess, rotationController.removeActivationDate);
-
-router.put('/:id/day', isAdmin, authorizeRotationAccess, rotationController.updateDayInRotation);
-
-router.post('/:id/duplicate', isAdmin, authorizeRotationAccess, rotationController.duplicateRotation);
-
-router.put('/:id/update', isAdmin, authorizeRotationAccess, rotationController.updateRotation);
+router.put('/:id/day', rotationController.updateDayInRotation);
+router.post('/:id/duplicate', rotationController.duplicateRotation);
+router.put('/:id/update', rotationController.updateRotation);
 
 export default router;

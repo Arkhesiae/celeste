@@ -15,15 +15,18 @@ router.use(verifyToken);
 // Carte du tableau de bord : tout utilisateur connecté ; comptes de demandes et position seulement, voir center.map.js
 router.get('/map', centerController.getCentersMapData);
 
-// Vues et gestion transverses aux centres : administrateur principal uniquement
-router.get('/all-active-rotations', isMasterAdmin, centerController.getActiveRotationsByCenter);
-router.get('/users/count', isMasterAdmin, centerController.getUsersCountByCenter);
-router.get('/admins', isMasterAdmin, centerController.getAdminsByCenter);
-router.post('/', isMasterAdmin, centerController.addCenter);
-router.put('/:id', isMasterAdmin, centerController.updateCenter);
-router.delete('/:id', isMasterAdmin, centerController.deleteCenter);
-
 // Tour de service actif : membres du centre (ou administrateur principal)
 router.get('/:id/active-rotation', authorizeCenterParam('id'), centerController.getActiveRotationOfCenter);
+
+// À partir d'ici : administrateur principal uniquement
+router.use(isMasterAdmin);
+
+// Vues et gestion transverses aux centres
+router.get('/all-active-rotations', centerController.getActiveRotationsByCenter);
+router.get('/users/count', centerController.getUsersCountByCenter);
+router.get('/admins', centerController.getAdminsByCenter);
+router.post('/', centerController.addCenter);
+router.put('/:id', centerController.updateCenter);
+router.delete('/:id', centerController.deleteCenter);
 
 export default router;

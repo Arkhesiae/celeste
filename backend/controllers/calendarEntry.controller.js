@@ -57,7 +57,7 @@ const restoreInitialShift = async (req, res, next) => {
 const getUserEntries = async (req, res, next) => {
     try {
         const userId = req.user.userId;
-        const { date } = req.body;
+        const { date } = req.query;
 
         if (!userId || !date) {
             throw new AppError('Les champs userId et date sont requis', 400);

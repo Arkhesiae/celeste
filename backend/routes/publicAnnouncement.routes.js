@@ -10,13 +10,15 @@ router.use(verifyToken);
 
 // Annonces à afficher : tout utilisateur connecté
 router.get('/active', publicAnnouncementController.getActiveAnnouncements);
-
 router.post('/:id/acknowledge', publicAnnouncementController.acknowledgeAnnouncement);
 
-// Gestion : administrateurs, cloisonnée par centre
-router.get('/', isAdmin, publicAnnouncementController.getAllAnnouncements);
-router.post('/', isAdmin, resolveCenterId, publicAnnouncementController.createAnnouncement);
-router.put('/:id', isAdmin, authorizeAnnouncementAccess, publicAnnouncementController.updateAnnouncement);
-router.delete('/:id', isAdmin, authorizeAnnouncementAccess, publicAnnouncementController.deleteAnnouncement);
+// À partir d'ici : administrateurs (local ou principal)
+router.use(isAdmin);
+
+// Gestion, cloisonnée par centre
+router.get('/', publicAnnouncementController.getAllAnnouncements);
+router.post('/', resolveCenterId, publicAnnouncementController.createAnnouncement);
+router.put('/:id', authorizeAnnouncementAccess, publicAnnouncementController.updateAnnouncement);
+router.delete('/:id', authorizeAnnouncementAccess, publicAnnouncementController.deleteAnnouncement);
 
 export default router;

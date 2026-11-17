@@ -26,9 +26,9 @@ export const vacationService = {
    * @returns {Promise<Array>} Liste des créneaux horaires
    */
   async fetchVacationsOfUser(userId, dates) {
-    const response = await apiFetch(`/user/${userId}/get-shifts-with-substitutions`, {
-      method: 'POST',
-      body: JSON.stringify({ dates }),
+    const query = new URLSearchParams({ startDate: dates.startDate, endDate: dates.endDate });
+    const response = await apiFetch(`/user/${userId}/get-shifts-with-substitutions?${query}`, {
+      method: 'GET',
     });
     return response;
   },

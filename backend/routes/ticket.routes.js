@@ -16,28 +16,28 @@ router.post('/inbound', express.text({ type: "*/*" }), handleInboundEmail);
 // Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
-// Mettre à jour le statut d'un ticket : administrateur du centre destinataire (ou master)
-router.post('/status/:id', isAdmin, authorizeTicketAccess, ticketController.updateTicketStatus);
+// Toute route de ce fichier qui porte un `:id` désigne un ticket : son centre est contrôlé une fois pour toutes (un master passe),
+// après les gardes de rôle déclarées plus bas, juste avant le contrôleur
+router.param('id', authorizeTicketAccess);
 
-// Seuls les administrateurs peuvent marquer les tickets comme lus
-router.put('/:id/read', isAdmin, authorizeTicketAccess, ticketController.markAsRead);
+// À partir d'ici : administrateurs (local ou principal)
+router.use(isAdmin);
 
-// Seuls les administrateurs principaux peuvent supprimer les tickets
-router.delete('/:id', isMasterAdmin, ticketController.deleteTicket);
+// Voir les tickets : administrateurs
+router.get('/', ticketController.getTickets);
 
-// Seuls les administrateurs peuvent voir tous les tickets
-router.get('/', isAdmin, ticketController.getTickets);
+// Modifier un ticket : l'administrateur du centre destinataire (ou le master, voir router.param)
+router.post('/status/:id', ticketController.updateTicketStatus);
+router.put('/:id/read', ticketController.markAsRead);
+router.put('/:id/reply-sent', ticketController.markReplySent);
+router.post('/:id/reply', ticketController.sendReply);
+router.put('/:id/archive', ticketController.archiveTicket);
+router.put('/:id/restore', ticketController.restoreTicket);
 
-// Marquer qu'une réponse a été envoyée
-router.put('/:id/reply-sent', isAdmin, authorizeTicketAccess, ticketController.markReplySent);
+// À partir d'ici : administrateur principal uniquement
+router.use(isMasterAdmin);
 
-// Envoyer une réponse à un ticket
-router.post('/:id/reply', isAdmin, authorizeTicketAccess, ticketController.sendReply);
-
-// Archiver un ticket
-router.put('/:id/archive', isAdmin, authorizeTicketAccess, ticketController.archiveTicket);
-
-// Restaurer un ticket archivé
-router.put('/:id/restore', isAdmin, authorizeTicketAccess, ticketController.restoreTicket);
+// Supprimer un ticket
+router.delete('/:id', ticketController.deleteTicket);
 
 export default router;

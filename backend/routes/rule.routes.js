@@ -11,15 +11,16 @@ router.get('/', ruleController.getAllRules);
 // Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
-// Initialisation et réinitialisation : administrateur principal uniquement
-router.post('/initialize', isMasterAdmin, ruleController.initializeRules);
-router.post('/reset', isMasterAdmin, ruleController.resetRules);
-
-// Verrouiller / déverrouiller une règle : administrateur principal uniquement
-router.put('/:name/lock', isMasterAdmin, ruleController.toggleLock);
-
 // Modifier une règle ou supprimer sa surcharge : administrateur de centre (droits et verrou contrôlés dans le service)
 router.put('/:name', ruleController.updateRule);
 router.delete('/:name', ruleController.deleteRuleOverride);
+
+// À partir d'ici : administrateur principal uniquement
+router.use(isMasterAdmin);
+
+// Initialisation, réinitialisation, verrouillage / déverrouillage
+router.post('/initialize', ruleController.initializeRules);
+router.post('/reset', ruleController.resetRules);
+router.put('/:name/lock', ruleController.toggleLock);
 
 export default router;

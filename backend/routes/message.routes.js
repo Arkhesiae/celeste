@@ -7,16 +7,20 @@ const router = express.Router();
 // Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
-// Seuls les administrateurs peuvent voir tous les messages
-router.get('/', isAdmin, messageController.getMessages);
-
-// Création de message (accessible à tous les utilisateurs authentifiés)
+// Création de message : tout utilisateur connecté
 router.post('/', messageController.createMessage);
 
-// Seuls les administrateurs peuvent marquer les messages comme lus
-router.put('/:id/read', isAdmin, messageController.markAsRead);
+// À partir d'ici : administrateurs (local ou principal)
+router.use(isAdmin);
 
-// Seuls les administrateurs principaux peuvent supprimer les messages
-router.delete('/:id', isMasterAdmin, messageController.deleteMessage);
+// Voir tous les messages, les marquer comme lus
+router.get('/', messageController.getMessages);
+router.put('/:id/read', messageController.markAsRead);
+
+// À partir d'ici : administrateur principal uniquement
+router.use(isMasterAdmin);
+
+// Supprimer un message
+router.delete('/:id', messageController.deleteMessage);
 
 export default router;

@@ -1,13 +1,12 @@
 import Substitution from '../models/Substitution.js';
 import User from '../models/User.js';
 import Rule from '../models/Rule.js';
-import { toDay } from '../utils/dates/dayFields.js';
-import { dayFilter, posterDayOf } from '../utils/dates/dayAccess.js';
+import { posterDayOf } from '../utils/dates/dayAccess.js';
 import { formatDateFr } from '../utils/dates/format.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { fullName } from '../utils/names.js';
 import { sameId } from '../utils/ids.js';
-import { assertDay, assertObject, isValidDate, isValidDateRange } from '../utils/validation.js';
+import { assertDay, assertId, assertObject, isValidDate, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 import * as planningService from '../services/planning/index.js';
 import * as substitutionService from '../services/substitution/index.js';
@@ -44,13 +43,12 @@ const getDemandHeatmap = async (req, res, next) => {
     }
 };
 
+// Demandes postées par un utilisateur : lui-même ou l'administrateur de son centre (garde de la route)
 const getUserDemands = async (req, res, next) => {
-    const { posterId } = req.user;
-
     try {
-        const user = await findOrThrow(User, posterId, { message: 'Utilisateur non trouvé' });
-        const demands = await Substitution.find({ posterId });
-        res.status(200).json(demands);
+        const userId = assertId(req.params.userId, 'ID utilisateur');
+        await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
+        res.status(200).json(await Substitution.find({ posterId: userId }));
     } catch (err) {
         next(err);
     }
@@ -89,22 +87,6 @@ const consultDemand = async (req, res, next) => {
 
         const demand = await substitutionService.consultDemand(demandId, userId);
         res.status(200).json({ message: 'Demande consultée avec succès', demand });
-    } catch (err) {
-        next(err);
-    }
-};
-
-const getSeenCount = async (req, res, next) => {
-    const { id: demandId } = req.params;
-
-    try {
-
-        if (!demandId) {
-            throw new AppError('L\'identifiant de la demande est requis', 400);
-        }
-
-        const request = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée', select: 'seenBy' });
-        res.json({ seenCount: request.seenBy.length });
     } catch (err) {
         next(err);
     }
@@ -164,38 +146,6 @@ const checkUserShift = async (req, res, next) => {
         next(err);
     }
 };
-
-const detectTeamChangeConflicts = async (req, res, next) => {
-    const { userId, newTeamId, fromDate } = req.query;
-
-    try {
-        if (!userId || !newTeamId || !fromDate) {
-            throw new AppError('Paramètres manquants', 400);
-        }
-
-        const substitutions = await Substitution.find({
-            posterId: userId,
-            deleted: false,
-            status: { $in: ['open', 'pending', 'accepted'] },
-            ...dayFilter('posterShift.day', 'posterShift.date', { gte: toDay(fromDate) })
-        });
-
-        const conflicts = [];
-        for (const sub of substitutions) {
-            const originalShiftId = sub.posterShift.shift?._id?.toString() || sub.posterShift._id?.toString();
-            const newShift = await planningService.computeShiftOfTeam(posterDayOf(sub), newTeamId);
-            if (originalShiftId && newShift && originalShiftId !== newShift._id) {
-                conflicts.push({ id: sub._id, newShift, originalShiftId, date: posterDayOf(sub) });
-            }
-        }
-
-        res.json({ conflicts });
-    } catch (err) {
-        //console.error("Erreur lors de la détection des conflits de substitutions :", err);
-        next(err);
-    }
-};
-
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
@@ -300,21 +250,6 @@ const cancelDemand = async (req, res, next) => {
         next(err);
     }
 };
-
-const deleteDemand = async (req, res, next) => {
-    const { id: demandId } = req.params;
-    try {
-        if (!demandId) {
-            throw new AppError('Paramètres manquants', 400);
-        }
-
-        await substitutionService.deleteDemand(demandId);
-        res.status(200).json({ message: 'Demande supprimée' });
-    } catch (err) {
-        next(err);
-    }
-};
-
 
 const markInterest = async (req, res, next) => {
     try {
@@ -445,14 +380,11 @@ export {
     getAllCenterDemands,
     getDemandHeatmap,
     consultDemand,
-    getSeenCount,
     getCompatibility,
     getAvailableUsers,
     checkUserShift,
-    detectTeamChangeConflicts,
     createDemand,
     cancelDemand,
-    deleteDemand,
     acceptDemand,
     withdrawFromDemand,
     markInterest,

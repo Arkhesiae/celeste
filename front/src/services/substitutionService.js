@@ -117,7 +117,7 @@ export const substitutionService = {
    * @returns {Promise<Array>} Liste des substitutions de l'utilisateur.
    */
   async getUserSubstitutions(userId) {
-    const response = await apiFetch(`/user/${userId}/substitution`, {
+    const response = await apiFetch(`/substitution/user/${userId}`, {
       method: 'GET',
     });
     return response;
@@ -167,18 +167,6 @@ export const substitutionService = {
   async unacceptDemand(demandId) {
     const response = await apiFetch(`/substitution/${demandId}/withdraw`, {
       method: 'POST',
-    });
-    return response;
-  },
-
-  /**
-   * Détecte les conflits de substitutions lors d'un changement d'équipe.
-   * @param {Object} params - { userId, newTeamId, fromDate }
-   * @returns {Promise<Object>} Liste des IDs de substitutions conflictuelles.
-   */
-  async detectTeamChangeConflicts(params) {
-    const response = await apiFetch(`/substitution/detect-team-change-conflicts?${new URLSearchParams(params)}`, {
-      method: 'GET',
     });
     return response;
   },

@@ -30,11 +30,8 @@ L'analyse des remplacements chaînés est en section 3, la proposition d'interfa
 
 ### 2.1 Flux des remplacements
 
-**S4 (P0). Contrôles de l'acteur manquants.** `POST /:id/cancel` et `DELETE /:id/delete` sont seulement derrière `authorizeDemandAccess` (même centre). Rien ne vérifie que
-l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` que pour la notification. `DELETE /:id/delete` exécute `deleteDemand`, en chantier
-(l'en-tête du fichier dit « non opérationnel ») : il pose le drapeau `deleted` sans toucher aux entrées de calendrier, donc sur une demande acceptée le remplacement reste dans le
-planning. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
-`GET /detect-team-change-conflicts` prend `userId` dans le corps sans aucun garde de centre : il révèle les demandes et dates d'un autre utilisateur.
+**S4 (P0). Contrôles de l'acteur manquants.** `POST /:id/cancel` est seulement derrière `authorizeDemandAccess` (même centre). Rien ne vérifie que
+l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` que pour la notification. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
 
 **S8 (P1). `reason` est perdu dans les cascades.** `cancelCascade` appelle `cancelRequestWithSession(child._id, { visited, session, cancelledRequests })` sans
 `reason`. Quand la racine est annulée avec `system-cancelled` (changement de rotation, d'équipe), les enfants en cascade reçoivent `cancelled`. Le paramètre est aussi
@@ -59,8 +56,6 @@ Envoyer une modification `variation` via `register-entry` changerait le planning
 - `acceptRequest`, `withdrawFromRequest` et `cancelRequest` recalculent les vacations après le commit ; un échec à ce moment (`computeUserShifts`, `categorizeRequests`) répond 500
   alors que l'action est validée et ne peut plus être rejouée (l'utilisateur voit une erreur, les données ont changé). Les étapes après commit devraient être au mieux (best-effort).
 - Contrôleur `createDemand` : après `res.status(201).json(...)`, le code de notification (populate, calcul du pool) peut lever une erreur et appelle `next(err)` sur une réponse déjà envoyée.
-- `getUserDemands` lit `req.user.posterId` (toujours indéfini, le jeton contient `userId`), donc `GET /substitution/user` répond toujours 404 ; le front ne l'appelle pas. Route morte.
-- `detect-team-change-conflicts` filtre `status: { $in: ['open', 'pending', 'accepted'] }` ; `pending` n'est pas un statut du modèle.
 - Expiration : `processPastDemands` et `processAndCompleteDemands` posent `deleted: true` pour les demandes `expired` et `completed`, donc `deleted` signifie à la fois « archivé » et « supprimé à la main ».
   `getAllCenterDemands` filtre `deleted: false`, donc un admin ne voit jamais l'historique.
 - `updatedAt`, `createdAt` sont posés à la main (`request.updatedAt = new Date()`, `createdAt: new Date()`) alors que le schéma a `timestamps: true`.
@@ -173,7 +168,6 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 | `initialCancel` | `request.cancel.js` | c'est la demande racine qui a été annulée | `rootRequest` |
 | `date` | partout dans `calendarEntry.*`, `registerEntry(userId, date, data)` | c'est une **chaîne** `YYYY-MM-DD` (le type du schéma est String), alors que `Substitution.posterShift.date` est un vrai `Date` ; `toDay`, `toDateKey`, `posterDayOf`, `new Date(...)` convertissent dans les deux sens | `day` pour la chaîne, `date` seulement pour un `Date` |
 | `isTrueSwitch` | corps de requête | jamais stocké, `type` le dit déjà | supprimer |
-| `userId` dans `getUserDemands` | `req.user.posterId` | le jeton contient `userId` | `req.user.userId` |
 
 **Conversions aller-retour à supprimer (chaîne de jour ↔ `Date` ↔ chaîne).**
 `posterDayOf(demand)` (chaîne) → `new Date(...)` pour la date de transaction → retour ; `cancelSubstitutionEntries({ date })` est documentée comme un `Date`, reçoit une chaîne, applique `toDateKey(date)` pour obtenir une chaîne et
@@ -197,7 +191,7 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 
 1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur).
 2. Justesse des données : S8 (`finalStatus` transmis), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
-3. Routes et appels morts : `getUserDemands`, puis la variation d'une demande (S10).
+3. Routes et appels morts : la variation d'une demande (S10).
 4. Modèle de chaîne : remplir `dependsOn` correctement (deux parents au plus, dont celui du côté accepteur à l'acceptation), supprimer le hook de cycle, puis la chaîne dans l'API et l'interface de la section 4.
 5. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
 

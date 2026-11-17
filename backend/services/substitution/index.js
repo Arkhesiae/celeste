@@ -6,7 +6,6 @@ export * from './request.accept.js';
 export * from './request.cancel.js';
 export * from './request.cascade.js';
 export * from './request.creation.js';
-export * from './request.delete.js';
 export * from './request.expiry.js';
 export * from './request.list.js';
 export * from './request.pendingTransactions.js';

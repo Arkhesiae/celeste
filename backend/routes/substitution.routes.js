@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyToken, isAdmin } from '../middleware/authMiddleware.js';
-import { authorizeCenterParam, authorizeDemandAccess } from '../middleware/centerAuth.js';
+import { authorizeCenterParam, authorizeDemandAccess, authorizeSelfOrCenterAdmin } from '../middleware/centerAuth.js';
 import { hasNoPendingCenterTransfer } from '../middleware/userStatus.js';
 import * as substitutionController from '../controllers/substitution.controller.js';
 
@@ -21,20 +21,18 @@ router.post('/center', substitutionController.getCenterRequests);
 router.get('/center/:centerId/heatmap', authorizeCenterParam('centerId'), substitutionController.getDemandHeatmap);
 router.get('/center/:centerId/all', isAdmin, authorizeCenterParam('centerId'), substitutionController.getAllCenterDemands);
 
-// Demandes de l'utilisateur et vérifications sur son planning
-router.get('/user', substitutionController.getUserDemands);
+// Demandes d'un utilisateur : lui-même ou l'administrateur de son centre
+router.get('/user/:userId', authorizeSelfOrCenterAdmin('userId'), substitutionController.getUserDemands);
+
+// Vérifications sur le planning de l'appelant
 router.get('/check-shift/:date', substitutionController.checkUserShift);
 router.get('/compatible-switches/:date', substitutionController.getCompatibleSwitches);
-
-// Changement d'équipe : ?userId=&newTeamId=&fromDate=
-router.get('/detect-team-change-conflicts', substitutionController.detectTeamChangeConflicts);
 
 // POST bien que ce soit une lecture : le corps porte une liste d'ids, trop longue pour une URL
 router.post('/recategorize', substitutionController.recategorizeSubstitutions);
 
 // Une demande (:id, voir router.param)
 router.get('/compatibility/:id', substitutionController.getCompatibility);
-router.get('/:id/seen-count', substitutionController.getSeenCount);
 // POST : marque la demande comme vue (effet de bord)
 router.post('/:id/consult', substitutionController.consultDemand);
 
@@ -49,7 +47,6 @@ router.post('/:id/accept', substitutionController.acceptDemand);
 router.post('/:id/swap', substitutionController.swapShifts);
 router.post('/:id/cancel', substitutionController.cancelDemand);
 router.post('/:id/withdraw', substitutionController.withdrawFromDemand);
-router.delete('/:id/delete', substitutionController.deleteDemand);
 router.post('/:id/send-email', substitutionController.sendAdminEmail);
 
 export default router;

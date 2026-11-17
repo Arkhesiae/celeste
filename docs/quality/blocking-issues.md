@@ -139,6 +139,14 @@ Team changes, cycle position changes, rotation changes and user cancellations em
 
 ---
 
+### 54. Unused and broken API routes — P2
+Audit of 2026-11-18 (backend routes against the calls written in `front/src`, function by function, then checked by hand). The unused substitution routes were removed the same day (`seen-count`, `DELETE /:id/delete` with `request.delete.js`, `detect-team-change-conflicts`); `GET /substitution/user` became `GET /substitution/user/:userId`, for the user or an admin of their center, and `substitutionService.getUserSubstitutions` calls it.
+**Backend routes no front code calls:** `GET /user/:id/team-at`, `GET /rotation`, `GET /rotation/center/:centerId` (the front only POSTs on that path), `GET /rotation/active-at-date` (also broken: it passes `req.centerId`, which is never set, as already noted above), `GET /team/:id/get-shifts`, `DELETE /announcement/:id`, `GET /stat/users`, `/stat/centers`, `/stat/substitutions` (the landing page uses `GET /stat`), `POST /rule/initialize` and `/rule/reset`, and the four `/dev/*` seeds (dev tools only). Deprecated by a newer route: `PUT /team/:id/cycle-start-date` (replaced by `cycle-position`, kept for the cycle migration) and `POST /calendar-entry/restore-initial` (same operation as `undo-mods`; the front only uses `undo-mods`).
+**Front calls with no backend route, and the function is used (fails with a 404 when reached):** `planningModificationService.registerModification` (`POST /calendar-entry/register-modification`), `teamService.getTeamMembers` (`GET /team/:id/members`), `vacationService.fetchWorkdaysOfUser` and `getAdjacentVacations` (`POST /user/:id/get-shifts`, see `shiftStore.fetchWorkdays`).
+**Front service functions that nothing calls, and whose route does not exist either:** `accountCreationService.activateAccount`, `emailService.getTemplates` / `getTemplatePreview`, `rotationService.getRotationById` / `getCenterRotations`, `substitutionService.getSubstitutionById` / `updateSubstitution` / `rejectSubstitution`, `userService.updateUser`. Also unused but with a route: `planningModificationService.restoreInitialShift`, `statService.getTotalUsers|Centers|Substitutions`, `emailService.deleteAnnouncement`.
+Not unused although a text search misses them: `POST /ticket/inbound` (inbound-mail webhook), `GET /user/devlist` (dev login buttons), `POST /user/:id/avatar` (raw `fetch`), `/otp/*` and `/account-recovery/*` (stores and pages), `GET /team/public/:centerId` and `/announcement/send` (the URL is chosen by a ternary), `DELETE /user/:id/team-occurrences/:occurrenceId` (`teamService.deleteTeamOccurrence`).
+Impact: dead surface to maintain and secure (two of these routes have known guard or logic defects), and four screens' calls that cannot succeed. Fix: delete what is dead, or write the missing routes.
+
 ## Cleanup
 Dead code, safe to remove once confirmed.
 

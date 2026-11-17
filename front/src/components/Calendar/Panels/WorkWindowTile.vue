@@ -1,28 +1,34 @@
 <template>
   <div class="work-window">
-    <!-- Bouton à bascule (MD3 expressif) : rond et discret au repos ; activé il devient un carré arrondi, change de couleur et
-         d'icône (contour → plein), et la tuile s'affiche. `aria-expanded` / `aria-controls` le relient à la tuile. -->
-    <div class="d-flex justify-space-between align-center" :class="{ 'mb-2': open }">
+    <!-- En-tête (bureau seulement) : bouton à bascule MD3 expressif qui entre dans le mode « fenêtre » (un jour touché ouvre sa
+         fenêtre de 7 jours) et en sort pour revenir au choix d'un jour. Rond au repos ; activé il devient un carré arrondi,
+         change de couleur et d'icône. `aria-expanded` / `aria-controls` le relient à la carte. -->
+    <div v-if="!headerless" class="d-flex justify-space-between align-center" :class="{ 'mb-2': active }">
       <span class="text-title font-weight-medium">Fenêtre de 7 jours</span>
       <v-icon-btn
-        v-model:active="open"
+        v-model:active="active"
         size="default"
         color="secondary"
         active-color="error"
-        :rounded="open ? '24' : '16'"
+        :rounded="active ? '24' : '16'"
         base-variant="flat"
         active-variant="flat"
-        icon="mdi-chevron-right"
-        active-icon="mdi-close"
-        :aria-label="open ? 'Masquer la fenêtre de 7 jours' : 'Afficher la fenêtre de 7 jours'"
-        :aria-expanded="open"
+        icon="mdi-calendar-week-outline"
+        active-icon="mdi-calendar-remove-outline"
+        :aria-label="active ? 'Quitter le mode fenêtre de 7 jours' : 'Choisir une fenêtre de 7 jours'"
+        :aria-expanded="active"
         aria-controls="work-window-card"
       />
     </div>
 
+    <p v-if="!headerless && active && !windowStart" class="text-body-medium text-medium-emphasis mb-0">
+      Touchez un jour du calendrier pour afficher sa fenêtre de 7 jours.
+    </p>
+
     <v-expand-transition>
       <v-card
-        v-show="open"
+        v-if="windowStart"
+        v-show="headerless || active"
         id="work-window-card"
         rounded="xl"
         elevation="0"
@@ -114,12 +120,7 @@
 
           <!-- Une barre par jour : la répartition de la charge, pas seulement son total -->
           <div class="days" role="img" :aria-label="`Temps travaillé par jour : ${daysSummary}`">
-            <div
-              v-for="day in windowDays"
-              :key="day.date"
-              class="day-col"
-              :title="`${formatDayShort(day.date)} : ${formatHours(day.workedMinutes)}`"
-            >
+            <div v-for="day in windowDays" :key="day.date" class="day-col" :class="day.kindClass" :title="day.title">
               <span class="day-bar-value tabular">{{
                 day.workedMinutes ? formatHours(day.workedMinutes).replace(' h ', 'h').replace(' h', 'h') : ''
               }}</span>
@@ -141,14 +142,18 @@
 import { computed } from 'vue';
 import { Temporal } from '@js-temporal/polyfill';
 import { formatDayRange, formatDayShort, formatHours, windowStartingAt } from '@/utils/workWindows';
+import { useShiftStore } from '@/stores/shiftStore';
+import { DAY_KIND_LABELS, dayKindClass, dayKindOfEntry } from '@/utils/dayStyle';
 
 /**
  * Tuile « Fenêtre de 7 jours » : travail cumulé et plus long repos d'une période de 7 jours qui commence au jour choisi,
  * comparés aux seuils du serveur (48 h de travail au plus, 35 h de repos continu au moins), et temps travaillé de chaque jour.
  */
 const props = defineProps({
-  /** Premier jour de la fenêtre (YYYY-MM-DD) */
-  windowStart: { type: String, required: true },
+  /** Premier jour de la fenêtre (YYYY-MM-DD) ; `null` tant qu'aucun jour n'est choisi */
+  windowStart: { type: String, default: null },
+  /** Sans en-tête (feuille du bas, mobile) : la carte est toujours affichée et le mode se pilote ailleurs */
+  headerless: { type: Boolean, default: false },
   /** Périodes de 7 jours renvoyées par le serveur */
   windows: { type: Array, required: true },
   /** Résultat du serveur par jour, indexé par date */
@@ -158,8 +163,8 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:windowStart']);
 
-// La tuile est visible par défaut ; le bouton de l'en-tête la masque et l'affiche
-const open = ref(true);
+/** Mode « fenêtre » actif : le bouton de l'en-tête l'active et le désactive (la carte n'est visible que dans ce mode) */
+const active = defineModel('active', { type: Boolean, default: false });
 
 const LETTERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 const BAR_MAX_HEIGHT = 44;
@@ -207,21 +212,26 @@ const momentLabel = (value) => {
   return `${day} ${String(moment.hour).padStart(2, '0')}:${String(moment.minute).padStart(2, '0')}`;
 };
 
+// Barres de la couleur du jour, comme le calendrier : vacation (primaire), VIC (secondaire), congé, autre affectation. Un jour
+// que la store des vacations n'a pas chargé (hors du mois affiché) garde la couleur de la vacation.
+const shiftStore = useShiftStore();
+
 const windowDays = computed(() =>
   Array.from({ length: 7 }, (_, index) => {
     const date = Temporal.PlainDate.from(props.windowStart).add({ days: index });
     const workedMinutes = props.daysByDate[date.toString()]?.workedMinutes ?? 0;
+    const kind = dayKindOfEntry(shiftStore.persistentVacationsMap.get(date.toString())) ?? 'work';
     return {
       date: date.toString(),
       letter: LETTERS[date.dayOfWeek - 1],
       workedMinutes,
+      kindClass: dayKindClass(kind),
+      title: `${formatDayShort(date.toString())} : ${formatHours(workedMinutes)}${workedMinutes ? ` (${DAY_KIND_LABELS[kind] ?? kind})` : ''}`,
       height: Math.max(3, Math.round((percent(workedMinutes, BAR_SCALE_MINUTES) * BAR_MAX_HEIGHT) / 100)),
     };
   }),
 );
-const daysSummary = computed(() =>
-  windowDays.value.map((day) => `${formatDayShort(day.date)} ${formatHours(day.workedMinutes)}`).join(', '),
-);
+const daysSummary = computed(() => windowDays.value.map((day) => day.title).join(', '));
 </script>
 
 <style scoped>
@@ -267,7 +277,8 @@ const daysSummary = computed(() =>
   width: 100%;
   max-width: 22px;
   border-radius: 4px 4px 2px 2px;
-  background: rgb(var(--v-theme-primary));
+  /* --tile-accent vient de la classe du jour (day--work, day--vic, day--leave, day--entry : styles/day.css) */
+  background: var(--tile-accent, rgb(var(--v-theme-primary)));
 }
 
 .day-bar--empty {

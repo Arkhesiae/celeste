@@ -82,7 +82,6 @@ declare module 'vue' {
     PointsSlider: typeof import('./src/components/Substitutions/PointsSlider.vue')['default']
     RecurringCostsCard: typeof import('./src/components/Financement/RecurringCostsCard.vue')['default']
     ReplyDialog: typeof import('./src/components/Tickets/ReplyDialog.vue')['default']
-    RestRuleTile: typeof import('./src/components/Calendar/Panels/RestRuleTile.vue')['default']
     RotationItem: typeof import('./src/components/Rotations/RotationItem/RotationItem.vue')['default']
     RotationItemSkeleton: typeof import('./src/components/Rotations/RotationItem/RotationItemSkeleton.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

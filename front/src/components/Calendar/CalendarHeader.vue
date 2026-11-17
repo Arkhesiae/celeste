@@ -20,20 +20,6 @@
     </div>
 
     <div class="d-flex align-center">
-      <v-btn-toggle
-        :model-value="selectionMode"
-        mandatory
-        divided
-        density="comfortable"
-        variant="outlined"
-        rounded="lg"
-        color="primary"
-        aria-label="Mode de sélection"
-        @update:model-value="emit('update:selectionMode', $event)"
-      >
-        <v-btn value="day" size="small" prepend-icon="mdi-calendar-today">Jour</v-btn>
-        <v-btn value="period" size="small" prepend-icon="mdi-calendar-range">Période</v-btn>
-      </v-btn-toggle>
       <v-btn icon variant="text" class="mx-2" @click="emit('navigateMonth', -1)">
         <v-icon>mdi-chevron-left</v-icon>
       </v-btn>
@@ -49,22 +35,6 @@
       {{ selectedMonthName }} <span v-if="!isCurrentYear">{{ selectedYear }}</span>
     </div>
     <v-btn icon="mdi-chevron-right" variant="text" size="small" @click="emit('navigateMonth', 1)" />
-  </div>
-  <div v-if="smAndDown" class="d-flex justify-center mb-4">
-    <v-btn-toggle
-      :model-value="selectionMode"
-      mandatory
-      divided
-      density="comfortable"
-      variant="outlined"
-      rounded="lg"
-      color="primary"
-      aria-label="Mode de sélection"
-      @update:model-value="emit('update:selectionMode', $event)"
-    >
-      <v-btn value="day" size="small" prepend-icon="mdi-calendar-today">Jour</v-btn>
-      <v-btn value="period" size="small" prepend-icon="mdi-calendar-range">Période</v-btn>
-    </v-btn-toggle>
   </div>
 </template>
 
@@ -82,14 +52,9 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  /** `day` : un jour à la fois ; `period` : deux jours choisis pour contrôler une période */
-  selectionMode: {
-    type: String,
-    default: 'day',
-  },
 });
 
-const emit = defineEmits(['navigateMonth', 'goToToday', 'update:selectionMode']);
+const emit = defineEmits(['navigateMonth', 'goToToday']);
 
 const { smAndDown } = useDisplay();
 

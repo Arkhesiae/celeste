@@ -18,6 +18,19 @@ export function dayKindOf({ type, shiftType = null, variation = null } = {}) {
   return null;
 }
 
+/**
+ * Nature d'un jour d'après son entrée dans la store des vacations (`shiftStore.persistentVacationsMap`) ; `null` si le jour n'y est pas.
+ * Remplacé, l'agent ne tient plus de vacation : on prend celle qu'il a cédée, comme le calendrier.
+ */
+export function dayKindOfEntry(entry) {
+  if (!entry) return null;
+  const shown = entry.shiftData?.shift ?? (entry.presence === 'replaced' ? entry.substitution?.gave?.shift : null);
+  return dayKindOf({ type: entry.type, shiftType: shown?.type, variation: entry.shiftData?.selectedVariation });
+}
+
+/** Libellé de la nature d'un jour, pour les infobulles (la couleur ne dit jamais seule) */
+export const DAY_KIND_LABELS = { work: 'vacation', vic: 'VIC', leave: 'congé', entry: 'affectation', rest: 'repos' };
+
 /** Classe de la nature d'un jour (`day--work`...), vide sans nature */
 export const dayKindClass = (kind) => (kind ? `day--${kind}` : '');
 

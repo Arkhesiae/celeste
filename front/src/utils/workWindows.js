@@ -24,16 +24,6 @@ const dayKeys = (from, to) => {
   return keys;
 };
 
-/** Les deux jours d'une sélection dans l'ordre chronologique */
-export function orderedPeriod(a, b) {
-  return Temporal.PlainDate.compare(a, b) <= 0 ? { start: a, end: b } : { start: b, end: a };
-}
-
-/** Nombre de jours d'une période, bornes comprises */
-export function daysInPeriod(start, end) {
-  return Temporal.PlainDate.from(start).until(Temporal.PlainDate.from(end), { largestUnit: 'days' }).days + 1;
-}
-
 /**
  * Ce que le calendrier dessine sous chaque jour : une ligne par problème (`work` : plus de 48 h de travail, `rest` : pas de
  * repos continu de 35 h). Une ligne couvre l'ensemble des périodes de 7 jours en défaut pour ce problème : une période isolée
@@ -67,40 +57,6 @@ export function buildWindowLines(windows) {
     }
   }
   return lines;
-}
-
-/**
- * Périodes de 7 jours à contrôler pour une sélection de jours :
- *   - sélection de 7 jours ou moins : celles qui la contiennent en entier (7 pour un seul jour, une seule pour 7 jours) ;
- *   - sélection de plus de 7 jours : toutes celles qui tiennent dans la sélection.
- */
-export function windowsForPeriod(windows, start, end) {
-  const length = daysInPeriod(start, end);
-  const first = length <= 7 ? Temporal.PlainDate.from(end).subtract({ days: 6 }) : Temporal.PlainDate.from(start);
-  const last = length <= 7 ? Temporal.PlainDate.from(start) : Temporal.PlainDate.from(end).subtract({ days: 6 });
-  return windows.filter((window) => {
-    const windowStart = Temporal.PlainDate.from(window.start);
-    return Temporal.PlainDate.compare(windowStart, first) >= 0 && Temporal.PlainDate.compare(windowStart, last) <= 0;
-  });
-}
-
-/**
- * Verdict sur un ensemble de périodes : la règle des 35 h et celle des 48 h, chacune avec la période la plus défavorable.
- * @returns {{ evaluated: number, rest: { ok: boolean, worst: Object|null }, work: { ok: boolean, worst: Object|null } }}
- */
-export function periodVerdict(windows) {
-  const worstBy = (key, direction) =>
-    windows.reduce(
-      (worst, window) => (worst === null || direction * (window[key] - worst[key]) < 0 ? window : worst),
-      null,
-    );
-  const worstRest = worstBy('longestRestMinutes', 1);
-  const worstWork = worstBy('workMinutes', -1);
-  return {
-    evaluated: windows.length,
-    rest: { ok: windows.every((window) => window.restOk), worst: worstRest },
-    work: { ok: windows.every((window) => window.workOk), worst: worstWork },
-  };
 }
 
 /** La période de 7 jours qui commence à ce jour (undefined si le serveur ne l'a pas renvoyée) */

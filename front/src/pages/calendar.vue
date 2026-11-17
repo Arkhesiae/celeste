@@ -5,10 +5,8 @@
         <CalendarHeader
           :selected-month="selectedMonth"
           :selected-year="selectedYear"
-          :selection-mode="selectionMode"
           @navigate-month="onNavigateMonth"
           @go-to-today="goToToday"
-          @update:selection-mode="setSelectionMode"
         />
 
         <CalendarDesktop
@@ -39,7 +37,7 @@
       <v-col v-if="!mdAndDown" cols="auto" style="width: 400px !important; max-width: 400px !important">
         <div class="d-flex flex-column ga-4">
           <CalendarPanel
-            v-if="selectedDate && selectionMode === 'day'"
+            v-if="selectedDate"
             :selected-date="selectedDate"
             @open-rempla-dialog="openSubstitutionForm"
             @open-drawer="handleOpenDrawer"
@@ -48,11 +46,13 @@
           />
 
           <WorkWindowTile
-            v-if="windowStart && workCheckStore.limits"
+            v-if="workCheckStore.limits"
+            :active="windowMode"
             :window-start="windowStart"
             :windows="workCheckStore.windows"
             :days-by-date="workCheckStore.daysByDate"
             :limits="workCheckStore.limits"
+            @update:active="setWindowMode"
             @update:window-start="windowStart = $event"
           />
         </div>
@@ -75,7 +75,8 @@
             @withdraw="handleWithdraw"
           />
           <WorkWindowTile
-            v-if="windowStart && workCheckStore.limits"
+            v-if="windowStart && workCheckStore.limits && windowMode"
+            headerless
             :window-start="windowStart"
             :windows="workCheckStore.windows"
             :days-by-date="workCheckStore.daysByDate"
@@ -85,6 +86,27 @@
         </div>
       </v-bottom-sheet>
     </v-row>
+
+    <!-- Mobile : bouton flottant à deux états. Inactif : on choisit un jour normalement. Actif (mode « fenêtre ») : un jour
+         touché ouvre sa fenêtre de 7 jours dans la feuille du bas ; un nouveau clic sur le bouton revient au mode normal.
+         order 1 + layout : il se pose au-dessus de la barre de navigation du bas. -->
+    <v-fab
+      v-if="mdAndDown"
+      app
+      layout
+      :order="1"
+      location="bottom end"
+      flat
+      :extended="windowMode"
+      text="Window"
+      :rounded="windowMode ? '12' : '24'"
+      elevation="0"
+      :icon="windowMode ? 'mdi-calendar-remove-outline' : 'mdi-calendar-week-outline'"
+      :color="windowMode ? 'error' : 'primary'"
+      :aria-pressed="windowMode"
+      :aria-label="windowMode ? 'Quitter le mode fenêtre de 7 jours' : 'Choisir une fenêtre de 7 jours'"
+      @click="setWindowMode(!windowMode)"
+    />
 
     <SubstitutionForm
       :submitting="subInProgress"
@@ -124,7 +146,6 @@ import { useCalendarData } from '@/composables/useCalendarData';
 import { toDateKey } from '@/utils/dateKey';
 import { Temporal } from '@js-temporal/polyfill';
 import { useWorkCheckStore } from '@/stores/workCheckStore.js';
-import { orderedPeriod } from '@/utils/workWindows';
 
 /** Constantes */
 const DIALOG_MODES = {
@@ -141,9 +162,9 @@ const rotationStore = useRotationStore();
 
 /**  États */
 const selectedDate = ref(null);
-// Contrôle du temps de travail : `day` = un jour à la fois ; `period` = deux jours choisis, contrôle de la règle des 35 h
+// `day` = un jour à la fois ; `window` = mode « fenêtre de 7 jours » (mobile, bouton flottant)
 const selectionMode = ref('day');
-const period = ref(null); // { start, end } ; `end` absent tant que le deuxième jour n'est pas choisi
+const period = ref(null); // fenêtre de 7 jours mise en évidence dans le calendrier : { start, end }
 const windowStart = ref(null); // premier jour de la fenêtre de 7 jours affichée dans la tuile
 const workCheckStore = useWorkCheckStore();
 const showSubstitutionForm = ref(false);
@@ -207,16 +228,22 @@ const onBottomSheetClose = (isOpen) => {
   if (!isOpen) {
     showBottomSheet.value = false;
     selectedDate.value = null;
+    // Mode fenêtre : fermer la feuille efface la fenêtre et ses informations, le mode reste actif pour le choix suivant
+    if (windowMode.value) {
+      period.value = null;
+      windowStart.value = null;
+    }
   }
 };
 
 const handleSelectDate = (dateStr) => {
-  if (dateStr && selectionMode.value === 'period') {
-    selectPeriodDay(dateStr);
+  if (dateStr && windowMode.value) {
+    selectWindowDay(dateStr);
     return;
   }
   if (dateStr) {
     selectedDate.value = dateStr;
+    period.value = null; // la mise en évidence d'une fenêtre précédente n'a plus lieu d'être
     windowStart.value = dateStr; // la tuile de fenêtre part du jour choisi
     showBottomSheet.value = true;
   } else {
@@ -225,46 +252,50 @@ const handleSelectDate = (dateStr) => {
   }
 };
 
-// Mode « Période » : un premier jour, puis un deuxième ; un troisième clic recommence. Deux fois le même jour = une période d'un jour.
-const selectPeriodDay = (dateStr) => {
-  if (!period.value?.start || period.value.end) {
-    period.value = { start: dateStr, end: null };
-    return;
-  }
-  period.value = orderedPeriod(period.value.start, dateStr);
-  windowStart.value = period.value.start;
-  showBottomSheet.value = true;
-};
+// Mode « fenêtre de 7 jours » (mobile) : le jour touché est le premier d'une fenêtre de 7 jours, montrée dans la feuille du bas
+const windowMode = computed(() => selectionMode.value === 'window');
 
-const setSelectionMode = (mode) => {
-  selectionMode.value = mode;
-  showBottomSheet.value = false;
-  if (mode === 'period') {
-    period.value = null;
+const selectWindowDay = (dateStr) => {
+  showWindowFrom(dateStr);
+  if (mdAndDown.value) {
     selectedDate.value = null;
-  }
-};
-
-// Un clic sur une ligne du calendrier : on regarde cette période de 7 jours, dans les deux tuiles
-const inspectWindow = (start) => {
-  selectionMode.value = 'period';
-  period.value = { start, end: Temporal.PlainDate.from(start).add({ days: 6 }).toString() };
-  windowStart.value = start;
-  selectedDate.value = null;
-  showBottomSheet.value = true;
-};
-
-// Périodes courantes proposées par la tuile quand rien n'est choisi
-const applyPreset = (key) => {
-  if (key === 'today7') {
-    const today = Temporal.Now.plainDateISO();
-    period.value = { start: today.toString(), end: today.add({ days: 6 }).toString() };
+    showBottomSheet.value = true;
   } else {
-    const first = Temporal.PlainDate.from({ year: selectedYear.value, month: selectedMonth.value, day: 1 });
-    period.value = { start: first.toString(), end: first.with({ day: first.daysInMonth }).toString() };
+    selectedDate.value = dateStr;
   }
-  windowStart.value = period.value.start;
-  showBottomSheet.value = true;
+};
+
+// Entre dans le mode fenêtre (bouton flottant, ou en-tête de la tuile sur grand écran) ou en sort : le choix d'un jour redevient normal.
+// Grand écran : la feuille du bas n'existe pas, le jour choisi et sa fenêtre de 7 jours s'affichent ensemble (les deux tuiles).
+// Mobile et tablette : une seule chose à la fois dans la feuille, donc le choix précédent est effacé.
+const setWindowMode = (on) => {
+  selectionMode.value = on ? 'window' : 'day';
+  showBottomSheet.value = false;
+  if (mdAndDown.value) {
+    period.value = null;
+    windowStart.value = null;
+    selectedDate.value = null;
+  } else if (on && selectedDate.value) {
+    showWindowFrom(selectedDate.value); // le jour déjà choisi ouvre sa fenêtre
+  } else {
+    period.value = null;
+    windowStart.value = null;
+  }
+};
+
+const showWindowFrom = (dateStr) => {
+  period.value = { start: dateStr, end: Temporal.PlainDate.from(dateStr).add({ days: 6 }).toString() };
+  windowStart.value = dateStr;
+};
+
+// Un clic sur une ligne du calendrier : on regarde cette fenêtre de 7 jours dans la tuile
+const inspectWindow = (start) => {
+  selectionMode.value = 'window'; // la tuile de fenêtre ne s'affiche que dans ce mode
+  showWindowFrom(start);
+  if (mdAndDown.value) {
+    selectedDate.value = null;
+    showBottomSheet.value = true;
+  }
 };
 
 const handleSubmit = async (demand) => {

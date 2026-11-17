@@ -34,27 +34,6 @@
             </div>
           </template>
         </template>
-
-        <v-row class="mt-8">
-          <v-col cols="12" lg="4" sm="4" xs="12" md="12">
-            <v-btn
-              v-if="smAndDown"
-              block
-              class="justify-space-between"
-              rounded="xl"
-              color="surface"
-              height="64"
-              variant="flat"
-              @click="showTimelineDrawer = !showTimelineDrawer"
-            >
-              <template #append>
-                <v-icon color="primary"> mdi-chevron-right </v-icon>
-              </template>
-              <v-icon class="mr-4"> mdi-timeline-clock </v-icon>
-              Voir la timeline
-            </v-btn>
-          </v-col>
-        </v-row>
       </v-col>
 
       <!-- Timeline -->
@@ -122,9 +101,38 @@
       </v-card>
     </v-bottom-sheet>
 
-    <!-- <v-fab v-if="smAndDown && isAdmin" prepend-icon="mdi-file-plus-outline" class="fab" height="60px" rounded="0"
-      location="bottom end" text="Tour de service" extended app color="onBackground"
-      @click="showAddDialog = true"></v-fab> -->
+    <!-- Mobile : deux boutons flottants, posés au-dessus de la barre du bas (order 1 et 2 : un ordre plus grand se range plus haut).
+         Le principal (ajouter un tour de service, administrateurs) réserve sa place ; la timeline est le petit bouton au-dessus, ou le
+         seul bouton quand il n'y a pas d'ajout possible. -->
+    <template v-if="smAndDown">
+      <v-fab
+        v-if="isAdmin"
+        app
+        layout
+        :order="1"
+        icon="mdi-file-plus-outline"
+        color="primary"
+        
+        location="bottom end"
+        aria-label="Ajouter un tour de service"
+        @click="showAddDialog = true"
+      />
+      <v-fab
+        app
+        :layout="!isAdmin"
+        :order="isAdmin ? 2 : 1"
+        :size="isAdmin ? 'small' : 'default'"
+        variant="flat"
+        elevation="0"
+        rounded="12"
+        icon="mdi-timeline-clock"
+        color="surfaceContainerHigh"
+        location="bottom end"
+        :class="{ 'rotation-fab--small': isAdmin }"
+        aria-label="Voir la timeline d'activation"
+        @click="showTimelineDrawer = !showTimelineDrawer"
+      />
+    </template>
 
     <ErrorDialog
       error-title="Impossible de supprimer ce tour de service"
@@ -173,11 +181,10 @@
     />
 
     <ConfirmChangeDialog
-      :dialog-visible="showConfirmChangeDialog"
+      v-model="showConfirmChangeDialog"
       :pending-activation="pendingActivation"
       @confirm="confirmChange"
       @cancel="cancelActivation"
-      @update:dialog-visible="showConfirmChangeDialog = $event"
     />
   </v-container>
 </template>
@@ -475,18 +482,9 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.fab {
-  padding-bottom: 24px !important;
-  padding-right: 24px !important;
-}
-
-:deep(.fab > .v-fab__container > button) {
-  border-radius: 16px !important;
-}
-
-:deep(.v-fab__container) {
-  margin-right: 16px !important;
-  margin-bottom: 96px !important;
+/* Petit bouton flottant : 40 px de large contre 56 px pour le principal ; 12 px de marge Vuetify + 8 px les centrent sur le même axe */
+.rotation-fab--small :deep(.v-fab__container) {
+  margin-inline-end: 20px;
 }
 
 .timeline-drawer {

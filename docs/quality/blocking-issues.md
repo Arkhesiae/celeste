@@ -123,9 +123,6 @@ Cascaded children get the same cancellation mail as the demand that caused it, w
 - Nothing lets an admin deactivate an account (`User.isActive` is only set by seeds).
 - Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `requestJob` / `reminderJob` still go to an inactive accepter.
 
-### 55. `rotationStore.rotations` is never filled — P2
-`front/src/stores/rotationStore.js` keeps rotations per center (`rotationsByCenterId`) but still declares `rotations`, which nothing assigns. `components/Rotations/Common/ConfirmChangeDialog.vue` (`rotationName`, `rotationDays`) reads `rotationStore.rotations.find(...)`, so the rotation-change confirmation dialog shows empty rotation names and day counts.
-
 ---
 
 ## Cleanup

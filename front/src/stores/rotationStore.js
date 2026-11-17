@@ -7,13 +7,36 @@ import { rotationService } from '@/services/rotationService';
  */
 export const useRotationStore = defineStore('rotation', () => {
   // State
-  const rotations = ref([]); // Liste des tours de service
   const loading = ref(true);
 
   const rotationsByCenterId = ref({}); // { [centerId]: rotation[] }
 
   const getRotationsForCenter = (centerId) => {
     return rotationsByCenterId.value[centerId] ?? [];
+  };
+
+  /**
+   * Un tour de service (nom, jours) d'après son id, parmi ceux des centres déjà chargés ; null s'il n'est pas chargé.
+   * @param {string} rotationId
+   */
+  const findRotationById = (rotationId) => {
+    for (const data of Object.values(rotationsByCenterId.value)) {
+      const rotation = data.allRotations?.find((candidate) => candidate._id === rotationId);
+      if (rotation) return rotation;
+    }
+    return null;
+  };
+
+  /**
+   * Le tour de service qui contient une vacation (un de ses jours), parmi ceux des centres déjà chargés ; null sinon.
+   * @param {string} shiftId
+   */
+  const findRotationOfShift = (shiftId) => {
+    for (const data of Object.values(rotationsByCenterId.value)) {
+      const rotation = data.allRotations?.find((candidate) => candidate.days?.some((day) => day._id === shiftId));
+      if (rotation) return rotation;
+    }
+    return null;
   };
 
   /**
@@ -135,12 +158,8 @@ export const useRotationStore = defineStore('rotation', () => {
    */
   const updateDayInRotation = async (rotationId, updatedDay, centerId) => {
     try {
-      const result = await rotationService.updateDayInRotation(rotationId, updatedDay);
-      if (result?.rotation) {
-        rotations.value = rotations.value.map((r) => (r._id === rotationId ? result.rotation : r));
-      } else {
-        await fetchRotations(centerId);
-      }
+      await rotationService.updateDayInRotation(rotationId, updatedDay);
+      await fetchRotations(centerId); // Rafraîchir les données
     } catch (error) {
       console.error('Erreur lors de la mise à jour du jour :', error);
       throw error;
@@ -163,16 +182,16 @@ export const useRotationStore = defineStore('rotation', () => {
   };
 
   const emptyStore = () => {
-    rotations.value = [];
     rotationsByCenterId.value = {};
   };
 
   return {
-    rotations,
     loading,
 
     getRotationsForCenter,
     getActiveRotationForCenter,
+    findRotationById,
+    findRotationOfShift,
     fetchRotations,
     removeActivationDate,
     saveRotation,

@@ -434,7 +434,7 @@ const formatType = (type) => {
 
 const getShiftNameById = (shift) => {
   if (shift.name) return shift.name;
-  const rotation = rotationStore.rotations.find((rotation) => rotation.days?.find((day) => day._id === shift._id));
+  const rotation = rotationStore.findRotationOfShift(shift._id);
   if (rotation) {
     const day = rotation.days.find((day) => day._id === shift._id);
     return day?.name || 'No shift';

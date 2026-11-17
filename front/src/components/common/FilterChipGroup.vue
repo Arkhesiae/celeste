@@ -33,7 +33,7 @@
     <v-slide-group-item v-if="sortOptions.length" disabled>
       <v-menu color="onBackground" rounded="lg">
         <template #activator="{ props }">
-          <v-btn color="primary" variant="text" rounded="lg" v-bind="props">
+          <v-btn color="primary" variant="text" rounded="lg" size="small" v-bind="props">
             <span>{{ selectedSort ? selectedSort.text : sortLabel }}</span>
             <v-icon>mdi-chevron-down</v-icon>
           </v-btn>

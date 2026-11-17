@@ -50,9 +50,10 @@
         <div class="flex-grow-1 flex-shrink-0">
           <slot name="content" />
         </div>
-        <div class="pa-0 ma-0 mt-6 flex-shrink-0">
+        <!-- v-card-actions dans un v-dialog : les boutons du slot prennent la taille et le style par défaut (plugins/vuetify.js) -->
+        <v-card-actions v-if="$slots.footer" class="generic-dialog__footer justify-space-between pa-0 ma-0 mt-6 flex-shrink-0">
           <slot name="footer" />
-        </div>
+        </v-card-actions>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -127,6 +128,11 @@ onUnmounted(() => {
 <style scoped>
 .transition-all {
   transition: all 0.3s ease;
+}
+
+/* Un conteneur posé dans le slot (div d-flex...) occupe toute la largeur de la rangée d'actions */
+.generic-dialog__footer > div {
+  flex: 1 1 auto;
 }
 
 .rounded-xxl {

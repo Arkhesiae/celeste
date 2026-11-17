@@ -1,7 +1,7 @@
 <template>
   <v-card class="px-2 ma-0" rounded="xl" variant="flat">
-    <v-card-item class="pr-0">
-      <v-card-title class="d-flex justify-space-between align-center">
+    <v-card-item class="pr-0 mb-4">
+      <v-card-title class="d-flex justify-space-between align-center mb-0 pb-0">
         <div class="d-flex align-center">
           <span class="text-title-large">Equipe {{ team?.name }}</span>
           <v-btn v-if="isAdmin" icon variant="text" size="small" class="ml-2" @click="$emit('edit-team-name', team)">
@@ -9,34 +9,50 @@
           </v-btn>
         </div>
         <div class="d-flex align-center">
-          <v-menu color="onBackground" rounded="lg">
+          <v-menu rounded="lg">
             <template #activator="{ props }">
-              <v-btn icon variant="text" v-bind="props" @click.stop>
+              <v-btn icon variant="text" size="small" v-bind="props" @click.stop>
                 <v-icon>mdi-dots-vertical</v-icon>
               </v-btn>
             </template>
-            <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-              <v-list-item v-if="isAdmin" rounded="lg" @click.stop="$emit('edit-cycle', team)">
-                <v-list-item-title>Modifier le cycle</v-list-item-title>
-              </v-list-item>
-              <v-list-item v-if="isAdmin" rounded="lg" @click.stop="$emit('remove-team', team._id)">
-                <v-list-item-title style="color: rgba(var(--v-theme-onError), 1)">
-                  Supprimer l'équipe
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
+            <v-card>
+              <v-list>
+                <v-list-item v-if="isAdmin" @click.stop="$emit('edit-cycle', team)">
+                  <v-list-item-title class="d-flex ga-3">
+                    <v-icon>mdi-clock-outline </v-icon>
+                    Modifier le cycle</v-list-item-title
+                  >
+                </v-list-item>
+                <v-list-item v-if="isAdmin" @click.stop="$emit('remove-team', team._id)">
+                  <v-list-item-title class="d-flex ga-3">
+                    <v-icon>mdi-close </v-icon>Supprimer l'équipe
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-card>
+            <v-card class="mt-1 pa-4">
+              <div>
+                <span class="text-body-small">Début de cycle:</span>
+                <v-chip class="ml-1" color="onBackground" size="small" rounded="lg">
+                  {{ cycleStartDate }}
+                </v-chip>
+              </div>
+              <div>
+                <span class="text-body-medium">Prochain début de cycle:</span>
+                <v-chip class="ml-1" color="onBackground" size="small" rounded="lg">
+                  {{ nextCycleDate }}
+                </v-chip>
+              </div>
+            </v-card>
           </v-menu>
         </div>
       </v-card-title>
+      <v-card-subtitle class="pa-0 ma-0 mt-n3"> {{ membersCount }} membres </v-card-subtitle>
     </v-card-item>
 
     <v-card-text>
       <div class="d-flex flex-column gap-2">
         <div>
-          <span class="d-inline">Membres:</span>
-          <span class="ml-1">
-            {{ membersCount }}
-          </span>
           <v-chip v-if="renfortsCount > 0" class="ml-1" color="onBackground" size="small" rounded="lg">
             dont {{ renfortsCount }} renfort(s)
           </v-chip>
@@ -56,18 +72,6 @@
             <span class="ml-1 text-medium-emphasis">/ {{ currentDay.total }}</span>
           </v-chip>
         </div>
-        <div>
-          <strong>Début de cycle:</strong>
-          <v-chip class="ml-1" color="onBackground" size="small" rounded="lg">
-            {{ cycleStartDate }}
-          </v-chip>
-        </div>
-        <div>
-          <strong>Prochain début de cycle:</strong>
-          <v-chip class="ml-1" color="onBackground" size="small" rounded="lg">
-            {{ nextCycleDate }}
-          </v-chip>
-        </div>
       </div>
 
       <v-btn-group class="team-actions" connected>
@@ -82,7 +86,8 @@
         >
         <v-btn
           icon="mdi-view-week-outline"
-          variant="text"
+          variant="tonal"
+          color="primary"
           size="small"
           aria-label="Ouvrir la grille de l'équipe"
           title="Grille de l'équipe"
@@ -139,7 +144,7 @@ defineEmits(['edit-team-name', 'edit-cycle', 'remove-team', 'view-members']);
 <style scoped>
 .team-actions {
   position: absolute;
-  bottom: 6px;
-  right: 6px;
+  bottom: 16px;
+  right: 16px;
 }
 </style>

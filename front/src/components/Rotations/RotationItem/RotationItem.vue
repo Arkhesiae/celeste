@@ -39,24 +39,23 @@
               <v-icon>mdi-dots-vertical</v-icon>
             </v-btn>
           </template>
-          <v-list rounded="xl" class="pa-4" bg-color="onBackground">
-            <!-- <v-list-item @click="handleEdit(rotation)" prepend-icon="mdi-pencil" rounded="lg">
-              <v-list-item-title>Modifier</v-list-item-title>
-            </v-list-item> -->
-            <v-list-item prepend-icon="mdi-content-copy" rounded="lg" @click="handleDuplicate(rotation)">
+          <v-card>
+          <v-list  >
+            <v-list-item prepend-icon="mdi-content-copy" @click="handleDuplicate(rotation)">
               <v-list-item-title>Dupliquer</v-list-item-title>
             </v-list-item>
             <v-list-item
               prepend-icon="mdi-clock-star-four-points-outline"
-              rounded="lg"
+        
               @click="$emit('set-activation-date', rotation)"
             >
               <v-list-item-title>Programmer activation</v-list-item-title>
             </v-list-item>
-            <v-list-item prepend-icon="mdi-delete" color="error" rounded="lg" @click="$emit('delete', rotation._id)">
+            <v-list-item prepend-icon="mdi-delete" color="error" @click="$emit('delete', rotation._id)">
               <v-list-item-title>Supprimer</v-list-item-title>
             </v-list-item>
           </v-list>
+          </v-card>
         </v-menu>
         <v-btn icon variant="text" color="default" @click.stop="$emit('toggle-expand', rotation._id)">
           <v-icon :icon="isExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'" />

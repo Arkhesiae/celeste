@@ -3,34 +3,22 @@
     <!-- En-tête -->
     <MainTitle title="Demandes" subtitle="Créer et consulter les demandes de rempla">
       <template #actions>
-        <!-- Bouton pour afficher/masquer la colonne latérale sur mobile -->
-        <div v-if="smAndDown" class="d-flex position-relative flex-column align-end ga-1">
-          <v-btn
-            color="primary"
-            size="small"
-            variant="text"
-            append-icon="mdi-chevron-right"
-            @click="showRulesDialog = true"
-          >
-            Règles de travail
-          </v-btn>
-        </div>
-        <div v-else>
-          <v-btn
-            color="primary"
-            flat
-            style="border-radius: 16px !important"
-            class="px-6"
-            height="48"
-            rounded="lg"
-            prepend-icon="mdi-book-open-variant"
-            @click="showRulesDialog = true"
-          >
-            Règles de travail
-          </v-btn>
-        </div>
+        <v-btn v-if="!smAndDown" color="primary" prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
+          Règles de travail
+        </v-btn>
       </template>
     </MainTitle>
+
+    <!-- Mobile : bouton d'action flottant ; order="1" le place au-dessus de la barre de navigation du bas (même ordre 0 = dessous) -->
+    <v-fab
+      v-if="smAndDown"
+      app
+      icon="mdi-book-open"
+      :order="1"
+      color="primary"
+      location="bottom end"
+      @click="showRulesDialog = true"
+    />
 
     <!-- 
     <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
@@ -213,14 +201,9 @@ onUnmounted(() => {
   background-color: #e5e4ec !important;
 }
 
-:deep(.fab > .v-fab__container > button) {
-  border-radius: 16px !important;
-}
 
-:deep(.v-fab__container) {
-  margin-right: 16px !important;
-  margin-bottom: 96px !important;
-}
+
+
 
 /* Indicateurs de catégories */
 .category-indicator {

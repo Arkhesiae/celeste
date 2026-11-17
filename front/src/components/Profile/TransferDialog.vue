@@ -1,76 +1,74 @@
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="500">
-    <v-card rounded="xl" class="pa-6">
-      <v-card-title class="pa-0"> Faire un virement </v-card-title>
-      <v-card-text class="pa-0 py-6">
-        <v-form @submit.prevent="confirmTransfer">
-          <div class="d-flex align-center w-100 flex-column ga-6">
-            <div class="d-flex align-center w-100">
-              <v-number-input
-                v-model="transferAmount"
-                variant="underlined"
-                elevation="0"
-                reverse
-                control-variant="split"
-                label=""
-                rounded="xl"
-                :hide-input="false"
-                :min="0"
-                :rules="[(v) => v > 0 || 'Le montant doit être supérieur à 0']"
-              />
-            </div>
-            <div class="d-flex align-center w-100">
-              <v-autocomplete
-                v-model="transferRecipient"
-                :items="availableUsers"
-                :item-title="getUserFullName"
-                item-value="_id"
-                label="Destinataire"
-                elevation="0"
-                color="surfaceContainerHighest"
-                rounded="xl"
-                :loading="isLoadingUsers"
-                :rules="[(v) => !!v || 'Le destinataire est requis']"
-                class="mb-4"
-              >
-                <template #item="{ props, item }">
-                  <v-list-item v-bind="props" :title="getUserFullName(item)" :subtitle="getUserSubtitle(item)">
-                    <template #prepend>
-                      <v-avatar size="32" color="primary">
-                        {{ getUserFullName(item).charAt(0) }}
-                      </v-avatar>
-                    </template>
-                  </v-list-item>
-                </template>
-              </v-autocomplete>
-            </div>
-          </div>
-
-          <!-- <v-checkbox
-            v-model="isDelayedTransfer"
-            label="Virement différé"
-            color="primary"
-            class="mb-4"
-          ></v-checkbox> -->
-
-          <v-text-field
-            v-if="isDelayedTransfer"
-            v-model="transferDate"
-            type="date"
-            label="Date du virement"
-            variant="solo"
+  <BaseDialog v-model="localDialogVisible" title="Faire un virement" icon="mdi-transfer" :max-width="500">
+    <v-form @submit.prevent="confirmTransfer">
+      <div class="d-flex align-center w-100 flex-column ga-6">
+        <div class="d-flex align-center w-100">
+          <v-number-input
+            v-model="transferAmount"
+            variant="underlined"
             elevation="0"
-            :rules="[(v) => !!v || 'La date est requise', (v) => isFutureDate(v) || 'La date doit être dans le futur']"
-            :min="minDate"
+            reverse
+            control-variant="split"
+            label=""
+            rounded="xl"
+            :hide-input="false"
+            :min="0"
+            :rules="[(v) => v > 0 || 'Le montant doit être supérieur à 0']"
           />
-        </v-form>
-      </v-card-text>
-      <v-card-actions class="pa-0">
-        <v-btn color="secondary" text :disabled="isLoading" @click="closeDialog"> Annuler </v-btn>
-        <v-btn color="primary" text :loading="isLoading" @click="confirmTransfer"> Confirmer </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+        </div>
+        <div class="d-flex align-center w-100">
+          <v-autocomplete
+            v-model="transferRecipient"
+            :items="availableUsers"
+            :item-title="getUserFullName"
+            item-value="_id"
+            label="Destinataire"
+            elevation="0"
+            color="surfaceContainerHighest"
+            rounded="xl"
+            :loading="isLoadingUsers"
+            :rules="[(v) => !!v || 'Le destinataire est requis']"
+            class="mb-4"
+          >
+            <template #item="{ props, item }">
+              <v-list-item v-bind="props" :title="getUserFullName(item)" :subtitle="getUserSubtitle(item)">
+                <template #prepend>
+                  <v-avatar size="32" color="primary">
+                    {{ getUserFullName(item).charAt(0) }}
+                  </v-avatar>
+                </template>
+              </v-list-item>
+            </template>
+          </v-autocomplete>
+        </div>
+      </div>
+
+      <!-- <v-checkbox
+        v-model="isDelayedTransfer"
+        label="Virement différé"
+        color="primary"
+        class="mb-4"
+      ></v-checkbox> -->
+
+      <v-text-field
+        v-if="isDelayedTransfer"
+        v-model="transferDate"
+        type="date"
+        label="Date du virement"
+        variant="solo"
+        elevation="0"
+        :rules="[(v) => !!v || 'La date est requise', (v) => isFutureDate(v) || 'La date doit être dans le futur']"
+        :min="minDate"
+      />
+    </v-form>
+
+    <template #actions>
+    
+      <v-btn color="secondary" variant="text" :disabled="isLoading" @click="closeDialog">Annuler</v-btn>
+        <v-spacer />
+      <v-btn color="primary" :loading="isLoading" @click="confirmTransfer">Confirmer</v-btn>
+    </template>
+  </BaseDialog>
 </template>
 
 <script setup>

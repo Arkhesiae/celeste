@@ -48,32 +48,31 @@
 
     <div class="d-flex align-center justify-center mb-4">
       <div v-if="hasCenter" style="max-width: 600px" class="d-flex ga-2">
+        <!-- Prop stacked : l'icône (prepend-icon) est centrée au-dessus du libellé -->
         <v-btn
-          value="option2"
+          stacked
+          prepend-icon="mdi-account-switch-outline"
+          size="small"
           variant="flat"
           height="52px"
           color="primary"
-          class="team-change-btn d-flex flex-column"
+          class="team-change-btn"
           rounded="xl"
           @click="promptDialog('Changement')"
         >
-          <template #prepend>
-            <v-icon>mdi-account-switch-outline</v-icon>
-          </template>
           Changement d'équipe
         </v-btn>
         <v-btn
+          stacked
+          prepend-icon="mdi-handshake-outline"
           color="surfaceContainer"
-          value="option2"
+          size="small"
           height="52px"
           variant="flat"
-          class="team-reinforcement-btn d-flex flex-column"
+          class="team-reinforcement-btn"
           rounded="lg"
           @click="promptDialog('Renfort')"
         >
-          <template #prepend>
-            <v-icon>mdi-handshake-outline</v-icon>
-          </template>
           Renfort
         </v-btn>
       </div>
@@ -84,7 +83,7 @@
     </div>
 
     <div class="d-flex align-center justify-space-between pa-0 mb-3">
-      <div class="text-title-large">
+      <div class="text-body-large">
         {{ nextOccurrences?.length > 0 ? 'A venir' : 'Aucun changement à venir' }}
       </div>
       <div>
@@ -94,7 +93,8 @@
             color="background"
             variant="flat"
             class="elevated-shadow"
-            rounded="lg"
+            size="small"
+            rounded="16"
             append-icon="mdi-history"
             @click="$router.push('/profile/' + authStore.userData.userId + '/change-history')"
           >

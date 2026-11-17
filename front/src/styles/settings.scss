@@ -97,6 +97,9 @@
       'border-radius-pressed': 16px,
     ),
   ),
+  // Menu MD3 : conteneur élevé de niveau 2, coins arrondis (les défauts du v-menu sont dans plugins/vuetify.js)
+  $menu-elevation: 0,
+  $menu-content-border-radius: 15px,
   $icon-btn-named-sizes: (
     'x-small': (
       'height': 32px,

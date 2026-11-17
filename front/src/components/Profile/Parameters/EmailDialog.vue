@@ -44,22 +44,19 @@
     </template>
 
     <template #footer>
-      <div class="d-flex justify-space-between align-center">
-        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="handleBack">
-          {{ currentStep === 1 ? 'Annuler' : 'Retour' }}
-        </v-btn>
-        <v-btn
-          v-if="currentStep === 1"
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!emailValid"
-          @click="handleNext"
-        >
-          Continuer
-        </v-btn>
-      </div>
+      <v-btn color="primary" variant="text" :disabled="loading" @click="handleBack">
+        {{ currentStep === 1 ? 'Annuler' : 'Retour' }}
+      </v-btn>
+      <v-btn
+        v-if="currentStep === 1"
+        color="primary"
+        variant="tonal"
+        :loading="loading"
+        :disabled="!emailValid"
+        @click="handleNext"
+      >
+        Continuer
+      </v-btn>
     </template>
   </GenericDialog>
 </template>

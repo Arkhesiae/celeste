@@ -28,6 +28,7 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi';
 // Composables
 import { createVuetify } from 'vuetify';
 import { fr } from 'vuetify/locale';
+import { padEnd, padStart } from 'vuetify/lib/util/helpers.mjs';
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
@@ -77,7 +78,7 @@ export default createVuetify({
           onPrimaryContainer: '#B4EBFF',
           secondary: '#e2ff6eff',
           onSecondary: '#1D333B',
-          secondaryContainer: '#344A52',
+          secondaryContainer: '#dbd9a5ff',
           onSecondaryContainer: '#CEE6F0',
           tertiary: '#C2C4EB',
           onTertiary: '#2B2E4D',
@@ -139,12 +140,12 @@ export default createVuetify({
           primary: '#675496ff',
           surfaceTint: '#675496FF',
           onPrimary: '#FFFFFF',
-          primaryContainer: '#B4EBFF',
+          primaryContainer: '#d4ccefff',
           onPrimaryContainer: '#001F28',
           secondary: '#4edfaaff',
           onSecondary: '#FFFFFF',
           secondaryContainer: '#CEE6F0',
-          onSecondaryContainer: '#071E25',
+          onSecondaryContainer: '#a9e4f6ff',
           tertiary: '#595C7E',
           onTertiary: '#FFFFFF',
           tertiaryContainer: '#E0E0FF',
@@ -223,6 +224,7 @@ export default createVuetify({
       scrim: '#0F1416',
       class: 'pa-6',
       rounded: 'xl',
+      
       VCardActions: {
         class: 'pa-0 ma-0',
         // Taille « small » par défaut ; un `size` explicite sur le bouton l'emporte.
@@ -230,6 +232,36 @@ export default createVuetify({
         VBtn: {
           size: 'small',
           variant: 'flat',
+        },
+      },
+    },
+    // Menu MD3 : conteneur « surface container » (niveau 2, rayon 12 px : voir $menu-* dans settings.scss),
+    // lignes de 48 px, libellé « label large ». Un prop explicite sur le menu ou la liste l'emporte.
+    VMenu: {
+      offset: 12,
+      minWidth: 112,
+      class: 'pa-0',
+      VCard: {
+        class: 'pa-2',
+        color: 'primaryContainer',
+        rounded: '16',
+        VList: {
+          rounded: '0',
+          bgColor: 'transparent',
+          density: 'default',
+          class: 'pa-0',
+          VListItem: {
+            minHeight: 48,
+            rounded: '12',
+            color: 'onSecondaryContainer',
+
+            VListItemTitle: {
+              class: 'text-label-large',
+            },
+          },
+          VListSubheader: {
+            class: 'text-label-medium',
+          },
         },
       },
     },

@@ -28,7 +28,7 @@
               </div>
             </div>
           </div>
-          <v-btn icon variant="text" size="large" color="onBackground" @click="router.push('/user-params')">
+          <v-btn icon variant="text" size="default" color="onBackground" @click="router.push('/user-params')">
             <v-icon>mdi-cog-outline</v-icon>
           </v-btn>
         </div>
@@ -71,26 +71,24 @@
 
     <v-row :class="smAndDown ? 'px-4' : 'mt-16'">
       <v-col v-for="item in items" :key="item.id" cols="12" md="4">
-        <v-card
+        <!-- spaced="end" : le libellé prend la place disponible et le chevron (append) est poussé au bord -->
+        <v-btn
           v-if="!smAndDown"
+          block
+          spaced="end"
+      
           color="surfaceContainer"
-          rounded="xl"
-          class="pa-6 pl-8 cursor-pointer"
+          variant="flat"
+          size="small"
+          class="text-onSurface"
           height="80"
-          link
-          flat
           @click="router.push(item.link)"
         >
-          <div class="d-flex align-center justify-space-between h-100">
-            <div class="d-flex align-center ga-2">
-              <v-icon size="16" class="" color="onSurface">
-                {{ item.icon }}
-              </v-icon>
-              <span class="text-onSurface text-body-medium font-weight-medium">{{ item.title }}</span>
-            </div>
-            <v-icon color="onSurface"> mdi-chevron-right </v-icon>
-          </div>
-        </v-card>
+          {{ item.title }}
+          <template #append>
+            <v-icon color="primary">mdi-chevron-right</v-icon>
+          </template>
+        </v-btn>
         <div v-else class="px-2 cursor-pointer" @click="router.push(item.link)">
           <div class="d-flex align-center ga-2 justify-space-between mb-6">
             <div class="d-flex align-center ga-2">
@@ -105,37 +103,33 @@
     </v-row>
     <v-row :class="smAndDown ? 'px-4' : ''">
       <v-col cols="6" md="6">
-        <v-card
+        <v-btn
           v-if="authStore.userData.centerId"
+          block
+          spaced="end"
+          append-icon="mdi-update"
           color="surfaceContainer"
-          rounded="xl"
-          class="pa-6 cursor-pointer"
+          variant="flat"
+          class="text-onSurface"
           height="64"
-          link
-          flat
           @click="router.push('/patchnotes')"
         >
-          <div class="d-flex align-center justify-space-between h-100">
-            <span class="text-onSurface text-body-small">Patchnotes</span>
-            <v-icon size="16" color="onSurface"> mdi-update </v-icon>
-          </div>
-        </v-card>
+          Patchnotes
+        </v-btn>
       </v-col>
       <v-col cols="6" md="6">
-        <v-card
+        <v-btn
+          block
+          spaced="end"
+          append-icon="mdi-currency-eur"
           color="surfaceContainer"
-          rounded="xl"
-          class="pa-6 cursor-pointer"
+          variant="flat"
+          class="text-onSurface"
           height="64"
-          link
-          flat
           @click="router.push('/financement')"
         >
-          <div class="d-flex align-center justify-space-between h-100">
-            <span class="text-onSurface text-body-small">Financement</span>
-            <v-icon size="16" color="onSurface"> mdi-currency-eur </v-icon>
-          </div>
-        </v-card>
+          Financement
+        </v-btn>
       </v-col>
     </v-row>
     <v-row :class="smAndDown ? 'px-4' : ''" class="mb-4">

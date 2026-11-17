@@ -30,19 +30,10 @@
     </template>
 
     <template #footer>
-      <div class="d-flex justify-space-between align-center">
-        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close"> Annuler </v-btn>
-        <v-btn
-          color="primary"
-          variant="tonal"
-          rounded="xl"
-          :loading="loading"
-          :disabled="!birthDateValid"
-          @click="handleSubmit"
-        >
-          Enregistrer
-        </v-btn>
-      </div>
+      <v-btn color="primary" variant="text" :disabled="loading" @click="close"> Annuler </v-btn>
+      <v-btn color="primary" variant="tonal" :loading="loading" :disabled="!birthDateValid" @click="handleSubmit">
+        Enregistrer
+      </v-btn>
     </template>
   </GenericDialog>
 </template>

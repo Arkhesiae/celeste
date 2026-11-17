@@ -191,31 +191,31 @@ const basicRules = [
   },
 ];
 
-// Règles supplémentaires avec propriété computed
+// Règles supplémentaires : calculées elles aussi (jours consécutifs et règles de nuit, compatibility.rules.js)
 const additionalRules = [
   {
     id: 4,
     icon: 'mdi-calendar-remove',
     text: 'Un agent ne peut travailler plus de 5 jours consécutifs, temps de trajet exclu.',
-    computed: false,
+    computed: true,
   },
   {
     id: 5,
     icon: 'mdi-bed',
     text: "Un agent bénéficie d'une période de repos minimale de 12 heures après une vacation de contrôle de nuit.",
-    computed: false,
+    computed: true,
   },
   {
     id: 6,
     icon: 'mdi-bread-slice',
     text: 'Un agent ne peut exercer plus de deux vacations de contrôle consécutives empiétant sur la plage 00 h 00-06 h 00.',
-    computed: false,
+    computed: true,
   },
   {
     id: 7,
     icon: 'mdi-moon-waning-crescent ',
     text: "Un agent bénéficie d'une période de repos minimale de 48 heures après deux vacations consécutives de contrôle de nuit.",
-    computed: false,
+    computed: true,
   },
 ];
 </script>

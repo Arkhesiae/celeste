@@ -154,7 +154,7 @@
                   </div>
                   <!-- <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" /> -->
 
-                  <v-btn variant="text" color="primary" class="mb-4 ps-1" @click="openForgotPasswordDialog">
+                  <v-btn variant="text" color="primary" size="small" class="mb-4 ps-1" @click="openForgotPasswordDialog">
                     Mot de passe oublié ?
                   </v-btn>
                 </v-window-item>
@@ -165,6 +165,7 @@
                   v-if="currentStep === 1"
                   variant="text"
                   color="onBackground"
+                  size="small"
                   append-icon="mdi-chevron-right"
                   rounded="xl"
                   class="create-account-button"
@@ -177,6 +178,7 @@
                   <v-btn
                     v-if="currentStep === 2 && !smAndDown"
                     variant="text"
+                    size="small"
                     color="onBackground"
                     prepend-icon="mdi-arrow-left"
                     rounded="xl"
@@ -191,6 +193,7 @@
                     v-if="currentStep === 1"
                     class="px-4"
                     variant="flat"
+                    size="small"
                     rounded="lg"
                     color="onBackground"
                     append-icon="mdi-arrow-right"
@@ -207,6 +210,7 @@
                     class="px-4"
                     variant="flat"
                     rounded="lg"
+                    size="small"
                     color="onBackground"
                     append-icon="mdi-login"
                     :class="smAndDown ? 'login-button-mobile' : 'login-button'"

@@ -84,7 +84,7 @@
             v-if="isAdmin"
             class="mb-8"
             prepend-icon="mdi-file-plus-outline"
-            color="onBackground"
+            color="secondary"
             height="80px"
             width="100%"
             elevation="0"

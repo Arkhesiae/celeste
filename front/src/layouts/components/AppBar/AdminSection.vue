@@ -20,7 +20,7 @@
           </div>
         </div>
       </template>
-      <v-btn icon color="onBackground" class="text-body-medium" @click="navigateToAdminPanel">
+      <v-btn icon color="onBackground" size="small" class="text-body-medium" @click="navigateToAdminPanel">
         <div class="d-flex align-center btn-admin">
           <v-icon size="x-small" :color="authStore.userData.adminType === 'master' ? 'primary' : 'secondary'">
             {{ authStore.userData.adminType === 'master' ? 'mdi-star-four-points' : 'mdi-shield-crown-outline' }}

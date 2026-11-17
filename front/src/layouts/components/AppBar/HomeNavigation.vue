@@ -28,6 +28,7 @@
       <div class="d-flex mx-5">
         <v-btn
           variant="flat"
+          size="small"
           rounded="lg"
           color="onBackground"
           append-icon="mdi-arrow-right"

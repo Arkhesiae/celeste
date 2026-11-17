@@ -235,7 +235,7 @@
     <template #actions />
     <template #footer>
       <!-- Boutons de navigation -->
-      <div class="pa-6 d-flex justify-space-between">
+ 
         <v-btn
           v-if="currentStep === 2"
           color="primary"
@@ -246,7 +246,7 @@
         >
           Retour
         </v-btn>
-        <v-spacer v-if="currentStep === 1" />
+        <v-spacer />
 
         <v-btn
           v-if="currentStep === 1"
@@ -270,7 +270,7 @@
         >
           {{ dialogMode === 'edit' ? 'Modifier' : 'Ajouter' }}
         </v-btn>
-      </div>
+      
     </template>
   </GenericDialog>
 

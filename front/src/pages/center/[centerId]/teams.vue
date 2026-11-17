@@ -6,17 +6,24 @@
       :back-button="authStore.userData.adminType === 'master'"
     >
       <template #actions>
-        <v-btn
-          color="secondary"
-          flat
-          style="border-radius: 16px !important"
-          prepend-icon="mdi-plus"
-          @click="openAddTeamDialog"
-        >
+        <v-btn v-if="!smAndDown" color="primary" prepend flat prepend-icon="mdi-plus" @click="openAddTeamDialog">
           Ajouter une équipe
         </v-btn>
       </template>
     </MainTitle>
+
+    <!-- Mobile : bouton d'action flottant. Même ordre (0) que la barre du bas et monté avant elle : il se plaçait
+         dessous ; order="1" le range après la barre, donc au-dessus d'elle. -->
+    <v-fab
+      v-if="smAndDown"
+      app
+      :order="1"
+      icon="mdi-plus"
+      color="primary"
+      location="bottom end"
+      aria-label="Ajouter une équipe"
+      @click="openAddTeamDialog"
+    />
 
     <v-alert v-if="teamCountWarning" type="warning" variant="tonal" rounded="xl" class="mb-4" icon="mdi-alert-outline">
       {{ teamCountWarning }}
@@ -571,12 +578,7 @@ onMounted(async () => {
   transition: transform 0.2s;
 }
 
-.add-team-btn {
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.096),
-    0 0 0 1px rgba(255, 255, 255, 0.007),
-    0 4px 8px rgba(0, 0, 0, 0.048);
-}
+
 
 .gap-1 {
   gap: 4px;

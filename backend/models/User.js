@@ -96,6 +96,16 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    // Demande de mutation vers un autre centre en attente (null : aucune). Tant qu'elle existe, l'utilisateur peut se connecter
+    // mais ne peut agir ni sur les equipes, ni sur les points, ni sur les remplacements (middleware/userStatus.js).
+    pendingCenterTransfer: {
+        type: new mongoose.Schema({
+            toCenterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Center', required: true },
+            reason: { type: String, default: '', trim: true },
+            requestedAt: { type: Date, default: Date.now }
+        }, { _id: false }),
+        default: null
+    },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     refreshTokens: [{

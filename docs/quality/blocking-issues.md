@@ -86,6 +86,9 @@ The twin fields, dual write and dual read are in place, but the data is only con
 
 ---
 
+### 52. Inactive accounts and pending center transfers are not enforced anywhere — P1
+`User.isActive` is stored but never read: `loginUser` (`backend/services/auth/auth.login.js:16`) and `refreshAccessToken` (`backend/services/auth/auth.refreshToken.js:71`) accept a deactivated account, and no route checks it. The two guards now exist (`backend/middleware/userStatus.js`: `checkUserStatus()`, `checkUserStatus({ checkCenterTransfer: true })`, plus `assertUserActive` for login) but are **not wired to any route yet**; nothing creates a `User.pendingCenterTransfer` either (the front `TransferRequestDialog.vue` still simulates the call), and there is no front rejection dialog. Impact: a deactivated user keeps full access, and a user waiting for a mutation can still change team, transfer points and post or accept substitutions. The routes and functions to guard are listed in `docs/product/roadmap.md` (planned, 2026-11-18).
+
 ## Soon — rotation/team-change correctness and hardening
 Not urgent individually; most concern the rotation change flow (#35-#36) and the team-change flow (#22-#25).
 

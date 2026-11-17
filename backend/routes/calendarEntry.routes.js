@@ -17,7 +17,6 @@ router.get('/:userId', calendarEntryController.getUserEntries);
 // (l'ordre compte : les lectures sont déclarées avant cette ligne et n'y passent pas)
 router.use(hasNoPendingCenterTransfer);
 
-router.post('/restore-initial', calendarEntryController.restoreInitialShift);
 router.post('/register-entry', calendarEntryController.registerEntry);
 router.post('/undo-mods', calendarEntryController.undoMods);
 router.post('/delete-assignment', calendarEntryController.remove);

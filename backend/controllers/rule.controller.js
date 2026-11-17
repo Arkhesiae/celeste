@@ -1,4 +1,3 @@
-import Rule from '../models/Rule.js';
 import { AppError } from '../error/AppError.js';
 import * as ruleService from '../services/rule/index.js';
 
@@ -67,29 +66,3 @@ export const deleteRuleOverride = async (req, res, next) => {
   }
 };
 
-// Existing route requirement handlers
-export const initializeRules = async (req, res, next) => {
-  try {
-    await ruleService.initializeRules();
-    res.status(200).json({ message: 'Rules initialized successfully' });
-  } catch (error) {
-    console.error('Error initializing rules:', error);
-    next(error);
-  }
-};
-
-export const resetRules = async (req, res, next) => {
-  try {
-    // Implementation for resetting rules
-    // For now, let's assume it means clearing overrides or re-initializing defaults
-    // Warn: This might include dropping the collection or just resetting values.
-    // I'll make it safe: reset all adminValues to empty array?
-    // Or re-run init?
-    // Let's just clear adminValues for now to "reset" to defaults.
-    await Rule.updateMany({}, { $set: { adminValues: [] } });
-    res.status(200).json({ message: 'Rules reset to defaults (overrides cleared)' });
-  } catch (error) {
-    console.error('Error resetting rules:', error);
-    next(error);
-  }
-};

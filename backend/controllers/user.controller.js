@@ -163,19 +163,6 @@ const getUsersByCenter = async (req, res, next) => {
     }
 };
 
-// Obtenir l'équipe d'un utilisateur à une date spécifique
-const getUserTeamAtDate = async (req, res, next) => {
-    try {
-        const id = assertId(req.params.id, 'ID utilisateur');
-        if (!req.query.date) {
-            throw new AppError('Date requise', 400);
-        }
-        res.json(await userService.getUserTeamAtDate(id, assertDay(req.query.date)));
-    } catch (error) {
-        next(error);
-    }
-};
-
 // Obtenir l'équipe actuelle d'un utilisateur
 const getUserCurrentTeam = async (req, res, next) => {
     try {
@@ -441,7 +428,6 @@ export {
     removeUserAdmin,
     assignUserToCenter,
     getUsersByCenter,
-    getUserTeamAtDate,
     getUserCurrentTeam,
     getUsersAndGroupByTeam,
     getUserTeamOccurrences,

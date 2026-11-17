@@ -18,9 +18,7 @@ router.delete('/:name', ruleController.deleteRuleOverride);
 // À partir d'ici : administrateur principal uniquement
 router.use(isMasterAdmin);
 
-// Initialisation, réinitialisation, verrouillage / déverrouillage
-router.post('/initialize', ruleController.initializeRules);
-router.post('/reset', ruleController.resetRules);
+// Verrouillage / déverrouillage d'une règle
 router.put('/:name/lock', ruleController.toggleLock);
 
 export default router;

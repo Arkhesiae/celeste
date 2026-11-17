@@ -27,32 +27,6 @@ const registerEntry = async (req, res, next) => {
     }
 };
 
-// Restorer le initial shift
-const restoreInitialShift = async (req, res, next) => {
-    try {
-        const userId = req.user.userId;
-        const { date } = req.body;
-
-        if (!userId || !date) {
-            throw new AppError('Les champs userId et date sont requis', 400);
-        }
-
-        if (!isValidDate(date)) {
-            throw new AppError('La date est invalide', 400);
-        }
-
-        const result = await calendarEntryService.restoreInitialShift(userId, date);
-
-        res.json({
-            message: 'Retour au planning initial',
-            ...result
-        });
-
-    } catch (error) {
-        next(error);
-    }
-};
-
 // Obtenir les modifications d'un utilisateur pour une date donnée
 const getUserEntries = async (req, res, next) => {
     try {
@@ -134,7 +108,6 @@ const remove = async (req, res, next) => {
 
 export {
     registerEntry,
-    restoreInitialShift,
     getUserEntries,
     undoMods,
     remove

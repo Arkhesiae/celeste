@@ -68,7 +68,6 @@ expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` e
 
 ### 2.3 Enregistrement des entrées de calendrier (`calendarEntry.register.js` et `.cancel.js`)
 
-- Les deux routes `/restore-initial` et `/undo-mods` (et leurs deux contrôleurs) font la même chose ; elles appellent maintenant la même fonction de service, il reste à en garder une côté API et front.
 - `data.team` (affectation) et `data.teamId` (modification, patch d'horaires) sont deux noms pour une même entrée ; `registerHourPatch` accepte les deux plus deux replis (`teamFromShift?._id ?? teamFromShift`).
 - `registerEntry` charge `substitution`, les trois dernières entrées et les vacations pour chaque gestionnaire alors que chacun n'en utilise qu'une partie.
 - `getUserEntries` a aussi un « Date » pour une chaîne de jour (`new Date(date)`), et `findLatestAssignment` dans `addSubstitutionEntries` ignore volontairement les entrées de remplacement (voir 3.2).

@@ -45,7 +45,7 @@ same singular camelCase word (kebab-case is for URLs only). What still breaks it
 ## 4. URLs
 
 All mounts are singular (`routes/index.js`). What is left are sub-paths that still name a plural, called by the front, so
-they change only together with it: `/stat/users|centers|substitutions`, `/center/users/count`, `/user/teams/:centerId`
+they change only together with it: `/center/users/count`, `/user/teams/:centerId`
 (and `/timeline`), `/announcement/users-count`, `/user/:id/team-occurrences`, `/user/:id/transactions`.
 Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:centerId`, ...) or stay as descriptive names.
 

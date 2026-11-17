@@ -39,14 +39,6 @@ const getTeamAtDate = async (teams, day) => {
     };
 };
 
-/** Équipe d'un utilisateur à une date (le jour est lu dans le fuseau de son centre) */
-export async function getUserTeamAtDate (userId, date) {
-    const user = await getUserWithTeams(userId);
-    const day = toCalendarDay(date, await getCenterTimeZone(user.centerId));
-    if (!day) throw new AppError('Date invalide', 400);
-    return getTeamAtDate(user.teams, day);
-}
-
 /** Équipe d'un utilisateur aujourd'hui (jour du centre) */
 export async function getUserCurrentTeam (userId) {
     const user = await getUserWithTeams(userId);

@@ -12,13 +12,4 @@ const router = express.Router();
 // Route pour récupérer toutes les statistiques
 router.get('/', statController.getStats);
 
-// Route pour récupérer le nombre total d'utilisateurs
-router.get('/users', statController.getTotalUsers);
-
-// Route pour récupérer le nombre total de centres
-router.get('/centers', statController.getTotalCenters);
-
-// Route pour récupérer le nombre total de substitutions
-router.get('/substitutions', statController.getTotalSubstitutions);
-
 export default router;

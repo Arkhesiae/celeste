@@ -44,7 +44,6 @@ router.get('/teams/:centerId/timeline', authorizeCenterParam('centerId'), userCo
 router.get('/:id/team-timeline', authorizeTargetUserCenter('id'), userController.getUserTeamTimeline);
 router.get('/center/:centerId', authorizeCenterParam('centerId'), userController.getUsersByCenter);
 router.get('/:id/current-team', authorizeTargetUserCenter('id'), userController.getUserCurrentTeam);
-router.get('/:id/team-at', isAdmin, authorizeSelfOrCenterAdmin('id'), userController.getUserTeamAtDate);
 router.get('/:id/team-occurrences', authorizeSelfOrCenterAdmin('id'), userController.getUserTeamOccurrences);
 router.delete('/:id/team-occurrences/:occurrenceId', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.deleteTeamOccurrence);
 router.post('/:id/assign-team', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.assignTeamToUser);

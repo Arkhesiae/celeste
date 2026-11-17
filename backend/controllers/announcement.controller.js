@@ -1,8 +1,6 @@
 import User from '../models/User.js';
 import Announcement from '../models/Announcement.js';
 import Center from '../models/Center.js';
-import { findOrThrow } from '../utils/mongo.js';
-import { sameId } from '../utils/ids.js';
 import { AppError } from '../error/AppError.js';
 import * as emailService from '../services/email/index.js';
 
@@ -272,36 +270,11 @@ const getStats = async (req, res, next) => {
   }
 };
 
-/**
- * Supprime une annonce de l'historique
- */
-const deleteAnnouncement = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-
-    const announcement = await findOrThrow(Announcement, id, { message: 'Annonce non trouvée' });
-    // Vérifier que l'utilisateur peut supprimer cette annonce
-    if (!sameId(announcement.sentBy, req.user._id) && !req.user.isAdmin) {
-      throw new AppError('Vous n\'êtes pas autorisé à supprimer cette annonce', 403);
-    }
-
-    await Announcement.findByIdAndDelete(id);
-
-    res.json({
-      success: true,
-      message: 'Annonce supprimée avec succès'
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export {
   // getTemplates,
   // getTemplatePreview,
   getUserCount,
   sendAnnouncement,
   getHistory,
-  getStats,
-  deleteAnnouncement
+  getStats
 }; 

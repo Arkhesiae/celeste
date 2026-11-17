@@ -19,9 +19,8 @@ router.post('/send', isMasterAdmin, announcementController.sendAnnouncement);
 // Envoi à un centre : son administrateur (ou le master). Le caractère « global » se déduit de la route, pas du corps
 router.post('/center/:centerId/send', authorizeCenterParam('centerId'), announcementController.sendAnnouncement);
 
-// Historique, statistiques et suppression : administrateurs
+// Historique et statistiques : administrateurs
 router.get('/history', announcementController.getHistory);
 router.get('/stats', announcementController.getStats);
-router.delete('/:id', announcementController.deleteAnnouncement);
 
 export default router;

@@ -55,7 +55,6 @@
 </template>
 
 <script setup>
-
 const props = defineProps({
   user: {
     type: Object,
@@ -82,5 +81,4 @@ const user2Team = computed(() => {
 });
 </script>
 
-<style>
-</style>
+<style></style>

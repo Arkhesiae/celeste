@@ -91,5 +91,4 @@ const openDemand = (demand) => {
   background-color: rgb(var(--v-theme-primary));
   color: rgb(var(--v-theme-background));
 }
-
 </style>

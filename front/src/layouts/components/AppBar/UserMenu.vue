@@ -66,18 +66,14 @@
     <v-card rounded="xl">
       <!-- Trois liens reliés en un seul groupe -->
       <v-btn-group connected variant="flat" color="primaryContainer" size="small" class="w-100 pa-0">
-        <v-btn class="flex-grow-1"  prepend-icon="mdi-account-cog" @click="$emit('navigate-profile')">
-          Profil
-        </v-btn>
-        <v-btn class="flex-grow-1"  prepend-icon="mdi-cog" @click="router.push('/user-params')">
+        <v-btn class="flex-grow-1" prepend-icon="mdi-account-cog" @click="$emit('navigate-profile')"> Profil </v-btn>
+        <v-btn class="flex-grow-1" prepend-icon="mdi-cog" @click="router.push('/user-params')">
           Paramètres
           <template v-if="!hasPhone" #append>
             <v-badge color="error" icon="mdi-exclamation-thick" inline />
           </template>
         </v-btn>
-        <v-btn class="flex-grow-1" prepend-icon="mdi-logout" @click="$emit('logout')">
-          Se déconnecter
-        </v-btn>
+        <v-btn class="flex-grow-1" prepend-icon="mdi-logout" @click="$emit('logout')"> Se déconnecter </v-btn>
       </v-btn-group>
 
       <div class="d-flex justify-end">

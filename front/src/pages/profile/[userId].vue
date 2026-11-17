@@ -193,7 +193,6 @@
         :order="2"
         size="small"
         rounded="12"
-        
         variant="flat"
         elevation="0"
         icon="mdi-handshake-outline"

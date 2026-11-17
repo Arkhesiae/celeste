@@ -6,8 +6,7 @@ const pointStore = usePointStore();
 const points = computed(() => pointStore.points);
 const pendingTransactions = computed(() => pointStore.pendingTransactions);
 
-defineProps({
-});
+defineProps({});
 </script>
 
 <template>

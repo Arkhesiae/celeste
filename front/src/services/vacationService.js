@@ -18,5 +18,4 @@ export const vacationService = {
     });
     return response;
   },
-
 };

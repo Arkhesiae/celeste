@@ -86,7 +86,9 @@ const emit = defineEmits(['update:selectedDate', 'move', 'inspect-window']);
 // Trois diapositives [précédent, affiché, suivant]. Après un glissement, le parent change de mois : le mois voisin devient
 // le mois affiché et on recentre sans animation (même principe que la grille d'équipe).
 const slides = computed(() =>
-  props.previousDays && props.nextDays ? [props.previousDays, props.calendarDays, props.nextDays] : [props.calendarDays],
+  props.previousDays && props.nextDays
+    ? [props.previousDays, props.calendarDays, props.nextDays]
+    : [props.calendarDays],
 );
 const swiper = shallowRef(null);
 const onSwiper = (instance) => {

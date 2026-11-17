@@ -235,42 +235,34 @@
     <template #actions />
     <template #footer>
       <!-- Boutons de navigation -->
- 
-        <v-btn
-          v-if="currentStep === 2"
-          color="primary"
-          variant="text"
-          rounded="xl"
-          prepend-icon="mdi-arrow-left"
-          @click="currentStep = 1"
-        >
-          Retour
-        </v-btn>
-        <v-spacer />
 
-        <v-btn
-          v-if="currentStep === 1"
-          color="primary"
-          variant="text"
-          rounded="xl"
-          append-icon="mdi-arrow-right"
-          :disabled="!hourType"
-          @click="goToStep2"
-        >
-          Suivant
-        </v-btn>
+      <v-btn
+        v-if="currentStep === 2"
+        color="primary"
+        variant="text"
+        rounded="xl"
+        prepend-icon="mdi-arrow-left"
+        @click="currentStep = 1"
+      >
+        Retour
+      </v-btn>
+      <v-spacer />
 
-        <v-btn
-          v-if="currentStep === 2"
-          color="primary"
-          variant="text"
-          rounded="xl"
-          :disabled="!isValid"
-          @click="submit"
-        >
-          {{ dialogMode === 'edit' ? 'Modifier' : 'Ajouter' }}
-        </v-btn>
-      
+      <v-btn
+        v-if="currentStep === 1"
+        color="primary"
+        variant="text"
+        rounded="xl"
+        append-icon="mdi-arrow-right"
+        :disabled="!hourType"
+        @click="goToStep2"
+      >
+        Suivant
+      </v-btn>
+
+      <v-btn v-if="currentStep === 2" color="primary" variant="text" rounded="xl" :disabled="!isValid" @click="submit">
+        {{ dialogMode === 'edit' ? 'Modifier' : 'Ajouter' }}
+      </v-btn>
     </template>
   </GenericDialog>
 

@@ -335,7 +335,6 @@ const cancelImpact = () => {
 </script>
 
 <style>
-
 .team-subtitle {
   color: rgba(var(--v-theme-on-surface), 0.7);
   font-size: 12px;

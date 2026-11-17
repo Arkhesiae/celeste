@@ -46,8 +46,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore.js';
 const substitutionStore = useSubstitutionStore();
 
 // Props
-defineProps({
-});
+defineProps({});
 
 const ownFilter = ref('tous');
 

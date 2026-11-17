@@ -112,7 +112,6 @@
         :order="1"
         icon="mdi-file-plus-outline"
         color="primary"
-        
         location="bottom end"
         aria-label="Ajouter un tour de service"
         @click="showAddDialog = true"

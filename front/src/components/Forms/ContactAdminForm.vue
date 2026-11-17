@@ -287,5 +287,4 @@ onMounted(async () => {
   background: rgba(var(--v-theme-background), 0.4);
   backdrop-filter: blur(10px);
 }
-
 </style>

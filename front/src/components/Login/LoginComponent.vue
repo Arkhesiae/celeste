@@ -154,7 +154,13 @@
                   </div>
                   <!-- <v-checkbox label="Se souvenir de moi" v-model="stayConnected" class="mobile-checkbox" /> -->
 
-                  <v-btn variant="text" color="primary" size="small" class="mb-4 ps-1" @click="openForgotPasswordDialog">
+                  <v-btn
+                    variant="text"
+                    color="primary"
+                    size="small"
+                    class="mb-4 ps-1"
+                    @click="openForgotPasswordDialog"
+                  >
                     Mot de passe oublié ?
                   </v-btn>
                 </v-window-item>

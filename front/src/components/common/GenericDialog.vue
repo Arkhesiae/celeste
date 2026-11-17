@@ -51,7 +51,10 @@
           <slot name="content" />
         </div>
         <!-- v-card-actions dans un v-dialog : les boutons du slot prennent la taille et le style par défaut (plugins/vuetify.js) -->
-        <v-card-actions v-if="$slots.footer" class="generic-dialog__footer justify-space-between pa-0 ma-0 mt-6 flex-shrink-0">
+        <v-card-actions
+          v-if="$slots.footer"
+          class="generic-dialog__footer justify-space-between pa-0 ma-0 mt-6 flex-shrink-0"
+        >
           <slot name="footer" />
         </v-card-actions>
       </v-card-text>

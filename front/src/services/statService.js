@@ -15,5 +15,4 @@ export const statService = {
     });
     return response;
   },
-
 };

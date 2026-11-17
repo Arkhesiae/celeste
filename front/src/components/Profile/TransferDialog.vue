@@ -63,9 +63,8 @@
     </v-form>
 
     <template #actions>
-    
       <v-btn color="secondary" variant="text" :disabled="isLoading" @click="closeDialog">Annuler</v-btn>
-        <v-spacer />
+      <v-spacer />
       <v-btn color="primary" :loading="isLoading" @click="confirmTransfer">Confirmer</v-btn>
     </template>
   </BaseDialog>

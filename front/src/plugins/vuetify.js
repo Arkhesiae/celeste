@@ -223,7 +223,7 @@ export default createVuetify({
       scrim: '#0F1416',
       class: 'pa-6',
       rounded: 'xl',
-      
+
       VCardActions: {
         class: 'pa-0 ma-0',
         // Taille « small » par défaut ; un `size` explicite sur le bouton l'emporte.

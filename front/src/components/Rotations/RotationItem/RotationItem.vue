@@ -40,21 +40,20 @@
             </v-btn>
           </template>
           <v-card>
-          <v-list  >
-            <v-list-item prepend-icon="mdi-content-copy" @click="handleDuplicate(rotation)">
-              <v-list-item-title>Dupliquer</v-list-item-title>
-            </v-list-item>
-            <v-list-item
-              prepend-icon="mdi-clock-star-four-points-outline"
-        
-              @click="$emit('set-activation-date', rotation)"
-            >
-              <v-list-item-title>Programmer activation</v-list-item-title>
-            </v-list-item>
-            <v-list-item prepend-icon="mdi-delete" color="error" @click="$emit('delete', rotation._id)">
-              <v-list-item-title>Supprimer</v-list-item-title>
-            </v-list-item>
-          </v-list>
+            <v-list>
+              <v-list-item prepend-icon="mdi-content-copy" @click="handleDuplicate(rotation)">
+                <v-list-item-title>Dupliquer</v-list-item-title>
+              </v-list-item>
+              <v-list-item
+                prepend-icon="mdi-clock-star-four-points-outline"
+                @click="$emit('set-activation-date', rotation)"
+              >
+                <v-list-item-title>Programmer activation</v-list-item-title>
+              </v-list-item>
+              <v-list-item prepend-icon="mdi-delete" color="error" @click="$emit('delete', rotation._id)">
+                <v-list-item-title>Supprimer</v-list-item-title>
+              </v-list-item>
+            </v-list>
           </v-card>
         </v-menu>
         <v-btn icon variant="text" color="default" @click.stop="$emit('toggle-expand', rotation._id)">

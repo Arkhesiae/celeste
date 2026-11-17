@@ -40,7 +40,9 @@ export function useCalendar(selectedYear, selectedMonth) {
 
   // Mois voisins, pour le glissement du calendrier mobile (le mois d'après n'est pas calculé tant que personne ne le lit)
   const neighborGrid = (months) => {
-    const month = Temporal.PlainDate.from({ year: selectedYear.value, month: selectedMonth.value, day: 1 }).add({ months });
+    const month = Temporal.PlainDate.from({ year: selectedYear.value, month: selectedMonth.value, day: 1 }).add({
+      months,
+    });
     return buildMonthGrid(month.year, month.month);
   };
   const previousDays = computed(() => neighborGrid(-1));

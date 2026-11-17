@@ -47,11 +47,7 @@
           >
             <TicketStatus v-if="!smAndDown" :ticket-id="ticket._id" :status="ticket.status" :prepend-icon="true" />
 
-            <MobileStatusChip
-              v-if="smAndDown"
-              :status="ticket.status"
-              @click.stop="openSelector(ticket._id)"
-            />
+            <MobileStatusChip v-if="smAndDown" :status="ticket.status" @click.stop="openSelector(ticket._id)" />
 
             <div class="d-flex align-center ga-0">
               <v-chip

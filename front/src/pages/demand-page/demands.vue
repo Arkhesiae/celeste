@@ -201,10 +201,6 @@ onUnmounted(() => {
   background-color: #e5e4ec !important;
 }
 
-
-
-
-
 /* Indicateurs de catégories */
 .category-indicator {
   padding: 0 8px;

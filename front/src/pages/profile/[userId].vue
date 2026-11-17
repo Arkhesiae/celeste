@@ -76,7 +76,6 @@
           v-if="!smAndDown"
           block
           spaced="end"
-      
           color="surfaceContainer"
           variant="flat"
           size="small"
@@ -174,6 +173,37 @@
       @confirm="confirmTeamChange"
       @cancel="cancelImpact"
     />
+
+    <!-- Mobile : changement d'équipe et renfort en boutons flottants, ici et non dans la carte (sa transition crée un
+         repère de position qui rangeait les boutons sous les autres éléments). Le principal réserve sa place au-dessus
+         de la barre du bas (layout, order 1), le petit se range au-dessus (order 2). -->
+    <template v-if="smAndDown && authStore.userData.centerId">
+      <v-fab
+        app
+        layout
+        :order="1"
+        icon="mdi-account-switch-outline"
+        color="primary"
+        location="bottom end"
+        aria-label="Changement d'équipe"
+        @click="openAddDialog('Changement')"
+      />
+      <v-fab
+        app
+        :order="2"
+        size="small"
+        rounded="12"
+        
+        variant="flat"
+        elevation="0"
+        icon="mdi-handshake-outline"
+        color="surfaceContainerHigh"
+        location="bottom end"
+        class="team-fab--small"
+        aria-label="Renfort"
+        @click="openAddDialog('Renfort')"
+      />
+    </template>
   </v-container>
 </template>
 
@@ -409,4 +439,9 @@ const headerStyle = reactive({
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Petit bouton flottant : 40 px de large contre 56 px pour le principal ; 12 px de marge Vuetify + 8 px les centrent sur le même axe */
+.team-fab--small :deep(.v-fab__container) {
+  margin-inline-end: 20px;
+}
+</style>

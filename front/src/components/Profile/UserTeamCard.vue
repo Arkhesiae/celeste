@@ -47,7 +47,7 @@
     </v-card-title>
 
     <div class="d-flex align-center justify-center mb-4">
-      <div v-if="hasCenter" style="max-width: 600px" class="d-flex ga-2">
+      <div v-if="hasCenter" style="max-width: 600px" class="d-none d-md-flex ga-2">
         <!-- Prop stacked : l'icône (prepend-icon) est centrée au-dessus du libellé -->
         <v-btn
           stacked

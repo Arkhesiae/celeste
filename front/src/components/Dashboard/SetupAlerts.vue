@@ -93,5 +93,5 @@ const teamStore = useTeamStore();
 const rotationStore = useRotationStore();
 const router = useRouter();
 
-const activeRotation = computed(() => rotationStore.sortedRotations.find((r) => r.status === 'active') ?? null);
+const activeRotation = computed(() => rotationStore.getActiveRotationForCenter(authStore.userData.centerId));
 </script>

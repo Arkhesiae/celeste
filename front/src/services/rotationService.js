@@ -17,18 +17,6 @@ export const rotationService = {
   },
 
   /**
-   * Récupère une rotation par son ID.
-   * @param {string} id - L'ID de la rotation.
-   * @returns {Promise<Object>} Les données de la rotation.
-   */
-  async getRotationById(id) {
-    const response = await apiFetch(`/rotation/${id}`, {
-      method: 'GET',
-    });
-    return response;
-  },
-
-  /**
    * Crée une nouvelle rotation.
    * @param {Object} rotationData - Les données de la nouvelle rotation.
    * @returns {Promise<Object>} La rotation créée.
@@ -95,18 +83,6 @@ export const rotationService = {
     const response = await apiFetch(`/rotation/${id}/remove-date`, {
       method: 'POST',
       body: JSON.stringify({ activationDate, confirmed: confirm }),
-    });
-    return response;
-  },
-
-  /**
-   * Récupère les rotations d'un centre.
-   * @param {string} centerId - L'ID du centre.
-   * @returns {Promise<Array>} Liste des rotations du centre.
-   */
-  async getCenterRotations(centerId) {
-    const response = await apiFetch(`/centers/${centerId}/rotations`, {
-      method: 'GET',
     });
     return response;
   },

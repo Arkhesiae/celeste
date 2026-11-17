@@ -26,9 +26,6 @@ router.get('/:centerId', authorizeCenterParam('centerId'), teamController.getTea
 // Récupérer toutes les équipes
 router.get('/', resolveCenterId, teamController.getAllTeams);
 
-// Récupérer les shifts d'une équipe pour des jours donnés : ?dates=AAAA-MM-JJ&dates=AAAA-MM-JJ
-router.get('/:id/get-shifts', teamController.getTeamShifts);
-
 // Grille de l'équipe (membres du centre ou master) : ?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD, 93 jours maximum
 router.get('/:id/grid', teamController.getTeamGrid);
 
@@ -43,7 +40,6 @@ router.use(isAdmin);
 router.post('/center/:centerId', authorizeCenterParam('centerId'), teamController.createTeam);
 
 router.put('/:id/cycle-position', teamController.setTeamCyclePosition);
-router.put('/:id/cycle-start-date', teamController.updateTeamCycleStartDate);
 router.put('/:id/name', teamController.updateTeamName);
 
 // Mettre à jour l'ordre des équipes

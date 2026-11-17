@@ -12,11 +12,8 @@ router.use(verifyToken);
 // passe), après les gardes de rôle `router.use` et juste avant le contrôleur
 router.param('id', authorizeRotationAccess);
 
-// Lecture : tout utilisateur connecté
-router.get('/', rotationController.getAllRotations);
-router.get('/center/:centerId', rotationController.getRotationsByCenter);
-router.get('/status/:centerId', rotationController.getAllRotationsWithStatus);
-router.get('/active-at-date', rotationController.getActiveRotationAtDate);
+// Lecture : les tours de service d'un centre avec leur statut, pour les membres du centre (ou le master)
+router.get('/status/:centerId', authorizeCenterParam('centerId'), rotationController.getAllRotationsWithStatus);
 
 // À partir d'ici : administrateurs (local ou principal)
 router.use(isAdmin);

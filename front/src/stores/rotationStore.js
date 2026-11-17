@@ -8,14 +8,21 @@ import { rotationService } from '@/services/rotationService';
 export const useRotationStore = defineStore('rotation', () => {
   // State
   const rotations = ref([]); // Liste des tours de service
-  const sortedRotations = ref([]); // Liste des tours de service triés
-  const activeRotation = ref(null); // Tour de service actif
   const loading = ref(true);
 
   const rotationsByCenterId = ref({}); // { [centerId]: rotation[] }
 
   const getRotationsForCenter = (centerId) => {
     return rotationsByCenterId.value[centerId] ?? [];
+  };
+
+  /**
+   * Tour de service actif d'un centre : celui dont la période contient le jour courant du centre (le serveur calcule le statut
+   * dans le fuseau du centre, voir `listRotationsWithStatus`) ; null si aucun, ou tant que le centre n'est pas chargé.
+   * @param {string} centerId
+   */
+  const getActiveRotationForCenter = (centerId) => {
+    return getRotationsForCenter(centerId).sortedRotations?.find((rotation) => rotation.status === 'active') ?? null;
   };
 
   /**
@@ -157,17 +164,15 @@ export const useRotationStore = defineStore('rotation', () => {
 
   const emptyStore = () => {
     rotations.value = [];
-    sortedRotations.value = [];
-    activeRotation.value = null;
+    rotationsByCenterId.value = {};
   };
 
   return {
     rotations,
-    sortedRotations,
-    activeRotation,
     loading,
 
     getRotationsForCenter,
+    getActiveRotationForCenter,
     fetchRotations,
     removeActivationDate,
     saveRotation,

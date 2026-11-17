@@ -64,25 +64,6 @@ export const useTeamStore = defineStore('team', () => {
   };
 
   /**
-   * Récupère les utilisateurs par IDs d'équipe.
-   * @param {Array<string>|string} teamIds - Les IDs des équipes.
-   * @param {string} date - La date pour filtrer les utilisateurs.
-   * @returns {Promise<Array>} Liste des utilisateurs.
-   */
-  const fetchUsersByTeamIds = async (teamIds, date) => {
-    try {
-      loading.value = true;
-      error.value = null;
-      return await teamService.getTeamMembers(teamIds, date);
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération des utilisateurs';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  /**
    * Récupère l'équipe actuelle d'un utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
    */
@@ -293,7 +274,6 @@ export const useTeamStore = defineStore('team', () => {
     // Actions
     fetchCenterTeams,
     fetchAllTeams,
-    fetchUsersByTeamIds,
     fetchCurrentTeamOfUser,
     fetchTeamOccurrencesOfUser,
     fetchUserTeamTimeline,

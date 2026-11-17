@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Rotation from '../models/Rotation.js';
 import { findOrThrow } from '../utils/mongo.js';
+import { todayIn } from '../utils/dates/plainDate.js';
 import { AppError } from '../error/AppError.js';
 import * as rotationService from '../services/rotation/index.js';
 import * as centerService from '../services/center/index.js';
@@ -220,7 +221,8 @@ const getActiveRotationOfCenter = async (req, res, next) => {
     const {id} = req.params;
     try {
         const center = await findOrThrow(Center, id, { message: 'Centre non trouvé' });
-        const activeRotation = await rotationService.findLatestRotation(center._id, new Date());
+        const today = todayIn(await centerService.getCenterTimeZone(center._id)).toString();   // jour courant du centre
+        const activeRotation = await rotationService.findLatestRotation(center._id, today);
         res.json(activeRotation);
     } catch (error) {
         next(error);
@@ -231,10 +233,12 @@ const getActiveRotationOfCenter = async (req, res, next) => {
 const getActiveRotationsByCenter = async (req, res, next) => {
     try {
         const centers = await Center.find();
+        const timeZones = await centerService.getCenterTimeZones(centers.map((center) => center._id));
         const activeRotationsByCenter = {};
 
         for (const center of centers) {
-            const lastActiveRotation = await rotationService.findLatestRotation(center._id, new Date());
+            const today = todayIn(timeZones.get(String(center._id))).toString();   // jour courant de ce centre
+            const lastActiveRotation = await rotationService.findLatestRotation(center._id, today);
             activeRotationsByCenter[center._id] = lastActiveRotation;
         }
 

@@ -140,7 +140,6 @@ import { useSubstitutionStore } from '@/stores/substitutionStore.js';
 import { useShiftStore } from '@/stores/shiftStore.js';
 import { useCalendar } from '@/composables/useCalendar';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
-import { useRotationStore } from '@/stores/rotationStore.js';
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
 import { toDateKey } from '@/utils/dateKey';
@@ -158,7 +157,6 @@ const substitutionStore = useSubstitutionStore();
 const snackbarStore = useSnackbarStore();
 const shiftStore = useShiftStore();
 const demandDeps = ref(null);
-const rotationStore = useRotationStore();
 
 /**  États */
 const selectedDate = ref(null);
@@ -172,10 +170,6 @@ const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const showDrawer = ref(false);
 const subInProgress = ref(false);
-
-const activeRotation = computed(() => {
-  return rotationStore.sortedRotations.find((rotation) => rotation.status === 'active') || null;
-});
 
 const { mobile, smAndDown, mdAndDown } = useDisplay();
 

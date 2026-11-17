@@ -1,14 +1,9 @@
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
 import User from '../models/User.js';
-import { anchorDayOf } from '../utils/dates/dayAccess.js';
-import { daysBetween } from '../utils/dates/plainDate.js';
-import { mod } from '../utils/math.js';
 import { findOrThrow } from '../utils/mongo.js';
 import { isValidId } from '../utils/ids.js';
 import { AppError } from '../error/AppError.js';
-import * as planningService from '../services/planning/index.js';
-import * as rotationService from '../services/rotation/index.js';
 import * as teamService from '../services/team/index.js';
 
 // Créer une nouvelle équipe dans un centre
@@ -97,36 +92,6 @@ const getAllTeams = async (req, res, next) => {
 };
 
 
-// Récupérer les shifts d'une équipe pour une période donnée
-const getTeamShifts = async (req, res, next) => {
-    try {
-        const { dates } = req.query;   // ?dates=AAAA-MM-JJ&dates=AAAA-MM-JJ (un ou plusieurs jours)
-        const { id } = req.params;
-
-        if (!dates || !id) {
-            throw new AppError(`Paramètres manquants : ${!dates ? 'dates manquantes' : 'ID d\'équipe manquant'}`, 400);
-        }
-
-        const team = await Team.findById(id);
-        if (!team || team.deleted) {
-            throw new AppError('Équipe non trouvée', 404);
-        }
-
-        const dateArray = Array.isArray(dates) ? dates : [dates];
-        const results = await Promise.all(
-            dateArray.map(async (date) => ({
-                date,
-                status: await planningService.computeShiftOfTeam(date, team._id)
-            }))
-        );
-
-        res.json(results);
-    } catch (error) {
-        console.error('Erreur lors de la récupération des vacances:', error);
-        next(error);
-    }
-};
-
 // Grille d'une équipe (membres + renforts et leurs vacations) sur une courte période
 const getTeamGrid = async (req, res, next) => {
     try {
@@ -151,45 +116,6 @@ const setTeamCyclePosition = async (req, res, next) => {
         if (result.needsApproval) return res.status(409).json(result);   // approbation requise : impact détaillé
         res.json(result);
     } catch (error) {
-        next(error);
-    }
-};
-
-// Mettre à jour la date de début de cycle d'une équipe
-const updateTeamCycleStartDate = async (req, res, next) => {
-    const { id } = req.params;
-    const { cycleStartDate } = req.body;
-    try {
-        if (!cycleStartDate) {
-            throw new AppError('Date de début de cycle manquante', 400);
-        }
-
-        const update = { $set: { cycleStartDate } };
-
-        // Double écriture pendant la migration : si le centre utilise déjà une ancre de cycle, l'offset de l'équipe
-        // doit rester cohérent avec la date saisie (il a priorité à la lecture, voir services/team/team.cycleIndex.js)
-        const current = await Team.findById(id).select('center');
-        const center = current ? await Center.findById(current.center).select('cycleAnchorDate cycleAnchorDay') : null;
-        const anchorDay = center ? anchorDayOf(center) : null;
-        if (anchorDay) {
-            const rotation = await rotationService.findLatestRotation(center._id, new Date());
-            const total = rotation?.days?.length;
-            if (total) {
-                update.$set.cycleOffset = mod(daysBetween(anchorDay, cycleStartDate), total);
-            } else {
-                update.$unset = { cycleOffset: '' };   // longueur du cycle inconnue : retour à l'ancien champ
-            }
-        }
-
-        const team = await Team.findByIdAndUpdate(id, update, { new: true });
-
-        if (!team) {
-            throw new AppError('Équipe non trouvée', 404);
-        }
-
-        res.json(team);
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour de la date de début de cycle:', error);
         next(error);
     }
 };
@@ -245,10 +171,8 @@ export {
     getTeamsByCenter,
     getPublicTeamsByCenter,
     getAllTeams,
-    getTeamShifts,
     getTeamGrid,
     setTeamCyclePosition,
-    updateTeamCycleStartDate,
     updateTeamName,
     updateTeamsOrder
 }; 

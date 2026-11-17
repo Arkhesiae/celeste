@@ -108,18 +108,6 @@ export const teamService = {
   },
 
   /**
-   * Récupère les membres d'une équipe.
-   * @param {string} teamId - L'ID de l'équipe.
-   * @returns {Promise<Array>} Liste des membres de l'équipe.
-   */
-  async getTeamMembers(teamId) {
-    const response = await apiFetch(`/team/${teamId}/members`, {
-      method: 'GET',
-    });
-    return response;
-  },
-
-  /**
    * Place une équipe à un jour du tour de service : « à la date `date`, l'équipe est au jour `day` ».
    * @param {string} teamId
    * @param {{ day: number, date: string, swap?: boolean, confirmed?: boolean }} position - `date` : YYYY-MM-DD ;

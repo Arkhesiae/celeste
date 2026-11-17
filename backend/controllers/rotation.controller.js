@@ -14,40 +14,12 @@ const saveRotation = async (req, res, next) => {
     }
 };
 
-// Obtenir tous les tours de service
-const getAllRotations = async (req, res, next) => {
-    try {
-        res.json(await rotationService.listRotations());
-    } catch (error) {
-        next(error);
-    }
-};
-
-// Obtenir les tours de service d'un centre spécifique
-const getRotationsByCenter = async (req, res, next) => {
-    try {
-        res.json(await rotationService.listRotationsOfCenter(req.params.centerId));
-    } catch (error) {
-        next(error);
-    }
-};
-
 // Obtenir tous les tours de service avec leur statut
 const getAllRotationsWithStatus = async (req, res, next) => {
     try {
         res.json(await rotationService.listRotationsWithStatus(req.params.centerId));
     } catch (error) {
         next(error);
-    }
-};
-
-// Obtenir le tour de service actif à une date donnée
-const getActiveRotationAtDate = async (req, res, next) => {
-    try {
-        const date = req.query.date ? new Date(req.query.date) : new Date();
-        res.json(await rotationService.getActiveRotationAtDate(req.centerId, date));
-    } catch (err) {
-        next(err);
     }
 };
 
@@ -113,4 +85,4 @@ const updateRotation = async (req, res, next) => {
     }
 };
 
-export { saveRotation, getAllRotations, getRotationsByCenter, getAllRotationsWithStatus, getActiveRotationAtDate, deleteRotation, addActivationDate, removeActivationDate, updateDayInRotation, duplicateRotation, updateRotation };
+export { saveRotation, getAllRotationsWithStatus, deleteRotation, addActivationDate, removeActivationDate, updateDayInRotation, duplicateRotation, updateRotation };

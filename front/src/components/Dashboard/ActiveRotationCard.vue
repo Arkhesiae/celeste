@@ -42,14 +42,15 @@
 import { formatDay, activationDay } from '@/utils/dayFields.js';
 import { useDisplay } from 'vuetify';
 import { useRotationStore } from '@/stores/rotationStore.js';
+import { useAuthStore } from '@/stores/authStore.js';
 
 const { smAndDown } = useDisplay();
 const rotationStore = useRotationStore();
+const authStore = useAuthStore();
 
 const loading = computed(() => rotationStore.loading);
-const activeRotation = computed(() => {
-  return rotationStore.sortedRotations.find((rotation) => rotation.status === 'active') || null;
-});
+// Le tour de service actif du centre de l'utilisateur, au jour courant de ce centre
+const activeRotation = computed(() => rotationStore.getActiveRotationForCenter(authStore.userData.centerId));
 </script>
 
 <style scoped>

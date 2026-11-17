@@ -8,11 +8,7 @@
 </template>
 
 <script setup>
-const props = defineProps({
-  ticketId: {
-    type: String,
-    required: true,
-  },
+defineProps({
   status: {
     type: String,
     required: true,
@@ -27,7 +23,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['status-updated']);
+defineEmits(['status-updated']);
 
 const getStatusColor = (status) => {
   switch (status) {

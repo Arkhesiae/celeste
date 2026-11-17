@@ -60,7 +60,6 @@ import { useCalendarData } from '@/composables/useCalendarData';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { useAuthStore } from '@/stores/authStore';
 import { toDateKey } from '@/utils/dateKey';
 
 const DIALOG_MODES = {
@@ -70,7 +69,6 @@ const DIALOG_MODES = {
 
 const emit = defineEmits(['open-demand']);
 
-const authStore = useAuthStore();
 const subInProgress = ref(false);
 
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);

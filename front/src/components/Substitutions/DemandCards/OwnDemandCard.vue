@@ -159,7 +159,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api';
-import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
+import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
@@ -171,11 +171,6 @@ const props = defineProps({
   demand: {
     type: Object,
     required: true,
-  },
-  isPoster: {
-    type: Boolean,
-    required: false,
-    default: false,
   },
   small: {
     type: Boolean,
@@ -422,18 +417,6 @@ const openDetails = () => {
 }
 
 /* Original status styles */
-.pending-demand-card {
-  border: 1px dashed rgba(255, 196, 134, 0.157) !important;
-}
-
-.accepted-demand-card {
-  border: 1px solid rgba(111, 185, 141, 0.0000057) !important;
-}
-
-.to-do-demand-card {
-  background-color: rgba(var(--v-theme-primary), 0.2) !important;
-  color: rgba(var(--v-theme-primary), 1) !important;
-}
 
 /* Original chip styles (adapted to new chip structure) */
 .demand-card .point-chip {

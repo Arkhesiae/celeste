@@ -447,10 +447,6 @@ watch(
   transition: all 0.2s ease;
 }
 
-.transition-block {
-  transition: all 0.5s ease-in-out;
-}
-
 .fade-expand-enter-active,
 .fade-expand-leave-active {
   transition: all 0.3s ease;

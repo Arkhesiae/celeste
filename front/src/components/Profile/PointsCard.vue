@@ -87,7 +87,6 @@ import { onMounted } from 'vue';
 import { usePointStore } from '@/stores/pointStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
-import { tr } from 'vuetify/locale';
 
 const pointStore = usePointStore();
 const { smAndDown } = useDisplay();

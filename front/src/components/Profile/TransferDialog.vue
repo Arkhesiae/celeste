@@ -135,7 +135,7 @@ const fetchAvailableUsers = async () => {
 
     // Filtrer l'utilisateur courant de la liste
     availableUsers.value = users.filter((user) => user._id !== props.userId);
-  } catch (error) {
+  } catch {
     snackbarStore.showNotification('Erreur lors de la récupération des utilisateurs', 'onError', 'mdi-alert-circle');
   } finally {
     isLoadingUsers.value = false;

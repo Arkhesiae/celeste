@@ -169,7 +169,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/authStore';
 
-const props = defineProps({
+defineProps({
   day: {
     type: Object,
     required: true,
@@ -184,7 +184,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['onDelete', 'close', 'onEdit']);
+defineEmits(['onDelete', 'close', 'onEdit']);
 const selectedVariant = ref(undefined);
 
 const authStore = useAuthStore();

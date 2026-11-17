@@ -1,69 +1,60 @@
 <template>
-  <v-dialog v-model="isOpen" :fullscreen="smAndDown" max-width="600px" persistent>
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-6">
-      <div class="d-flex align-center text-title-large">Envoyer une réponse</div>
-
-      <div class="pt-4">
-        <div class="mb-4 d-flex align-center ga-3 ml-2">
-          <div class="text-title-small">Destinataire</div>
-          <v-chip size="small" rounded="lg" color="surfaceContainerHigh" class="bg-surfaceContainerHigh" variant="flat">
-            <v-icon start size="small"> mdi-email </v-icon>
-            {{ ticket?.senderEmail }}
-          </v-chip>
-        </div>
-
-        <div class="mb-4 d-flex align-center ga-3 ml-2">
-          <div class="text-title-small">Sujet</div>
-          <v-chip size="small" rounded="xl" color="secondary" variant="outlined">
-            <v-icon start size="small"> mdi-tag </v-icon>
-            Re: {{ ticket?.title }}
-          </v-chip>
-        </div>
-
-        <v-form ref="form" v-model="isFormValid">
-          <v-textarea
-            v-model="replyContent"
-            label="Votre réponse"
-            placeholder="Tapez votre réponse ici..."
-            rows="2"
-            variant="solo-filled"
-            flat
-            rounded="xl"
-            hide-details="auto"
-            :rules="replyRules"
-            counter
-            maxlength="2000"
-            auto-grow
-            required
-          />
-        </v-form>
+  <GenericDialog v-model="isOpen" title="Envoyer une réponse" :max-width="600" persistent>
+    <template #content>
+      <div class="mb-4 d-flex align-center ga-3">
+        <div class="text-title-small">Destinataire</div>
+        <v-chip size="small" rounded="lg" color="surfaceContainerHigh" class="bg-surfaceContainerHigh" variant="flat">
+          <v-icon start size="small"> mdi-email </v-icon>
+          {{ ticket?.senderEmail }}
+        </v-chip>
       </div>
 
-      <div class="d-flex justify-end gap-2">
-        <v-spacer />
-        <v-btn color="grey" variant="text" :disabled="isLoading" size="small" @click="closeDialog"> Annuler </v-btn>
-        <v-btn
-          color="surfaceContainerHigh"
-          class="bg-surfaceContainerHigh"
-          variant="flat"
-          :loading="isLoading"
-          :disabled="!isFormValid || !replyContent.trim()"
-          prepend-icon="mdi-send"
-          size="small"
-          @click="sendReply"
-        >
-          Envoyer
-        </v-btn>
+      <div class="mb-4 d-flex align-center ga-3">
+        <div class="text-title-small">Sujet</div>
+        <v-chip size="small" rounded="xl" color="secondary" variant="outlined">
+          <v-icon start size="small"> mdi-tag </v-icon>
+          Re: {{ ticket?.title }}
+        </v-chip>
       </div>
-    </v-card>
-  </v-dialog>
+
+      <v-form ref="form" v-model="isFormValid">
+        <v-textarea
+          v-model="replyContent"
+          label="Votre réponse"
+          placeholder="Tapez votre réponse ici..."
+          rows="2"
+          variant="solo-filled"
+          flat
+          rounded="xl"
+          hide-details="auto"
+          :rules="replyRules"
+          counter
+          maxlength="2000"
+          auto-grow
+          required
+        />
+      </v-form>
+    </template>
+
+    <template #footer>
+      <v-spacer />
+      <v-btn variant="text" :disabled="isLoading" @click="closeDialog">Annuler</v-btn>
+      <v-btn
+        :loading="isLoading"
+        :disabled="!isFormValid || !replyContent.trim()"
+        prepend-icon="mdi-send"
+        @click="sendReply"
+      >
+        Envoyer
+      </v-btn>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
 // import { ticketService } from '@/services/ticketService';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useTicketStore } from '@/stores/ticketStore';
-import { isValidEmail } from '../../utils/validation.js';
 
 const snackbarStore = useSnackbarStore();
 const ticketStore = useTicketStore();
@@ -101,10 +92,6 @@ const closeDialog = () => {
   replyContent.value = '';
   isOpen.value = false;
 };
-
-const emailValid = computed(() => {
-  return isValidEmail(props.ticket?.senderEmail);
-});
 
 const sendReply = async () => {
   if (!isFormValid.value || !replyContent.value.trim()) {

@@ -45,11 +45,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore.js';
 const substitutionStore = useSubstitutionStore();
 
 // Props
-const props = defineProps({
-  selectedFilter: {
-    type: String,
-    default: 'tous',
-  },
+defineProps({
 });
 
 const ownFilter = ref('tous');

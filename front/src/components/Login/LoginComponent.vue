@@ -339,7 +339,7 @@ const checkEmailExists = async () => {
     validStep1.value = exists;
     emailError.value = exists ? '' : 'Adresse e-mail introuvable';
     return exists;
-  } catch (error) {
+  } catch {
     emailError.value = 'Erreur lors de la vérification';
     return false;
   } finally {

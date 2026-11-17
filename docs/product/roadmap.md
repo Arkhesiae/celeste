@@ -17,6 +17,9 @@ One line per item, with the date. Move items between sections as they progress.
 
 - (2026-11-17) Run `npm run format` once over `front/src` (about 260 files differ from Prettier) in its own commit, then fix the ESLint errors that remain (about 150, mostly unused variables, `no-useless-catch`, `v-if` with `v-for`) and add `lint:check` / `format:check` to a pre-commit hook (husky + lint-staged).
 
+- (2026-11-18) Move the remaining raw `v-dialog` components onto `BaseDialog` / `GenericDialog`: ConfirmChangeDialog, TeamChangeImpactDialog, ForgotPasswordDialog, UserTeamCard, RotationItem, WorkshiftSummary, AddOrEditDay, TicketList, TicketDetails, UserCardDetails, AdminDemandCard, VersionSelector, the admin pages (announcements, emails, rules, tickets) and demands/index.vue.
+- (2026-11-18) Decide about `components/Calendar/Panels/RestRuleTile.vue`: documented as the period-mode 35h tile of the calendar but no page uses it any more (`calendar.vue` still holds the unused `selectDay` and `applyPreset`).
+
 ## In progress
 - (2026-11-02) Backend cleanup after the controllers/services refactor (see known issues).
 

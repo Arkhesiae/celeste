@@ -166,7 +166,7 @@ const teamCountMismatch = computed(
   () => props.teamsCount !== null && (props.rotation.days?.length ?? 0) !== props.teamsCount,
 );
 
-const emit = defineEmits(['set-activation-date', 'delete', 'toggle-expand', 'edit']);
+defineEmits(['set-activation-date', 'delete', 'toggle-expand', 'edit']);
 
 const rotationStore = useRotationStore();
 
@@ -195,7 +195,7 @@ const handleDuplicate = async (rotation) => {
   try {
     await rotationStore.duplicateRotation(rotation._id, rotation.centerId);
     snackbarStore.showNotification('Tour de service dupliqué avec succès', 'onPrimary', 'mdi-check');
-  } catch (error) {
+  } catch {
     snackbarStore.showNotification(
       'Erreur lors de la duplication du tour de service',
       'onError',

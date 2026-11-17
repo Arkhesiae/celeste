@@ -65,7 +65,7 @@
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
 import { profileService } from '@/services/profileService';
-import OTPVerification from '@/components/OTPVerification.vue';
+import OTPVerification from '@/components/Login/OTPVerification.vue';
 
 const authStore = useAuthStore();
 const { smAndDown } = useDisplay();

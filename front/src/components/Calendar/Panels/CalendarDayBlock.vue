@@ -77,7 +77,7 @@
     <!-- Demand chips (bottom-right) -->
     <div class="d-flex justify-center position-absolute mb-1 mr-1" style="bottom: 0; right: 0">
       <div v-for="(demand, index) in demands" :key="demand.id">
-        <DemandChip :order="index + 1" :demand="demand" :date="date.toString()" />
+        <DemandChip :order="index + 1" :demand="demand" />
       </div>
       <div v-if="demands.length > 1" class="chipe position-absolute" style="top: 50%; left: -5px">
         <v-icon size="14px" color="onPrimary">mdi-plus</v-icon>
@@ -206,11 +206,9 @@ const props = defineProps({
 });
 
 import { Temporal } from '@js-temporal/polyfill';
-import { useRoute } from 'vue-router';
 
 import { useCenterStore } from '@/stores/centerStore';
 const DEFAULT_TIME_ZONE = 'Europe/Paris';
-const route = useRoute();
 
 const centerStore = useCenterStore();
 const centerId = 'aze';

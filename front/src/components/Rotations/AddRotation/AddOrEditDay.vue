@@ -370,10 +370,6 @@ const props = defineProps({
     type: Array,
     default: () => ['A', 'B', 'C'],
   },
-  existingDay: {
-    type: Object,
-    default: null,
-  },
 });
 
 const dialogMode = ref('add');

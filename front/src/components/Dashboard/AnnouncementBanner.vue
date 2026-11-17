@@ -198,19 +198,6 @@ onMounted(() => {
 }
 
 /* ── Navigation (multiple banners) ──────────────────────────────────────── */
-.banner-nav {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
-}
-
-.nav-label {
-  font-size: 11px;
-  color: rgba(var(--v-theme-onSurface), 0.5);
-  min-width: 28px;
-  text-align: center;
-}
 
 /* ── Acknowledge button ──────────────────────────────────────────────────── */
 .ack-btn {

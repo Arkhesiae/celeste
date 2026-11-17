@@ -419,22 +419,12 @@ onMounted(() => {
   padding-bottom: 2rem;
 }
 
-.admin-type-chip {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-}
-
 .v-list-item {
   transition: all 0.2s ease;
 }
 
 .v-list-item:hover {
   background-color: rgba(var(--v-theme-primary), 0.04);
-}
-
-.gap-3 {
-  gap: 12px;
 }
 
 @media (max-width: 600px) {

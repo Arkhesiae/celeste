@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   nextMonths: { type: Array, required: true },
   exhaustionDate: { type: String, required: true },
   nextCampaign: { type: [String, Number], required: true },

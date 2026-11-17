@@ -309,7 +309,7 @@ onMounted(async () => {
       centerStore.fetchActiveRotations(),
     ]);
     snackbarStore.showNotification('Données chargées', 'onPrimary', 'mdi-check');
-  } catch (error) {
+  } catch {
     snackbarStore.showNotification('Erreur lors du chargement des données', 'onError', 'mdi-alert-circle');
   }
 });

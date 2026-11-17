@@ -6,8 +6,7 @@ const pointStore = usePointStore();
 const points = computed(() => pointStore.points);
 const pendingTransactions = computed(() => pointStore.pendingTransactions);
 
-const props = defineProps({
-  tier: { type: String, default: 'Silver' },
+defineProps({
 });
 </script>
 

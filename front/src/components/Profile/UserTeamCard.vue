@@ -120,7 +120,7 @@
       <v-card color="transparent" class="pa-0" elevation="0" rounded=".">
         <v-scroll-x-transition mode="out-in">
           <div>
-            <TeamOccurence
+            <TeamOccurrence
               v-for="nextOccurrence in nextOccurrences"
               :key="nextOccurrence._id"
               :occurrence="nextOccurrence"
@@ -335,9 +335,6 @@ const cancelImpact = () => {
 </script>
 
 <style>
-.team-substitution-title {
-  color: rgb(var(--v-theme-primary));
-}
 
 .team-subtitle {
   color: rgba(var(--v-theme-on-surface), 0.7);
@@ -353,17 +350,6 @@ const cancelImpact = () => {
     0 4px 20px rgba(0, 0, 0, 0.096),
     0 0 0 1px rgba(255, 255, 255, 0.007),
     0 4px 8px rgba(0, 0, 0, 0.048);
-}
-
-.scale-up {
-  background: #768dff;
-  transform: scale(1.01);
-  /* Carte sélectionnée */
-}
-
-.scale-down {
-  transform: scale(1);
-  /* Cartes non sélectionnées */
 }
 
 .gradient {

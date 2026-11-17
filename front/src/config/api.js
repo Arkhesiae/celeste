@@ -89,7 +89,7 @@ const refreshToken = async (authStore) => {
   try {
     const data = await authService.refreshToken();
     authStore.setAccessToken(data.accessToken);
-  } catch (err) {
+  } catch {
     authStore.clearAuth();
     router.push('/login');
     throw new Error('SESSION_EXPIRED');

@@ -50,18 +50,22 @@
     </v-row>
 
     <!-- Dialog pour ajouter une équipe -->
-    <v-dialog v-model="addTeamDialog" max-width="500">
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0"> Ajouter une équipe </v-card-title>
-        <v-card-text class="pa-0 mt-4">
-          <v-text-field v-model="newTeamName" label="Nom de l'équipe" variant="outlined" flat rounded="xl" required />
-        </v-card-text>
-        <v-card-actions class="pa-0">
-          <v-btn text color="primary" @click="addTeamDialog = false"> Annuler </v-btn>
-          <v-btn text color="primary" @click="addNewTeam"> Enregistrer </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <BaseDialog v-model="addTeamDialog" title="Ajouter une équipe" icon="mdi-account-group-outline" :max-width="500">
+      <v-text-field
+        v-model="newTeamName"
+        label="Nom de l'équipe"
+        variant="outlined"
+        rounded="xl"
+        hide-details
+        required
+      />
+
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="addTeamDialog = false">Annuler</v-btn>
+        <v-btn @click="addNewTeam">Enregistrer</v-btn>
+      </template>
+    </BaseDialog>
 
     <!-- Dialog pour la position de l'équipe dans le cycle -->
     <base-dialog
@@ -116,64 +120,46 @@
     />
 
     <!-- Dialog pour modifier le nom de l'équipe -->
-    <v-dialog v-model="editTeamNameDialog" max-width="360">
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title class="pa-0"> Modifier le nom de l'équipe </v-card-title>
-        <v-card-text class="pa-0 my-6">
-          <v-text-field
-            v-model="editedTeamName"
-            variant="underlined"
-            flat
-            rounded="xl"
-            label="Nom de l'équipe"
-            required
-          />
-        </v-card-text>
-        <v-card-actions class="pa-0">
-          <v-btn text @click="editTeamNameDialog = false"> Annuler </v-btn>
-          <v-btn text color="primary" @click="renameTeam"> Enregistrer </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <BaseDialog v-model="editTeamNameDialog" title="Modifier le nom de l'équipe" :max-width="360">
+      <v-text-field v-model="editedTeamName" variant="underlined" label="Nom de l'équipe" hide-details required />
+
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="editTeamNameDialog = false">Annuler</v-btn>
+        <v-btn @click="renameTeam">Enregistrer</v-btn>
+      </template>
+    </BaseDialog>
 
     <!-- Dialog pour réorganiser les équipes -->
-    <v-dialog v-model="reorderDialog" max-width="800" persistent>
-      <v-card rounded="xl" class="pa-6">
-        <v-card-title class="d-flex justify-space-between align-center pa-0">
-          <span>Réorganiser les équipes</span>
-          <v-btn icon variant="text" @click="closeReorderDialog">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <div class="text-body-medium text-medium-emphasis mb-4">
-            Glissez-déposez les équipes pour modifier leur ordre. L'ordre sera sauvegardé automatiquement.
-          </div>
-          <VueDraggable
-            v-model="orderedTeams"
-            :animation="150"
-            ghost-class="ghost"
-            target=".sort-target"
-            class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded"
+    <BaseDialog v-model="reorderDialog" title="Réorganiser les équipes" persistent :max-width="800">
+      <div class="text-body-medium text-medium-emphasis mb-4">
+        Glissez-déposez les équipes pour modifier leur ordre. L'ordre sera sauvegardé automatiquement.
+      </div>
+      <VueDraggable
+        v-model="orderedTeams"
+        :animation="150"
+        ghost-class="ghost"
+        target=".sort-target"
+        class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded"
+      >
+        <TransitionGroup type="transition" tag="div" name="fade" class="sort-target">
+          <div
+            v-for="item in orderedTeams"
+            :key="item._id"
+            class="cursor-move my-4 rounded-lg pa-2"
+            style="background-color: rgba(var(--v-theme-background), 1)"
           >
-            <TransitionGroup type="transition" tag="div" name="fade" class="sort-target">
-              <div
-                v-for="item in orderedTeams"
-                :key="item._id"
-                class="cursor-move my-4 rounded-lg pa-2"
-                style="background-color: rgba(var(--v-theme-background), 1)"
-              >
-                <v-icon>mdi-drag</v-icon>
-                {{ item.name }}
-              </div>
-            </TransitionGroup>
-          </VueDraggable>
-        </v-card-text>
-        <v-card-actions class="pa-0">
-          <v-btn color="primary" variant="text" @click="closeReorderDialog"> Fermer </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+            <v-icon>mdi-drag</v-icon>
+            {{ item.name }}
+          </div>
+        </TransitionGroup>
+      </VueDraggable>
+
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="closeReorderDialog">Fermer</v-btn>
+      </template>
+    </BaseDialog>
 
     <!-- Panneau latéral pour les membres -->
     <v-navigation-drawer
@@ -576,12 +562,6 @@ onMounted(async () => {
 <style scoped>
 .v-card {
   transition: transform 0.2s;
-}
-
-
-
-.gap-1 {
-  gap: 4px;
 }
 
 .gap-2 {

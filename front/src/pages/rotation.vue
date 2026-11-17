@@ -494,13 +494,6 @@ onMounted(async () => {
   border-top-right-radius: 24px;
 }
 
-.timeline-toggle-btn {
-  position: fixed;
-  bottom: 24px;
-  left: 24px;
-  z-index: 100;
-}
-
 :deep(.v-navigation-drawer__content) {
   overflow-y: auto;
 }

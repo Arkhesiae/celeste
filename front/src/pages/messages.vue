@@ -82,12 +82,6 @@ onMounted(async () => {
   border-color: rgba(var(--v-theme-primary), 0.2);
 }
 
-.message-content {
-  background-color: rgba(var(--v-theme-surface-variant), 0.1);
-  white-space: pre-wrap;
-  line-height: 1.6;
-}
-
 .gap-2 {
   gap: 8px;
 }

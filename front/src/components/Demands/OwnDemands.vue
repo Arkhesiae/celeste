@@ -22,7 +22,6 @@
           <OwnDemandCard
             v-for="(demand, index) in demands"
             :key="demand.id"
-            :is-poster="true"
             :demand="demand"
             :small="true"
             @open-details="openDemandDetails"
@@ -47,11 +46,7 @@ import { useSubstitutionStore } from '@/stores/substitutionStore.js';
 const substitutionStore = useSubstitutionStore();
 
 // Props
-const props = defineProps({
-  selectedFilter: {
-    type: String,
-    default: 'tous',
-  },
+defineProps({
 });
 
 const ownFilter = ref('tous');

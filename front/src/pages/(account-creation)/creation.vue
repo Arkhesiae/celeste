@@ -388,7 +388,7 @@ import { accountCreationService } from '@/services/accountCreationService.js';
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
-import OTPVerification from '@/components/OTPVerification.vue';
+import OTPVerification from '@/components/Login/OTPVerification.vue';
 import ContactAdminForm from '@/components/Forms/ContactAdminForm.vue';
 
 const router = useRouter();
@@ -470,7 +470,7 @@ const fetchCenterTeams = async () => {
   loadingTeams.value = true;
   try {
     await teamStore.fetchCenterTeams(user.value.centerId, { publicList: true }); // pas encore connecté
-  } catch (error) {
+  } catch {
     stepErrors.value[5] = 'Erreur lors de la récupération des équipes';
     console.error('Erreur lors de la récupération des équipes', 'error');
   } finally {

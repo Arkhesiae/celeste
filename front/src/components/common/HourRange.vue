@@ -1,5 +1,5 @@
 <script setup>
-const props = defineProps({
+defineProps({
   hours: { type: Object, required: true },
   endsNextDay: { type: Boolean, default: false },
   wasPatched: { type: Boolean, default: false },

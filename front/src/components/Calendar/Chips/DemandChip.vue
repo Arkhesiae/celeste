@@ -8,7 +8,6 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 const props = defineProps({
   demand: { type: Object, required: true },
-  date: { type: String, required: true },
   text: { type: String },
 
   order: { type: Number, required: true },

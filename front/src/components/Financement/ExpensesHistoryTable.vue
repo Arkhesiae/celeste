@@ -45,7 +45,7 @@
 import { useDisplay } from 'vuetify';
 const { smAndDown } = useDisplay();
 
-const props = defineProps({
+defineProps({
   campaignExpenses: { type: Array, required: true },
   previousCampaignsRemainder: { type: Number, required: true },
 });

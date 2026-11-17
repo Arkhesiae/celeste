@@ -32,7 +32,7 @@ import { useDisplay } from 'vuetify';
 const { smAndDown } = useDisplay();
 const router = useRouter();
 
-const props = defineProps({
+defineProps({
   title: {
     type: String,
     required: true,

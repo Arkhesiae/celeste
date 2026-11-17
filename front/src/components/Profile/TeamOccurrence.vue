@@ -180,22 +180,6 @@ const handleDelete = (occurrenceId) => {
   line-height: 1.6;
 }
 
-.chip--soon {
-  background: rgba(var(--v-theme-warning), 0.1);
-  border-color: rgba(var(--v-theme-warning), 0.35);
-  color: rgb(var(--v-theme-warning));
-}
-
-.chip--today {
-  background: rgba(var(--v-theme-success), 0.1);
-  border-color: rgba(var(--v-theme-success), 0.35);
-  color: rgb(var(--v-theme-success));
-}
-
-.chip--past {
-  opacity: 0.55;
-}
-
 /* ── Delete button ── */
 .del-btn {
   width: 36px;
@@ -220,11 +204,6 @@ const handleDelete = (occurrenceId) => {
 }
 
 /* ── Confirm group ── */
-.confirm-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 
 .btn-cancel {
   font-size: 12px;

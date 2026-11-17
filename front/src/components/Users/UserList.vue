@@ -318,7 +318,4 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.sort-select {
-  max-width: 200px;
-}
 </style>

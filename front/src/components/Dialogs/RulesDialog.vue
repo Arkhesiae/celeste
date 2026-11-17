@@ -1,15 +1,7 @@
 <template>
-  <v-dialog v-model="modelValue" max-width="1200px" persistent :fullscreen="smAndDown">
-    <v-card :rounded="smAndDown ? '0' : 'xl'" class="pa-6">
-      <v-card-title class="d-flex align-center justify-space-between pa-0 ma-0 mb-6">
-        <div class="d-flex align-center">
-          <v-icon icon="mdi-book-open-variant" color="primary" class="mr-6" size="16" />
-          <span class="text-headline-small font-weight-medium">Règles de travail</span>
-        </div>
-        <v-btn icon="mdi-close" variant="text" @click="closeDialog" />
-      </v-card-title>
-
-      <div class="my-6 pa-4 bg-surfaceContainerHighest rounded-lg">
+  <GenericDialog v-model="modelValue" title="Règles de travail" :max-width="1200" persistent>
+    <template #content>
+      <div class="mb-6 pa-4 bg-surfaceContainerHighest rounded-lg">
         <div class="d-flex align-center">
           <v-icon icon="mdi-file-document-outline" color="primary" class="mr-3" size="20" />
           <span class="text-body-medium text-medium-emphasis">
@@ -146,20 +138,16 @@
           </p>
         </div>
       </v-card-text>
+    </template>
 
-      <v-card-actions class="pa-0 pt-0 mt-4">
-        <v-spacer />
-        <v-btn color="primary" variant="tonal" prepend-icon="mdi-check" @click="closeDialog"> Compris </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #footer>
+      <v-spacer />
+      <v-btn variant="tonal" prepend-icon="mdi-check" @click="closeDialog">Compris</v-btn>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
-import { useDisplay } from 'vuetify';
-
-const { smAndDown } = useDisplay();
-
 const modelValue = defineModel({
   type: Boolean,
   default: false,

@@ -130,7 +130,6 @@ import { toDateKey, sameDateKey } from '@/utils/dateKey';
 
 const props = defineProps({
   date: { type: [Date, String], required: true },
-  enableModifications: { type: Boolean, default: true },
   enableAssign: { type: Boolean, default: true },
 });
 

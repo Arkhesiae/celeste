@@ -92,9 +92,4 @@ const openDemand = (demand) => {
   color: rgb(var(--v-theme-background));
 }
 
-.content-custom {
-  background-color: rgba(var(--v-theme-on-surface), 0.1);
-  display: flex;
-  gap: 8px;
-}
 </style>

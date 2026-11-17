@@ -787,29 +787,10 @@ const previousCampaignsRemainder = computed(() => {
 }
 
 /* Légende */
-.forecast-legend {
-  border-top: 1px solid rgba(var(--v-theme-outline), 0.2);
-  padding-top: 16px;
-}
-
-.campaign-list {
-  max-height: 50vh;
-  overflow-y: auto;
-}
-
-.campaign-item {
-  border: 1px solid transparent;
-  transition: all 0.2s ease-in-out;
-}
 
 .campaign-hover:hover {
   background-color: rgba(var(--v-theme-primary), 0.05);
   border-color: rgba(var(--v-theme-primary), 0.1);
-}
-
-.selected-campaign {
-  background-color: rgba(var(--v-theme-primary), 0.1);
-  border-color: rgba(var(--v-theme-primary), 0.03);
 }
 
 /* Responsive pour la grille des mois */

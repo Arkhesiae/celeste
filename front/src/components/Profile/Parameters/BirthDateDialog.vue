@@ -47,7 +47,7 @@ import { profileService } from '@/services/profileService';
 const authStore = useAuthStore();
 
 const modelValue = defineModel({ type: Boolean, default: false });
-const emit = defineEmits(['success', 'error']);
+defineEmits(['success', 'error']);
 
 const birthDateForm = ref(null);
 const birthDateValid = ref(false);
@@ -90,7 +90,7 @@ const handleSubmit = async () => {
     authStore.userData.birthDate = birthDay;
     authStore.userData.birthDay = birthDay;
     close();
-  } catch (error) {
+  } catch {
     // TODO: handle error
   } finally {
     loading.value = false;

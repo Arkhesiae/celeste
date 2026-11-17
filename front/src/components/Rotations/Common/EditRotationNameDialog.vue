@@ -28,33 +28,20 @@ const submit = () => {
 </script>
 
 <template>
-  <v-dialog v-model="localDialogVisible" max-width="500px">
-    <v-card rounded="xl" elevation="0" color="surfaceContainerHigh">
-      <v-card-item class="pa-6">
-        <div class="d-flex align-center justify-space-between">
-          <div>
-            <div class="text-title-large font-weight-medium">Modifier le nom</div>
-            <div class="text-medium-emphasis text-body-medium mt-1">Modifiez le nom du tour de service</div>
-          </div>
-          <v-btn icon="mdi-close" variant="text" @click="localDialogVisible = false" />
-        </div>
-      </v-card-item>
+  <BaseDialog v-model="localDialogVisible" title="Modifier le nom" :max-width="500">
+    <p class="text-medium-emphasis text-body-medium mb-4">Modifiez le nom du tour de service</p>
+    <v-text-field
+      v-model="newName"
+      label="Nom du tour de service"
+      :rules="nameRules"
+      variant="outlined"
+      rounded="xl"
+      hide-details="auto"
+    />
 
-      <v-card-text class="pa-6 pt-0">
-        <v-text-field
-          v-model="newName"
-          label="Nom du tour de service"
-          :rules="nameRules"
-          variant="outlined"
-          rounded="xl"
-          hide-details="auto"
-        />
-      </v-card-text>
-
-      <v-card-actions class="pa-6 pt-0">
-        <v-spacer />
-        <v-btn color="primary" variant="flat" rounded="xl" :disabled="!newName" @click="submit"> Enregistrer </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #actions>
+      <v-spacer />
+      <v-btn color="primary" :disabled="!newName" @click="submit">Enregistrer</v-btn>
+    </template>
+  </BaseDialog>
 </template>

@@ -173,7 +173,7 @@ const isActive = (path) => {
 //   emit('toggle-notifications');
 // };
 
-const emit = defineEmits(['toggle-notifications']);
+defineEmits(['toggle-notifications']);
 </script>
 
 <style scoped>

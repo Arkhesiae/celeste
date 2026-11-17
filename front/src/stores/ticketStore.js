@@ -18,7 +18,7 @@ export const useTicketStore = defineStore('ticket', () => {
     loading.value = true;
     try {
       tickets.value = await ticketService.fetchTickets();
-    } catch (err) {
+    } catch {
       // Error handling removed
     } finally {
       loading.value = false;

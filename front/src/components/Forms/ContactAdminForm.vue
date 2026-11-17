@@ -157,7 +157,6 @@
 
 <script setup>
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { useUserStore } from '@/stores/userStore';
 import { ticketService } from '@/services/ticketService';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
@@ -277,7 +276,7 @@ onMounted(async () => {
     // TODO: Récupérer la liste des administrateurs depuis l'API
     // const response = await userStore.fetchAdmins();
     // admins.value = response;
-  } catch (error) {
+  } catch {
     snackbarStore.showNotification('Erreur lors du chargement des administrateurs', 'error', 'mdi-alert-circle');
   }
 });
@@ -289,7 +288,4 @@ onMounted(async () => {
   backdrop-filter: blur(10px);
 }
 
-.selected-admin {
-  border: 2px solid rgb(var(--v-theme-primary));
-}
 </style>

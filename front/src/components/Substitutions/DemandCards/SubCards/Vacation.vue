@@ -55,8 +55,6 @@
 </template>
 
 <script setup>
-import { useUserStore } from '@/stores/userStore';
-const userStore = useUserStore();
 
 const props = defineProps({
   user: {
@@ -74,9 +72,6 @@ const props = defineProps({
   permutation: {
     type: Boolean,
   },
-  open: {
-    type: Boolean,
-  },
 });
 
 const userTeam = computed(() => {
@@ -88,7 +83,4 @@ const user2Team = computed(() => {
 </script>
 
 <style>
-.text-line-decoration-through {
-  text-decoration: line-through;
-}
 </style>

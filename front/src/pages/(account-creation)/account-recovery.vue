@@ -1,6 +1,6 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import OTPVerification from '@/components/OTPVerification.vue';
+import OTPVerification from '@/components/Login/OTPVerification.vue';
 import { API_URL, handleResponse } from '@/config/api.js';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';

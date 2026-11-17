@@ -393,13 +393,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.rules-page {
-  padding-top: 2rem;
-}
-
-.rule-input {
-  max-width: 100px;
-}
 
 .gap-2 {
   gap: 8px;

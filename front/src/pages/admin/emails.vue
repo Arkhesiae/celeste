@@ -369,7 +369,7 @@ onMounted(async () => {
     } else {
       formData.value.centerId = authStore.userData.centerId || '';
     }
-  } catch (e) {
+  } catch {
     // ignore; UI will just show empty selector
   }
 });

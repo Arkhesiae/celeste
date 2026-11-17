@@ -78,7 +78,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['click', 'approve', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
+defineEmits(['click', 'approve', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
 
 const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
 // const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');

@@ -53,10 +53,6 @@ const props = defineProps({
     type: String,
     default: 'Vérification de votre email',
   },
-  description: {
-    type: String,
-    default: 'Un code de vérification a été envoyé à votre adresse email',
-  },
   email: {
     type: String,
     required: true,

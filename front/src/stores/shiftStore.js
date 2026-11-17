@@ -3,7 +3,6 @@ import { Temporal } from '@js-temporal/polyfill';
 import { vacationService } from '@/services/vacationService';
 import { useAuthStore } from '@/stores/authStore';
 import { parseShiftDateTime } from '@/utils/parseShiftDateTime';
-import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
 
 /**

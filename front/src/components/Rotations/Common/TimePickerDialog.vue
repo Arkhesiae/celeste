@@ -36,52 +36,35 @@ const saveTimePicker = () => {
 </script>
 
 <template>
-  <v-dialog v-model="localDialogVisible" persistent max-width="500px">
-    <v-card rounded="xl" elevation="0" color="surfaceContainerHigh">
-      <v-card-item class="pa-6">
-        <div class="d-flex align-center justify-space-between">
-          <div>
-            <div class="text-title-large font-weight-medium">
-              {{ type === 'startTime' ? 'Heure de début' : 'Heure de fin' }}
-            </div>
-            <div class="text-medium-emphasis text-body-medium mt-1">Sélectionnez l'heure pour cette vacation</div>
-          </div>
-          <v-btn icon="mdi-close" variant="text" @click="closeTimePicker" />
-        </div>
-      </v-card-item>
+  <BaseDialog
+    v-model="localDialogVisible"
+    persistent
+    :title="type === 'startTime' ? 'Heure de début' : 'Heure de fin'"
+    :max-width="500"
+  >
+    <p class="text-medium-emphasis text-body-medium mb-4">Sélectionnez l'heure pour cette vacation</p>
+    <div class="d-flex justify-center">
+      <v-time-picker
+        v-model="localTime"
+        color="primary"
+        bg-color="transparent"
+        format="24hr"
+        scrollable
+        title=""
+        locale="fr"
+        rounded="xl"
+        :allowed-minutes="[0, 30, 15, 45]"
+        elevation="0"
+        width="100%"
+      />
+    </div>
 
-      <v-card-text class="d-flex justify-center pa-0 pt-0">
-        <v-time-picker
-          v-model="localTime"
-          color="primary"
-          bg-color="transparent"
-          format="24hr"
-          scrollable
-          title=""
-          locale="fr"
-          rounded="xl"
-          :allowed-minutes="[0, 30, 15, 45]"
-          elevation="0"
-          width="100%"
-        />
-      </v-card-text>
-
-      <v-card-actions class="pa-6">
-        <v-spacer />
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          class="ml-4"
-          :slim="true"
-          size="large"
-          @click="saveTimePicker"
-        >
-          Enregistrer
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #actions>
+      <v-spacer />
+      <v-btn variant="text" @click="closeTimePicker">Annuler</v-btn>
+      <v-btn @click="saveTimePicker">Enregistrer</v-btn>
+    </template>
+  </BaseDialog>
 </template>
 
 <style scoped>

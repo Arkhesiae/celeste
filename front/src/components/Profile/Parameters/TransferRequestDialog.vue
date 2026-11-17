@@ -1,65 +1,44 @@
 <template>
-  <v-dialog
-    v-model="localDialogVisible"
-    transition="scroll-x-reverse-transition"
-    max-width="500px"
-    :fullscreen="smAndDown"
-  >
-    <v-card :rounded="smAndDown ? '' : 'xl'" class="pa-0 pt-6">
-      <v-card-item class="py-1 px-6 mb-2">
-        <v-card-title class="d-flex justify-space-between align-center"> Demander une mutation </v-card-title>
-        <template v-if="!smAndDown" #append>
-          <v-btn icon="mdi-close" variant="text" @click="close" />
-        </template>
-        <template v-else #prepend>
-          <v-btn icon="mdi-arrow-left" variant="text" @click="close" />
-        </template>
-      </v-card-item>
+  <GenericDialog v-model="localDialogVisible" title="Demander une mutation" :max-width="500">
+    <template #content>
+      <v-form ref="form" v-model="valid">
+        <v-select
+          v-model="selectedCenter"
+          :items="centers"
+          label="Centre de destination"
+          prepend-inner-icon="mdi-office-building-outline"
+          variant="outlined"
+          color="primary"
+          rounded="xl"
+          bg-color="surface"
+          hide-details="auto"
+          :rules="[(v) => !!v || 'Le centre de destination est requis']"
+        />
 
-      <v-card-text class="px-6">
-        <v-form ref="form" v-model="valid">
-          <v-select
-            v-model="selectedCenter"
-            :items="centers"
-            label="Centre de destination"
-            prepend-inner-icon="mdi-office-building-outline"
-            variant="outlined"
-            color="primary"
-            rounded="xl"
-            bg-color="surface"
-            hide-details="auto"
-            :rules="[(v) => !!v || 'Le centre de destination est requis']"
-          />
+        <v-textarea
+          v-model="reason"
+          label="Motif de la demande"
+          prepend-inner-icon="mdi-text-box-outline"
+          variant="outlined"
+          color="primary"
+          rounded="xl"
+          bg-color="surface"
+          hide-details="auto"
+          class="mt-4"
+          :rules="[(v) => !!v || 'Le motif est requis']"
+        />
+      </v-form>
+    </template>
 
-          <v-textarea
-            v-model="reason"
-            label="Motif de la demande"
-            prepend-inner-icon="mdi-text-box-outline"
-            variant="outlined"
-            color="primary"
-            rounded="xl"
-            bg-color="surface"
-            hide-details="auto"
-            class="mt-4"
-            :rules="[(v) => !!v || 'Le motif est requis']"
-          />
-        </v-form>
-      </v-card-text>
-
-      <v-card-actions class="pa-6">
-        <v-spacer />
-        <v-btn color="primary" variant="text" rounded="xl" :disabled="loading" @click="close"> Annuler </v-btn>
-        <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid" @click="submit">
-          Envoyer la demande
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #footer>
+      <v-spacer />
+      <v-btn variant="text" :disabled="loading" @click="close">Annuler</v-btn>
+      <v-btn variant="tonal" :loading="loading" :disabled="!valid" @click="submit">Envoyer la demande</v-btn>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
-import { useDisplay } from 'vuetify';
-
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -69,7 +48,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'success', 'error']);
 
-const { smAndDown } = useDisplay();
 const form = ref(null);
 const valid = ref(false);
 const loading = ref(false);

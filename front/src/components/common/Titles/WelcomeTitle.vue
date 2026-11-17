@@ -45,10 +45,6 @@ defineProps({
     type: String,
     required: true,
   },
-  backButton: {
-    type: Boolean,
-    required: false,
-  },
 });
 
 const titleRef = ref(null);

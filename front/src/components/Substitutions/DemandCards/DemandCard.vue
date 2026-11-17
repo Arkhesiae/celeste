@@ -154,7 +154,7 @@ import { useTeamStore } from '@/stores/teamStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { API_URL } from '@/config/api';
 import { useDisplay } from 'vuetify';
-import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
+import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 import { formatPairsForDate, formatDateLabel, formatDateSuffix } from '@/utils/compatiblePairsFormat';
 
 const props = defineProps({
@@ -456,16 +456,8 @@ const handleReplace = () => {
   border-style: dashed;
 }
 
-.faint-border {
-  border-color: rgba(243, 243, 243, 0.000005);
-}
-
 .demand {
   border-radius: 20px !important;
-}
-
-.hybrid-chip {
-  background: linear-gradient(to right, rgba(var(--v-theme-permutation), 1), rgba(var(--v-theme-primary), 1) 50%);
 }
 
 .main-btn {

@@ -63,7 +63,6 @@ const shiftStore = useShiftStore();
 const props = defineProps({
   calendarDays: Array,
   loadingVacations: Boolean,
-  rotationsMap: Map,
   selectedDate: [String, null],
   /** Période choisie ({ start, end }, `end` absent tant que le deuxième jour n'est pas choisi) */
   period: { type: Object, default: null },
@@ -216,10 +215,6 @@ const demandsForDate = (dateStr) => (dateStr ? (demandsMap.value.get(dateStr) ??
 
 .empty-day {
   opacity: 0.4;
-}
-
-.calendar-sheet {
-  touch-action: pan-y pinch-zoom;
 }
 
 .chip-container {

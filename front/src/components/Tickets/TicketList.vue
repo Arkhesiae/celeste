@@ -50,7 +50,6 @@
             <MobileStatusChip
               v-if="smAndDown"
               :status="ticket.status"
-              :ticket-id="ticket._id"
               @click.stop="openSelector(ticket._id)"
             />
 

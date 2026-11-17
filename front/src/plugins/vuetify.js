@@ -28,7 +28,6 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi';
 // Composables
 import { createVuetify } from 'vuetify';
 import { fr } from 'vuetify/locale';
-import { padEnd, padStart } from 'vuetify/lib/util/helpers.mjs';
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({

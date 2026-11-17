@@ -65,7 +65,6 @@ const props = defineProps({
     default: null,
   },
   isSelected: Function,
-  rotationsMap: Map,
 });
 
 const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];

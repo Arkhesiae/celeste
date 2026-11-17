@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { AppError } from '../../error/AppError.js';
 import { generateAccessToken, generateRefreshToken } from './auth.refreshToken.js';
 import { userPayload } from "./auth.payload.js";
+import { assertUserActive } from '../../middleware/userStatus.js';
 
 
 /**
@@ -23,6 +24,9 @@ export async function loginUser (email, password) {
     if (!passwordMatches) {
         throw new AppError('Mot de passe invalide', 401, 'INVALID_PASSWORD');
     }
+
+    // Après le mot de passe : on ne révèle l'état d'un compte qu'à celui qui en connaît le secret
+    assertUserActive(user);
 
     // Génération des tokens
     const accessToken = generateAccessToken({

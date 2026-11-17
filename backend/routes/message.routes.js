@@ -4,17 +4,19 @@ import * as messageController from '../controllers/message.controller.js';
 
 const router = express.Router();
 
-// Routes pour les messages
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
+router.use(verifyToken);
+
 // Seuls les administrateurs peuvent voir tous les messages
-router.get('/', verifyToken, isAdmin, messageController.getMessages);
+router.get('/', isAdmin, messageController.getMessages);
 
 // Création de message (accessible à tous les utilisateurs authentifiés)
-router.post('/', verifyToken, messageController.createMessage);
+router.post('/', messageController.createMessage);
 
 // Seuls les administrateurs peuvent marquer les messages comme lus
-router.put('/:id/read', verifyToken, isAdmin, messageController.markAsRead);
+router.put('/:id/read', isAdmin, messageController.markAsRead);
 
 // Seuls les administrateurs principaux peuvent supprimer les messages
-router.delete('/:id', verifyToken, isMasterAdmin, messageController.deleteMessage);
+router.delete('/:id', isMasterAdmin, messageController.deleteMessage);
 
-export default router; 
+export default router;

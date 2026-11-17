@@ -9,7 +9,7 @@ const router = express.Router();
 // centres avant qu'un compte n'existe. Le contrôleur n'en expose que le strict nécessaire (id, nom, OACI, type, zone).
 router.get('/', centerController.getAllCenters);
 
-// Tout le reste exige un utilisateur connecté
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
 // Carte du tableau de bord : tout utilisateur connecté ; comptes de demandes et position seulement, voir center.map.js

@@ -5,6 +5,7 @@ import { AVATARS_DIRECTORY } from '../config/paths.js';
 import { AVATAR_MAX_BYTES } from '../config/limits.js';
 import { verifyToken, isAdmin, isMasterAdmin } from '../middleware/authMiddleware.js';
 import { authorizeCenterParam, authorizeTargetUserCenter, authorizeSelfOrCenterAdmin, resolveCenterId } from '../middleware/centerAuth.js';
+import { hasNoPendingCenterTransfer } from '../middleware/userStatus.js';
 import * as userController from '../controllers/user.controller.js';
 
 const router = express.Router();
@@ -28,14 +29,13 @@ const upload = multer({
   }
 })
 
-
 // Routes publiques (aucune authentification requise) : inscription et connexion en ont besoin avant qu'un compte existe
 router.post('/create', userController.createUser);
 router.post('/check-email', userController.checkEmailAvailability);
 router.get('/info/:email', userController.getUserInfoByEmail);
 router.get('/devlist', userController.getDevListUsers);
 
-
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 // Routes pour les équipes (groupées par fonctionnalité)
 
@@ -46,8 +46,8 @@ router.get('/center/:centerId', authorizeCenterParam('centerId'), userController
 router.get('/:id/current-team', authorizeTargetUserCenter('id'), userController.getUserCurrentTeam);
 router.get('/:id/team-at', isAdmin, authorizeSelfOrCenterAdmin('id'), userController.getUserTeamAtDate);
 router.get('/:id/team-occurrences', authorizeSelfOrCenterAdmin('id'), userController.getUserTeamOccurrences);
-router.delete('/:id/team-occurrences/:occurrenceId', authorizeSelfOrCenterAdmin('id'), userController.deleteTeamOccurrence);
-router.post('/:id/assign-team', authorizeSelfOrCenterAdmin('id'), userController.assignTeamToUser);
+router.delete('/:id/team-occurrences/:occurrenceId', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.deleteTeamOccurrence);
+router.post('/:id/assign-team', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.assignTeamToUser);
 
 // Routes pour les shifts
 router.post('/:id/get-shifts-with-substitutions', authorizeSelfOrCenterAdmin('id'), userController.getUserShiftsWithSubstitutions);
@@ -55,7 +55,7 @@ router.post('/:id/get-shifts-with-substitutions', authorizeSelfOrCenterAdmin('id
 // Routes pour les points et transactions
 router.get('/:id/points', authorizeSelfOrCenterAdmin('id'), userController.getPointsById);
 router.get('/:id/work-check', authorizeSelfOrCenterAdmin('id'), userController.getUserWorkCheck);
-router.post('/:id/points/transfer', userController.transferPoints);
+router.post('/:id/points/transfer', hasNoPendingCenterTransfer, userController.transferPoints);
 router.get('/:id/transactions', userController.getTransactionHistory);
 
 // Routes pour les préférences et profil utilisateur

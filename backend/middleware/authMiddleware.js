@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { AppError } from '../error/AppError.js';
+import { verifyUserActive } from './userStatus.js';
 
-const verifyToken = (req, res, next) => {
+const verifyAccessToken = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -28,5 +29,15 @@ const isMasterAdmin = (req, res, next) => {
     if (req.user?.isAdmin && req.user.adminType === 'master') return next();
     throw new AppError("Accès refusé. Droits d'administrateur principal requis.", 403);
 };
+
+/**
+ * Garde de toute route authentifiée, deux middleware à la suite (un tableau : `router.use(verifyToken)` et
+ * `router.get(path, verifyToken, ...)` l'acceptent tels quels) :
+ *   1. jeton d'accès valide ;
+ *   2. compte actif, relu en base (403 ACCOUNT_INACTIVE), qui passe l'état du compte au suivant (`req.accountStatus`).
+ * Les routes sans `verifyToken` (publiques, connexion, renouvellement du jeton) font leur propre contrôle. Les routes qui
+ * modifient des données ajoutent `hasNoPendingCenterTransfer` (userStatus.js) après lui.
+ */
+const verifyToken = [verifyAccessToken, verifyUserActive];
 
 export { verifyToken, isAdmin, isMasterAdmin };

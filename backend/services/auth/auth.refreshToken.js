@@ -2,6 +2,7 @@ import User from "../../models/User.js";
 import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from "../../error/AppError.js";
 import { userPayload } from "./auth.payload.js";
+import { assertUserActive } from '../../middleware/userStatus.js';
 import jwt from 'jsonwebtoken';
 import { DEFAULT_ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from '../../config/auth.js';
 
@@ -72,6 +73,7 @@ export async function refreshAccessToken (refreshToken) {
     const payload = verifyRefreshToken(refreshToken);
 
     const user = await findOrThrow(User, payload.userId, { message: 'Utilisateur non trouvé', code: 'USER_NOT_FOUND' });
+    assertUserActive(user);   // un compte désactivé ne renouvelle plus son jeton
     const now = new Date();
     const validTokens = user.refreshTokens.filter(rt => rt.expiresAt > now);
     const tokenIndex = validTokens.findIndex(rt => rt.token === refreshToken);

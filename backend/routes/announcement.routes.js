@@ -5,18 +5,21 @@ import * as announcementController from '../controllers/announcement.controller.
 
 const router = express.Router();
 
-router.get('/users-count', verifyToken, isAdmin, announcementController.getUserCount);
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
+router.use(verifyToken);
+
+// Nombre de destinataires possibles : administrateurs
+router.get('/users-count', isAdmin, announcementController.getUserCount);
 
 // Envoi global (tous les centres) : administrateur principal uniquement
-router.post('/send', verifyToken, isMasterAdmin, announcementController.sendAnnouncement);
+router.post('/send', isMasterAdmin, announcementController.sendAnnouncement);
 
 // Envoi à un centre : son administrateur (ou le master). Le caractère « global » se déduit de la route, pas du corps
-router.post('/center/:centerId/send', verifyToken, isAdmin, authorizeCenterParam('centerId'), announcementController.sendAnnouncement);
+router.post('/center/:centerId/send', isAdmin, authorizeCenterParam('centerId'), announcementController.sendAnnouncement);
 
-router.get('/history', verifyToken, isAdmin, announcementController.getHistory);
+// Historique, statistiques et suppression : administrateurs
+router.get('/history', isAdmin, announcementController.getHistory);
+router.get('/stats', isAdmin, announcementController.getStats);
+router.delete('/:id', isAdmin, announcementController.deleteAnnouncement);
 
-router.get('/stats', verifyToken, isAdmin, announcementController.getStats);
-
-router.delete('/:id', verifyToken, isAdmin, announcementController.deleteAnnouncement);
-
-export default router; 
+export default router;

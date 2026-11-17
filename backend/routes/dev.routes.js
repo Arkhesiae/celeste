@@ -10,15 +10,17 @@ const router = express.Router();
 
 dotenv.config();
 
-
 const ensureDev = () => {
   if (process.env.NODE_ENV === 'production') {
     throw new AppError("Cette route n'est disponible qu'en mode développement", 403);
   }
 };
 
+// Toutes les routes ci-dessous : administrateur principal connecté (et seulement hors production, voir ensureDev)
+router.use(verifyToken, isMasterAdmin);
+
 // Route pour générer les utilisateurs des équipes (uniquement en dev)
-router.post('/populate-users', verifyToken, isMasterAdmin, async (req, res, next) => {
+router.post('/populate-users', async (req, res, next) => {
   ensureDev();
 
   const result = await generateTeamUsers();
@@ -30,7 +32,7 @@ router.post('/populate-users', verifyToken, isMasterAdmin, async (req, res, next
 });
 
 // Seed conf par défaut LFBB : centre, équipes 1–12, agents, TDS Densifié Ete
-router.post('/seed-default-config', verifyToken, isMasterAdmin, async (req, res, next) => {
+router.post('/seed-default-config', async (req, res, next) => {
   ensureDev();
 
   try {
@@ -43,7 +45,7 @@ router.post('/seed-default-config', verifyToken, isMasterAdmin, async (req, res,
 });
 
 // Demandes de rempla ouvertes (~200) pour stress-test agent9 (équipes ≠ 9)
-router.post('/seed-team-demands', verifyToken, isMasterAdmin, async (req, res, next) => {
+router.post('/seed-team-demands', async (req, res, next) => {
   ensureDev();
 
   try {
@@ -64,7 +66,7 @@ router.post('/seed-team-demands', verifyToken, isMasterAdmin, async (req, res, n
 });
 
 // Uniquement permutations ciblant les vacs de agent9-1
-router.post('/seed-switch-demands', verifyToken, isMasterAdmin, async (req, res, next) => {
+router.post('/seed-switch-demands', async (req, res, next) => {
   ensureDev();
 
   try {

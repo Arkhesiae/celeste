@@ -5,15 +5,18 @@ import * as publicAnnouncementController from '../controllers/publicAnnouncement
 
 const router = express.Router();
 
-// ── User routes ──────────────────────────────────────────────────────────────
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
+router.use(verifyToken);
 
-router.get('/active', verifyToken, publicAnnouncementController.getActiveAnnouncements);
+// Annonces à afficher : tout utilisateur connecté
+router.get('/active', publicAnnouncementController.getActiveAnnouncements);
 
-router.post('/:id/acknowledge', verifyToken, publicAnnouncementController.acknowledgeAnnouncement);
+router.post('/:id/acknowledge', publicAnnouncementController.acknowledgeAnnouncement);
 
-router.get('/', verifyToken, isAdmin, publicAnnouncementController.getAllAnnouncements);
-router.post('/', verifyToken, isAdmin, resolveCenterId, publicAnnouncementController.createAnnouncement);
-router.put('/:id', verifyToken, isAdmin, authorizeAnnouncementAccess, publicAnnouncementController.updateAnnouncement);
-router.delete('/:id', verifyToken, isAdmin, authorizeAnnouncementAccess, publicAnnouncementController.deleteAnnouncement);
+// Gestion : administrateurs, cloisonnée par centre
+router.get('/', isAdmin, publicAnnouncementController.getAllAnnouncements);
+router.post('/', isAdmin, resolveCenterId, publicAnnouncementController.createAnnouncement);
+router.put('/:id', isAdmin, authorizeAnnouncementAccess, publicAnnouncementController.updateAnnouncement);
+router.delete('/:id', isAdmin, authorizeAnnouncementAccess, publicAnnouncementController.deleteAnnouncement);
 
 export default router;

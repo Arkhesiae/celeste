@@ -4,23 +4,21 @@ import * as ruleController from '../controllers/rule.controller.js';
 
 const router = express.Router();
 
-// Récupérer toutes les règles (Public or Protected? Leaving as is based on existing file, but note it is before verifyToken)
-// Actually, usually we might want this protected. But to preserve existing behavior if any, I'll leave it here 
-// OR move it if I think it's a bug. Given the "verifyToken" use below, it implies lines above are public.
+// Lecture des règles d'un centre (?centerId=) : aujourd'hui ouverte sans jeton, ce qui n'est pas une route publique voulue
+// (voir le suivi, point 53) ; elle reste ici pour ne pas changer le comportement.
 router.get('/', ruleController.getAllRules);
 
-// Toutes les routes ci-dessous nécessitent une authentification
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
 router.use(verifyToken);
 
-// Routes protégées pour les administrateurs maîtres uniquement (Init/Reset)
+// Initialisation et réinitialisation : administrateur principal uniquement
 router.post('/initialize', isMasterAdmin, ruleController.initializeRules);
 router.post('/reset', isMasterAdmin, ruleController.resetRules);
 
-// Lock/Unlock rule (Master Admin only)
+// Verrouiller / déverrouiller une règle : administrateur principal uniquement
 router.put('/:name/lock', isMasterAdmin, ruleController.toggleLock);
 
-// Update rule (Center Admin accessible, permission logic in service/controller + lock check)
-// Previously restricted to isMasterAdmin, now opened up for center overrides.
+// Modifier une règle ou supprimer sa surcharge : administrateur de centre (droits et verrou contrôlés dans le service)
 router.put('/:name', ruleController.updateRule);
 router.delete('/:name', ruleController.deleteRuleOverride);
 

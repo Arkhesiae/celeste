@@ -19,10 +19,13 @@ router.post('/reset-password-request', authController.requestPasswordReset);
 // Route pour réinitialiser le mot de passe
 router.post('/reset-password', authController.resetPassword);
 
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
+router.use(verifyToken);
+
 // Route pour vérifier le mot de passe actuel
-router.post('/verify-password', verifyToken, authController.verifyPassword);
+router.post('/verify-password', authController.verifyPassword);
 
 // Route pour mettre à jour le mot de passe
-router.post('/update-password', verifyToken, authController.updatePassword);
+router.post('/update-password', authController.updatePassword);
 
 export default router;

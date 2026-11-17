@@ -5,28 +5,31 @@ import * as rotationController from '../controllers/rotation.controller.js';
 
 const router = express.Router();
 
-// Routes publiques
-router.get('/', verifyToken, rotationController.getAllRotations);
-router.get('/center/:centerId', verifyToken, rotationController.getRotationsByCenter);
+// Toutes les routes ci-dessous exigent un utilisateur connecté (jeton valide, compte actif)
+router.use(verifyToken);
 
-router.get('/status/:centerId', verifyToken, rotationController.getAllRotationsWithStatus);
+// Lecture : tout utilisateur connecté
+router.get('/', rotationController.getAllRotations);
+router.get('/center/:centerId', rotationController.getRotationsByCenter);
 
-router.get('/active-at-date', verifyToken, rotationController.getActiveRotationAtDate);
+router.get('/status/:centerId', rotationController.getAllRotationsWithStatus);
+
+router.get('/active-at-date', rotationController.getActiveRotationAtDate);
 
 // Routes protégées par isAdmin, cloisonnées par centre (authorizeRotation*)
-router.post('/center/:centerId', verifyToken, isAdmin, authorizeCenterParam('centerId'), rotationController.saveRotation);
+router.post('/center/:centerId', isAdmin, authorizeCenterParam('centerId'), rotationController.saveRotation);
 
-router.delete('/:id', verifyToken, isAdmin, authorizeRotationAccess, rotationController.deleteRotation);
+router.delete('/:id', isAdmin, authorizeRotationAccess, rotationController.deleteRotation);
 
 // Aperçu (409 si des demandes sont touchées) ou, avec `confirmed: true` dans le corps, application du changement
-router.post('/:id/activate', verifyToken, isAdmin, authorizeRotationAccess, rotationController.addActivationDate);
+router.post('/:id/activate', isAdmin, authorizeRotationAccess, rotationController.addActivationDate);
 
-router.post('/:id/remove-date', verifyToken, isAdmin, authorizeRotationAccess, rotationController.removeActivationDate);
+router.post('/:id/remove-date', isAdmin, authorizeRotationAccess, rotationController.removeActivationDate);
 
-router.put('/:id/day', verifyToken, isAdmin, authorizeRotationAccess, rotationController.updateDayInRotation);
+router.put('/:id/day', isAdmin, authorizeRotationAccess, rotationController.updateDayInRotation);
 
-router.post('/:id/duplicate', verifyToken, isAdmin, authorizeRotationAccess, rotationController.duplicateRotation);
+router.post('/:id/duplicate', isAdmin, authorizeRotationAccess, rotationController.duplicateRotation);
 
-router.put('/:id/update', verifyToken, isAdmin, authorizeRotationAccess, rotationController.updateRotation);
+router.put('/:id/update', isAdmin, authorizeRotationAccess, rotationController.updateRotation);
 
-export default router; 
+export default router;

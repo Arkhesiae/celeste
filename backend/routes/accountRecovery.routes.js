@@ -7,4 +7,4 @@ const router = express.Router();
 router.get('/legacy-user', accountRecoveryController.fetchLegacyUser);
 router.post('/recover', accountRecoveryController.initiateAccountRecovery, userController.createRecoveredUser);
 
-export default router; 
+export default router;

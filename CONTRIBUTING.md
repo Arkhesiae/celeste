@@ -23,3 +23,10 @@ VITE_USER_PASS=user
 - Démarrer MongoDB en replica set (les transactions l'exigent) : `docker compose -f backend/docker-compose.dev.yml up -d`
 - Installer le package dotenv dans /backend/ `npm i dotenv`
 - Installer le package vite dans /front/ : `npm i vite`
+
+# Qualité du code du front
+
+Dans `/front/` : `npm run lint:check` (ESLint, sans modifier), `npm run lint` (ESLint `--fix`), `npm run format:check` / `npm run format`
+(Prettier : `.prettierrc.json`, aligné sur `.editorconfig`). ESLint vérifie la justesse (Vue `<script setup>` imposé, variables
+inutilisées...), Prettier seul décide de la mise en forme. Ne reformatez pas le code que votre changement ne touche pas : le premier
+`npm run format` sur toute la base se fait dans un commit à part.

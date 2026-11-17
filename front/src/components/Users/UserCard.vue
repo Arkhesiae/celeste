@@ -6,7 +6,7 @@
     :color="smAndDown ? 'transparent ' : 'surface'"
     @click="$emit('click', user)"
   >
-    <v-card-item>
+    <v-card-item class="pa-0 pt-2">
       <v-card-title class="d-flex justify-space-between align-center">
         <div class="d-flex align-center">
           <v-avatar
@@ -26,53 +26,9 @@
             </div>
           </div>
         </div>
-        <v-icon
-          class="position-absolute top-0 right-0 ma-4 opacity-50"
-          color="onBackground"
-          size="x-small"
-        >
-          mdi-arrow-expand
-        </v-icon>
-        <!-- <v-menu color="onBackground" rounded="lg">
-          <template v-slot:activator="{ props }">
-            <v-btn icon variant="text" v-bind="props" @click.stop>
-              <v-icon>mdi-dots-vertical</v-icon>
-            </v-btn>
-          </template>
-<v-list color="onBackground"
-        bg-color="onBackground"
-        rounded="xl"
-        class="pa-4">
-  <v-list-item rounded="lg"
-               @click.stop="$emit('approve', user)"
-               v-if="user.registrationStatus === 'pending' && (isLocalAdmin || isMasterAdmin)">
-    <v-list-item-title>Approuver</v-list-item-title>
-  </v-list-item>
-  <v-list-item rounded="lg"
-               @click.stop="$emit('makeAdmin', user)"
-               v-if="!user.isAdmin && isMasterAdmin">
-    <v-list-item-title>Octroyer statut admin</v-list-item-title>
-  </v-list-item>
-  <v-list-item rounded="lg"
-               @click.stop="$emit('removeAdmin', user)"
-               v-if="user.isAdmin && isMasterAdmin">
-    <v-list-item-title>Enlever statut admin</v-list-item-title>
-  </v-list-item>
-  <v-list-item rounded="lg"
-               @click.stop="$emit('assignCenter', user)"
-               v-if="isMasterAdmin">
-    <v-list-item-title>Modifier le centre</v-list-item-title>
-  </v-list-item>
-  <v-list-item rounded="lg"
-               @click.stop="$emit('delete', user)"
-               v-if="isLocalAdmin || isMasterAdmin">
-    <v-list-item-title class="text-onError">Supprimer</v-list-item-title>
-  </v-list-item>
-</v-list>
-</v-menu> -->
       </v-card-title>
     </v-card-item>
-    <v-card-text class="pt-0 d-flex justify-start">
+    <v-card-text class="pa-0 my-2 d-flex justify-start">
       <div
         v-if="user.isAdmin"
         class="d-flex mr-2"
@@ -103,8 +59,9 @@
       </div>
 
       <v-chip
-        color="onBackground"
-        rounded="lg"
+        color="primary"
+        rounded="xl"
+        variant="flat"
         size="small"
         class="mr-2"
       >
@@ -128,12 +85,12 @@
             user.points || user.points === 0 ? user.points :
             "XX" }}
         </div>
-        <div class="text-body-medium text-medium-emphasis mt-n2">
+        <div class="text-body-small font-weight-bold text-disabled text-uppercase mt-n2">
           Points
         </div>
       </div>
       <v-chip
-        color="onBackground"
+        color="primary"
         rounded="lg"
         size="small"
         class="mr-2"

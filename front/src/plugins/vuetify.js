@@ -144,7 +144,7 @@ export default createVuetify({
           "onPrimary": "#FFFFFF",
           "primaryContainer": "#B4EBFF",
           "onPrimaryContainer": "#001F28",
-          "secondary": "#32d9bdff",
+          "secondary": "#4edfaaff",
           "onSecondary": "#FFFFFF",
           "secondaryContainer": "#CEE6F0",
           "onSecondaryContainer": "#071E25",

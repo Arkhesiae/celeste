@@ -1,0 +1,9 @@
+dist
+node_modules
+android
+ios
+coverage
+*.d.ts
+.eslintrc-auto-import.json
+src/assets/map/countries.json
+package-lock.json

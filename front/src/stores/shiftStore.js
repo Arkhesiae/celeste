@@ -185,37 +185,6 @@ export const useShiftStore = defineStore('shift', () => {
     }
   };
 
-  const fetchWorkdays = async (dates) => {
-    if (!userId.value) return;
-
-    loading.value = true;
-    try {
-      error.value = null;
-      const workdays = await vacationService.fetchWorkdaysOfUser(userId.value, dates);
-      return workdays;
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération des jours de travail';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  const getAdjacentVacations = async (date) => {
-    if (!userId.value || !date) return { prev: null, next: null };
-
-    loading.value = true;
-    try {
-      error.value = null;
-      return await vacationService.getAdjacentVacations(userId.value, date);
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération des vacations adjacentes';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
-
   const emptyStore = () => {
     shiftsWithSubstitutions.value = [];
     persistentVacationsMap.value = new Map();
@@ -238,8 +207,6 @@ export const useShiftStore = defineStore('shift', () => {
 
     // Actions
     fetchShiftsWithSubstitutions,
-    fetchWorkdays,
-    getAdjacentVacations,
 
     // Getters
     getShiftForDate,

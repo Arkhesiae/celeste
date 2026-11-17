@@ -1,6 +1,6 @@
 # Revue : entrées de calendrier, calcul des vacations d'un utilisateur, remplacements (chaînés compris)
 
-Date de la revue : 2026-11-14. Revue faite en lecture seule ; les points corrigés depuis (S1 à S3, S5 à S7, S12, et la partie lecture de S10) ont été retirés. Ce qui reste est une proposition en attente de décision.
+Date de la revue : 2026-11-14. Revue faite en lecture seule ; les points corrigés depuis (S1 à S3, S5 à S7, S12, et S10, par le retrait du sélecteur) ont été retirés. Ce qui reste est une proposition en attente de décision.
 
 Périmètre lu en entier : `services/calendarEntry/*`, `controllers/calendarEntry.controller.js`, `routes/calendarEntry.routes.js`,
 `services/planning/planning.userShifts.js`, `services/substitution/request.{accept,cancel,cascade,creation,delete,expiry,list,withdraw}.js`,
@@ -20,7 +20,6 @@ Gravité : **P0** données fausses ou faille de sécurité, **P1** fonctionnalit
 | S4 | P0 | `routes/substitution.routes.js` | N'importe quel membre du centre peut annuler ou supprimer la demande de n'importe qui |
 | S8 | P1 | `request.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
 | S9 | P1 | `request.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
-| S10 | P1 | `planningModificationService.registerModification`, `DemandModal` | Choisir une variation d'une demande poste sur une route inexistante (404) : décision de conception à prendre |
 
 L'analyse des remplacements chaînés est en section 3, la proposition d'interface en section 4, les noms en section 5, les simplifications en section 6.
 
@@ -42,13 +41,6 @@ et rien d'autre : pas de compatibilité repos/charge (toute la pile `compatibili
 ce jour-là (un utilisateur qui tient un autre remplacement ce jour peut en accepter un second), pas de contrôle de date (une demande d'un jour passé que le job de 30 minutes n'a pas encore
 expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` existe dans le modèle et n'est lu nulle part (donc une demande réservée est ouverte à tous), et
 `isTrueSwitch` n'est jamais stocké (champ de schéma mort). Le serveur est le seul endroit digne de confiance face à une course ou à un client falsifié.
-
-**S10 (P1, reste à décider). Choisir une variation depuis `DemandModal`.** Le front `planningModificationService.registerModification` poste sur
-`/calendar-entry/register-modification` avec `type: 'selectedVariation'` : cette route n'existe pas (404), donc le choix d'une variation depuis `DemandModal` échoue. Ce n'est pas
-qu'une route à renommer : l'ancien flux mettait à jour la variation **de la demande** (`posterShift.selectedVariation`) et renvoyait `updatedDemand`, que le serveur ne produit plus (toujours `null`).
-Envoyer une modification `variation` via `register-entry` changerait le planning du demandeur sans toucher la demande, que la compatibilité lit. Décision à prendre : un endpoint dédié
-« variation d'une demande » (poseur seulement, demande ouverte), ou retirer le sélecteur.
-
 
 **Autres points**
 - Écritures non atomiques dans `registerEntry` (pas de transaction) : `registerHourPatch` désactive le patch précédent **avant** les validations qui peuvent répondre 422 ; un 422 laisse le jour sans son patch.
@@ -191,8 +183,7 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 
 1. Garde-fous, petits et sûrs : S4 (contrôle de l'acteur).
 2. Justesse des données : S8 (`finalStatus` transmis), S9 (compatibilité serveur, date, réservation), restaurer `savedEntry` ou refuser l'acceptation.
-3. Routes et appels morts : la variation d'une demande (S10).
-4. Modèle de chaîne : remplir `dependsOn` correctement (deux parents au plus, dont celui du côté accepteur à l'acceptation), supprimer le hook de cycle, puis la chaîne dans l'API et l'interface de la section 4.
-5. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
+3. Modèle de chaîne : remplir `dependsOn` correctement (deux parents au plus, dont celui du côté accepteur à l'acceptation), supprimer le hook de cycle, puis la chaîne dans l'API et l'interface de la section 4.
+4. Renommages et nettoyage jour/`Date` (section 5), à faire en dernier car ils touchent la plupart des fichiers.
 
 Les points déjà corrigés ont été retirés de ce document. Dites-moi quels points restants prendre et dans quel ordre.

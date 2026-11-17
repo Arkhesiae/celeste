@@ -6,17 +6,6 @@ import { apiFetch } from '../config/api';
 
 export const emailService = {
   /**
-   * Récupère la liste des templates disponibles.
-   * @returns {Promise<Array>} Liste des templates.
-   */
-  async getTemplates() {
-    const response = await apiFetch(`/announcement/templates`, {
-      method: 'GET',
-    });
-    return response;
-  },
-
-  /**
    * Récupère le nombre total d'utilisateurs.
    * @returns {Promise<number>} Le nombre d'utilisateurs.
    */
@@ -63,32 +52,6 @@ export const emailService = {
   async getStats() {
     const response = await apiFetch(`/announcement/stats`, {
       method: 'GET',
-    });
-    return response;
-  },
-
-  /**
-   * Supprime une annonce.
-   * @param {string} id - L'ID de l'annonce à supprimer.
-   * @returns {Promise<Object>} La réponse du serveur.
-   */
-  async deleteAnnouncement(id) {
-    const response = await apiFetch(`/announcement/${id}`, {
-      method: 'DELETE',
-    });
-    return response;
-  },
-
-  /**
-   * Récupère un template HTML depuis le backend.
-   * @param {string} templateType - Le type de template.
-   * @param {Object} data - Les données pour le template.
-   * @returns {Promise<string>} Le HTML du template.
-   */
-  async getTemplatePreview(templateType, data) {
-    const response = await apiFetch(`/announcement/templates/${templateType}/preview`, {
-      method: 'POST',
-      body: JSON.stringify(data),
     });
     return response;
   },

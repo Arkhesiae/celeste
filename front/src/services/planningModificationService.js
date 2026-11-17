@@ -1,22 +1,6 @@
 import { apiFetch } from '../config/api';
 
 export const planningModificationService = {
-  // async registerModification(modificationData) {
-  //   const response = await apiFetch(`/calendar-entry/register`, {
-  //     method: 'POST',
-  //     body: JSON.stringify(modificationData)
-  //   });
-  //   return response;
-  // },
-
-  async restoreInitialShift(userId, date) {
-    const response = await apiFetch(`/calendar-entry/restore-initial`, {
-      method: 'POST',
-      body: JSON.stringify({ userId, date }),
-    });
-    return response;
-  },
-
   async fetchEntries(userId, date) {
     const response = await apiFetch(`/calendar-entry/${userId}?date=${encodeURIComponent(date)}`, {
       method: 'GET',
@@ -26,14 +10,6 @@ export const planningModificationService = {
 
   async registerEntry(data) {
     const response = await apiFetch(`/calendar-entry/register-entry`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    return response;
-  },
-
-  async registerModification(data) {
-    const response = await apiFetch(`/calendar-entry/register-modification`, {
       method: 'POST',
       body: JSON.stringify(data),
     });

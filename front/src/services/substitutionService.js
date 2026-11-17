@@ -37,18 +37,6 @@ export const substitutionService = {
   },
 
   /**
-   * Récupère une substitution par son ID.
-   * @param {string} id - L'ID de la substitution.
-   * @returns {Promise<Object>} Les données de la substitution.
-   */
-  async getSubstitutionById(id) {
-    const response = await apiFetch(`/substitution/${id}`, {
-      method: 'GET',
-    });
-    return response;
-  },
-
-  /**
    * Crée une nouvelle substitution.
    * @param {Object} substitutionData - Les données de la nouvelle substitution.
    * @returns {Promise<Object>} La substitution créée.
@@ -56,20 +44,6 @@ export const substitutionService = {
   async createSubstitutionDemand(substitutionData) {
     const response = await apiFetch(`/substitution`, {
       method: 'POST',
-      body: JSON.stringify(substitutionData),
-    });
-    return response;
-  },
-
-  /**
-   * Met à jour une substitution.
-   * @param {string} id - L'ID de la substitution.
-   * @param {Object} substitutionData - Les nouvelles données de la substitution.
-   * @returns {Promise<Object>} La substitution mise à jour.
-   */
-  async updateSubstitution(id, substitutionData) {
-    const response = await apiFetch(`/substitution/${id}`, {
-      method: 'PUT',
       body: JSON.stringify(substitutionData),
     });
     return response;
@@ -94,18 +68,6 @@ export const substitutionService = {
    */
   async acceptDemand(demandId) {
     const response = await apiFetch(`/substitution/${demandId}/accept`, {
-      method: 'POST',
-    });
-    return response;
-  },
-
-  /**
-   * Refuse une substitution.
-   * @param {string} demandId - L'ID de la demande de substitution.
-   * @returns {Promise<Object>} La substitution refusée.
-   */
-  async rejectSubstitution(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/reject`, {
       method: 'POST',
     });
     return response;

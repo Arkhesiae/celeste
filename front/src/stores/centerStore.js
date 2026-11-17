@@ -59,28 +59,6 @@ export const useCenterStore = defineStore('center', () => {
   };
 
   /**
-   * Récupère le centre d'un utilisateur.
-   * @param {string} userId - L'ID de l'utilisateur.
-   * @returns {Promise<Object|null>} Le centre de l'utilisateur, ou null en cas d'erreur.
-   */
-  const getUserCenterById = async (userId) => {
-    try {
-      loading.value = true;
-      error.value = null;
-      const center = await centerService.getUserCenterById(userId);
-      if (!centers.value.some((c) => c._id === center._id)) {
-        centers.value.push(center);
-      }
-      return center;
-    } catch (err) {
-      error.value = err.message || "Erreur lors de la récupération du centre de l'utilisateur";
-      return null;
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  /**
    * Crée un nouveau centre.
    * @param {Object} centerData - Les données du nouveau centre.
    */
@@ -240,7 +218,6 @@ export const useCenterStore = defineStore('center', () => {
     fetchCenters,
     fetchCentersMap,
     fetchUsersByCenter,
-    getUserCenterById,
     createCenter,
     updateCenter,
     deleteCenter,

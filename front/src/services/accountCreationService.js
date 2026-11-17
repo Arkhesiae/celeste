@@ -32,19 +32,6 @@ export const accountCreationService = {
   },
 
   /**
-   * Active un compte utilisateur.
-   * @param {string} token - Le token d'activation.
-   * @returns {Promise<Object>} Le compte activé.
-   */
-  async activateAccount(token) {
-    const response = await apiFetch(`/auth/activate`, {
-      method: 'POST',
-      body: JSON.stringify({ token }),
-    });
-    return response;
-  },
-
-  /**
    * Récupère les informations d'un utilisateur par son email.
    * @param {string} email - L'email de l'utilisateur.
    * @returns {Promise<Object>} Les informations de l'utilisateur.

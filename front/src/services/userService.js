@@ -57,20 +57,6 @@ export const userService = {
   },
 
   /**
-   * Met à jour les informations d'un utilisateur.
-   * @param {string} id - L'ID de l'utilisateur.
-   * @param {Object} userData - Les nouvelles données de l'utilisateur.
-   * @returns {Promise<Object>} L'utilisateur mis à jour.
-   */
-  async updateUser(id, userData) {
-    const response = await apiFetch(`/user/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(userData),
-    });
-    return response;
-  },
-
-  /**
    * Supprime un utilisateur.
    * @param {string} id - L'ID de l'utilisateur à supprimer.
    * @returns {Promise<void>}

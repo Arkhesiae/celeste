@@ -16,36 +16,4 @@ export const statService = {
     return response;
   },
 
-  /**
-   * Récupère le nombre total d'utilisateurs.
-   * @returns {Promise<number>} Le nombre total d'utilisateurs.
-   */
-  async getTotalUsers() {
-    const response = await apiFetch(`/stat/users`, {
-      method: 'GET',
-    });
-    return response;
-  },
-
-  /**
-   * Récupère le nombre total de centres.
-   * @returns {Promise<number>} Le nombre total de centres.
-   */
-  async getTotalCenters() {
-    const response = await apiFetch(`/stat/centers`, {
-      method: 'GET',
-    });
-    return response;
-  },
-
-  /**
-   * Récupère le nombre total de substitutions.
-   * @returns {Promise<number>} Le nombre total de substitutions.
-   */
-  async getTotalSubstitutions() {
-    const response = await apiFetch(`/stat/substitutions`, {
-      method: 'GET',
-    });
-    return response;
-  },
 };

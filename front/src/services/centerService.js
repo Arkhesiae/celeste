@@ -38,28 +38,6 @@ export const centerService = {
   },
 
   /**
-   * Récupère le centre d'un utilisateur.
-   * @param {string} userId - L'ID de l'utilisateur.
-   * @returns {Promise<Object>} Le centre de l'utilisateur.
-   */
-  async getUserCenterById(userId) {
-    const userResponse = await apiFetch(`/user/${userId}`, {
-      method: 'GET',
-    });
-    const user = await userResponse;
-    const centerId = user.centerId;
-
-    if (!centerId) {
-      throw new Error("L'utilisateur n'appartient à aucun centre.");
-    }
-
-    const centerResponse = await apiFetch(`/center/${centerId}`, {
-      method: 'GET',
-    });
-    return centerResponse;
-  },
-
-  /**
    * Ajoute un nouveau centre.
    * @param {Object} newCenter - Les données du nouveau centre.
    * @returns {Promise<Object>} Le centre ajouté.

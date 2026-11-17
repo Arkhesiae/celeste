@@ -6,7 +6,7 @@
           :selected-month="selectedMonth"
           :selected-year="selectedYear"
           :selection-mode="selectionMode"
-          @navigate-month="navigateMonth"
+          @navigate-month="onNavigateMonth"
           @go-to-today="goToToday"
           @update:selection-mode="setSelectionMode"
         />
@@ -22,11 +22,14 @@
 
         <CalendarMobile
           v-else
+          ref="calendarMobile"
           :calendar-days="calendarDays"
-          :loading="loading"
+          :previous-days="previousDays"
+          :next-days="nextDays"
           :selected-date="selectedDate"
           :period="period"
           @update:selected-date="handleSelectDate"
+          @move="navigateMonth"
           @inspect-window="inspectWindow"
         />
 
@@ -157,8 +160,19 @@ const { mobile, smAndDown, mdAndDown } = useDisplay();
 
 const { selectedMonth, selectedYear, navigateMonth, goToToday } = useCalendarNavigation();
 
-const { calendarDays } = useCalendar(selectedYear, selectedMonth);
-const { loading, fetchMonthData } = useCalendarData(calendarDays);
+const { calendarDays, previousDays, nextDays } = useCalendar(selectedYear, selectedMonth);
+// Sur mobile, les mois voisins sont chargés avec le mois affiché pour que le glissement les montre déjà remplis
+const { fetchMonthData } = useCalendarData(
+  calendarDays,
+  computed(() => (smAndDown.value ? { previousDays: previousDays.value, nextDays: nextDays.value } : null)),
+);
+
+// Flèches du mois : sur mobile elles font glisser le calendrier, qui prévient ensuite la page (`move`)
+const calendarMobile = ref(null);
+const onNavigateMonth = (direction) => {
+  if (smAndDown.value && calendarMobile.value) calendarMobile.value.slideBy(direction);
+  else navigateMonth(direction);
+};
 
 // Utilisation des composables
 

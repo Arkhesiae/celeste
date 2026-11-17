@@ -6,18 +6,20 @@
       </v-col>
     </v-row>
 
-    <v-fade-transition mode="out-in">
-      <div v-if="loadingVacations">
-        <v-row v-for="week in 6" :key="`skel-${week}`" class="px-4 d-flex justify-space-between align-center my-1 ga-1">
-          <v-col v-for="day in 7" :key="`skel-day-${day}`" class="ma-0 pa-0 d-flex justify-space-around align-center">
-            <v-skeleton-loader type="list-item-two-line" :height="64" width="100%" style="border-radius: 12px" />
-          </v-col>
-        </v-row>
-      </div>
-
-      <div v-else>
+    <!-- Mois précédent, affiché et suivant : le Swiper les fait défiler en douceur ; la hauteur suit le mois (5 ou 6 semaines) -->
+    <Swiper
+      class="calendar-swiper"
+      :slides-per-view="1"
+      :initial-slide="slides.length === 3 ? 1 : 0"
+      :speed="300"
+      :threshold="8"
+      auto-height
+      @swiper="onSwiper"
+      @transition-end="onTransitionEnd"
+    >
+      <SwiperSlide v-for="(slide, slideIndex) in slides" :key="slideIndex">
         <v-row
-          v-for="(week, index) in calendarDays"
+          v-for="(week, index) in slide"
           :key="index"
           class="px-4 d-flex justify-space-between align-center my-1 ga-1"
         >
@@ -35,18 +37,20 @@
               :rest="workOf(plainDateToDateStr(day))?.rest ?? null"
               :window-lines="linesFor(plainDateToDateStr(day))"
               :in-period="inPeriod(plainDateToDateStr(day))"
-              @inspect-window="emit('inspect-window', $event)"
               :height="64"
+              @inspect-window="emit('inspect-window', $event)"
               @select="selectDate"
             />
           </v-col>
         </v-row>
-      </div>
-    </v-fade-transition>
+      </SwiperSlide>
+    </Swiper>
   </div>
 </template>
 
 <script setup>
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import 'swiper/css';
 import { posterDay } from '@/utils/dayFields.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { useSubstitutionStore } from '@/stores/substitutionStore';
@@ -61,8 +65,11 @@ const substitutionStore = useSubstitutionStore();
 const shiftStore = useShiftStore();
 
 const props = defineProps({
+  /** Semaines du mois affiché */
   calendarDays: Array,
-  loadingVacations: Boolean,
+  /** Semaines du mois précédent et du mois suivant : sans elles, le calendrier n'a qu'une diapositive (pas de glissement) */
+  previousDays: { type: Array, default: null },
+  nextDays: { type: Array, default: null },
   selectedDate: [String, null],
   /** Période choisie ({ start, end }, `end` absent tant que le deuxième jour n'est pas choisi) */
   period: { type: Object, default: null },
@@ -72,7 +79,37 @@ const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
 const { workOf, linesFor, inPeriod } = useWorkIndicators(toRef(props, 'period'));
 
-const emit = defineEmits(['update:selectedDate', 'swipe-left', 'swipe-right', 'inspect-window']);
+/** `move` : le Swiper s'est arrêté sur le mois précédent (-1) ou suivant (+1) */
+const emit = defineEmits(['update:selectedDate', 'move', 'inspect-window']);
+
+// ── Swiper ────────────────────────────────────────────────────────────────────
+// Trois diapositives [précédent, affiché, suivant]. Après un glissement, le parent change de mois : le mois voisin devient
+// le mois affiché et on recentre sans animation (même principe que la grille d'équipe).
+const slides = computed(() =>
+  props.previousDays && props.nextDays ? [props.previousDays, props.calendarDays, props.nextDays] : [props.calendarDays],
+);
+const swiper = shallowRef(null);
+const onSwiper = (instance) => {
+  swiper.value = instance;
+};
+
+const onTransitionEnd = (instance) => {
+  if (slides.value.length === 3 && instance.activeIndex !== 1) emit('move', instance.activeIndex - 1);
+};
+
+watch(
+  () => props.calendarDays,
+  () => {
+    if (slides.value.length === 3) nextTick(() => swiper.value?.slideTo(1, 0, false));
+  },
+);
+
+/** Fait glisser vers le mois précédent (-1) ou suivant (+1) : boutons de navigation */
+const slideBy = (direction) => {
+  if (slides.value.length === 3) swiper.value?.slideTo(1 + direction, 300);
+  else emit('move', direction);
+};
+defineExpose({ slideBy });
 
 const selectDate = (date) => {
   emit('update:selectedDate', date.toString());

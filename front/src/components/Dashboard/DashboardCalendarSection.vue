@@ -3,15 +3,18 @@
     <CalendarHeader
       :selected-month="selectedMonth"
       :selected-year="selectedYear"
-      @navigate-month="navigateMonth"
+      @navigate-month="calendarMobile?.slideBy($event)"
       @go-to-today="goToToday"
     />
 
     <CalendarMobile
+      ref="calendarMobile"
       :calendar-days="calendarDays"
-      :loading="loading"
+      :previous-days="previousDays"
+      :next-days="nextDays"
       :selected-date="selectedDate"
       @update:selected-date="handleSelectDate"
+      @move="navigateMonth"
     />
   </div>
 
@@ -83,8 +86,12 @@ const snackbarStore = useSnackbarStore();
 
 const { selectedMonth, selectedYear, navigateMonth, goToToday } = useCalendarNavigation();
 
-const { calendarDays } = useCalendar(selectedYear, selectedMonth);
-const { loading, fetchMonthData } = useCalendarData(calendarDays);
+const calendarMobile = ref(null);
+const { calendarDays, previousDays, nextDays } = useCalendar(selectedYear, selectedMonth);
+const { fetchMonthData } = useCalendarData(
+  calendarDays,
+  computed(() => ({ previousDays: previousDays.value, nextDays: nextDays.value })),
+);
 
 const vacationsOfUser = computed(() => {
   return shiftStore.persistentVacationsMap;

@@ -4,7 +4,13 @@ import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import { useWorkCheckStore } from '@/stores/workCheckStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 
-export function useCalendarData(calendarDays) {
+/**
+ * @param calendarDays semaines du mois affiché
+ * @param neighbors `{ previousDays, nextDays }` (ref ou computed) ou `null` : avec les mois voisins, les vacations et les demandes
+ *   sont chargées de la grille du mois précédent à celle du mois suivant, pour que le calendrier mobile les montre pendant le
+ *   glissement ; le contrôle du temps de travail (62 jours au plus côté serveur) reste celui du mois affiché
+ */
+export function useCalendarData(calendarDays, neighbors = null) {
   const shiftStore = useShiftStore();
   const substitutionStore = useSubstitutionStore();
   const snackbarStore = useSnackbarStore();
@@ -29,10 +35,17 @@ export function useCalendarData(calendarDays) {
     return calendarDays.value[calendarDays.value.length - 1][6].date.toString();
   });
 
+  // Période des vacations et des demandes : le mois affiché, élargi aux mois voisins quand ils sont fournis
+  const rangeStart = computed(() => neighbors?.value?.previousDays?.[0]?.[0]?.date.toString() ?? startDate.value);
+  const rangeEnd = computed(() => {
+    const next = neighbors?.value?.nextDays;
+    return next?.length ? next[next.length - 1][6].date.toString() : endDate.value;
+  });
+
   const fetchShifts = async () => {
     loadingShifts.value = true;
     try {
-      await shiftStore.fetchShiftsWithSubstitutions({ startDate: startDate.value, endDate: endDate.value });
+      await shiftStore.fetchShiftsWithSubstitutions({ startDate: rangeStart.value, endDate: rangeEnd.value });
     } catch (err) {
       snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-outline');
       throw err;
@@ -46,7 +59,7 @@ export function useCalendarData(calendarDays) {
   const fetchSubstitutions = async () => {
     loadingSubstitutions.value = true;
     try {
-      await substitutionStore.fetchAllDemands({ startDate: startDate.value, endDate: endDate.value });
+      await substitutionStore.fetchAllDemands({ startDate: rangeStart.value, endDate: rangeEnd.value });
     } catch (err) {
       snackbarStore.showNotification(
         'Erreur lors du chargement des substitutions : ' + err.message,

@@ -209,7 +209,7 @@
 
     <template #footer>
       <!-- Les boutons sont dans le v-card-actions de GenericDialog : taille et style par défaut de plugins/vuetify.js -->
-      <div class="d-flex justify-space-between">
+      
         <template v-if="currentWindow === 0">
           <v-spacer />
           <v-btn variant="text" :disabled="isNextButtonDisabled" @click="currentWindow = 1"> Suivant </v-btn>
@@ -225,7 +225,7 @@
             Poster la demande
           </v-btn>
         </template>
-      </div>
+     
     </template>
   </GenericDialog>
 

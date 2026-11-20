@@ -48,7 +48,7 @@
                       :disabled="rule.locked && !isMasterAdmin"
                       :color="rule.locked ? 'primary' : 'primary'"
                       density="compact"
-                      inset
+                     
                     />
                     <span v-else-if="rule.name === 'Mailing administration'" style="font-size: 14px; font-weight: bold">
                       {{
@@ -118,7 +118,7 @@
           v-model="mailingRuleToEdit.value.enabled"
           label="Activer l'envoi de mails à l'administration"
           color="primary"
-          inset
+         
           hide-details
           class="mb-4"
         />

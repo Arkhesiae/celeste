@@ -94,7 +94,7 @@
                 true-icon="mdi-plus-box-outline"
                 icon-color="onBackground"
                 base-color="surfaceContainerHighest"
-                inset
+               
                 hide-details
               />
               <span class="text-body-medium">Jour optionnel</span>

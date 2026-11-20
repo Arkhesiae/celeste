@@ -117,8 +117,8 @@ Cascaded children get the same cancellation mail as the demand that caused it, w
 ### 39. Center and role in the access token can be stale — P2
 `middleware/centerAuth.js` (`loadCaller`) trusts `centerId`, `adminType` and `isAdmin` from the JWT (access lifetime 15m). A user moved to another center, demoted, or deleted keeps their old center and role until the token expires.
 
-### 52. Pending center transfers cannot be created, and the front does not handle an inactive account — P2
-- Nothing sets `User.pendingCenterTransfer`: the front `TransferRequestDialog.vue` simulates the call, and no admin of the target center can approve (then clear it and set `centerId`) or refuse a request.
+### 52. The front does not handle an inactive account, and a center transfer cannot be refused — P2
+- The receiving admin can accept a center transfer but not refuse it; only the user can cancel it. The agent is not emailed when it is accepted.
 - The front does not react to 403 `ACCOUNT_INACTIVE`: no rejection dialog at login, no logout of an open session.
 - Nothing lets an admin deactivate an account (`User.isActive` is only set by seeds).
 - Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `requestJob` / `reminderJob` still go to an inactive accepter.

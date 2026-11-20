@@ -15,6 +15,7 @@ import announcementRouter from './announcement.routes.js';
 import calendarEntryRouter from './calendarEntry.routes.js';
 import statRouter from './stat.routes.js';
 import bannerRouter from './banner.routes.js';
+import centerTransferRouter from './centerTransfer.routes.js';
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use('/announcement', announcementRouter);
 router.use('/calendar-entry', calendarEntryRouter);
 router.use('/stat', statRouter);
 router.use('/banner', bannerRouter);
+router.use('/center-transfer', centerTransferRouter);
 
 export default router;

@@ -201,7 +201,7 @@ export default createVuetify({
           pending: '#af6200',
           new: '#28adbb',
           done: '#25c060',
-          anomalySoft: '#b8956c',
+          warning: '#b8956c',
         },
       },
     },
@@ -219,6 +219,8 @@ export default createVuetify({
     VBtnGroup: { size: 'default' },
     VBtn: { size: 'default' },
     VBtnToggle: { size: 'default' },
+    // Interrupteurs Material 3 : piste arrondie, pouce qui grossit (un `inset` explicite sur l'interrupteur l'emporte)
+    VSwitch: { inset: 'material' },
     // },
     VDialog: {
       scrim: '#0F1416',

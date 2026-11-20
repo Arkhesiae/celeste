@@ -322,6 +322,9 @@ const registerEntry = async (payload) => {
   }
 };
 
+// « Modifier l'horaire » d'un jour sans vacation (affectation) : on rouvre le dialogue des affectations, où les horaires se choisissent
+const patchHours = () => emit('open-entry-dialog');
+
 const showMddaDialog = ref(false);
 const mddaLoading = ref(false);
 

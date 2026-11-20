@@ -37,6 +37,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useUserStore } from '@/stores/userStore.js';
+import { useCenterTransferStore } from '@/stores/centerTransferStore.js';
 
 defineOptions({
   name: 'Users',
@@ -47,6 +48,12 @@ const router = useRouter();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
 const userStore = useUserStore();
+const transferStore = useCenterTransferStore();
+
+// Les demandes de mutation à accepter donnent leur pastille à l'onglet « Mutations »
+onMounted(() => {
+  if (isAdmin.value) transferStore.fetchAll().catch(() => {});
+});
 
 const isAdmin = computed(() => authStore.userData.isAdmin);
 
@@ -63,7 +70,13 @@ const sections = computed(() => [
     icon: 'mdi-account-clock-outline',
     badge: pendingUsersCount.value,
   },
-  { value: 'mutations', path: '/users/mutations', title: 'Mutations', icon: 'mdi-swap-horizontal' },
+  {
+    value: 'mutations',
+    path: '/users/mutations',
+    title: 'Mutations',
+    icon: 'mdi-swap-horizontal',
+    badge: transferStore.pendingCount,
+  },
 ]);
 
 const section = computed(() => sections.value.find((item) => item.path === route.path)?.value ?? 'members');

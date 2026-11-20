@@ -4,349 +4,228 @@
 
     <v-row>
       <v-col cols="12" md="6">
-        <v-card rounded="xl" elevation="0" class="pa-0" color="transparent">
-          <v-card-title class="text-headline-small"> Profil </v-card-title>
-          <v-card-text class="d-flex flex-column ga-4">
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showEmailDialog = true"
-            >
-              <span class="text-body-large">Modifier l'adresse email</span>
-              <!-- <v-icon>mdi-chevron-right</v-icon> -->
-            </v-btn>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showAvatarDialog = true"
-            >
-              <span class="text-body-large">Modifier l'avatar</span>
-              <!-- <v-icon>mdi-chevron-right</v-icon> -->
-            </v-btn>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showPhoneDialog = true"
-            >
-              <v-chip
-                :color="authStore.userData.phone ? 'primary' : 'error'"
-                :variant="authStore.userData.phone ? 'flat' : 'text'"
-                class="rounded-pill py-0 position-absolute"
-                size="small"
-                style="right: 16px; top: 50%; transform: translateY(-50%)"
-              >
-                <v-icon>mdi-phone</v-icon>
-              </v-chip>
-              <span class="text-body-large">Numéro de téléphone</span>
-            </v-btn>
+        <SettingsSection title="Profil">
+          <SettingsRow
+            icon="mdi-email-outline"
+            title="Modifier l'adresse email"
+            :subtitle="authStore.userData.email"
+            @click="showEmailDialog = true"
+          />
+          <SettingsRow
+            icon="mdi-account-circle-outline"
+            title="Modifier l'avatar"
+            subtitle="Votre photo de profil"
+            @click="showAvatarDialog = true"
+          />
+          <SettingsRow
+            icon="mdi-phone-outline"
+            title="Numéro de téléphone"
+            :subtitle="authStore.userData.phone || 'Non renseigné'"
+            :error="!authStore.userData.phone"
+            @click="showPhoneDialog = true"
+          />
+          <SettingsRow
+            icon="mdi-cake-variant-outline"
+            title="Date de naissance"
+            :subtitle="birthDay ? formatDay(birthDay) : 'Non renseignée'"
+            @click="showBirthDateDialog = true"
+          />
+        </SettingsSection>
 
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showBirthDateDialog = true"
-            >
-              <v-chip
-                :color="birthDayOf(authStore.userData) ? 'primary' : 'surface'"
-                :variant="birthDayOf(authStore.userData) ? 'flat' : 'text'"
-                class="rounded-pill py-0 position-absolute"
-                size="small"
-                style="right: 16px; top: 50%; transform: translateY(-50%)"
-              >
-                <v-icon>mdi-baby</v-icon>
-              </v-chip>
-              <span class="text-body-large">Date de naissance</span>
-            </v-btn>
-            <!-- <v-btn block height="64" class="rounded-lg py-4 opacity-10" color="surface" elevation="0" :disabled="true">
-              <v-chip color="error" variant="flat" class="rounded-pill py-0 position-absolute" size="small" style="right: 16px; top: 50%; transform: translateY(-50%);">
-                <v-icon>mdi-account-key</v-icon>
-              </v-chip>
-              <span class="text-body-large">Connexion ICNAGENDA</span>
-              
-            </v-btn> -->
-          </v-card-text>
-        </v-card>
-        <v-card rounded="xl" elevation="0" class="pa-0" color="background">
-          <v-card-title class="text-headline-small"> Apparence </v-card-title>
-          <v-card-text>
-            <!-- Tout le bouton change le thème ; l'interrupteur n'est là que pour montrer l'état (il ne reçoit pas le clic) -->
-            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0" @click="isDark = !isDark">
-              <template #prepend>
-                <ThemeSwitch readonly tabindex="-1" class="pointer-events-none" />
-              </template>
-              <span class="text-body-large">Changer le thème</span>
-            </v-btn>
-          </v-card-text>
-        </v-card>
+        <SettingsSection title="Apparence">
+          <!-- Toute la ligne change le thème ; l'interrupteur ne fait que montrer l'état (il ne reçoit pas le clic) -->
+          <SettingsRow
+            icon="mdi-theme-light-dark"
+            title="Changer le thème"
+            :subtitle="isDark ? 'Sombre' : 'Clair'"
+            @click="isDark = !isDark"
+          >
+            <template #append>
+              <ThemeSwitch readonly tabindex="-1" class="pointer-events-none" />
+            </template>
+          </SettingsRow>
+        </SettingsSection>
+
+        <SettingsSection title="Mutation">
+          <!-- Demande en cours : elle peut être annulée tant que l'administrateur du centre d'arrivée ne l'a pas acceptée -->
+          <template v-if="transferStore.mine" #intro>
+            <v-alert color="secondary" variant="tonal" rounded="xl" icon="mdi-swap-horizontal" class="mb-2">
+              <div class="font-weight-bold">Mutation vers {{ transferStore.mine.toCenter.name }} en attente</div>
+              <div class="text-body-small">
+                Demandée le {{ formatDay(transferStore.mine.requestedAt) }} · motif : {{ transferStore.mine.reason }}
+              </div>
+              <div class="text-body-small mt-1">
+                L'administrateur de ce centre doit l'accepter. D'ici là, vos équipes, vos points et vos remplacements sont figés.
+              </div>
+            </v-alert>
+          </template>
+          <SettingsRow
+            v-if="transferStore.mine"
+            icon="mdi-close-circle-outline"
+            title="Annuler la demande de mutation"
+            :loading="cancellingTransfer"
+            @click="cancelTransfer"
+          />
+          <SettingsRow
+            v-else
+            icon="mdi-swap-horizontal"
+            title="Demander une mutation"
+            subtitle="Rejoindre un autre centre"
+            @click="showTransferRequestDialog = true"
+          />
+        </SettingsSection>
       </v-col>
+
       <v-col cols="12" md="6">
-        <v-card rounded="xl" elevation="0" color="background" class="pa-0">
-          <v-card-title class="text-headline-small"> Sécurité </v-card-title>
-          <v-card-text>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4"
-              color="surface"
-              elevation="0"
-              @click="showPasswordDialog = true"
-            >
-              <span class="text-body-large">Modifier le mot de passe</span>
-            </v-btn>
-          </v-card-text>
-        </v-card>
-        <v-card rounded="xl" elevation="0" class="pa-0" color="background">
-          <div class="d-flex align-center justify-start ga-2">
-            <v-card-title class="text-headline-small"> Emails </v-card-title>
+        <SettingsSection title="Sécurité">
+          <SettingsRow
+            icon="mdi-lock-outline"
+            title="Modifier le mot de passe"
+            subtitle="Choisissez un nouveau mot de passe"
+            @click="showPasswordDialog = true"
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Emails">
+          <template #title-append>
             <v-chip v-if="noCategoryEnabled" color="error" variant="flat" class="rounded-pill py-0" size="small">
               <v-icon class="mr-2"> mdi-email-alert-outline </v-icon>
               <span class="text-body-small">Aucune catégorie sélectionnée</span>
             </v-chip>
-          </div>
-          <v-card-text>
-            <v-btn
-              block
-              height="64"
-              class="rounded-lg py-4 mb-4 d-flex"
-              variant="flat"
-              color="surface"
-              elevation="0"
-              @click="toggleGlobal"
-            >
-              <template #prepend>
-                <v-switch
-                  v-model="emailGlobalEnabled"
-                  inset
-                  class="ml-2"
-                  hide-details
-                  false-icon="mdi-close"
-                  true-icon="mdi-email-multiple"
-                />
-              </template>
-              <span class="text-body-large">Recevoir les emails</span>
-            </v-btn>
+          </template>
 
-            <div class="d-flex flex-column">
-              <div v-for="(option, index) in emailOptions" :key="option.value">
-                <div class="d-flex align-center justify-space-between">
-                  <div
-                    class="d-flex align-center justify-space-between ga-2"
-                    :style="{ opacity: !emailGlobalEnabled ? 0.5 : 1 }"
-                  >
-                    <v-icon :icon="option.icon" size="small" />
-                    <span style="font-size: 12px; font-weight: 500">{{ option.label }}</span>
-                  </div>
-                  <v-switch
-                    v-model="emailCategories[option.value]"
-                    :disabled="!emailGlobalEnabled"
-                    density="compact"
-                    inset
-                    class="ml-2"
-                    hide-details
-                    false-icon="mdi-close"
-                    true-icon="mdi-email-multiple"
-                  />
-                </div>
-                <v-divider v-if="index !== emailOptions.length - 1" />
-              </div>
-            </div>
-          </v-card-text>
-        </v-card>
+          <!-- Toute la ligne bascule ; les interrupteurs ne font que montrer l'état -->
+          <SettingsRow icon="mdi-email-multiple-outline" title="Recevoir les emails" @click="emailGlobalEnabled = !emailGlobalEnabled">
+            <template #append>
+              <v-switch v-model="emailGlobalEnabled" readonly tabindex="-1" hide-details class="pointer-events-none" />
+            </template>
+          </SettingsRow>
+          <SettingsRow
+            v-for="option in emailOptions"
+            :key="option.pref"
+            :icon="option.icon"
+            :title="option.label"
+            :disabled="!emailGlobalEnabled"
+            @click="emailCategories[option.pref] = !emailCategories[option.pref]"
+          >
+            <template #append>
+              <v-switch
+                v-model="emailCategories[option.pref]"
+                readonly
+                tabindex="-1"
+                density="compact"
+               
+                hide-details
+                class="pointer-events-none"
+              />
+            </template>
+          </SettingsRow>
+        </SettingsSection>
       </v-col>
     </v-row>
 
     <!-- Dialogues -->
-    <EmailDialog v-model="showEmailDialog" @success="handleEmailSuccess" @error="handleEmailError" />
-    <PasswordDialog v-model="showPasswordDialog" @success="handlePasswordSuccess" @error="handlePasswordError" />
-    <AvatarDialog v-model="showAvatarDialog" @success="handleAvatarSuccess" @error="handleAvatarError" />
-    <PhoneDialog v-model="showPhoneDialog" @success="handlePhoneSuccess" @error="handlePhoneError" />
-    <BirthDateDialog v-model="showBirthDateDialog" @success="handleBirthDateSuccess" @error="handleBirthDateError" />
-    <TransferRequestDialog v-model="showTransferRequestDialog" />
+    <EmailDialog v-model="showEmailDialog" @success="notifySuccess" @error="notifyError" />
+    <PasswordDialog v-model="showPasswordDialog" @success="notifySuccess" @error="notifyError" />
+    <AvatarDialog v-model="showAvatarDialog" @success="notifySuccess" @error="notifyError" />
+    <PhoneDialog v-model="showPhoneDialog" @success="notifySuccess" @error="notifyError" />
+    <BirthDateDialog v-model="showBirthDateDialog" @success="notifySuccess" @error="notifyError" />
+    <TransferRequestDialog v-model="showTransferRequestDialog" @success="notifySuccess" @error="notifyError" />
   </v-container>
 </template>
 
 <script setup>
-import { birthDayOf } from '@/utils/dayFields.js';
+import { birthDayOf, formatDay } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import { useCenterTransferStore } from '@/stores/centerTransferStore';
+import ThemeSwitch from '@/layouts/components/AppBar/ThemeSwitch.vue';
 import { useDarkMode } from '@/composables/useDarkMode';
 
+const authStore = useAuthStore();
+const snackbarStore = useSnackbarStore();
+const transferStore = useCenterTransferStore();
 const { isDark } = useDarkMode();
 
-const snackbarStore = useSnackbarStore();
+const birthDay = computed(() => birthDayOf(authStore.userData));
 
-const emailOptions = ref([
-  {
-    label: 'Demandes - Remplacement',
-    value: 'emailDemandReplacement',
-    icon: 'mdi-account-arrow-left-outline',
-  },
-  {
-    label: 'Demandes - Switch',
-    value: 'emailDemandSwitch',
-    icon: 'mdi-swap-horizontal-hidden',
-  },
-  {
-    label: 'Annonces',
-    value: 'emailAnnouncements',
-    icon: 'mdi-bullhorn-outline',
-  },
-]);
+// La demande de mutation en cours, s'il y en a une
+onMounted(() => transferStore.fetchMine().catch(() => {}));
 
-const authStore = useAuthStore();
+// Les dialogues signalent leur résultat par `success` / `error` avec un message
+const notifySuccess = (message) => snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle');
+const notifyError = (message) => snackbarStore.showNotification(message, 'onError', 'mdi-close-circle');
 
 // États des dialogues
 const showEmailDialog = ref(false);
 const showPasswordDialog = ref(false);
-
 const showAvatarDialog = ref(false);
 const showPhoneDialog = ref(false);
 const showBirthDateDialog = ref(false);
 const showTransferRequestDialog = ref(false);
 
-const emailCategories = ref({
-  emailDemandReplacement:
-    authStore.userData.preferences.emails.categories.replacement !== undefined
-      ? authStore.userData.preferences.emails.categories.replacement
-      : true,
-  emailDemandSwitch:
-    authStore.userData.preferences.emails.categories.switch !== undefined
-      ? authStore.userData.preferences.emails.categories.switch
-      : true,
-  emailAnnouncements:
-    authStore.userData.preferences.emails.categories.announcements !== undefined
-      ? authStore.userData.preferences.emails.categories.announcements
-      : true,
-});
-const emailGlobalEnabled = ref(
-  authStore.userData.preferences.emails.all !== undefined ? authStore.userData.preferences.emails.all : true,
-);
-
-const noCategoryEnabled = computed(() => {
-  return (
-    emailGlobalEnabled.value &&
-    !emailCategories.value.emailDemandReplacement &&
-    !emailCategories.value.emailDemandSwitch &&
-    !emailCategories.value.emailAnnouncements
-  );
-});
-
-// Fonction pour mettre à jour les préférences dans le backend
-const updateEmailPreferences = async () => {
+const cancellingTransfer = ref(false);
+const cancelTransfer = async () => {
+  cancellingTransfer.value = true;
   try {
-    const currentPreferences = authStore.userData.preferences || {};
-    const emailPrefs = {
-      all: emailGlobalEnabled.value,
-      categories: {
-        replacement: emailCategories.value.emailDemandReplacement,
-        switch: emailCategories.value.emailDemandSwitch,
-        announcements: emailCategories.value.emailAnnouncements,
-      },
-    };
-
-    await authStore.updateUserPreferences({
-      ...currentPreferences,
-      emails: emailPrefs,
-    });
+    await transferStore.cancel();
+    notifySuccess('Demande de mutation annulée');
   } catch (error) {
-    console.error('Erreur lors de la mise à jour des préférences email:', error);
-    snackbarStore.showNotification(
-      'Erreur lors de la mise à jour des préférences email',
-      'onError',
-      'mdi-close-circle',
-    );
+    notifyError(error.message || "Impossible d'annuler la demande");
+  } finally {
+    cancellingTransfer.value = false;
   }
 };
 
-// Sync global with individual switches et mise à jour backend
-watch(emailGlobalEnabled, async (enabled) => {
-  if (!enabled) {
-    emailCategories.value.emailDemandReplacement = false;
-    emailCategories.value.emailDemandSwitch = false;
-    emailCategories.value.emailAnnouncements = false;
+// Catégories d'emails : `pref` est la clé enregistrée dans les préférences de l'utilisateur
+const emailOptions = [
+  { label: 'Demandes - Remplacement', pref: 'replacement', icon: 'mdi-account-arrow-left-outline' },
+  { label: 'Demandes - Switch', pref: 'switch', icon: 'mdi-swap-horizontal-hidden' },
+  { label: 'Annonces', pref: 'announcements', icon: 'mdi-bullhorn-outline' },
+];
+
+const emailPreferences = authStore.userData.preferences.emails;
+const emailGlobalEnabled = ref(emailPreferences.all ?? true);
+const emailCategories = ref(
+  Object.fromEntries(emailOptions.map(({ pref }) => [pref, emailPreferences.categories[pref] ?? true])),
+);
+const setAllCategories = (enabled) => {
+  for (const { pref } of emailOptions) emailCategories.value[pref] = enabled;
+};
+
+const noCategoryEnabled = computed(
+  () => emailGlobalEnabled.value && !Object.values(emailCategories.value).some(Boolean),
+);
+
+// Enregistre les préférences d'emails dans le backend
+const updateEmailPreferences = async () => {
+  try {
+    await authStore.updateUserPreferences({
+      ...authStore.userData.preferences,
+      emails: { all: emailGlobalEnabled.value, categories: { ...emailCategories.value } },
+    });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour des préférences email:', error);
+    notifyError('Erreur lors de la mise à jour des préférences email');
   }
-  // Mettre à jour le backend
+};
+
+// Désactiver les emails décoche toutes les catégories ; activer une catégorie réactive les emails
+watch(emailGlobalEnabled, async (enabled) => {
+  if (!enabled) setAllCategories(false);
   await updateEmailPreferences();
 });
 
-// Watcher pour mettre à jour le backend quand les catégories changent
 watch(
   emailCategories,
   async () => {
-    const anyEnabled =
-      emailCategories.value.emailDemandReplacement ||
-      emailCategories.value.emailDemandSwitch ||
-      emailCategories.value.emailAnnouncements;
-    if (anyEnabled && !emailGlobalEnabled.value) {
+    if (!emailGlobalEnabled.value && Object.values(emailCategories.value).some(Boolean)) {
       emailGlobalEnabled.value = true;
     }
-    // Mettre à jour le backend
     await updateEmailPreferences();
   },
   { deep: true },
 );
-
-const handleEmailSuccess = (message) => {
-  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle');
-};
-
-const handleEmailError = (message) => {
-  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle');
-};
-
-const handlePasswordSuccess = (message) => {
-  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle');
-};
-
-const handlePasswordError = (message) => {
-  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle');
-};
-
-const handleAvatarSuccess = (message) => {
-  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle');
-};
-
-const handleAvatarError = (message) => {
-  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle');
-};
-
-const handlePhoneSuccess = (message) => {
-  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check');
-};
-
-const handlePhoneError = (message) => {
-  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle');
-};
-
-const handleBirthDateSuccess = (message) => {
-  snackbarStore.showNotification(message, 'onPrimary', 'mdi-check-circle');
-};
-
-const handleBirthDateError = (message) => {
-  snackbarStore.showNotification(message, 'onError', 'mdi-close-circle');
-};
-
-// Actions de bascule
-const toggleGlobal = async () => {
-  emailGlobalEnabled.value = !emailGlobalEnabled.value;
-  if (!emailGlobalEnabled.value) {
-    emailCategories.value.emailDemandReplacement = false;
-    emailCategories.value.emailDemandSwitch = false;
-    emailCategories.value.emailAnnouncements = false;
-  }
-  // La mise à jour backend est gérée par le watcher sur emailGlobalEnabled
-};
 </script>
 
 <style scoped>

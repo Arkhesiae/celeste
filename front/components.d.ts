@@ -89,6 +89,8 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     RulesDialog: typeof import('./src/components/Dialogs/RulesDialog.vue')['default']
+    SettingsRow: typeof import('./src/components/Profile/Parameters/SettingsRow.vue')['default']
+    SettingsSection: typeof import('./src/components/Profile/Parameters/SettingsSection.vue')['default']
     SetupAlerts: typeof import('./src/components/Dashboard/SetupAlerts.vue')['default']
     ShiftCard: typeof import('./src/components/Calendar/ShiftCard.vue')['default']
     SimpleTitle: typeof import('./src/components/common/Titles/SimpleTitle.vue')['default']

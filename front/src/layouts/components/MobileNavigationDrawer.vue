@@ -80,7 +80,7 @@
         </v-scale-transition>
 
         <div class="d-flex w-100 flex-column" style="max-width: 400px">
-          <v-fade-transition v-if="isLoggedIn" group appear>
+          <v-fade-transition v-if="isLoggedIn" appear>
             <v-list class="pa-0 ga-1 d-flex flex-column" bg-color="transparent" rounded="30">
               <v-list-item
                 v-for="link in menuLinks"

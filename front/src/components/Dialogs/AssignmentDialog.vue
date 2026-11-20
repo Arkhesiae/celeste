@@ -28,7 +28,7 @@
         label="Congé validé"
         color="primary"
         density="comfortable"
-        inset
+       
         hide-details
       />
 

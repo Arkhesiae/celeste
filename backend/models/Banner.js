@@ -12,7 +12,7 @@ const acknowledgedBySchema = new mongoose.Schema({
   }
 }, { _id: false });
 
-const publicAnnouncementSchema = new mongoose.Schema({
+const bannerSchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -59,19 +59,21 @@ const publicAnnouncementSchema = new mongoose.Schema({
     default: null
   }
 }, {
-  timestamps: true
+  timestamps: true,
+  // Les bannières s'appelaient « annonces publiques » : la collection garde son ancien nom pour ne pas migrer les données
+  collection: 'publicannouncements'
 });
 
 // Indexes for common query patterns
-publicAnnouncementSchema.index({ isActive: 1, isGlobal: 1, createdAt: -1 });
-publicAnnouncementSchema.index({ isActive: 1, centerId: 1, createdAt: -1 });
-publicAnnouncementSchema.index({ isPermanent: 1 });
-publicAnnouncementSchema.index({ expiresAt: 1 });
+bannerSchema.index({ isActive: 1, isGlobal: 1, createdAt: -1 });
+bannerSchema.index({ isActive: 1, centerId: 1, createdAt: -1 });
+bannerSchema.index({ isPermanent: 1 });
+bannerSchema.index({ expiresAt: 1 });
 
 /**
- * Returns true if this announcement is currently visible (active and not expired).
+ * Returns true if this banner is currently visible (active and not expired).
  */
-publicAnnouncementSchema.methods.isCurrentlyVisible = function () {
+bannerSchema.methods.isCurrentlyVisible = function () {
   if (!this.isActive) return false;
   if (this.expiresAt && new Date() > this.expiresAt) return false;
   return true;
@@ -80,10 +82,10 @@ publicAnnouncementSchema.methods.isCurrentlyVisible = function () {
 /**
  * Returns true if the given userId has acknowledged this announcement.
  */
-publicAnnouncementSchema.methods.isAcknowledgedBy = function (userId) {
+bannerSchema.methods.isAcknowledgedBy = function (userId) {
   return this.acknowledgedBy.some(a => a.userId.toString() === userId.toString());
 };
 
-const PublicAnnouncement = mongoose.model('PublicAnnouncement', publicAnnouncementSchema);
+const Banner = mongoose.model('Banner', bannerSchema);
 
-export default PublicAnnouncement;
+export default Banner;

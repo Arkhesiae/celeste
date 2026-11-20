@@ -4,13 +4,14 @@
       <WelcomeTitle :user-name="userName"> </WelcomeTitle>
     </Transition>
 
-    <!-- <Transition name="donations-transition" appear>
+    <Transition name="donations-transition" appear>
       <Donations></Donations>
-    </Transition> -->
+    </Transition>
 
     <SetupAlerts />
 
-    <!-- <AnnouncementBanner /> -->
+    <!-- Bannières publiées par les administrateurs -->
+    <BannerList />
 
     <v-row>
       <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">

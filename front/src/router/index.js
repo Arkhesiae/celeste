@@ -31,6 +31,17 @@ const router = createRouter({
   },
 });
 
+// Anciennes adresses des pages réunies sous /information
+router.addRoute({ path: '/financement', redirect: '/information/financement' });
+router.addRoute({ path: '/patchnotes', redirect: '/information/patchnotes' });
+// Anciennes adresses du calendrier et de la grille, réunis sous /planning (le centre de la grille passe en requête)
+router.addRoute({ path: '/calendar', redirect: '/planning/calendar' });
+router.addRoute({ path: '/admin/pending-users', redirect: '/users/candidatures' });
+router.addRoute({
+  path: '/center/:centerId/grid',
+  redirect: (to) => ({ path: '/planning/grid', query: { ...to.query, center: to.params.centerId } }),
+});
+
 const noAuth = [
   '/login',
   '/(account-creation)/creation',
@@ -94,7 +105,7 @@ router.beforeEach(async (to, from) => {
       return '/';
     }
 
-    if (to.path.startsWith('/admin') || to.path === '/admin-panel') {
+    if (to.path.startsWith('/admin') || to.path === '/admin-panel' || to.path.startsWith('/users/')) {
       if (!authStore.userData.isAdmin) {
         return '/';
       }

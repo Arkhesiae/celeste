@@ -3,11 +3,8 @@
     <template #activator="{ props }">
       <v-tooltip location="bottom" text="Profil">
         <template #activator="{ props: tooltipProps }">
-          <v-btn icon color="primary" variant="tonal" class="mr-2" v-bind="{ ...props, ...tooltipProps }">
-            <v-avatar size="40" variant="tonal" color="primary">
-              <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-              <v-icon v-else> mdi-account </v-icon>
-            </v-avatar>
+          <v-btn icon color="primary" variant="text" class="mr-2" v-bind="{ ...props, ...tooltipProps }">
+            <UserAvatar :size="32" />
           </v-btn>
         </template>
       </v-tooltip>
@@ -18,10 +15,7 @@
       <v-list>
         <v-list-item>
           <template #prepend>
-            <v-avatar size="32" variant="tonal" style="background-color: rgb(var(--v-theme-background))">
-              <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-              <v-icon v-else> mdi-account </v-icon>
-            </v-avatar>
+            <UserAvatar :size="32" />
           </template>
           <v-list-item-title class="text-title-large">
             {{ username }}
@@ -92,7 +86,6 @@
 </template>
 
 <script setup>
-import { API_URL } from '@/config/api';
 import { usePointStore } from '@/stores/pointStore';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useRouter } from 'vue-router';

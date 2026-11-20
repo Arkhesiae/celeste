@@ -4,7 +4,7 @@ import Substitution from '../models/Substitution.js';
 import Team from '../models/Team.js';
 import Ticket from '../models/Ticket.js';
 import Rotation from '../models/Rotation.js';
-import PublicAnnouncement from '../models/PublicAnnouncement.js';
+import Banner from '../models/Banner.js';
 import { AppError } from '../error/AppError.js';
 
 /**
@@ -20,7 +20,7 @@ import { AppError } from '../error/AppError.js';
  *   un centre dans l'URL ....... authorizeCenterParam('centerId')
  *   une ressource par son id ... authorizeResourceCenter(Model, opts) — ou ses instances nommées :
  *                                authorizeDemandAccess, authorizeTeamAccess, authorizeTicketAccess,
- *                                authorizeRotationAccess, authorizeAnnouncementAccess
+ *                                authorizeRotationAccess, authorizeBannerAccess
  *   plusieurs ressources (corps)  authorizeBodyResourcesCenter(Model, opts)
  *   un utilisateur par son id .. authorizeTargetUserCenter (soi ou un collègue) / authorizeSelfOrCenterAdmin
  *   seulement le centre de l'appelant (listes) ... resolveCenterId
@@ -134,5 +134,5 @@ export const authorizeTicketAccess = authorizeResourceCenter(Ticket);
 /** Tour de service (`Rotation.centerId`). */
 export const authorizeRotationAccess = authorizeResourceCenter(Rotation);
 
-/** Annonce publique (`PublicAnnouncement.centerId`) : une annonce globale n'est modifiable que par le master. */
-export const authorizeAnnouncementAccess = authorizeResourceCenter(PublicAnnouncement, { masterOnlyField: 'isGlobal' });
+/** Bannière (`Banner.centerId`) : une bannière globale n'est modifiable que par le master. */
+export const authorizeBannerAccess = authorizeResourceCenter(Banner, { masterOnlyField: 'isGlobal' });

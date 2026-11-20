@@ -5,7 +5,7 @@
     class="mb-4 pa-6"
     :class="smAndDown ? 'mx-4' : 'mx-0'"
     color="surfaceContainer"
-    to="/rotation"
+    @click="rotationsDialog = true"
   >
     <div class="d-flex align-center justify-space-between">
       <div class="d-flex flex-column ga-2" style="flex: 1; min-width: 0">
@@ -35,6 +35,13 @@
 
       <v-icon icon="mdi-chevron-right" color="primary" size="24" />
     </div>
+
+    <!-- La page des tours de service, en plein écran (la même que /rotation) -->
+    <GenericDialog v-model="rotationsDialog" title="Tours de service" fullscreen max-width="100%">
+      <template #content>
+        <RotationsView v-if="rotationsDialog" :center-id="authStore.userData.centerId" embedded />
+      </template>
+    </GenericDialog>
   </v-card>
 </template>
 
@@ -47,6 +54,8 @@ import { useAuthStore } from '@/stores/authStore.js';
 const { smAndDown } = useDisplay();
 const rotationStore = useRotationStore();
 const authStore = useAuthStore();
+
+const rotationsDialog = ref(false);
 
 const loading = computed(() => rotationStore.loading);
 // Le tour de service actif du centre de l'utilisateur, au jour courant de ce centre

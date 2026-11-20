@@ -39,7 +39,7 @@ same singular camelCase word (kebab-case is for URLs only). What still breaks it
 
 | Current | Anomaly | Proposed |
 |---|---|---|
-| `services/publicAnnouncement/publicAnnouncement.service.js`, `services/rule/rule.service.js` | one `<domain>.service.js` file per domain instead of one file per action | accepted for a small single-file domain (documented in `CLAUDE.md`); split by action if one of them grows or when its controller is reworked |
+| `services/banner/banner.service.js`, `services/rule/rule.service.js` | one `<domain>.service.js` file per domain instead of one file per action | accepted for a small single-file domain (documented in `CLAUDE.md`); split by action if one of them grows or when its controller is reworked |
 | `middleware/` (`authMiddleware.js`, `centerAuth.js`, `errorHandler.js`) | three different suffix styles | `auth.middleware.js`, `centerAuth.middleware.js`, `errorHandler.middleware.js`, or keep (they are named after what they export) |
 
 ## 4. URLs

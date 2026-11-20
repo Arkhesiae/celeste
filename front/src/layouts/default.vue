@@ -7,7 +7,7 @@
       @toggle-drawer="toggleDrawer"
     />
 
-    <DesktopNavigationDrawer2 v-model:nav-expanded="navExpanded" />
+    <DesktopNavigationDrawer2 />
 
     <MobileNavigationDrawer v-model:model-value="mobileDrawer" class="user-safe-area" />
 
@@ -26,10 +26,9 @@
             :name="route.meta.transition || ''"
             > -->
 
-          <component :is="Component" :key="route.fullPath" />
+          <component :is="Component" />
         </transition>
       </router-view>
-
       <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
     </v-main>
 

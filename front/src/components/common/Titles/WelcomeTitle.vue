@@ -1,9 +1,6 @@
 <template>
   <div class="d-flex ga-6 align-center my-16" :class="smAndDown ? 'justify-center' : 'justify-start'">
-    <v-avatar :size="avatarSize" class="" variant="tonal" color="primary">
-      <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
-      <v-icon v-else> mdi-account </v-icon>
-    </v-avatar>
+    <UserAvatar :size="avatarSize" />
     <div class="d-flex flex-column" :class="smAndDown ? 'align-center' : 'align-start'">
       <div class="d-flex align-center">
         <span
@@ -30,10 +27,7 @@
 
 <script setup>
 import { useDisplay } from 'vuetify';
-import { API_URL } from '@/config/api';
-import { useAuthStore } from '@/stores/authStore.js';
 
-const authStore = useAuthStore();
 const { smAndDown } = useDisplay();
 
 const avatarSize = computed(() => {

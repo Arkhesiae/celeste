@@ -3,7 +3,7 @@
     <!-- ── Permanent banners (always visible, no dismiss) ────────────────── -->
     <TransitionGroup name="banner-slide" tag="div">
       <div
-        v-for="ann in PAstore.permanentAnnouncements"
+        v-for="ann in bannerStore.permanentBanners"
         :key="ann._id"
         class="announcement-banner permanent"
         :class="`type-${ann.type}`"
@@ -60,14 +60,14 @@
 </template>
 
 <script setup>
-import { usePublicAnnouncementStore } from '@/stores/publicAnnouncementStore.js';
+import { useBannerStore } from '@/stores/bannerStore.js';
 
-const PAstore = usePublicAnnouncementStore();
+const bannerStore = useBannerStore();
 
 const acknowledging = ref(false);
 
 const currentBanner = computed(() => {
-  return PAstore.currentBanner;
+  return bannerStore.currentBanner;
 });
 
 const typeIcon = (type) => {
@@ -81,18 +81,18 @@ const typeIcon = (type) => {
 };
 
 const handleAcknowledge = async () => {
-  const id = PAstore.currentBanner?._id;
+  const id = bannerStore.currentBanner?._id;
   if (!id) return;
   acknowledging.value = true;
   try {
-    await PAstore.acknowledge(id);
+    await bannerStore.acknowledge(id);
   } finally {
     acknowledging.value = false;
   }
 };
 
 onMounted(() => {
-  PAstore.fetchActive();
+  bannerStore.fetchActive();
 });
 </script>
 

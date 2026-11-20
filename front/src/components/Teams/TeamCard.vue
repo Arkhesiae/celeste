@@ -91,8 +91,7 @@
           size="small"
           aria-label="Ouvrir la grille de l'équipe"
           title="Grille de l'équipe"
-          :to="gridLink"
-          @click.stop
+          @click.stop="$emit('open-grid', team)"
         />
       </v-btn-group>
     </v-card-text>
@@ -131,14 +130,9 @@ defineProps({
     type: Object,
     default: null,
   },
-  /** Destination de la grille de l'équipe */
-  gridLink: {
-    type: [Object, String],
-    default: undefined,
-  },
 });
 
-defineEmits(['edit-team-name', 'edit-cycle', 'remove-team', 'view-members']);
+defineEmits(['edit-team-name', 'edit-cycle', 'remove-team', 'view-members', 'open-grid']);
 </script>
 
 <style scoped>

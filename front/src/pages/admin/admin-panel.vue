@@ -181,7 +181,7 @@ const quickStats = computed(() => [
     value: stats.value.pendingUsers,
     label: 'En attente',
     icon: 'mdi-account-clock',
-    path: '/admin/pending-users',
+    path: '/users/candidatures',
     color: 'warning',
   },
   {
@@ -218,7 +218,7 @@ const mainSections = computed(() => [
         icon: 'mdi-account-clock',
         key: 'pendingUsers',
         iconColor: 'warning',
-        path: '/admin/pending-users',
+        path: '/users/candidatures',
         requiresMaster: false,
       },
       {
@@ -323,11 +323,11 @@ const mainSections = computed(() => [
       },
       {
         id: 'announcements',
-        title: 'Annonces publiques',
+        title: 'Bannières',
         subtitle: 'Gérer les bannières du tableau de bord',
         icon: 'mdi-bullhorn',
         iconColor: 'primary',
-        path: '/admin/announcements',
+        path: '/admin/banners',
         requiresMaster: false,
       },
       //   {
@@ -350,7 +350,7 @@ const mainSections = computed(() => [
 //     title: 'Approuver des candidatures',
 //     color: 'primary',
 //     icon: 'mdi-account-plus',
-//     path: '/admin/pending-users',
+//     path: '/users/candidatures',
 //     requiresMaster: false
 //   },
 //   {

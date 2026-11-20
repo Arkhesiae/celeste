@@ -88,9 +88,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/admin/announcements': RouteRecordInfo<
-      '/admin/announcements',
-      '/admin/announcements',
+    '/admin/banners': RouteRecordInfo<
+      '/admin/banners',
+      '/admin/banners',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -109,32 +109,11 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/admin/pending-users': RouteRecordInfo<
-      '/admin/pending-users',
-      '/admin/pending-users',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/admin/rules': RouteRecordInfo<
       '/admin/rules',
       '/admin/rules',
       Record<never, never>,
       Record<never, never>,
-      | never
-    >,
-    '/calendar': RouteRecordInfo<
-      '/calendar',
-      '/calendar',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/center/[centerId]/grid': RouteRecordInfo<
-      '/center/[centerId]/grid',
-      '/center/:centerId/grid',
-      { centerId: ParamValue<true> },
-      { centerId: ParamValue<false> },
       | never
     >,
     '/center/[centerId]/teams': RouteRecordInfo<
@@ -164,17 +143,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       Record<never, never>,
       | never
-    >,
-    '/demand-page': RouteRecordInfo<
-      '/demand-page',
-      '/demand-page',
-      Record<never, never>,
-      Record<never, never>,
-      | '/demand-page/demands'
-      | '/demand-page/demands/'
-      | '/demand-page/standalone'
-      | '/demand-page/standalone/available'
-      | '/demand-page/standalone/own'
     >,
     '/demand-page/demands': RouteRecordInfo<
       '/demand-page/demands',
@@ -212,16 +180,39 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/financement': RouteRecordInfo<
-      '/financement',
-      '/financement',
+    '/haptic': RouteRecordInfo<
+      '/haptic',
+      '/haptic',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '/haptic': RouteRecordInfo<
-      '/haptic',
-      '/haptic',
+    '/information': RouteRecordInfo<
+      '/information',
+      '/information',
+      Record<never, never>,
+      Record<never, never>,
+      | '/information/'
+      | '/information/financement'
+      | '/information/patchnotes'
+    >,
+    '/information/': RouteRecordInfo<
+      '/information/',
+      '/information',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/information/financement': RouteRecordInfo<
+      '/information/financement',
+      '/information/financement',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/information/patchnotes': RouteRecordInfo<
+      '/information/patchnotes',
+      '/information/patchnotes',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -254,16 +245,39 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/patchnotes': RouteRecordInfo<
-      '/patchnotes',
-      '/patchnotes',
+    '/pending-approval': RouteRecordInfo<
+      '/pending-approval',
+      '/pending-approval',
       Record<never, never>,
       Record<never, never>,
       | never
     >,
-    '/pending-approval': RouteRecordInfo<
-      '/pending-approval',
-      '/pending-approval',
+    '/planning': RouteRecordInfo<
+      '/planning',
+      '/planning',
+      Record<never, never>,
+      Record<never, never>,
+      | '/planning/'
+      | '/planning/calendar'
+      | '/planning/grid'
+    >,
+    '/planning/': RouteRecordInfo<
+      '/planning/',
+      '/planning',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/planning/calendar': RouteRecordInfo<
+      '/planning/calendar',
+      '/planning/calendar',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/planning/grid': RouteRecordInfo<
+      '/planning/grid',
+      '/planning/grid',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -320,6 +334,29 @@ declare module 'vue-router/auto-routes' {
     '/users': RouteRecordInfo<
       '/users',
       '/users',
+      Record<never, never>,
+      Record<never, never>,
+      | '/users/'
+      | '/users/candidatures'
+      | '/users/mutations'
+    >,
+    '/users/': RouteRecordInfo<
+      '/users/',
+      '/users',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/users/candidatures': RouteRecordInfo<
+      '/users/candidatures',
+      '/users/candidatures',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/users/mutations': RouteRecordInfo<
+      '/users/mutations',
+      '/users/mutations',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -403,9 +440,9 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/admin/announcements.vue': {
+    'src/pages/admin/banners.vue': {
       routes:
-        | '/admin/announcements'
+        | '/admin/banners'
       views:
         | never
       pathParamNames:
@@ -427,33 +464,9 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/admin/pending-users.vue': {
-      routes:
-        | '/admin/pending-users'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
     'src/pages/admin/rules.vue': {
       routes:
         | '/admin/rules'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/calendar.vue': {
-      routes:
-        | '/calendar'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/center/[centerId]/grid.vue': {
-      routes:
-        | '/center/[centerId]/grid'
       views:
         | never
       pathParamNames:
@@ -488,19 +501,6 @@ declare module 'vue-router/auto-routes' {
         | '/dashboard'
       views:
         | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/demand-page.vue': {
-      routes:
-        | '/demand-page'
-        | '/demand-page/demands'
-        | '/demand-page/demands/'
-        | '/demand-page/standalone'
-        | '/demand-page/standalone/available'
-        | '/demand-page/standalone/own'
-      views:
-        | 'default'
       pathParamNames:
         | never
     }
@@ -547,17 +547,44 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/financement.vue': {
+    'src/pages/haptic.vue': {
       routes:
-        | '/financement'
+        | '/haptic'
       views:
         | never
       pathParamNames:
         | never
     }
-    'src/pages/haptic.vue': {
+    'src/pages/information.vue': {
       routes:
-        | '/haptic'
+        | '/information'
+        | '/information/'
+        | '/information/financement'
+        | '/information/patchnotes'
+      views:
+        | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/pages/information/index.vue': {
+      routes:
+        | '/information/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/information/financement.vue': {
+      routes:
+        | '/information/financement'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/information/patchnotes.vue': {
+      routes:
+        | '/information/patchnotes'
       views:
         | never
       pathParamNames:
@@ -595,17 +622,44 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/patchnotes.vue': {
+    'src/pages/pending-approval.vue': {
       routes:
-        | '/patchnotes'
+        | '/pending-approval'
       views:
         | never
       pathParamNames:
         | never
     }
-    'src/pages/pending-approval.vue': {
+    'src/pages/planning.vue': {
       routes:
-        | '/pending-approval'
+        | '/planning'
+        | '/planning/'
+        | '/planning/calendar'
+        | '/planning/grid'
+      views:
+        | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/pages/planning/index.vue': {
+      routes:
+        | '/planning/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/planning/calendar.vue': {
+      routes:
+        | '/planning/calendar'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/planning/grid.vue': {
+      routes:
+        | '/planning/grid'
       views:
         | never
       pathParamNames:
@@ -670,6 +724,33 @@ declare module 'vue-router/auto-routes' {
     'src/pages/users.vue': {
       routes:
         | '/users'
+        | '/users/'
+        | '/users/candidatures'
+        | '/users/mutations'
+      views:
+        | 'default'
+      pathParamNames:
+        | never
+    }
+    'src/pages/users/index.vue': {
+      routes:
+        | '/users/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/users/candidatures.vue': {
+      routes:
+        | '/users/candidatures'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/users/mutations.vue': {
+      routes:
+        | '/users/mutations'
       views:
         | never
       pathParamNames:

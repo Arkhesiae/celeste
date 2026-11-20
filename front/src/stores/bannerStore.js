@@ -1,16 +1,16 @@
 import { defineStore } from 'pinia';
-import { publicAnnouncementService } from '@/services/publicAnnouncementService.js';
+import { bannerService } from '@/services/bannerService.js';
 import { useSnackbarStore } from './snackbarStore';
 
-export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () => {
+export const useBannerStore = defineStore('banner', () => {
   const snackbarStore = useSnackbarStore();
 
   // ── State ────────────────────────────────────────────────────────────────
 
-  const permanentAnnouncements = ref([]);
+  const permanentBanners = ref([]);
 
-  const nonPermanentAnnouncements = ref([]);
-  const allAnnouncements = ref([]);
+  const nonPermanentBanners = ref([]);
+  const allBanners = ref([]);
 
   const loading = ref(false);
   const saving = ref(false);
@@ -20,24 +20,24 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   // ── Getters ──────────────────────────────────────────────────────────────
 
   const currentBanner = computed(() => {
-    return nonPermanentAnnouncements.value[0] ?? null;
+    return nonPermanentBanners.value[0] ?? null;
   });
 
   const hasBanners = computed(() => {
-    return permanentAnnouncements.value.length > 0 || nonPermanentAnnouncements.value.length > 0;
+    return permanentBanners.value.length > 0 || nonPermanentBanners.value.length > 0;
   });
-  const pendingCount = computed(() => nonPermanentAnnouncements.value.length);
+  const pendingCount = computed(() => nonPermanentBanners.value.length);
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
   const fetchActive = async () => {
     try {
       loading.value = true;
-      const data = await publicAnnouncementService.getActive();
-      permanentAnnouncements.value = data.permanentAnnouncements ?? [];
-      nonPermanentAnnouncements.value = data.nonPermanentAnnouncements ?? [];
+      const data = await bannerService.getActive();
+      permanentBanners.value = data.permanentBanners ?? [];
+      nonPermanentBanners.value = data.nonPermanentBanners ?? [];
     } catch (error) {
-      console.error('[PublicAnnouncement] Erreur lors du chargement des annonces:', error);
+      console.error('[Banner] Erreur lors du chargement des bannières :', error);
     } finally {
       loading.value = false;
     }
@@ -45,10 +45,10 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
 
   const acknowledge = async (id) => {
     try {
-      await publicAnnouncementService.acknowledge(id);
-      nonPermanentAnnouncements.value = nonPermanentAnnouncements.value.filter((a) => a._id !== id);
+      await bannerService.acknowledge(id);
+      nonPermanentBanners.value = nonPermanentBanners.value.filter((a) => a._id !== id);
     } catch (error) {
-      console.error("[PublicAnnouncement] Erreur lors de l'acquittement:", error);
+      console.error("[Banner] Erreur lors de l'acquittement:", error);
     }
   };
 
@@ -57,11 +57,11 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   const fetchAll = async (params = {}) => {
     try {
       loading.value = true;
-      const data = await publicAnnouncementService.getAll(params);
-      allAnnouncements.value = data.announcements ?? [];
+      const data = await bannerService.getAll(params);
+      allBanners.value = data.banners ?? [];
       pagination.value = data.pagination ?? pagination.value;
     } catch (error) {
-      console.error('[PublicAnnouncement] Erreur admin fetch:', error);
+      console.error('[Banner] Erreur admin fetch:', error);
       throw error;
     } finally {
       loading.value = false;
@@ -71,10 +71,10 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   const create = async (formData) => {
     try {
       saving.value = true;
-      const data = await publicAnnouncementService.create(formData);
-      allAnnouncements.value.unshift(data.announcement);
-      snackbarStore.showNotification('Annonce créée avec succès', 'success', 'mdi-bullhorn');
-      return data.announcement;
+      const data = await bannerService.create(formData);
+      allBanners.value.unshift(data.banner);
+      snackbarStore.showNotification('Bannière créée avec succès', 'success', 'mdi-bullhorn');
+      return data.banner;
     } catch (error) {
       snackbarStore.showNotification('Erreur lors de la création : ' + error.message, 'error', 'mdi-alert-circle');
       throw error;
@@ -86,11 +86,11 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   const update = async (id, formData) => {
     try {
       saving.value = true;
-      const data = await publicAnnouncementService.update(id, formData);
-      const idx = allAnnouncements.value.findIndex((a) => a._id === id);
-      if (idx !== -1) allAnnouncements.value[idx] = data.announcement;
-      snackbarStore.showNotification('Annonce mise à jour', 'success', 'mdi-check-circle');
-      return data.announcement;
+      const data = await bannerService.update(id, formData);
+      const idx = allBanners.value.findIndex((a) => a._id === id);
+      if (idx !== -1) allBanners.value[idx] = data.banner;
+      snackbarStore.showNotification('Bannière mise à jour', 'success', 'mdi-check-circle');
+      return data.banner;
     } catch (error) {
       snackbarStore.showNotification('Erreur lors de la mise à jour : ' + error.message, 'error', 'mdi-alert-circle');
       throw error;
@@ -102,9 +102,9 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   const remove = async (id) => {
     try {
       saving.value = true;
-      await publicAnnouncementService.remove(id);
-      allAnnouncements.value = allAnnouncements.value.filter((a) => a._id !== id);
-      snackbarStore.showNotification('Annonce supprimée', 'success', 'mdi-trash-can');
+      await bannerService.remove(id);
+      allBanners.value = allBanners.value.filter((a) => a._id !== id);
+      snackbarStore.showNotification('Bannière supprimée', 'success', 'mdi-trash-can');
     } catch (error) {
       snackbarStore.showNotification('Erreur lors de la suppression : ' + error.message, 'error', 'mdi-alert-circle');
       throw error;
@@ -114,16 +114,16 @@ export const usePublicAnnouncementStore = defineStore('publicAnnouncement', () =
   };
 
   const resetStore = () => {
-    permanentAnnouncements.value = [];
-    nonPermanentAnnouncements.value = [];
-    allAnnouncements.value = [];
+    permanentBanners.value = [];
+    nonPermanentBanners.value = [];
+    allBanners.value = [];
   };
 
   return {
     // State
-    permanentAnnouncements,
-    nonPermanentAnnouncements,
-    allAnnouncements,
+    permanentBanners,
+    nonPermanentBanners,
+    allBanners,
     loading,
     saving,
     pagination,

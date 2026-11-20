@@ -1,7 +1,5 @@
 <template>
-  <v-container class="pb-8">
-    <MainTitle :title="team?.name ? `Grille · ${team.name}` : 'Grille'" :subtitle="rangeLabel" back-button />
-
+  <div>
     <!-- Barre d'outils : équipe, nombre de jours affichés, navigation -->
     <div class="d-flex flex-wrap align-center ga-2 mb-4">
       <v-select
@@ -55,43 +53,61 @@
         {{ errorMessage }}
       </v-alert>
     </v-card>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
 import { Temporal } from '@js-temporal/polyfill';
-import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useTeamStore } from '@/stores/teamStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useAuthStore } from '@/stores/authStore';
 
+// Grille d'une équipe (membres × jours) : la page /planning/grid et la fenêtre de la page des équipes l'utilisent toutes deux.
+// Le composant ne touche pas à l'adresse : il signale ses choix par `change`, la page décide de les garder dans la requête.
+const props = defineProps({
+  centerId: {
+    type: String,
+    required: true,
+  },
+  /** Équipe affichée au départ ; sans elle, celle de l'utilisateur si elle est de ce centre, sinon la première */
+  teamId: {
+    type: String,
+    default: null,
+  },
+  /** Nombre de jours affiché au départ (6, 12 ou 24) */
+  span: {
+    type: Number,
+    default: 12,
+  },
+});
+
+const emit = defineEmits(['change']);
+
 const SPANS = [6, 12, 24];
 const MOBILE_SPAN = 6;
 const DEFAULT_TIME_ZONE = 'Europe/Paris';
 
-const route = useRoute();
-const router = useRouter();
 const teamStore = useTeamStore();
 const centerStore = useCenterStore();
 const authStore = useAuthStore();
-const centerId = route.params.centerId;
 
 const teams = computed(() => [...teamStore.centerTeams].sort((a, b) => a.order - b.order));
-const timeZone = computed(() => centerStore.centers.find((c) => c._id === centerId)?.timeZone || DEFAULT_TIME_ZONE);
+const timeZone = computed(
+  () => centerStore.centers.find((c) => c._id === props.centerId)?.timeZone || DEFAULT_TIME_ZONE,
+);
 
 // Sur mobile, une seule durée : 6 jours
 const { smAndDown } = useDisplay();
 const spans = computed(() => (smAndDown.value ? [MOBILE_SPAN] : SPANS));
 
-const initialSpan = Number(route.query.span);
-const span = ref(smAndDown.value ? MOBILE_SPAN : SPANS.includes(initialSpan) ? initialSpan : 12);
+const span = ref(smAndDown.value ? MOBILE_SPAN : SPANS.includes(props.span) ? props.span : 12);
 watch(smAndDown, (mobile) => {
   if (mobile) span.value = MOBILE_SPAN;
 });
 
 const gridRef = ref(null);
-const selectedTeamId = ref(typeof route.query.team === 'string' ? route.query.team : null);
+const selectedTeamId = ref(props.teamId);
 const team = computed(() => teams.value.find((t) => t._id === selectedTeamId.value) ?? null);
 
 // Dates en chaînes YYYY-MM-DD : le jour courant est celui du fuseau du centre
@@ -114,6 +130,18 @@ const rangeLabel = computed(() => {
   const format = (key) => Temporal.PlainDate.from(key).toLocaleString('fr-FR', { day: 'numeric', month: 'short' });
   return `${format(startDate.value)} → ${format(endDate.value)}`;
 });
+
+watch(
+  [() => team.value?.name, rangeLabel, selectedTeamId, span],
+  () =>
+    emit('change', {
+      teamName: team.value?.name ?? '',
+      rangeLabel: rangeLabel.value,
+      teamId: selectedTeamId.value,
+      span: span.value,
+    }),
+  { immediate: true },
+);
 
 // Boutons : le Swiper anime le glissement, puis TeamGrid émet `move` une fois arrivé
 const slide = (direction) => gridRef.value?.slideBy(direction);
@@ -154,13 +182,8 @@ const loadGrid = async () => {
   }
 };
 
-watch(span, () => {
-  router.replace({ query: { ...route.query, span: String(span.value) } });
-});
-
-watch(selectedTeamId, (id) => {
+watch(selectedTeamId, () => {
   grid.value = null; // ne pas afficher les membres de l'équipe précédente pendant le chargement
-  router.replace({ query: { ...route.query, team: id } });
 });
 
 watch([selectedTeamId, startDate, span], loadGrid);
@@ -171,12 +194,10 @@ const ownTeamId = async () => {
   return teamStore.currentTeam?.teamId ?? null;
 };
 
-// Le jour courant change à minuit (fuseau du centre) si la page reste ouverte
+// Le jour courant change à minuit (fuseau du centre) si la grille reste ouverte
 let timer = null;
 onMounted(async () => {
-  await Promise.all([teamStore.fetchCenterTeams(centerId), centerStore.fetchCenters()]);
-  // Sans équipe dans l'adresse (les raccourcis du menu n'en donnent pas) : celle de l'utilisateur si elle est de ce centre,
-  // sinon la première
+  await Promise.all([teamStore.fetchCenterTeams(props.centerId), centerStore.fetchCenters()]);
   if (!team.value) {
     const own = await ownTeamId();
     selectedTeamId.value = teams.value.some((t) => t._id === own) ? own : (teams.value[0]?._id ?? null);

@@ -80,9 +80,10 @@
         <v-card rounded="xl" elevation="0" class="pa-0" color="background">
           <v-card-title class="text-headline-small"> Apparence </v-card-title>
           <v-card-text>
-            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0">
+            <!-- Tout le bouton change le thème ; l'interrupteur n'est là que pour montrer l'état (il ne reçoit pas le clic) -->
+            <v-btn block height="64" class="rounded-lg py-4" color="surface" elevation="0" @click="isDark = !isDark">
               <template #prepend>
-                <ThemeSwitch />
+                <ThemeSwitch readonly tabindex="-1" class="pointer-events-none" />
               </template>
               <span class="text-body-large">Changer le thème</span>
             </v-btn>
@@ -179,6 +180,9 @@
 import { birthDayOf } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
+import { useDarkMode } from '@/composables/useDarkMode';
+
+const { isDark } = useDarkMode();
 
 const snackbarStore = useSnackbarStore();
 

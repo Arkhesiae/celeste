@@ -6,6 +6,12 @@
       :back-button="authStore.userData.adminType === 'master'"
     >
       <template #actions>
+        <v-btn variant="tonal" color="primary" prepend-icon="mdi-account-group-outline" @click="usersDialog = true">
+          Utilisateurs
+        </v-btn>
+        <v-btn variant="tonal" color="primary" prepend-icon="mdi-file-clock-outline" @click="rotationsDialog = true">
+          Tours de service
+        </v-btn>
         <v-btn v-if="!smAndDown" color="primary" prepend flat prepend-icon="mdi-plus" @click="openAddTeamDialog">
           Ajouter une équipe
         </v-btn>
@@ -40,14 +46,34 @@
           :cycle-start-date="getCycleStartLabel(team)"
           :next-cycle-date="getNextCycleDate(team)"
           :current-day="getCurrentCycleDay(team)"
-          :grid-link="{ path: `/center/${centerId}/grid`, query: { team: team._id } }"
           @edit-team-name="openEditTeamNameDialog"
           @edit-cycle="openCycleDialog"
           @remove-team="removeTeam"
           @view-members="openMembersPanel"
+          @open-grid="openGrid"
         />
       </v-col>
     </v-row>
+
+    <!-- Grille de l'équipe (la page /planning/grid affiche la même) -->
+    <GenericDialog v-model="gridDialog" :title="gridTitle" max-width="1200px">
+      <template #content>
+        <TeamGridView v-if="gridDialog" :center-id="centerId" :team-id="gridTeamId" @change="onGridChange" />
+      </template>
+    </GenericDialog>
+
+    <!-- Utilisateurs et tours de service du centre, en plein écran (les pages /users et /rotation affichent les mêmes) -->
+    <GenericDialog v-model="usersDialog" title="Utilisateurs" fullscreen max-width="100%">
+      <template #content>
+        <UserList v-if="usersDialog" :center-id="centerId" embedded />
+      </template>
+    </GenericDialog>
+
+    <GenericDialog v-model="rotationsDialog" title="Tours de service" fullscreen max-width="100%">
+      <template #content>
+        <RotationsView v-if="rotationsDialog" :center-id="centerId" embedded />
+      </template>
+    </GenericDialog>
 
     <!-- Dialog pour ajouter une équipe -->
     <BaseDialog v-model="addTeamDialog" title="Ajouter une équipe" icon="mdi-account-group-outline" :max-width="500">
@@ -535,6 +561,24 @@ const teamCountWarning = computed(() => {
     "il faut autant d'équipes que de jours pour que chaque jour du tour soit assuré."
   );
 });
+
+const usersDialog = ref(false);
+const rotationsDialog = ref(false);
+
+const gridDialog = ref(false);
+const gridTeamId = ref(null);
+const gridTeamName = ref('');
+const gridTitle = computed(() => (gridTeamName.value ? `Grille · ${gridTeamName.value}` : 'Grille'));
+
+const openGrid = (team) => {
+  gridTeamId.value = team._id;
+  gridTeamName.value = team.name;
+  gridDialog.value = true;
+};
+
+const onGridChange = ({ teamName }) => {
+  gridTeamName.value = teamName;
+};
 
 const openMembersPanel = (team) => {
   selectedTeamForMembers.value = team;

@@ -2,20 +2,10 @@
   <v-switch v-model="isDark" inset hide-details false-icon="mdi-weather-sunny" true-icon="mdi-weather-night" />
 </template>
 
-<script setup lang="ts">
-import { useTheme } from 'vuetify';
-import { useAuthStore } from '@/stores/authStore';
+<script setup>
+import { useDarkMode } from '@/composables/useDarkMode';
 
-const theme = useTheme();
-const authStore = useAuthStore();
-
-const isDark = computed<boolean>({
-  get: () => theme.global.current.value.dark,
-  set: (dark) => {
-    theme.change(dark ? 'darkTheme' : 'lightTheme');
-    authStore.updateUserPreferences({ theme: dark });
-  },
-});
+const { isDark } = useDarkMode();
 </script>
 
 <style scoped>

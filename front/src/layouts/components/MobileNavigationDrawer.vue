@@ -3,7 +3,6 @@
     <div
       v-if="modelValue && smAndDown"
       class="d-flex"
-      close-on-content-click
       style="
         margin-top: calc(64px + var(--safe-area-top));
         height: calc(100vh - 64px - var(--safe-area-top) - var(--safe-area-bottom));
@@ -13,9 +12,7 @@
         top: 0;
         left: 0;
       "
-      @update:model-value="$emit('update:modelValue', $event)"
     >
-      <!-- Parent Container -->
       <v-card
         class="pa-0 px-6 d-flex flex-column align-center flex-0-0 rounded-0"
         tile
@@ -23,164 +20,101 @@
         flat
         style="width: 100%; height: 100%; overflow-y: auto"
       >
-        <!-- User Avatar Section -->
+        <!-- Utilisateur : ouvre le profil ; le bouton à droite déconnecte -->
         <v-scale-transition appear>
           <v-card
             v-if="isLoggedIn"
             max-width="400px"
             color="surfaceContainer"
             flat
-            class="flex-0-0 my-16 pa-4 d-flex justify-space-between rounded-xl"
+            rounded="100"
+            class="flex-0-0 my-16 pa-4 d-flex justify-space-between"
             width="100%"
-            @click="handleClick('/profile/' + authStore.userData.userId)"
+            @click="handleClick(`/profile/${authStore.userData.userId}`)"
           >
             <div class="d-flex justify-space-between align-center ga-2 pl-2">
-              <v-avatar size="36" color="primary">
-                <img
-                  v-if="authStore.userData?.avatar"
-                  width="36"
-                  height="36"
-                  :src="`${API_URL}${authStore.userData?.avatar}`"
-                  alt="avatar"
-                />
-                <v-icon v-else> mdi-account </v-icon>
-              </v-avatar>
+              <v-badge :model-value="missingPhone" color="error" icon="mdi-exclamation-thick" overlap location="top start">
+                <div
+                  class="d-flex align-center justify-center"
+                  style="
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);
+                    position: relative;
+                  "
+                >
+                  <v-avatar size="32" variant="flat" style="background-color: rgba(var(--v-theme-background), 0.8)">
+                    <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
+                    <span v-else class="text-body-small">{{ authStore.userData.name.slice(0, 1) }}</span>
+                  </v-avatar>
+                </div>
+              </v-badge>
 
-              <div class="d-flex flex-column">
-                <div style="font-size: 16px !important; position: relative; top: 2px">
-                  {{ getUserInfo?.name?.charAt(0).toUpperCase() + getUserInfo?.name?.slice(1) }}
-                </div>
-                <div style="font-size: 16px !important; position: relative; top: -2px">
-                  <b>{{ getUserInfo?.lastName?.toUpperCase() }}</b>
-                </div>
+              <div class="d-flex flex-column ml-2">
+                <span class="text-title-small">{{ firstName }}</span>
+                <span class="text-title-small">
+                  <b>{{ lastName }}</b>
+                </span>
               </div>
             </div>
-            <div class="d-flex justify-space-between flex-column align-center">
-              <div v-if="points > 99999" class="text-center text-title-large">
-                <v-icon class="mb-1" size="large"> mdi-infinity </v-icon>
-              </div>
-              <div v-else :key="points" class="text-headline-small font-weight-bold text-center">
-                {{ points }}
-              </div>
-              <div class="text-body-medium text-medium-emphasis mt-n3">Points</div>
-            </div>
+
+            <v-btn
+              color="error"
+              variant="text"
+              icon="mdi-logout"
+              aria-label="Se déconnecter"
+              @click.stop="handleLogout"
+            />
           </v-card>
         </v-scale-transition>
 
-        <!-- Navigation Links Section -->
-        <v-card
-          class="d-flex flex-column flex-0-0"
-          color="transparent"
-          elevation="0"
-          tile
-          flat
-          style="width: 100%; max-width: 400px"
-        >
-          <div v-if="isLoggedIn" class="text-body-large d-flex flex-column">
-            <v-fade-transition group appear>
-              <div v-for="(item, index) in menuItemsLogged" :key="item.key" class="d-flex flex-column">
-                <span
-                  style="font-size: 14px !important"
-                  class="pt-4 pb-4 cursor-pointer font-weight-medium"
-                  :title="item.title"
-                  @click="handleClick(item.path)"
-                >
-                  {{ item.label }}
-                </span>
-                <v-divider v-if="index < menuItemsLogged.length - 1" style="opacity: 0.04" />
-              </div>
-              <v-divider v-if="authStore.userData.isAdmin" style="opacity: 0.04" />
-              <div
-                v-for="(item, index) in menuItemsLoggedAdmin"
-                v-if="authStore.userData.isAdmin"
-                :key="item.key"
-                class="d-flex flex-column"
+        <div class="d-flex w-100 flex-column" style="max-width: 400px">
+          <v-fade-transition v-if="isLoggedIn" group appear>
+            <v-list class="pa-0 ga-1 d-flex flex-column" bg-color="transparent" rounded="30">
+              <v-list-item
+                v-for="link in menuLinks"
+                :key="link.path"
+                class="bg-surfaceContainer text-body-medium font-weight-bold pa-6 rounded-lg"
+                :title="link.title"
+                @click="handleClick(link.path)"
               >
-                <div class="d-flex justify-space-between align-center">
-                  <span
-                    style="font-size: 14px !important"
-                    class="pt-4 pb-4 cursor-pointer font-weight-medium"
-                    :title="item.title"
-                    @click="handleClick(item.path)"
-                  >
-                    {{ item.label }}
-                  </span>
-                  <div v-if="item?.badgeCount">
-                    <v-chip
-                      v-if="item?.badgeCount > 0"
-                      color="pending"
-                      size="x-small"
-                      variant="flat"
-                      rounded="lg"
-                      class="font-weight-bold ml-2"
-                    >
-                      <span class="font-weight-bold">{{ item?.badgeCount }}</span>
-                    </v-chip>
-                  </div>
-                </div>
-                <v-divider v-if="index < menuItemsLoggedAdmin.length - 1" style="opacity: 0.04" />
-              </div>
-            </v-fade-transition>
+                <template #prepend>
+                  <v-icon :icon="link.icon" color="primary" />
+                </template>
+              </v-list-item>
+            </v-list>
+          </v-fade-transition>
 
-            <v-btn
-              style="height: 48px; border-radius: 16px !important"
-              color="surfaceContainerHigh"
-              variant="flat"
-              class="mt-3 text-error font-weight-bold"
-              @click="handleLogout"
-            >
-              Se déconnecter
-            </v-btn>
-          </div>
-
-          <div v-else class="text-body-large d-flex flex-column">
-            <v-btn
-              v-if="!isLoggedIn"
-              class="my-8"
-              variant="flat"
-              rounded="lg"
-              color="onBackground"
-              append-icon="mdi-arrow-right"
-              width="100%"
-              style="height: 48px; border-radius: 16px !important"
-              @click="handleClick('/login')"
-            >
-              Se connecter
-            </v-btn>
-          </div>
-
-          <!-- Footer Links Section -->
-          <v-list nav class="d-flex justify-space-around align-center pt-8 text-body-small" bg-color="background">
-            <span style="cursor: pointer" @click="handleClick('/contact-admin')">Assistance</span>
-            <v-divider vertical />
-            <span style="cursor: pointer" @click="handleClick('/patchnotes')">Patchnotes</span>
-            <v-divider vertical />
-            <span style="cursor: pointer" @click="handleClick('/financement')">Financement</span>
-          </v-list>
-
-          <!-- Footer Links Section -->
-          <v-list
-            v-if="!isLoggedIn"
-            nav
-            class="d-flex justify-space-around align-center pt-8 text-body-small"
-            bg-color="background"
+          <v-btn
+            v-else
+            class="my-8"
+            variant="flat"
+            rounded="lg"
+            color="onBackground"
+            append-icon="mdi-arrow-right"
+            width="100%"
+            style="height: 48px; border-radius: 16px !important"
+            @click="handleClick('/login')"
           >
-            <div class="d-flex" style="cursor: pointer">
-              <span @click="">Icnagenda</span>
-              <v-icon class="text-medium-emphasis ml-3"> mdi-open-in-new </v-icon>
-            </div>
-            <v-divider vertical />
-            <div class="d-flex" style="cursor: pointer">
-              <span @click="">Olafatco</span>
-              <v-icon class="text-medium-emphasis ml-3"> mdi-open-in-new </v-icon>
-            </div>
+            Se connecter
+          </v-btn>
+
+          <!-- Liens externes -->
+          <v-list nav class="d-flex justify-space-around align-center pt-8 text-body-small" bg-color="background">
+            <template v-for="(link, index) in externalLinks" :key="link.href">
+              <v-divider v-if="index > 0" vertical />
+              <a :href="link.href" target="_blank" rel="noopener noreferrer" class="d-flex" style="color: inherit; text-decoration: none">
+                <span>{{ link.title }}</span>
+                <v-icon class="text-medium-emphasis ml-3"> mdi-open-in-new </v-icon>
+              </a>
+            </template>
           </v-list>
-        </v-card>
-        <!-- <span>{{ API_URL }}</span> -->
-        <!-- <span>safeAreaTop: {{ safeAreaTop }}</span>
-      <span>safeAreaBottom: {{ safeAreaBottom }}</span>
-      <span>safeAreaLeft: {{ safeAreaLeft }}</span>
-      <span>safeAreaRight: {{ safeAreaRight }}</span> -->
+
+          <div class="d-flex align-center ma-6 justify-space-evenly">
+            <span class="text-primary text-body-small font-weight-bold">Celeste</span>
+          </div>
+        </div>
       </v-card>
     </div>
   </v-slide-y-reverse-transition>
@@ -190,23 +124,8 @@
 import { useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
-
 import { useUserStore } from '@/stores/userStore.js';
 import { API_URL } from '@/config/api.js';
-import { usePointStore } from '@/stores/pointStore.js';
-
-const router = useRouter();
-const { smAndDown } = useDisplay();
-const authStore = useAuthStore();
-const pointStore = usePointStore();
-const userStore = useUserStore();
-const isLoggedIn = computed(() => authStore.isLoggedIn);
-// const isAdmin = computed(() => authStore.userData.isAdmin);
-// const username = computed(() => authStore.userData.name);
-// const usernameInitial = computed(() => username.value ? username.value.charAt(0).toUpperCase() : '');
-// const theme = ref(false);
-// const user = ref(null);
-const points = computed(() => pointStore.points);
 
 defineProps({
   modelValue: {
@@ -215,97 +134,43 @@ defineProps({
   },
 });
 
-const pendingUsersCount = computed(() => {
-  return userStore.users.filter((user) => user.registrationStatus === 'pending').length;
+const emit = defineEmits(['update:modelValue']);
+
+const router = useRouter();
+const { smAndDown } = useDisplay();
+const authStore = useAuthStore();
+const userStore = useUserStore();
+
+const isLoggedIn = computed(() => authStore.isLoggedIn);
+const missingPhone = computed(() => !authStore.userData?.phone);
+
+// Les pages principales sont dans la barre du bas ; le tiroir porte le reste
+const menuLinks = [
+  { title: 'Assistance', path: '/contact-admin', icon: 'mdi-help-circle-outline' },
+  { title: 'Informations', path: '/information', icon: 'mdi-information-outline' },
+  { title: 'Paramètres', path: '/user-params', icon: 'mdi-cog-outline' },
+];
+
+const externalLinks = [
+  { title: 'Icnagenda', href: 'https://icnagenda.FR' },
+  { title: 'Olafatco', href: 'https://olafatco.dsna.aviation-civile.gouv.fr/gerer-la-licence' },
+];
+
+const userInfo = computed(() => userStore.users.find((user) => user._id === authStore.userData.userId));
+const firstName = computed(() => {
+  const name = userInfo.value?.name ?? '';
+  return name.charAt(0).toUpperCase() + name.slice(1);
 });
+const lastName = computed(() => userInfo.value?.lastName?.toUpperCase() ?? '');
 
-// const safeAreaTop = computed(() => {
-//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-top');
-// });
-
-// const safeAreaBottom = computed(() => {
-//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-bottom');
-// });
-
-// const safeAreaLeft = computed(() => {
-//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-left');
-// });
-
-// const safeAreaRight = computed(() => {
-//   return window.getComputedStyle(document.documentElement).getPropertyValue('--safe-area-right');
-// });
-
-const emit = defineEmits(['update:modelValue', 'update:theme']);
-
-const menuItemsLogged = [
-  { key: 'remplacements', label: 'Demandes', path: '/demand-page/demands', title: 'Remplacements' },
-  { key: 'calendar', label: 'Calendrier', path: '/calendar', title: 'Calendrier' },
-  // Grille de l'équipe ; un administrateur principal sans centre choisit d'abord un centre
-  {
-    key: 'grid',
-    label: 'Grille',
-    path: authStore.userData.centerId ? '/center/' + authStore.userData.centerId + '/grid' : '/center/centers',
-    title: 'Grille',
-  },
-  { key: 'rotation', label: 'Tour de service', path: '/rotation', title: 'Tour de service' },
-  {
-    key: 'centres',
-    label: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre',
-    path:
-      authStore.userData.adminType === 'master'
-        ? '/center/centers'
-        : '/center/' + authStore.userData.centerId + '/teams',
-    title: authStore.userData.adminType === 'master' ? 'Centres' : 'Mon centre',
-  },
-  // { key: 'patchnotes', label: 'Patch Notes', path: '/patchnotes', title: 'Patch Notes' },
-  // { key: 'financement', label: 'Financement', path: '/financement', title: 'Financement' },
-  // { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
-  // { key: 'pending-users', label: 'Candidatures', path: '/admin/pending-users', title: 'Candidatures en attente' }
-];
-
-const menuItemsLoggedAdmin = [
-  { key: 'users', label: 'Utilisateurs', path: '/users', title: 'Utilisateurs' },
-  {
-    key: 'pending-users',
-    label: 'Candidatures',
-    path: '/admin/pending-users',
-    title: 'Candidatures en attente',
-    badgeCount: pendingUsersCount.value,
-  },
-];
-
-// const menuItems = [
-//   // { key: 'about', label: 'A propos', path: '/about', title: 'A propos' },
-//   // { key: 'news', label: 'Nouveautés', path: '/news', title: 'Nouveautés' },
-//   { key: 'assistance', label: 'Assistance', path: '/assistance', title: 'Assistance' }
-// ];
+const handleClick = (path) => {
+  router.push({ path });
+  emit('update:modelValue', false);
+};
 
 const handleLogout = async () => {
   await authStore.logOut();
+  emit('update:modelValue', false);
   await router.push({ path: '/login', replace: true });
 };
-
-const getUserInfo = computed(() => {
-  const userInfo = userStore.users.find((user) => user._id === authStore.userData.userId);
-  return userInfo;
-});
-
-const handleClick = (path) => {
-  router.push({ path: path });
-  emit('update:modelValue', false);
-};
 </script>
-
-<style scoped>
-:deep(.v-switch__track) {
-  height: 24px !important;
-  border: 1px solid rgba(173, 154, 154, 0.21);
-  min-width: 44px !important;
-  background: rgba(255, 255, 255, 0.05) !important;
-}
-
-:deep(.v-switch__thumb) {
-  height: 20px !important;
-  width: 20px !important;
-}
-</style>

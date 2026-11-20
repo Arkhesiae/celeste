@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <MainTitle title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
+    <MainTitle v-if="!embedded" title="Liste des utilisateurs" subtitle="Gérer et organiser les membres">
       <template #actions>
         <v-select
           v-if="authStore.userData.adminType === 'master'"
@@ -115,6 +115,18 @@ import UserCard from '@/components/Users/UserCard.vue';
 import UserCardDetails from '@/components/Users/UserCardDetails.vue';
 import AssignCenterDialog from '@/components/Users/AssignCenterDialog.vue';
 
+// Liste des utilisateurs, ou fenêtre de la page d'un centre (`centerId` : les membres de ce centre, sans titre ni choix de centre)
+const props = defineProps({
+  centerId: {
+    type: String,
+    default: undefined,
+  },
+  embedded: {
+    type: Boolean,
+    default: false,
+  },
+});
+
 const centerStore = useCenterStore();
 const teamStore = useTeamStore();
 const authStore = useAuthStore();
@@ -158,9 +170,10 @@ const filteredUsers = computed(() => {
   let filtered = users.value;
   if (!users.value) return [];
 
-  // Filtrer par type d'admin
-  if (authStore.userData.adminType !== 'master') {
-    filtered = filtered.filter((user) => user.centerId === authStore.userData.centerId);
+  // Un centre imposé, sinon celui de l'utilisateur sauf pour l'administrateur principal
+  const scopeCenterId = props.centerId ?? (authStore.userData.adminType !== 'master' ? authStore.userData.centerId : null);
+  if (scopeCenterId) {
+    filtered = filtered.filter((user) => user.centerId === scopeCenterId);
   }
 
   if (selectedFilter.value === 'admin') {
@@ -293,7 +306,10 @@ const handleCenterChange = async (centerId) => {
 onMounted(async () => {
   isLoading.value = true;
   try {
-    if (authStore.userData.adminType === 'master') {
+    if (props.centerId) {
+      await userStore.fetchUsersByCenter(props.centerId);
+      selectedCenterId.value = props.centerId;
+    } else if (authStore.userData.adminType === 'master') {
       await userStore.fetchUsers();
       selectedCenterId.value = null;
     } else {

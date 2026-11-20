@@ -9,14 +9,7 @@
 
             <div class="d-flex align-center justify-space-between">
               <div class="d-flex align-center">
-                <v-avatar size="64" class="mr-4" variant="tonal">
-                  <v-img
-                    v-if="authStore.userData.avatar"
-                    :src="`${API_URL}${authStore.userData.avatar}`"
-                    alt="Avatar"
-                  />
-                  <v-icon v-else> mdi-account </v-icon>
-                </v-avatar>
+                <UserAvatar :size="64" class="mr-4" />
                 <div>
                   <div class="text-body-large">
                     {{ authStore.userData.name }}
@@ -111,7 +104,7 @@
           variant="flat"
           class="text-onSurface"
           height="64"
-          @click="router.push('/patchnotes')"
+          @click="router.push('/information/patchnotes')"
         >
           Patchnotes
         </v-btn>
@@ -125,7 +118,7 @@
           variant="flat"
           class="text-onSurface"
           height="64"
-          @click="router.push('/financement')"
+          @click="router.push('/information/financement')"
         >
           Financement
         </v-btn>
@@ -216,7 +209,6 @@ import { usePointStore } from '@/stores/pointStore.js';
 import TransferDialog from '@/components/Profile/TransferDialog.vue';
 import PointsCard from '@/components/Profile/PointsCard.vue';
 
-import { API_URL } from '@/config/api';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();

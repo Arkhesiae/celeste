@@ -2,7 +2,7 @@
   <v-container class="announcements-admin">
     <!-- ── Header ──────────────────────────────────────────────────────────── -->
     <MainTitle
-      title="Annonces publiques"
+      title="Bannières"
       subtitle="Gérer les bannières affichées sur le tableau de bord des utilisateurs"
     >
       <template #actions>
@@ -15,7 +15,7 @@
           prepend-icon="mdi-plus"
           @click="openCreateDialog"
         >
-          Nouvelle annonce
+          Nouvelle bannière
         </v-btn>
       </template>
     </MainTitle>
@@ -40,7 +40,7 @@
     <!-- ── Active announcements list ───────────────────────────────────────── -->
     <v-card rounded="xl" color="surfaceContainerLow" flat class="mb-6">
       <v-card-title class="pa-6 pb-2 d-flex align-center justify-space-between">
-        <span class="text-body-large font-weight-semibold">Annonces actives</span>
+        <span class="text-body-large font-weight-semibold">Bannières actives</span>
         <v-chip size="small" color="primary" label>{{ activeAnnouncements.length }}</v-chip>
       </v-card-title>
       <v-card-text class="pa-4">
@@ -50,7 +50,7 @@
 
         <div v-else-if="activeAnnouncements.length === 0" class="empty-state">
           <v-icon size="40" color="medium-emphasis">mdi-bullhorn-outline</v-icon>
-          <p class="text-body-medium text-medium-emphasis mt-2 mb-0">Aucune annonce active</p>
+          <p class="text-body-medium text-medium-emphasis mt-2 mb-0">Aucune bannière active</p>
         </div>
 
         <div v-else class="announcements-list">
@@ -126,7 +126,7 @@
       </v-card-title>
       <v-card-text class="pa-4">
         <div v-if="inactiveAnnouncements.length === 0" class="empty-state">
-          <p class="text-body-small text-disabled mb-0">Aucune annonce archivée</p>
+          <p class="text-body-small text-disabled mb-0">Aucune bannière archivée</p>
         </div>
         <div v-else class="announcements-list">
           <div v-for="ann in inactiveAnnouncements" :key="ann._id" class="announcement-row inactive">
@@ -167,14 +167,14 @@
               <v-icon size="16">mdi-bullhorn</v-icon>
             </v-avatar>
             <span class="text-title-large font-weight-bold">
-              {{ editingId ? "Modifier l'annonce" : 'Nouvelle annonce' }}
+              {{ editingId ? "Modifier la bannière" : 'Nouvelle bannière' }}
             </span>
           </div>
           <p class="text-body-small text-medium-emphasis mb-0 ml-11">
             {{
               editingId
                 ? 'Modifiez les champs ci-dessous.'
-                : "L'annonce sera visible immédiatement sur le tableau de bord."
+                : "La bannière sera visible immédiatement sur le tableau de bord."
             }}
           </p>
         </div>
@@ -186,8 +186,8 @@
             <div class="preview-content">
               <v-icon :icon="typeConfig[form.type]?.icon" size="16" :color="typeConfig[form.type]?.color" />
               <div class="preview-text">
-                <span class="preview-title">{{ form.title || "Titre de l'annonce" }}</span>
-                <span class="preview-msg">{{ form.message || "Message de l'annonce…" }}</span>
+                <span class="preview-title">{{ form.title || "Titre de la bannière" }}</span>
+                <span class="preview-msg">{{ form.message || "Message de la bannière…" }}</span>
               </div>
               <v-chip v-if="form.isPermanent" size="x-small" label class="ml-1">
                 <v-icon start size="10">mdi-pin</v-icon>
@@ -325,7 +325,7 @@
 
     <ConfirmationDialog
       v-model="deleteDialog"
-      title="Supprimer l'annonce"
+      title="Supprimer la bannière"
       :text="deleteText"
       confirm-label="Supprimer"
       cancel-label="Annuler"
@@ -338,12 +338,12 @@
 
 <script setup>
 import { useAuthStore } from '@/stores/authStore';
-import { usePublicAnnouncementStore } from '@/stores/publicAnnouncementStore';
+import { useBannerStore } from '@/stores/bannerStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
 
 const authStore = useAuthStore();
-const store = usePublicAnnouncementStore();
+const store = useBannerStore();
 const centerStore = useCenterStore();
 const { smAndDown } = useDisplay();
 
@@ -366,15 +366,15 @@ const typeOptions = [
 ];
 
 // ── Computed lists ────────────────────────────────────────────────────────
-const activeAnnouncements = computed(() => store.allAnnouncements.filter((a) => a.isActive));
-const inactiveAnnouncements = computed(() => store.allAnnouncements.filter((a) => !a.isActive));
+const activeAnnouncements = computed(() => store.allBanners.filter((a) => a.isActive));
+const inactiveAnnouncements = computed(() => store.allBanners.filter((a) => !a.isActive));
 
 // ── Stats ─────────────────────────────────────────────────────────────────
 const statCards = computed(() => [
   {
     key: 'total',
     label: 'Total',
-    value: store.allAnnouncements.length,
+    value: store.allBanners.length,
     icon: 'mdi-bullhorn',
     color: 'primary',
   },
@@ -388,14 +388,14 @@ const statCards = computed(() => [
   {
     key: 'permanent',
     label: 'Permanentes',
-    value: store.allAnnouncements.filter((a) => a.isPermanent).length,
+    value: store.allBanners.filter((a) => a.isPermanent).length,
     icon: 'mdi-pin',
     color: 'secondary',
   },
   {
     key: 'acknowledged',
     label: 'Acquittements',
-    value: store.allAnnouncements.reduce((sum, a) => sum + (a.acknowledgedBy?.length ?? 0), 0),
+    value: store.allBanners.reduce((sum, a) => sum + (a.acknowledgedBy?.length ?? 0), 0),
     icon: 'mdi-account-check',
     color: 'tertiary',
   },
@@ -483,7 +483,7 @@ const toggleActive = async (ann) => {
 
 const confirmDelete = (ann) => {
   deletingAnnouncement.value = ann;
-  deleteText.value = `Êtes-vous sûr de vouloir supprimer l'annonce "${ann.title}" ?`;
+  deleteText.value = `Êtes-vous sûr de vouloir supprimer la bannière "${ann.title}" ?`;
   deleteDialog.value = true;
 };
 

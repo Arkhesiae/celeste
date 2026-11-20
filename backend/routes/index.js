@@ -14,7 +14,7 @@ import accountRecoveryRouter from './accountRecovery.routes.js';
 import announcementRouter from './announcement.routes.js';
 import calendarEntryRouter from './calendarEntry.routes.js';
 import statRouter from './stat.routes.js';
-import publicAnnouncementRouter from './publicAnnouncement.routes.js';
+import bannerRouter from './banner.routes.js';
 
 const router = express.Router();
 
@@ -34,6 +34,6 @@ router.use('/account-recovery', accountRecoveryRouter);
 router.use('/announcement', announcementRouter);
 router.use('/calendar-entry', calendarEntryRouter);
 router.use('/stat', statRouter);
-router.use('/public-announcement', publicAnnouncementRouter);
+router.use('/banner', bannerRouter);
 
 export default router;

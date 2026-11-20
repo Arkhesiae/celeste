@@ -1,12 +1,5 @@
 <template>
   <v-app-bar class="user-safe-area" scroll-behavior="elevate" color="background">
-    <!-- Bouton navigation pour écran large -->
-    <template #prepend>
-      <template v-if="!smAndDown && isLoggedIn">
-        <v-app-bar-nav-icon @click="toggleDrawer" />
-      </template>
-    </template>
-
     <!-- Titre de l'application -->
     <AppBarTitle :is-homepage="isHomepage" :is-dashboard="isDashboard" @title-click="handleTitleClick" />
 
@@ -26,7 +19,20 @@
       </template>
 
       <template v-if="smAndDown">
-        <v-app-bar-nav-icon :icon="isMobileDrawerOpen ? 'mdi-close' : 'mdi-menu'" @click="toggleMobileDrawer" />
+        <v-btn
+          value="profile"
+          active-color="onPrimary"
+          active-class="active-item"
+          icon
+          color="primary"
+          :active="router.currentRoute.value.path === '/profile/' + authStore.userData.userId"
+          @click="toggleMobileDrawer"
+        >
+          <!-- <v-badge color="tertiary" :content="NOTIFICATION_COUNT" :model-value="false"> -->
+
+          <UserAvatar :size="28" :badge="missingPhone" />
+          <!-- </v-badge> -->
+        </v-btn>
       </template>
 
       <template v-else>
@@ -46,7 +52,7 @@
 
         <!-- Menu utilisateur -->
         <div v-if="isLoggedIn">
-          <v-badge :model-value="missingPhone" location="bottom left" color="error" icon="mdi-exclamation-thick">
+          <v-badge :model-value="missingPhone" offset-x="10" offset-y="10" location="bottom left" color="error" icon="mdi-exclamation-thick">
             <UserMenu
               :username="username"
               :email="authStore.userData.email"

@@ -185,6 +185,15 @@ export const substitutionService = {
   },
 
   /**
+   * Une demande avec ses vacations (sert à afficher la demande dont une autre dépend).
+   * @param {string} demandId - L'ID de la demande.
+   * @returns {Promise<Object>} La demande.
+   */
+  async getDemand(demandId) {
+    return apiFetch(`/substitution/${demandId}`, { method: 'GET' });
+  },
+
+  /**
    * Envoie le mail automatique d'administration pour une demande.
    * @param {string} demandId - L'ID de la demande.
    * @returns {Promise<Object>} Résultat de l'envoi.

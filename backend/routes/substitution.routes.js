@@ -33,6 +33,8 @@ router.post('/recategorize', substitutionController.recategorizeSubstitutions);
 
 // Une demande (:id, voir router.param)
 router.get('/compatibility/:id', substitutionController.getCompatibility);
+// Une demande avec ses vacations (la demande dont une autre dépend)
+router.get('/:id', substitutionController.getDemand);
 // POST : marque la demande comme vue (effet de bord)
 router.post('/:id/consult', substitutionController.consultDemand);
 

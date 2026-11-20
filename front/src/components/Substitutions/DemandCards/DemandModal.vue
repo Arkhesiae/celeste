@@ -2,11 +2,16 @@
   <GenericDialog
     title="Demande "
     :model-value="modelValue"
-    max-width="600"
+    max-width="800"
     :show-actions="false"
     @update:model-value="$emit('update:modelValue', $event)"
   >
     <template #content>
+      <!-- Après avoir ouvert une demande liée : retour à celle d'où l'on vient -->
+      <v-btn v-if="trail.length" variant="text" size="small" prepend-icon="mdi-arrow-left" class="mb-2" @click="backToChild">
+        Retour à la demande
+      </v-btn>
+
       <div class="d-flex flex-column align-center mb-6">
         <h1 class="text-display-medium font-weight-bold">
           {{ getShiftName }}
@@ -59,126 +64,146 @@
         </v-expand-transition>
       </v-card>
 
-      <v-card rounded="xl" color="background" elevation="0" class="mb-4 pa-4">
-        <div class="d-flex align-center justify-space-between">
-          <div class="d-flex align-center" style="position: relative; width: 20px">
-            <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
-              <v-icon class="" style="top: 1px; font-size: 14px" icon="mdi-swap-horizontal" />
-            </div>
-            <div v-if="demand?.type === 'substitution'" class="d-flex align-center ga-2">
-              <v-icon class="" style="top: 1px; font-size: 14px" icon="mdi-account-arrow-left-outline " />
-            </div>
-            <div v-if="demand?.type === 'hybrid'" class="d-flex align-center ga-2 position-relative">
-              <v-icon class="ml-n1" style="top: 1px; font-size: 14px" icon="mdi-account-arrow-left-outline " />
-              <v-icon
-                class="ml-n2"
-                style="top: 2px; font-size: 14px; position: absolute; left: 10px"
-                icon="mdi-swap-horizontal"
-              />
-            </div>
-          </div>
-          <span class="text-disabled text-body-medium font-weight-medium">{{ formatType(demand.type) }}</span>
-        </div>
-      </v-card>
-
-      <v-card
-        v-if="demand.accepterId"
-        v-ripple="false"
-        :hover="false"
-        color="background"
-        rounded="xl"
-        elevation="0"
-        class="mb-4 pa-4"
-        @click="showAccepterDetails = !showAccepterDetails"
-      >
-        <div class="d-flex justify-space-between align-center">
-          <span class="text-body-medium font-weight-medium text-medium-emphasis">Acceptée par </span>
-          <div class="d-flex align-center ga-1">
-            <v-avatar size="20" color="surfaceContainer" class="mr-1">
-              <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
-              <v-icon v-else size="16"> mdi-account-check-outline </v-icon>
-            </v-avatar>
-            <div class="d-flex align-center text-left ga-1">
-              <span
-                class="font-weight-bold text-truncate"
-                :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: 0.75rem"
-              >
-                {{ accepterName }}
-              </span>
-            </div>
-            <v-icon icon="mdi-menu-down" :class="showAccepterDetails ? 'rotate-180' : ''" size="small" />
-          </div>
-        </div>
-        <v-expand-transition>
-          <div v-if="showAccepterDetails">
-            <div class="d-flex flex-column">
-              <div class="d-flex ga-1 align-center" @click.stop="copyEmail">
-                <span class="pa-0 text-medium-emphasis" style="font-size: 14px">
-                  {{ accepter?.email }}
-                </span>
-                <v-icon size="12"> mdi-content-copy </v-icon>
+      <!-- Type, acceptation, points, date, commentaire et vues : un seul groupe, grands arrondis aux extrémités, petits entre deux cartes -->
+      <div class="connected-cards mb-4">
+        <v-card rounded="xl" color="background" elevation="0" class="pa-4">
+          <div class="d-flex align-center justify-space-between">
+            <div class="d-flex align-center" style="position: relative; width: 20px">
+              <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
+                <v-icon class="" style="top: 1px; font-size: 14px" icon="mdi-swap-horizontal" />
               </div>
-
-              <span class="text-body-small opacity-70 font-weight-medium">
-                {{ accepter?.personalData?.phoneNumber }}
-              </span>
-            </div>
-          </div>
-        </v-expand-transition>
-      </v-card>
-
-      <v-card rounded="xl" elevation="0" class="mb-4 px-4 py-2" color="background">
-        <div
-          v-if="demand.type !== 'switch'"
-          class="d-flex justify-space-between py-2 align-center"
-          style="height: 48px"
-        >
-          <span class="text-body-medium font-weight-medium text-medium-emphasis">Points</span>
-          <div class="d-flex ga-1 align-end">
-            <span class="text-body-medium font-weight-medium text-disabled">{{ demand.points }}</span>
-            <LogoCopy />
-          </div>
-        </div>
-        <v-divider v-if="demand.acceptedSwitches.length > 0 && demand.type === 'hybrid'" />
-        <div
-          v-if="demand.acceptedSwitches.length > 0"
-          class="d-flex justify-space-between py-2 align-center"
-          style="height: 48px"
-        >
-          <span class="text-body-medium font-weight-medium text-medium-emphasis">Permutations</span>
-          <div class="d-flex ga-2">
-            <v-chip v-for="s in demand.acceptedSwitches" :key="s.shift" rounded="lg" size="small" variant="text">
-              <div class="d-flex ga-2 align-center">
-                <div class="d-flex ga-0 align-center">
-                  <v-icon start size="small"> mdi-swap-horizontal </v-icon>
-                  <span class="text-body-small font-weight-medium">{{ getShiftNameById(s.shift) }}</span>
-                </div>
-                <span class="text-body-medium font-weight-medium text-disabled">{{ s.points }}</span>
+              <div v-if="demand?.type === 'substitution'" class="d-flex align-center ga-2">
+                <v-icon class="" style="top: 1px; font-size: 14px" icon="mdi-account-arrow-left-outline " />
               </div>
+              <div v-if="demand?.type === 'hybrid'" class="d-flex align-center ga-2 position-relative">
+                <v-icon class="ml-n1" style="top: 1px; font-size: 14px" icon="mdi-account-arrow-left-outline " />
+                <v-icon
+                  class="ml-n2"
+                  style="top: 2px; font-size: 14px; position: absolute; left: 10px"
+                  icon="mdi-swap-horizontal"
+                />
+              </div>
+            </div>
+            <div class="d-flex align-center ga-2">
+            <!-- Cette demande dépend d'une autre (celle qui lui a donné sa vacation) : un clic l'affiche -->
+            <v-chip
+              v-for="(parentId, index) in demand.dependsOn ?? []"
+              :key="parentId"
+              size="small"
+              variant="tonal"
+              color="primary"
+              prepend-icon="mdi-link-variant"
+              :loading="loadingParentId === parentId"
+              :aria-label="'Afficher la demande liée'"
+              @click.stop="openParent(parentId)"
+            >
+              Demande liée{{ demand.dependsOn.length > 1 ? ` ${index + 1}` : '' }}
             </v-chip>
-            <LogoCopy />
+            <span class="text-disabled text-body-medium font-weight-medium">{{ formatType(demand.type) }}</span>
           </div>
-        </div>
-      </v-card>
+          </div>
+        </v-card>
 
-      <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
-        <div class="d-flex justify-space-between align-center text-disabled">
-          <span class="text-body-medium font-weight-medium text-medium-emphasis">Date</span>
-          <span class="text-body-medium text-disabled">{{ formatDate(posterDay(demand)) }}</span>
-        </div>
-      </v-card>
+        <v-card
+          v-if="demand.accepterId"
+          v-ripple="false"
+          :hover="false"
+          color="background"
+          rounded="xl"
+          elevation="0"
+          class="pa-4"
+          @click="showAccepterDetails = !showAccepterDetails"
+        >
+          <div class="d-flex justify-space-between align-center">
+            <span class="text-body-medium font-weight-medium text-medium-emphasis">Acceptée par </span>
+            <div class="d-flex align-center ga-1">
+              <v-avatar size="20" color="surfaceContainer" class="mr-1">
+                <v-img v-if="accepter?.avatar" :src="`${API_URL}${accepter?.avatar}`" alt="Avatar" />
+                <v-icon v-else size="16"> mdi-account-check-outline </v-icon>
+              </v-avatar>
+              <div class="d-flex align-center text-left ga-1">
+                <span
+                  class="font-weight-bold text-truncate"
+                  :class="isAccepter ? 'text-primary' : ''"
+                  style="max-width: 100px; font-size: 0.75rem"
+                >
+                  {{ accepterName }}
+                </span>
+              </div>
+              <v-icon icon="mdi-menu-down" :class="showAccepterDetails ? 'rotate-180' : ''" size="small" />
+            </div>
+          </div>
+          <v-expand-transition>
+            <div v-if="showAccepterDetails">
+              <div class="d-flex flex-column">
+                <div class="d-flex ga-1 align-center" @click.stop="copyEmail">
+                  <span class="pa-0 text-medium-emphasis" style="font-size: 14px">
+                    {{ accepter?.email }}
+                  </span>
+                  <v-icon size="12"> mdi-content-copy </v-icon>
+                </div>
 
-      <v-card v-if="demand.comment" color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
-        <span class="text-disabled text-body-medium font-weight-medium">{{ demand.comment }}</span>
-      </v-card>
+                <span class="text-body-small opacity-70 font-weight-medium">
+                  {{ accepter?.personalData?.phoneNumber }}
+                </span>
+              </div>
+            </div>
+          </v-expand-transition>
+        </v-card>
 
-      <v-card color="background" rounded="xl" elevation="0" class="mb-4 pa-4">
-        <div class="d-flex align-center ga-2">
-          <v-icon size="12" icon="mdi-eye-outline" />
-          <span class="text-body-medium text-medium-emphasis"> Vue par {{ demand.seenBy?.length }} personnes </span>
-        </div>
-      </v-card>
+        <v-card rounded="xl" elevation="0" class="px-4 py-2" color="background">
+          <div
+            v-if="demand.type !== 'switch'"
+            class="d-flex justify-space-between py-2 align-center"
+            style="height: 48px"
+          >
+            <span class="text-body-medium font-weight-medium text-medium-emphasis">Points</span>
+            <div class="d-flex ga-1 align-end">
+              <span class="text-body-medium font-weight-medium text-disabled">{{ demand.points }}</span>
+              <LogoCopy />
+            </div>
+          </div>
+          <v-divider v-if="demand.acceptedSwitches.length > 0 && demand.type === 'hybrid'" />
+          <div
+            v-if="demand.acceptedSwitches.length > 0"
+            class="d-flex justify-space-between py-2 align-center"
+            style="height: 48px"
+          >
+            <span class="text-body-medium font-weight-medium text-medium-emphasis">Permutations</span>
+            <div class="d-flex ga-2">
+              <v-chip v-for="s in demand.acceptedSwitches" :key="s.shift" rounded="lg" size="small" variant="text">
+                <div class="d-flex ga-2 align-center">
+                  <div class="d-flex ga-0 align-center">
+                    <v-icon start size="small"> mdi-swap-horizontal </v-icon>
+                    <span class="text-body-small font-weight-medium">{{ getShiftNameById(s.shift) }}</span>
+                  </div>
+                  <span class="text-body-medium font-weight-medium text-disabled">{{ s.points }}</span>
+                </div>
+              </v-chip>
+              <LogoCopy />
+            </div>
+          </div>
+        </v-card>
+
+        <v-card color="background" rounded="xl" elevation="0" class="pa-4">
+          <div class="d-flex justify-space-between align-center text-disabled">
+            <span class="text-body-medium font-weight-medium text-medium-emphasis">Date</span>
+            <span class="text-body-medium text-disabled">{{ formatDate(posterDay(demand)) }}</span>
+          </div>
+        </v-card>
+
+        <v-card v-if="demand.comment" color="background" rounded="xl" elevation="0" class="pa-4">
+          <span class="text-disabled text-body-medium font-weight-medium">{{ demand.comment }}</span>
+        </v-card>
+
+        <v-card color="background" rounded="xl" elevation="0" class="pa-4">
+          <div class="d-flex align-center ga-2">
+            <v-icon size="12" icon="mdi-eye-outline" />
+            <span class="text-body-medium text-medium-emphasis"> Vue par {{ demand.seenBy?.length }} personnes </span>
+          </div>
+        </v-card>
+
+      </div>
 
       <v-card
         v-if="isMailingEnabled && (isOwner || isAccepter)"
@@ -442,6 +467,36 @@ const getShiftNameById = (shift) => {
   return 'No shift';
 };
 
+// Demande liée : un clic charge celle dont cette demande dépend et la montre à la place (l'hôte la reçoit par `update-demand`) ;
+// « Retour » rétablit la précédente. La pile est vidée à la fermeture.
+const trail = ref([]);
+const loadingParentId = ref(null);
+
+const openParent = async (parentId) => {
+  loadingParentId.value = parentId;
+  try {
+    const parent = await substitutionStore.fetchDemand(parentId);
+    trail.value.push(props.demand);
+    emit('update-demand', parent);
+  } catch (error) {
+    snackbarStore.showNotification(error.message || 'Demande liée introuvable', 'onError', 'mdi-alert-circle-outline');
+  } finally {
+    loadingParentId.value = null;
+  }
+};
+
+const backToChild = () => {
+  const previous = trail.value.pop();
+  if (previous) emit('update-demand', previous);
+};
+
+watch(
+  () => props.modelValue,
+  (open) => {
+    if (!open) trail.value = [];
+  },
+);
+
 const now = ref(Date.now());
 
 onMounted(() => {
@@ -505,6 +560,26 @@ const copyEmail = async () => {
 </script>
 
 <style scoped>
+.connected-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.connected-cards > .v-card {
+  border-radius: 8px;
+}
+
+.connected-cards > .v-card:first-child {
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+}
+
+.connected-cards > .v-card:last-child {
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+
 .list-item {
   height: 48px;
   padding: 4px 16px;

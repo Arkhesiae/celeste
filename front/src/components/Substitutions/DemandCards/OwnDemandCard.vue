@@ -44,6 +44,14 @@
             />
           </template>
 
+          <v-icon
+            v-if="demand?.dependsOn?.length"
+            size="x-small"
+            color="primary"
+            icon="mdi-link-variant"
+            title="Liée à une autre demande"
+            aria-label="Liée à une autre demande"
+          />
           <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8">
             mdi-comment-text-outline
           </v-icon>

@@ -10,6 +10,27 @@ import { categorizeWithVariations } from './compatibility/compatibility.variatio
 import { getUserTimeZone } from '../center/center.timezone.js';
 
 
+/** Vacations d'une demande, chargées avec elle pour l'affichage */
+const DEMAND_POPULATE = [
+    { path: 'posterShift.shift', populate: { path: 'variations' } },
+    { path: 'posterShift.selectedVariation' },
+    { path: 'posterShift.teamId' },
+    { path: 'accepterShift.shift', populate: { path: 'variations' } },
+    { path: 'accepterShift.selectedVariation' },
+    { path: 'accepterShift.teamId' },
+    { path: 'acceptedSwitches.shift', select: '_id name' },
+];
+
+/**
+ * Une demande avec ses vacations : sert à afficher la demande dont une autre dépend (`dependsOn`). Le centre est contrôlé par la route.
+ * @param {string} demandId
+ */
+export async function getRequestById (demandId) {
+    const request = await Substitution.findOne({ _id: demandId, deleted: false }).populate(DEMAND_POPULATE);
+    if (!request) throw new AppError('Demande introuvable', 404);
+    return request.toObject();
+}
+
 /**
  * Récupère les demandes d'un utilisateur
  * @param {string} userId - ID de l'utilisateur
@@ -27,15 +48,7 @@ export async function getRequests (userId, startDateStr, endDateStr) {
         ...dayFilter('posterShift.day', 'posterShift.date', { gte: toDay(startDateStr), lte: toDay(endDateStr) })
     };
 
-    const options = [
-        { path: 'posterShift.shift', populate: { path: 'variations' } },
-        { path: 'posterShift.selectedVariation' },
-        { path: 'posterShift.teamId' },
-        { path: 'accepterShift.shift', populate: { path: 'variations' } },
-        { path: 'accepterShift.selectedVariation' },
-        { path: 'accepterShift.teamId' },
-        { path: 'acceptedSwitches.shift', select: '_id name' },
-    ];
+    const options = DEMAND_POPULATE;
 
     const [otherRequests, myRequests] = await Promise.all([
         Substitution.find({

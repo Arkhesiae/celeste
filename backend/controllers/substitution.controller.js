@@ -106,6 +106,14 @@ const getCompatibility = async (req, res, next) => {
     }
 };
 
+const getDemand = async (req, res, next) => {
+  try {
+    res.status(200).json(await substitutionService.getRequestById(req.params.id));
+  } catch (err) {
+    next(err);
+  }
+};
+
 const getAvailableUsers = async (req, res, next) => {
     const { id: demandId } = req.params;
 
@@ -377,6 +385,7 @@ const sendAdminEmail = async (req, res, next) => {
 export {
     getCenterRequests,
     getUserDemands,
+    getDemand,
     getAllCenterDemands,
     getDemandHeatmap,
     consultDemand,

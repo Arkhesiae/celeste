@@ -1,7 +1,15 @@
 <template>
   <v-navigation-drawer v-if="!smAndDown && isLoggedIn" rail order="-1" border="none" rail-width="96px">
     <div class="py-6 d-flex align-center justify-space-evenly">
-      <v-btn icon class="desktop-nav__home" elevation="0" color="primary" to="/dashboard" :ripple="false" aria-label="Tableau de bord">
+      <v-btn
+        icon
+        class="desktop-nav__home"
+        elevation="0"
+        color="primary"
+        to="/dashboard"
+        :ripple="false"
+        aria-label="Tableau de bord"
+      >
         <!-- Le logo sur l'accueil, l'icône d'accueil ailleurs -->
         <v-slide-x-transition mode="out-in">
           <LogoCopy v-if="isHome" key="logo" class="desktop-nav__logo" />

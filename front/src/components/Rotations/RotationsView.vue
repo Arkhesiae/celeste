@@ -493,10 +493,7 @@ onMounted(async () => {
   try {
     await centerStore.fetchCenters();
 
-    await Promise.all([
-      rotationStore.fetchRotations(selectedCenterId.value),
-      loadTeamsCount(selectedCenterId.value),
-    ]);
+    await Promise.all([rotationStore.fetchRotations(selectedCenterId.value), loadTeamsCount(selectedCenterId.value)]);
   } catch (error) {
     snackbarStore.showNotification(
       'Erreur lors de la récupération des tours de service : ' + error.message,

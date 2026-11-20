@@ -171,7 +171,8 @@ const filteredUsers = computed(() => {
   if (!users.value) return [];
 
   // Un centre imposé, sinon celui de l'utilisateur sauf pour l'administrateur principal
-  const scopeCenterId = props.centerId ?? (authStore.userData.adminType !== 'master' ? authStore.userData.centerId : null);
+  const scopeCenterId =
+    props.centerId ?? (authStore.userData.adminType !== 'master' ? authStore.userData.centerId : null);
   if (scopeCenterId) {
     filtered = filtered.filter((user) => user.centerId === scopeCenterId);
   }

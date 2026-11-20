@@ -52,7 +52,14 @@
 
         <!-- Menu utilisateur -->
         <div v-if="isLoggedIn">
-          <v-badge :model-value="missingPhone" offset-x="10" offset-y="10" location="bottom left" color="error" icon="mdi-exclamation-thick">
+          <v-badge
+            :model-value="missingPhone"
+            offset-x="10"
+            offset-y="10"
+            location="bottom left"
+            color="error"
+            icon="mdi-exclamation-thick"
+          >
             <UserMenu
               :username="username"
               :email="authStore.userData.email"

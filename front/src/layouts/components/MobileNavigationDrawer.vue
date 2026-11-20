@@ -33,7 +33,13 @@
             @click="handleClick(`/profile/${authStore.userData.userId}`)"
           >
             <div class="d-flex justify-space-between align-center ga-2 pl-2">
-              <v-badge :model-value="missingPhone" color="error" icon="mdi-exclamation-thick" overlap location="top start">
+              <v-badge
+                :model-value="missingPhone"
+                color="error"
+                icon="mdi-exclamation-thick"
+                overlap
+                location="top start"
+              >
                 <div
                   class="d-flex align-center justify-center"
                   style="
@@ -45,7 +51,11 @@
                   "
                 >
                   <v-avatar size="32" variant="flat" style="background-color: rgba(var(--v-theme-background), 0.8)">
-                    <v-img v-if="authStore.userData.avatar" :src="`${API_URL}${authStore.userData.avatar}`" alt="Avatar" />
+                    <v-img
+                      v-if="authStore.userData.avatar"
+                      :src="`${API_URL}${authStore.userData.avatar}`"
+                      alt="Avatar"
+                    />
                     <span v-else class="text-body-small">{{ authStore.userData.name.slice(0, 1) }}</span>
                   </v-avatar>
                 </div>
@@ -104,7 +114,13 @@
           <v-list nav class="d-flex justify-space-around align-center pt-8 text-body-small" bg-color="background">
             <template v-for="(link, index) in externalLinks" :key="link.href">
               <v-divider v-if="index > 0" vertical />
-              <a :href="link.href" target="_blank" rel="noopener noreferrer" class="d-flex" style="color: inherit; text-decoration: none">
+              <a
+                :href="link.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="d-flex"
+                style="color: inherit; text-decoration: none"
+              >
                 <span>{{ link.title }}</span>
                 <v-icon class="text-medium-emphasis ml-3"> mdi-open-in-new </v-icon>
               </a>

@@ -1,10 +1,7 @@
 <template>
   <v-container class="announcements-admin">
     <!-- ── Header ──────────────────────────────────────────────────────────── -->
-    <MainTitle
-      title="Bannières"
-      subtitle="Gérer les bannières affichées sur le tableau de bord des utilisateurs"
-    >
+    <MainTitle title="Bannières" subtitle="Gérer les bannières affichées sur le tableau de bord des utilisateurs">
       <template #actions>
         <v-btn
           color="primary"
@@ -167,14 +164,14 @@
               <v-icon size="16">mdi-bullhorn</v-icon>
             </v-avatar>
             <span class="text-title-large font-weight-bold">
-              {{ editingId ? "Modifier la bannière" : 'Nouvelle bannière' }}
+              {{ editingId ? 'Modifier la bannière' : 'Nouvelle bannière' }}
             </span>
           </div>
           <p class="text-body-small text-medium-emphasis mb-0 ml-11">
             {{
               editingId
                 ? 'Modifiez les champs ci-dessous.'
-                : "La bannière sera visible immédiatement sur le tableau de bord."
+                : 'La bannière sera visible immédiatement sur le tableau de bord.'
             }}
           </p>
         </div>
@@ -186,8 +183,8 @@
             <div class="preview-content">
               <v-icon :icon="typeConfig[form.type]?.icon" size="16" :color="typeConfig[form.type]?.color" />
               <div class="preview-text">
-                <span class="preview-title">{{ form.title || "Titre de la bannière" }}</span>
-                <span class="preview-msg">{{ form.message || "Message de la bannière…" }}</span>
+                <span class="preview-title">{{ form.title || 'Titre de la bannière' }}</span>
+                <span class="preview-msg">{{ form.message || 'Message de la bannière…' }}</span>
               </div>
               <v-chip v-if="form.isPermanent" size="x-small" label class="ml-1">
                 <v-icon start size="10">mdi-pin</v-icon>

@@ -3,12 +3,12 @@ import { activationDaysOf, dayFilter, dayInArrayFilter } from '../../utils/dates
 import { toDay } from '../../utils/dates/dayFields.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import Center from '../../models/Center.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import { AppError } from '../../error/AppError.js';
-import { withdrawFromRequestWithSession, cancelRequestWithSession } from '../substitution/request.cascade.js';
+import { withdrawFromDemandWithSession, cancelDemandWithSession } from '../demand/demand.cascade.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 
 
@@ -186,7 +186,7 @@ const simulateChangeOutcome = async (change, demands) => {
         return buildCancelAllSimulation(demands, 'rotation_structure_mismatch');
     }
 
-    const populatedDemands = await Substitution.populate(demands, [
+    const populatedDemands = await Demand.populate(demands, [
         { path: 'acceptedSwitches.shift' },
         { path: 'posterShift.shift' },
         { path: 'accepterShift.shift' },
@@ -264,7 +264,7 @@ const handleChanges = async (changes, centerId, message, session = null, notific
 
 
 /**
- * Convertit les demandes de substitution pour une nouvelle rotation
+ * Convertit les demandes pour une nouvelle rotation
  * @param {Array} demandsToConvert - Les demandes à convertir
  * @param {string} oldRotationId - ID de l'ancienne rotation
  * @param {string} newRotationId - ID de la nouvelle rotation
@@ -280,7 +280,7 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, 
         let convertedDemands = 0;
 
         // Fetch batché au lieu d'un findById par demande
-        const populatedDemands = await Substitution.find({ _id: { $in: demandsToConvert.map(d => d._id) } })
+        const populatedDemands = await Demand.find({ _id: { $in: demandsToConvert.map(d => d._id) } })
             .session(session)
             .populate('acceptedSwitches.shift')
             .populate('posterShift.shift')
@@ -297,9 +297,9 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, 
 
             if (cancelled) {
                 // Les erreurs remontent : la transaction est annulée et l'appelant est prévenu
-                const cancelledRequests = [];
-                await cancelRequestWithSession(populatedDemand._id, { session, reason: "system-cancelled", cancelledRequests });
-                notifications.cancelled.push(...cancelledRequests.map((r) => r._id));
+                const cascadeCancelled = [];
+                await cancelDemandWithSession(populatedDemand._id, { session, reason: "system-cancelled", cancelledDemands: cascadeCancelled });
+                notifications.cancelled.push(...cascadeCancelled.map((r) => r._id));
                 console.log(`✅ [${populatedDemand._id}] Demande annulée (${cancelled.reason})`);
                 cancelledDemands++;
                 continue;
@@ -310,12 +310,12 @@ const convertCenterDemands = async (demandsToConvert, oldRotation, newRotation, 
             let currentDemand = populatedDemand;
 
             if (accepter.verdict === 'reopen') {
-                await withdrawFromRequestWithSession(populatedDemand._id, populatedDemand.accepterId, { session });
+                await withdrawFromDemandWithSession(populatedDemand._id, populatedDemand.accepterId, { session });
                 notifications.withdrawn.push({ demandId: populatedDemand._id, accepterId: populatedDemand.accepterId });
                 console.log(`✅ [${populatedDemand._id}] Demande réouverte (accepter shift est maintenant un repos)`);
                 demandReopened = true;
                 // Le retrait a sauvegardé la demande : on la relit pour ne pas écraser son état avec une copie périmée
-                currentDemand = await Substitution.findById(populatedDemand._id)
+                currentDemand = await Demand.findById(populatedDemand._id)
                     .session(session)
                     .populate('acceptedSwitches.shift')
                     .populate('posterShift.shift')
@@ -394,7 +394,7 @@ const getDemandsToConvert = async (change, centerId, session = null) => {
     if (change.from) bounds.gte = toDay(change.from);
     if (change.to) bounds.lt = toDay(change.to);
 
-    return Substitution.find({
+    return Demand.find({
         centerId,
         status: { $in: ['open', 'accepted'] },
         deleted: false,
@@ -409,14 +409,14 @@ const getDemandsToConvert = async (change, centerId, session = null) => {
  */
 const systemCancelDemands = async (demands, session, notifications = { cancelled: [], withdrawn: [] }) => {
     const visited = new Set();
-    const cancelledRequests = [];
+    const cascadeCancelled = [];
 
     for (const demand of demands) {
-        await cancelRequestWithSession(demand._id, { session, visited, cancelledRequests, reason: 'system-cancelled' });
+        await cancelDemandWithSession(demand._id, { session, visited, cancelledDemands: cascadeCancelled, reason: 'system-cancelled' });
     }
 
-    notifications.cancelled.push(...cancelledRequests.map((r) => r._id));
-    return cancelledRequests.length;
+    notifications.cancelled.push(...cascadeCancelled.map((r) => r._id));
+    return cascadeCancelled.length;
 };
 
 

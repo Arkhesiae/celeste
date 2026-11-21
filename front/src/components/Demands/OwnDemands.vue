@@ -41,9 +41,9 @@
 <script setup>
 import { posterDay } from '@/utils/dayFields.js';
 
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 
 // Props
 defineProps({});
@@ -69,13 +69,13 @@ const ownFilterOptions = [
 const emit = defineEmits(['openDetails']);
 
 const pendingDemands = computed(() => [
-  ...substitutionStore.ownPendingHybridSubstitutions,
-  ...substitutionStore.ownPendingTrueSubstitutions,
-  ...substitutionStore.ownPendingTrueSwitches,
+  ...demandStore.ownPendingHybridSubstitutions,
+  ...demandStore.ownPendingTrueSubstitutions,
+  ...demandStore.ownPendingTrueSwitches,
 ]);
 
-const acceptedAsPoster = computed(() => substitutionStore.acceptedAsPoster);
-const acceptedAsAccepter = computed(() => substitutionStore.acceptedAsAccepter);
+const acceptedAsPoster = computed(() => demandStore.acceptedAsPoster);
+const acceptedAsAccepter = computed(() => demandStore.acceptedAsAccepter);
 
 // Demandes acceptées (section "A venir")
 const upcomingDemands = computed(() => {

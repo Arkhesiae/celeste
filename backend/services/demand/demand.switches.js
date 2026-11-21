@@ -2,7 +2,7 @@ import User from '../../models/User.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { findLatestRotation } from '../rotation/rotation.latest.js';
 import { generateShiftsMap } from '../planning/planning.shiftsMap.js';
 import { shiftMapToArray } from '../planning/planning.shiftsMap.js';
@@ -110,7 +110,7 @@ export async function consultDemand (demandId, userId) {
         throw new AppError('ID de la demande et ID utilisateur requis', 400);
     }
 
-    const demand = await Substitution.findByIdAndUpdate(
+    const demand = await Demand.findByIdAndUpdate(
         demandId,
         { $addToSet: { consultedBy: userId } },
         { new: true }

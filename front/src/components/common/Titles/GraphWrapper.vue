@@ -13,7 +13,7 @@
 
 <script setup>
 import { posterDay } from '@/utils/dayFields.js';
-import { substitutionService } from '@/services/substitutionService';
+import { demandService } from '@/services/demandService';
 import { getDisplayShiftName, getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const props = defineProps({
@@ -110,7 +110,7 @@ const fetchCompatibility = async () => {
   if (!props.demand?._id) return;
   loading.value = true;
   try {
-    const data = await substitutionService.fetchCompatibility(props.demand._id);
+    const data = await demandService.fetchCompatibility(props.demand._id);
     if (data && data.shiftsArray) {
       days.value = generateDaysData(data.shiftsArray);
     }

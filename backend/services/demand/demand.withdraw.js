@@ -3,22 +3,22 @@ import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { sendCancelledAcceptanceEmail } from '../email/demand/demand.emails.js';
-import { categorizeRequests } from './request.list.js';
+import { categorizeDemands } from './demand.list.js';
 import { AppError } from '../../error/AppError.js';
-import { withdrawFromRequestWithSession } from './request.cascade.js';
+import { withdrawFromDemandWithSession } from './demand.cascade.js';
 
 
 /**
- * Annule l'acceptation d'une demande de substitution
- * @param {string} requestId - ID de la demande
+ * Annule l'acceptation d'une demande
+ * @param {string} demandId - ID de la demande
  * @param {string} userId - ID de l'utilisateur qui annule l'acceptation
  * @returns {Promise<Object>} Demande avec acceptation annulée
  */
-export async function withdrawFromRequest (requestId, userId) {
-    let updatedRequest, cancelledRequests;
+export async function withdrawFromDemand (demandId, userId) {
+    let updatedDemand, cancelledDemands;
     try {
-        ({ updatedRequest, cancelledRequests } = await inTransaction((session) =>
-            withdrawFromRequestWithSession(requestId, userId, { session })
+        ({ updatedDemand, cancelledDemands } = await inTransaction((session) =>
+            withdrawFromDemandWithSession(demandId, userId, { session })
         ));
     } catch (err) {
         if (err instanceof AppError) throw err;
@@ -26,8 +26,8 @@ export async function withdrawFromRequest (requestId, userId) {
     }
 
     const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([
-        computeUserShifts([posterDayOf(updatedRequest)], userId),
-        categorizeRequests([updatedRequest], userId),
+        computeUserShifts([posterDayOf(updatedDemand)], userId),
+        categorizeDemands([updatedDemand], userId),
         User.findById(userId).select('name lastName email'),
     ]);
 
@@ -41,22 +41,22 @@ export async function withdrawFromRequest (requestId, userId) {
 
     const shifts = shiftsResult.value;
     const originalAccepter = accepterResult.value;
-    const categorizedRequests = categorizedResult.status === 'fulfilled'
+    const categorizedDemands = categorizedResult.status === 'fulfilled'
         ? categorizedResult.value
-        : [updatedRequest];
+        : [updatedDemand];
 
 
-    console.log("Withdraw from demand", originalAccepter?.name, "  | cancelledRequests : ", cancelledRequests.length);
+    console.log("Withdraw from demand", originalAccepter?.name, "  | cancelledDemands : ", cancelledDemands.length);
 
-    await updatedRequest.populate([
+    await updatedDemand.populate([
         { path: 'posterId', select: 'name lastName email' },
     ]);
 
-    sendCancelledAcceptanceEmail(updatedRequest, originalAccepter)
+    sendCancelledAcceptanceEmail(updatedDemand, originalAccepter)
         .then(({ sent, failed }) =>
-            console.log('📧 Notifications envoyées:', { demandId: updatedRequest._id, sent, failed })
+            console.log('📧 Notifications envoyées:', { demandId: updatedDemand._id, sent, failed })
         )
         .catch((err) => console.error('❌ Erreur notification:', err));
 
-    return { shift: shifts[0], updatedRequest: categorizedRequests[0], cancelledRequests };
+    return { shift: shifts[0], updatedDemand: categorizedDemands[0], cancelledDemands };
 }

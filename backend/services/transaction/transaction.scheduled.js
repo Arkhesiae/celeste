@@ -1,6 +1,6 @@
 import PointTransfer from '../../models/PointTransfer.js';
 import { findOrThrow } from '../../utils/mongo.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { AppError } from '../../error/AppError.js';
 
 import { MIN_POINTS_BALANCE } from '../../config/points.js';
@@ -32,15 +32,15 @@ const processPendingTransactions = async () => {
     }).populate('sender').populate('receiver');
 
     // Une transaction liée à une demande ne s'exécute que si la demande est toujours acceptée ou terminée
-    const requestIds = [...new Set(pendingTransactions.filter(t => t.request).map(t => t.request.toString()))];
-    const liveRequests = new Set(
-        (await Substitution.find({ _id: { $in: requestIds }, status: { $in: ['accepted', 'completed'] } }).select('_id'))
+    const demandIds = [...new Set(pendingTransactions.filter(t => t.request).map(t => t.request.toString()))];
+    const liveDemands = new Set(
+        (await Demand.find({ _id: { $in: demandIds }, status: { $in: ['accepted', 'completed'] } }).select('_id'))
             .map(r => r._id.toString())
     );
 
     for (const transaction of pendingTransactions) {
         try {
-            if (transaction.request && !liveRequests.has(transaction.request.toString())) {
+            if (transaction.request && !liveDemands.has(transaction.request.toString())) {
                 transaction.status = 'cancelled';
                 await transaction.save();
                 continue;

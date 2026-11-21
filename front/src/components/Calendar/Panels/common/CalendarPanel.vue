@@ -103,7 +103,7 @@
 
       <v-tooltip
         v-if="
-          !substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)
+          !demandStore.hasOwnPendingDemand(selectedDate) && !demandStore.hasAcceptedAsPoster(selectedDate)
         "
         text="Proposer un échange"
         location="bottom"
@@ -127,7 +127,7 @@
 
       <v-tooltip
         v-if="
-          !substitutionStore.hasOwnPendingDemand(selectedDate) && !substitutionStore.hasAcceptedAsPoster(selectedDate)
+          !demandStore.hasOwnPendingDemand(selectedDate) && !demandStore.hasAcceptedAsPoster(selectedDate)
         "
         text="Demander un remplacement"
         location="bottom"
@@ -220,7 +220,7 @@
 
 <script setup>
 import { posterDay } from '@/utils/dayFields.js';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
 import { planningModificationService } from '@/services/planningModificationService';
@@ -229,7 +229,7 @@ import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useDate } from 'vuetify';
 import { sameDateKey, toDateKey } from '@/utils/dateKey';
 
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const snackbarStore = useSnackbarStore();
 const authStore = useAuthStore();
 const shiftStore = useShiftStore();
@@ -283,7 +283,7 @@ const disabled = computed(() => {
 const disabledReason = computed(() => {
   if (inPast.value) return 'Date passée';
   if (isRestDay.value) return 'Jour de repos';
-  if (substitutionStore.hasAcceptedAsPoster(props.selectedDate)) {
+  if (demandStore.hasAcceptedAsPoster(props.selectedDate)) {
     return 'Vous êtes remplacé ce jour';
   }
   if (!isShift.value) return 'Aucun shift valide';
@@ -367,19 +367,19 @@ const cancelEntry = () => {
 
 // ─── Absence ──────────────────────────────────────────────────────────────────
 
-// ─── Substitution state ───────────────────────────────────────────────────────
+// ─── Demand state ───────────────────────────────────────────────────────
 
 const pendingDemand = computed(() =>
   [
-    ...substitutionStore.ownPendingHybridSubstitutions,
-    ...substitutionStore.ownPendingTrueSubstitutions,
-    ...substitutionStore.ownPendingTrueSwitches,
+    ...demandStore.ownPendingHybridSubstitutions,
+    ...demandStore.ownPendingTrueSubstitutions,
+    ...demandStore.ownPendingTrueSwitches,
   ].find((d) => sameDateKey(posterDay(d), props.selectedDate)),
 );
 
 const acceptedAsAccepter = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsAccepter.filter((d) => sameDateKey(posterDay(d), props.selectedDate));
+  return demandStore.acceptedAsAccepter.filter((d) => sameDateKey(posterDay(d), props.selectedDate));
 });
 
 const lastAccepted = computed(() => {
@@ -389,7 +389,7 @@ const lastAccepted = computed(() => {
 
 const acceptedAsPoster = computed(() => {
   if (!props.selectedDate) return null;
-  return substitutionStore.acceptedAsPoster.filter((d) => sameDateKey(posterDay(d), props.selectedDate));
+  return demandStore.acceptedAsPoster.filter((d) => sameDateKey(posterDay(d), props.selectedDate));
 });
 
 const lastOwnDemand = computed(() => {
@@ -407,15 +407,15 @@ const substitutionsDemands = computed(() => {
 });
 
 const availableSubstitutions = computed(() =>
-  substitutionStore.availableSubstitutions.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
+  demandStore.availableSubstitutions.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
 );
 
 const availableSwitches = computed(() =>
-  substitutionStore.availableSwitches.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
+  demandStore.availableSwitches.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
 );
 
 const otherDemands = computed(() =>
-  substitutionStore.otherDemands.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
+  demandStore.otherDemands.filter((d) => posterDay(d) === toDateKey(props.selectedDate)),
 );
 
 watch(

@@ -6,7 +6,7 @@ import { useTeamStore } from '@/stores/teamStore';
 import { usePointStore } from '@/stores/pointStore';
 import { useTicketStore } from '@/stores/ticketStore';
 import { useShiftStore } from '@/stores/shiftStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useInitializationStore } from '@/stores/initializationStore';
 import { useTheme } from 'vuetify';
@@ -20,7 +20,7 @@ export function useAppInitialization() {
   const pointStore = usePointStore();
   const ticketStore = useTicketStore();
   const shiftStore = useShiftStore();
-  const substitutionStore = useSubstitutionStore();
+  const demandStore = useDemandStore();
   const rotationStore = useRotationStore();
   const initializationStore = useInitializationStore();
 
@@ -85,12 +85,12 @@ export function useAppInitialization() {
     await shiftStore.fetchShiftsWithSubstitutions(dates);
     initializationStore.updateInitializationState('shifts', true);
 
-    await substitutionStore.fetchAllDemands({
+    await demandStore.fetchAllDemands({
       startDate: today.toString(),
       endDate: today.add({ years: 1 }).toString(),
     });
 
-    initializationStore.updateInitializationState('substitutions', true);
+    initializationStore.updateInitializationState('demands', true);
   };
 
   const initializeRotations = async () => {

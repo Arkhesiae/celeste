@@ -305,7 +305,7 @@ import { useSnackbarStore } from '@/stores/snackbarStore';
 import { API_URL } from '@/config/api';
 import { useAuthStore } from '@/stores/authStore';
 import { useRotationStore } from '@/stores/rotationStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const userStore = useUserStore();
@@ -313,7 +313,7 @@ const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
 const date = useDate();
 const rotationStore = useRotationStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 
 const emit = defineEmits([
   'update:modelValue',
@@ -370,14 +370,14 @@ const isAccepted = computed(() => {
   return props.demand?.accepterId;
 });
 
-const isMailingEnabled = computed(() => substitutionStore.isMailingEnabled);
+const isMailingEnabled = computed(() => demandStore.isMailingEnabled);
 const sendingMail = ref(false);
 
 const sendAdminMailAction = async () => {
   if (!props.demand?._id) return;
   sendingMail.value = true;
   try {
-    const response = await substitutionStore.sendAdminMail(props.demand._id);
+    const response = await demandStore.sendAdminMail(props.demand._id);
     if (response?.demand) {
       emit('update-demand', response.demand);
     }
@@ -475,7 +475,7 @@ const loadingParentId = ref(null);
 const openParent = async (parentId) => {
   loadingParentId.value = parentId;
   try {
-    const parent = await substitutionStore.fetchDemand(parentId);
+    const parent = await demandStore.fetchDemand(parentId);
     trail.value.push(props.demand);
     emit('update-demand', parent);
   } catch (error) {
@@ -514,7 +514,7 @@ watch(
   async (newVal) => {
     if (newVal && props.demand && props.demand.isNew) {
       try {
-        await substitutionStore.consultDemand(props.demand._id);
+        await demandStore.consultDemand(props.demand._id);
       } catch (error) {
         console.error('Erreur lors du marquage comme consulté:', error);
       }

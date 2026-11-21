@@ -271,7 +271,7 @@ import { sameDateKey, pickerDayKey } from '@/utils/dateKey';
 import { posterDay, occurrenceDays } from '@/utils/dayFields.js';
 import { useDate } from 'vuetify';
 import { useTeamStore } from '@/stores/teamStore';
-import { substitutionService } from '@/services/substitutionService';
+import { demandService } from '@/services/demandService';
 
 const props = defineProps({
   dialogMode: {
@@ -426,7 +426,7 @@ const overrideDateConflict = () => {
 const handleDeleteAndSubmit = async () => {
   showConflictDialog.value = false;
   for (const conflict of substitutionConflicts.value) {
-    await substitutionService.cancelDemand(conflict.id);
+    await demandService.cancelDemand(conflict.id);
   }
   handleSubmit();
 };

@@ -8,7 +8,7 @@ import { dayFilter, posterDayOf } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import User from '../../models/User.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { AppError } from '../../error/AppError.js';
 import { deactivateEntries } from './calendarEntry.cancel.js';
@@ -31,7 +31,7 @@ export async function registerEntry (userId, date, data) {
 
     const [userShift, substitution, latestAssignment, latestModification, latestHourPatch] = await Promise.all([
         computeUserShifts([date], userId),
-        Substitution.findOne({
+        Demand.findOne({
             $and: [
                 { $or: [{ posterId: userId }, { accepterId: userId }] },
                 dayFilter('posterShift.day', 'posterShift.date', { eq: toDay(date) }),

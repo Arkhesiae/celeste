@@ -16,8 +16,8 @@ export const dayOf = (twin, legacy) => toDateKey(twin) ?? toDateKey(legacy);
 
 /** Jour d'un `posterShift` / `accepterShift` */
 export const shiftDay = (shift) => dayOf(shift?.day, shift?.date);
-export const posterDay = (substitution) => shiftDay(substitution?.posterShift);
-export const accepterDay = (substitution) => shiftDay(substitution?.accepterShift);
+export const posterDay = (demand) => shiftDay(demand?.posterShift);
+export const accepterDay = (demand) => shiftDay(demand?.accepterShift);
 
 /** Bornes d'une occurrence d'équipe : { from, to }, `to` nul = équipe permanente */
 export const occurrenceDays = (occurrence) => ({

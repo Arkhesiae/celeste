@@ -1,7 +1,7 @@
 /**
- * `GET /substitution/user/:userId` : les demandes d'un utilisateur, pour lui-même ou l'administrateur de son centre.
+ * `GET /demand/user/:userId` : les demandes d'un utilisateur, pour lui-même ou l'administrateur de son centre.
  *
- *   node --test backend/test/substitutionUser.db.test.js
+ *   node --test backend/test/demandUser.db.test.js
  *
  * Nécessite un MongoDB local (TEST_SUBUSER_MONGO_URI, par défaut mongodb://127.0.0.1:27017/celeste_test_subuser), supprimé à la
  * fin. Sans MongoDB joignable, les tests sont ignorés.
@@ -14,7 +14,7 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import Center from '../models/Center.js';
 import User from '../models/User.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import routes from '../routes/index.js';
 import { errorHandler } from '../middleware/errorHandler.js';
 import { generateAccessToken } from '../services/auth/auth.refreshToken.js';
@@ -67,13 +67,13 @@ test("les demandes d'un utilisateur : lui-même et l'administrateur de son centr
   const colleague = await mk({ centerId: a._id });
   const adminA = await mk({ centerId: a._id, isAdmin: true, adminType: 'local' });
   const adminB = await mk({ centerId: b._id, isAdmin: true, adminType: 'local' });
-  await Substitution.collection.insertOne({ posterId: owner._id, centerId: a._id, status: 'open', type: 'substitution', deleted: false });
+  await Demand.collection.insertOne({ posterId: owner._id, centerId: a._id, status: 'open', type: 'substitution', deleted: false });
 
-  const own = await call(`/substitution/user/${owner._id}`, owner);
+  const own = await call(`/demand/user/${owner._id}`, owner);
   assert.equal(own.status, 200);
   assert.equal(own.data.length, 1);
-  assert.equal((await call(`/substitution/user/${owner._id}`, adminA)).status, 200);            // administrateur de son centre
-  assert.equal((await call(`/substitution/user/${owner._id}`, colleague)).status, 403);          // un collègue
-  assert.equal((await call(`/substitution/user/${owner._id}`, adminB)).status, 403);             // un administrateur d'un autre centre
-  assert.equal((await call('/substitution/user/pas-un-id', owner)).status, 400);
+  assert.equal((await call(`/demand/user/${owner._id}`, adminA)).status, 200);            // administrateur de son centre
+  assert.equal((await call(`/demand/user/${owner._id}`, colleague)).status, 403);          // un collègue
+  assert.equal((await call(`/demand/user/${owner._id}`, adminB)).status, 403);             // un administrateur d'un autre centre
+  assert.equal((await call('/demand/user/pas-un-id', owner)).status, 400);
 });

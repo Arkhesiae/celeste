@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { posterDay } from '@/utils/dayFields.js';
-import { substitutionService } from '@/services/substitutionService';
+import { demandService } from '@/services/demandService';
 import { ruleService } from '@/services/ruleService';
 import { useAuthStore } from '@/stores/authStore';
 import { useShiftStore } from '@/stores/shiftStore';
@@ -8,18 +8,18 @@ import { usePointStore } from '@/stores/pointStore';
 import { sameDateKey, sameId, toDateKey } from '@/utils/dateKey';
 
 /**
- * Store Pinia pour gérer l'état des substitutions.
- * Ce store gère toutes les opérations liées aux substitutions, y compris :
- * - Les demandes de substitution
+ * Store Pinia pour gérer l'état des demandes (remplacement, permutation ou les deux).
+ * Ce store gère toutes les opérations liées aux demands, y compris :
+ * - Les demandes de remplacement, de permutation ou mixtes
  * - Les échanges de shifts
  * - Le suivi des statuts
  * - Les filtres et compteurs
  *
- * @module substitutionStore
+ * @module demandStore
  */
-export const useSubstitutionStore = defineStore('substitution', () => {
+export const useDemandStore = defineStore('demand', () => {
   // =============== STATE ===============
-  const substitutions = ref([]);
+  const demands = ref([]);
   const isMailingEnabled = ref(false);
 
   const loading = ref(false);
@@ -34,13 +34,13 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   // =============== UTILITY FUNCTIONS ===============
 
-  const matchesDate = (substitutions, date) => {
-    if (!substitutions?.length || !date) return false;
-    return substitutions.some((substitution) => sameDateKey(posterDay(substitution), date));
+  const matchesDate = (demands, date) => {
+    if (!demands?.length || !date) return false;
+    return demands.some((demand) => sameDateKey(posterDay(demand), date));
   };
 
-  const isOwn = (substitution) => sameId(substitution.posterId, userId.value);
-  const isOther = (substitution) => !sameId(substitution.posterId, userId.value);
+  const isOwn = (demand) => sameId(demand.posterId, userId.value);
+  const isOther = (demand) => !sameId(demand.posterId, userId.value);
 
   // =============== COMPUTED PROPERTIES ===============
 
@@ -48,22 +48,22 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const pendingTrueSwitches = computed(() => {
     if (!userId.value) return [];
-    return substitutions.value.filter(
-      (substitution) => substitution.status === 'open' && substitution.type === 'switch',
+    return demands.value.filter(
+      (demand) => demand.status === 'open' && demand.type === 'switch',
     );
   });
 
   const pendingTrueSubstitutions = computed(() => {
     if (!userId.value) return [];
-    return substitutions.value.filter(
-      (substitution) => substitution.status === 'open' && substitution.type === 'substitution',
+    return demands.value.filter(
+      (demand) => demand.status === 'open' && demand.type === 'substitution',
     );
   });
 
   const pendingHybridSubstitutions = computed(() => {
     if (!userId.value) return [];
-    return substitutions.value.filter(
-      (substitution) => substitution.status === 'open' && substitution.type === 'hybrid',
+    return demands.value.filter(
+      (demand) => demand.status === 'open' && demand.type === 'hybrid',
     );
   });
 
@@ -71,17 +71,17 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const ownPendingTrueSwitches = computed(() => {
     if (!userId.value) return [];
-    return pendingTrueSwitches.value.filter((substitution) => isOwn(substitution));
+    return pendingTrueSwitches.value.filter((demand) => isOwn(demand));
   });
 
   const ownPendingTrueSubstitutions = computed(() => {
     if (!userId.value) return [];
-    return pendingTrueSubstitutions.value.filter((substitution) => isOwn(substitution));
+    return pendingTrueSubstitutions.value.filter((demand) => isOwn(demand));
   });
 
   const ownPendingHybridSubstitutions = computed(() => {
     if (!userId.value) return [];
-    return pendingHybridSubstitutions.value.filter((substitution) => isOwn(substitution));
+    return pendingHybridSubstitutions.value.filter((demand) => isOwn(demand));
   });
 
   // ----- Available -----
@@ -90,10 +90,10 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     if (!userId.value) return [];
     return [
       ...pendingHybridSubstitutions.value.filter(
-        (substitution) => isOther(substitution) && substitution.canSwitch && substitution.limit?.length === 1,
+        (demand) => isOther(demand) && demand.canSwitch && demand.limit?.length === 1,
       ),
       ...pendingTrueSwitches.value.filter(
-        (substitution) => isOther(substitution) && substitution.canSwitch && substitution.limit?.length === 1,
+        (demand) => isOther(demand) && demand.canSwitch && demand.limit?.length === 1,
       ),
     ];
   });
@@ -102,22 +102,22 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     if (!userId.value) return [];
     return [
       ...pendingHybridSubstitutions.value.filter(
-        (substitution) => isOther(substitution) && !substitution.canSwitch && substitution.limit?.length === 0,
+        (demand) => isOther(demand) && !demand.canSwitch && demand.limit?.length === 0,
       ),
       ...pendingTrueSubstitutions.value.filter(
-        (substitution) => isOther(substitution) && substitution.limit?.length === 0,
+        (demand) => isOther(demand) && demand.limit?.length === 0,
       ),
     ];
   });
 
   const otherDemands = computed(() => {
     if (!userId.value) return [];
-    return substitutions.value.filter(
-      (substitution) =>
-        substitution.status === 'open' &&
-        isOther(substitution) &&
-        !availableSwitches.value.includes(substitution) &&
-        !availableSubstitutions.value.includes(substitution),
+    return demands.value.filter(
+      (demand) =>
+        demand.status === 'open' &&
+        isOther(demand) &&
+        !availableSwitches.value.includes(demand) &&
+        !availableSubstitutions.value.includes(demand),
     );
   });
 
@@ -131,16 +131,16 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const acceptedAsPoster = computed(() => {
     if (!userId.value) return [];
-    return substitutions.value.filter((substitution) => substitution.status === 'accepted' && isOwn(substitution));
+    return demands.value.filter((demand) => demand.status === 'accepted' && isOwn(demand));
   });
 
   // ----- Accepted as Accepter -----
 
   const acceptedAsAccepter = computed(() => {
     if (!userId.value) return [];
-    return substitutions.value.filter(
-      (substitution) =>
-        substitution.status === 'accepted' && sameId(substitution.accepterId, userId.value) && isOther(substitution),
+    return demands.value.filter(
+      (demand) =>
+        demand.status === 'accepted' && sameId(demand.accepterId, userId.value) && isOther(demand),
     );
   });
 
@@ -195,14 +195,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   // Une demande (par exemple celle dont une autre dépend) : celle de la liste déjà chargée, sinon (terminée, hors période...) le serveur
   const fetchDemand = async (demandId) =>
-    substitutions.value.find((demand) => demand._id === demandId) ?? (await substitutionService.getDemand(demandId));
+    demands.value.find((demand) => demand._id === demandId) ?? (await demandService.getDemand(demandId));
 
   const sendAdminMail = async (demandId) => {
     try {
-      const response = await substitutionService.sendAdminMail(demandId);
-      const index = substitutions.value.findIndex((s) => s._id === demandId);
+      const response = await demandService.sendAdminMail(demandId);
+      const index = demands.value.findIndex((s) => s._id === demandId);
       if (index !== -1) {
-        substitutions.value[index].mailStatus = 'sent';
+        demands.value[index].mailStatus = 'sent';
       }
       return response;
     } catch (err) {
@@ -214,7 +214,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const fetchDemands = async (dates, status) => {
     try {
       await checkMailingRule();
-      const demands = await substitutionService.fetchAndMarkAsSeen(dates, status);
+      const demands = await demandService.fetchAndMarkAsSeen(dates, status);
       startDate.value = dates.startDate;
       endDate.value = dates.endDate;
       return demands;
@@ -231,14 +231,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
       const newDemands = await fetchDemands(dates);
 
       newDemands.forEach((newDemand) => {
-        const existingIndex = substitutions.value.findIndex((s) => s._id === newDemand._id);
+        const existingIndex = demands.value.findIndex((s) => s._id === newDemand._id);
 
         if (existingIndex !== -1) {
-          // Remplacer la substitution existante
-          substitutions.value[existingIndex] = newDemand;
+          // Remplacer la demande existante
+          demands.value[existingIndex] = newDemand;
         } else {
-          // Ajouter la nouvelle substitution
-          substitutions.value.push(newDemand);
+          // Ajouter la nouvelle demande
+          demands.value.push(newDemand);
         }
       });
     } catch (err) {
@@ -250,14 +250,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   };
 
   // ----- Gestion des demandes -----
-  const createSubstitutionDemand = async (substitutionData) => {
+  const createDemand = async (demandData) => {
     try {
       loading.value = true;
       error.value = null;
-      const newSubstitution = await substitutionService.createSubstitutionDemand(substitutionData);
-      substitutions.value.push(newSubstitution);
+      const newDemand = await demandService.createDemand(demandData);
+      demands.value.push(newDemand);
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la création de la substitution';
+      error.value = err.message || 'Erreur lors de la création de la demande';
       throw err;
     } finally {
       loading.value = false;
@@ -268,17 +268,17 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     try {
       loading.value = true;
       error.value = null;
-      const response = await substitutionService.cancelDemand(demandId);
-      const index = substitutions.value.findIndex((s) => s._id === demandId);
+      const response = await demandService.cancelDemand(demandId);
+      const index = demands.value.findIndex((s) => s._id === demandId);
       if (index !== -1) {
-        substitutions.value.splice(index, 1);
+        demands.value.splice(index, 1);
       }
 
       shiftStore.addEntry(response.shift);
 
       await pointStore.fetchTransactions();
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la suppression de la substitution';
+      error.value = err.message || 'Erreur lors de la suppression de la demande';
       throw err;
     } finally {
       loading.value = false;
@@ -289,14 +289,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
   const acceptDemand = async (demandId) => {
     loading.value = true;
     try {
-      const updatedSubstitution = await substitutionService.acceptDemand(demandId);
-      const index = substitutions.value.findIndex((s) => s._id === demandId);
+      const updatedDemand = await demandService.acceptDemand(demandId);
+      const index = demands.value.findIndex((s) => s._id === demandId);
       if (index !== -1) {
-        substitutions.value[index] = updatedSubstitution.request;
+        demands.value[index] = updatedDemand.demand;
       }
 
-      shiftStore.addEntry(updatedSubstitution.newShiftData);
-      recategorizeSubstitutions(updatedSubstitution.newShiftData.date);
+      shiftStore.addEntry(updatedDemand.newShiftData);
+      recategorizeDemands(updatedDemand.newShiftData.date);
       await pointStore.fetchTransactions();
     } catch (err) {
       console.error("Erreur lors de l'acceptation de la demande:", err);
@@ -308,14 +308,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const swapShifts = async (demandId) => {
     try {
-      const response = await substitutionService.swapShifts(demandId);
-      const index = substitutions.value.findIndex((s) => s._id === demandId);
+      const response = await demandService.swapShifts(demandId);
+      const index = demands.value.findIndex((s) => s._id === demandId);
       if (index !== -1) {
-        substitutions.value[index] = response.demand;
+        demands.value[index] = response.demand;
       }
 
       shiftStore.addEntry(response.newShiftData);
-      recategorizeSubstitutions(response.newShiftData.date);
+      recategorizeDemands(response.newShiftData.date);
       await pointStore.fetchTransactions();
     } catch (error) {
       console.error("Erreur lors de l'échange des shifts:", error);
@@ -325,14 +325,14 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const unacceptDemand = async (demandId) => {
     try {
-      const updatedSubstitution = await substitutionService.unacceptDemand(demandId);
-      const index = substitutions.value.findIndex((s) => s._id === demandId);
+      const updatedDemand = await demandService.unacceptDemand(demandId);
+      const index = demands.value.findIndex((s) => s._id === demandId);
       if (index !== -1) {
-        substitutions.value[index] = updatedSubstitution.request;
+        demands.value[index] = updatedDemand.demand;
       }
 
-      shiftStore.addEntry(updatedSubstitution.newShiftData);
-      recategorizeSubstitutions(updatedSubstitution.newShiftData.date);
+      shiftStore.addEntry(updatedDemand.newShiftData);
+      recategorizeDemands(updatedDemand.newShiftData.date);
       await pointStore.fetchTransactions();
     } catch (error) {
       console.error("Erreur lors de l'annulation de l'acceptation:", error.message);
@@ -344,7 +344,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const checkUserShift = async (date) => {
     try {
-      return await substitutionService.checkUserShift(date);
+      return await demandService.checkUserShift(date);
     } catch (error) {
       console.error('Erreur lors de la vérification du shift:', error);
       throw error;
@@ -353,7 +353,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const markInterest = async (demandId) => {
     try {
-      const response = await substitutionService.markInterest(demandId);
+      const response = await demandService.markInterest(demandId);
       await fetchAllDemands({ startDate: startDate.value, endDate: endDate.value });
       return response;
     } catch (error) {
@@ -364,10 +364,10 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
   const consultDemand = async (demandId) => {
     try {
-      await substitutionService.consultDemand(demandId);
-      const index = substitutions.value.findIndex((sub) => sub._id === demandId);
+      await demandService.consultDemand(demandId);
+      const index = demands.value.findIndex((sub) => sub._id === demandId);
       if (index !== -1) {
-        substitutions.value[index].isNew = false;
+        demands.value[index].isNew = false;
       }
     } catch (error) {
       console.error('Erreur lors de la consultation de la demande:', error.message);
@@ -375,21 +375,9 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     }
   };
 
-  const fetchSubstitutions = async (date) => {
-    try {
-      loading.value = true;
-      substitutions.value = await substitutionService.getSubstitutions(date);
-    } catch (err) {
-      error.value = err.message || 'Erreur lors de la récupération des substitutions';
-      throw err;
-    } finally {
-      loading.value = false;
-    }
-  };
+  // ----- Get open demand IDs from others within date range -----
 
-  // ----- Get open substitution IDs from others within date range -----
-
-  const getOpenSubstitutionIdsFromOthers = (dateKey) => {
+  const getOpenDemandIdsFromOthers = (dateKey) => {
     if (!userId.value) return [];
 
     const targetDate = new Date(dateKey);
@@ -398,47 +386,47 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     const endDate = new Date(targetDate);
     endDate.setDate(endDate.getDate() + 6);
 
-    return substitutions.value
+    return demands.value
       .filter(
-        (substitution) =>
-          substitution.status === 'open' &&
-          isOther(substitution) &&
-          posterDay(substitution) >= toDateKey(startDate) &&
-          posterDay(substitution) <= toDateKey(endDate),
+        (demand) =>
+          demand.status === 'open' &&
+          isOther(demand) &&
+          posterDay(demand) >= toDateKey(startDate) &&
+          posterDay(demand) <= toDateKey(endDate),
       )
-      .map((substitution) => substitution._id);
+      .map((demand) => demand._id);
   };
 
-  const recategorizeSubstitutions = async (dateKey) => {
+  const recategorizeDemands = async (dateKey) => {
     try {
-      const openSubstitutionIds = getOpenSubstitutionIdsFromOthers(dateKey);
-      if (openSubstitutionIds.length > 0) {
-        const recategorizedSubstitutions = await substitutionService.recategorizeSubstitutions(openSubstitutionIds);
-        recategorizedSubstitutions.categorizedSubstitutions.forEach((updatedSubstitution) => {
-          const index = substitutions.value.findIndex((sub) => sub._id === updatedSubstitution._id);
+      const openDemandIds = getOpenDemandIdsFromOthers(dateKey);
+      if (openDemandIds.length > 0) {
+        const recategorizedDemands = await demandService.recategorizeDemands(openDemandIds);
+        recategorizedDemands.categorizedDemands.forEach((updatedDemand) => {
+          const index = demands.value.findIndex((sub) => sub._id === updatedDemand._id);
           if (index !== -1) {
-            substitutions.value[index] = updatedSubstitution;
+            demands.value[index] = updatedDemand;
           }
         });
       }
     } catch (err) {
-      error.value = err.message || 'Erreur lors de la récategorisation des substitutions';
+      error.value = err.message || 'Erreur lors de la récategorisation des demandes';
       throw err;
     }
   };
 
   const emptyStore = () => {
-    substitutions.value = [];
+    demands.value = [];
     loading.value = false;
     error.value = null;
   };
 
   /** Charge de demandes par jour (comptes), non conservée dans le store : lecture à la demande. */
-  const fetchDemandHeatmap = (centerId, dates) => substitutionService.fetchDemandHeatmap(centerId, dates);
+  const fetchDemandHeatmap = (centerId, dates) => demandService.fetchDemandHeatmap(centerId, dates);
 
   return {
     // State
-    substitutions,
+    demands,
     isMailingEnabled,
 
     loading,
@@ -470,7 +458,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
 
     fetchAllDemands,
     fetchDemandHeatmap,
-    createSubstitutionDemand,
+    createDemand,
     cancelDemand,
     acceptDemand,
     unacceptDemand,
@@ -478,8 +466,7 @@ export const useSubstitutionStore = defineStore('substitution', () => {
     swapShifts,
     markInterest,
     consultDemand,
-    fetchSubstitutions,
-    recategorizeSubstitutions,
+    recategorizeDemands,
     emptyStore,
     sendAdminMail,
     fetchDemand,

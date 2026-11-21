@@ -1,4 +1,4 @@
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import User from '../models/User.js';
 import Rule from '../models/Rule.js';
 import { posterDayOf } from '../utils/dates/dayAccess.js';
@@ -9,10 +9,10 @@ import { sameId } from '../utils/ids.js';
 import { assertDay, assertId, assertObject, isValidDate, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 import * as planningService from '../services/planning/index.js';
-import * as substitutionService from '../services/substitution/index.js';
+import * as demandService from '../services/demand/index.js';
 import * as emailService from '../services/email/index.js';
 
-const getCenterRequests = async (req, res, next) => {
+const getCenterDemands = async (req, res, next) => {
     const { userId } = req.user;
     const { startDate, endDate } = req.body;
 
@@ -25,7 +25,7 @@ const getCenterRequests = async (req, res, next) => {
             throw new AppError('Les dates sont invalides', 400);
         }
 
-        const requests = await substitutionService.getRequests(userId, startDate, endDate);
+        const requests = await demandService.getDemands(userId, startDate, endDate);
         res.status(200).json(requests);
     } catch (err) {
         next(err);
@@ -37,7 +37,7 @@ const getDemandHeatmap = async (req, res, next) => {
     try {
         const { centerId } = req.params;
         const { startDate, endDate } = req.query;
-        res.status(200).json(await substitutionService.getDemandHeatmap(centerId, startDate, endDate));
+        res.status(200).json(await demandService.getDemandHeatmap(centerId, startDate, endDate));
     } catch (err) {
         next(err);
     }
@@ -48,7 +48,7 @@ const getUserDemands = async (req, res, next) => {
     try {
         const userId = assertId(req.params.userId, 'ID utilisateur');
         await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-        res.status(200).json(await Substitution.find({ posterId: userId }));
+        res.status(200).json(await Demand.find({ posterId: userId }));
     } catch (err) {
         next(err);
     }
@@ -63,7 +63,7 @@ const getAllCenterDemands = async (req, res, next) => {
         }
 
 
-        const demands = await Substitution.find({ centerId, deleted: false })
+        const demands = await Demand.find({ centerId, deleted: false })
             .populate('posterId', 'name lastName email avatar personalData')
             .populate('accepterId', 'name lastName email avatar personalData')
             .populate('posterShift.shift')
@@ -85,7 +85,7 @@ const consultDemand = async (req, res, next) => {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
 
-        const demand = await substitutionService.consultDemand(demandId, userId);
+        const demand = await demandService.consultDemand(demandId, userId);
         res.status(200).json({ message: 'Demande consultée avec succès', demand });
     } catch (err) {
         next(err);
@@ -99,7 +99,7 @@ const getCompatibility = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
-        const data = await substitutionService.getCompatibility(demandId, userId);
+        const data = await demandService.getCompatibility(demandId, userId);
         res.status(200).json(data);
     } catch (err) {
         next(err);
@@ -108,7 +108,7 @@ const getCompatibility = async (req, res, next) => {
 
 const getDemand = async (req, res, next) => {
   try {
-    res.status(200).json(await substitutionService.getRequestById(req.params.id));
+    res.status(200).json(await demandService.getDemandById(req.params.id));
   } catch (err) {
     next(err);
   }
@@ -121,12 +121,12 @@ const getAvailableUsers = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('L\'identifiant de la demande est requis', 400);
         }
-        const demand = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée' });
+        const demand = await findOrThrow(Demand, demandId, { message: 'Demande non trouvée' });
         if (demand.status !== 'open') {
             throw new AppError('Cette demande n\'est plus disponible', 400);
         }
 
-        const userPool = await substitutionService.computeUserPool(demand);
+        const userPool = await demandService.computeUserPool(demand);
         res.status(200).json({ userPool, totalUsers: userPool.length });
     } catch (err) {
         //console.error('Erreur lors du calcul du pool d\'utilisateurs:', err);
@@ -164,7 +164,7 @@ const createDemand = async (req, res, next) => {
         assertObject(posterShift, 'Vacation');
         assertDay(posterShift.date, 'Date de la vacation');
 
-        const demand = await substitutionService.createDemand({
+        const demand = await demandService.createDemand({
             posterId: req.user.userId,
             posterShift: { date: posterShift.date, selectedVariation: posterShift.selectedVariation },
             comment,
@@ -181,7 +181,7 @@ const createDemand = async (req, res, next) => {
             { path: 'acceptedSwitches.shift', select: 'name default' },
         ]);
 
-        const userPool = await substitutionService.computeUserPool(populatedDemand);
+        const userPool = await demandService.computeUserPool(populatedDemand);
         if (userPool.length > 0) {
             emailService.sendUserPoolNotification(userPool, populatedDemand)
                 .then(results => console.log(`📧 Notifications envoyées:`, results))
@@ -202,8 +202,8 @@ const acceptDemand = async (req, res, next) => {
             throw new AppError('Paramètres manquants', 400);
         }
 
-        const { request, shift } = await substitutionService.acceptDemand(demandId, userId);
-        res.status(200).json({ message: 'Demande acceptée', request, newShiftData: shift });
+        const { demand, shift } = await demandService.acceptDemand(demandId, userId);
+        res.status(200).json({ message: 'Demande acceptée', demand, newShiftData: shift });
     } catch (err) {
         next(err);
     }
@@ -218,7 +218,7 @@ const swapShifts = async (req, res, next) => {
             throw new AppError('Paramètres manquants', 400);
         }
 
-        const { demand, acceptedShiftPoints, shift } = await substitutionService.swapShifts(demandId, userId);
+        const { demand, acceptedShiftPoints, shift } = await demandService.swapShifts(demandId, userId);
         res.status(200).json({
             message: 'Switch enregistré',
             demand,
@@ -238,8 +238,8 @@ const withdrawFromDemand = async (req, res, next) => {
     }
 
     try {
-        const result = await substitutionService.withdrawFromRequest(demandId, userId);
-        res.status(200).json({ message: 'Désistement enregistré', request: result.updatedRequest, newShiftData: result.shift });
+        const result = await demandService.withdrawFromDemand(demandId, userId);
+        res.status(200).json({ message: 'Désistement enregistré', demand: result.updatedDemand, newShiftData: result.shift });
     } catch (err) {
         next(err);
     }
@@ -252,7 +252,7 @@ const cancelDemand = async (req, res, next) => {
         if (!demandId) {
             throw new AppError('Paramètres manquants', 400);
         }
-        const result = await substitutionService.cancelRequest(demandId, { actorId: req.user.userId });
+        const result = await demandService.cancelDemand(demandId, { actorId: req.user.userId });
         res.status(200).json({ message: 'Demande annulée avec succès', demand: result.initialCancel, shift: result.shift });
     } catch (err) {
         next(err);
@@ -264,7 +264,7 @@ const markInterest = async (req, res, next) => {
         const { id: demandId } = req.params;
         const { userId } = req.user;
 
-        const demand = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée' });
+        const demand = await findOrThrow(Demand, demandId, { message: 'Demande non trouvée' });
         const alreadyInterested = demand.interested.includes(userId);
         if (alreadyInterested) {
             demand.interested = demand.interested.filter(id => !sameId(id, userId));
@@ -283,13 +283,13 @@ const markInterest = async (req, res, next) => {
 };
 
 
-// Recatégoriser les substitutions
-const recategorizeSubstitutions = async (req, res, next) => {
+// Recatégoriser les demandes
+const recategorizeDemands = async (req, res, next) => {
     try {
         const userId = req.user.userId;
-        const { substitutionIds } = req.body;
-        const categorizedSubstitutions = await substitutionService.recategorizeSubstitutions(substitutionIds, userId);
-        res.status(200).json({ message: 'Substitutions recatégorisées avec succès', categorizedSubstitutions });
+        const { demandIds } = req.body;
+        const categorizedDemands = await demandService.recategorizeDemands(demandIds, userId);
+        res.status(200).json({ message: 'Substitutions recatégorisées avec succès', categorizedDemands });
     } catch (err) {
         next(err);
     }
@@ -303,7 +303,7 @@ const getCompatibleSwitches = async (req, res, next) => {
         if (!isValidDate(date)) {
             throw new AppError('Date invalide (AAAA-MM-JJ attendu)', 400);
         }
-        const compatibleShifts = await substitutionService.getCompatibleSwitches(date, userId);
+        const compatibleShifts = await demandService.getCompatibleSwitches(date, userId);
         res.status(200).json(compatibleShifts);
     } catch (err) {
         next(err);
@@ -318,7 +318,7 @@ const sendAdminEmail = async (req, res, next) => {
             throw new AppError('Identifiant de la demande requis', 400);
         }
 
-        const demand = await findOrThrow(Substitution, demandId, { message: 'Demande non trouvée' });
+        const demand = await findOrThrow(Demand, demandId, { message: 'Demande non trouvée' });
         const rule = await Rule.findOne({ name: 'Mailing administration' });
         if (!rule) {
             throw new AppError('Règle de mailing non configurée', 404);
@@ -336,7 +336,7 @@ const sendAdminEmail = async (req, res, next) => {
             throw new AppError('Aucune adresse e-mail configurée pour le mailing de ce centre', 400);
         }
 
-        const populatedDemand = await Substitution.findById(demandId)
+        const populatedDemand = await Demand.findById(demandId)
             .populate('posterId', 'name lastName email')
             .populate('posterShift.shift')
             .populate('posterShift.teamId');
@@ -383,7 +383,7 @@ const sendAdminEmail = async (req, res, next) => {
 };
 
 export {
-    getCenterRequests,
+    getCenterDemands,
     getUserDemands,
     getDemand,
     getAllCenterDemands,
@@ -398,7 +398,7 @@ export {
     withdrawFromDemand,
     markInterest,
     swapShifts,
-    recategorizeSubstitutions,
+    recategorizeDemands,
     getCompatibleSwitches,
     sendAdminEmail,
 };

@@ -87,7 +87,7 @@ The twin fields, dual write and dual read are in place, but the data is only con
 Not urgent individually; most concern the rotation change flow (#35-#36) and the team-change flow (#22-#25).
 
 ### 41. Cron jobs compute "today" in the default time zone, not per center — P2
-`services/substitution/request.expiry.js` (`processPastDemands`, `processAndCompleteDemands`) call `todayIn()` with the default zone (`Europe/Paris`), so a center in another zone has demands cancelled/archived at the wrong moment around midnight.
+`services/demand/demand.expiry.js` (`processPastDemands`, `processAndCompleteDemands`) call `todayIn()` with the default zone (`Europe/Paris`), so a center in another zone has demands cancelled/archived at the wrong moment around midnight.
 
 ### 35. Rotation change leaves stale variations and calendar entries — P2
 Converted demands keep `posterShift.selectedVariation` pointing at a variation of the old shift. Calendar entries are never touched by a rotation change (unlike team changes): an accepted substitution's accepter assignment stores the old `shiftData.shift`, which `computeUserShifts` applies directly, so after conversion the calendar can show the old shift while the demand shows the new one; Modifications/HourPatches on old shift ids are ignored by the consistency check and accumulate.
@@ -121,7 +121,7 @@ Cascaded children get the same cancellation mail as the demand that caused it, w
 - The receiving admin can accept a center transfer but not refuse it; only the user can cancel it. The agent is not emailed when it is accepted.
 - The front does not react to 403 `ACCOUNT_INACTIVE`: no rejection dialog at login, no logout of an open session.
 - Nothing lets an admin deactivate an account (`User.isActive` is only set by seeds).
-- Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `requestJob` / `reminderJob` still go to an inactive accepter.
+- Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `demandJob` / `reminderJob` still go to an inactive accepter.
 
 ---
 

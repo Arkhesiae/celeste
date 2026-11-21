@@ -1,4 +1,4 @@
-import Substitution from "../../models/Substitution.js";
+import Demand from "../../models/Demand.js";
 import { dayFilter } from '../../utils/dates/dayAccess.js';
 import { toCalendarDay } from '../../utils/dates/calendarDay.js';
 import { findOrThrow } from '../../utils/mongo.js';
@@ -63,7 +63,7 @@ export async function createDemand(data) {
     }
 
     // Check for existing open demands on this date
-    const existingDemands = await Substitution.find({
+    const existingDemands = await Demand.find({
         posterId,
         ...dayFilter('posterShift.day', 'posterShift.date', { eq: givenDay.toString() }),
         deleted: false,
@@ -92,8 +92,8 @@ export async function createDemand(data) {
         type = acceptedSwitches?.length > 0 ? 'hybrid' : 'substitution';
     }
 
-    // Find accepted substitutions involving the poster on the same day
-    const sameDayAcceptedSubstitutions = await Substitution.find({
+    // Find accepted demands involving the poster on the same day
+    const sameDayAcceptedDemands = await Demand.find({
         deleted: false,
         status: 'accepted',
         $and: [
@@ -102,7 +102,7 @@ export async function createDemand(data) {
         ],
     }).select('_id');
 
-    const dependsOn = sameDayAcceptedSubstitutions.map((s) => s._id);
+    const dependsOn = sameDayAcceptedDemands.map((s) => s._id);
 
     // Create demand
     const teamId = shiftData.team?._id ?? shiftData.team;
@@ -110,7 +110,7 @@ export async function createDemand(data) {
         throw new AppError("Équipe introuvable pour cette vacation", 400);
     }
 
-    const demand = new Substitution({
+    const demand = new Demand({
         posterId,
         posterShift: {
             shift: shiftData.shift._id,

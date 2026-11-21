@@ -58,9 +58,9 @@ export const activationDaysOf = (rotation) => {
 };
 
 /** Jour d'un `posterShift` / `accepterShift` (sous-document avec `day` et `date`) */
-export const shiftDayOf = (shift, label = 'Substitution.shift.day') => dayOf(shift?.day, shift?.date, label);
-export const posterDayOf = (substitution) => shiftDayOf(substitution?.posterShift, 'Substitution.posterShift.day');
-export const accepterDayOf = (substitution) => shiftDayOf(substitution?.accepterShift, 'Substitution.accepterShift.day');
+export const shiftDayOf = (shift, label = 'Demand.shift.day') => dayOf(shift?.day, shift?.date, label);
+export const posterDayOf = (substitution) => shiftDayOf(substitution?.posterShift, 'Demand.posterShift.day');
+export const accepterDayOf = (substitution) => shiftDayOf(substitution?.accepterShift, 'Demand.accepterShift.day');
 
 /**
  * Bornes d'une occurrence d'équipe (`User.teams[]`) : { from, to }, `to` nul = équipe permanente.

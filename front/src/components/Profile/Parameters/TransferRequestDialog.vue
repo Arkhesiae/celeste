@@ -51,10 +51,10 @@
               vacation désactivée{{ impact.entries > 1 ? 's' : '' }}
             </li>
             <li>
-              {{ impact.substitutions }} remplacement{{ impact.substitutions > 1 ? 's' : '' }} ou permutation{{
-                impact.substitutions > 1 ? 's' : ''
+              {{ impact.demands }} remplacement{{ impact.demands > 1 ? 's' : '' }} ou permutation{{
+                impact.demands > 1 ? 's' : ''
               }}
-              à venir annulé{{ impact.substitutions > 1 ? 's' : '' }} (ou dont vous vous désistez)
+              à venir annulé{{ impact.demands > 1 ? 's' : '' }} (ou dont vous vous désistez)
             </li>
             <li>Vos équipes retirées et vos points remis à zéro</li>
           </ul>
@@ -101,7 +101,7 @@ const loading = ref(false);
 const step = ref('form');
 const selectedCenter = ref('');
 const reason = ref('');
-const impact = ref({ substitutions: 0, entries: 0, points: 0, negativePoints: false });
+const impact = ref({ demands: 0, entries: 0, points: 0, negativePoints: false });
 
 // Tous les centres sauf le sien
 const centers = computed(() => centerStore.centers.filter((center) => center._id !== authStore.userData.centerId));

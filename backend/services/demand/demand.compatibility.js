@@ -1,4 +1,4 @@
-import Substitution from "../../models/Substitution.js";
+import Demand from "../../models/Demand.js";
 import { findOrThrow } from '../../utils/mongo.js';
 import User from "../../models/User.js";
 import { shiftMapFromSingleDemand, shiftMapToArray } from "../planning/planning.shiftsMap.js";
@@ -8,7 +8,7 @@ import { getCenterTimeZone } from "../center/center.timezone.js";
 import { withZonedBounds, wallClockIso } from "../../utils/shifts/shiftTime.js";
 
 const getCompatibility = async (demandId, userId) => {
-    const demand = await Substitution.findById(demandId).populate([
+    const demand = await Demand.findById(demandId).populate([
         { path: 'posterShift.shift', populate: { path: 'variations' } },
         { path: 'posterShift.selectedVariation' },
         { path: 'acceptedSwitches.shift', select: '_id name' }

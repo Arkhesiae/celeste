@@ -23,7 +23,7 @@ const PointTransferSchema = new mongoose.Schema({
     },
     request: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Substitution',
+        ref: 'Demand',
         default: null
     },
     description: {

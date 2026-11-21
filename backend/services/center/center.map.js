@@ -1,5 +1,5 @@
 import Center from '../../models/Center.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { dayFilter } from '../../utils/dates/dayAccess.js';
 import { todayIn } from '../../utils/dates/plainDate.js';
 import { getCenterTimeZones } from './center.timezone.js';
@@ -34,7 +34,7 @@ export async function getCentersMap (ownCenterId) {
         ...dayFilter('posterShift.day', 'posterShift.date', { gte: todayIn(timeZones.get(String(center._id))).toString() }),
     }));
 
-    const counts = await Substitution.aggregate([
+    const counts = await Demand.aggregate([
         { $match: { deleted: false, status: { $in: ['open', 'accepted'] }, $or: upcomingByCenter } },
         { $group: { _id: { centerId: '$centerId', status: '$status' }, count: { $sum: 1 } } },
     ]);

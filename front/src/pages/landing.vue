@@ -282,7 +282,7 @@ const setupStatsObserver = async () => {
         console.log('ae');
         startAnimation(statStore.totalUsers, animatedNumber, 'controllers', 1000);
         startAnimation(statStore.totalCenters, animatedCenters, 'centers', 1500);
-        startAnimation(statStore.totalSubstitutions, animatedReplacements, 'replacements', 2000);
+        startAnimation(statStore.totalDemands, animatedReplacements, 'replacements', 2000);
       } else {
         animatedNumber.value = 0;
         animatedCenters.value = 0;

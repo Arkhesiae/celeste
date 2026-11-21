@@ -7,7 +7,7 @@ import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
 import Center from '../models/Center.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import { geocodeName, ensureCenterLocations } from '../services/center/center.geocode.js';
 import { getCentersMap } from '../services/center/center.map.js';
 import { todayIn } from '../utils/dates/plainDate.js';
@@ -95,7 +95,7 @@ test('Carte : comptes de demandes à venir par centre (ouvertes / acceptées), c
     posterShift: { day: today.add({ days: dayOffset }).toString(), date: new Date(`${today.add({ days: dayOffset }).toString()}T00:00:00Z`) },
   });
   // insertion directe : seuls les champs lus par la carte comptent
-  await Substitution.collection.insertMany([
+  await Demand.collection.insertMany([
     demand(own._id, 'open', 0), demand(own._id, 'open', 3), demand(own._id, 'accepted', 1),
     demand(own._id, 'open', -2),                      // passée : ignorée
     demand(own._id, 'cancelled', 1),                  // ni ouverte ni acceptée : ignorée

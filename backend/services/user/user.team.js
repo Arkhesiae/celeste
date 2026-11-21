@@ -30,7 +30,7 @@ function planTeamChange (user, afterTeams) {
 async function buildApprovalRequest (user, { before, after, changes }) {
     const impacts = await Promise.all(changes.map((change) => previewUserPeriodImpact(user._id, change)));
 
-    if (!impacts.some(({ substitutions, entries }) => substitutions.length || entries.length)) {
+    if (!impacts.some(({ demands, entries }) => demands.length || entries.length)) {
         return null;
     }
 
@@ -48,7 +48,7 @@ async function buildApprovalRequest (user, { before, after, changes }) {
 }
 
 /**
- * Assainit chaque période modifiée (substitutions + entrées de calendrier) puis enregistre les nouvelles
+ * Assainit chaque période modifiée (demandes + entrées de calendrier) puis enregistre les nouvelles
  * occurrences — le tout dans la transaction fournie.
  */
 async function sanitizeAndSaveTeams (user, afterTeams, session) {

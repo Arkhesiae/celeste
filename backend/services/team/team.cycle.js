@@ -30,10 +30,10 @@ const effectiveOffset = (team, anchor, total) => {
  * Deux équipes ne peuvent pas être au même jour : en cas de conflit, la fonction refuse (code
  * CYCLE_POSITION_TAKEN) sauf avec `swap`, qui échange alors les positions des deux équipes.
  *
- * Changer la position d'une équipe réécrit ses vacations de base à partir d'aujourd'hui : les substitutions et les
+ * Changer la position d'une équipe réécrit ses vacations de base à partir d'aujourd'hui : les demandes et les
  * entrées de calendrier liées à une vacation de ses membres (actuels, à venir et renforts) ne sont plus valables.
  * Sans `confirmed`, rien n'est modifié et la fonction renvoie `{ needsApproval: true, ... }` avec l'impact détaillé ;
- * avec `confirmed`, les substitutions sont annulées (ou l'accepteur retiré), les entrées liées à une vacation
+ * avec `confirmed`, les demandes sont annulées (ou l'accepteur retiré), les entrées liées à une vacation
  * désactivées, puis les personnes concernées prévenues par email après le commit.
  *
  * @param {string} teamId
@@ -107,12 +107,12 @@ export async function setTeamCyclePosition (teamId, { day, date, swap = false, c
     const impact = [];
     if (!confirmed) {
         for (const member of members) {
-            const { substitutions, entries } = await previewUserPeriodImpact(member._id, period);
-            if (substitutions.length || entries.length) {
+            const { demands, entries } = await previewUserPeriodImpact(member._id, period);
+            if (demands.length || entries.length) {
                 impact.push({
                     userId: member._id,
                     name: fullName(member),
-                    substitutions,
+                    demands,
                     entries,
                 });
             }

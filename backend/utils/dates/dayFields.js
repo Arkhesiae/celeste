@@ -32,6 +32,6 @@ export const DAY_FIELDS = [
         key: 'user.teams.fromDay/toDay', collection: 'users', type: 'subdocs', array: 'teams',
         pairs: [{ from: 'fromDate', to: 'fromDay' }, { from: 'toDate', to: 'toDay' }],
     },
-    { key: 'substitution.posterShift.day', collection: 'substitutions', type: 'scalar', from: 'posterShift.date', to: 'posterShift.day' },
-    { key: 'substitution.accepterShift.day', collection: 'substitutions', type: 'scalar', from: 'accepterShift.date', to: 'accepterShift.day' },
+    { key: 'demand.posterShift.day', collection: 'substitutions', type: 'scalar', from: 'posterShift.date', to: 'posterShift.day' },
+    { key: 'demand.accepterShift.day', collection: 'substitutions', type: 'scalar', from: 'accepterShift.date', to: 'accepterShift.day' },
 ];

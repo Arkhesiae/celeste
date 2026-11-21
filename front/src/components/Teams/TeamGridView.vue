@@ -158,10 +158,10 @@ const goToToday = () => {
   startDate.value = today.value;
 };
 
-let requestId = 0;
+let demandId = 0;
 const loadGrid = async () => {
   if (!selectedTeamId.value || !startDate.value) return;
-  const current = ++requestId;
+  const current = ++demandId;
   loading.value = true;
   errorMessage.value = '';
   try {
@@ -171,14 +171,14 @@ const loadGrid = async () => {
       .add({ days: 2 * span.value - 1 })
       .toString();
     const data = await teamStore.fetchTeamGrid(selectedTeamId.value, first, last);
-    if (current === requestId) grid.value = data;
+    if (current === demandId) grid.value = data;
   } catch (error) {
-    if (current === requestId) {
+    if (current === demandId) {
       grid.value = null;
       errorMessage.value = error.message || 'Erreur lors du chargement de la grille';
     }
   } finally {
-    if (current === requestId) loading.value = false;
+    if (current === demandId) loading.value = false;
   }
 };
 

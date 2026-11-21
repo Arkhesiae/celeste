@@ -88,7 +88,7 @@ test('compte désactivé : refusé à la connexion, au renouvellement du jeton e
   const read = await call('GET', `/user/${inactive._id}/points`, { user: inactive });
   assert.equal(read.status, 403);
   assert.equal(read.code, 'ACCOUNT_INACTIVE');
-  assert.equal((await call('POST', '/substitution', { user: inactive, body: {} })).code, 'ACCOUNT_INACTIVE');
+  assert.equal((await call('POST', '/demand', { user: inactive, body: {} })).code, 'ACCOUNT_INACTIVE');
   assert.equal((await call('GET', `/user/${active._id}/points`, { user: active })).status, 200);
 });
 
@@ -107,8 +107,8 @@ test('mutation en attente : connexion et lectures permises, routes qui modifient
   for (const [method, path, body] of [
     ['POST', `/user/${pending._id}/points/transfer`, { receiverId: String(pending._id), amount: 1 }],
     ['POST', `/user/${pending._id}/assign-team`, { teamId: String(someId) }],
-    ['POST', '/substitution', {}],
-    ['POST', `/substitution/${someId}/accept`, {}],
+    ['POST', '/demand', {}],
+    ['POST', `/demand/${someId}/accept`, {}],
     ['POST', '/calendar-entry/register-entry', {}],
     ['PUT', `/team/${someId}/name`, { name: 'X' }],
   ]) {

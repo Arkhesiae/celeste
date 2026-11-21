@@ -1,11 +1,11 @@
 import { ref } from 'vue';
 import { posterDay } from '@/utils/dayFields.js';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 
 export function useDemandActions() {
   const snackbarStore = useSnackbarStore();
-  const substitutionStore = useSubstitutionStore();
+  const demandStore = useDemandStore();
 
   const showDemandDetailsModal = ref(false);
   const selectedDemand = ref(null);
@@ -24,7 +24,7 @@ export function useDemandActions() {
 
   const handleReplacement = async (demand) => {
     try {
-      const response = await substitutionStore.checkUserShift(posterDay(demand));
+      const response = await demandStore.checkUserShift(posterDay(demand));
       userHasShift.value = response.hasShift;
       canSwitch.value = demand.canSwitch;
       selectedDemand.value = demand;
@@ -47,7 +47,7 @@ export function useDemandActions() {
   const handleConfirmAccept = async () => {
     loading.value.confirm = true;
     try {
-      await substitutionStore.acceptDemand(selectedDemand.value._id);
+      await demandStore.acceptDemand(selectedDemand.value._id);
       snackbarStore.showNotification('Remplacement accepté', 'onRemplacement', 'mdi-account-arrow-left-outline');
       showConfirmationDialog.value = false;
       showDemandDetailsModal.value = false;
@@ -76,7 +76,7 @@ export function useDemandActions() {
   const handleConfirmSwitch = async () => {
     loading.value.confirm = true;
     try {
-      await substitutionStore.swapShifts(selectedDemand.value._id);
+      await demandStore.swapShifts(selectedDemand.value._id);
       snackbarStore.showNotification('Permutation acceptée', 'onRemplacement', 'mdi-swap-horizontal');
       showConfirmationDialog.value = false;
       showDemandDetailsModal.value = false;
@@ -112,10 +112,10 @@ export function useDemandActions() {
     loading.value.confirm = true;
     try {
       if (dialogOption.value === 'cancel') {
-        await substitutionStore.cancelDemand(selectedDemand.value._id);
+        await demandStore.cancelDemand(selectedDemand.value._id);
         snackbarStore.showNotification('Demande supprimée', 'success', 'mdi-delete');
       } else {
-        await substitutionStore.unacceptDemand(selectedDemand.value._id);
+        await demandStore.unacceptDemand(selectedDemand.value._id);
         snackbarStore.showNotification('Désistement enregistré', 'success', 'mdi-account-minus');
       }
       showConfirmationDialog.value = false;

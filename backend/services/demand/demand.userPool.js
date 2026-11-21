@@ -8,7 +8,7 @@ const limit = pLimit(10);
 
 /**
  * Calcule le pool d'utilisateurs pouvant potentiellement accepter une demande
- * @param {Object} demand - La demande de substitution
+ * @param {Object} demand - La demande
  * @param {string} demand.type - Le type de demande ('substitution', 'hybrid', 'switch')
  * @param {Object} demand.posterShift - Le shift du poster
  * @param {Array} demand.acceptedSwitches - Les shifts acceptés pour l'échange

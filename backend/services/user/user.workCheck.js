@@ -14,7 +14,7 @@ import { WORK_CHECK_MARGIN_DAYS } from '../../config/limits.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { shiftMapToArray, toShiftsMap } from '../planning/planning.shiftsMap.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
-import { windowStartingOn, longestRestIn, workMinutesIn, minutesBetween, isNight } from '../substitution/compatibility/compatibility.rules.js';
+import { windowStartingOn, longestRestIn, workMinutesIn, minutesBetween, isNight } from '../demand/compatibility/compatibility.rules.js';
 
 /**
  * Contrôle du temps de travail d'un utilisateur sur une période, pour le calendrier : temps travaillé de chaque jour, repos

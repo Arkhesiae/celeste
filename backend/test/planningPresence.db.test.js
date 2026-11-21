@@ -19,10 +19,10 @@ import Rotation from '../models/Rotation.js';
 import User from '../models/User.js';
 import '../models/Variation.js';
 import { computeUserShifts } from '../services/planning/planning.userShifts.js';
-import { createDemand } from '../services/substitution/request.creation.js';
-import { acceptDemand, swapShifts } from '../services/substitution/request.accept.js';
-import { cancelRequest } from '../services/substitution/request.cancel.js';
-import { withdrawFromRequest } from '../services/substitution/request.withdraw.js';
+import { createDemand } from '../services/demand/demand.creation.js';
+import { acceptDemand, swapShifts } from '../services/demand/demand.accept.js';
+import { cancelDemand } from '../services/demand/demand.cancel.js';
+import { withdrawFromDemand } from '../services/demand/demand.withdraw.js';
 import { registerEntry } from '../services/calendarEntry/calendarEntry.register.js';
 
 const URI = process.env.TEST_PRESENCE_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_presence';
@@ -105,7 +105,7 @@ test('remplacement : le remplacé ne tient plus rien, ce qu’il a cédé est da
   assert.equal(a.history.length, 1);
   assert.deepEqual([a.history[0].substitution.kind, String(a.history[0].substitution.demandId)], ['replaced', String(s1._id)]);
 
-  await cancelRequest(s1._id);
+  await cancelDemand(s1._id);
   assert.deepEqual(await view(A), ['present', 'J', null, null, 'J', true]);
   assert.deepEqual(await view(E), ['present', 'R', null, null, 'R', false]);
 });
@@ -128,13 +128,13 @@ test('chaîne A → E → F : E cède J (pas son repos), désistement et annulat
   assert.deepEqual(e.history.map((step) => [step.substitution.kind, String(step.substitution.demandId)]), [['replacing', String(s1._id)], ['replaced', String(s2._id)]]);
 
   // F annule son acceptation (désistement) : E retrouve J
-  await withdrawFromRequest(s2._id, F._id);
+  await withdrawFromDemand(s2._id, F._id);
   assert.deepEqual(await view(E), ['present', 'J', 'replacing', null, 'R', true]);
   assert.deepEqual(await view(F), ['present', 'R', null, null, 'R', false]);
 
   // F reprend, puis A annule S1 : S2 (qui en dépend) est annulée avec, tous reviennent à leur rotation
   await acceptDemand(s2._id, F._id);
-  await cancelRequest(s1._id);
+  await cancelDemand(s1._id);
   assert.deepEqual(await view(A), ['present', 'J', null, null, 'J', true]);
   assert.deepEqual(await view(E), ['present', 'R', null, null, 'R', false]);
   assert.deepEqual(await view(F), ['present', 'R', null, null, 'R', false]);
@@ -162,7 +162,7 @@ test('permutations A↔B, C↔D puis C↔A : chacun tient la vacation de l’aut
   assert.deepEqual(await view(D), ['present', 'L', 'exchanged', 'M', 'M', true]);   // inchangé
 
   // Annuler la dernière permutation rend à C et à A ce que S2 et S1 leur avaient donné
-  await cancelRequest(s3._id);
+  await cancelDemand(s3._id);
   assert.deepEqual(await view(C), ['present', 'M', 'exchanged', 'L', 'L', true]);
   assert.deepEqual(await view(A), ['present', 'K', 'exchanged', 'J', 'J', true]);
 });
@@ -180,7 +180,7 @@ test('remplacer une vacation obtenue par permutation : le remplacé cède celle 
   assert.deepEqual(await view(E), ['present', 'K', 'replacing', null, 'R', true]);
   assert.deepEqual(await view(B), ['present', 'J', 'exchanged', 'K', 'K', true]);
 
-  await cancelRequest(s2._id);
+  await cancelDemand(s2._id);
   assert.deepEqual(await view(A), ['present', 'K', 'exchanged', 'J', 'J', true]);
 });
 
@@ -199,7 +199,7 @@ test('modifications : celui qui tient une vacation (accepteur, permutation) a sa
   assert.deepEqual(await view(E), ['released', 'J', 'replacing', null, 'R', false]);
   await registerEntry(E._id, day, await modification(E, J, 'pres'));
   assert.deepEqual(await view(E), ['present', 'J', 'replacing', null, 'R', true]);
-  await cancelRequest(s1._id);
+  await cancelDemand(s1._id);
 
   const s2 = await post(A, switchFor(K));
   await swapShifts(s2._id, B._id);

@@ -41,7 +41,7 @@ export async function previewCenterTransfer (userId) {
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', select: 'points centerId' });
     const impact = await previewUserPeriodImpact(user._id, await upcomingPeriod(user.centerId));
     return {
-        substitutions: impact.substitutions.length,
+        demands: impact.demands.length,
         entries: impact.entries.length,
         points: user.points,
         negativePoints: user.points < 0,

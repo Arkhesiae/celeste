@@ -5,7 +5,7 @@ import { fullName } from '../../utils/names.js';
 import { sameId } from '../../utils/ids.js';
 import Team from '../../models/Team.js';
 import User from '../../models/User.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { Assignment } from '../../models/CalendarEntry.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
 import { computeShiftOfTeam } from '../planning/planning.teamShift.js';
@@ -86,7 +86,7 @@ export async function getTeamGrid (teamId, startDate, endDate) {
         userId: { $in: userIds }, date: { $in: dates }, active: true, subType: 'substitution', 'substitution.id': { $ne: null },
     }).select('userId date substitution.id createdAt').sort({ createdAt: 1 }).lean();
 
-    const substitutions = await Substitution.find({ _id: { $in: assignments.map((a) => a.substitution.id) } })
+    const substitutions = await Demand.find({ _id: { $in: assignments.map((a) => a.substitution.id) } })
         .select('posterId accepterId accepterShift').lean();
     const subById = new Map(substitutions.map((s) => [String(s._id), s]));
 

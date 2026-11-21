@@ -1,5 +1,5 @@
 /**
- * Demande liée : `GET /substitution/:id` renvoie une demande avec ses vacations et son `dependsOn` (le front s'en sert pour afficher la
+ * Demande liée : `GET /demand/:id` renvoie une demande avec ses vacations et son `dependsOn` (le front s'en sert pour afficher la
  * demande dont une autre dépend). Le centre est contrôlé : une demande d'un autre centre répond 403, une supprimée 404.
  *
  *   node --test backend/test/demandParent.db.test.js
@@ -15,7 +15,7 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import Center from '../models/Center.js';
 import User from '../models/User.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import routes from '../routes/index.js';
 import { errorHandler } from '../middleware/errorHandler.js';
 import { generateAccessToken } from '../services/auth/auth.refreshToken.js';
@@ -62,7 +62,7 @@ const get = async (user, path) => {
   return { status: response.status, body: await response.json().catch(() => null) };
 };
 
-test('GET /substitution/:id : la demande liée, avec ses vacations, dans le centre seulement', async (t) => {
+test('GET /demand/:id : la demande liée, avec ses vacations, dans le centre seulement', async (t) => {
   if (!available) return t.skip('MongoDB indisponible');
   const centerA = await Center.create({ name: 'A', OACI: 'AAAA', type: 'app', timeZone: 'Europe/Paris' });
   const centerB = await Center.create({ name: 'B', OACI: 'BBBB', type: 'app', timeZone: 'Europe/Paris' });
@@ -72,7 +72,7 @@ test('GET /substitution/:id : la demande liée, avec ses vacations, dans le cent
 
   const day = '2099-03-10';
   const makeDemand = (extra = {}) =>
-    Substitution.create({
+    Demand.create({
       posterId: poster._id, centerId: centerA._id, type: 'substitution', points: 5,
       posterShift: { shift: new mongoose.Types.ObjectId(), teamId: new mongoose.Types.ObjectId(), day, date: new Date(`${day}T00:00:00.000Z`) },
       ...extra,
@@ -81,18 +81,18 @@ test('GET /substitution/:id : la demande liée, avec ses vacations, dans le cent
   const child = await makeDemand({ dependsOn: [parent._id] });
 
   // la demande enfant porte l'identifiant de sa demande liée, que le front va chercher
-  const childRead = await get(colleague, `/substitution/${child._id}`);
+  const childRead = await get(colleague, `/demand/${child._id}`);
   assert.equal(childRead.status, 200);
   assert.deepEqual(childRead.body.dependsOn, [String(parent._id)]);
 
-  const parentRead = await get(colleague, `/substitution/${parent._id}`);
+  const parentRead = await get(colleague, `/demand/${parent._id}`);
   assert.equal(parentRead.status, 200);
   assert.equal(parentRead.body._id, String(parent._id));
   assert.equal(parentRead.body.status, 'accepted');
   assert.deepEqual(parentRead.body.dependsOn, []);
 
   // un autre centre n'y a pas accès, une demande supprimée n'existe plus
-  assert.equal((await get(stranger, `/substitution/${parent._id}`)).status, 403);
+  assert.equal((await get(stranger, `/demand/${parent._id}`)).status, 403);
   const removed = await makeDemand({ deleted: true });
-  assert.equal((await get(colleague, `/substitution/${removed._id}`)).status, 404);
+  assert.equal((await get(colleague, `/demand/${removed._id}`)).status, 404);
 });

@@ -39,7 +39,7 @@
           <CalendarPanel
             v-if="selectedDate"
             :selected-date="selectedDate"
-            @open-rempla-dialog="openSubstitutionForm"
+            @open-rempla-dialog="openDemandForm"
             @open-drawer="handleOpenDrawer"
             @cancel="handleCancel"
             @withdraw="handleWithdraw"
@@ -69,7 +69,7 @@
           <CalendarPanel
             v-if="selectedDate && selectionMode === 'day'"
             :selected-date="selectedDate"
-            @open-rempla-dialog="openSubstitutionForm"
+            @open-rempla-dialog="openDemandForm"
             @open-drawer="handleOpenDrawer"
             @cancel="handleCancel"
             @withdraw="handleWithdraw"
@@ -108,14 +108,14 @@
       @click="setWindowMode(!windowMode)"
     />
 
-    <SubstitutionForm
+    <DemandForm
       :submitting="subInProgress"
       :dialog-mode="dialogMode"
-      :dialog-visible="showSubstitutionForm"
+      :dialog-visible="showDemandForm"
       :date="selectedDate"
       :selected-shift="selectedVacation"
       @on-submit="handleSubmit"
-      @update:dialog-visible="showSubstitutionForm = $event"
+      @update:dialog-visible="showDemandForm = $event"
     />
 
     <!-- Drawers -->
@@ -136,7 +136,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDisplay } from 'vuetify';
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 import { useShiftStore } from '@/stores/shiftStore.js';
 import { useCalendar } from '@/composables/useCalendar';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
@@ -153,7 +153,7 @@ const DIALOG_MODES = {
 
 /**  Initialisation des stores */
 const authStore = useAuthStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const snackbarStore = useSnackbarStore();
 const shiftStore = useShiftStore();
 const demandDeps = ref(null);
@@ -165,7 +165,7 @@ const selectionMode = ref('day');
 const period = ref(null); // fenêtre de 7 jours mise en évidence dans le calendrier : { start, end }
 const windowStart = ref(null); // premier jour de la fenêtre de 7 jours affichée dans la tuile
 const workCheckStore = useWorkCheckStore();
-const showSubstitutionForm = ref(false);
+const showDemandForm = ref(false);
 const showBottomSheet = ref(false);
 const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const showDrawer = ref(false);
@@ -209,9 +209,9 @@ const selectDay = (date) => {
   selectedDate.value = toDateKey(date);
 };
 
-const openSubstitutionForm = (mode) => {
+const openDemandForm = (mode) => {
   dialogMode.value = mode;
-  showSubstitutionForm.value = true;
+  showDemandForm.value = true;
 };
 
 const handleOpenDrawer = (type) => {
@@ -310,10 +310,10 @@ const handleSubmit = async (demand) => {
       isTrueSwitch: demand.isTrueSwitch,
     };
 
-    await substitutionStore.createSubstitutionDemand(requestData);
+    await demandStore.createDemand(requestData);
     snackbarStore.showNotification('Demande créée !', 'onPrimary', 'mdi-check');
     subInProgress.value = false;
-    showSubstitutionForm.value = false;
+    showDemandForm.value = false;
     showBottomSheet.value = false;
     return true;
   } catch (error) {
@@ -323,18 +323,18 @@ const handleSubmit = async (demand) => {
       'onError',
       'mdi-alert-circle-outline',
     );
-    showSubstitutionForm.value = false;
+    showDemandForm.value = false;
     showBottomSheet.value = false;
     return false;
   }
 };
 
-const handleCancel = (substitutionId) => {
-  demandDeps.value.handleCancel(substitutionId);
+const handleCancel = (demandId) => {
+  demandDeps.value.handleCancel(demandId);
 };
 
-const handleWithdraw = (substitutionId) => {
-  demandDeps.value.handleWithdraw(substitutionId);
+const handleWithdraw = (demandId) => {
+  demandDeps.value.handleWithdraw(demandId);
 };
 
 const handleReplacement = (demand) => {

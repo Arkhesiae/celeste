@@ -7,7 +7,7 @@ from `git ls-files`, an import graph of the backend modules, and line counts.
 
 The target conventions are the ones the code already follows most of the time (see `CLAUDE.md`):
 `routes/ → controllers/ → services/ → models/`, pure helpers in `utils/`, **one name per domain**, and in services the dot
-style `<domain>.<action>.js` (`user.team.js`, `request.accept.js`).
+style `<domain>.<action>.js` (`user.team.js`, `demand.accept.js`).
 
 ## 1. Folders and repository files
 
@@ -21,7 +21,7 @@ style `<domain>.<action>.js` (`user.team.js`, `request.accept.js`).
 
 - **10 of 15 controllers still import models directly** (`accountRecovery`, `announcement`, `auth`, `center`, `message`,
   `otp`, `rule`, `stat`, `substitution`, `team`) and run queries and business rules themselves; the biggest is
-  `substitution.controller.js` (457 lines). Proposed: controllers read **and validate** the request, call a service and
+  `demand.controller.js` (457 lines). Proposed: controllers read **and validate** the request, call a service and
   answer in the one response shape described in `CLAUDE.md`; move the rest to `services/<domain>/`, one resource per
   change, `substitution` next, then `center`, `team` and the small ones. The same pass should apply the validators of
   `utils/validation.js` (`assertId`, `assertEmail`, ...) to each controller's inputs and drop the `console.error` calls in

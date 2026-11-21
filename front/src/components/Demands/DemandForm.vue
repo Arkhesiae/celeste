@@ -242,7 +242,7 @@
 <script setup>
 import { useDate } from 'vuetify';
 import { toDateKey } from '@/utils/dateKey';
-import { substitutionService } from '@/services/substitutionService';
+import { demandService } from '@/services/demandService';
 
 const dialogVisible = defineModel('dialogVisible', { type: Boolean, required: true });
 
@@ -396,7 +396,7 @@ const toggleSwitch = (dayId) => {
 
 const fetchCompatibleSwitches = async () => {
   if (!localDate.value) return [];
-  return substitutionService.fetchCompatibleSwitches(toDateKey(localDate.value));
+  return demandService.fetchCompatibleSwitches(toDateKey(localDate.value));
 };
 
 const closeDialog = () => emit('update:dialogVisible', false);

@@ -10,7 +10,7 @@ import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftT
  * Envoie un email de notification aux utilisateurs du pool concernant une demande publiée
  * @param {Array} userPool - Liste des utilisateurs du pool (doit contenir email, name, lastName, canSwitch, canReplace)
  * @param {Object} demandeur - L'utilisateur qui a posté la demande
- * @param {Object} demand - La demande de substitution
+ * @param {Object} demand - La demande
  * @param {string} shiftDay - Le jour du shift concerné
  * @returns {Object} Résultat de l'envoi
  */
@@ -133,7 +133,7 @@ L'équipe Celeste
  * Envoie un email de notification aux utilisateurs du pool concernant une demande publiée
  * @param {Array} userPool - Liste des utilisateurs du pool (doit contenir email, name, lastName)
  * @param {Object} demandeur - L'utilisateur qui a posté la demande
- * @param {Object} demand - La demande de substitution
+ * @param {Object} demand - La demande
  * @param {string} shiftDay - Le jour du shift concerné
  * @returns {Object} Résultat de l'envoi
  */
@@ -206,7 +206,7 @@ L'équipe Celeste
  * Envoie un email de notification aux utilisateurs du pool concernant une demande publiée
  * @param {Array} userPool - Liste des utilisateurs du pool (doit contenir email, name, lastName)
  * @param {Object} demandeur - L'utilisateur qui a posté la demande
- * @param {Object} demand - La demande de substitution
+ * @param {Object} demand - La demande
  * @param {string} shiftDay - Le jour du shift concerné
  * @returns {Object} Résultat de l'envoi
  */
@@ -295,7 +295,7 @@ async function sendReplacementReminderEmail (demand) {
   }
   const shiftName = (posterShift?.shift?.name ?? '') + (variationName ?? '');
   const times = getEffectiveShiftTimes(posterShift?.shift, selectedVariation) || posterShift?.shift?.default;
-  const date = formatDateFr(shiftDayOf(posterShift, 'Substitution.posterShift.day'));
+  const date = formatDateFr(shiftDayOf(posterShift, 'Demand.posterShift.day'));
 
   const templateData = {
     userName: accepter.name,

@@ -1,8 +1,8 @@
 import PointTransfer from '../../models/PointTransfer.js';
 import { cancelScheduledTransaction } from '../transaction/transaction.scheduled.js';
 
-export const cancelRequestTransactions = async (requestId, { session } = {}) => {
-    const transactions = await PointTransfer.find({ request: requestId, status: 'pending' }).session(session);
+export const cancelDemandTransactions = async (demandId, { session } = {}) => {
+    const transactions = await PointTransfer.find({ request: demandId, status: 'pending' }).session(session);
     if (transactions.length > 0) {
         // Une par une : opérations concurrentes sur une session de transaction non supportées (known issue #48)
         for (const transaction of transactions) {

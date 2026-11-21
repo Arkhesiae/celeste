@@ -1,4 +1,4 @@
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import User from '../../models/User.js';
 import { formatDateFr } from '../../utils/dates/format.js';
 import { posterDayOf, dayFilter } from '../../utils/dates/dayAccess.js';
@@ -12,19 +12,19 @@ import * as scheduledTransactionService from '../transaction/transaction.schedul
 import { MAX_POINTS_TO_ACCEPT_REQUEST } from '../../config/points.js';
 
 /**
- * Accepte une demande de substitution ou un échange de vacations
- * @param {string} requestId
+ * Accepte une demande ou un échange de vacations
+ * @param {string} demandId
  * @param {string} userId
  * @param {Object} opts
  * @param {boolean} opts.isSwitch - true for shift swap, false for substitution
  */
-export async function acceptRequest (requestId, userId, { isSwitch = false } = {}) {
-    let request, acceptedShiftPoints;
+export async function acceptOrSwapDemand (demandId, userId, { isSwitch = false } = {}) {
+    let demand, acceptedShiftPoints;
 
     try {
         await inTransaction(async (session) => {
-            ({ request, acceptedShiftPoints } =
-                await acceptRequestWithSession(requestId, userId, { session, isSwitch }));
+            ({ demand, acceptedShiftPoints } =
+                await acceptDemandWithSession(demandId, userId, { session, isSwitch }));
         });
     } catch (error) {
         if (error instanceof AppError) throw error;
@@ -35,10 +35,10 @@ export async function acceptRequest (requestId, userId, { isSwitch = false } = {
 
     // Post-transaction : vacation de l'accepteur ce jour-là, avec les entrées de calendrier qui viennent d'être validées
     // (la vacation du demandeur pour un remplacement, la sienne échangée pour une permutation)
-    const accepterShift = (await computeUserShifts([posterDayOf(request)], userId))[0];
+    const accepterShift = (await computeUserShifts([posterDayOf(demand)], userId))[0];
 
     // Post-transaction: populate for return value
-    await request.populate([
+    await demand.populate([
         { path: 'posterShift.shift', populate: { path: 'variations' } },
         { path: 'posterShift.selectedVariation' },
         { path: 'posterShift.teamId', select: 'name' },
@@ -49,52 +49,52 @@ export async function acceptRequest (requestId, userId, { isSwitch = false } = {
         ] : []),
     ]);
 
-    const result = request.toObject();
+    const result = demand.toObject();
 
     // Populate for email only
-    await request.populate([
+    await demand.populate([
         { path: 'posterId', select: 'name lastName email' },
         { path: 'accepterId', select: 'name lastName email' },
     ]);
 
-    sendAcceptedDemandEmail(request)
+    sendAcceptedDemandEmail(demand)
         .then(({ sent, failed }) =>
-            console.log('📧 Notifications envoyées:', { requestId: request._id, sent, failed })
+            console.log('📧 Notifications envoyées:', { demandId: demand._id, sent, failed })
         )
         .catch((err) => console.error('❌ Erreur notification:', err));
 
     return isSwitch
-        ? { request: result, acceptedShiftPoints, shift: accepterShift }
-        : { request: result, shift: accepterShift };
+        ? { demand: result, acceptedShiftPoints, shift: accepterShift }
+        : { demand: result, shift: accepterShift };
 }
 
-export const acceptDemand = (requestId, userId) => acceptRequest(requestId, userId, { isSwitch: false });
-export const swapShifts = async (requestId, userId) => {
-    const res = await acceptRequest(requestId, userId, { isSwitch: true });
-    return { demand: res.request, acceptedShiftPoints: res.acceptedShiftPoints, shift: res.shift };
+export const acceptDemand = (demandId, userId) => acceptOrSwapDemand(demandId, userId, { isSwitch: false });
+export const swapShifts = async (demandId, userId) => {
+    const res = await acceptOrSwapDemand(demandId, userId, { isSwitch: true });
+    return { demand: res.demand, acceptedShiftPoints: res.acceptedShiftPoints, shift: res.shift };
 };
 
 /**
- * Accepte une demande de substitution ou un échange de vacations
- * @param {string} requestId
+ * Accepte une demande ou un échange de vacations
+ * @param {string} demandId
  * @param {string} userId
  * @param {Object} opts
  * @param {boolean} opts.isSwitch - true for shift swap, false for substitution
  */
-export async function acceptRequestWithSession (requestId, userId, { session, isSwitch = false }) {
+export async function acceptDemandWithSession (demandId, userId, { session, isSwitch = false }) {
     // L'une après l'autre : opérations concurrentes sur une session de transaction non supportées (known issue #48)
-    const request = await Substitution.findById(requestId).session(session);
+    const demand = await Demand.findById(demandId).session(session);
     const user = isSwitch ? await User.findById(userId).session(session) : null;
 
-    if (!request) throw new AppError('Demande non trouvée', 404);
+    if (!demand) throw new AppError('Demande non trouvée', 404);
     if (!user && isSwitch) throw new AppError('Utilisateur non trouvé', 404);
-    if (request.status !== 'open') throw new AppError("Cette demande n'est plus disponible", 400);
-    if (sameId(request.posterId, userId)) throw new AppError('Vous ne pouvez pas accepter votre propre demande', 400);
+    if (demand.status !== 'open') throw new AppError("Cette demande n'est plus disponible", 400);
+    if (sameId(demand.posterId, userId)) throw new AppError('Vous ne pouvez pas accepter votre propre demande', 400);
 
-    const openDemands = await Substitution.find({
+    const openDemands = await Demand.find({
         posterId: userId,
         status: 'open',
-        ...dayFilter('posterShift.day', 'posterShift.date', { eq: posterDayOf(request) })
+        ...dayFilter('posterShift.day', 'posterShift.date', { eq: posterDayOf(demand) })
     }).session(session);
 
     if (openDemands.length > 0) {
@@ -105,12 +105,12 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
 
     // Switch-specific: validate accepter shift and points
     if (isSwitch) {
-        const [accepterDay] = await computeUserShifts([posterDayOf(request)], userId);
+        const [accepterDay] = await computeUserShifts([posterDayOf(demand)], userId);
         // Une vacation cédée reste affichée barrée : seule une vacation réellement travaillée peut être échangée
         const heldShift = accepterDay?.isWorked ? accepterDay.shiftData?.shift : null;
         if (!heldShift) throw new AppError("Vous n'avez pas de vacation à échanger ce jour-là", 400);
 
-        const acceptedShiftData = request.acceptedSwitches.find(
+        const acceptedShiftData = demand.acceptedSwitches.find(
             (s) => sameId(s.shift, heldShift._id)
         );
         if (!acceptedShiftData) throw new AppError("Votre vacation n'est pas acceptée pour cet échange", 400);
@@ -121,37 +121,37 @@ export async function acceptRequestWithSession (requestId, userId, { session, is
         }
 
         const heldTeam = accepterDay.shiftData.team;
-        request.accepterShift = {
+        demand.accepterShift = {
             shift: heldShift._id,
             teamId: heldTeam?._id ?? heldTeam,
             selectedVariation: null,
-            date: request.posterShift.date,
-            day: posterDayOf(request),   // même jour que celui du demandeur
+            date: demand.posterShift.date,
+            day: posterDayOf(demand),   // même jour que celui du demandeur
         };
     }
 
-    request.accepterId = userId;
-    request.status = 'accepted';
-    request.reminderSentAt = null;
-    request.updatedAt = new Date();
-    await request.save({ session });
+    demand.accepterId = userId;
+    demand.status = 'accepted';
+    demand.reminderSentAt = null;
+    demand.updatedAt = new Date();
+    await demand.save({ session });
 
-    const points = isSwitch ? acceptedShiftPoints : request.points;
+    const points = isSwitch ? acceptedShiftPoints : demand.points;
     if (points > 0) {
         await scheduledTransactionService.createScheduledTransaction({
-            sender: request.posterId,
+            sender: demand.posterId,
             receiver: userId,
             amount: points,
             type: 'replacement',
-            request: requestId,
-            description: `${isSwitch ? 'Permutation' : 'Remplacement'} du ${formatDateFr(posterDayOf(request), { short: true })}`,
-            scheduledDate: new Date(posterDayOf(request))   // YYYY-MM-DD = minuit UTC
+            request: demandId,
+            description: `${isSwitch ? 'Permutation' : 'Remplacement'} du ${formatDateFr(posterDayOf(demand), { short: true })}`,
+            scheduledDate: new Date(posterDayOf(demand))   // YYYY-MM-DD = minuit UTC
         }, { session });
     }
 
     // Les entrées de calendrier sont écrites dans la transaction ; la vacation de l'accepteur qui en résulte se calcule
-    // après le commit (voir acceptRequest) : computeUserShifts ne lit pas dans la session
-    await addSubstitutionEntries(request, { session });
+    // après le commit (voir acceptOrSwapDemand) : computeUserShifts ne lit pas dans la session
+    await addSubstitutionEntries(demand, { session });
 
-    return { request, acceptedShiftPoints };
+    return { demand, acceptedShiftPoints };
 }

@@ -1,17 +1,17 @@
 /**
- * Service pour gérer les appels API liés aux substitutions.
- * @module substitutionService
+ * Service pour gérer les appels API liés aux demandes (remplacement, permutation ou les deux).
+ * @module demandService
  */
 import { apiFetch } from '../config/api';
 
-export const substitutionService = {
+export const demandService = {
   /**
-   * Récupère les demandes de substitution d'un centre et les marque comme vues.
+   * Récupère les demandes d'un centre et les marque comme vues.
    * @param {Object} dates - Objet contenant les dates de début et de fin
    * @param {string} dates.startDate - Date de début au format ISO
    * @param {string} dates.endDate - Date de fin au format ISO
    * @param {string} [status] - Statut optionnel pour filtrer les demandes ('open', 'accepted', 'completed', 'cancelled')
-   * @returns {Promise<Array>} Liste des demandes de substitution
+   * @returns {Promise<Array>} Liste des demandes
    */
   async fetchAndMarkAsSeen(dates, status) {
     // Vérifier que les dates sont définies
@@ -30,56 +30,56 @@ export const substitutionService = {
       requestBody.status = status;
     }
 
-    return apiFetch(`/substitution/center`, {
+    return apiFetch(`/demand/center`, {
       method: 'POST',
       body: JSON.stringify(requestBody),
     });
   },
 
   /**
-   * Crée une nouvelle substitution.
-   * @param {Object} substitutionData - Les données de la nouvelle substitution.
-   * @returns {Promise<Object>} La substitution créée.
+   * Crée une nouvelle demande.
+   * @param {Object} demandData - Les données de la nouvelle demande.
+   * @returns {Promise<Object>} La demande créée.
    */
-  async createSubstitutionDemand(substitutionData) {
-    const response = await apiFetch(`/substitution`, {
+  async createDemand(demandData) {
+    const response = await apiFetch(`/demand`, {
       method: 'POST',
-      body: JSON.stringify(substitutionData),
+      body: JSON.stringify(demandData),
     });
     return response;
   },
 
   /**
-   * Supprime une substitution.
-   * @param {string} demandId - L'ID de la demande de substitution.
+   * Supprime une demande.
+   * @param {string} demandId - L'ID de la demande.
    * @returns {Promise<void>}
    */
   async cancelDemand(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/cancel`, {
+    const response = await apiFetch(`/demand/${demandId}/cancel`, {
       method: 'POST',
     });
     return response;
   },
 
   /**
-   * Accepte une demande de substitution.
-   * @param {string} demandId - L'ID de la demande de substitution.
-   * @returns {Promise<Object>} La substitution acceptée.
+   * Accepte une demande.
+   * @param {string} demandId - L'ID de la demande.
+   * @returns {Promise<Object>} La demande acceptée.
    */
   async acceptDemand(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/accept`, {
+    const response = await apiFetch(`/demand/${demandId}/accept`, {
       method: 'POST',
     });
     return response;
   },
 
   /**
-   * Récupère les substitutions d'un utilisateur.
+   * Récupère les demandes d'un utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
-   * @returns {Promise<Array>} Liste des substitutions de l'utilisateur.
+   * @returns {Promise<Array>} Liste des demandes de l'utilisateur.
    */
-  async getUserSubstitutions(userId) {
-    const response = await apiFetch(`/substitution/user/${userId}`, {
+  async getUserDemands(userId) {
+    const response = await apiFetch(`/demand/user/${userId}`, {
       method: 'GET',
     });
     return response;
@@ -91,7 +91,7 @@ export const substitutionService = {
    * @returns {Promise<Object>} Les informations du shift.
    */
   async checkUserShift(date) {
-    const response = await apiFetch(`/substitution/check-shift/${date}`, {
+    const response = await apiFetch(`/demand/check-shift/${date}`, {
       method: 'GET',
     });
     return response;
@@ -99,11 +99,11 @@ export const substitutionService = {
 
   /**
    * Échange les shifts entre deux utilisateurs.
-   * @param {string} demandId - L'ID de la demande de substitution.
+   * @param {string} demandId - L'ID de la demande.
    * @returns {Promise<Object>} Les informations de l'échange.
    */
   async swapShifts(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/swap`, {
+    const response = await apiFetch(`/demand/${demandId}/swap`, {
       method: 'POST',
     });
     return response;
@@ -111,43 +111,43 @@ export const substitutionService = {
 
   /**
    * Marque une demande comme intéressante.
-   * @param {string} demandId - L'ID de la demande de substitution.
+   * @param {string} demandId - L'ID de la demande.
    * @returns {Promise<Object>} Les informations de la demande.
    */
   async markInterest(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/interest`, {
+    const response = await apiFetch(`/demand/${demandId}/interest`, {
       method: 'POST',
     });
     return response;
   },
 
   /**
-   * Annule l'acceptation d'une demande de substitution.
-   * @param {string} demandId - L'ID de la demande de substitution.
-   * @returns {Promise<Object>} La substitution mise à jour.
+   * Annule l'acceptation d'une demande.
+   * @param {string} demandId - L'ID de la demande.
+   * @returns {Promise<Object>} La demande mise à jour.
    */
   async unacceptDemand(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/withdraw`, {
+    const response = await apiFetch(`/demand/${demandId}/withdraw`, {
       method: 'POST',
     });
     return response;
   },
 
   /**
-   * Recatégorise les substitutions ouvertes pour une date donnée.
-   * @param {Array<string>} substitutionIds - Liste des IDs de substitutions à recatégoriser
-   * @returns {Promise<Array>} Liste des substitutions recatégorisées
+   * Recatégorise les demandes ouvertes pour une date donnée.
+   * @param {Array<string>} demandIds - Liste des IDs de demandes à recatégoriser
+   * @returns {Promise<Array>} Liste des demandes recatégorisées
    */
-  async recategorizeSubstitutions(substitutionIds) {
-    const response = await apiFetch(`/substitution/recategorize`, {
+  async recategorizeDemands(demandIds) {
+    const response = await apiFetch(`/demand/recategorize`, {
       method: 'POST',
-      body: JSON.stringify({ substitutionIds }),
+      body: JSON.stringify({ demandIds }),
     });
     return response;
   },
 
   async fetchCompatibleSwitches(date) {
-    const response = await apiFetch(`/substitution/compatible-switches/${date}`, {
+    const response = await apiFetch(`/demand/compatible-switches/${date}`, {
       method: 'GET',
     });
     return response;
@@ -159,7 +159,7 @@ export const substitutionService = {
    * @returns {Promise<Array>} Liste de toutes les demandes du centre.
    */
   async fetchAllCenterDemands(centerId) {
-    const response = await apiFetch(`/substitution/center/${centerId}/all`);
+    const response = await apiFetch(`/demand/center/${centerId}/all`);
     return response;
   },
 
@@ -169,16 +169,16 @@ export const substitutionService = {
    * @returns {Promise<Object>} Les compatibilités de la demande.
    */
   async fetchCompatibility(demandId) {
-    return apiFetch(`/substitution/compatibility/${demandId}`);
+    return apiFetch(`/demand/compatibility/${demandId}`);
   },
 
   /**
    * Marque une demande comme consultée.
-   * @param {string} demandId - L'ID de la demande de substitution.
-   * @returns {Promise<Object>} La substitution mise à jour.
+   * @param {string} demandId - L'ID de la demande.
+   * @returns {Promise<Object>} La demande mise à jour.
    */
   async consultDemand(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/consult`, {
+    const response = await apiFetch(`/demand/${demandId}/consult`, {
       method: 'POST',
     });
     return response;
@@ -190,7 +190,7 @@ export const substitutionService = {
    * @returns {Promise<Object>} La demande.
    */
   async getDemand(demandId) {
-    return apiFetch(`/substitution/${demandId}`, { method: 'GET' });
+    return apiFetch(`/demand/${demandId}`, { method: 'GET' });
   },
 
   /**
@@ -199,7 +199,7 @@ export const substitutionService = {
    * @returns {Promise<Object>} Résultat de l'envoi.
    */
   async sendAdminMail(demandId) {
-    const response = await apiFetch(`/substitution/${demandId}/send-email`, {
+    const response = await apiFetch(`/demand/${demandId}/send-email`, {
       method: 'POST',
     });
     return response;
@@ -213,6 +213,6 @@ export const substitutionService = {
    */
   async fetchDemandHeatmap(centerId, { startDate, endDate }) {
     const params = new URLSearchParams({ startDate, endDate });
-    return apiFetch(`/substitution/center/${centerId}/heatmap?${params}`, { method: 'GET' });
+    return apiFetch(`/demand/center/${centerId}/heatmap?${params}`, { method: 'GET' });
   },
 };

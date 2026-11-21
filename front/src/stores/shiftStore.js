@@ -3,7 +3,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { vacationService } from '@/services/vacationService';
 import { useAuthStore } from '@/stores/authStore';
 import { parseShiftDateTime } from '@/utils/parseShiftDateTime';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 
 /**
  * Store Pinia pour gérer l'état des vacations.
@@ -56,8 +56,8 @@ export const useShiftStore = defineStore('shift', () => {
   };
 
   const triggerRecategorize = (dateKey) => {
-    const substitutionStore = useSubstitutionStore();
-    substitutionStore.recategorizeSubstitutions(dateKey);
+    const demandStore = useDemandStore();
+    demandStore.recategorizeDemands(dateKey);
   };
 
   const addEntry = (entry, dateKey = null, targetMap = null) => {

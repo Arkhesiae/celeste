@@ -121,7 +121,7 @@ import { posterDay } from '@/utils/dayFields.js';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { planningModificationService } from '@/services/planningModificationService';
 import { getEffectiveShiftTimes, getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypes } from '@/utils/entryIcons';
@@ -138,7 +138,7 @@ const emit = defineEmits(['open-entry-dialog', 'entry-registered']);
 const shiftStore = useShiftStore();
 const authStore = useAuthStore();
 const snackbarStore = useSnackbarStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 
 // ─── Date key ─────────────────────────────────────────────────────────────────
 
@@ -222,12 +222,12 @@ const dayType = computed(() => {
 });
 
 const hasNoDemand = computed(() => {
-  const acceptedAsAccepter = substitutionStore.acceptedAsAccepter.filter((d) => sameDateKey(posterDay(d), props.date));
-  const acceptedAsPoster = substitutionStore.acceptedAsPoster.filter((d) => sameDateKey(posterDay(d), props.date));
+  const acceptedAsAccepter = demandStore.acceptedAsAccepter.filter((d) => sameDateKey(posterDay(d), props.date));
+  const acceptedAsPoster = demandStore.acceptedAsPoster.filter((d) => sameDateKey(posterDay(d), props.date));
   const pendingDemand = [
-    ...substitutionStore.ownPendingHybridSubstitutions,
-    ...substitutionStore.ownPendingTrueSubstitutions,
-    ...substitutionStore.ownPendingTrueSwitches,
+    ...demandStore.ownPendingHybridSubstitutions,
+    ...demandStore.ownPendingTrueSubstitutions,
+    ...demandStore.ownPendingTrueSwitches,
   ].find((d) => sameDateKey(posterDay(d), props.date));
   return !pendingDemand && !acceptedAsPoster?.length && !acceptedAsAccepter?.length;
 });

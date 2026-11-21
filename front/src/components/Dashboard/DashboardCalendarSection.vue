@@ -28,21 +28,21 @@
     <CalendarPanel
       v-if="selectedDate"
       :selected-date="selectedDate"
-      @open-rempla-dialog="openSubstitutionForm"
+      @open-rempla-dialog="openDemandForm"
       @open-drawer="handleOpenDrawer"
       @cancel="handleCancel"
       @withdraw="handleWithdraw"
     />
   </v-bottom-sheet>
 
-  <SubstitutionForm
+  <DemandForm
     :submitting="subInProgress"
     :dialog-mode="dialogMode"
-    :dialog-visible="showSubstitutionForm"
+    :dialog-visible="showDemandForm"
     :date="selectedDate"
     :selected-shift="selectedVacation"
     @on-submit="handleSubmit"
-    @update:dialog-visible="showSubstitutionForm = $event"
+    @update:dialog-visible="showDemandForm = $event"
   />
 
   <!-- Drawers -->
@@ -61,7 +61,7 @@ import { useCalendar } from '@/composables/useCalendar';
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
 import { useShiftStore } from '@/stores/shiftStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { toDateKey } from '@/utils/dateKey';
 
@@ -78,10 +78,10 @@ const dialogMode = ref(DIALOG_MODES.REMPLACEMENT);
 const showBottomSheet = ref(false);
 const showDrawer = ref(false);
 const selectedDate = ref(null);
-const showSubstitutionForm = ref(false);
+const showDemandForm = ref(false);
 
 const shiftStore = useShiftStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const snackbarStore = useSnackbarStore();
 
 const { selectedMonth, selectedYear, navigateMonth, goToToday } = useCalendarNavigation();
@@ -123,32 +123,32 @@ const handleSelectDate = (dateStr) => {
   }
 };
 
-const handleCancel = (substitutionId) => {
-  demandDeps.value.handleCancel(substitutionId);
+const handleCancel = (demandId) => {
+  demandDeps.value.handleCancel(demandId);
 };
 
-const handleWithdraw = (substitutionId) => {
-  demandDeps.value.handleWithdraw(substitutionId);
+const handleWithdraw = (demandId) => {
+  demandDeps.value.handleWithdraw(demandId);
 };
 
-const openSubstitutionForm = (mode) => {
+const openDemandForm = (mode) => {
   dialogMode.value = mode;
-  showSubstitutionForm.value = true;
+  showDemandForm.value = true;
 };
 
 const closeRemplaDialog = () => {
-  showSubstitutionForm.value = false;
+  showDemandForm.value = false;
   dialogMode.value = null;
 };
 
 const handleReplacement = () => {
   showDrawer.value = false;
-  showSubstitutionForm.value = true;
+  showDemandForm.value = true;
 };
 
 const handleSwitch = () => {
   showDrawer.value = false;
-  showSubstitutionForm.value = true;
+  showDemandForm.value = true;
 };
 
 const openDemand = (demandId) => {
@@ -172,7 +172,7 @@ const handleSubmit = async (demand) => {
       acceptedSwitches: demand.acceptedSwitches,
     };
 
-    await substitutionStore.createSubstitutionDemand(requestData);
+    await demandStore.createDemand(requestData);
     snackbarStore.showNotification('Demande créée !', 'onPrimary', 'mdi-check');
     subInProgress.value = false;
     closeRemplaDialog();

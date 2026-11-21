@@ -164,17 +164,17 @@ import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
 import { useAuthStore } from '@/stores/authStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { useDisplay } from 'vuetify';
 import { API_URL } from '@/config/api';
 import { getEffectiveShiftTimes } from '@/utils/getEffectiveShiftTimes';
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
-const isMailingEnabled = computed(() => substitutionStore.isMailingEnabled);
+const isMailingEnabled = computed(() => demandStore.isMailingEnabled);
 const props = defineProps({
   demand: {
     type: Object,

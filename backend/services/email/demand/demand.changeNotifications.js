@@ -1,4 +1,4 @@
-import Substitution from '../../../models/Substitution.js';
+import Demand from '../../../models/Demand.js';
 import { posterDayOf } from '../../../utils/dates/dayAccess.js';
 import { formatDateFr } from '../../../utils/dates/format.js';
 import { shortName } from '../../../utils/names.js';
@@ -9,7 +9,7 @@ import { renderMail } from '../email.renderer.js';
 import { sendCancelledAcceptanceEmail, sendCancelledDemandEmail } from './demand.emails.js';
 
 /**
- * Notifications envoyées aux tiers touchés quand une demande de substitution est annulée ou qu'un accepteur
+ * Notifications envoyées aux tiers touchés quand une demande est annulée ou qu'un accepteur
  * en est retiré en dehors d'une action directe de leur part (changement d'équipe, changement de tour de service).
  * Les emails sont volontairement génériques : ils ne précisent ni la cause ni que l'opération est automatique.
  *  - retrait d'un accepteur → l'auteur reçoit l'email « acceptation annulée » (cancelledAcceptance), le même que
@@ -38,7 +38,7 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
         if (!ids.length) return { sent: 0 };
 
         const [demands, accepters] = await Promise.all([
-            Substitution.find({ _id: { $in: ids } }).populate([
+            Demand.find({ _id: { $in: ids } }).populate([
                 { path: 'posterId', select: 'name lastName email' },
                 { path: 'accepterId', select: 'name lastName email' },
             ]),
@@ -106,7 +106,7 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
 }
 
 /**
- * Prévient les personnes touchées quand une demande est annulée par une action directe d'un utilisateur (`request.cancel.js`).
+ * Prévient les personnes touchées quand une demande est annulée par une action directe d'un utilisateur (`demand.cancel.js`).
  *  - l'auteur annule sa propre demande acceptée : l'accepteur reçoit l'email « demande annulée » (cancelledDemand) ; l'auteur
  *    n'est pas prévenu, c'est lui qui agit ;
  *  - quelqu'un d'autre l'annule (un administrateur par exemple) : l'auteur et l'accepteur reçoivent l'email générique
@@ -124,7 +124,7 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
  */
 export async function notifyDemandCancelledByUser ({ demandId, cascadedIds = [], actorId } = {}) {
     try {
-        const demand = await Substitution.findById(demandId).populate([
+        const demand = await Demand.findById(demandId).populate([
             { path: 'posterId', select: 'name lastName email' },
             { path: 'accepterId', select: 'name lastName email' },
         ]);

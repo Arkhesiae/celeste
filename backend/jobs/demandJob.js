@@ -1,9 +1,9 @@
 import cron from 'node-cron';
-import { REQUEST_JOB_CRON } from '../config/schedules.js';
-import { processPastDemands, processAndCompleteDemands } from '../services/substitution/index.js';
+import { DEMAND_JOB_CRON } from '../config/schedules.js';
+import { processPastDemands, processAndCompleteDemands } from '../services/demand/index.js';
 
 // Exécuter toutes les 30 minutes
-cron.schedule(REQUEST_JOB_CRON, async () => {
+cron.schedule(DEMAND_JOB_CRON, async () => {
     try {
         const pastDemands = await processPastDemands();
         const completedDemands = await processAndCompleteDemands();

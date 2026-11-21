@@ -94,7 +94,7 @@ import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useRouter } from 'vue-router';
 import { computed } from 'vue';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 
 const hapticsImpact = async () => {
@@ -105,14 +105,14 @@ const { smAndDown } = useDisplay();
 const router = useRouter();
 const authStore = useAuthStore();
 // const notificationStore = useNotificationStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 // const NOTIFICATION_COUNT = computed(() => notificationStore.unreadCount);
 const demandsCount = computed(
   () =>
-    substitutionStore.availableSubstitutions.length +
-    substitutionStore.availableSwitches.length +
-    substitutionStore.otherDemands.length,
+    demandStore.availableSubstitutions.length +
+    demandStore.availableSwitches.length +
+    demandStore.otherDemands.length,
 );
 
 // Calendrier et grille de l'équipe sont deux vues d'un même planning (voir PlanningSwitch.vue)

@@ -2,18 +2,18 @@ import { inTransaction } from '../../utils/mongo.js';
 import { dayFilter, posterDayOf, accepterDayOf } from '../../utils/dates/dayAccess.js';
 import { fullName } from '../../utils/names.js';
 import { sameId } from '../../utils/ids.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { CalendarEntry } from '../../models/CalendarEntry.js';
 import { AppError } from '../../error/AppError.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import {
-    cancelRequestWithSession,
-    withdrawFromRequestWithSession,
-} from '../substitution/request.cascade.js';
+    cancelDemandWithSession,
+    withdrawFromDemandWithSession,
+} from '../demand/demand.cascade.js';
 
 /**
  * Helpers pour "assainir" une période d'un utilisateur (ex. après un changement d'équipe) :
- *  - cancelUserSubstitutionsInPeriod : annule / se désiste de ses substitutions
+ *  - cancelUserDemandsInPeriod : annule / se désiste de ses demandes
  *  - clearUserCalendarEntriesInPeriod : désactive ses entrées de calendrier liées aux vacations
  *  - sanitizeUserPeriod : les deux, dans une même transaction
  *
@@ -32,7 +32,7 @@ const requireDateKey = (value, label) => {
 
 /**
  * @returns {{ fromKey: string, toKey: string|null, fromDate: Date, toDate: Date|null }}
- *   clés YYYY-MM-DD (entrées de calendrier) et bornes Date UTC (substitutions)
+ *   clés YYYY-MM-DD (entrées de calendrier) et bornes Date UTC (demandes)
  */
 export function normalizePeriod ({ from, to } = {}) {
     const fromKey = requireDateKey(from, 'from');
@@ -51,7 +51,7 @@ export function normalizePeriod ({ from, to } = {}) {
 }
 
 /** Demandes ouvertes/acceptées de l'utilisateur (auteur ou accepteur) dont une des dates est dans la période. */
-const periodSubstitutionsQuery = (userId, { fromKey, toKey: endKey }) => {
+const periodDemandsQuery = (userId, { fromKey, toKey: endKey }) => {
     const bounds = endKey ? { gte: fromKey, lte: endKey } : { gte: fromKey };
     return {
         deleted: { $ne: true },
@@ -84,34 +84,34 @@ const periodEntriesQuery = (userId, { fromKey, toKey: endKey }) => ({
  * @returns {Promise<{ cancelled: string[], withdrawn: string[] }>}
  *   cancelled : ids annulés (y compris par cascade) ; withdrawn : ids dont l'utilisateur s'est désisté
  */
-export async function cancelUserSubstitutionsInPeriod (userId, period, { session, reason = 'system-cancelled' } = {}) {
+export async function cancelUserDemandsInPeriod (userId, period, { session, reason = 'system-cancelled' } = {}) {
     const normalized = normalizePeriod(period);
     const uid = userId.toString();
 
     return inTransaction(async (activeSession) => {
-        const candidates = await Substitution.find(periodSubstitutionsQuery(userId, normalized))
+        const candidates = await Demand.find(periodDemandsQuery(userId, normalized))
             .select('_id').session(activeSession);
 
-        const cancelledRequests = [];
+        const cancelledDemands = [];
         const withdrawn = [];
 
         for (const { _id } of candidates) {
             // Relecture : une annulation en cascade précédente a pu changer l'état de cette demande
-            const request = await Substitution.findById(_id)
+            const demand = await Demand.findById(_id)
                 .select('status posterId accepterId')
                 .session(activeSession);
-            if (!request || !['open', 'accepted'].includes(request.status)) continue;
+            if (!demand || !['open', 'accepted'].includes(demand.status)) continue;
 
-            if (sameId(request.posterId, uid)) {
-                await cancelRequestWithSession(_id, { session: activeSession, cancelledRequests, reason });
-            } else if (request.accepterId?.toString() === uid && request.status === 'accepted') {
-                await withdrawFromRequestWithSession(_id, userId, { session: activeSession, cancelledRequests });
+            if (sameId(demand.posterId, uid)) {
+                await cancelDemandWithSession(_id, { session: activeSession, cancelledDemands, reason });
+            } else if (demand.accepterId?.toString() === uid && demand.status === 'accepted') {
+                await withdrawFromDemandWithSession(_id, userId, { session: activeSession, cancelledDemands });
                 withdrawn.push(_id.toString());
             }
         }
 
         return {
-            cancelled: [...new Set(cancelledRequests.map((r) => r._id.toString()))],
+            cancelled: [...new Set(cancelledDemands.map((r) => r._id.toString()))],
             withdrawn,
         };
     }, { session });
@@ -147,7 +147,7 @@ export async function clearUserCalendarEntriesInPeriod (userId, period, { sessio
  * @param {string|ObjectId} userId
  * @param {{ from: Date|string, to?: Date|string }} period
  * @returns {Promise<{
- *   substitutions: Array<{ id: string, action: 'cancel'|'withdraw', cascade: boolean, type: string, status: string,
+ *   demands: Array<{ id: string, action: 'cancel'|'withdraw', cascade: boolean, type: string, status: string,
  *                          date: string|null, accepterDate: string|null, poster: string, accepter: string|null }>,
  *   entries: Array<{ id: string, date: string, type: string, subType: string }>
  * }>}
@@ -157,39 +157,39 @@ export async function previewUserPeriodImpact (userId, period) {
     const uid = userId.toString();
     const populate = [{ path: 'posterId', select: 'name lastName' }, { path: 'accepterId', select: 'name lastName' }];
 
-    const direct = await Substitution.find(periodSubstitutionsQuery(userId, normalized)).populate(populate);
+    const direct = await Demand.find(periodDemandsQuery(userId, normalized)).populate(populate);
 
     const byId = new Map();
-    const describe = (request, action, cascade) => {
-        byId.set(request._id.toString(), {
-            id: request._id.toString(),
+    const describe = (demand, action, cascade) => {
+        byId.set(demand._id.toString(), {
+            id: demand._id.toString(),
             action,
             cascade,
-            type: request.type,
-            status: request.status,
-            date: posterDayOf(request),
-            accepterDate: accepterDayOf(request),
-            poster: fullName(request.posterId) || null,
-            accepter: fullName(request.accepterId) || null,
+            type: demand.type,
+            status: demand.status,
+            date: posterDayOf(demand),
+            accepterDate: accepterDayOf(demand),
+            poster: fullName(demand.posterId) || null,
+            accepter: fullName(demand.accepterId) || null,
         });
     };
 
-    // Même règle que cancelUserSubstitutionsInPeriod : auteur → annulation ; accepteur d'une demande acceptée → désistement
+    // Même règle que cancelUserDemandsInPeriod : auteur → annulation ; accepteur d'une demande acceptée → désistement
     const queue = [];
-    for (const request of direct) {
-        if (request.posterId?._id?.toString() === uid) {
-            describe(request, 'cancel', false);
-            queue.push(request._id);
-        } else if (request.accepterId?._id?.toString() === uid && request.status === 'accepted') {
-            describe(request, 'withdraw', false);
-            queue.push(request._id);
+    for (const demand of direct) {
+        if (demand.posterId?._id?.toString() === uid) {
+            describe(demand, 'cancel', false);
+            queue.push(demand._id);
+        } else if (demand.accepterId?._id?.toString() === uid && demand.status === 'accepted') {
+            describe(demand, 'withdraw', false);
+            queue.push(demand._id);
         }
     }
 
     // Annulations en cascade (demandes dépendantes), à tout niveau
     while (queue.length) {
         const parentId = queue.shift();
-        const children = await Substitution.find({ dependsOn: parentId }).populate(populate);
+        const children = await Demand.find({ dependsOn: parentId }).populate(populate);
         for (const child of children) {
             if (byId.has(child._id.toString())) continue;
             describe(child, 'cancel', true);
@@ -200,7 +200,7 @@ export async function previewUserPeriodImpact (userId, period) {
     const entries = await CalendarEntry.find(periodEntriesQuery(userId, normalized)).sort({ date: 1 });
 
     return {
-        substitutions: [...byId.values()],
+        demands: [...byId.values()],
         entries: entries.map((entry) => ({
             id: entry._id.toString(),
             date: entry.date,
@@ -211,7 +211,7 @@ export async function previewUserPeriodImpact (userId, period) {
 }
 
 /**
- * Assainit une période pour un utilisateur : d'abord les substitutions (qui restaurent leurs propres
+ * Assainit une période pour un utilisateur : d'abord les demandes (qui restaurent leurs propres
  * entrées), puis le balayage des entrées de calendrier restantes. Une seule transaction.
  *
  * @param {string|ObjectId} userId
@@ -225,8 +225,8 @@ export async function sanitizeUserPeriod (userId, period, { session, reason } = 
     normalizePeriod(period); // échoue tôt, avant d'ouvrir une transaction
 
     return inTransaction(async (activeSession) => {
-        const substitutions = await cancelUserSubstitutionsInPeriod(userId, period, { session: activeSession, reason });
+        const demands = await cancelUserDemandsInPeriod(userId, period, { session: activeSession, reason });
         const entries = await clearUserCalendarEntriesInPeriod(userId, period, { session: activeSession });
-        return { ...substitutions, ...entries };
+        return { ...demands, ...entries };
     }, { session });
 }

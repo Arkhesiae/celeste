@@ -62,11 +62,11 @@ import { useRoute } from 'vue-router';
 import { VNavigationBtn } from 'vuetify/labs/VNavigationBtn';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { useUserStore } from '@/stores/userStore';
 
 const userStore = useUserStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const authStore = useAuthStore();
 const { smAndDown } = useDisplay();
 const route = useRoute();
@@ -79,9 +79,9 @@ const centerId = computed(() => authStore.userData.centerId);
 
 const demandsCount = computed(
   () =>
-    substitutionStore.availableSubstitutions.length +
-    substitutionStore.availableSwitches.length +
-    substitutionStore.otherDemands.length,
+    demandStore.availableSubstitutions.length +
+    demandStore.availableSwitches.length +
+    demandStore.otherDemands.length,
 );
 
 const pendingUsersCount = computed(

@@ -5,11 +5,11 @@ import mongoose from 'mongoose';
 import User from '../models/User.js';
 import Team from '../models/Team.js';
 import Center from '../models/Center.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import '../models/Variation.js';
 import '../models/Shift.js';
 import '../models/Rotation.js';
-import { createDemand } from '../services/substitution/index.js';
+import { createDemand } from '../services/demand/index.js';
 import { computeUserShifts } from '../services/planning/index.js';
 
 dotenv.config({ path: '.env.development' });
@@ -38,7 +38,7 @@ export default async function seedTeamDemands ({
   }
 
   if (replacePrevious) {
-    const del = await Substitution.deleteMany({
+    const del = await Demand.deleteMany({
       centerId: center._id,
       comment: { $regex: `^\\${SEED_COMMENT_PREFIX}` },
     });
@@ -164,7 +164,7 @@ export async function seedSwitchDemands ({
   }
 
   if (replacePrevious) {
-    const del = await Substitution.deleteMany({
+    const del = await Demand.deleteMany({
       centerId: center._id,
       comment: { $regex: `^\\${SEED_COMMENT_PREFIX} switch` },
     });

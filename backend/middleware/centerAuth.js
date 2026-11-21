@@ -1,6 +1,6 @@
 import User from '../models/User.js';
 import { isValidId, sameId } from '../utils/ids.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import Team from '../models/Team.js';
 import Ticket from '../models/Ticket.js';
 import Rotation from '../models/Rotation.js';
@@ -122,8 +122,8 @@ export const authorizeSelfOrCenterAdmin = (param = 'id') => authorizeUserAccess(
 
 // ── Instances nommées pour les routes ────────────────────────────────────────
 
-/** Demande de remplacement / permutation (`Substitution.centerId`). */
-export const authorizeDemandAccess = authorizeResourceCenter(Substitution);
+/** Demande de remplacement / permutation (`Demand.centerId`). */
+export const authorizeDemandAccess = authorizeResourceCenter(Demand);
 
 /** Équipe (`Team.center`). */
 export const authorizeTeamAccess = authorizeResourceCenter(Team, { centerField: 'center' });

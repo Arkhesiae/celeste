@@ -29,13 +29,13 @@
         >
           <span class="text-body-medium font-weight-bold text-truncate flex-grow-1">{{ member.name }}</span>
           <v-chip
-            v-if="member.substitutions.length"
+            v-if="member.demands.length"
             size="x-small"
             rounded="lg"
             variant="tonal"
             prepend-icon="mdi-swap-horizontal"
           >
-            {{ member.substitutions.length }}
+            {{ member.demands.length }}
           </v-chip>
           <v-chip
             v-if="member.entries.length"
@@ -53,7 +53,7 @@
 
         <v-expand-transition>
           <div v-show="isOpen(member.userId)" class="px-3 pb-2">
-            <div v-for="sub in member.substitutions" :key="sub.id" class="text-body-small">
+            <div v-for="sub in member.demands" :key="sub.id" class="text-body-small">
               <v-icon size="14" class="mr-1"> mdi-swap-horizontal </v-icon>
               {{ formatDay(sub.date) }} · {{ typeLabel(sub.type) }} · {{ actionLabel(sub) }}
             </div>
@@ -79,7 +79,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { entryTypes } from '@/utils/entryIcons';
 
 defineProps({
-  /** Réponse 409 de PUT /teams/:id/cycle-position : { message, teams, members: [{ userId, name, substitutions, entries }] } */
+  /** Réponse 409 de PUT /teams/:id/cycle-position : { message, teams, members: [{ userId, name, demands, entries }] } */
   impact: { type: Object, default: null },
   loading: { type: Boolean, default: false },
 });

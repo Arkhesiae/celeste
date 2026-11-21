@@ -65,7 +65,7 @@
 
 <script setup>
 import { useCenterStore } from '@/stores/centerStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 
 /*
  * Carte des centres (Leaflet), SANS service de tuiles : le fond est un fichier local de contours de pays
@@ -78,7 +78,7 @@ const LOCATION_POLL_MS = 8000; // la position des centres est cherchée en arri�
 const LOCATION_POLL_MAX = 6;
 
 const centerStore = useCenterStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 
 const mapElement = ref(null);
 const loading = ref(false);
@@ -226,7 +226,7 @@ const schedulePoll = () => {
 
 // Les demandes changent (création, acceptation, annulation) : recompter, sans enchaîner les appels
 watch(
-  () => substitutionStore.substitutions,
+  () => demandStore.demands,
   () => {
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(load, 800);

@@ -10,20 +10,20 @@ export const useStatStore = defineStore('stat', () => {
   // State
   const totalUsers = ref(0);
   const totalCenters = ref(0);
-  const totalSubstitutions = ref(0);
+  const totalDemands = ref(0);
   const isLoading = ref(false);
   const error = ref(null);
 
   // Getters
   const hasStats = () => {
-    return totalUsers.value > 0 || totalCenters.value > 0 || totalSubstitutions.value > 0;
+    return totalUsers.value > 0 || totalCenters.value > 0 || totalDemands.value > 0;
   };
 
   const getStatsSummary = () => {
     return {
       totalUsers: totalUsers.value,
       totalCenters: totalCenters.value,
-      totalSubstitutions: totalSubstitutions.value,
+      totalDemands: totalDemands.value,
     };
   };
 
@@ -40,7 +40,7 @@ export const useStatStore = defineStore('stat', () => {
 
       totalUsers.value = stats.data.totalUsers;
       totalCenters.value = stats.data.totalCenters;
-      totalSubstitutions.value = stats.data.totalSubstitutions;
+      totalDemands.value = stats.data.totalDemands;
     } catch (err) {
       error.value = err.message || 'Erreur lors de la récupération des statistiques';
       console.error('Erreur lors de la récupération des statistiques:', err);
@@ -55,7 +55,7 @@ export const useStatStore = defineStore('stat', () => {
   const resetStats = () => {
     totalUsers.value = 0;
     totalCenters.value = 0;
-    totalSubstitutions.value = 0;
+    totalDemands.value = 0;
     error.value = null;
   };
 
@@ -63,7 +63,7 @@ export const useStatStore = defineStore('stat', () => {
     // State
     totalUsers,
     totalCenters,
-    totalSubstitutions,
+    totalDemands,
     isLoading,
     error,
 

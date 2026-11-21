@@ -1,5 +1,5 @@
 /**
- * Tests des règles de repos / de charge utilisées par le calcul de compatibilité (services/substitution/compatibility/compatibility.rules.js).
+ * Tests des règles de repos / de charge utilisées par le calcul de compatibilité (services/demand/compatibility/compatibility.rules.js).
  *
  * Fonctions pures, sans base de données :  node --test backend/test/
  *
@@ -24,7 +24,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { categorize } from '../services/substitution/compatibility/compatibility.categorize.js';
+import { categorize } from '../services/demand/compatibility/compatibility.categorize.js';
 import {
   checkMinimumRestTime,
   checkWeeklyRestPeriod,
@@ -33,7 +33,7 @@ import {
   checkRestAfterNightControl,
   checkConsecutiveNightControls,
   checkRestAfterTwoNightControls,
-} from '../services/substitution/compatibility/compatibility.rules.js';
+} from '../services/demand/compatibility/compatibility.rules.js';
 import { shiftMapToArray } from '../services/planning/planning.shiftsMap.js';
 import { isNightControl } from '../utils/shifts/nightControl.js';
 import { withZonedBounds, wallClockIso } from '../utils/shifts/shiftTime.js';
@@ -314,7 +314,7 @@ test('Contrôle de nuit : le résultat ne dépend pas du fuseau du serveur', () 
   const probe = (serverTimeZone) => {
     const code = `
       import { isNightControl } from './utils/shifts/nightControl.js';
-      import { checkRestAfterNightControl } from './services/substitution/compatibility/compatibility.rules.js';
+      import { checkRestAfterNightControl } from './services/demand/compatibility/compatibility.rules.js';
       import { withZonedBounds } from './utils/shifts/shiftTime.js';
       const shiftOf = (date, startTime, endTime, endsNextDay = false) => ({ shift: { type: 'work' }, date, startTime, endTime, endsNextDay });
       const [night, nextShift] = withZonedBounds([shiftOf('2026-03-10', '22:00', '06:00', true), shiftOf('2026-03-11', '14:00', '20:00')], 'UTC');

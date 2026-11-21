@@ -8,18 +8,18 @@ Files (all under `backend/`):
 | File | Role |
 |---|---|
 | `services/planning/planning.shiftsMap.js` | builds the user's planning around the demand day (`Map` day → shift entry) |
-| `services/substitution/compatibility/compatibility.categorize.js` | the compatibility computation for one demand: `categorize`, `checkCompatibilityForVariation` |
-| `services/substitution/compatibility/compatibility.rules.js` | the pure legal rules: `legalLimitsFor` and the seven checks (no database, no environment) |
-| `services/substitution/compatibility/compatibility.variations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
+| `services/demand/compatibility/compatibility.categorize.js` | the compatibility computation for one demand: `categorize`, `checkCompatibilityForVariation` |
+| `services/demand/compatibility/compatibility.rules.js` | the pure legal rules: `legalLimitsFor` and the seven checks (no database, no environment) |
+| `services/demand/compatibility/compatibility.variations.js` | **optional** exploration of ambiguous variations (`categorizeWithVariations`) |
 | `utils/shifts/shiftTime.js` | `withZonedBounds` (date key + `HH:mm` → Temporal instants in the center's zone) and `wallClockIso` (instant → text for the front) |
 | `utils/shifts/nightControl.js` | what a night control is (`isNightControl`) |
-| `services/substitution/substitution.switches.js` | `getCompatibleSwitches`: the same rules for the candidate days of a switch |
+| `services/demand/demand.switches.js` | `getCompatibleSwitches`: the same rules for the candidate days of a switch |
 | `test/` | `npm test` (see "Tests" below) |
 
 ## 1. Flow
 
 ```
- request.list.js / substitution.compatibility.js / substitution.userPool.js
+ demand.list.js / demand.compatibility.js / demand.userPool.js
                  |
    generateShiftsMap(demand days, userId)         planning of the user, ±12 days, worked shifts only
                  |
@@ -36,11 +36,11 @@ Files (all under `backend/`):
 
 Who calls what:
 
-- **User pool** (who gets the e-mail for a new demand, `substitution.userPool.js`): `categorize` only. It reads `limit`,
+- **User pool** (who gets the e-mail for a new demand, `demand.userPool.js`): `categorize` only. It reads `limit`,
   `canSwitch` and `rest`.
-- **Demand lists and detail** (`request.list.js`, `substitution.compatibility.js`): `categorizeWithVariations`, which is
+- **Demand lists and detail** (`demand.list.js`, `demand.compatibility.js`): `categorizeWithVariations`, which is
   `categorize` plus the optional variation exploration (off by default, see section 5).
-- **Switch dialog** (`GET /substitution/compatible-switches/:date`, `getCompatibleSwitches`): for each non-rest day of
+- **Switch dialog** (`GET /demand/compatible-switches/:date`, `getCompatibleSwitches`): for each non-rest day of
   the rotation active at that date, the candidate day is put in the planning and goes through the same `legalLimitsFor`.
 
 ## 2. The planning: `generateShiftsMap`
@@ -124,7 +124,7 @@ user whose planning it is.
 - **Text for the front.** The front displays the UTC hours of the ISO strings it receives, so `wallClockIso` writes the
   local time of the center with a `Z` (`2026-03-28T22:00:00.000Z` for 22:00 in Paris). It is used for the
   `invalidRest35` / `invalidWork48` windows (`windowStart`, `windowEnd`, `longestRestStart`, `longestRestEnd`) and for the
-  `start` / `end` of the planning returned by `getCompatibility` (`substitution.compatibility.js`). Durations (`rest`,
+  `start` / `end` of the planning returned by `getCompatibility` (`demand.compatibility.js`). Durations (`rest`,
   `longestRest`, `totalWorkMinutes`) are real minutes.
 
 ## 5. Result
@@ -159,7 +159,7 @@ because nothing was explored, not because no variation fits).
   combinations that pass. `potentiallyCompatible` = some combinations pass and some fail. The number of evaluations is
   capped at 128.
 - Status: the exploration is not fully integrated in the UI (`DemandCard.vue`, `WorkdayAmplitudeGraph.vue` read these
-  fields); with the flag off, those hints are simply absent and `substitutionStore.potentiallyCompatibleDemands` is empty.
+  fields); with the flag off, those hints are simply absent and `demandStore.potentiallyCompatibleDemands` is empty.
 
 ## 6. Tests
 

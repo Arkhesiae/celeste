@@ -56,12 +56,12 @@
 
           <v-divider class="my-3" />
 
-          <div class="text-label-large font-weight-bold mb-1">Demandes ({{ change.substitutions.length }})</div>
-          <div v-if="!change.substitutions.length" class="text-body-small text-medium-emphasis">
+          <div class="text-label-large font-weight-bold mb-1">Demandes ({{ change.demands.length }})</div>
+          <div v-if="!change.demands.length" class="text-body-small text-medium-emphasis">
             Aucune demande concernée
           </div>
           <v-list v-else density="compact" class="pa-0 impact-list" bg-color="transparent">
-            <v-list-item v-for="sub in change.substitutions" :key="sub.id" class="px-0">
+            <v-list-item v-for="sub in change.demands" :key="sub.id" class="px-0">
               <template #prepend>
                 <v-chip
                   size="x-small"

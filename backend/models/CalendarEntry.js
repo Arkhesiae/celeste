@@ -107,7 +107,7 @@ const AssignmentSchema = new mongoose.Schema({
     substitution: {
         id: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Substitution',
+            ref: 'Demand',
             default: null
         },
         savedEntry: {

@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { dayFilter } from '../../utils/dates/dayAccess.js';
 import Center from '../../models/Center.js';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { sendReplacementReminderEmail } from '../email/demand/demand.emails.js';
 
 import { DEFAULT_REMINDER_HOUR } from '../../config/schedules.js';
@@ -31,7 +31,7 @@ export async function sendUpcomingReplacementReminders ({ now = new Date(), hour
 
         const tomorrow = local.toPlainDate().add({ days: 1 }).toString();
 
-        const demands = await Substitution.find({
+        const demands = await Demand.find({
             centerId: center._id,
             status: 'accepted',
             deleted: { $ne: true },
@@ -55,7 +55,7 @@ export async function sendUpcomingReplacementReminders ({ now = new Date(), hour
             if (!wantsEmail) { skipped += 1; continue; }
 
             // Réservation atomique : seule une exécution envoie ; timestamps:false laisse updatedAt intact
-            const claimed = await Substitution.findOneAndUpdate(
+            const claimed = await Demand.findOneAndUpdate(
                 { _id: demand._id, status: 'accepted', reminderSentAt: null },
                 { $set: { reminderSentAt: now } },
                 { timestamps: false }
@@ -68,7 +68,7 @@ export async function sendUpcomingReplacementReminders ({ now = new Date(), hour
                 sent += 1;
             } catch (error) {
                 console.error(`❌ Rappel non envoyé pour la demande ${demand._id}:`, error.message);
-                await Substitution.updateOne({ _id: demand._id }, { $set: { reminderSentAt: null } }, { timestamps: false });
+                await Demand.updateOne({ _id: demand._id }, { $set: { reminderSentAt: null } }, { timestamps: false });
             }
         }
     }

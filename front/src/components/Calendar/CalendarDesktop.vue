@@ -43,14 +43,14 @@
 import { posterDay } from '@/utils/dayFields.js';
 import { Temporal } from '@js-temporal/polyfill';
 import { useShiftStore } from '@/stores/shiftStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';
 import { entryTypeOf } from '@/utils/entryIcons';
 import { dayKindOf } from '@/utils/dayStyle';
 import { sameDateKey, toDateKey } from '@/utils/dateKey';
 import { useWorkIndicators } from '@/composables/useWorkIndicators';
 
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const shiftStore = useShiftStore();
 
 const props = defineProps({
@@ -124,25 +124,25 @@ const getShiftData = (dateStr) => shiftDataMap.value.get(dateStr) ?? {};
 
 const hasAvailableSubstitutions = (dateStr) =>
   dateStr
-    ? substitutionStore.availableSubstitutions.some((substitution) => sameDateKey(posterDay(substitution), dateStr))
+    ? demandStore.availableSubstitutions.some((demand) => sameDateKey(posterDay(demand), dateStr))
     : false;
 const hasAvailableSwitches = (dateStr) =>
   dateStr
-    ? substitutionStore.availableSwitches.some((substitution) => sameDateKey(posterDay(substitution), dateStr))
+    ? demandStore.availableSwitches.some((demand) => sameDateKey(posterDay(demand), dateStr))
     : false;
 const hasOtherDemands = (dateStr) =>
   dateStr
-    ? substitutionStore.otherDemands.some((substitution) => sameDateKey(posterDay(substitution), dateStr))
+    ? demandStore.otherDemands.some((demand) => sameDateKey(posterDay(demand), dateStr))
     : false;
 
 const demandsMap = computed(() => {
   const map = new Map();
   const all = [
-    ...substitutionStore.ownPendingHybridSubstitutions,
-    ...substitutionStore.ownPendingTrueSubstitutions,
-    ...substitutionStore.ownPendingTrueSwitches,
-    ...substitutionStore.acceptedAsAccepter,
-    ...substitutionStore.acceptedAsPoster,
+    ...demandStore.ownPendingHybridSubstitutions,
+    ...demandStore.ownPendingTrueSubstitutions,
+    ...demandStore.ownPendingTrueSwitches,
+    ...demandStore.acceptedAsAccepter,
+    ...demandStore.acceptedAsPoster,
   ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   for (const demand of all) {

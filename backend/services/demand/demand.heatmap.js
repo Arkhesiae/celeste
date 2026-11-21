@@ -2,7 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { dayFilter, reportMissingDay } from '../../utils/dates/dayAccess.js';
 import { eachDay } from '../../utils/dates/plainDate.js';
 import mongoose from 'mongoose';
-import Substitution from '../../models/Substitution.js';
+import Demand from '../../models/Demand.js';
 import { AppError } from '../../error/AppError.js';
 import { isValidDate } from '../../utils/validation.js';
 
@@ -14,7 +14,7 @@ import { DEMAND_HEATMAP_MAX_DAYS as MAX_DAYS } from '../../config/limits.js';
  * combien d'acceptées (et non terminées) portent sur ce jour. Sert à repérer les dates « tendues ».
  *
  * Comptes uniquement : pas de contenu de demande (donc ouvert à tout membre du centre), pas de catégorisation et
- * aucun effet de bord (contrairement à getRequests, qui marque les demandes comme vues).
+ * aucun effet de bord (contrairement à getDemands, qui marque les demandes comme vues).
  * Le jour d'une demande est celui de sa vacation d'origine (`posterShift.date`, jour calendaire stocké à minuit UTC).
  *
  * @param {string} centerId
@@ -43,7 +43,7 @@ export async function getDemandHeatmap (centerId, startDate, endDate) {
         ...dayFilter('posterShift.day', 'posterShift.date', { gte: first.toString(), lte: last.toString() }),
     };
 
-    const counts = await Substitution.aggregate([
+    const counts = await Demand.aggregate([
         { $match: match },
         {
             $group: {
@@ -59,8 +59,8 @@ export async function getDemandHeatmap (centerId, startDate, endDate) {
     ]);
 
     // TEMPORARY(day-fields): controle de migration (compte + [jours]), a supprimer a la bascule.
-    const withoutTwin = await Substitution.countDocuments({ ...match, 'posterShift.day': { $exists: false } });
-    if (withoutTwin) reportMissingDay('Substitution.posterShift.day (carte de chaleur)', `${withoutTwin} demande(s)`);
+    const withoutTwin = await Demand.countDocuments({ ...match, 'posterShift.day': { $exists: false } });
+    if (withoutTwin) reportMissingDay('Demand.posterShift.day (carte de chaleur)', `${withoutTwin} demande(s)`);
 
     const byDay = new Map(days.map((date) => [date, { date, open: 0, accepted: 0 }]));
     for (const { _id, count } of counts) {

@@ -1,6 +1,6 @@
 import User from '../models/User.js';
 import Center from '../models/Center.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 
 /**
  * Contrôleur pour gérer les statistiques de l'application.
@@ -19,15 +19,15 @@ export const getStats = async (req, res, next) => {
     // Compter le nombre total de centres
     const totalCenters = await Center.countDocuments();
     
-    // Compter le nombre total de substitutions
-    const totalSubstitutions = await Substitution.countDocuments();
+    // Compter le nombre total de demandes
+    const totalDemands = await Demand.countDocuments();
 
     res.json({
       success: true,
       data: {
         totalUsers,
         totalCenters,
-        totalSubstitutions
+        totalDemands
       }
     });
   } catch (error) {

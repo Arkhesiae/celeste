@@ -14,7 +14,7 @@
   </v-row>
   <v-row v-if="visible">
     <v-col cols="12">
-      <div v-if="substitutionStore.loading" class="d-flex justify-center align-center py-8">
+      <div v-if="demandStore.loading" class="d-flex justify-center align-center py-8">
         <v-progress-circular indeterminate color="primary" size="36" />
       </div>
       <div v-else-if="demands.length === 0">
@@ -38,9 +38,9 @@
 <script setup>
 import { sameDateKey } from '@/utils/dateKey';
 import { posterDay } from '@/utils/dayFields.js';
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const props = defineProps({
   selectedDate: {
     type: [Date, String, null],
@@ -51,22 +51,22 @@ const props = defineProps({
 const visible = ref(false);
 
 const allRequests = computed(() => [
-  ...substitutionStore.availableSubstitutions,
-  ...substitutionStore.availableSwitches,
-  ...substitutionStore.otherDemands,
+  ...demandStore.availableSubstitutions,
+  ...demandStore.availableSwitches,
+  ...demandStore.otherDemands,
 ]);
 
 const compatibles = computed(() => [
-  ...substitutionStore.availableSubstitutions,
-  ...substitutionStore.availableSwitches,
+  ...demandStore.availableSubstitutions,
+  ...demandStore.availableSwitches,
 ]);
 
 const filters = computed(() => {
   const list = [
     { label: 'Compatibles', value: 'compatibles', count: compatibles.value.length },
-    { label: 'Remplaçables', value: 'remplacables', count: substitutionStore.availableSubstitutions.length },
-    { label: 'Permutables', value: 'permutables', count: substitutionStore.availableSwitches.length },
-    { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: substitutionStore.otherDemands.length },
+    { label: 'Remplaçables', value: 'remplacables', count: demandStore.availableSubstitutions.length },
+    { label: 'Permutables', value: 'permutables', count: demandStore.availableSwitches.length },
+    { label: 'Incompatibles', value: 'incompatibles', color: 'error', count: demandStore.otherDemands.length },
     { label: 'Toutes', value: 'all', count: allRequests.value.length },
   ];
 
@@ -110,13 +110,13 @@ const demands = computed(() => {
       result = compatibles.value;
       break;
     case 'remplacables':
-      result = substitutionStore.availableSubstitutions;
+      result = demandStore.availableSubstitutions;
       break;
     case 'permutables':
-      result = substitutionStore.availableSwitches;
+      result = demandStore.availableSwitches;
       break;
     case 'incompatibles':
-      result = substitutionStore.otherDemands;
+      result = demandStore.otherDemands;
       break;
     default:
       result = allRequests.value;

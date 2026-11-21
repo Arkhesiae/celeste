@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 export const useInitializationStore = defineStore('initialization', () => {
   const isLoading = ref(false);
   const initializationState = ref({
-    substitutions: false,
+    demands: false,
     centers: false,
     team: false,
     rotations: false,
@@ -36,7 +36,7 @@ export const useInitializationStore = defineStore('initialization', () => {
   watch(isLoading, (newVal) => {
     if (!newVal) {
       initializationState.value = {
-        substitutions: false,
+        demands: false,
         centers: false,
         tickets: false,
         team: false,

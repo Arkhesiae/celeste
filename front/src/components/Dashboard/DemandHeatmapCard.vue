@@ -59,7 +59,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { VHeatmap } from 'vuetify/labs/VHeatmap';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterStore } from '@/stores/centerStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 
 const DEFAULT_TIME_ZONE = 'Europe/Paris';
 const MONTHS = 6;
@@ -97,7 +97,7 @@ const THRESHOLDS = [
 
 const authStore = useAuthStore();
 const centerStore = useCenterStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 
 const centerId = computed(() => authStore.userData.centerId);
 const timeZone = computed(
@@ -191,29 +191,29 @@ const summary = computed(() => {
   };
 });
 
-let requestId = 0;
+let demandId = 0;
 const load = async () => {
   if (!centerId.value) return;
-  const current = ++requestId;
+  const current = ++demandId;
   loading.value = true;
   try {
-    const data = await substitutionStore.fetchDemandHeatmap(centerId.value, {
+    const data = await demandStore.fetchDemandHeatmap(centerId.value, {
       startDate: first.value.toString(),
       endDate: last.value.toString(),
     });
-    if (current === requestId) days.value = data;
+    if (current === demandId) days.value = data;
   } catch (error) {
     console.error('Erreur lors du chargement de la charge des demandes:', error);
-    if (current === requestId) days.value = [];
+    if (current === demandId) days.value = [];
   } finally {
-    if (current === requestId) loading.value = false;
+    if (current === demandId) loading.value = false;
   }
 };
 
 // Les demandes changent (création, acceptation, annulation) : recompter, sans enchaîner les appels
 let timer = null;
 watch(
-  () => substitutionStore.substitutions,
+  () => demandStore.demands,
   () => {
     clearTimeout(timer);
     timer = setTimeout(load, 600);

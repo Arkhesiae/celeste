@@ -17,7 +17,7 @@ import Rotation from '../models/Rotation.js';
 import User from '../models/User.js';
 import Variation from '../models/Variation.js';
 import { Modification } from '../models/CalendarEntry.js';
-import { getCompatibleSwitches } from '../services/substitution/substitution.switches.js';
+import { getCompatibleSwitches } from '../services/demand/demand.switches.js';
 import { generateShiftsMap } from '../services/planning/planning.shiftsMap.js';
 
 const URI = process.env.TEST_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_compat';
@@ -246,9 +246,9 @@ test('getCompatibleSwitches : les vacations sont placées dans le fuseau du cent
   assert.deepEqual((await morningIn(utc)).limit, []);
 });
 
-test('GET /substitution/compatible-switches/:date : une date qui n’est pas AAAA-MM-JJ est refusée par le contrôleur (400)', async () => {
+test('GET /demand/compatible-switches/:date : une date qui n’est pas AAAA-MM-JJ est refusée par le contrôleur (400)', async () => {
   // Le service ne convertit rien : c'est le contrôleur qui contrôle le format
-  const { getCompatibleSwitches: handler } = await import('../controllers/substitution.controller.js');
+  const { getCompatibleSwitches: handler } = await import('../controllers/demand.controller.js');
   const res = { status () { return this; }, json () {} };
   for (const date of ['2026-02-30', '2026-03-04T10:00:00Z', 'demain', '04/03/2026', '']) {
     let error = null;

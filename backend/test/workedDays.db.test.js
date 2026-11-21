@@ -20,13 +20,13 @@ import '../models/Variation.js';
 import { Assignment, Modification } from '../models/CalendarEntry.js';
 import { computeUserShifts } from '../services/planning/planning.userShifts.js';
 import { toShiftsMap } from '../services/planning/planning.shiftsMap.js';
-import { createDemand } from '../services/substitution/request.creation.js';
+import { createDemand } from '../services/demand/demand.creation.js';
 import { addSubstitutionEntries, registerEntry } from '../services/calendarEntry/calendarEntry.register.js';
 import { getUserEntries } from '../services/calendarEntry/calendarEntry.read.js';
 import { cancelSubstitutionEntries, deleteAssignment, restoreInitialShift } from '../services/calendarEntry/calendarEntry.cancel.js';
-import { swapShifts } from '../services/substitution/request.accept.js';
-import { cancelRequest } from '../services/substitution/request.cancel.js';
-import Substitution from '../models/Substitution.js';
+import { swapShifts } from '../services/demand/demand.accept.js';
+import { cancelDemand } from '../services/demand/demand.cancel.js';
+import Demand from '../models/Demand.js';
 
 const URI = process.env.TEST_WORKED_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_worked';
 let available = false;
@@ -148,7 +148,7 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
 
   const chained = await post(accepter._id, 0);          // B, qui la tient, peut la reposter (chaîne)
   assert.equal(chained.status, 'open');
-  assert.equal(await Substitution.countDocuments({ posterId: poster._id }), 1);
+  assert.equal(await Demand.countDocuments({ posterId: poster._id }), 1);
 
   await registerEntry(accepter._id, at(0), { ...modification, entryType: 'disp' });  // et se mettre en dispo
 
@@ -181,15 +181,15 @@ test('createDemand : refusé sur un repos, un jour facultatif ou une vacation d�
   assert.equal(await Modification.countDocuments({ userId: poster._id, date: at(0), active: true }), 0);
 
   // S11 : une demande terminée, expirée ou déjà annulée ne s'annule plus et garde son statut ; la cascade l'épargne
-  await Substitution.updateOne({ _id: chained._id }, { status: 'completed' });   // demande enfant déjà terminée
-  await cancelRequest(demand._id);                                                // la racine (acceptée) s'annule
-  assert.equal((await Substitution.findById(demand._id)).status, 'cancelled');
-  assert.equal((await Substitution.findById(chained._id)).status, 'completed');   // l'enfant terminé n'est pas réécrit
-  await assert.rejects(cancelRequest(demand._id), { status: 400 });               // déjà annulée
-  await assert.rejects(cancelRequest(chained._id), { status: 400 });              // terminée
-  await Substitution.updateOne({ _id: chained._id }, { status: 'expired' });
-  await assert.rejects(cancelRequest(chained._id), { status: 400 });              // expirée
-  assert.equal((await Substitution.findById(chained._id)).status, 'expired');
+  await Demand.updateOne({ _id: chained._id }, { status: 'completed' });   // demande enfant déjà terminée
+  await cancelDemand(demand._id);                                                // la racine (acceptée) s'annule
+  assert.equal((await Demand.findById(demand._id)).status, 'cancelled');
+  assert.equal((await Demand.findById(chained._id)).status, 'completed');   // l'enfant terminé n'est pas réécrit
+  await assert.rejects(cancelDemand(demand._id), { status: 400 });               // déjà annulée
+  await assert.rejects(cancelDemand(chained._id), { status: 400 });              // terminée
+  await Demand.updateOne({ _id: chained._id }, { status: 'expired' });
+  await assert.rejects(cancelDemand(chained._id), { status: 400 });              // expirée
+  assert.equal((await Demand.findById(chained._id)).status, 'expired');
 });
 
 test('permutation : chacun prend la vacation de l’autre, et peut la modifier (S5, S6)', async (t) => {
@@ -242,7 +242,7 @@ test('permutation : chacun prend la vacation de l’autre, et peut la modifier (
   assert.equal(newAccepterDay.shiftData.shift.name, 'J3');
   assert.equal(newAccepterDay.isWorked, true);
 
-  const saved = await Substitution.findById(demand._id);
+  const saved = await Demand.findById(demand._id);
   assert.equal(saved.status, 'accepted');
   assert.equal(saved.accepterShift.day, at(0));
 

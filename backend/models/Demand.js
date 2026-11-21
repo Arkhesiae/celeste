@@ -11,7 +11,7 @@ const NewShiftSchema = new mongoose.Schema({
     selectedVariation: { type: mongoose.Schema.Types.ObjectId, ref: 'Variation', default: null },
 });
 
-const SubstitutionSchema = new mongoose.Schema({
+const DemandSchema = new mongoose.Schema({
     posterId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
@@ -89,7 +89,7 @@ const SubstitutionSchema = new mongoose.Schema({
     }],
     dependsOn: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Substitution'
+        ref: 'Demand'
     }],
     mailStatus: {
         type: String,
@@ -110,26 +110,28 @@ const SubstitutionSchema = new mongoose.Schema({
         default: Date.now
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    // Le modèle s'appelait Substitution : la collection garde son nom pour ne pas migrer les données
+    collection: 'substitutions'
 });
 
 // Ajout des index pour optimiser les requêtes fréquentes
-SubstitutionSchema.index({ status: 1 });
-SubstitutionSchema.index({ centerId: 1 });
+DemandSchema.index({ status: 1 });
+DemandSchema.index({ centerId: 1 });
 
-SubstitutionSchema.pre('save', async function () {
+DemandSchema.pre('save', async function () {
     if (this.dependsOn) {
-        let current = await Substitution.findById(this.dependsOn);
+        let current = await Demand.findById(this.dependsOn);
         const seen = new Set([this._id.toString()]);
         while (current?.dependsOn) {
             if (seen.has(current.dependsOn.toString()))
                 throw new AppError('Cycle détecté dans dependsOn', 400);
             seen.add(current.dependsOn.toString());
-            current = await Substitution.findById(current.dependsOn);
+            current = await Demand.findById(current.dependsOn);
         }
     }
 });
 
-const Substitution = mongoose.model('Substitution', SubstitutionSchema);
+const Demand = mongoose.model('Demand', DemandSchema);
 
-export default Substitution;
+export default Demand;

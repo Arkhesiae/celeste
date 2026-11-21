@@ -48,7 +48,7 @@ import { useCenterStore } from '@/stores/centerStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
 
-import { substitutionService } from '@/services/substitutionService.js';
+import { demandService } from '@/services/demandService.js';
 
 defineOptions({
   name: 'AdminDemands',
@@ -85,7 +85,7 @@ const handleCenterChange = async (centerId) => {
 const fetchCenterDemands = async (centerId) => {
   isLoading.value = true;
   try {
-    const response = await substitutionService.fetchAllCenterDemands(centerId);
+    const response = await demandService.fetchAllCenterDemands(centerId);
     demands.value = response;
 
     snackbarStore.showNotification('Demandes chargées avec succès', 'onPrimary', 'mdi-check');

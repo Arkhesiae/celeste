@@ -15,7 +15,7 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import Center from '../models/Center.js';
 import User from '../models/User.js';
-import Substitution from '../models/Substitution.js';
+import Demand from '../models/Demand.js';
 import { Assignment } from '../models/CalendarEntry.js';
 import routes from '../routes/index.js';
 import { errorHandler } from '../middleware/errorHandler.js';
@@ -84,14 +84,14 @@ test('mutation de centre : demande, annulation, visibilité, acceptation et remi
     userId: user._id, centerId: centerA._id, date: day, subType: 'training',
     shiftData: { shift: new mongoose.Types.ObjectId(), team: new mongoose.Types.ObjectId() },
   });
-  const demand = await Substitution.create({
+  const demand = await Demand.create({
     posterId: user._id, centerId: centerA._id, type: 'substitution', points: 5,
     posterShift: { shift: new mongoose.Types.ObjectId(), teamId: new mongoose.Types.ObjectId(), day, date: new Date(`${day}T00:00:00.000Z`) },
   });
 
   // aperçu avant la demande : ce qui sera effacé, et l'alerte de solde négatif
   const preview = (await call(user, 'GET', '/center-transfer/preview')).body;
-  assert.equal(preview.substitutions, 1);
+  assert.equal(preview.demands, 1);
   assert.equal(preview.entries, 1);
   assert.equal(preview.points, -12);
   assert.equal(preview.negativePoints, true);
@@ -150,7 +150,7 @@ test('mutation de centre : demande, annulation, visibilité, acceptation et remi
   assert.equal(moved.points, 0);
   assert.equal(moved.pendingCenterTransfer, null);
   assert.equal((await Assignment.findById(entry._id)).active, false);
-  assert.equal((await Substitution.findById(demand._id)).status.includes('cancelled'), true);
+  assert.equal((await Demand.findById(demand._id)).status.includes('cancelled'), true);
 
   // l'acceptation d'une demande qui n'existe plus échoue ; un administrateur local qui change de centre ne l'est plus
   assert.equal((await call(adminB, 'POST', `/center-transfer/${user._id}/accept`)).status, 404);

@@ -73,7 +73,7 @@ export function getDemandIcon(demand, userId) {
   let hybridResolution = null;
 
   if (demand.type === DEMAND_TYPE.HYBRID) {
-    hybridResolution = demand.accepterShift ? 'Switch' : 'Substitution';
+    hybridResolution = demand.accepterShift ? 'Switch' : 'Demand';
   }
 
   const key = buildIconKey(demandType, status, hybridResolution, role);

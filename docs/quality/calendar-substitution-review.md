@@ -3,9 +3,9 @@
 Date de la revue : 2026-11-14. Revue faite en lecture seule ; les points corrigés depuis (S1 à S3, S5 à S7, S12, et S10, par le retrait du sélecteur) ont été retirés. Ce qui reste est une proposition en attente de décision.
 
 Périmètre lu en entier : `services/calendarEntry/*`, `controllers/calendarEntry.controller.js`, `routes/calendarEntry.routes.js`,
-`services/planning/planning.userShifts.js`, `services/substitution/request.{accept,cancel,cascade,creation,delete,expiry,list,withdraw}.js`,
-`services/substitution/substitution.userPool.js`, `models/Substitution.js`, `models/CalendarEntry.js`, `controllers/substitution.controller.js`,
-`routes/substitution.routes.js`, et les appels côté front (calendrier, modales) qui les utilisent.
+`services/planning/planning.userShifts.js`, `services/demand/request.{accept,cancel,cascade,creation,delete,expiry,list,withdraw}.js`,
+`services/demand/demand.userPool.js`, `models/Demand.js`, `models/CalendarEntry.js`, `controllers/demand.controller.js`,
+`routes/demand.routes.js`, et les appels côté front (calendrier, modales) qui les utilisent.
 
 **Niveau de certitude.** Les points marqués *(vérifié)* ont été reproduits avec un petit script (cast Mongoose, schéma). Les autres viennent de la lecture du code et
 du suivi des appels ; rien n'a été exécuté sur une base de données pour cette revue, donc chacun doit être confirmé par un test avant correction.
@@ -17,9 +17,9 @@ Gravité : **P0** données fausses ou faille de sécurité, **P1** fonctionnalit
 
 | # | Gr. | Où | En une ligne |
 |---|-----|----|--------------|
-| S4 | P0 | `routes/substitution.routes.js` | N'importe quel membre du centre peut annuler ou supprimer la demande de n'importe qui |
-| S8 | P1 | `request.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
-| S9 | P1 | `request.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
+| S4 | P0 | `routes/demand.routes.js` | N'importe quel membre du centre peut annuler ou supprimer la demande de n'importe qui |
+| S8 | P1 | `demand.cascade.js` | Les enfants d'une cascade ne reçoivent jamais le `reason` (`system-cancelled` devient `cancelled`) |
+| S9 | P1 | `demand.accept.js` | Aucun contrôle de compatibilité côté serveur, aucun contrôle de date, `reservedForUserId` ignoré |
 
 L'analyse des remplacements chaînés est en section 3, la proposition d'interface en section 4, les noms en section 5, les simplifications en section 6.
 
@@ -30,13 +30,13 @@ L'analyse des remplacements chaînés est en section 3, la proposition d'interfa
 ### 2.1 Flux des remplacements
 
 **S4 (P0). Contrôles de l'acteur manquants.** `POST /:id/cancel` est seulement derrière `authorizeDemandAccess` (même centre). Rien ne vérifie que
-l'appelant est le demandeur (ou un admin). `cancelRequest` n'utilise `actorId` que pour la notification. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
+l'appelant est le demandeur (ou un admin). `cancelDemand` n'utilise `actorId` que pour la notification. `POST /:id/send-email` permet à n'importe quel membre d'envoyer un mail aux administrateurs du centre pour n'importe quelle demande (et met des noms d'utilisateurs dans du HTML brut).
 
-**S8 (P1). `reason` est perdu dans les cascades.** `cancelCascade` appelle `cancelRequestWithSession(child._id, { visited, session, cancelledRequests })` sans
+**S8 (P1). `reason` est perdu dans les cascades.** `cancelCascade` appelle `cancelDemandWithSession(child._id, { visited, session, cancelledDemands })` sans
 `reason`. Quand la racine est annulée avec `system-cancelled` (changement de rotation, d'équipe), les enfants en cascade reçoivent `cancelled`. Le paramètre est aussi
 mal nommé : c'est un **statut** final, pas une raison.
 
-**S9 (P1). L'acceptation n'est pas re-validée côté serveur.** `acceptRequestWithSession` vérifie le statut, l'auto-acceptation et une demande ouverte de l'accepteur ce jour-là,
+**S9 (P1). L'acceptation n'est pas re-validée côté serveur.** `acceptDemandWithSession` vérifie le statut, l'auto-acceptation et une demande ouverte de l'accepteur ce jour-là,
 et rien d'autre : pas de compatibilité repos/charge (toute la pile `compatibility.*` ne tourne que pour l'affichage), pas de vérification que l'accepteur ne travaille pas déjà
 ce jour-là (un utilisateur qui tient un autre remplacement ce jour peut en accepter un second), pas de contrôle de date (une demande d'un jour passé que le job de 30 minutes n'a pas encore
 expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` existe dans le modèle et n'est lu nulle part (donc une demande réservée est ouverte à tous), et
@@ -45,7 +45,7 @@ expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` e
 **Autres points**
 - Écritures non atomiques dans `registerEntry` (pas de transaction) : `registerHourPatch` désactive le patch précédent **avant** les validations qui peuvent répondre 422 ; un 422 laisse le jour sans son patch.
   `registerModification` désactive l'ancienne modification, puis annule les patchs, puis enregistre.
-- `acceptRequest`, `withdrawFromRequest` et `cancelRequest` recalculent les vacations après le commit ; un échec à ce moment (`computeUserShifts`, `categorizeRequests`) répond 500
+- `acceptOrSwapDemand`, `withdrawFromDemand` et `cancelDemand` recalculent les vacations après le commit ; un échec à ce moment (`computeUserShifts`, `categorizeDemands`) répond 500
   alors que l'action est validée et ne peut plus être rejouée (l'utilisateur voit une erreur, les données ont changé). Les étapes après commit devraient être au mieux (best-effort).
 - Contrôleur `createDemand` : après `res.status(201).json(...)`, le code de notification (populate, calcul du pool) peut lever une erreur et appelle `next(err)` sur une réponse déjà envoyée.
 - Expiration : `processPastDemands` et `processAndCompleteDemands` posent `deleted: true` pour les demandes `expired` et `completed`, donc `deleted` signifie à la fois « archivé » et « supprimé à la main ».
@@ -107,10 +107,10 @@ Prenons : A poste S1, B accepte, B poste S2 (enfant de S1), C accepte, C poste S
 5. **Les horodatages comme ordre.** La justesse du défaire dépend de `createdAt` strictement croissant par utilisateur et par jour, et de `$gte` (qui retire aussi une entrée de la même milliseconde).
    Les entrées d'une demande sont créées dans une transaction pour deux utilisateurs différents, donc elles ne se télescopent pas, mais une entrée manuelle créée dans la même milliseconde qu'une acceptation serait désactivée.
    `cancelAfter` désactive aussi **toute** entrée plus récente de l'utilisateur (modifications, patchs, affectations), même sans lien avec la demande ; c'est voulu pour les enfants de S2 mais c'est une surprise pour, par exemple, un patch d'horaires ajouté par C après son acceptation.
-6. **Points.** Les transactions sont planifiées par demande à l'acceptation (`createScheduledTransaction`) ; l'annulation les retire (`cancelRequestTransactions`). Avec l'écart de date (S9), une chaîne annulée après coup laisse
+6. **Points.** Les transactions sont planifiées par demande à l'acceptation (`createScheduledTransaction`) ; l'annulation les retire (`cancelDemandTransactions`). Avec l'écart de date (S9), une chaîne annulée après coup laisse
    des transferts que le planning ne justifie plus.
 7. **Expiration d'une chaîne.** `processAndCompleteDemands` termine chaque demande acceptée indépendamment une fois le jour passé (`deleted: true`) ; une annulation tardive de la racine est maintenant refusée (400), et la cascade épargne les demandes déjà terminées.
-8. **L'ordre de `cancelledRequests` est un contrat caché.** La racine est le **dernier** élément (`cancelledRequests[cancelledRequests.length - 1]` dans `cancelRequest`), les enfants viennent d'abord ; dans `withdrawFromRequest` le tableau ne contient que des enfants.
+8. **L'ordre de `cancelledDemands` est un contrat caché.** La racine est le **dernier** élément (`cancelledDemands[cancelledDemands.length - 1]` dans `cancelDemand`), les enfants viennent d'abord ; dans `withdrawFromDemand` le tableau ne contient que des enfants.
    Le prochain changement de l'ordre de parcours casse en silence la demande déclarée racine et les personnes notifiées.
 
 ### 3.3 Vérifications à transformer en tests
@@ -121,7 +121,7 @@ annulation d'une permutation acceptée (les deux jours reviennent à l'état d'a
 
 ## 4. Interface : permettre à chacun de voir le résultat final
 
-**Ce que voit un utilisateur aujourd'hui.** `getRequests` renvoie les demandes ouvertes/acceptées du centre pour une période ; chaque demande connaît son demandeur et son accepteur, rien de ses voisines dans la chaîne.
+**Ce que voit un utilisateur aujourd'hui.** `getDemands` renvoie les demandes ouvertes/acceptées du centre pour une période ; chaque demande connaît son demandeur et son accepteur, rien de ses voisines dans la chaîne.
 `computeUserShifts` garde un `history` pour le jour (`type`, `shiftData`, `wasOverride`) mais abandonne `substitution.id`, donc le front ne peut pas relier une entrée à une demande ni à l'autre personne.
 `DemandChip` et `DemandModal` montrent l'accepteur **direct** (avatar, nom, téléphone, e-mail). A voit donc « remplacé par B » et les coordonnées de B, alors que C est celui qui travaillera réellement.
 Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, retiré ou annulé).
@@ -129,8 +129,8 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 **Proposition (à valider avant tout travail).**
 1. **Données.** Garder `dependsOn` comme tableau de deux parents au plus (côté demandeur, côté accepteur), rempli comme décrit en 3.2 point 2. Pour des remplacements simples la chaîne d'un jour reste `racine → ... → feuille`
    (un seul parent par demande) ; une permutation relie deux chaînes, l'affichage part alors de la demande ouverte et remonte les deux côtés. Le « titulaire final »
-   est l'accepteur du dernier nœud accepté (ou le demandeur du nœud si la dernière demande est encore ouverte, affiché « en attente »). L'exposer dans `getRequests` sous la forme `chain: [{ demandId, posterId, accepterId, status }]` (identifiants seulement, noms résolus par le store d'utilisateurs existant), ou via un petit endpoint
-   `GET /substitution/:id/chain`.
+   est l'accepteur du dernier nœud accepté (ou le demandeur du nœud si la dernière demande est encore ouverte, affiché « en attente »). L'exposer dans `getDemands` sous la forme `chain: [{ demandId, posterId, accepterId, status }]` (identifiants seulement, noms résolus par le store d'utilisateurs existant), ou via un petit endpoint
+   `GET /demand/:id/chain`.
 2. **Entrée de calendrier.** Ajouter `substitution: { id, role: 'poster' | 'accepter' }` aux entrées de `history`, pour qu'un jour puisse afficher « remplacé par B » et ouvrir la demande.
 3. **Bloc du jour / modale pour le demandeur d'origine A.** Une ligne compacte « A → B → C » avec un marqueur par maillon : accepté, ouvert (en attente), annulé. Le dernier titulaire est mis en évidence et est la seule fiche de contact affichée ; les personnes intermédiaires gardent leur nom seulement.
    Pour A, le jour affiche toujours « remplacé » tant que la chaîne est ouverte à son extrémité (« en attente d'un remplaçant ») : A sait que B reste responsable jusqu'à ce que quelqu'un accepte S2.
@@ -145,19 +145,19 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 
 | Nom | Où | Problème | Suggestion |
 |-----|----|----------|-----------|
-| `userShift` | `registerEntry`, `cancel*`, `acceptRequest` | c'est un **tableau** de jours ; le nom singulier le cache (`userShift[0]` partout) | `userDays` (tableau) / `userDay` (un seul) |
-| `userShifts`, `userShiftData` | `request.accept.js` | tableau / une entrée de jour, encore | `userDays`, `userDay` |
-| `posterShift`, `accepterShift` (sur `Substitution`) | modèle, tous les services | ce n'est pas une vacation : `{ shift, day, date, teamId, selectedVariation }` ; `posterShift.shift` bégaie | `posterSlot` / `posterDay` ou `poster: { shift, day, teamId, variation }` |
+| `userShift` | `registerEntry`, `cancel*`, `acceptOrSwapDemand` | c'est un **tableau** de jours ; le nom singulier le cache (`userShift[0]` partout) | `userDays` (tableau) / `userDay` (un seul) |
+| `userShifts`, `userShiftData` | `demand.accept.js` | tableau / une entrée de jour, encore | `userDays`, `userDay` |
+| `posterShift`, `accepterShift` (sur `Demand`) | modèle, tous les services | ce n'est pas une vacation : `{ shift, day, date, teamId, selectedVariation }` ; `posterShift.shift` bégaie | `posterSlot` / `posterDay` ou `poster: { shift, day, teamId, variation }` |
 | `posterShift` / `accepterShift` (retour de `addSubstitutionEntries`, `cancelSubstitutionEntries`) | `calendarEntry.*` | **même nom, autre forme** : ici un jour calculé, `null` dans une transaction (et déstructuré puis ignoré dans `withdraw`) | `posterDay`, `accepterDay` |
-| `NewShiftSchema` | `models/Substitution.js` | « new » hérité | `SlotSchema` |
+| `NewShiftSchema` | `models/Demand.js` | « new » hérité | `SlotSchema` |
 | `isSameShift` | `register.js` et `planning.userShifts.js` | même nom, deux signatures, l'une renvoie `undefined` | `sameShiftId` / `isSameShiftAs` |
 | `type` | quatre sens : discriminant d'entrée (`assignment`, ...), `type` de résultat (`creation`, `modification`, `restoration`), `type` de jour (`shift`, `empty`, ou le sous-type d'affectation), `type` de demande (`switch`, `hybrid`, `substitution`) | `type` ne se lit pas sans son fichier | `kind` pour le discriminant, `action`/`outcome` pour le résultat, `dayKind` pour le jour calculé |
-| `substitution` | `type` de demande, `subType` d'affectation, nom du modèle et `Substitution.type` | un « remplacement » et toute la collection partagent un mot ; les fichiers disent `request`, les fonctions `demand`, les variables `sub`, `request`, `demand`, `substitution` | trancher : `demand` pour l'entité, `replacement` pour le genre |
+| `substitution` | `type` de demande, `subType` d'affectation, nom du modèle et `Demand.type` | un « remplacement » et toute la collection partagent un mot ; les fichiers disent `request`, les fonctions `demand`, les variables `sub`, `request`, `demand`, `substitution` | trancher : `demand` pour l'entité, `replacement` pour le genre |
 | `subType` / `entryType` | modèle / charge utile du front | même concept, deux noms | `subType` de bout en bout |
 | `team` / `teamId` | `data.team`, `data.teamId`, `shiftData.team`, `posterShift.teamId` | une référence `Team` appelée des deux façons | `teamId` pour les ids, `team` seulement pour les documents |
-| `reason` | `cancelRequestWithSession` | c'est un **statut** final | `finalStatus` |
-| `initialCancel` | `request.cancel.js` | c'est la demande racine qui a été annulée | `rootRequest` |
-| `date` | partout dans `calendarEntry.*`, `registerEntry(userId, date, data)` | c'est une **chaîne** `YYYY-MM-DD` (le type du schéma est String), alors que `Substitution.posterShift.date` est un vrai `Date` ; `toDay`, `toDateKey`, `posterDayOf`, `new Date(...)` convertissent dans les deux sens | `day` pour la chaîne, `date` seulement pour un `Date` |
+| `reason` | `cancelDemandWithSession` | c'est un **statut** final | `finalStatus` |
+| `initialCancel` | `demand.cancel.js` | c'est la demande racine qui a été annulée | `rootRequest` |
+| `date` | partout dans `calendarEntry.*`, `registerEntry(userId, date, data)` | c'est une **chaîne** `YYYY-MM-DD` (le type du schéma est String), alors que `Demand.posterShift.date` est un vrai `Date` ; `toDay`, `toDateKey`, `posterDayOf`, `new Date(...)` convertissent dans les deux sens | `day` pour la chaîne, `date` seulement pour un `Date` |
 | `isTrueSwitch` | corps de requête | jamais stocké, `type` le dit déjà | supprimer |
 
 **Conversions aller-retour à supprimer (chaîne de jour ↔ `Date` ↔ chaîne).**

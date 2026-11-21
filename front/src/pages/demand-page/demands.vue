@@ -68,31 +68,31 @@
           <div class="d-flex ga-1" style="right: 0px; top: -18px">
             <div
               class="category-indicator"
-              :title="`${substitutionStore.availableSubstitutions.length} demande(s) en attente`"
+              :title="`${demandStore.availableSubstitutions.length} demande(s) en attente`"
             >
               <v-icon icon="mdi-account-arrow-left-outline" size="small" color="primary" />
-              {{ substitutionStore.availableSubstitutions.length }}
+              {{ demandStore.availableSubstitutions.length }}
             </div>
             <div
               class="category-indicator"
-              :title="`${substitutionStore.availableSwitches.length} demande(s) permutable(s)`"
+              :title="`${demandStore.availableSwitches.length} demande(s) permutable(s)`"
             >
               <v-icon icon="mdi-swap-horizontal" size="small" color="primary" />
-              {{ substitutionStore.availableSwitches.length }}
+              {{ demandStore.availableSwitches.length }}
             </div>
             <div
               class="category-indicator"
-              :title="`${substitutionStore.potentiallyCompatibleDemands.length} demande(s) potentiellement compatible(s)`"
+              :title="`${demandStore.potentiallyCompatibleDemands.length} demande(s) potentiellement compatible(s)`"
             >
               <v-icon icon="mdi-help-circle-outline" size="small" color="primary" />
-              {{ substitutionStore.potentiallyCompatibleDemands.length }}
+              {{ demandStore.potentiallyCompatibleDemands.length }}
             </div>
             <div
               class="category-indicator"
-              :title="`${substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length} demande(s) incompatible(s)`"
+              :title="`${demandStore.otherDemands.length - demandStore.potentiallyCompatibleDemands.length} demande(s) incompatible(s)`"
             >
               <v-icon icon="mdi-close" size="small" color="primary" />
-              {{ substitutionStore.otherDemands.length - substitutionStore.potentiallyCompatibleDemands.length }}
+              {{ demandStore.otherDemands.length - demandStore.potentiallyCompatibleDemands.length }}
             </div>
           </div>
         </template>
@@ -141,7 +141,7 @@ meta:
 </route>
 
 <script setup>
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 
 import { useDisplay } from 'vuetify';
 import { useRouter } from 'vue-router';
@@ -149,7 +149,7 @@ import { useRouter } from 'vue-router';
 // const unSeenDemands = ref(0);
 
 // Stores
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 
 const { smAndDown } = useDisplay();
 
@@ -160,17 +160,17 @@ const showRulesDialog = ref(false);
 
 // Données de la demande
 const pendingDemands = computed(() => [
-  ...substitutionStore.ownPendingHybridSubstitutions,
-  ...substitutionStore.ownPendingTrueSubstitutions,
-  ...substitutionStore.ownPendingTrueSwitches,
+  ...demandStore.ownPendingHybridSubstitutions,
+  ...demandStore.ownPendingTrueSubstitutions,
+  ...demandStore.ownPendingTrueSwitches,
 ]);
 
-const acceptedAsPoster = computed(() => substitutionStore.acceptedAsPoster);
-const acceptedAsAccepter = computed(() => substitutionStore.acceptedAsAccepter);
+const acceptedAsPoster = computed(() => demandStore.acceptedAsPoster);
+const acceptedAsAccepter = computed(() => demandStore.acceptedAsAccepter);
 
 const refetchOnFocus = () => {
-  if (substitutionStore.startDate && substitutionStore.endDate) {
-    substitutionStore.fetchAllDemands({ startDate: substitutionStore.startDate, endDate: substitutionStore.endDate });
+  if (demandStore.startDate && demandStore.endDate) {
+    demandStore.fetchAllDemands({ startDate: demandStore.startDate, endDate: demandStore.endDate });
   }
 };
 

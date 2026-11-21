@@ -157,7 +157,7 @@ import { computed, onMounted, ref, onUnmounted } from 'vue';
 import { useUserStore } from '@/stores/userStore.js';
 import { useDate } from 'vuetify';
 import { useSnackbarStore } from '@/stores/snackbarStore';
-import { useSubstitutionStore } from '@/stores/substitutionStore';
+import { useDemandStore } from '@/stores/demandStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useTeamStore } from '@/stores/teamStore';
 import { useShiftStore } from '@/stores/shiftStore';
@@ -191,7 +191,7 @@ const authStore = useAuthStore();
 const userStore = useUserStore();
 const snackbarStore = useSnackbarStore();
 const teamStore = useTeamStore();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const shiftStore = useShiftStore();
 const date = useDate();
 const loading = ref({
@@ -435,7 +435,7 @@ const isInterested = computed(() => {
 const handleInterest = async () => {
   loading.value.interest = true;
   try {
-    const response = await substitutionStore.markInterest(props.demand._id);
+    const response = await demandStore.markInterest(props.demand._id);
     if (response.message === 'Interest added') {
       snackbarStore.showNotification('Intérêt marqué', 'onPrimary', 'mdi-check');
     }

@@ -1,5 +1,5 @@
 import { useShiftStore } from '@/stores/shiftStore.js';
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import { useWorkCheckStore } from '@/stores/workCheckStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
@@ -12,7 +12,7 @@ import { useAuthStore } from '@/stores/authStore.js';
  */
 export function useCalendarData(calendarDays, neighbors = null) {
   const shiftStore = useShiftStore();
-  const substitutionStore = useSubstitutionStore();
+  const demandStore = useDemandStore();
   const snackbarStore = useSnackbarStore();
   const workCheckStore = useWorkCheckStore();
   const authStore = useAuthStore();
@@ -59,10 +59,10 @@ export function useCalendarData(calendarDays, neighbors = null) {
   const fetchSubstitutions = async () => {
     loadingSubstitutions.value = true;
     try {
-      await substitutionStore.fetchAllDemands({ startDate: rangeStart.value, endDate: rangeEnd.value });
+      await demandStore.fetchAllDemands({ startDate: rangeStart.value, endDate: rangeEnd.value });
     } catch (err) {
       snackbarStore.showNotification(
-        'Erreur lors du chargement des substitutions : ' + err.message,
+        'Erreur lors du chargement des demandes : ' + err.message,
         'onError',
         'mdi-alert-outline',
       );

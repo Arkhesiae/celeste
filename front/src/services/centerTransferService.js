@@ -11,7 +11,7 @@ export const centerTransferService = {
     return apiFetch('/center-transfer/mine', { method: 'GET' });
   },
 
-  /** Ce que l'acceptation effacerait : { substitutions, entries, points, negativePoints } */
+  /** Ce que l'acceptation effacerait : { demands, entries, points, negativePoints } */
   preview() {
     return apiFetch('/center-transfer/preview', { method: 'GET' });
   },

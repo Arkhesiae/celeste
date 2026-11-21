@@ -18,7 +18,7 @@
       </v-col>
     </v-row>
 
-    <v-dialog :model-value="substitutionStore.loading" persistent width="300">
+    <v-dialog :model-value="demandStore.loading" persistent width="300">
       <v-card rounded="xl" class="pa-2">
         <v-card-text class="d-flex align-center">
           <v-progress-circular indeterminate color="primary" />
@@ -36,10 +36,10 @@
 <script setup>
 import { ref } from 'vue';
 import { useDisplay } from 'vuetify';
-import { useSubstitutionStore } from '@/stores/substitutionStore.js';
+import { useDemandStore } from '@/stores/demandStore.js';
 
 const { smAndDown } = useDisplay();
-const substitutionStore = useSubstitutionStore();
+const demandStore = useDemandStore();
 const demandDeps = ref(null);
 const showRulesDialog = ref(false);
 

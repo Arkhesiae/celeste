@@ -28,7 +28,7 @@
           />
         </div>
         <div v-else class="text-center py-4">
-          <v-icon icon="mdi-tray-remove" size="small" class="mb-2" />
+          <UndrawTheVoid class="art-illustration art-illustration--static mb-2" style="width: 150px" />
           <div class="text-body-medium text-disabled">
             {{ emptyMessage }}
           </div>

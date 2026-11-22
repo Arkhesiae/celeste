@@ -58,8 +58,13 @@
       <div v-if="isLoading || !showUserList">
         <Loading />
       </div>
-      <v-col v-else-if="!sortedAndFilteredUsers.length" cols="12" class="text-medium-emphasis">
-        Aucun utilisateur trouvé
+      <v-col
+        v-else-if="!sortedAndFilteredUsers.length"
+        cols="12"
+        class="d-flex flex-column align-center ga-4 py-8 text-medium-emphasis"
+      >
+        <UndrawTeam class="art-illustration art-illustration--static" style="width: 240px" />
+        <span>Aucun utilisateur trouvé</span>
       </v-col>
       <v-col
         v-for="user in sortedAndFilteredUsers"

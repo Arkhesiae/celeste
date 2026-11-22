@@ -1,5 +1,13 @@
 <template>
-  <div class="d-flex ga-6 align-center my-16" :class="smAndDown ? 'justify-center' : 'justify-start'">
+  <div class="d-flex ga-6 align-center my-16 position-relative" :class="smAndDown ? 'justify-center' : 'justify-start'">
+    <ArtTarget
+      v-if="!smAndDown"
+      shape="diamond"
+      tone="secondary"
+      outlined
+      class="art art--corner art--target"
+      style="right: 18%; top: -10px; width: 46px"
+    />
     <UserAvatar :size="avatarSize" />
     <div class="d-flex flex-column" :class="smAndDown ? 'align-center' : 'align-start'">
       <div class="d-flex align-center">

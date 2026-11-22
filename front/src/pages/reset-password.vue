@@ -3,6 +3,7 @@
     <v-row justify="center" align-content="center">
       <v-col cols="12" sm="8" md="6" lg="4" align-self="center">
         <v-card class="rounded-xl pa-6" flat>
+          <div class="d-flex justify-center mb-4"><UndrawForgotPassword class="art-illustration art-illustration--static" style="width: 200px" /></div>
           <v-card-title class="text-headline-small mb-4 pa-0"> Réinitialisation du mot de passe </v-card-title>
 
           <v-card-text class="pa-0 py-4">

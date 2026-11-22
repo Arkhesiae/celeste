@@ -24,6 +24,11 @@
       </template>
     </MainTitle>
 
+    <div v-if="!pendingUsers.length" class="d-flex flex-column align-center ga-4 py-8">
+      <UndrawAllChecked class="art-illustration art-illustration--static" style="width: 240px" />
+      <span class="text-medium-emphasis text-title-small">Aucune candidature en attente</span>
+    </div>
+
     <v-row>
       <v-col v-for="user in pendingUsers" :key="user._id" cols="12">
         <v-card class="pa-2" rounded="xl" variant="flat" color="surface">

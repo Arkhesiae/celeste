@@ -1,6 +1,7 @@
 <template>
   <div class="otp-verification">
     <div class="text-center">
+      <UndrawTwoFactorAuthentication class="art-illustration art-illustration--static mb-2" style="width: 200px" />
       <v-card-title class="pl-0 text-headline-small">
         {{ title }}
       </v-card-title>

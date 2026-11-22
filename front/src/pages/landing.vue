@@ -1,128 +1,139 @@
 <template>
-  <v-container fluid>
-    <v-row justify="center" style="min-height: 800px">
-      <v-col cols="12" sm="12" md="12" lg="12" class="py-16">
-        <div class="d-flex align-center" :class="mdAndUp ? 'justify-space-between' : 'justify-center'">
-          <v-card variant="text" class="mt-16" style="z-index: 34 !important">
-            <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
-              <div class="text-label-medium subtitle-animation">Votre site de rempla</div>
-              <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
+  <div class="landing-page">
+    <!-- Droites qui se croisent et formes arrondies : hors du conteneur, sur toute la largeur de la page, en parallaxe (elles défilent moins vite que la page) -->
+    <div class="landing-art" aria-hidden="true">
+      <div ref="artLayer" class="landing-art__layer">
+        <ArtLineField class="art art--lines" />
+      </div>
+    </div>
 
-              <div
-                class="font-weight-medium d-flex flex-wrap mt-4 text-display-large"
-                :class="[mdAndUp ? 'text-display-large' : 'text-display-medium ', { 'justify-center': !mdAndUp }]"
-              >
-                <span class="title-animation" style="margin-right: 1rem; font-weight: 900 !important">Bienvenue</span>
+    <v-container fluid class="landing-content">
+      <v-row align="center" justify="start" style="min-height: 800px">
+        <v-col cols="12" sm="12" md="12" lg="12" class="py-16">
+          <div class="d-flex align-center" :class="mdAndUp ? 'justify-start' : 'justify-center'">
+            <v-card variant="text" style="z-index: 34 !important">
+              <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
+                <div class="text-label-medium subtitle-animation">Votre site de rempla</div>
+                <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
 
-                <span class="title-animation" style="margin-right: 1rem; font-weight: 900 !important">sur</span>
-                <span class="gradient font-weight-bold title-animation">Céleste</span>
-              </div>
-              <div class="text-title-large mt-5 subtitle-animation">Votre nouvelle plateforme de remplacements</div>
-            </v-card-text>
-
-            <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
-              <div class="block d-flex button-animation" style="animation-delay: 1.1s">
-                <v-btn
-                  prepend-icon="mdi-lightning-bolt"
-                  elevation="1"
-                  style="border-radius: 16px !important"
-                  height="48px "
-                  class="px-8"
-                  variant="flat"
-                  color="primary"
-                  @click="router.push({ path: '/get-started' })"
+                <div
+                  class="font-weight-medium d-flex flex-wrap mt-4 text-display-large"
+                  :class="[mdAndUp ? 'text-display-large' : 'text-display-medium ', { 'justify-center': !mdAndUp }]"
                 >
-                  Get started
-                </v-btn>
-              </div>
-              <div class="d-flex button-animation soft-glow" style="animation-delay: 1.3s; z-index: 34 !important">
-                <v-btn
-                  class="px-8 pr-8"
-                  variant="flat"
-                  style="border-radius: 200px !important"
-                  height="48px"
-                  color="surfaceContainer"
-                  @click="router.push({ path: '/login' })"
-                >
-                  <template #append>
-                    <v-icon color="primary"> mdi-arrow-right </v-icon>
-                  </template>
-                  Se connecter
-                </v-btn>
-              </div>
-            </v-card-actions>
-          </v-card>
-          <v-img src="@/assets/CRNA.png" alt="landing" :class="{ 'img-mobile': !mdAndUp, 'img-desktop': mdAndUp }" />
-        </div>
-      </v-col>
-    </v-row>
+                  <span class="title-animation" style="margin-right: 1rem; font-weight: 900 !important">Bienvenue</span>
 
-    <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch" width="100%" style="min-height: 200px; width: 100%">
-      <v-col v-for="(card, index) in cards" :key="index" cols="12" md="4">
-        <div
-          :ref="
-            (el) => {
-              if (el) cardRefs[index] = el;
-            }
-          "
-          style="min-height: 200px"
-        >
-          <transition name="card">
-            <div v-show="card.isVisible">
-              <v-card height="100%" rounded="xl" flat class="flex-column d-flex pa-8 bg-surfaceContainer">
-                <v-scale-transition>
-                  <v-icon color="primary" class="mt-4 mb-4 align-self-center">
-                    {{ card.icon }}
-                  </v-icon>
-                </v-scale-transition>
+                  <span class="title-animation" style="margin-right: 1rem; font-weight: 900 !important">sur</span>
+                  <span class="gradient font-weight-bold title-animation">Céleste</span>
+                </div>
+                <div class="text-title-large mt-5 subtitle-animation">Votre nouvelle plateforme de remplacements</div>
+              </v-card-text>
 
-                <v-slide-y-transition>
-                  <span class="text-body-large mt-2 font-weight-bold">{{ card.title }}</span>
-                </v-slide-y-transition>
-                <v-slide-y-transition>
-                  <span class="text-body-small text-medium-emphasis">{{ card.description }}</span>
-                </v-slide-y-transition>
-              </v-card>
-            </div>
-          </transition>
-        </div>
-      </v-col>
-    </v-row>
+              <v-card-actions class="ml-2 pb-5 flex-wrap ga-4" :class="{ 'justify-center': !mdAndUp }">
+                <div class="block d-flex button-animation" style="animation-delay: 1.1s">
+                  <v-btn
+                    prepend-icon="mdi-lightning-bolt"
+                    elevation="1"
+                    style="border-radius: 16px !important"
+                    height="48px "
+                    class="px-8"
+                    variant="flat"
+                    color="primary"
+                    @click="router.push({ path: '/get-started' })"
+                  >
+                    Get started
+                  </v-btn>
+                </div>
+                <div class="d-flex button-animation soft-glow" style="animation-delay: 1.3s; z-index: 34 !important">
+                  <v-btn
+                    class="px-8 pr-8"
+                    variant="flat"
+                    style="border-radius: 200px !important"
+                    height="48px"
+                    color="surfaceContainer"
+                    @click="router.push({ path: '/login' })"
+                  >
+                    <template #append>
+                      <v-icon color="primary"> mdi-arrow-right </v-icon>
+                    </template>
+                    Se connecter
+                  </v-btn>
+                </div>
+              </v-card-actions>
+            </v-card>
+          </div>
+        </v-col>
+      </v-row>
 
-    <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
-      <v-fade-transition group appear>
-        <v-col key="center" cols="12" md="4">
-          <v-card
-            ref="statsRef"
-            color="transparent"
-            flat
-            height="100%"
-            rounded="xl"
-            class="flex-column align-center d-flex pa-4"
+      <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch" width="100%" style="min-height: 200px; width: 100%">
+        <v-col v-for="(card, index) in cards" :key="index" cols="12" md="4">
+          <div
+            :ref="
+              (el) => {
+                if (el) cardRefs[index] = el;
+              }
+            "
+            style="min-height: 200px"
           >
-            <span class="text-display-large mt-2 font-weight-bold text-primary">{{ Math.floor(animatedCenters) }}</span>
-            <span class="text-body-large text-medium-emphasis">centres</span>
-          </v-card>
+            <transition name="card">
+              <div v-show="card.isVisible">
+                <v-card height="100%" rounded="xl" flat class="flex-column d-flex pa-8 bg-surfaceContainer">
+                  <v-scale-transition>
+                    <v-icon color="primary" class="mt-4 mb-4 align-self-center">
+                      {{ card.icon }}
+                    </v-icon>
+                  </v-scale-transition>
+
+                  <v-slide-y-transition>
+                    <span class="text-body-large mt-2 font-weight-bold">{{ card.title }}</span>
+                  </v-slide-y-transition>
+                  <v-slide-y-transition>
+                    <span class="text-body-small text-medium-emphasis">{{ card.description }}</span>
+                  </v-slide-y-transition>
+                </v-card>
+              </div>
+            </transition>
+          </div>
         </v-col>
-        <v-col key="controllers" cols="12" md="4">
-          <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-display-large mt-2 font-weight-bold text-onSurface">{{
-              Math.floor(animatedNumber)
-            }}</span>
-            <span class="text-body-large text-medium-emphasis">contrôleurs</span>
-          </v-card>
-        </v-col>
-        <v-col key="replace" cols="12" md="4">
-          <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
-            <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7">{{
-              Math.floor(animatedReplacements)
-            }}</span>
-            <span class="text-body-large text-medium-emphasis">remplacements</span>
-          </v-card>
-        </v-col>
-      </v-fade-transition>
-    </v-row>
-    <!-- 
+      </v-row>
+
+      <!-- Troisième section (désactivée pour l'instant) : la France, avec l'image du CRNA au survol de Paris. Pour la remettre : <FranceSection /> -->
+
+      <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
+        <v-fade-transition group appear>
+          <v-col key="center" cols="12" md="4">
+            <v-card
+              ref="statsRef"
+              color="transparent"
+              flat
+              height="100%"
+              rounded="xl"
+              class="flex-column align-center d-flex pa-4"
+            >
+              <span class="text-display-large mt-2 font-weight-bold text-primary">{{
+                Math.floor(animatedCenters)
+              }}</span>
+              <span class="text-body-large text-medium-emphasis">centres</span>
+            </v-card>
+          </v-col>
+          <v-col key="controllers" cols="12" md="4">
+            <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
+              <span class="text-display-large mt-2 font-weight-bold text-onSurface">{{
+                Math.floor(animatedNumber)
+              }}</span>
+              <span class="text-body-large text-medium-emphasis">contrôleurs</span>
+            </v-card>
+          </v-col>
+          <v-col key="replace" cols="12" md="4">
+            <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
+              <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7">{{
+                Math.floor(animatedReplacements)
+              }}</span>
+              <span class="text-body-large text-medium-emphasis">remplacements</span>
+            </v-card>
+          </v-col>
+        </v-fade-transition>
+      </v-row>
+      <!-- 
     <v-row class="px-4 mt-16 d-flex align-content-stretch">
       <v-col cols="12" md="12">
         <v-card flat height="100%" rounded="xl" class="flex-column d-flex pa-8">
@@ -133,7 +144,8 @@
         </v-card>
       </v-col>
     </v-row> -->
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -309,6 +321,38 @@ const setupStatsObserver = async () => {
 
 let statsObserver = null;
 
+// Parallaxe : la couche du fond suit le défilement à `PARALLAX` de sa vitesse (donc moins vite que la page). Elle est assez haute pour couvrir
+// la fenêtre jusqu'en bas de page ; avec « réduire les animations », elle défile exactement comme la page.
+const artLayer = ref(null);
+const PARALLAX = 0.3;
+let artFrame = 0;
+
+const updateArtLayer = () => {
+  artFrame = 0;
+  const layer = artLayer.value;
+  if (!layer) return;
+  const factor = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : PARALLAX;
+  const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+  layer.style.setProperty('--art-height', `${window.innerHeight + scrollable * factor}px`);
+  layer.style.setProperty('--art-shift', `${-window.scrollY * factor}px`);
+};
+
+const scheduleArtLayer = () => {
+  if (!artFrame) artFrame = requestAnimationFrame(updateArtLayer);
+};
+
+onMounted(() => {
+  updateArtLayer();
+  window.addEventListener('scroll', scheduleArtLayer, { passive: true });
+  window.addEventListener('resize', scheduleArtLayer);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', scheduleArtLayer);
+  window.removeEventListener('resize', scheduleArtLayer);
+  if (artFrame) cancelAnimationFrame(artFrame);
+});
+
 onMounted(async () => {
   getStats();
   await setupIntersectionObserver();
@@ -358,6 +402,41 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.landing-page {
+  position: relative;
+}
+
+/* Le fond n'est pas limité au conteneur : une fenêtre fixe (toute la largeur, jusque sous la barre du haut) le rogne, et sa couche, plus haute que la
+   fenêtre, est décalée de `--art-shift` par le script de parallaxe. Il ne reçoit aucun clic. */
+.landing-art {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.landing-art__layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--art-height, 100vh);
+  transform: translate3d(0, var(--art-shift, 0px), 0);
+  will-change: transform;
+}
+
+.landing-art .art--lines {
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+}
+
+.landing-content {
+  position: relative;
+  z-index: 1;
+}
+
 .gradient {
   fill: transparent;
   color: #000;
@@ -493,25 +572,6 @@ onMounted(() => {
   animation: titleEntrance 0.6s ease forwards;
   animation-delay: 0.6s;
   opacity: 0;
-}
-
-.img-mobile {
-  height: 600px;
-  width: 800px;
-  position: absolute;
-  top: 400px;
-  left: 50%;
-  transform: translateX(-36%);
-}
-
-.img-desktop {
-  z-index: 10;
-  width: 500px;
-  transform: translateX(20%) translateY(20%) scale(1.6);
-  object-fit: cover;
-  /* position: absolute; */
-  /* right: -250px; */
-  /* top: 200px; */
 }
 
 .card-hover {

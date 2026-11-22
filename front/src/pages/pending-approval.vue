@@ -7,7 +7,7 @@
 
           <v-card-text>
             <div class="d-flex flex-column align-center mb-6">
-              <v-icon icon="mdi-clock-outline" size="24" color="warning" class="mb-4" />
+              <UndrawProcessing class="art-illustration art-illustration--static mb-4" style="width: 220px" />
 
               <p class="text-body-large mb-4">
                 Votre compte est en attente d'approbation par un administrateur. Vous recevrez une notification dès que

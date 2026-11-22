@@ -36,7 +36,10 @@
     </v-alert>
 
     <v-row>
-      <span v-if="filteredAndSortedTeams.length === 0">Aucune équipe trouvée</span>
+      <v-col v-if="filteredAndSortedTeams.length === 0" cols="12" class="d-flex flex-column align-center ga-4 py-8">
+        <UndrawNobodyHome class="art-illustration art-illustration--static" style="width: 260px" />
+        <span class="text-medium-emphasis text-title-small">Aucune équipe trouvée</span>
+      </v-col>
       <v-col v-for="team in filteredAndSortedTeams" :key="team._id" cols="12" md="6" lg="6">
         <TeamCard
           :team="team"

@@ -19,6 +19,7 @@ import './styles/listitem.css';
 import './styles/tile.css';
 import './styles/day.css';
 import './styles/dot.css';
+import './styles/art.css';
 
 const app = createApp(App);
 

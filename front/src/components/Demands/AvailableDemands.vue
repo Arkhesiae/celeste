@@ -17,7 +17,8 @@
       <div v-if="demandStore.loading" class="d-flex justify-center align-center py-8">
         <v-progress-circular indeterminate color="primary" size="36" />
       </div>
-      <div v-else-if="demands.length === 0">
+      <div v-else-if="demands.length === 0" class="d-flex flex-column align-center ga-4 py-6">
+        <UndrawAtTheAirport class="art-illustration art-illustration--static" style="width: 200px" />
         <span class="text-medium-emphasis text-title-small"> Aucune demande disponible </span>
       </div>
       <div v-else class="d-flex flex-column ga-2 mt-0">

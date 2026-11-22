@@ -5,6 +5,7 @@
     :fullscreen="smAndDown"
   >
     <template #content>
+      <div class="d-flex justify-center mb-4"><UndrawSecurePassword class="art-illustration art-illustration--static" style="width: 170px" /></div>
       <v-form ref="form" v-model="valid" @submit.prevent="handleStepAction">
         <template v-if="step === 1">
           <v-text-field

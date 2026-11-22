@@ -6,6 +6,8 @@
     class="mb-4 pa-6"
     color="surfaceContainer"
   >
+    <ArtTower class="art art--corner" style="top: 14px; right: 18px; width: 64px" />
+
     <v-card-title class="text-title-large font-weight-medium pa-0 ma-0"> Recommandations locales </v-card-title>
     <span class="text-body-small text-disabled">
       <v-icon icon="mdi-information-outline " color="primary" size="16" class="mr-2" />

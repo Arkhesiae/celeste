@@ -1,5 +1,6 @@
 <template>
-  <v-container>
+  <v-container class="page-art-content">
+    <PageIllustration><UndrawSettings /></PageIllustration>
     <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" :back-button="true" />
 
     <v-row>

@@ -1,5 +1,6 @@
 <template>
-  <v-container>
+  <v-container class="page-art-content">
+    <PageIllustration><UndrawContactUs /></PageIllustration>
     <MainTitle title="Contacter un administrateur" subtitle="Besoin d'aide ? Envoyez un message à un administrateur" />
 
     <v-row>

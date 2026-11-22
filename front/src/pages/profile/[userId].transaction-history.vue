@@ -65,8 +65,9 @@
                   :transaction="transaction"
                 />
               </div>
-              <div v-else class="text-center text-medium-emphasis text-body-medium mt-4">
-                Aucune transaction trouvée
+              <div v-else class="d-flex flex-column align-center ga-2 text-medium-emphasis text-body-medium mt-4">
+                <UndrawTheVoid class="art-illustration art-illustration--static" style="width: 140px" />
+                <span>Aucune transaction trouvée</span>
               </div>
             </v-card-text>
           </v-card>

@@ -7,7 +7,8 @@
     color="surfaceContainer"
     @click="rotationsDialog = true"
   >
-    <div class="d-flex align-center justify-space-between">
+
+    <div class="d-flex align-center justify-space-between position-relative">
       <div class="d-flex flex-column ga-2" style="flex: 1; min-width: 0">
         <span class="text-body-small text-uppercase text-disabled pa-0"> Tour de service actif </span>
 
@@ -29,10 +30,13 @@
               </div>
             </div>
           </div>
-          <div v-else class="text-medium-emphasis">Aucun tour de service actif</div>
+          <div v-else class="d-flex align-center ga-4 text-medium-emphasis">
+          
+            <span>Aucun tour de service actif</span>
+          </div>
         </div>
       </div>
-
+        <UndrawTimeManagement class="art-illustration art-illustration--static" style="width: 70px" />
       <v-icon icon="mdi-chevron-right" color="primary" size="24" />
     </div>
 

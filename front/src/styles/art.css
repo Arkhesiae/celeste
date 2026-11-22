@@ -1,0 +1,49 @@
+/* Toutes les illustrations, qu'il s'agisse de dessins au trait (`art`), d'illustrations unDraw (`art-illustration`) ou de leur emplacement dans une page
+   (`page-illustration`) : purement décoratives, elles ne reçoivent jamais le clic et ne se sélectionnent pas. */
+.art,
+.art-illustration,
+.page-illustration {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Dessins d'ambiance (components/Assets/Art/*) : au trait, couleur primaire très atténuée, jamais interactifs. Les poser avec `class="art"`
+   dans une carte (qui est déjà `position: relative; overflow: hidden`) ; `art--corner` les sort du flux, à placer avec top / right / bottom / left. */
+.art {
+  color: rgb(var(--v-theme-primary));
+  opacity: 0.12;
+  flex-shrink: 0;
+}
+
+.art--corner {
+  position: absolute;
+}
+
+.art--target {
+  opacity: 0.4;
+}
+
+/* Écran radar de la page d'accueil : on ne voit que son quart, très discret */
+.art--radar {
+  opacity: 0.55;
+  width: 100%;
+  height: 100%;
+}
+
+/* Illustrations unDraw (components/Assets/Art/Undraw*.vue) : colorées aux couleurs du thème, posées dans un coin (par défaut) ou dans le flux
+   (`art-illustration--static`) */
+.art-illustration {
+  position: absolute;
+  opacity: 0.92;
+}
+
+.art-illustration--static {
+  position: static;
+}
+
+/* Conteneur d'une page à illustration (PageIllustration) : il crée son propre contexte d'empilement, l'illustration (z-index: -1) reste derrière son contenu
+   mais devant le fond de la page */
+.page-art-content {
+  position: relative;
+  z-index: 0;
+}

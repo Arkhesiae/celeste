@@ -11,7 +11,7 @@
       color="surfaceContainer"
       class="pa-8 text-center"
     >
-      <v-icon icon="mdi-swap-horizontal" size="48" class="mb-4 text-medium-emphasis" />
+      <UndrawTravelMode class="art-illustration art-illustration--static mb-4" style="width: 150px" />
       <div class="text-title-medium">Aucune demande de mutation</div>
       <div class="text-body-medium text-medium-emphasis mt-2">
         Les demandes de changement de centre des agents de votre centre, ou vers votre centre, apparaîtront ici.

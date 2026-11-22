@@ -49,6 +49,10 @@
         :today="today"
         @move="move"
       />
+      <div v-if="!loading && !errorMessage && grid && !grid.members.length" class="d-flex flex-column align-center ga-4 py-8">
+        <UndrawTeamwork class="art-illustration art-illustration--static" style="width: 240px" />
+        <span class="text-medium-emphasis text-title-small">Aucun membre sur cette période</span>
+      </div>
       <v-alert v-if="errorMessage" type="error" variant="tonal" class="ma-4">
         {{ errorMessage }}
       </v-alert>

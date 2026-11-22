@@ -1,91 +1,98 @@
 <template>
-  <v-container ref="containerRef" :class="smAndDown ? 'mb-n16' : ''">
-    <Transition name="title-transition" appear>
-      <WelcomeTitle :user-name="userName"> </WelcomeTitle>
-    </Transition>
+  <div class="dashboard-page">
+    <!-- Écran radar dans le coin haut-droit de la page, sous le contenu -->
+    <div class="radar-layer" aria-hidden="true">
+      <ArtRadarField class="art art--radar" />
+    </div>
 
-    <Transition name="donations-transition" appear>
-      <Donations></Donations>
-    </Transition>
+    <v-container ref="containerRef" class="dashboard-content" :class="smAndDown ? 'mb-n16' : ''">
+      <Transition name="title-transition" appear>
+        <WelcomeTitle :user-name="userName"> </WelcomeTitle>
+      </Transition>
 
-    <SetupAlerts />
+      <Transition name="donations-transition" appear>
+        <Donations></Donations>
+      </Transition>
 
-    <!-- Bannières publiées par les administrateurs -->
-    <BannerList />
+      <SetupAlerts />
 
-    <v-row>
-      <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
-        <PointsCardMobile v-if="smAndDown" :points="stats.points" class="my-8" @click="openPointSection" />
-      </v-col>
-    </v-row>
-    <!-- Grille principale -->
-    <v-row>
-      <v-col
-        cols="12"
-        md="auto"
-        lg="auto"
-        xl="auto"
-        style="min-width: 0; width: 0"
-        class="flex-grow-1 ga-4 d-flex flex-column"
-      >
-        <VacationCards />
-        <DemandCards @open-details="openDemand" />
-      </v-col>
+      <!-- Bannières publiées par les administrateurs -->
+      <BannerList />
 
-      <v-col :class="smAndDown ? '' : 'right-col'">
-        <div class="d-flex justify-space-between align-start flex-column mb-4 flex-grow-1 ga-4">
-          <span class="text-title-large font-weight-medium pa-0"> Mon centre </span>
-        </div>
-
-        <LocalRecommendationsCard />
-
-        <ActiveRotationCard />
-
-        <v-card
-          rounded="xl"
-          elevation="0"
-          class="pa-4"
-          :class="smAndDown ? 'pb-16 mx-n3' : ''"
-          color="surfaceContainer"
+      <v-row>
+        <v-col cols="12" md="12" xl="12" offset-xl="0" class="pa-2">
+          <PointsCardMobile v-if="smAndDown" :points="stats.points" class="my-8" @click="openPointSection" />
+        </v-col>
+      </v-row>
+      <!-- Grille principale -->
+      <v-row>
+        <v-col
+          cols="12"
+          md="auto"
+          lg="auto"
+          xl="auto"
+          style="min-width: 0; width: 0"
+          class="flex-grow-1 ga-4 d-flex flex-column"
         >
-          <div class="d-flex ga-10 flex-column">
-            <PointsCard
-              v-if="!smAndDown"
-              color="transparent"
-              class="pa-0"
-              :points="stats.points"
-              :transactions="[]"
-              @transfer="transferDialog = true"
-            />
+          <VacationCards />
+          <DemandCards @open-details="openDemand" />
+        </v-col>
 
-            <DashboardCalendarSection />
+        <v-col :class="smAndDown ? '' : 'right-col'">
+          <div class="d-flex justify-space-between align-start flex-column mb-4 flex-grow-1 ga-4">
+            <span class="text-title-large font-weight-medium pa-0"> Mon centre </span>
           </div>
 
-          <!-- <DashboardTeamCard /> -->
-        </v-card>
+          <LocalRecommendationsCard />
 
-        <DemandHeatmapCard class="my-4" />
+          <ActiveRotationCard />
 
-        <!-- <CentersMapCard class="my-4 mb-16" /> -->
-      </v-col>
-    </v-row>
+          <v-card
+            rounded="xl"
+            elevation="0"
+            class="pa-4"
+            :class="smAndDown ? 'pb-16 mx-n3' : ''"
+            color="surfaceContainer"
+          >
+            <div class="d-flex ga-10 flex-column">
+              <PointsCard
+                v-if="!smAndDown"
+                color="transparent"
+                class="pa-0"
+                :points="stats.points"
+                :transactions="[]"
+                @transfer="transferDialog = true"
+              />
 
-    <v-bottom-sheet
-      v-if="smAndDown"
-      :model-value="pointSectionVisible"
-      @update:model-value="pointSectionVisible = $event"
-    >
-      <PointsCard class="pa-4" :points="stats.points" :transactions="[]" @transfer="transferDialog = true" />
-    </v-bottom-sheet>
+              <DashboardCalendarSection />
+            </div>
 
-    <TransferDialog
-      :dialog-visible="transferDialog"
-      :user-id="authStore.userData.userId"
-      @update:dialog-visible="transferDialog = $event"
-    />
+            <!-- <DashboardTeamCard /> -->
+          </v-card>
 
-    <DemandDependencies ref="demandDeps" />
-  </v-container>
+          <DemandHeatmapCard class="my-4" />
+
+          <!-- <CentersMapCard class="my-4 mb-16" /> -->
+        </v-col>
+      </v-row>
+
+      <v-bottom-sheet
+        v-if="smAndDown"
+        :model-value="pointSectionVisible"
+        @update:model-value="pointSectionVisible = $event"
+      >
+        <PointsCard class="pa-4" :points="stats.points" :transactions="[]" @transfer="transferDialog = true" />
+      </v-bottom-sheet>
+
+      <TransferDialog
+        :dialog-visible="transferDialog"
+        :user-id="authStore.userData.userId"
+        @update:dialog-visible="transferDialog = $event"
+      />
+
+      <DemandDependencies ref="demandDeps" />
+    </v-container>
+  </div>
 </template>
 
 <script setup>
@@ -142,6 +149,28 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.dashboard-page {
+  position: relative;
+}
+
+/* Le radar occupe le coin haut-droit de la page ; il est coupé par la couche, jamais par le contenu, et ne gêne aucun clic */
+.radar-layer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: min(820px, 100vw);
+  aspect-ratio: 1;
+  overflow: hidden;
+  opacity: 0.99;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dashboard-content {
+  position: relative;
+  z-index: 1;
+}
+
 .right-col {
   max-width: 500px;
 }

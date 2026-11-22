@@ -1,5 +1,6 @@
 <template>
-  <v-container :class="smAndDown ? 'mb-16' : ''">
+  <v-container class="page-art-content" :class="smAndDown ? 'mb-16' : ''">
+    <PageIllustration><UndrawSystemUpdate /></PageIllustration>
     <!-- En-tête -->
 
     <MainTitle title="Patch Notes" subtitle="Historique des versions">

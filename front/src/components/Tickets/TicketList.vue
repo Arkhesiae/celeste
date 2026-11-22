@@ -67,6 +67,7 @@
       <v-divider v-if="index < tickets.length - 1" opacity="0.1"></v-divider>
     </div>
     <v-list-item v-if="tickets.length === 0" class="text-center py-4">
+      <div class="d-flex justify-center mb-2"><UndrawEmptyMailbox class="art-illustration art-illustration--static" style="width: 140px" /></div>
       <v-list-item-title class="text-grey"> Aucun ticket trouvé </v-list-item-title>
     </v-list-item>
   </v-list>

@@ -46,7 +46,7 @@
         </div>
 
         <div v-else-if="activeAnnouncements.length === 0" class="empty-state">
-          <v-icon size="40" color="medium-emphasis">mdi-bullhorn-outline</v-icon>
+          <UndrawNewsfeed class="art-illustration art-illustration--static" style="width: 120px" />
           <p class="text-body-medium text-medium-emphasis mt-2 mb-0">Aucune bannière active</p>
         </div>
 

@@ -43,7 +43,7 @@
           </template>
           <template v-else>
             <div class="d-flex ga-2 pa-4 align-center justify-center flex-column text-title-large">
-              <v-icon size="24">mdi-tray-remove</v-icon>
+              <UndrawSchedule class="art-illustration art-illustration--static" style="width: 190px" />
               <span class="text-disabled"> C'est vide </span>
             </div>
           </template>

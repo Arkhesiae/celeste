@@ -25,6 +25,8 @@
             :demand="demand"
             :small="true"
             @open-details="openDemandDetails"
+            @cancel-demand="emit('cancelDemand', $event)"
+            @withdraw-demand="emit('withdrawDemand', $event)"
           />
         </div>
         <div v-else class="text-center py-4">
@@ -66,7 +68,7 @@ const ownFilterOptions = [
 ];
 
 // Emits
-const emit = defineEmits(['openDetails']);
+const emit = defineEmits(['openDetails', 'cancelDemand', 'withdrawDemand']);
 
 const pendingDemands = computed(() => [
   ...demandStore.ownPendingHybridSubstitutions,

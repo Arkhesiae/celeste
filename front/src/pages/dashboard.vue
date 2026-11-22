@@ -35,7 +35,11 @@
           class="flex-grow-1 ga-4 d-flex flex-column"
         >
           <VacationCards />
-          <DemandCards @open-details="openDemand" />
+          <DemandCards
+            @open-details="openDemand"
+            @cancel-demand="(demand) => demandDeps.handleCancel(demand)"
+            @withdraw-demand="(demand) => demandDeps.handleWithdraw(demand)"
+          />
         </v-col>
 
         <v-col :class="smAndDown ? '' : 'right-col'">

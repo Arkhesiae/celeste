@@ -158,28 +158,6 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/demand-page/standalone': RouteRecordInfo<
-      '/demand-page/standalone',
-      '/demand-page/standalone',
-      Record<never, never>,
-      Record<never, never>,
-      | '/demand-page/standalone/available'
-      | '/demand-page/standalone/own'
-    >,
-    '/demand-page/standalone/available': RouteRecordInfo<
-      '/demand-page/standalone/available',
-      '/demand-page/standalone/available',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
-    '/demand-page/standalone/own': RouteRecordInfo<
-      '/demand-page/standalone/own',
-      '/demand-page/standalone/own',
-      Record<never, never>,
-      Record<never, never>,
-      | never
-    >,
     '/haptic': RouteRecordInfo<
       '/haptic',
       '/haptic',
@@ -516,32 +494,6 @@ declare module 'vue-router/auto-routes' {
     'src/pages/demand-page/demands/index.vue': {
       routes:
         | '/demand-page/demands/'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/demand-page/standalone.vue': {
-      routes:
-        | '/demand-page/standalone'
-        | '/demand-page/standalone/available'
-        | '/demand-page/standalone/own'
-      views:
-        | 'default'
-      pathParamNames:
-        | never
-    }
-    'src/pages/demand-page/standalone/available.vue': {
-      routes:
-        | '/demand-page/standalone/available'
-      views:
-        | never
-      pathParamNames:
-        | never
-    }
-    'src/pages/demand-page/standalone/own.vue': {
-      routes:
-        | '/demand-page/standalone/own'
       views:
         | never
       pathParamNames:

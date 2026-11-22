@@ -12,7 +12,13 @@
         class="vacation-swiper"
       >
         <SwiperSlide v-for="(demand, index) in demandList" :key="index">
-          <OwnDemandCard :demand="demand" :dot="false" @open-details="emit('openDetails', $event)" />
+          <OwnDemandCard
+            :demand="demand"
+            :dot="false"
+            @open-details="emit('openDetails', $event)"
+            @cancel-demand="emit('cancelDemand', $event)"
+            @withdraw-demand="emit('withdrawDemand', $event)"
+          />
         </SwiperSlide>
       </Swiper>
     </div>
@@ -27,6 +33,8 @@
         :demand="demand"
         :dot="false"
         @open-details="emit('openDetails', $event)"
+        @cancel-demand="emit('cancelDemand', $event)"
+        @withdraw-demand="emit('withdrawDemand', $event)"
       />
     </div>
   </div>
@@ -50,7 +58,7 @@ defineProps({});
 const ownFilter = ref('tous');
 
 // Emits
-const emit = defineEmits(['openDetails']);
+const emit = defineEmits(['openDetails', 'cancelDemand', 'withdrawDemand']);
 
 const pendingDemands = computed(() => [
   ...demandStore.ownPendingHybridSubstitutions,

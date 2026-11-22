@@ -10,7 +10,7 @@
           />
           <v-icon v-else size="12"> mdi-account </v-icon>
         </v-avatar>
-        <span style="font-weight: 800; font-size: 0.75rem">{{ posterName }}</span>
+        <span class="text-truncate" style="font-weight: 800; font-size: 0.75rem">{{ posterName }}</span>
 
         <div
           style="
@@ -54,12 +54,14 @@
     </div>
 
     <div
-      v-long-press:500="handleInterest"
+      v-touch-hold.mouse="openMenu"
       v-ripple
       class="long-press-target d-flex align-center bg-surfaceContainer demand justify-space-between pr-4 cursor-pointer"
       @click="openDetails"
       @contextmenu.prevent
     >
+      <ArtRadarRings :decreasing="3" :rings="6" size="550%" :origin="{ x: '100%', y: '-20%' }" />
+
       <div class="pa-4 pl-8 pr-0 flex-shrink-0 position-relative">
         <div class="d-flex align-center flex-shrink-0 ga-3">
           <div class="pb-0 mb-0 d-flex align-center ga-2">
@@ -148,6 +150,16 @@
       <v-icon size="12" color="onBackground" class="text-disabled" style="opacity: 0.5"> mdi-eye-outline </v-icon>
       <span class="text-body-small font-weight-medium text-disabled">{{ demand?.seenBy?.length || 0 }}</span>
     </div>
+
+    <!-- Menu d'un appui long : ce que l'on peut faire de cette demande -->
+    <CompactMenu
+      v-model:open="menuOpen"
+      :model-value="null"
+      :items="menuItems"
+      :target="menuTarget"
+      label="Actions de la demande"
+      @select="onMenuSelect"
+    />
   </div>
 </template>
 
@@ -174,6 +186,11 @@ const props = defineProps({
   small: {
     type: Boolean,
     default: false,
+  },
+  // Nom complet (prénom, puis NOM) ; sinon abrégé (prénom et initiales du nom). Toujours sur une seule ligne.
+  fullName: {
+    type: Boolean,
+    default: true,
   },
 });
 
@@ -323,7 +340,16 @@ const poster = computed(() => {
 });
 
 const posterName = computed(() => {
-  return poster.value?.name + ' ' + poster.value?.lastName.split(' ').map((word) => word[0] + '.') || 'Demandeur';
+  const user = poster.value;
+  if (!user?.name) return 'Demandeur';
+  const lastName = user.lastName ?? '';
+  if (props.fullName) return [user.name, lastName.toUpperCase()].filter(Boolean).join(' ');
+  const initials = lastName
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => `${word[0]}.`)
+    .join(' ');
+  return [user.name, initials].filter(Boolean).join(' ');
 });
 
 const posterTeamName = computed(() => {
@@ -404,7 +430,7 @@ const timeSinceCreation = computed(() => {
   const diffInMinutes = Math.floor((now.value - createdAt) / 60000);
 
   if (diffInMinutes < 60) {
-    return `Il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`;
+    return `Il y a ${diffInMinutes} min${diffInMinutes > 1 ? 's.' : '.'}`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
@@ -431,6 +457,33 @@ onUnmounted(() => {
 const isInterested = computed(() => {
   return props.demand?.interested?.includes(authStore.userData.userId);
 });
+
+// Menu de l'appui long : remplacer, permuter (selon le type et ce que la permutation permet) et marquer son intérêt
+const menuOpen = ref(false);
+const menuTarget = ref(undefined);
+
+const menuItems = computed(() => {
+  const items = [];
+  if (!isSwitch(props.demand))
+    items.push({ title: 'Remplacer', value: 'replace', icon: 'mdi-account-arrow-left-outline' });
+  if ((isSwitch(props.demand) || isHybrid(props.demand)) && canSwitch.value) {
+    items.push({ title: 'Permuter', value: 'switch', icon: 'mdi-swap-horizontal' });
+  }
+  if (!isInterested.value) items.push({ title: 'Marquer mon intérêt', value: 'interest', icon: 'mdi-heart-outline' });
+  return items;
+});
+
+const openMenu = ({ clientX, clientY }) => {
+  if (!menuItems.value.length) return;
+  menuTarget.value = [clientX, clientY];
+  menuOpen.value = true;
+};
+
+const onMenuSelect = ({ value }) => {
+  if (value === 'replace') handleReplace();
+  else if (value === 'switch') handleSwitch();
+  else if (value === 'interest') handleInterest();
+};
 
 const handleInterest = async () => {
   loading.value.interest = true;
@@ -467,6 +520,9 @@ const handleReplace = () => {
 
 .demand {
   border-radius: 20px !important;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
 .main-btn {

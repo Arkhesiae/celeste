@@ -2,73 +2,95 @@
   <div class="d-flex align-start ga-2">
     <div v-if="dot" class="dot dot-big" :class="dotClass" />
     <v-card
-      :class="smAndDown ? 'demand-card__mobile pl-2' : 'pl-4'"
+      v-touch-hold.mouse="openMenu"
+      :class="[smAndDown ? 'demand-card__mobile pl-2' : 'pl-4', { 'demand-card--owner': isOwner && !smAndDown }]"
       variant="flat"
       rounded="lg"
       class="demand-card pa-3 flex-1-1"
       @click="openDetails"
+      @contextmenu.prevent
     >
-      <div class="d-flex align-center justify-space-between">
-        <div class="d-flex align-center mr-3 ga-2">
-          <v-icon v-if="isOwner" size="12" color="primary"> mdi-account-star-outline </v-icon>
-          <span style="font-weight: 800; font-size: 0.75rem" :class="{ 'text-primary': isOwner }">{{
-            posterName
-          }}</span>
-          <div
-            v-if="!isOwner"
-            style="
-              height: 14px;
-              width: 14px;
-              border-radius: 50%;
-              border: 1px solid rgba(var(--v-theme-primary), 0.02);
-              background-color: rgba(var(--v-theme-primary), 0.1);
-            "
-            class="d-flex align-center justify-center"
+      <!-- Ma demande : cinq formes très discrètes en fond (pas dans le flux : la mise en page ne change pas) -->
+      <template v-if="isOwner">
+        <ArtTarget
+          v-for="(spot, index) in ownerShapes"
+          :key="index"
+          class="art owner-shape"
+          :shape="spot.shape"
+          :tone="spot.tone"
+          :outlined="spot.outlined"
+          :rotation="spot.rotation"
+          :style="{ top: spot.top, left: spot.left, width: spot.size }"
+        />
+      </template>
+      <div class="d-flex align-start justify-space-between">
+        <div class="d-flex align-start mr-3 ga-2">
+          <v-icon v-if="isOwner" size="12" color="primary" style="height: 14px"> mdi-account-star-outline </v-icon>
+          <span
+            class="d-flex flex-column"
+            style="font-weight: 800; font-size: 0.75rem; line-height: 1.15"
+            :class="{ 'text-primary': isOwner }"
           >
-            <span class="text-truncate" style="font-size: 0.625rem; font-weight: 700; opacity: 0.8">{{
-              posterTeamName
-            }}</span>
-          </div>
-          <div class="dot dot--xs" />
-          <span class="text-body-small font-weight-medium text-medium-emphasis">{{
-            formatDate(posterDay(demand))
-          }}</span>
-
-          <template v-if="isMailingEnabled">
+            <span v-for="line in posterNameLines" :key="line">{{ line }}</span>
+          </span>
+          <!-- Équipe, date, icônes et points : centrés sur la première ligne du nom, même quand le nom tient sur deux lignes -->
+          <div class="d-flex align-center ga-2" style="height: 14px">
+            <div
+              v-if="!isOwner"
+              style="
+                height: 14px;
+                width: 14px;
+                border-radius: 50%;
+                border: 1px solid rgba(var(--v-theme-primary), 0.02);
+                background-color: rgba(var(--v-theme-primary), 0.1);
+              "
+              class="d-flex align-center justify-center"
+            >
+              <span class="text-truncate" style="font-size: 0.625rem; font-weight: 700; opacity: 0.8">{{
+                posterTeamName
+              }}</span>
+            </div>
             <div class="dot dot--xs" />
+            <span class="text-body-small font-weight-medium text-medium-emphasis">{{
+              formatDate(posterDay(demand))
+            }}</span>
+
+            <template v-if="isMailingEnabled">
+              <div class="dot dot--xs" />
+              <v-icon
+                :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
+                :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'"
+                style="opacity: 0.7"
+                size="x-small"
+              />
+            </template>
+
             <v-icon
-              :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
-              :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'"
-              style="opacity: 0.7"
+              v-if="demand?.dependsOn?.length"
               size="x-small"
-            />
-          </template>
-
-          <v-icon
-            v-if="demand?.dependsOn?.length"
-            size="x-small"
-            color="primary"
-            icon="mdi-link-variant"
-            title="Liée à une autre demande"
-            aria-label="Liée à une autre demande"
-          />
-          <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8">
-            mdi-comment-text-outline
-          </v-icon>
-
-          <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2">
-            <LogoCopy color="onBackground" style="top: -2px; position: relative; transform: scale(0.87)" />
-            <span :class="pointClass" style="font-size: 0.875rem; font-weight: 600">{{ totalPoints }}</span>
-            <v-icon
-              v-if="hasVariablePoints && !demand.accepterId"
               color="primary"
-              style="position: relative; top: 0px"
-              icon="mdi-tune"
+              icon="mdi-link-variant"
+              title="Liée à une autre demande"
+              aria-label="Liée à une autre demande"
             />
-          </v-chip>
+            <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8">
+              mdi-comment-text-outline
+            </v-icon>
+
+            <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2">
+              <LogoCopy color="onBackground" style="top: -2px; position: relative; transform: scale(0.87)" />
+              <span :class="pointClass" style="font-size: 0.875rem; font-weight: 600">{{ totalPoints }}</span>
+              <v-icon
+                v-if="hasVariablePoints && !demand.accepterId"
+                color="primary"
+                style="position: relative; top: 0px"
+                icon="mdi-tune"
+              />
+            </v-chip>
+          </div>
         </div>
 
-        <div class="d-flex align-center">
+        <div class="d-flex align-start" style="height: 14px">
           <div class="d-flex align-center" style="position: relative; width: 20px">
             <v-icon size="x-small"> {{ getDemandIcon(demand, authStore.userData.userId) }}</v-icon>
           </div>
@@ -124,11 +146,11 @@
             </v-avatar>
             <div class="d-flex align-center text-left ga-1">
               <span
-                class="font-weight-bold text-truncate"
+                class="d-flex flex-column font-weight-bold"
                 :class="isAccepter ? 'text-primary' : ''"
-                style="max-width: 100px; font-size: 0.75rem"
+                style="max-width: 150px; font-size: 0.75rem; line-height: 1.15"
               >
-                {{ accepterName }}
+                <span class="text-truncate">{{ accepterName }}</span>
               </span>
               <div
                 v-if="!isAccepter"
@@ -155,6 +177,16 @@
         </div>
       </div>
     </v-card>
+
+    <!-- Menu d'un appui long : annuler (demandeur) ou se désister (accepteur) -->
+    <CompactMenu
+      v-model:open="menuOpen"
+      :model-value="null"
+      :items="menuItems"
+      :target="menuTarget"
+      label="Actions de la demande"
+      @select="onMenuSelect"
+    />
   </div>
 </template>
 
@@ -190,9 +222,46 @@ const props = defineProps({
     required: false,
     default: true,
   },
+  // Noms complets, sur deux lignes (prénom, puis NOM) ; sinon abrégés sur une ligne (prénom et initiales du nom)
+  fullName: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-const emit = defineEmits(['accept', 'decline', 'openDetails']);
+const emit = defineEmits(['accept', 'decline', 'openDetails', 'cancelDemand', 'withdrawDemand']);
+
+// Menu de l'appui long : annuler si l'on est le demandeur, se désister si l'on est l'accepteur d'une demande acceptée
+// Les cinq formes du fond d'une demande à moi : positions fixes (en % de la carte), formes et teintes choisies une fois pour toutes
+const ownerShapes = [
+  { shape: 'circle', tone: 'primary', outlined: false, rotation: 0, top: '-14%', left: '58%', size: '44px' },
+  { shape: 'triangle', tone: 'secondary', outlined: true, rotation: 20, top: '52%', left: '80%', size: '36px' },
+  { shape: 'square', tone: 'primary', outlined: true, rotation: 12, top: '60%', left: '38%', size: '28px' },
+  { shape: 'hexagon', tone: 'primary', outlined: false, rotation: 0, top: '-20%', left: '88%', size: '30px' },
+  { shape: 'diamond', tone: 'secondary', outlined: false, rotation: 0, top: '70%', left: '64%', size: '22px' },
+];
+
+const menuOpen = ref(false);
+const menuTarget = ref(undefined);
+
+const menuItems = computed(() => {
+  const items = [];
+  if (isOwner.value) items.push({ title: 'Annuler', value: 'cancel', icon: 'mdi-delete-outline' });
+  if (isAccepter.value && isAccepted.value) {
+    items.push({ title: 'Se désister', value: 'withdraw', icon: 'mdi-account-minus-outline' });
+  }
+  return items;
+});
+
+const openMenu = ({ clientX, clientY }) => {
+  if (!menuItems.value.length) return;
+  menuTarget.value = [clientX, clientY];
+  menuOpen.value = true;
+};
+
+const onMenuSelect = ({ value }) => {
+  emit(value === 'cancel' ? 'cancelDemand' : 'withdrawDemand', props.demand);
+};
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
@@ -221,13 +290,26 @@ const poster = computed(() => {
   return getUserById(props.demand.posterId);
 });
 
-const posterName = computed(() => {
-  return poster.value?.name + ' ' + poster.value?.lastName.split(' ').map((word) => word[0] + '.') || 'Demandeur';
-});
+// Les lignes à afficher pour le nom d'un utilisateur : [prénom, NOM] en nom complet, [« prénom N. »] en nom abrégé
+const nameLines = (user, fallback) => {
+  if (!user?.name) return [fallback];
+  const lastName = user.lastName ?? '';
+  if (props.fullName) return lastName ? [user.name, lastName.toUpperCase()] : [user.name];
+  const initials = lastName
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => `${word[0]}.`)
+    .join(' ');
+  return [initials ? `${user.name} ${initials}` : user.name];
+};
 
-const accepterName = computed(() => {
-  return accepter.value?.name + ' ' + accepter.value?.lastName.split(' ').map((word) => word[0] + '.') || 'Accepteur';
-});
+const posterNameLines = computed(() => nameLines(poster.value, 'Demandeur'));
+// L'accepteur : toujours le nom complet (prénom, puis NOM) sur une seule ligne, quel que soit `fullName`
+const accepterName = computed(() =>
+  accepter.value?.name
+    ? [accepter.value.name, accepter.value.lastName?.toUpperCase()].filter(Boolean).join(' ')
+    : 'Accepteur',
+);
 
 const isOwner = computed(() => {
   return props.demand?.posterId === authStore.userData.userId;
@@ -435,6 +517,17 @@ const openDetails = () => {
 
 .demand-card {
   background-color: rgba(var(--v-theme-surfaceContainer), 1) !important;
+}
+
+/* Mes demandes : mince liseré primaire, tracé en ombre intérieure pour ne changer ni la taille ni la mise en page */
+.owner-shape {
+  position: absolute;
+  z-index: -1; /* derrière le contenu, dans le contexte d'empilement de la carte */
+  opacity: 0.1;
+}
+
+.demand-card--owner {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, rgb(var(--v-theme-primary)) 20%, transparent);
 }
 
 .demand-card.demand-card__mobile {

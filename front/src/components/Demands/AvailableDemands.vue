@@ -4,10 +4,10 @@
       <div class="d-flex align-center justify-space-between">
         <FilterChipGroup
           v-model="selectedFilter"
+          v-model:sort="sortBy"
+          v-model:sort-order="sortOrder"
           :filters="filters"
           :sort-options="sortOptions"
-          :initial-sort="sortOptions[1]"
-          @update:sort="sortBy = $event"
         />
       </div>
     </v-col>
@@ -57,10 +57,7 @@ const allRequests = computed(() => [
   ...demandStore.otherDemands,
 ]);
 
-const compatibles = computed(() => [
-  ...demandStore.availableSubstitutions,
-  ...demandStore.availableSwitches,
-]);
+const compatibles = computed(() => [...demandStore.availableSubstitutions, ...demandStore.availableSwitches]);
 
 const filters = computed(() => {
   const list = [
@@ -89,6 +86,7 @@ const sortOptions = [
   { text: 'Points', tag: 'shift.points' },
 ];
 const sortBy = ref(sortOptions[1]);
+const sortOrder = ref('asc');
 
 const emits = defineEmits(['open-details', 'handle-replacement', 'handle-switch']);
 
@@ -126,20 +124,24 @@ const demands = computed(() => {
   return sortDemands(result);
 });
 
+// Comparaison croissante de deux demandes selon le critère de tri
+const compareBy = (tag, a, b) => {
+  switch (tag) {
+    case 'date':
+      return (posterDay(a) ?? '').localeCompare(posterDay(b) ?? '');
+    case 'shift.name':
+      return a.posterShift.shift.name?.localeCompare(b.posterShift.shift.name);
+    case 'shift.points':
+      return a.points - b.points;
+    default:
+      return 0;
+  }
+};
+
 const sortDemands = (demands) => {
   if (!sortBy.value) return demands;
-  return [...demands].sort((a, b) => {
-    switch (sortBy.value.tag) {
-      case 'date':
-        return (posterDay(a) ?? '').localeCompare(posterDay(b) ?? '');
-      case 'shift.name':
-        return a.posterShift.shift.name?.localeCompare(b.posterShift.shift.name);
-      case 'shift.points':
-        return a.points - b.points;
-      default:
-        return 0;
-    }
-  });
+  const direction = sortOrder.value === 'desc' ? -1 : 1;
+  return [...demands].sort((a, b) => direction * compareBy(sortBy.value.tag, a, b));
 };
 
 const filterByDate = (demands) => {

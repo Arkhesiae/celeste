@@ -1,24 +1,18 @@
 <template>
   <v-container>
     <!-- En-tête -->
-    <MainTitle title="Demandes" subtitle="Créer et consulter les demandes de rempla">
+
+    
+    <MainTitle  v-if="!smAndDown" title="Demandes" subtitle="Créer et consulter les demandes de rempla">
       <template #actions>
-        <v-btn v-if="!smAndDown" color="primary" prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
+        <v-btn color="primary" prepend-icon="mdi-book-open-variant" @click="showRulesDialog = true">
           Règles de travail
         </v-btn>
       </template>
     </MainTitle>
 
     <!-- Mobile : bouton d'action flottant ; order="1" le place au-dessus de la barre de navigation du bas (même ordre 0 = dessous) -->
-    <v-fab
-      v-if="smAndDown"
-      app
-      icon="mdi-book-open"
-      :order="1"
-      color="primary"
-      location="bottom end"
-      @click="showRulesDialog = true"
-    />
+    
 
     <!-- 
     <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
@@ -41,95 +35,7 @@
       </div>
     </v-alert> -->
 
-    <div
-      v-if="smAndDown"
-      class="d-flex align-center justify-center flex-1-1 flex-column ga-2"
-      style="font-size: 0.75rem"
-    >
-      <!-- <div class="d-flex justify-center flex-column align-center ga-2 my-16">
-
-        <v-icon icon="mdi-heart-outline" size="x-large" color="primary" style="opacity: 0.5;"></v-icon>
-        <span v-if="unSeenDemands > 0">{{ unSeenDemands }} nouvelle(s) demande(s) disponible(s)</span>
-        <span v-else>Aucune nouvelle demande</span>
-
-      </div> -->
-      <div class="d-flex justify-center flex-column align-center ga-2 my-8">
-        <span>Des demandes sont disponibles</span>
-      </div>
-      <v-btn
-        variant="flat"
-        rounded="pill"
-        style="font-size: 0.75rem"
-        color="surfaceContainer"
-        class="flex-0-1"
-        @click="router.push('/demand-page/standalone/available')"
-      >
-        <template #prepend>
-          <div class="d-flex ga-1" style="right: 0px; top: -18px">
-            <div
-              class="category-indicator"
-              :title="`${demandStore.availableSubstitutions.length} demande(s) en attente`"
-            >
-              <v-icon icon="mdi-account-arrow-left-outline" size="small" color="primary" />
-              {{ demandStore.availableSubstitutions.length }}
-            </div>
-            <div
-              class="category-indicator"
-              :title="`${demandStore.availableSwitches.length} demande(s) permutable(s)`"
-            >
-              <v-icon icon="mdi-swap-horizontal" size="small" color="primary" />
-              {{ demandStore.availableSwitches.length }}
-            </div>
-            <div
-              class="category-indicator"
-              :title="`${demandStore.potentiallyCompatibleDemands.length} demande(s) potentiellement compatible(s)`"
-            >
-              <v-icon icon="mdi-help-circle-outline" size="small" color="primary" />
-              {{ demandStore.potentiallyCompatibleDemands.length }}
-            </div>
-            <div
-              class="category-indicator"
-              :title="`${demandStore.otherDemands.length - demandStore.potentiallyCompatibleDemands.length} demande(s) incompatible(s)`"
-            >
-              <v-icon icon="mdi-close" size="small" color="primary" />
-              {{ demandStore.otherDemands.length - demandStore.potentiallyCompatibleDemands.length }}
-            </div>
-          </div>
-        </template>
-        Voir tout
-      </v-btn>
-      <v-btn
-        variant="flat"
-        style="font-size: 0.75rem"
-        rounded="pill"
-        color="surfaceContainer"
-        @click="router.push('/demand-page/standalone/own')"
-      >
-        Mes demandes
-        <template #prepend>
-          <div class="d-flex ga-1" style="right: 0px; top: -18px">
-            <div
-              v-if="pendingDemands.length > 0"
-              class="category-indicator"
-              :title="`${pendingDemands.length} demande(s) en attente`"
-            >
-              <v-icon icon="mdi-help" size="small" color="primary" />
-              {{ pendingDemands.length }}
-            </div>
-            <div
-              v-if="acceptedAsPoster?.length > 0"
-              class="category-indicator"
-              :title="`${acceptedAsPoster.length} demande(s) acceptée(s)`"
-            >
-              <v-icon icon="mdi-check" size="small" color="primary" />
-              {{ acceptedAsPoster.length + acceptedAsAccepter.length }}
-            </div>
-          </div>
-        </template>
-      </v-btn>
-    </div>
-
-    <router-view v-if="!smAndDown" />
+    <router-view />
 
     <RulesDialog v-model="showRulesDialog" />
   </v-container>
@@ -144,29 +50,12 @@ meta:
 import { useDemandStore } from '@/stores/demandStore.js';
 
 import { useDisplay } from 'vuetify';
-import { useRouter } from 'vue-router';
 
-// const unSeenDemands = ref(0);
-
-// Stores
 const demandStore = useDemandStore();
 
 const { smAndDown } = useDisplay();
 
-const router = useRouter();
-// État local
-
 const showRulesDialog = ref(false);
-
-// Données de la demande
-const pendingDemands = computed(() => [
-  ...demandStore.ownPendingHybridSubstitutions,
-  ...demandStore.ownPendingTrueSubstitutions,
-  ...demandStore.ownPendingTrueSwitches,
-]);
-
-const acceptedAsPoster = computed(() => demandStore.acceptedAsPoster);
-const acceptedAsAccepter = computed(() => demandStore.acceptedAsAccepter);
 
 const refetchOnFocus = () => {
   if (demandStore.startDate && demandStore.endDate) {
@@ -199,39 +88,5 @@ onUnmounted(() => {
 
 .remplacement-fab-tonal {
   background-color: #e5e4ec !important;
-}
-
-/* Indicateurs de catégories */
-.category-indicator {
-  padding: 0 8px;
-  height: 16px;
-  border-radius: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 0.75rem;
-
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.category-indicator:hover {
-  transform: scale(1.1);
-}
-
-.category-indicator.pending {
-  background-color: rgb(var(--v-theme-pendingDemand));
-  color: rgb(var(--v-theme-onPendingDemand));
-}
-
-.category-indicator.accepted {
-  background-color: rgb(var(--v-theme-acceptedDemand));
-  color: rgb(var(--v-theme-onAcceptedDemand));
-}
-
-.category-indicator.todo {
-  background-color: rgb(var(--v-theme-primary));
-  color: rgb(var(--v-theme-background));
 }
 </style>

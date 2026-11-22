@@ -11,10 +11,10 @@
         aria-label="Tableau de bord"
       >
         <!-- Le logo sur l'accueil, l'icône d'accueil ailleurs -->
-        <v-slide-x-transition mode="out-in">
+        <v-scale-transition mode="out-in">
           <LogoCopy v-if="isHome" key="logo" class="desktop-nav__logo" />
-          <v-icon v-else key="home" icon="mdi-home-outline" color="background" />
-        </v-slide-x-transition>
+          <v-icon v-else key="home" icon="mdi-home" color="background" />
+        </v-scale-transition>
       </v-btn>
     </div>
 

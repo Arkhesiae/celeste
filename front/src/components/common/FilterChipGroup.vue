@@ -1,59 +1,55 @@
 <template>
-  <v-slide-group :model-value="modelValue" mandatory @update:model-value="$emit('update:modelValue', $event)">
-    <!-- Sort menu as first item -->
-
-    <!-- Filter chips -->
-    <v-slide-group-item
-      v-for="filter in filters"
-      :key="filter.value"
-      v-slot="{ isSelected, toggle }"
-      :value="filter.value"
-    >
-      <v-chip
-        class="justify-center font-weight-medium ga-2 align-center chip-custom"
-        :class="['chip-custom mr-2', isSelected && 'chip-selected', isSelected && filter.color && 'chip-error']"
-        variant="tonal"
-        rounded="pill"
-        :selected="isSelected"
-        @click="toggle"
+  <div class="filter-chip-group d-flex flex-column ga-2">
+    <v-slide-group v-model="modelValue" mandatory>
+      <!-- Filtres : un seul est choisi à la fois (la valeur du v-model) -->
+      <v-slide-group-item
+        v-for="filter in filters"
+        :key="filter.value"
+        v-slot="{ isSelected, toggle }"
+        :value="filter.value"
       >
-        <div class="d-flex align-center ga-1">
-          <v-icon v-if="isSelected">mdi-check</v-icon>
+        <v-chip
+          class="justify-center font-weight-medium ga-1 align-center chip-custom"
+          :class="['chip-custom mr-2', isSelected && 'chip-selected', isSelected && filter.color && 'chip-error']"
+          variant="tonal"
+          rounded="pill"
+          :selected="isSelected"
+          @click="toggle"
+        >
+          <div class="d-flex align-center ga-1 text-label-medium">
+            <v-icon v-if="isSelected">mdi-check</v-icon>
 
-          {{ filter.label }}
-        </div>
-        <template v-if="filter.count" #append>
-          <span class="font-weight-bold" style="font-size: 0.685rem !important">
-            {{ filter.count }}
-          </span>
-        </template>
-      </v-chip>
-    </v-slide-group-item>
+            {{ filter.label }}
+          </div>
+          <template v-if="filter.count" #append>
+            <span class="font-weight-bold" style="font-size: 0.685rem !important">
+              {{ filter.count }}
+            </span>
+          </template>
+        </v-chip>
+      </v-slide-group-item>
+    </v-slide-group>
 
-    <v-slide-group-item v-if="sortOptions.length" disabled>
-      <v-menu color="onBackground" rounded="lg">
-        <template #activator="{ props }">
-          <v-btn color="primary" variant="text" rounded="lg" size="small" v-bind="props">
-            <span>{{ selectedSort ? selectedSort.text : sortLabel }}</span>
-            <v-icon>mdi-chevron-down</v-icon>
-          </v-btn>
-        </template>
-        <v-list color="onBackground" bg-color="onBackground" rounded="xl" class="pa-4">
-          <v-list-item v-for="option in sortOptions" :key="option.value" rounded="lg" @click="onSortChange(option)">
-            <v-list-item-title>{{ option.text }}</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-    </v-slide-group-item>
-  </v-slide-group>
+    <!-- Tri, sur sa propre ligne : le critère et l'ordre choisis sont deux v-model de plus -->
+    <SortSplitButton
+      v-if="sortOptions.length"
+      v-model:sort="sort"
+      v-model:order="sortOrder"
+      class="align-self-start"
+      :options="sortOptions"
+      :label="sortLabel"
+    />
+  </div>
 </template>
 
 <script setup>
+// Trois liaisons à double sens : le filtre choisi (`v-model`, la valeur d'un des `filters`), le critère de tri choisi (`v-model:sort`, un des
+// `sortOptions`, objets `{ text, tag }`) et l'ordre (`v-model:sort-order`, 'asc' ou 'desc'). Sans liaison du parent, chacun garde son état ici.
+const modelValue = defineModel({ type: String, required: true });
+const sort = defineModel('sort', { type: Object, default: null });
+const sortOrder = defineModel('sortOrder', { type: String, default: 'asc' });
+
 const props = defineProps({
-  modelValue: {
-    type: String,
-    required: true,
-  },
   filters: {
     type: Array,
     default: () => [],
@@ -66,25 +62,26 @@ const props = defineProps({
     type: String,
     default: 'Trier par',
   },
-  initialSort: {
-    type: Object,
-    default: null,
-  },
 });
 
-const emit = defineEmits(['update:modelValue', 'update:sort']);
-
-const selectedSort = ref(props.initialSort);
-
-const onSortChange = (option) => {
-  selectedSort.value = option;
-  emit('update:sort', option);
-};
+// sans critère choisi au départ, le premier
+if (!sort.value && props.sortOptions.length) sort.value = props.sortOptions[0];
 </script>
 
 <style scoped>
+/* Dans un conteneur flex (ici et chez le parent) un élément ne descend pas sous la largeur de son contenu (`min-width: auto`) : le groupe de chips
+   prenait alors la largeur de tous ses chips au lieu de celle disponible, et ne défilait plus. `min-width: 0` lui rend la largeur de son parent. */
+.filter-chip-group {
+  width: 100%;
+  min-width: 0;
+}
+
+.filter-chip-group :deep(.v-slide-group) {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .chip-custom {
-  margin-top: 2px;
   background-color: rgba(var(--v-theme-surfaceContainerHigh), 1) !important;
   color: rgba(var(--v-theme-onBackground), 0.7) !important;
   font-size: 0.75rem !important;
@@ -99,10 +96,5 @@ const onSortChange = (option) => {
 .chip-custom.chip-selected.chip-error {
   background-color: rgba(var(--v-theme-error), 0.1) !important;
   color: rgba(var(--v-theme-error), 0.8) !important;
-}
-
-:deep(.v-slide-group__content) {
-  display: flex !important;
-  gap: 8px !important;
 }
 </style>

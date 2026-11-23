@@ -51,7 +51,8 @@
 
           <ActiveRotationCard />
 
-          <v-card
+          <v-card
+
             elevation="0"
             class="pa-4"
             :class="smAndDown ? 'pb-16 mx-n3' : ''"
@@ -101,6 +102,8 @@
 <script setup>
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDisplay } from 'vuetify';
+
+
 
 const authStore = useAuthStore();
 const demandDeps = ref(null);

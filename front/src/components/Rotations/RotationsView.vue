@@ -118,7 +118,7 @@
     <!-- Mobile : deux boutons flottants, posés au-dessus de la barre du bas (order 1 et 2 : un ordre plus grand se range plus haut).
          Le principal (ajouter un tour de service, administrateurs) réserve sa place ; la timeline est le petit bouton au-dessus, ou le
          seul bouton quand il n'y a pas d'ajout possible. -->
-    <template v-if="smAndDown && !embedded">
+    <template v-if="smAndDown ">
       <v-fab
         v-if="isAdmin"
         app

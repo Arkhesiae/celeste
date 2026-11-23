@@ -15,7 +15,8 @@
 
     <v-main>
       <router-view v-slot="{ Component, route }">
-        <transition :name="'fade-one'" mode="out-in">
+        <transition :name="'fade'" mode="out-in" @enter="scroll">
+
           <!-- <transition 
             @before-enter="beforeEnter"
             @before-leave="beforeLeave"
@@ -39,6 +40,10 @@
 </template>
 
 <script setup>
+import { useScrollRestoration } from 'vue-router/experimental';
+
+// Défilement des pages hors onglets (en haut) : le choix par chemin est dans les options du plugin (router/scrollRestoration.js)
+const { scroll } = useScrollRestoration({ manual: true });
 
 const isDev = ref(import.meta.env.DEV);
 // const initializationStore = useInitializationStore();
@@ -207,7 +212,7 @@ a {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.05s ease-out;
+  transition: all .1s ease-out;
 }
 
 .fade-enter-from,
@@ -233,13 +238,5 @@ a {
   background-color: rgba(var(--v-theme-background), 1) !important;
 }
 
-.fade-one-enter-active,
-.fade-one-leave-active {
-  transition: opacity 0.1s ease;
-}
 
-.fade-one-enter-from,
-.fade-one-leave-to {
-  opacity: 0;
-}
 </style>

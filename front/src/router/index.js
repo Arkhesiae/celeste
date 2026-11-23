@@ -8,27 +8,6 @@ import { setupLayouts } from 'virtual:generated-layouts';
 const router = createRouter({
   history: createWebHistory(),
   routes: setupLayouts(routes),
-  scrollBehavior(to, from, savedPosition) {
-    // Utiliser la position sauvegardée si elle existe
-    if (savedPosition) {
-      return savedPosition;
-    }
-
-    // Forcer le défilement vers le haut uniquement pour certaines routes
-    const forceTopRoutes = [
-      '/parameter',
-      '/profile/[userId]/change-history',
-      '/profile/[userId]/transaction-history',
-      '/profile/[userId]/points',
-    ];
-
-    if (forceTopRoutes.includes(to.name)) {
-      return { top: 0, behavior: 'smooth' };
-    }
-
-    // Comportement par défaut : défilement vers le haut
-    return { top: 0 };
-  },
 });
 
 // Anciennes adresses des pages réunies sous /information
@@ -70,7 +49,7 @@ const both = ['/contact-admin', '/loading'];
 //   }
 // };
 
-router.beforeEach(async (to, from) => {
+router.beforeEach(async (to) => {
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
     return;
   }

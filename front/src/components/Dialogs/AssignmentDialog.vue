@@ -15,7 +15,7 @@
             :class="entry.key === 'absence' ? 'entry-tile--leave' : 'entry-tile--entry'"
             @click="type = entry.key"
           >
-            <v-icon size="24" aria-hidden="true">{{ `mdi-${entry.icon}` }}</v-icon>
+            <v-icon size="24" aria-hidden="true">{{ entry.icon }}</v-icon>
             <span class="entry-tile__label text-label-medium font-weight-bold">{{ entry.label }}</span>
           </button>
         </div>

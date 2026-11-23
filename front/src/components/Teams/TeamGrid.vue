@@ -186,7 +186,7 @@ const buildCell = (day) => {
   return {
     classes: [dayKindClass(kind), ...dayPresenceClasses(day.presence)],
     replaced: day.presence === 'replaced',
-    icon: entry ? `mdi-${entry.icon}` : null,
+    icon: entry ? entry.icon : null,
     label,
     counterpart: day.counterpart?.name ?? null,
     counterpartIcon,

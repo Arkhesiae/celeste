@@ -9,6 +9,7 @@ import svgLoader from 'vite-svg-loader'
 import Components from "unplugin-vue-components/vite";
 import Fonts from "unplugin-fonts/vite";
 import AutoImport from "unplugin-auto-import/vite";
+import mdiIcons from './vite-plugins/mdiIcons.js'
 
 export default defineConfig({
   base: '/',
@@ -36,6 +37,7 @@ export default defineConfig({
       },
     }),
     svgLoader(),
+    mdiIcons(),
     AutoImport({
       imports: [
         'vue',

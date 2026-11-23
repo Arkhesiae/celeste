@@ -21,10 +21,8 @@ import hybrid_accepted_as_switch_accepter from '@/assets/customIcons/demands/hyb
 import hybrid_accepted_as_switch_poster from '@/assets/customIcons/demands/hybrid_accepted_as_switch_poster.svg?component';
 import hybrid_pending from '@/assets/customIcons/demands/hybrid_pending.svg?component';
 
-import '@mdi/font/css/materialdesignicons.css';
-// import 'material-design-icons-iconfont/dist/material-design-icons.css'
-
-import { aliases, mdi } from 'vuetify/iconsets/mdi';
+import { aliases } from 'vuetify/iconsets/mdi';
+import { mdiSvg } from './mdiSvgIcons.js';
 // Composables
 import { createVuetify } from 'vuetify';
 import { fr } from 'vuetify/locale';
@@ -49,7 +47,7 @@ export default createVuetify({
       hybridPending: hybrid_pending,
     },
     sets: {
-      mdi,
+      mdi: mdiSvg,
     },
   },
   date: {

@@ -113,7 +113,7 @@ const shiftDataMap = computed(() => {
       kind: dayKindOf({ type: value?.type, shiftType: shown?.type, variation: value?.shiftData?.selectedVariation }),
       icon: (() => {
         const entry = entryTypeOf(value?.type);
-        return entry ? `mdi-${entry.icon}` : null;
+        return entry ? entry.icon : null;
       })(),
     });
   }

@@ -236,7 +236,7 @@ const hasNoDemand = computed(() => {
 
 const typeIcon = (type) => {
   const entry = entryTypes.find((e) => e.key === type);
-  return entry ? 'mdi-' + entry.icon : 'mdi-close';
+  return entry ? entry.icon : 'mdi-close';
 };
 
 // ─── Actions ──────────────────────────────────────────────────────────────────

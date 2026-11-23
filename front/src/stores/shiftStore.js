@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { vacationService } from '@/services/vacationService';
 import { useAuthStore } from '@/stores/authStore';
 import { parseShiftDateTime } from '@/utils/parseShiftDateTime';

@@ -52,7 +52,7 @@
 </template>
 
 <script setup>
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 
 const props = defineProps({
   /** Jours du tour de service : [{ position (1..N), name, isRest, hours }] */

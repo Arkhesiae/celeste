@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 
 /**
  * Aides d'affichage du contrôle du temps de travail (calendrier) : ne contient aucune règle, seulement la mise en forme et

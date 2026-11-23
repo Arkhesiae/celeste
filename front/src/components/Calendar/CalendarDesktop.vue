@@ -41,7 +41,7 @@
 
 <script setup>
 import { posterDay } from '@/utils/dayFields.js';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { useShiftStore } from '@/stores/shiftStore';
 import { useDemandStore } from '@/stores/demandStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';

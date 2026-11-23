@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { VHeatmap } from 'vuetify/labs/VHeatmap';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterStore } from '@/stores/centerStore';

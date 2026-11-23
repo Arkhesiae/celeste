@@ -139,7 +139,7 @@
 
 <script setup>
 import { computed } from 'vue';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { formatDayRange, formatDayShort, formatHours, windowStartingAt } from '@/utils/workWindows';
 import { useShiftStore } from '@/stores/shiftStore';
 import { DAY_KIND_LABELS, dayKindClass, dayKindOfEntry } from '@/utils/dayStyle';

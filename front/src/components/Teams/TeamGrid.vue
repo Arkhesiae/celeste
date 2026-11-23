@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import { entryTypes } from '@/utils/entryIcons';

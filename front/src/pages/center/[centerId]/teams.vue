@@ -248,7 +248,7 @@ import { useRotationStore } from '@/stores/rotationStore';
 import { useCenterStore } from '@/stores/centerStore';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { toDateKey } from '@/utils/dateKey';
 
 const teamStore = useTeamStore();

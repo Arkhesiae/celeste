@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 
 export function useCalendarNavigation() {
   const today = Temporal.Now.plainDateISO();

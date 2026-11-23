@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 import { useDate } from 'vuetify';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 
 const DEFAULT_TIME_ZONE = 'Europe/Paris';
 

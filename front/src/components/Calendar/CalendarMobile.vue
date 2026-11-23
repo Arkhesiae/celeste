@@ -52,7 +52,7 @@
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import { posterDay } from '@/utils/dayFields.js';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { useDemandStore } from '@/stores/demandStore';
 import { useShiftStore } from '@/stores/shiftStore';
 import { getDisplayShiftName } from '@/utils/getEffectiveShiftTimes';

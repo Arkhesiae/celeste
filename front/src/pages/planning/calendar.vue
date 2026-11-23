@@ -143,7 +143,7 @@ import { useSnackbarStore } from '@/stores/snackbarStore.js';
 import { useCalendarNavigation } from '@/composables/useCalendarNavigation';
 import { useCalendarData } from '@/composables/useCalendarData';
 import { toDateKey } from '@/utils/dateKey';
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { useWorkCheckStore } from '@/stores/workCheckStore.js';
 
 /** Constantes */

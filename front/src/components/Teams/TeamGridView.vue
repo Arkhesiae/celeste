@@ -61,7 +61,7 @@
 </template>
 
 <script setup>
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 import { useDisplay } from 'vuetify';
 import { useTeamStore } from '@/stores/teamStore';
 import { useCenterStore } from '@/stores/centerStore';

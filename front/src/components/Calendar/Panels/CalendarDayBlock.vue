@@ -205,7 +205,7 @@ const props = defineProps({
   },
 });
 
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from 'temporal-polyfill';
 
 import { useCenterStore } from '@/stores/centerStore';
 const DEFAULT_TIME_ZONE = 'Europe/Paris';

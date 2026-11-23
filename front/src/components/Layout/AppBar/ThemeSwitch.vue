@@ -1,5 +1,5 @@
 <template>
-  <v-switch v-model="isDark" hide-details false-icon="mdi-weather-sunny" true-icon="mdi-weather-night" />
+  <v-switch v-model="isDark" false-icon="mdi-weather-sunny" true-icon="mdi-weather-night" />
 </template>
 
 <script setup>

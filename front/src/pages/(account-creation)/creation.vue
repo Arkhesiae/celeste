@@ -97,7 +97,7 @@
                       />
                       <span class="text-body-small text-grey-darken-1">Veuillez entrer votre adresse e-mail</span>
                       <v-slide-y-transition>
-                        <v-alert v-if="showLegacyAlert" color="error" rounded="lg" variant="tonal" class="mt-2">
+                        <v-alert v-if="showLegacyAlert" color="error" rounded="lg" class="mt-2">
                           <p class="text-body-small">Cette adresse email correspond à un compte <b>REMPLACER.OVH</b></p>
                           <a
                             class="text-body-small d-flex align-center"
@@ -649,18 +649,6 @@ const validateStep = async (stepNum) => {
   height: calc(100% + 4px);
   z-index: -1;
   animation: steam 7s linear infinite;
-}
-
-@keyframes steam {
-  0% {
-    background-position: 0 0;
-  }
-  80% {
-    background-position: 400% 0;
-  }
-  100% {
-    background-position: 400% 0;
-  }
 }
 
 .block:after {

@@ -6,7 +6,6 @@
 
     <v-card
       v-else-if="!transferStore.transfers.length"
-      rounded="xl"
       variant="flat"
       color="surfaceContainer"
       class="pa-8 text-center"
@@ -20,7 +19,7 @@
 
     <v-row v-else>
       <v-col v-for="transfer in transferStore.transfers" :key="transfer.userId" cols="12" md="6">
-        <v-card rounded="xl" variant="flat" color="surfaceContainer" class="pa-4 h-100">
+        <v-card variant="flat" color="surfaceContainer" class="pa-4 h-100">
           <div class="d-flex align-center ga-3">
             <UserAvatar :size="40" :avatar="transfer.avatar ?? undefined" :name="transfer.name" />
             <div class="d-flex flex-column flex-grow-1 min-width-0">
@@ -49,7 +48,6 @@
           <v-alert
             v-if="transfer.points < 0"
             type="error"
-            variant="tonal"
             density="compact"
             rounded="lg"
             icon="mdi-alert-circle-outline"

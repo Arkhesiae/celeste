@@ -1,5 +1,5 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-4" color="surfaceContainer">
+  <v-card elevation="0" class="pa-4" color="surfaceContainer">
     <div class="d-flex align-start justify-space-between ga-2 mb-3">
       <div class="d-flex flex-column">
         <span class="text-body-small text-uppercase text-disabled">Activité des centres</span>

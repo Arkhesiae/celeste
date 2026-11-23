@@ -37,7 +37,7 @@
     </div>
 
     <!-- Balayer à gauche / à droite change la période (Swiper) ; la colonne des noms reste fixe -->
-    <v-card rounded="xl" variant="flat" class="grid-card" color="transparent">
+    <v-card variant="flat" class="grid-card" color="transparent">
       <v-progress-linear v-if="loading" indeterminate color="primary" />
       <TeamGrid
         v-if="startDate"
@@ -53,7 +53,7 @@
         <UndrawTeamwork class="art-illustration art-illustration--static" style="width: 240px" />
         <span class="text-medium-emphasis text-title-small">Aucun membre sur cette période</span>
       </div>
-      <v-alert v-if="errorMessage" type="error" variant="tonal" class="ma-4">
+      <v-alert v-if="errorMessage" type="error" class="ma-4">
         {{ errorMessage }}
       </v-alert>
     </v-card>

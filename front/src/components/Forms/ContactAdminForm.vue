@@ -1,6 +1,6 @@
 <template>
   <v-form ref="form" v-model="isValid" @submit.prevent="handleSubmit">
-    <v-card color="transparent" rounded="xl" elevation="0" class="pa-0">
+    <v-card color="transparent" elevation="0" class="pa-0">
       <v-card-text>
         <v-row>
           <v-col cols="12" md="6">

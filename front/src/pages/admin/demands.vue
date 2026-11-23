@@ -33,7 +33,7 @@
         <AdminDemandCard :demand="demand" />
       </v-col>
       <v-col v-if="!isLoading && demands.length === 0" cols="12">
-        <v-card class="pa-8 text-center" rounded="xl" elevation="0">
+        <v-card class="pa-8 text-center" elevation="0">
           <v-icon icon="mdi-information-outline" size="48" color="onSurface" opacity="0.3" />
           <p class="text-title-large mt-4 mb-0">Aucune demande trouvée</p>
           <p class="text-body-medium opacity-70">Il n'y a actuellement aucune demande dans ce centre</p>

@@ -20,7 +20,7 @@
     <!-- ── Stats row ───────────────────────────────────────────────────────── -->
     <v-row class="mb-6">
       <v-col v-for="stat in statCards" :key="stat.key" cols="12" sm="6" md="3">
-        <v-card class="stat-card pa-5" rounded="xl" color="surfaceContainerLow" flat>
+        <v-card class="stat-card pa-5" color="surfaceContainerLow" flat>
           <div class="d-flex align-center ga-4">
             <v-avatar :color="stat.color" variant="tonal" size="40">
               <v-icon :icon="stat.icon" size="18" />
@@ -35,7 +35,7 @@
     </v-row>
 
     <!-- ── Active announcements list ───────────────────────────────────────── -->
-    <v-card rounded="xl" color="surfaceContainerLow" flat class="mb-6">
+    <v-card color="surfaceContainerLow" flat class="mb-6">
       <v-card-title class="pa-6 pb-2 d-flex align-center justify-space-between">
         <span class="text-body-large font-weight-semibold">Bannières actives</span>
         <v-chip size="small" color="primary" label>{{ activeAnnouncements.length }}</v-chip>
@@ -80,11 +80,11 @@
               <div class="row-footer">
                 <span class="text-body-small text-disabled">
                   Par {{ ann.createdBy?.name }} {{ ann.createdBy?.lastName }} ·
-                  {{ formatDate(ann.createdAt) }}
+                  {{ formatDateTime(ann.createdAt) }}
                 </span>
                 <span v-if="ann.expiresAt" class="text-body-small text-warning">
                   <v-icon size="12">mdi-clock-outline</v-icon>
-                  Expire le {{ formatDate(ann.expiresAt) }}
+                  Expire le {{ formatDateTime(ann.expiresAt) }}
                 </span>
                 <span class="text-body-small text-medium-emphasis">
                   <v-icon size="12">mdi-account-check</v-icon>
@@ -96,8 +96,7 @@
             <!-- Actions -->
             <div class="row-actions">
               <v-switch
-                :model-value="ann.isActive"
-                hide-details
+                :model-value="ann.isActive"
                 density="compact"
                 color="primary"
                 class="mr-2"
@@ -116,7 +115,7 @@
     </v-card>
 
     <!-- ── Inactive / archived ──────────────────────────────────────────────── -->
-    <v-card rounded="xl" color="surfaceContainerLow" flat>
+    <v-card color="surfaceContainerLow" flat>
       <v-card-title class="pa-6 pb-2 d-flex align-center justify-space-between">
         <span class="text-body-large font-weight-semibold">Archivées / Inactives</span>
         <v-chip size="small" label>{{ inactiveAnnouncements.length }}</v-chip>
@@ -137,8 +136,7 @@
             </div>
             <div class="row-actions">
               <v-switch
-                :model-value="ann.isActive"
-                hide-details
+                :model-value="ann.isActive"
                 density="compact"
                 color="primary"
                 @update:model-value="toggleActive(ann)"
@@ -246,26 +244,26 @@
           <v-row dense class="mb-2">
             <!-- Permanent toggle -->
             <v-col cols="12" sm="6">
-              <v-card rounded="xl" color="surfaceContainer" flat class="pa-4">
+              <v-card color="surfaceContainer" flat class="pa-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
                     <div class="text-body-medium font-weight-medium">Permanent</div>
                     <div class="text-body-small text-medium-emphasis">Non dismissible par les utilisateurs</div>
                   </div>
-                  <v-switch v-model="form.isPermanent" hide-details density="compact" color="primary" />
+                  <v-switch v-model="form.isPermanent" density="compact" color="primary" />
                 </div>
               </v-card>
             </v-col>
 
             <!-- Global / Local toggle (master admin only) -->
             <v-col v-if="isMasterAdmin" cols="12" sm="6">
-              <v-card rounded="xl" color="surfaceContainer" flat class="pa-4">
+              <v-card color="surfaceContainer" flat class="pa-4">
                 <div class="d-flex align-center justify-space-between">
                   <div>
                     <div class="text-body-medium font-weight-medium">Portée globale</div>
                     <div class="text-body-small text-medium-emphasis">Visible par tous les centres</div>
                   </div>
-                  <v-switch v-model="form.isGlobal" hide-details density="compact" color="primary" />
+                  <v-switch v-model="form.isGlobal" density="compact" color="primary" />
                 </div>
               </v-card>
             </v-col>
@@ -334,6 +332,7 @@
 </template>
 
 <script setup>
+import { formatDateTime } from '@/utils/formatDate';
 import { useAuthStore } from '@/stores/authStore';
 import { useBannerStore } from '@/stores/bannerStore';
 import { useCenterStore } from '@/stores/centerStore';
@@ -422,16 +421,6 @@ const deleteText = ref('');
 const deletingAnnouncement = ref(null);
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-const formatDate = (date) => {
-  if (!date) return '—';
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 // ── Dialog actions ────────────────────────────────────────────────────────
 const openCreateDialog = () => {

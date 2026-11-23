@@ -215,8 +215,7 @@ const close = () => {
                 <v-card
                   v-if="newRotation.days.length > 0"
                   color="background"
-                  class="mb-8 pa-4"
-                  rounded="xl"
+                  class="mb-8 pa-4"
                   elevation="0"
                 >
                   <v-card-item>

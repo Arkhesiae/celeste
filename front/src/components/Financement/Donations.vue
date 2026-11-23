@@ -14,7 +14,7 @@
         </p>
       </div>
 
-      <v-card class="mb-4 main-card" rounded="xl" variant="outlined">
+      <v-card class="mb-4 main-card" variant="outlined">
         <v-card-text class="pa-5">
           <div class="d-flex align-end justify-space-between mb-3">
             <div>
@@ -69,8 +69,7 @@
       <div class="d-flex flex-column ga-2 mb-4">
         <v-card
           v-for="item in paymentItems"
-          :key="item.id"
-          rounded="xl"
+          :key="item.id"
           variant="outlined"
           class="copy-card"
           ripple
@@ -225,11 +224,6 @@ onMounted(() => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
-
-.campaign-root {
-  max-width: 680px;
-  margin: 0 auto;
-}
 
 .campaign-title {
   font-family: 'DM Serif Display', Georgia, serif;

@@ -1,7 +1,6 @@
 <template>
   <v-card
-    v-if="getCenterName?.includes('CRNA Nord')"
-    rounded="xl"
+    v-if="getCenterName?.includes('CRNA Nord')"
     elevation="0"
     class="mb-4 pa-6"
     color="surfaceContainer"

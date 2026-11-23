@@ -64,19 +64,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.message-item {
-  border-radius: 16px !important;
-  transition: all 0.2s ease;
-  background-color: rgba(var(--v-theme-surfaceContainerHigh), 0.5);
-  border: 1px solid rgba(var(--v-theme-surfaceContainerHigh), 0.1);
-}
-
-.message-item:hover {
-  background-color: rgba(var(--v-theme-surface-variant), 0.1);
-  transform: translateY(0px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .unread {
   background-color: rgba(var(--v-theme-primary), 0.05);
   border-color: rgba(var(--v-theme-primary), 0.2);

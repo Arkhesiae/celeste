@@ -22,7 +22,7 @@
     <!-- Statistiques -->
     <v-row class="mb-6">
       <v-col cols="12" md="4">
-        <v-card class="pa-4 pl-8" rounded="xl" color="surfaceContainerLow" flat>
+        <v-card class="pa-4 pl-8" color="surfaceContainerLow" flat>
           <div class="d-flex align-center ga-4">
             <v-icon size="16" color="onBackground" class="mr-3"> mdi-account-group </v-icon>
             <div>
@@ -35,7 +35,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="4">
-        <v-card class="pa-4 pl-8" rounded="xl" color="surfaceContainerLow" flat>
+        <v-card class="pa-4 pl-8" color="surfaceContainerLow" flat>
           <div class="d-flex align-center ga-4">
             <v-icon size="16" color="surfaceContainerHighest" class="mr-3"> mdi-email-check </v-icon>
             <div>
@@ -48,7 +48,7 @@
         </v-card>
       </v-col>
       <v-col cols="12" md="4">
-        <v-card class="pa-4 pl-8" rounded="xl" color="surfaceContainerLow" flat>
+        <v-card class="pa-4 pl-8" color="surfaceContainerLow" flat>
           <div class="d-flex align-center ga-4">
             <v-icon size="16" color="surfaceContainerHighest" class="mr-3"> mdi-email-alert </v-icon>
             <div>
@@ -63,7 +63,7 @@
     </v-row>
 
     <!-- Historique des envois -->
-    <v-card class="mb-6 pa-6" rounded="xl" color="surfaceContainerLow" flat>
+    <v-card class="mb-6 pa-6" color="surfaceContainerLow" flat>
       <v-card-title class="pa-0 ma-0 mb-4"> Historique des envois </v-card-title>
       <v-card-text class="pa-0">
         <v-data-table
@@ -220,7 +220,7 @@
 
     <!-- Dialog d'aperçu -->
     <v-dialog v-model="previewDialog" max-width="1200px">
-      <v-card rounded="xl" color="surfaceContainerLow" flat class="pa-6">
+      <v-card color="surfaceContainerLow" flat class="pa-6">
         <v-card-title class="pa-0 ma-0"> Aperçu de l'email </v-card-title>
         <v-card-text class="pa-0 pt-8">
           <div v-if="emailPreview" class="email-preview" v-html="emailPreview" />
@@ -255,6 +255,7 @@
 </template>
 
 <script setup>
+import { formatDateTime as formatDate } from '@/utils/formatDate';
 import { useAuthStore } from '@/stores/authStore';
 import { useEmailStore } from '@/stores/emailStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -301,15 +302,6 @@ const toggleScopeMode = () => {
 const centers = computed(() => centerStore.centers || []);
 
 // Méthodes
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 const formatSender = (sentBy) => {
   if (!sentBy) return 'N/A';

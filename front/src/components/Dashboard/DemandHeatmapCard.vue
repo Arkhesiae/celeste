@@ -1,5 +1,5 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-4" color="surfaceContainer">
+  <v-card elevation="0" class="pa-4" color="surfaceContainer">
     <UndrawAirplane class="art-illustration" style="top: 4px; right: 14px; width: 104px" />
 
     <div class="d-flex align-start justify-space-between ga-2 mb-3">

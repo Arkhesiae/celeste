@@ -27,17 +27,12 @@
     "@capgo/capacitor-native-biometric": "^8.3.1",
     "@js-temporal/polyfill": "^0.5.1",
     "capacitor-plugin-safe-area": "^5.0.0",
-    "jsonwebtoken": "^9.0.3",
-    "jwt-decode": "^4.0.0",
-    "latest": "^0.2.0",
     "leaflet": "^1.9.4",
     "npm-check-updates": "^19.3.1",
-    "roboto-fontface": "*",
     "swiper": "^12.2",
     "vue": "^3.5.38",
     "vue-draggable-plus": "^0.6.1",
-    "vuetify": "^4.3.3",
-    "vuex": "^4.1.0"
+    "vuetify": "^4.3.3"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.0.1",

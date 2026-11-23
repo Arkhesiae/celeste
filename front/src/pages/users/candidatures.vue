@@ -31,7 +31,7 @@
 
     <v-row>
       <v-col v-for="user in pendingUsers" :key="user._id" cols="12">
-        <v-card class="pa-2" rounded="xl" variant="flat" color="surface">
+        <v-card class="pa-2" variant="flat" color="surface">
           <v-card-item>
             <v-card-title class="d-flex justify-space-between align-center">
               <div class="d-flex align-center">

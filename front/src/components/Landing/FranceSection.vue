@@ -3,7 +3,7 @@
        Contour issu de src/assets/map/countries.json (Natural Earth), projeté une fois pour toutes (voir la rubrique « Landing » de CLAUDE.md). -->
   <v-row class="px-4 py-16 mt-16 align-center france-section">
     <v-col cols="12" md="6" class="d-flex justify-center">
-      <v-card rounded="xl" flat color="surfaceContainer" class="france-section__card pa-4">
+      <v-card flat color="surfaceContainer" class="france-section__card pa-4">
         <svg viewBox="0 0 520 520" role="group" aria-label="Carte de la France" class="france-section__map">
           <path
             class="france-section__land"

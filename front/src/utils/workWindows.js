@@ -76,13 +76,6 @@ export function formatDayRange(start, end) {
   return `${first} → ${b.toLocaleString('fr-FR', { day: 'numeric', month: 'short' })}`;
 }
 
-/** Heure d'une date-heure locale `2027-03-12T16:00` → « ven. 16:00 » */
-export function formatLocalMoment(value) {
-  if (!value) return '';
-  const moment = Temporal.PlainDateTime.from(value);
-  return `${moment.toPlainDate().toLocaleString('fr-FR', { weekday: 'short' })} ${String(moment.hour).padStart(2, '0')}:${String(moment.minute).padStart(2, '0')}`;
-}
-
 /**
  * Phrase qui explique une ligne du calendrier : la période en défaut, sa valeur et le seuil.
  * @param {Object} window - période de 7 jours

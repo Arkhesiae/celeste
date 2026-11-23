@@ -2,8 +2,7 @@
   <!-- Carte de sélection -->
 
   <v-card
-    style="cursor: pointer"
-    rounded="xl"
+    style="cursor: pointer"
     elevation="0"
     class="mt-2 smooth-shadow pa-6 d-flex align-center justify-space-between"
     color="surfaceContainer"

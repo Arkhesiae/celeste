@@ -39,13 +39,6 @@
 </template>
 
 <script setup>
-import AppBar from './components/AppBar.vue';
-import DesktopNavigationDrawer2 from './components/DesktopNavigationDrawer2.vue';
-import MobileNavigationDrawer from './components/MobileNavigationDrawer.vue';
-import LoginButtons from './components/LoginButtons.vue';
-import GlobalSnackbar from './components/GlobalSnackbar.vue';
-import BottomNavigation from './components/BottomNavigation.vue';
-import AdditionnalSnackbar from './components/AdditionnalSnackbar.vue';
 
 const isDev = ref(import.meta.env.DEV);
 // const initializationStore = useInitializationStore();
@@ -176,10 +169,6 @@ const toggleDrawer = () => {
 }
 
 /* Maintenir la hauteur du v-main quand les enfants sont en position absolute */
-.v-main.transitioning {
-  position: fixed !important;
-  /* La hauteur sera définie dynamiquement par JavaScript */
-}
 
 .transition-wrapper {
   position: relative;

@@ -76,7 +76,7 @@
 
       <!-- Colonne de droite : Transactions en attente -->
       <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="0" color="background">
+        <v-card elevation="0" color="background">
           <v-card-text class="pa-1">
             <h2 class="text-headline-small mb-6">Transactions en attente</h2>
 

@@ -33,6 +33,7 @@
     <v-row v-if="!authStore.userData.phone" :class="smAndDown ? 'px-4' : ''">
       <v-col cols="12">
         <v-alert
+          variant="elevated"
           class="cursor-pointer text-medium-emphasis"
           rounded="xl"
           color="error"
@@ -130,7 +131,6 @@
       <v-col cols="12" md="4" order-lg="3" class="d-flex justify-center">
         <v-card
           color="surfaceContainerLow"
-          rounded="xl"
           width="200px"
           class="pa-6 cursor-pointer"
           height="48"

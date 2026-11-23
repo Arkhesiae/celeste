@@ -1,5 +1,5 @@
 <template>
-  <v-card class="demand-card pa-6" rounded="xl" elevation="0" variant="flat" color="surface">
+  <v-card class="demand-card pa-6" elevation="0" variant="flat" color="surface">
     <v-card-item class="pa-0">
       <div class="d-flex align-start justify-space-between mb-4">
         <div class="d-flex align-center ga-2">
@@ -85,7 +85,7 @@
 
     <!-- Dialog utilisateur -->
     <v-dialog v-model="showUserDialogModal" max-width="350">
-      <v-card rounded="xl" color="surfaceContainer" class="pa-6">
+      <v-card color="surfaceContainer" class="pa-6">
         <div class="d-flex flex-column ga-2">
           <div class="d-flex align-center ga-2">
             <v-avatar size="40" variant="tonal">

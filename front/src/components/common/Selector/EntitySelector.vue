@@ -1,6 +1,5 @@
 <template>
-  <v-card
-    rounded="xl"
+  <v-card
     elevation="0"
     class="pa-2 overflow-hidden d-flex flex-column"
     color="surfaceContainer"

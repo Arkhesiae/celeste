@@ -72,7 +72,7 @@ export default createVuetify({
           onPermutation: '#5c2a65',
           primary: '#b4b3f5',
           surfaceTint: '#87D1EA',
-          onPrimary: '#251141ff',
+          onPrimary: '#251141',
           primaryContainer: '#004E5F',
           onPrimaryContainer: '#B4EBFF',
           secondary: '#e2ff6e',
@@ -149,7 +149,7 @@ export default createVuetify({
           onTertiary: '#FFFFFF',
           tertiaryContainer: '#E0E0FF',
           onTertiaryContainer: '#161937',
-          error: '#682b36ff',
+          error: '#682b36',
           onError: '#FFB4AB',
           errorContainer: '#FFDAD6',
           onErrorContainer: '#410002',
@@ -219,8 +219,12 @@ export default createVuetify({
     VBtnGroup: { size: 'default' },
     VBtn: { size: 'default' },
     VBtnToggle: { size: 'default' },
-    // Interrupteurs Material 3 : piste arrondie, pouce qui grossit (un `inset` explicite sur l'interrupteur l'emporte)
-    VSwitch: { inset: 'material' },
+    // Interrupteurs Material 3 : piste arrondie, pouce qui grossit (un `inset` explicite sur l'interrupteur l'emporte), sans zone de message
+    VSwitch: { inset: 'material', hideDetails: true },
+    // Alertes teintées (26 sur 28 l'écrivaient) ; une alerte pleine l'écrit (`variant="elevated"`)
+    VAlert: { variant: 'tonal' },
+    // Cartes à grands coins ; un `rounded` explicite sur la carte l'emporte (menus et dialogues règlent le leur plus bas)
+    VCard: { rounded: 'xl' },
     // },
     VDialog: {
       scrim: '#0F1416',

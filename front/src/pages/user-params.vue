@@ -50,7 +50,7 @@
         <SettingsSection title="Mutation">
           <!-- Demande en cours : elle peut être annulée tant que l'administrateur du centre d'arrivée ne l'a pas acceptée -->
           <template v-if="transferStore.mine" #intro>
-            <v-alert color="secondary" variant="tonal" rounded="xl" icon="mdi-swap-horizontal" class="mb-2">
+            <v-alert color="secondary" rounded="xl" icon="mdi-swap-horizontal" class="mb-2">
               <div class="font-weight-bold">Mutation vers {{ transferStore.mine.toCenter.name }} en attente</div>
               <div class="text-body-small">
                 Demandée le {{ formatDay(transferStore.mine.requestedAt) }} · motif : {{ transferStore.mine.reason }}
@@ -98,7 +98,7 @@
           <!-- Toute la ligne bascule ; les interrupteurs ne font que montrer l'état -->
           <SettingsRow icon="mdi-email-multiple-outline" title="Recevoir les emails" @click="emailGlobalEnabled = !emailGlobalEnabled">
             <template #append>
-              <v-switch v-model="emailGlobalEnabled" readonly tabindex="-1" hide-details class="pointer-events-none" />
+              <v-switch v-model="emailGlobalEnabled" readonly tabindex="-1" class="pointer-events-none" />
             </template>
           </SettingsRow>
           <SettingsRow
@@ -116,7 +116,6 @@
                 tabindex="-1"
                 density="compact"
                
-                hide-details
                 class="pointer-events-none"
               />
             </template>
@@ -140,7 +139,6 @@ import { birthDayOf, formatDay } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { useCenterTransferStore } from '@/stores/centerTransferStore';
-import ThemeSwitch from '@/layouts/components/AppBar/ThemeSwitch.vue';
 import { useDarkMode } from '@/composables/useDarkMode';
 
 const authStore = useAuthStore();
@@ -231,7 +229,7 @@ watch(
 
 <style scoped>
 .v-container {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 :deep(.v-switch__track) {

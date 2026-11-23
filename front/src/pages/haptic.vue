@@ -4,7 +4,7 @@
 
     <v-row>
       <v-col cols="12">
-        <v-card rounded="xl" elevation="0" class="pa-6" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6" color="surfaceContainer">
           <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2"> mdi-vibrate </v-icon>
             Retours Haptiques
@@ -48,7 +48,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6 mt-4" color="surfaceContainer">
           <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2"> mdi-bell-ring </v-icon>
             Notifications
@@ -99,7 +99,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6 mt-4" color="surfaceContainer">
           <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2"> mdi-tune </v-icon>
             Sélection
@@ -132,7 +132,7 @@
           </v-card-text>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6 mt-4" color="surfaceContainer">
           <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2"> mdi-cog </v-icon>
             Actions Avancées
@@ -205,7 +205,7 @@
         </v-card>
 
         <!-- Informations sur la compatibilité -->
-        <v-card rounded="xl" elevation="0" class="pa-6 mt-4" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6 mt-4" color="surfaceContainer">
           <v-card-title class="text-headline-small mb-4">
             <v-icon class="mr-2"> mdi-information </v-icon>
             Informations
@@ -213,15 +213,13 @@
 
           <v-card-text>
             <v-alert
-              type="info"
-              variant="tonal"
+              type="info"
               class="mb-4"
               :text="`Compatibilité: ${hapticsSupported ? 'Supporté' : 'Non supporté'}`"
             />
 
             <v-alert
-              type="warning"
-              variant="tonal"
+              type="warning"
               :text="'Les retours haptiques ne fonctionnent que sur les appareils mobiles avec Capacitor. Sur le web, aucun effet ne sera produit.'"
             />
           </v-card-text>

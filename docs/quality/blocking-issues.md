@@ -123,6 +123,12 @@ Cascaded children get the same cancellation mail as the demand that caused it, w
 - Nothing lets an admin deactivate an account (`User.isActive` is only set by seeds).
 - Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `demandJob` / `reminderJob` still go to an inactive accepter.
 
+### 54. Kebab-case theme variables resolve to Vuetify's defaults, not the project's colours — P2
+About 26 uses of `var(--v-theme-on-surface)` and `var(--v-theme-surface-variant)` (kebab-case, e.g. in `pages/`, `components/Calendar/`) read Vuetify's built-in palette because the project defines `onSurface` / `surfaceVariant` (camelCase). The colour is close but not the theme's; light/dark may differ. Replace with the camelCase variables and check the screens. Found by the 2026-11-23 front scan.
+
+### 55. Google Fonts imported at runtime, twice — P2
+`components/common/Titles/WelcomeTitle.vue:175` and `components/Financement/Donations.vue:227` each `@import url('https://fonts.googleapis.com/...DM+Serif+Display')`: a render-blocking third-party request that also fails offline (Capacitor). Self-host the font (one `@font-face`, woff2) in `styles/`.
+
 ---
 
 ## Cleanup

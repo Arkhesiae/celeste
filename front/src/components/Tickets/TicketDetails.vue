@@ -144,6 +144,7 @@
 </template>
 
 <script setup>
+import { formatDateTime as formatDate } from '@/utils/formatDate';
 import { computed, ref } from 'vue';
 import { useTicketStore } from '@/stores/ticketStore';
 // import { useSnackbarStore } from '@/stores/snackbarStore';
@@ -222,15 +223,6 @@ const getTicketTypeLabel = (type) => {
   return found ? found.title : type;
 };
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-};
 
 const openReplyDialog = () => {
   showReplyDialog.value = true;

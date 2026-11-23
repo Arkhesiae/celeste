@@ -7,14 +7,6 @@ export function isSeedComment(comment) {
 }
 
 /**
- * Affiche uniquement les vrais commentaires agents.
- * Les marqueurs [seed]… ne sont jamais montrés comme commentaire.
- */
-export function canSeeDemandComment(comment) {
-  return Boolean(getVisibleDemandComment(comment));
-}
-
-/**
  * Texte du commentaire agent à afficher, ou '' si vide / marqueur seed.
  */
 export function getVisibleDemandComment(comment) {

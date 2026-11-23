@@ -17,8 +17,7 @@
             <v-card
               :class="['pa-4 cursor-pointer transition-all', hourType === 'fixed' ? 'selected' : 'outlined']"
               :color="hourType === 'fixed' ? 'onBackground' : 'surface'"
-              flat
-              rounded="xl"
+              flat
               @click="hourType = 'fixed'"
             >
               <div class="d-flex align-center">
@@ -32,8 +31,7 @@
             <v-card
               :class="['pa-4 cursor-pointer transition-all', hourType === 'variable' ? 'selected' : 'outlined']"
               :color="hourType === 'variable' ? 'onBackground' : 'surface'"
-              flat
-              rounded="xl"
+              flat
               @click="hourType = 'variable'"
             >
               <div class="d-flex align-center">
@@ -94,8 +92,7 @@
                 true-icon="mdi-plus-box-outline"
                 icon-color="onBackground"
                 base-color="surfaceContainerHighest"
-               
-                hide-details
+               
               />
               <span class="text-body-medium">Jour optionnel</span>
             </div>
@@ -267,7 +264,7 @@
   </GenericDialog>
 
   <!-- <v-dialog v-model="localDialogVisible" :fullscreen="xs" max-width="600" style="z-index: 3100 !important;">
-    <v-card rounded="xl" color="surfaceContainer">
+    <v-card color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
         <v-card-title class="">
           <div class="text-title-large font-weight-medium">{{ mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'
@@ -301,7 +298,7 @@
   />
 
   <v-dialog v-model="showVariantNameDialog" max-width="500" style="z-index: 3300 !important">
-    <v-card rounded="xl" color="surfaceContainer">
+    <v-card color="surfaceContainer">
       <v-card-item class="pa-6 mb-4">
         <v-card-title class="">
           <div class="text-title-large font-weight-medium">Modifier le nom de la variante</div>

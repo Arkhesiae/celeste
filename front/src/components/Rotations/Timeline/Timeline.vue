@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-card v-if="!currentActive" color="error" variant="tonal" class="pa-4 mb-4" rounded="xl">
+    <v-card v-if="!currentActive" color="error" variant="tonal" class="pa-4 mb-4">
       <v-card-item class="px-2">
         <template #prepend>
           <v-icon icon="mdi-alert-outline" />
@@ -14,7 +14,7 @@
         </p>
       </v-card-text>
     </v-card>
-    <v-card v-if="sortedRotations?.length > 0" rounded="xl" elevation="0" class="py-4">
+    <v-card v-if="sortedRotations?.length > 0" elevation="0" class="py-4">
       <v-timeline line-inset="4px" line-color="surface-variant" truncate-line="end" side="end" line-thickness="2">
         <v-scroll-y-transition group appear>
           <v-timeline-item

@@ -103,6 +103,7 @@
 </template>
 
 <script setup>
+import { formatDateLong as formatDate } from '@/utils/formatDate';
 import { occurrenceDays, todayKey } from '@/utils/dayFields.js';
 import { useTeamStore } from '@/stores/teamStore';
 // import { useRouter } from 'vue-router';
@@ -127,13 +128,6 @@ const filteredOccurrences = computed(() => {
   });
 });
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  });
-};
 </script>
 
 <style scoped>

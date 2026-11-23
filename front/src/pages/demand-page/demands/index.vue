@@ -43,7 +43,7 @@
     </v-row>
 
     <v-dialog :model-value="demandStore.loading" persistent width="300">
-      <v-card rounded="xl" class="pa-2">
+      <v-card class="pa-2">
         <v-card-text class="d-flex align-center">
           <v-progress-circular indeterminate color="primary" />
           <p class="ml-4">Chargement...</p>

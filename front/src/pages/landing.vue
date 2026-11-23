@@ -76,7 +76,7 @@
           >
             <transition name="card">
               <div v-show="card.isVisible">
-                <v-card height="100%" rounded="xl" flat class="flex-column d-flex pa-8 bg-surfaceContainer">
+                <v-card height="100%" flat class="flex-column d-flex pa-8 bg-surfaceContainer">
                   <v-scale-transition>
                     <v-icon color="primary" class="mt-4 mb-4 align-self-center">
                       {{ card.icon }}
@@ -106,7 +106,6 @@
               color="transparent"
               flat
               height="100%"
-              rounded="xl"
               class="flex-column align-center d-flex pa-4"
             >
               <span class="text-display-large mt-2 font-weight-bold text-primary">{{
@@ -116,7 +115,7 @@
             </v-card>
           </v-col>
           <v-col key="controllers" cols="12" md="4">
-            <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
+            <v-card color="transparent" flat height="100%" class="flex-column align-center d-flex pa-4">
               <span class="text-display-large mt-2 font-weight-bold text-onSurface">{{
                 Math.floor(animatedNumber)
               }}</span>
@@ -124,7 +123,7 @@
             </v-card>
           </v-col>
           <v-col key="replace" cols="12" md="4">
-            <v-card color="transparent" flat height="100%" rounded="xl" class="flex-column align-center d-flex pa-4">
+            <v-card color="transparent" flat height="100%" class="flex-column align-center d-flex pa-4">
               <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7">{{
                 Math.floor(animatedReplacements)
               }}</span>
@@ -136,7 +135,7 @@
       <!-- 
     <v-row class="px-4 mt-16 d-flex align-content-stretch">
       <v-col cols="12" md="12">
-        <v-card flat height="100%" rounded="xl" class="flex-column d-flex pa-8">
+        <v-card flat height="100%" class="flex-column d-flex pa-8">
           <v-card-title class="text-title-large mt-2 font-weight-bold">
             <v-icon color="primary">mdi-rocket-launch</v-icon>
           </v-card-title>

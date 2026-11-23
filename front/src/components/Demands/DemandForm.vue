@@ -85,7 +85,7 @@
                 <v-skeleton-loader v-for="n in 6" :key="n" elevation="0" flat height="84" />
               </div>
 
-              <v-alert v-else-if="rotationDays.length === 0" type="info" variant="tonal" rounded="lg" density="compact">
+              <v-alert v-else-if="rotationDays.length === 0" type="info" rounded="lg" density="compact">
                 Aucun tour de service actif à cette date.
               </v-alert>
 
@@ -131,7 +131,7 @@
                         :aria-label="`Motifs pour la vacation ${day.name}`"
                       />
                     </template>
-                    <v-card rounded="xl" max-width="320" class="pa-3">
+                    <v-card max-width="320" class="pa-3">
                       <p class="text-label-large mb-2">{{ day.name }} · {{ day.statusLabel }}</p>
                       <ul class="switch-reasons text-body-small">
                         <li v-for="detail in day.details" :key="detail.label">
@@ -148,7 +148,7 @@
 
         <v-window-item :value="1">
           <v-progress-circular v-if="loadingRotations" indeterminate color="primary" class="ma-4" />
-          <v-alert v-else-if="rotationError" type="error" variant="tonal" class="mt-2" rounded="lg">
+          <v-alert v-else-if="rotationError" type="error" class="mt-2" rounded="lg">
             {{ rotationError }}
           </v-alert>
           <template v-else>

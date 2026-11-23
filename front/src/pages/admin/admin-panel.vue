@@ -3,7 +3,7 @@
     <!-- En-tête avec titre et informations admin -->
     <v-row class="my-16">
       <v-col cols="12">
-        <v-card class="pa-6" rounded="xl" variant="flat" color="surface">
+        <v-card class="pa-6" variant="flat" color="surface">
           <div class="d-flex align-center justify-space-between">
             <div>
               <div class="align-center ga-2 font-weight-bold d-flex">
@@ -24,8 +24,7 @@
     <v-row class="mb-6">
       <v-col v-for="stat in quickStats" :key="stat.key" cols="12" :sm="stat.key === 'totalUsers' ? 12 : 6" md="4">
         <v-card
-          class="pa-4 opacity-100 px-6"
-          rounded="xl"
+          class="pa-4 opacity-100 px-6"
           variant="flat"
           color="surfaceContainerHighest"
           :class="actionNeeded(stat) ? 'action-needed' : ''"

@@ -52,7 +52,7 @@
             </div>
             <div class="dot dot--xs" />
             <span class="text-body-small font-weight-medium text-medium-emphasis">{{
-              formatDate(posterDay(demand))
+              formatDayMonth(posterDay(demand))
             }}</span>
 
             <template v-if="isMailingEnabled">
@@ -192,6 +192,7 @@
 
 <script setup>
 import { posterDay } from '@/utils/dayFields.js';
+import { formatDayMonth } from '@/utils/formatDate';
 import { getDemandIcon } from '@/utils/demandToIcon.js';
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
@@ -263,12 +264,9 @@ const onMenuSelect = ({ value }) => {
   emit(value === 'cancel' ? 'cancelDemand' : 'withdrawDemand', props.demand);
 };
 
-const formatDate = (date) => {
-  return new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-};
 
-const getTeamById = (teamId) => teamStore.centerTeams.find((team) => team._id === teamId);
-const getUserById = (userId) => userStore.users.find((user) => user._id === userId);
+const getTeamById = teamStore.getCenterTeam;
+const getUserById = userStore.getUser;
 
 const accepter = computed(() => {
   if (!props.demand?.accepterId) return null;

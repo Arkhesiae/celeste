@@ -220,6 +220,9 @@ export const useUserStore = defineStore('user', () => {
     error.value = null;
   };
 
+  // Un utilisateur de la liste déjà chargée (sans appel réseau)
+  const getUser = (userId) => users.value.find((user) => user._id === userId);
+
   return {
     // State
     users,
@@ -235,6 +238,7 @@ export const useUserStore = defineStore('user', () => {
     isLoading,
     getError,
     // Actions
+    getUser,
     fetchUsers,
     fetchUsersOfCenter,
     fetchUsersByCenter,

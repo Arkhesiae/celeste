@@ -924,10 +924,7 @@ const getWindowDateLabel = (idx) => {
   position: relative;
 
   /* border: 1px solid #4ebd68; */
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: 10;
 }
 
@@ -985,10 +982,7 @@ const getWindowDateLabel = (idx) => {
 
 .bars-container {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   display: flex;
   width: 100%;
   justify-content: space-between;

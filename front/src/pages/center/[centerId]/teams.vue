@@ -31,7 +31,7 @@
       @click="openAddTeamDialog"
     />
 
-    <v-alert v-if="teamCountWarning" type="warning" variant="tonal" rounded="xl" class="mb-4" icon="mdi-alert-outline">
+    <v-alert v-if="teamCountWarning" type="warning" rounded="xl" class="mb-4" icon="mdi-alert-outline">
       {{ teamCountWarning }}
     </v-alert>
 
@@ -108,7 +108,6 @@
         v-if="!rotationLength"
         type="info"
         color="secondary"
-        variant="tonal"
         density="compact"
         rounded="xl"
         class="mb-4"
@@ -124,7 +123,7 @@
         :current-position="currentCyclePosition"
         :time-zone="centerTimeZone"
       />
-      <v-alert v-if="swapTarget" type="warning" variant="tonal" density="compact" rounded="lg" class="mt-4">
+      <v-alert v-if="swapTarget" type="warning" density="compact" rounded="lg" class="mt-4">
         Ce jour est celui de l'équipe {{ swapTarget }} : les deux équipes échangeront leurs positions.
       </v-alert>
       <template #actions>

@@ -51,8 +51,7 @@
 
           <ActiveRotationCard />
 
-          <v-card
-            rounded="xl"
+          <v-card
             elevation="0"
             class="pa-4"
             :class="smAndDown ? 'pb-16 mx-n3' : ''"
@@ -177,31 +176,6 @@ onUnmounted(() => {
 
 .right-col {
   max-width: 500px;
-}
-
-.highlight-shadow {
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.096),
-    0 0 0 1px rgba(255, 255, 255, 0.007),
-    0 4px 8px rgba(0, 0, 0, 0.148);
-}
-
-.new-demand-button.highlight-shadow {
-  backface-visibility: hidden;
-  transform: translateZ(0);
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.026),
-    0 0 0 1px rgba(255, 255, 255, 0.007),
-    0 4px 4px rgba(0, 0, 0, 0.018);
-}
-
-.new-demand-button.highlight-shadow:hover {
-  transform: scale(1.05) translateZ(0);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.096),
-    0 0 0 1px rgba(255, 255, 255, 0.007),
-    0 4px 8px rgba(0, 0, 0, 0.148);
-  transition: transform 0.2s ease-in-out;
 }
 
 .title-transition-enter-active,

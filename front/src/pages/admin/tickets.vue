@@ -45,7 +45,7 @@
 
     <v-row>
       <v-col cols="12">
-        <v-card class="py-6 pa-0" rounded="xl" color="transparent" flat>
+        <v-card class="py-6 pa-0" color="transparent" flat>
           <!-- Filtres -->
           <v-slide-y-transition>
             <div v-if="showFilters" class="mb-4">
@@ -123,7 +123,7 @@
 
     <!-- Dialog de confirmation de suppression -->
     <v-dialog v-model="deleteDialog" max-width="400px">
-      <v-card rounded="xl" class="pa-6">
+      <v-card class="pa-6">
         <v-card-title class="pa-0"> Confirmer la suppression </v-card-title>
         <v-card-text class="pa-0"> Êtes-vous sûr de vouloir supprimer ce ticket ? </v-card-text>
         <v-card-actions class="pa-0">

@@ -73,17 +73,6 @@ export const demandService = {
     return response;
   },
 
-  /**
-   * Récupère les demandes d'un utilisateur.
-   * @param {string} userId - L'ID de l'utilisateur.
-   * @returns {Promise<Array>} Liste des demandes de l'utilisateur.
-   */
-  async getUserDemands(userId) {
-    const response = await apiFetch(`/demand/user/${userId}`, {
-      method: 'GET',
-    });
-    return response;
-  },
 
   /**
    * Vérifie le shift d'un utilisateur pour une date donnée.

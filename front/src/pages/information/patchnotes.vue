@@ -159,8 +159,7 @@
       <v-col cols="12" md="8" lg="9">
         <v-card
           v-if="selectedVersion"
-          :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
-          rounded="xl"
+          :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
           elevation="0"
           class="smooth-shadow pa-2 pt-16"
           color="transparent"
@@ -278,7 +277,7 @@
         </v-card>
 
         <!-- État vide -->
-        <v-card v-else rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card v-else elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-file-document-outline" size="64" color="medium-emphasis" class="mb-4" />
             <h3 class="text-title-large font-weight-medium mb-2">Sélectionnez une version</h3>

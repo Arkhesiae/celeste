@@ -43,8 +43,7 @@
                     <v-switch
                       v-if="typeof rule.value === 'boolean'"
                       v-model="rule.value"
-                      :class="smAndDown ? '' : 'custom-switch'"
-                      hide-details
+                      :class="smAndDown ? '' : 'custom-switch'"
                       :disabled="rule.locked && !isMasterAdmin"
                       :color="rule.locked ? 'primary' : 'primary'"
                       density="compact"
@@ -118,8 +117,7 @@
           v-model="mailingRuleToEdit.value.enabled"
           label="Activer l'envoi de mails à l'administration"
           color="primary"
-         
-          hide-details
+         
           class="mb-4"
         />
 

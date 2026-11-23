@@ -1,5 +1,5 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="pa-6 bite" color="surfaceContainer" height="100%">
+  <v-card elevation="0" class="pa-6 bite" color="surfaceContainer" height="100%">
     <!-- En-tête avec l'icône et le menu -->
     <div class="d-flex justify-space-between align-center pa-0">
       <div class="d-flex align-center">
@@ -185,7 +185,7 @@
   </teleport>
 
   <v-dialog v-model="showConflictDialog" max-width="600px">
-    <v-card rounded="xl" elevation="0" class="pa-6">
+    <v-card elevation="0" class="pa-6">
       <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
         <v-card-title>Conflits détectés</v-card-title>
       </v-card-item>
@@ -197,8 +197,7 @@
               v-for="(conf, idx) in substitutionConflicts"
               :key="idx"
               color="background"
-              class="pa-4"
-              rounded="xl"
+              class="pa-4"
               elevation="0"
             >
               <v-list-item-title> Demande du {{ toDisplayFormat(posterDay(conf.sub)) }} </v-list-item-title>

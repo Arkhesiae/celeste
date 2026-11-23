@@ -59,7 +59,7 @@
             </v-col>
             <v-col cols="12" md="6">
               <v-fade-transition>
-                <v-card color="background" class="mb-8 pa-4" rounded="xl" elevation="0">
+                <v-card color="background" class="mb-8 pa-4" elevation="0">
                   <v-card-item>
                     <div class="d-flex justify-space-between align-center">
                       <v-card-title class="text-body-large font-weight-medium">
@@ -115,7 +115,7 @@
           <v-row>
             <v-col cols="12" md="6" class="pa-4">
               <v-slide-y-transition>
-                <v-alert v-if="conflict" color="error" type="warning" rounded="lg" variant="tonal" class="mt-4">
+                <v-alert v-if="conflict" color="error" type="warning" rounded="lg" class="mt-4">
                   <v-card-title class="pa-0 ma-0"> Conflit </v-card-title>
                   <v-card-text class="pa-0 ma-0">
                     <p class="opacity-50">
@@ -129,8 +129,7 @@
                   v-if="enRenfortConflict"
                   color="error"
                   type="warning"
-                  rounded="lg"
-                  variant="tonal"
+                  rounded="lg"
                   class="mt-4"
                 >
                   <v-card-title class="pa-0 ma-0"> Renfort déjà prévu </v-card-title>
@@ -214,7 +213,7 @@
 
   <!-- Confirmation Dialog -->
   <v-dialog v-model="showConfirmationDialog" max-width="400px">
-    <v-card rounded="xl" elevation="0" class="pa-2">
+    <v-card elevation="0" class="pa-2">
       <v-card-item prepend-icon="mdi-alert-outline">
         <v-card-title>Conflit de changement</v-card-title>
       </v-card-item>
@@ -231,7 +230,7 @@
   </v-dialog>
 
   <v-dialog v-model="showConflictDialog" max-width="600px">
-    <v-card rounded="xl" elevation="0" class="pa-6">
+    <v-card elevation="0" class="pa-6">
       <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
         <v-card-title>Conflits détectés</v-card-title>
       </v-card-item>
@@ -243,8 +242,7 @@
               v-for="(conf, idx) in substitutionConflicts"
               :key="idx"
               color="background"
-              class="pa-4"
-              rounded="xl"
+              class="pa-4"
               elevation="0"
             >
               <v-list-item-title> Demande du {{ toDisplayFormat(posterDay(conf.sub)) }} </v-list-item-title>

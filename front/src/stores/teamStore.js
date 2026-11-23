@@ -260,6 +260,9 @@ export const useTeamStore = defineStore('team', () => {
   /** Grille d'une équipe sur une courte période (non conservée dans le store : lecture à la demande). */
   const fetchTeamGrid = (teamId, startDate, endDate) => teamService.getTeamGrid(teamId, startDate, endDate);
 
+  // Une équipe de la liste du centre déjà chargée (sans appel réseau)
+  const getCenterTeam = (teamId) => centerTeams.value.find((team) => team._id === teamId);
+
   return {
     // State
     currentCenter,
@@ -272,6 +275,7 @@ export const useTeamStore = defineStore('team', () => {
     error,
 
     // Actions
+    getCenterTeam,
     fetchCenterTeams,
     fetchAllTeams,
     fetchCurrentTeamOfUser,

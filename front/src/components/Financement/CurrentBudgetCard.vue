@@ -1,6 +1,5 @@
 <template>
-  <v-card
-    rounded="xl"
+  <v-card
     elevation="0"
     :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
     class="smooth-shadow pt-16 pb-4 overflow-visible d-flex flex-column"

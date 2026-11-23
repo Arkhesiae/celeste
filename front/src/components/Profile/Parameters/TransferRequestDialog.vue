@@ -43,7 +43,7 @@
           pouvez plus modifier vos équipes, vos points ni vos remplacements ; vous pouvez l'annuler à tout moment.
         </div>
 
-        <v-alert type="warning" variant="tonal" rounded="xl" density="comfortable" icon="mdi-broom">
+        <v-alert type="warning" rounded="xl" density="comfortable" icon="mdi-broom">
           <div class="font-weight-bold mb-1">Si la mutation est acceptée, votre période à venir sera nettoyée :</div>
           <ul class="pl-4">
             <li>
@@ -60,7 +60,7 @@
           </ul>
         </v-alert>
 
-        <v-alert v-if="impact.negativePoints" type="error" variant="tonal" rounded="xl" density="comfortable" icon="mdi-alert-circle-outline">
+        <v-alert v-if="impact.negativePoints" type="error" rounded="xl" density="comfortable" icon="mdi-alert-circle-outline">
           Votre solde de points est négatif ({{ impact.points }}). Partir avec un solde négatif, c'est mal.
         </v-alert>
       </div>

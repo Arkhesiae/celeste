@@ -30,7 +30,6 @@
         v-if="windowStart"
         v-show="headerless || active"
         id="work-window-card"
-        rounded="xl"
         elevation="0"
         color="surfaceContainer"
         class="work-tile pa-4"

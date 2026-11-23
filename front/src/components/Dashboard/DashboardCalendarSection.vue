@@ -199,15 +199,4 @@ onMounted(async () => {
   background: rgba(var(--v-theme-background), 0.4);
 }
 
-.calendar-card.not-visible {
-  opacity: 0.01;
-  transition: all 0.3s ease-in-out;
-  transform: translateY(20px) scale(0.9);
-}
-
-.calendar-card {
-  opacity: 1;
-  transition: all 0.5s ease-in-out 0.2s;
-  transform: translateY(0px) scale(1);
-}
 </style>

@@ -327,8 +327,8 @@ const canSwitch = computed(() => {
   return props.demand?.canSwitch;
 });
 
-const getTeamById = (teamId) => teamStore.centerTeams.find((team) => team._id === teamId);
-const getUserById = (userId) => userStore.users.find((user) => user._id === userId);
+const getTeamById = teamStore.getCenterTeam;
+const getUserById = userStore.getUser;
 
 const poster = computed(() => {
   if (!props.demand?.posterId) return null;

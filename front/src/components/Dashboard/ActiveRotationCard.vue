@@ -1,6 +1,5 @@
 <template>
-  <v-card
-    rounded="xl"
+  <v-card
     elevation="0"
     class="mb-4 pa-6"
     :class="smAndDown ? 'mx-4' : 'mx-0'"

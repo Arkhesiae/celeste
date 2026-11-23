@@ -15,7 +15,7 @@
     
 
     <!-- 
-    <v-alert v-if="!activeRotation" color="error" variant="tonal" rounded="xl" class="mb-4 pa-4"
+    <v-alert v-if="!activeRotation" color="error" rounded="xl" class="mb-4 pa-4"
       icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
       <div class="d-flex align-center justify-space-between">
         <div>
@@ -86,7 +86,4 @@ onUnmounted(() => {
   background: none !important;
 }
 
-.remplacement-fab-tonal {
-  background-color: #e5e4ec !important;
-}
 </style>

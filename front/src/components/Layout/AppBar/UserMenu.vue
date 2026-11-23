@@ -11,7 +11,7 @@
     </template>
 
     <!-- Identité, points et équipe -->
-    <v-card min-width="300" class="pa-4 mb-1" rounded="xl">
+    <v-card min-width="300" class="pa-4 mb-1">
       <v-list>
         <v-list-item>
           <template #prepend>
@@ -57,7 +57,7 @@
     </v-card>
 
     <!-- Actions -->
-    <v-card rounded="xl">
+    <v-card>
       <!-- Trois liens reliés en un seul groupe -->
       <v-btn-group connected variant="flat" color="primaryContainer" size="small" class="w-100 pa-0">
         <v-btn class="flex-grow-1" prepend-icon="mdi-account-cog" @click="$emit('navigate-profile')"> Profil </v-btn>

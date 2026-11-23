@@ -29,7 +29,6 @@
         color="primary"
         density="comfortable"
        
-        hide-details
       />
 
       <!-- Horaires : le serveur les exige pour toute entrée sans vacation ; 09:00 – 17:00 par défaut -->

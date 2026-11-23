@@ -5,7 +5,7 @@
       class="d-flex"
       style="
         margin-top: calc(64px + var(--safe-area-top));
-        height: calc(100vh - 64px - var(--safe-area-top) - var(--safe-area-bottom));
+        height: calc(100dvh - 64px - var(--safe-area-top) - var(--safe-area-bottom));
         width: 100%;
         z-index: 4000 !important;
         position: fixed;

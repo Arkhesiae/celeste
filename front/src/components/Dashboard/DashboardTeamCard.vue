@@ -1,6 +1,6 @@
 <template>
   <!-- Carte de l'équipe -->
-  <v-card ref="teamCard" rounded="xl" elevation="0" class="pa-2 team-card">
+  <v-card ref="teamCard" elevation="0" class="pa-2 team-card">
     <div class="d-flex align-start justify-space-between">
       <v-card-title class="text-body-large font-weight-bold"> Mon équipe </v-card-title>
       <v-icon

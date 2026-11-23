@@ -97,13 +97,6 @@ const pendingTransactions = computed(() => pointStore.pendingTransactions);
 const processedTransactions = computed(() => pointStore.processedTransactions);
 const isLoading = computed(() => pointStore.isLoading);
 
-const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-};
 
 onMounted(() => {
   // pointStore.fetchUserPoints();
@@ -157,12 +150,4 @@ onMounted(() => {
   opacity: 0;
 }
 
-.pending-transaction {
-  border-left: 3px solid rgb(var(--v-theme-warning));
-  background: rgba(var(--v-theme-warning), 0.05);
-}
-
-.pending-transaction:hover {
-  background: rgba(var(--v-theme-warning), 0.1);
-}
 </style>

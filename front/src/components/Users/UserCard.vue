@@ -127,20 +127,6 @@ const getTeamName = (team) => {
   animation: steam 7s linear infinite;
 }
 
-@keyframes steam {
-  0% {
-    background-position: 0 0;
-  }
-
-  80% {
-    background-position: 400% 0;
-  }
-
-  100% {
-    background-position: 400% 0;
-  }
-}
-
 .block:after {
   filter: blur(5px);
 }

@@ -11,7 +11,7 @@
         période seront converties de la façon suivante :</span
       >
 
-      <v-alert v-if="pendingActivation.changes?.length > 1" type="info" variant="tonal" class="my-3" density="compact">
+      <v-alert v-if="pendingActivation.changes?.length > 1" type="info" class="my-3" density="compact">
         <v-progress-linear :model-value="(changeIndex / totalChangesCount) * 100" color="primary" height="8" rounded />
         <div class="d-flex justify-space-between mt-2">
           <span class="text-body-small">Approuvé: {{ changeIndex }} / {{ totalChangesCount }}</span>
@@ -20,7 +20,7 @@
       </v-alert>
 
       <template v-if="currentChange">
-        <v-card class="pa-4 my-8" rounded="xl" elevation="0" color="surfaceContainer">
+        <v-card class="pa-4 my-8" elevation="0" color="surfaceContainer">
           <div class="d-flex align-center ga-1">
             <span v-if="currentChange.to" class="text-body-small">Du </span>
             <span v-else class="text-body-small">À partir du </span>

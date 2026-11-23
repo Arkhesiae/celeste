@@ -219,34 +219,4 @@ body,
   }
 }
 
-.slide-custom-enter-active,
-.slide-custom-leave-active {
-  transition:
-    transform 0.3s ease,
-    opacity 0.3s ease;
-  position: relative;
-  width: 100%;
-  top: 0;
-  left: 0;
-}
-
-.slide-custom-enter-from {
-  left: 100%;
-  opacity: 0;
-}
-
-.slide-custom-enter-to {
-  left: 0;
-  opacity: 1;
-}
-
-.slide-custom-leave-from {
-  left: 0;
-  opacity: 1;
-}
-
-.slide-custom-leave-to {
-  left: -20%;
-  opacity: 0;
-}
 </style>

@@ -2,7 +2,7 @@
   <v-container class="d-flex fill-height">
     <v-row justify="center" align-content="center">
       <v-col cols="12" md="8" lg="6">
-        <v-card class="pa-6" rounded="xl" elevation="0">
+        <v-card class="pa-6" elevation="0">
           <v-card-title class="mb-4"> En attente d'approbation </v-card-title>
 
           <v-card-text>

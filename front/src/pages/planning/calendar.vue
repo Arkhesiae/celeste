@@ -374,63 +374,12 @@ onMounted(async () => {
 <style>
 :root {
   --calendar-day-size: 80px;
-  --calendar-day-mobile-size: 48px;
   --border-radius: 8px;
 }
 
 .calendar-day {
   height: var(--calendar-day-size);
   width: var(--calendar-day-size);
-}
-
-.calendar-day-mobile {
-  height: var(--calendar-day-mobile-size) !important;
-  width: var(--calendar-day-mobile-size) !important;
-}
-
-.nblock {
-  position: relative;
-  /* Nécessaire pour positionner ::after */
-  z-index: 0;
-  /* Supprime le contexte inutile */
-  overflow: visible !important;
-  opacity: 1 !important;
-}
-
-.nblock:after {
-  content: '';
-  position: absolute;
-  left: -2px;
-  top: -2px;
-  border-radius: 8px;
-  background: linear-gradient(
-    45deg,
-    #ff86ac,
-    rgba(255, 160, 109, 0.94),
-    rgba(250, 152, 248, 0.05),
-    rgba(159, 159, 248, 0.22),
-    #f693b1
-  );
-  background-size: 400%;
-  width: calc(100% + 4px);
-  height: calc(100% + 4px);
-  z-index: -1;
-  /* Cela fonctionne si le stacking context de `.block` est supprimé */
-  animation: steam 15s linear infinite;
-}
-
-@keyframes steam {
-  0% {
-    background-position: 0 0;
-  }
-
-  100% {
-    background-position: 400% 0;
-  }
-}
-
-.nblock:after {
-  filter: blur(10px);
 }
 
 .empty-day {

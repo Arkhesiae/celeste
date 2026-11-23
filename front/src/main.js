@@ -12,9 +12,7 @@ import App from './App.vue';
 // Composables
 import { createApp } from 'vue';
 
-import './styles/fonts.css';
 import './styles/transitions.css';
-import './styles/listitem.css';
 import './styles/tile.css';
 import './styles/day.css';
 import './styles/dot.css';

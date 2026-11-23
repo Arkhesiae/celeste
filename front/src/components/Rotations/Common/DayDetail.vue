@@ -191,8 +191,4 @@ const authStore = useAuthStore();
 </script>
 
 <style scoped>
-.shift-item {
-  background-color: rgb(var(--v-theme-surface));
-  border: 1px solid rgb(var(--v-theme-outline));
-}
 </style>

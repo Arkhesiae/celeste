@@ -2,8 +2,7 @@
   <div>
     <v-alert
       v-if="!authStore.userData.centerId"
-      color="error"
-      variant="tonal"
+      color="error"
       rounded="xl"
       class="mb-4 pa-4"
       icon="mdi-alert-outline"
@@ -20,8 +19,7 @@
 
     <v-alert
       v-if="!teamStore.currentTeam"
-      color="error"
-      variant="tonal"
+      color="error"
       rounded="xl"
       class="mb-4 pa-4"
       icon="mdi-alert-circle-outline"
@@ -40,8 +38,7 @@
 
     <v-alert
       v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate"
-      color="error"
-      variant="tonal"
+      color="error"
       rounded="xl"
       class="mb-4 pa-4"
       icon="mdi-alert-outline"
@@ -61,8 +58,7 @@
 
     <v-alert
       v-if="!activeRotation"
-      color="error"
-      variant="tonal"
+      color="error"
       rounded="xl"
       class="mb-4 pa-4"
       icon="mdi-alert-outline"

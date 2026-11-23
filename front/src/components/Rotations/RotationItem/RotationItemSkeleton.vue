@@ -1,5 +1,5 @@
 <template>
-  <v-card v-for="i in 1" :key="i" class="mb-4 pa-4" rounded="xl" elevation="0">
+  <v-card v-for="i in 1" :key="i" class="mb-4 pa-4" elevation="0">
     <v-card-item>
       <div class="d-flex align-center">
         <v-skeleton-loader type="heading" width="160" class="mt-1" />

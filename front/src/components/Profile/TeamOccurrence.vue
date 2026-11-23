@@ -181,81 +181,9 @@ const handleDelete = (occurrenceId) => {
 }
 
 /* ── Delete button ── */
-.del-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: transparent;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgb(var(--v-theme-error));
-  transition:
-    background 0.12s,
-    border-color 0.12s,
-    color 0.12s;
-}
-
-.del-btn:hover {
-  background: rgba(var(--v-theme-error), 0.08);
-  border-color: rgba(var(--v-theme-error), 0.35);
-  color: rgb(var(--v-theme-error));
-}
 
 /* ── Confirm group ── */
 
-.btn-cancel {
-  font-size: 12px;
-  padding: 4px 10px;
-  border-radius: 8px;
-  border: 0.5px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  background: transparent;
-  color: rgb(var(--v-theme-on-surface-variant));
-  cursor: pointer;
-  transition: background 0.1s;
-  line-height: 1.5;
-}
-
-.btn-cancel:hover {
-  background: rgba(var(--v-theme-on-surface), 0.05);
-}
-
-.btn-confirm {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 12px;
-  border-radius: 8px;
-  border: 0.5px solid rgba(var(--v-theme-error), 0.4);
-  background: rgba(var(--v-theme-error), 0.1);
-  color: rgb(var(--v-theme-error));
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: opacity 0.1s;
-  line-height: 1.5;
-}
-
-.btn-confirm:hover {
-  opacity: 0.75;
-}
-
 /* ── Transition ── */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
-}
 
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateX(6px);
-}
-
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-6px);
-}
 </style>

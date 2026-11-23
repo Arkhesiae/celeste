@@ -1,10 +1,10 @@
 <template>
-  <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+  <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
     <h3 class="text-title-large font-weight-medium mb-4">
       <v-icon icon="mdi-code-braces" color="success" class="mr-2" />
       Coûts de Développement
     </h3>
-    <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+    <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
       <div class="d-flex align-center mb-4">
         <v-icon icon="mdi-robot" color="primary" class="mr-3" size="32" />
         <div>

@@ -30,8 +30,7 @@
         type="error"
         icon="mdi-shield"
         rounded="lg"
-        color="secondary"
-        variant="tonal"
+        color="secondary"
         class="mt-4"
         closable
         @click:close="error = ''"

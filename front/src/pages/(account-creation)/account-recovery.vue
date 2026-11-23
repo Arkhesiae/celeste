@@ -160,8 +160,7 @@ async function handleRecovery() {
     <v-row>
       <v-col cols="12" class="d-flex justify-center align-center">
         <v-card
-          flat
-          rounded="xl"
+          flat
           class="pa-6 smooth-height"
           max-width="1200px"
           :class="smAndDown ? 'bg-transparent px-0' : ''"
@@ -178,7 +177,7 @@ async function handleRecovery() {
                   </span>
                 </div>
               </v-scroll-y-transition>
-              <v-alert class="mt-4" color="pendingDemand" variant="tonal" rounded="xl" icon="mdi-mail">
+              <v-alert class="mt-4" color="pendingDemand" rounded="xl" icon="mdi-mail">
                 <span class="text-body-medium pl-0">
                   Nous vous rappelons qu'il est préférable de ne pas utiliser l'adresse aviation-civile.gouv.fr.
                   <br />
@@ -221,8 +220,7 @@ async function handleRecovery() {
                     <v-alert
                       v-if="step1Error"
                       color="error"
-                      rounded="xl"
-                      variant="tonal"
+                      rounded="xl"
                       class="mb-2 d-flex align-center"
                     >
                       <v-icon color="error" size="24" class="mr-2"> mdi-alert-circle </v-icon>
@@ -296,8 +294,7 @@ async function handleRecovery() {
                     v-if="step2Error"
                     type="error"
                     class="mb-2"
-                    color="error"
-                    variant="tonal"
+                    color="error"
                     rounded="xl"
                     icon="mdi-alert-outline"
                   >
@@ -350,8 +347,7 @@ async function handleRecovery() {
                       v-if="step4Error"
                       type="error"
                       class="mb-2"
-                      color="error"
-                      variant="tonal"
+                      color="error"
                       rounded="xl"
                       icon="mdi-alert-outline"
                     >

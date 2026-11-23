@@ -6,7 +6,6 @@
           width="100%"
           class="mt-n16 pa-6 pt-10"
           :color="smAndDown ? 'transparent' : ''"
-          rounded="xl"
           elevation="0"
           style="max-width: 900px; z-index: 34 !important"
         >
@@ -71,7 +70,6 @@
 
                 <v-window-item :value="2">
                   <v-card
-                    rounded="xl"
                     flat=""
                     :color="smAndDown ? 'surfaceContainer' : 'background'"
                     @click="currentStep = 1"

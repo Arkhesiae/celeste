@@ -10,7 +10,7 @@ defineProps({});
 </script>
 
 <template>
-  <v-card rounded="xl" color="surfaceContainer" flat class="points-card" @click="$emit('click')">
+  <v-card color="surfaceContainer" flat class="points-card" @click="$emit('click')">
     <div class="d-flex align-center pa-4 ga-4">
       <v-avatar color="surfaceContainer" size="40">
         <Logo color="primary" style="margin-top: -2px; margin-left: 2px" />

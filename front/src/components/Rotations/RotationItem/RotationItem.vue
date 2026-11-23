@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mb-4 pa-4" rounded="xl" elevation="0" :class="{ 'active-rotation': isActive }">
+  <v-card class="mb-4 pa-4" elevation="0" :class="{ 'active-rotation': isActive }">
     <v-card-item>
       <div class="d-flex align-center">
         <template v-if="!smAndDown && isEditing">
@@ -63,8 +63,7 @@
     </v-card-item>
     <v-alert
       v-if="teamCountMismatch"
-      type="warning"
-      variant="tonal"
+      type="warning"
       density="compact"
       rounded="lg"
       class="mx-4 mb-2"

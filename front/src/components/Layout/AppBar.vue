@@ -91,12 +91,7 @@ import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useTeamStore } from '@/stores/teamStore.js';
 import { usePointStore } from '@/stores/pointStore.js';
-import { useTicketStore } from '../../stores/ticketStore';
-import AppBarTitle from './AppBar/AppBarTitle.vue';
-import AdminSection from './AppBar/AdminSection.vue';
-import HomeNavigation from './AppBar/HomeNavigation.vue';
-import UserMenu from './AppBar/UserMenu.vue';
-import ThemeSwitch from './AppBar/ThemeSwitch.vue';
+import { useTicketStore } from '@/stores/ticketStore';
 
 // Constants
 const HOME_PATH = '/landing';

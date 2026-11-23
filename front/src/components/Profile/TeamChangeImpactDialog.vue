@@ -6,7 +6,7 @@
     persistent
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-card rounded="xl" elevation="0" class="pa-6">
+    <v-card elevation="0" class="pa-6">
       <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
         <v-card-title>Confirmer le changement d'équipe</v-card-title>
       </v-card-item>
@@ -41,7 +41,6 @@
           v-for="(change, i) in changes"
           :key="i"
           class="pa-4 my-4"
-          rounded="xl"
           elevation="0"
           color="surfaceContainer"
         >

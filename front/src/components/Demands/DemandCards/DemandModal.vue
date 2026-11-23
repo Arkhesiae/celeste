@@ -23,8 +23,7 @@
 
       <v-card
         v-ripple="false"
-        :hover="false"
-        rounded="xl"
+        :hover="false"
         color="background"
         elevation="0"
         class="mb-4 pa-4"
@@ -66,7 +65,7 @@
 
       <!-- Type, acceptation, points, date, commentaire et vues : un seul groupe, grands arrondis aux extrémités, petits entre deux cartes -->
       <div class="connected-cards mb-4">
-        <v-card rounded="xl" color="background" elevation="0" class="pa-4">
+        <v-card color="background" elevation="0" class="pa-4">
           <div class="d-flex align-center justify-space-between">
             <div class="d-flex align-center" style="position: relative; width: 20px">
               <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
@@ -108,8 +107,7 @@
           v-if="demand.accepterId"
           v-ripple="false"
           :hover="false"
-          color="background"
-          rounded="xl"
+          color="background"
           elevation="0"
           class="pa-4"
           @click="showAccepterDetails = !showAccepterDetails"
@@ -151,7 +149,7 @@
           </v-expand-transition>
         </v-card>
 
-        <v-card rounded="xl" elevation="0" class="px-4 py-2" color="background">
+        <v-card elevation="0" class="px-4 py-2" color="background">
           <div
             v-if="demand.type !== 'switch'"
             class="d-flex justify-space-between py-2 align-center"
@@ -185,18 +183,18 @@
           </div>
         </v-card>
 
-        <v-card color="background" rounded="xl" elevation="0" class="pa-4">
+        <v-card color="background" elevation="0" class="pa-4">
           <div class="d-flex justify-space-between align-center text-disabled">
             <span class="text-body-medium font-weight-medium text-medium-emphasis">Date</span>
             <span class="text-body-medium text-disabled">{{ formatDate(posterDay(demand)) }}</span>
           </div>
         </v-card>
 
-        <v-card v-if="demand.comment" color="background" rounded="xl" elevation="0" class="pa-4">
+        <v-card v-if="demand.comment" color="background" elevation="0" class="pa-4">
           <span class="text-disabled text-body-medium font-weight-medium">{{ demand.comment }}</span>
         </v-card>
 
-        <v-card color="background" rounded="xl" elevation="0" class="pa-4">
+        <v-card color="background" elevation="0" class="pa-4">
           <div class="d-flex align-center ga-2">
             <v-icon size="12" icon="mdi-eye-outline" />
             <span class="text-body-medium text-medium-emphasis"> Vue par {{ demand.seenBy?.length }} personnes </span>
@@ -207,8 +205,7 @@
 
       <v-card
         v-if="isMailingEnabled && (isOwner || isAccepter)"
-        color="background"
-        rounded="xl"
+        color="background"
         elevation="0"
         class="mb-4 pa-4"
       >
@@ -273,8 +270,7 @@
 
       <v-card
         v-if="isOwner || isAccepter"
-        v-ripple
-        rounded="xl"
+        v-ripple
         elevation="0"
         class="mb-4 mt-4"
         color="error"
@@ -336,7 +332,7 @@ const props = defineProps({
   },
 });
 
-const getUserById = (userId) => userStore.users.find((user) => user._id === userId);
+const getUserById = userStore.getUser;
 
 let intervalId;
 

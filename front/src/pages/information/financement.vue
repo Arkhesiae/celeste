@@ -15,7 +15,7 @@
       <!-- Colonne latérale : Sélecteur de campagne -->
       <v-col cols="12" md="4" lg="3" class="d-flex flex-column overflow-hidden" style="max-height: 640px">
         <template v-if="!smAndDown">
-          <v-card rounded="xl" elevation="0" class="py-4" height="100%" color="transparent">
+          <v-card elevation="0" class="py-4" height="100%" color="transparent">
             <div class="d-flex flex-column flex-grow-0" style="max-height: 100%">
               <EntitySelector
                 :items="campaigns"
@@ -232,7 +232,7 @@
     <!-- Graphique d'évolution -->
     <!-- <v-row>
       <v-col cols="12" class="pa-2">
-        <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
           <h3 class="text-title-large font-weight-medium mb-4">
             <v-icon icon="mdi-chart-line" color="info" class="mr-2" />
             Évolution du Budget
@@ -258,7 +258,7 @@
     <!-- Actions -->
     <!-- <v-row>
       <v-col cols="12" class="pa-2">
-        <v-card rounded="xl" elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-heart" color="error" size="48" class="mb-4" />
             <h3 class="text-headline-small font-weight-bold mb-2">Soutenez le projet</h3>
@@ -560,13 +560,6 @@ const previousCampaignsRemainder = computed(() => {
   min-width: 80px;
 }
 
-.label-text {
-  font-weight: bold;
-  font-size: 0.875rem;
-  color: rgb(var(--v-theme-primary));
-  line-height: 1;
-}
-
 .label-subtitle {
   font-size: 0.75rem;
   color: rgba(var(--v-theme-on-surface), 0.7);
@@ -591,10 +584,6 @@ const previousCampaignsRemainder = computed(() => {
   .indicator-label {
     min-width: 70px;
     padding: 4px 8px;
-  }
-
-  .label-text {
-    font-size: 0.8rem;
   }
 
   .label-subtitle {
@@ -788,11 +777,6 @@ const previousCampaignsRemainder = computed(() => {
 }
 
 /* Légende */
-
-.campaign-hover:hover {
-  background-color: rgba(var(--v-theme-primary), 0.05);
-  border-color: rgba(var(--v-theme-primary), 0.1);
-}
 
 /* Responsive pour la grille des mois */
 @media (max-width: 1200px) {

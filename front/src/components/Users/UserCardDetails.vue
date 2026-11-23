@@ -1,6 +1,6 @@
 <template>
   <v-dialog :model-value="dialogVisible" max-width="600" @update:model-value="$emit('update:dialogVisible', $event)">
-    <v-card v-if="user" rounded="xl" variant="flat" class="pa-6">
+    <v-card v-if="user" variant="flat" class="pa-6">
       <v-card-title class="d-flex justify-space-between align-center pa-0">
         <div class="d-flex align-center">
           <v-avatar color="primary" size="60" class="mr-3">
@@ -66,8 +66,7 @@
               v-if="!user.isAdmin && isMasterAdmin"
               flat
               class="pa-4"
-              color="surfaceContainerHighest"
-              rounded="xl"
+              color="surfaceContainerHighest"
               @click="$emit('makeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -79,8 +78,7 @@
               v-if="user.isAdmin && isMasterAdmin"
               flat
               class="pa-4"
-              color="surfaceContainerHighest"
-              rounded="xl"
+              color="surfaceContainerHighest"
               @click="$emit('removeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -94,8 +92,7 @@
               v-if="isMasterAdmin"
               flat
               class="pa-4"
-              color="surfaceContainerHighest"
-              rounded="xl"
+              color="surfaceContainerHighest"
               @click="$emit('assignCenter', userId)"
             >
               <div class="d-flex align-center ga-3">
@@ -109,8 +106,7 @@
               v-if="isLocalAdmin || isMasterAdmin"
               flat
               class="pa-4"
-              color="error"
-              rounded="xl"
+              color="error"
               @click="$emit('delete', user)"
             >
               <div class="d-flex align-center ga-3">

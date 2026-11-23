@@ -153,11 +153,6 @@ function getInitials(name) {
     .toUpperCase();
 }
 
-function formatDate(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  return d.toLocaleDateString('fr-FR');
-}
 </script>
 
 <style scoped>

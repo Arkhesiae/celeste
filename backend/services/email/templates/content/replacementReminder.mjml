@@ -10,4 +10,5 @@
   {{/if}}
   <mj-text mj-class="muted" padding="10px 0 0">Un empêchement ? Retirez-vous de la demande depuis l'application dès que possible afin que {{posterName}} puisse trouver quelqu'un d'autre.</mj-text>
 </mj-column></mj-section>
+{{> contact person=posterContact label="Pour joindre l'auteur de la demande" }}
 {{> button }}

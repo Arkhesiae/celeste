@@ -9,4 +9,5 @@
   <mj-text mj-class="muted"><strong>Note :</strong> cette demande avait été acceptée par : {{accepters}}</mj-text>
   {{/if}}
 </mj-column></mj-section>
+{{> contact person=posterContact label="Pour joindre l'auteur de la demande" }}
 {{> button }}

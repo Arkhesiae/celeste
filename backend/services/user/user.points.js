@@ -3,6 +3,7 @@ import PointTransfer from '../../models/PointTransfer.js';
 import { AppError } from '../../error/AppError.js';
 import { MIN_POINTS_BALANCE } from '../../config/points.js';
 import { createScheduledTransaction } from '../transaction/transaction.scheduled.js';
+import { notifyPointTransferCompleted } from '../email/email.pointTransfer.js';
 
 /**
  * Points d'un utilisateur : solde, transfert à un collègue (immédiat ou différé), historique.
@@ -73,6 +74,9 @@ export async function transferPoints ({ fromUserId, toUserId, amount, descriptio
         sender.save(),
         receiver.save()
     ]);
+
+    // Les soldes sont à jour : le receveur est prévenu (ne lève jamais, pas attendu)
+    notifyPointTransferCompleted(transaction._id);
 
     return { message: 'Transfert effectué avec succès', transaction };
 }

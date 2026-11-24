@@ -8,4 +8,5 @@
 <mj-section><mj-column>
   <mj-text mj-class="muted" align="center" padding="16px 0 0">Vous faites partie du pool d'utilisateurs pouvant potentiellement accepter cette demande.</mj-text>
 </mj-column></mj-section>
+{{> contact person=posterContact label="Pour joindre l'auteur de la demande" }}
 {{> button }}

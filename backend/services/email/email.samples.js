@@ -4,6 +4,9 @@ import { MIN_POINTS_BALANCE } from '../../config/points.js';
 // Données d'exemple de chaque mail, pour la page d'aperçu (`/preview`) et pour le test qui rend tous les modèles.
 // Une clé par aperçu ; `template` nomme le fichier de `templates/content` quand il diffère de la clé (deux variantes d'un
 // même mail), `label` est le nom affiché dans la navigation et `group` la rubrique où il est rangé.
+const alex = { name: 'Alex MARTIN', email: 'alex.martin@example.com', phone: '06 12 34 56 78' };
+const camille = { name: 'Camille DUPONT', email: 'camille.dupont@example.com', phone: null };
+
 const demand = {
   demandDate: 'jeudi 26 novembre',
   typeText: 'Remplacement',
@@ -123,7 +126,7 @@ export const MAIL_SAMPLES = {
   availableDemand: {
     label: 'Nouvelle demande disponible',
     group: 'Demandes',
-    data: { ...demand, userName: 'Camille', posterName: 'Alex MARTIN', canSwitch: true, canReplace: true },
+    data: { ...demand, userName: 'Camille', posterName: 'Alex MARTIN', posterContact: alex, canSwitch: true, canReplace: true },
   },
   availableDemandSwitch: {
     template: 'availableDemand',
@@ -133,6 +136,7 @@ export const MAIL_SAMPLES = {
       ...demand,
       userName: 'Camille',
       posterName: 'Alex MARTIN',
+      posterContact: alex,
       typeText: 'Permutation',
       demandType: 'switch',
       canSwitch: true,
@@ -154,12 +158,13 @@ export const MAIL_SAMPLES = {
       posterShift: 'Matin',
       accepterShift: 'Soir',
       accepterTeam: 'Équipe C',
+      accepterContact: camille,
     },
   },
   withdrawal: {
     label: 'Désistement',
     group: 'Demandes',
-    data: { userName: 'Alex', accepterName: 'Camille DUPONT', posterShiftDate: 'jeudi 26 novembre' },
+    data: { userName: 'Alex', accepterName: 'Camille DUPONT', accepterContact: camille, posterShiftDate: 'jeudi 26 novembre' },
   },
   cancelledDemand: {
     label: 'Demande annulée par son auteur',
@@ -172,6 +177,7 @@ export const MAIL_SAMPLES = {
       creationDate: '20/11/2026',
       youWereAccepter: true,
       accepters: 'Camille DUPONT',
+      posterContact: alex,
     },
   },
   unacceptedDemand: {
@@ -182,13 +188,13 @@ export const MAIL_SAMPLES = {
   systemCancel: {
     label: 'Demande annulée (accepteur)',
     group: 'Demandes',
-    data: { userName: 'Camille', role: 'accepter', typeText: 'Remplacement', counterpartName: 'Alex MARTIN', posterShiftDate: 'jeudi 26 novembre' },
+    data: { userName: 'Camille', role: 'accepter', typeText: 'Remplacement', counterpartName: 'Alex MARTIN', counterpartContact: alex, posterShiftDate: 'jeudi 26 novembre' },
   },
   systemCancelPoster: {
     template: 'systemCancel',
     label: 'Demande annulée (auteur)',
     group: 'Demandes',
-    data: { userName: 'Alex', role: 'poster', typeText: 'Remplacement', counterpartName: 'Camille DUPONT', posterShiftDate: 'jeudi 26 novembre' },
+    data: { userName: 'Alex', role: 'poster', typeText: 'Remplacement', counterpartName: 'Camille DUPONT', counterpartContact: camille, posterShiftDate: 'jeudi 26 novembre' },
   },
   replacementReminder: {
     label: 'Rappel de la veille',
@@ -200,6 +206,7 @@ export const MAIL_SAMPLES = {
       effectiveTypeText: 'permutation',
       effectiveTypeLower: 'une permutation',
       exchangedShift: 'Soir',
+      posterContact: alex,
       demandType: 'switch',
       typeText: 'Permutation',
     },
@@ -207,7 +214,7 @@ export const MAIL_SAMPLES = {
   administrationRequest: {
     label: "Demande à l'administration",
     group: 'Demandes',
-    data: { ...demand, centerName: 'Paris CRNA', posterName: 'Alex MARTIN', accepterName: 'Camille DUPONT' },
+    data: { ...demand, centerName: 'Paris CRNA', posterName: 'Alex MARTIN', posterContact: alex, accepterName: 'Camille DUPONT', accepterContact: camille },
   },
   announcement: {
     label: 'Annonce du centre',

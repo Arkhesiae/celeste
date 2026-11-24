@@ -177,7 +177,7 @@ const createDemand = async (req, res, next) => {
 
         // Notifications en arrière-plan, après la réponse
         const populatedDemand = await demand.populate([
-            { path: 'posterId', select: 'name lastName' },
+            { path: 'posterId', select: 'name lastName email personalData.phoneNumber' },
             { path: 'posterShift.teamId', select: 'name' },
             { path: 'acceptedSwitches.shift', select: 'name default' },
         ]);
@@ -338,8 +338,8 @@ const sendAdminEmail = async (req, res, next) => {
         }
 
         const populatedDemand = await Demand.findById(demandId).populate([
-            { path: 'posterId', select: 'name lastName' },
-            { path: 'accepterId', select: 'name lastName' },
+            { path: 'posterId', select: 'name lastName email personalData.phoneNumber' },
+            { path: 'accepterId', select: 'name lastName email personalData.phoneNumber' },
             { path: 'centerId', select: 'name' },
             { path: 'posterShift.shift', populate: { path: 'variations' } },
             { path: 'posterShift.selectedVariation' },

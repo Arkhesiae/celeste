@@ -1,0 +1,8 @@
+{{#if person}}{{#if person.email}}
+<mj-section padding="12px 0 0"><mj-column border="1px solid #C0C8CC" border-radius="16px" padding="10px 18px">
+  <mj-text mj-class="label" padding="2px 0">{{#if label}}{{label}}{{else}}Pour le joindre{{/if}}</mj-text>
+  <mj-text padding="0" font-weight="700">{{person.name}}</mj-text>
+  <mj-text padding="2px 0 0"><a href="mailto:{{person.email}}">{{person.email}}</a></mj-text>
+  {{#if person.phone}}<mj-text padding="2px 0 0"><a href="tel:{{person.phone}}">{{person.phone}}</a></mj-text>{{/if}}
+</mj-column></mj-section>
+{{/if}}{{/if}}

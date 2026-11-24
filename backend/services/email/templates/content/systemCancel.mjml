@@ -12,4 +12,5 @@
   <mj-text mj-class="muted">Vous pouvez publier une nouvelle demande si nécessaire.</mj-text>
   {{/ifEquals}}
 </mj-column></mj-section>
+{{> contact person=counterpartContact }}
 {{> button }}

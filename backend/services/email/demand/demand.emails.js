@@ -7,6 +7,16 @@ import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftT
 
 
 /**
+ * Coordonnées d'un utilisateur pour la fiche « contact » des mails (`{{> contact person=... }}`) : nom, adresse et téléphone s'il
+ * est renseigné. null sans adresse (la fiche ne s'affiche pas). `user` doit avoir name, lastName, email et personalData.phoneNumber.
+ */
+export function contactOf(user) {
+  const email = user?.email?.trim();
+  if (!email) return null;
+  return { name: fullName(user), email, phone: user.personalData?.phoneNumber?.trim() || null };
+}
+
+/**
  * Envoie un email de notification aux utilisateurs du pool concernant une demande publiée
  * @param {Array} userPool - Liste des utilisateurs du pool (doit contenir email, name, lastName, canSwitch, canReplace)
  * @param {Object} demandeur - L'utilisateur qui a posté la demande
@@ -76,6 +86,7 @@ async function sendUserPoolNotification(userPool, demand) {
           typeText: typeText(),
           acceptedSwitches: acceptedSwitches,
           posterName: fullName,
+          posterContact: contactOf(demand.posterId),
           teamName: demand.posterShift.teamId.name,
           demandDate: formatDateFr(posterDayOf(demand)),
           shift: shiftDisplayName,
@@ -173,6 +184,7 @@ L'équipe Celeste
       typeText: typeText(),
       accepterShift: demand.accepterShift?.shift?.name,
       accepterTeam: demand.accepterShift?.teamId?.name,
+      accepterContact: contactOf(demand.accepterId),
     }
 
     const html = renderMail('acceptedDemand', templateData);
@@ -239,6 +251,7 @@ L'équipe Celeste
       userName: demand.posterId.name,
       accepterName: fullName,
       posterShiftDate: formatDateFr(posterDayOf(demand)),
+      accepterContact: contactOf(originalAccepter),
     }
 
 
@@ -308,6 +321,7 @@ async function sendReplacementReminderEmail (demand) {
     endTime: times?.endTime,
     teamName: posterShift?.teamId?.name,
     points: demand.points,
+    posterContact: contactOf(demand.posterId),
   };
 
   const text = `
@@ -359,6 +373,7 @@ L'équipe Celeste
     posterShiftDate: date,
     creationDate: formatDateFr(demand.createdAt),
     youWereAccepter: true,
+    posterContact: contactOf(demand.posterId),
   });
 
   return emailService.sendEmail({
@@ -391,7 +406,9 @@ async function sendAdministrationRequestEmail (emails, demand) {
   const html = renderMail('administrationRequest', {
     centerName: demand.centerId?.name,
     posterName,
+    posterContact: contactOf(demand.posterId),
     accepterName,
+    accepterContact: contactOf(demand.accepterId),
     accepterShift: demand.accepterShift?.shift?.name,
     demandDate: date,
     typeText,

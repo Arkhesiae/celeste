@@ -4,4 +4,5 @@
   <mj-text><strong>{{accepterName}}</strong> s'est désisté(e) de votre demande du <strong>{{posterShiftDate}}</strong> : il ou elle ne vous remplace plus.</mj-text>
   <mj-text>Votre demande est désormais à nouveau visible pour d'autres collègues.</mj-text>
 </mj-column></mj-section>
+{{> contact person=accepterContact label="Pour joindre la personne qui s'est désistée" }}
 {{> button }}

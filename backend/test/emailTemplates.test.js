@@ -52,3 +52,13 @@ test('points mails say what they should for each recipient and reason', () => {
   assert.match(html('pointsTransferCancelledByUser'), /annulé avant son exécution/);
   assert.match(html('pointsTransferCancelledError'), /erreur technique/);
 });
+
+test('demand mails give the contact details of the other person, the phone only when known', () => {
+  const html = (key) => renderMail(sampleTemplate(key), MAIL_SAMPLES[key].data);
+  for (const key of ['availableDemand', 'acceptedDemand', 'withdrawal', 'cancelledDemand', 'systemCancel', 'systemCancelPoster', 'replacementReminder', 'administrationRequest']) {
+    assert.match(html(key), /href="mailto:[^"]+@example\.com"/, key);
+  }
+  assert.match(html('availableDemand'), /href="tel:06 12 34 56 78"/);
+  assert.doesNotMatch(html('withdrawal'), /href="tel:/); // Camille n'a pas de téléphone
+  assert.doesNotMatch(renderMail('withdrawal', { accepterName: 'X' }), /mailto:/); // sans adresse : pas de fiche
+});

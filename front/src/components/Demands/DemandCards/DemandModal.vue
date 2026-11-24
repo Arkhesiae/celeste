@@ -233,6 +233,29 @@
         </div>
       </v-card>
 
+      <!-- Pense-bête des déclarations à faire une fois la demande acceptée : deux cases à deux états, pour l'instant sans enregistrement -->
+      <div v-if="isAccepted && (isOwner || isAccepter)" class="mb-4">
+        <span class="text-body-small text-medium-emphasis mb-2 d-block">Déclarations à faire</span>
+        <div class="declaration-tiles">
+          <button
+            v-for="declaration in declarations"
+            :key="declaration.key"
+            type="button"
+            class="tile declaration-tile"
+            :aria-pressed="declarationsDone[declaration.key]"
+            @click="declarationsDone[declaration.key] = !declarationsDone[declaration.key]"
+          >
+            <v-icon size="24" aria-hidden="true">
+              {{ declarationsDone[declaration.key] ? 'mdi-check-circle-outline' : declaration.icon }}
+            </v-icon>
+            <span class="text-label-medium font-weight-bold">{{ declaration.title }}</span>
+            <span class="declaration-tile__subtitle text-label-small">
+              {{ declarationsDone[declaration.key] ? declaration.doneText : declaration.todoText }}
+            </span>
+          </button>
+        </div>
+      </div>
+
       <v-card class="pa-0 rounded-xl" color="background" elevation="0">
         <GraphWrapper :demand="demand" />
       </v-card>
@@ -493,6 +516,33 @@ watch(
   },
 );
 
+// Pense-bête des déclarations : l'état n'est pas enregistré, il repart à « non renseigné » quand on change de demande
+const declarations = [
+  {
+    key: 'olaf',
+    title: 'OLAF renseigné',
+    icon: 'mdi-airplane',
+    todoText: 'À déclarer sur OLAFATCO',
+    doneText: 'Déclaré sur OLAFATCO',
+  },
+  {
+    key: 'icnagenda',
+    title: 'ICNAGENDA renseigné',
+    icon: 'mdi-calendar-account-outline',
+    todoText: 'À reporter sur ICNAGENDA',
+    doneText: 'Reporté sur ICNAGENDA',
+  },
+];
+const declarationsDone = reactive({ olaf: false, icnagenda: false });
+
+watch(
+  () => props.demand?._id,
+  () => {
+    declarationsDone.olaf = false;
+    declarationsDone.icnagenda = false;
+  },
+);
+
 const now = ref(Date.now());
 
 onMounted(() => {
@@ -574,6 +624,27 @@ const copyEmail = async () => {
 .connected-cards > .v-card:last-child {
   border-bottom-left-radius: 24px;
   border-bottom-right-radius: 24px;
+}
+
+.declaration-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* Tuile globale (styles/tile.css), disposée comme celles des entrées de planning : icône, titre, puis une ligne qui dit où en est la déclaration */
+.declaration-tile {
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 96px;
+  padding: 12px 8px;
+  text-align: center;
+}
+
+.declaration-tile__subtitle {
+  line-height: 1.2;
+  opacity: 0.7;
 }
 
 .list-item {

@@ -38,7 +38,7 @@ export async function sendUpcomingReplacementReminders ({ now = new Date(), hour
             reminderSentAt: null,
             ...dayFilter('posterShift.day', 'posterShift.date', { eq: tomorrow }),
         }).populate([
-            { path: 'posterId', select: 'name lastName' },
+            { path: 'posterId', select: 'name lastName email personalData.phoneNumber' },
             { path: 'accepterId', select: 'name email isActive preferences' },
             { path: 'posterShift.shift', populate: { path: 'variations' } },
             { path: 'posterShift.selectedVariation' },

@@ -7,4 +7,5 @@
   {{/if}}
   <mj-text>N'oubliez pas de déclarer ce remplacement sur OLAFATCO.</mj-text>
 </mj-column></mj-section>
+{{> contact person=accepterContact label="Pour joindre la personne qui a accepté" }}
 {{> button }}

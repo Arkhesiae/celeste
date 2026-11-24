@@ -28,7 +28,7 @@ export async function withdrawFromDemand (demandId, userId) {
     const [shiftsResult, categorizedResult, accepterResult] = await Promise.allSettled([
         computeUserShifts([posterDayOf(updatedDemand)], userId),
         categorizeDemands([updatedDemand], userId),
-        User.findById(userId).select('name lastName email'),
+        User.findById(userId).select('name lastName email personalData.phoneNumber'),
     ]);
 
     if (shiftsResult.status === 'rejected') {

@@ -4,6 +4,7 @@ import Demand from '../../models/Demand.js';
 import { AppError } from '../../error/AppError.js';
 
 import { MIN_POINTS_BALANCE } from '../../config/points.js';
+import { notifyPointTransferCompleted, notifyPointTransferCancelled } from '../email/email.pointTransfer.js';
 /**
  * Crée une transaction différée
  * @param {Object} transactionData - Données de la transaction
@@ -38,32 +39,22 @@ const processPendingTransactions = async () => {
             .map(r => r._id.toString())
     );
 
+    // Ce qu'il est advenu de chaque transfert : les mails partent après la boucle, une fois les soldes enregistrés
+    const outcomes = [];
+
     for (const transaction of pendingTransactions) {
         try {
             if (transaction.request && !liveDemands.has(transaction.request.toString())) {
                 transaction.status = 'cancelled';
                 await transaction.save();
+                outcomes.push({ id: transaction._id, reason: 'demandNoLongerAccepted' });
                 continue;
             }
-            // Vérifier que l'expéditeur a toujours assez de points
-            // if (transaction.type === "replacement" || transaction.type === "swap") {
-            //     // Pour replacement/swap, le solde minimum autorisé est -20
-            //     if ((transaction.sender.points - transaction.amount) < -40) {
-            //         transaction.status = 'cancelled';
-            //         await transaction.save();
-            //         continue;
-            //     }
-            // } else if (transaction.type === "transfer") {
-            //     // Pour un transfert classique, le solde ne peut pas devenir négatif
-            //     if ((transaction.sender.points - transaction.amount) < -40) {
-            //         transaction.status = 'cancelled';
-            //         await transaction.save();
-            //         continue;
-            //     }
-            // }
+    
             if ((transaction.sender.points - transaction.amount) < MIN_POINTS_BALANCE) {
                 transaction.status = 'cancelled';
                 await transaction.save();
+                outcomes.push({ id: transaction._id, reason: 'insufficientBalance' });
                 continue;
             }
             // Effectuer le transfert
@@ -76,11 +67,18 @@ const processPendingTransactions = async () => {
                 transaction.receiver.save(),
                 transaction.save()
             ]);
+            outcomes.push({ id: transaction._id, reason: null });
         } catch (error) {
             console.error(`Erreur lors du traitement de la transaction ${transaction._id}:`, error);
             transaction.status = 'cancelled';
             await transaction.save();
+            outcomes.push({ id: transaction._id, reason: 'error' });
         }
+    }
+
+    // Une raison : transfert annulé ; sans raison : transfert exécuté. Ces fonctions ne lèvent jamais.
+    for (const { id, reason } of outcomes) {
+        await (reason ? notifyPointTransferCancelled(id, reason) : notifyPointTransferCompleted(id));
     }
     return pendingTransactions.length;
 };

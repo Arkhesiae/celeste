@@ -6,7 +6,7 @@ import { idOf } from '../../../utils/ids.js';
 import User from '../../../models/User.js';
 import * as emailService from '../email.transport.js';
 import { renderMail } from '../email.renderer.js';
-import { sendWithdrawalEmail, sendCancelledDemandEmail } from './demand.emails.js';
+import { sendWithdrawalEmail, sendCancelledDemandEmail, contactOf } from './demand.emails.js';
 
 /**
  * Notifications envoyées aux tiers touchés quand une demande est annulée ou qu'un accepteur
@@ -39,10 +39,10 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
 
         const [demands, accepters] = await Promise.all([
             Demand.find({ _id: { $in: ids } }).populate([
-                { path: 'posterId', select: 'name lastName email' },
-                { path: 'accepterId', select: 'name lastName email' },
+                { path: 'posterId', select: 'name lastName email personalData.phoneNumber' },
+                { path: 'accepterId', select: 'name lastName email personalData.phoneNumber' },
             ]),
-            User.find({ _id: { $in: [...new Set(withdrawn.map((w) => String(w.accepterId)))] } }).select('name lastName'),
+            User.find({ _id: { $in: [...new Set(withdrawn.map((w) => String(w.accepterId)))] } }).select('name lastName email personalData.phoneNumber'),
         ]);
 
         const demandById = new Map(demands.map((d) => [idOf(d), d]));
@@ -83,13 +83,13 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
             addMail(
                 demand.posterId,
                 'Votre demande a été annulée',
-                { ...common, role: 'poster', counterpartName: accepterName },
+                { ...common, role: 'poster', counterpartName: accepterName, counterpartContact: contactOf(demand.accepterId) },
                 `Bonjour ${demand.posterId?.name ?? ''},\n\nVotre demande du ${date} a été annulée.${accepterName ? `\n\n${accepterName} ne vous remplace plus.` : ''}\n\nCordialement,\nL'équipe Celeste`
             );
             addMail(
                 demand.accepterId,
                 'Une demande que vous aviez acceptée a été annulée',
-                { ...common, role: 'accepter', counterpartName: posterName },
+                { ...common, role: 'accepter', counterpartName: posterName, counterpartContact: contactOf(demand.posterId) },
                 `Bonjour ${demand.accepterId?.name ?? ''},\n\nLa demande de ${posterName} du ${date}, que vous aviez acceptée, a été annulée.\n\nVous n'êtes plus engagé(e) sur cette vacation.\n\nCordialement,\nL'équipe Celeste`
             );
         }
@@ -125,8 +125,8 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
 export async function notifyDemandCancelledByUser ({ demandId, cascadedIds = [], actorId } = {}) {
     try {
         const demand = await Demand.findById(demandId).populate([
-            { path: 'posterId', select: 'name lastName email' },
-            { path: 'accepterId', select: 'name lastName email' },
+            { path: 'posterId', select: 'name lastName email personalData.phoneNumber' },
+            { path: 'accepterId', select: 'name lastName email personalData.phoneNumber' },
         ]);
         if (!demand) return { sent: 0 };
 

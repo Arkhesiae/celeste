@@ -18,4 +18,6 @@
 <mj-section><mj-column>
   <mj-text mj-class="small" padding="14px 0 0">Si la demande ne respecte pas ces règles, merci de ne pas la valider et d'en informer l'agent.</mj-text>
 </mj-column></mj-section>
+{{> contact person=posterContact label="Contact de l'agent" }}
+{{> contact person=accepterContact label="Contact de la personne qui a accepté" }}
 {{> button }}

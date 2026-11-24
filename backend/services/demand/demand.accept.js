@@ -54,7 +54,7 @@ export async function acceptOrSwapDemand (demandId, userId, { isSwitch = false }
     // Populate for email only
     await demand.populate([
         { path: 'posterId', select: 'name lastName email' },
-        { path: 'accepterId', select: 'name lastName email' },
+        { path: 'accepterId', select: 'name lastName email personalData.phoneNumber' },
     ]);
 
     sendAcceptedDemandEmail(demand)

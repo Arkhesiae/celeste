@@ -8,6 +8,7 @@ export * from './email.approval.js';
 export * from './email.inbound.js';
 export * from './email.newTicket.js';
 export * from './email.otp.js';
+export * from './email.pointTransfer.js';
 export * from './email.renderer.js';
 export * from './email.resetPassword.js';
 export * from './email.ticketReply.js';

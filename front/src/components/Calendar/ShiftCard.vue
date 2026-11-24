@@ -62,6 +62,21 @@
       </div>
 
       <div v-if="enableAssign || showUndoMods || showDelete" class="d-flex align-center ga-2 mr-n2 mt-n2">
+        <!-- Note du jour : indépendante de la vacation et des entrées, disponible tout jour -->
+        <v-tooltip v-if="enableAssign" :text="comment ? 'Modifier le commentaire' : 'Ajouter un commentaire'" location="top">
+          <template #activator="{ props: tooltipProps }">
+            <v-btn
+              v-bind="tooltipProps"
+              icon
+              size="x-small"
+              variant="text"
+              :aria-label="comment ? 'Modifier le commentaire' : 'Ajouter un commentaire'"
+              @click="showCommentDialog = true"
+            >
+              <v-icon>{{ comment ? 'mdi-comment-text' : 'mdi-comment-plus-outline' }}</v-icon>
+            </v-btn>
+          </template>
+        </v-tooltip>
         <v-tooltip v-if="enableAssign && canRegisterEntry" text="Modifier" location="top">
           <template #activator="{ props: tooltipProps }">
             <v-btn v-bind="tooltipProps" icon size="x-small" variant="text" @click="emit('open-entry-dialog')">
@@ -103,6 +118,8 @@
         @register-absence="registerAbsence"
       />
     </Transition>
+
+    <DayCommentDialog v-model="showCommentDialog" :date="date" />
 
     <MddaDialog
       v-model="showMddaDialog"
@@ -158,6 +175,7 @@ const isBaseShift = computed(() => vacation.value?.isBaseShift);
 const baseShift = computed(() => vacation.value?.baseShift);
 const history = computed(() => vacation.value?.history);
 const comment = computed(() => vacation.value?.comment || '');
+const showCommentDialog = ref(false);
 const variations = computed(() => vacation.value?.shiftData?.shift?.variations ?? []);
 const selectedVariation = computed(() => vacation.value?.shiftData?.selectedVariation);
 const shiftTeam = computed(() => vacation.value?.shiftData?.team?.name || '');

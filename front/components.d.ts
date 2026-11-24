@@ -52,6 +52,7 @@ declare module 'vue' {
     CycleDayPicker: typeof import('./src/components/Teams/CycleDayPicker.vue')['default']
     DashboardCalendarSection: typeof import('./src/components/Dashboard/DashboardCalendarSection.vue')['default']
     DashboardTeamCard: typeof import('./src/components/Dashboard/DashboardTeamCard.vue')['default']
+    DayCommentDialog: typeof import('./src/components/Dialogs/DayCommentDialog.vue')['default']
     DayDetail: typeof import('./src/components/Rotations/Common/DayDetail.vue')['default']
     DayList: typeof import('./src/components/Rotations/Information/DayList.vue')['default']
     DemandCard: typeof import('./src/components/Demands/DemandCards/DemandCard.vue')['default']

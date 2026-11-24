@@ -16,3 +16,6 @@ export const TEAM_TIMELINE_MAX_DAYS = 800;
 /** Contrôle du temps de travail du calendrier : période maximale demandée (jours) et marge chargée de part et d'autre */
 export const WORK_CHECK_MAX_DAYS = 62;
 export const WORK_CHECK_MARGIN_DAYS = 7;
+
+/** Longueur maximale du commentaire d'un jour du calendrier (note du jour, ou commentaire d'une affectation) */
+export const CALENDAR_COMMENT_MAX_LENGTH = 500;

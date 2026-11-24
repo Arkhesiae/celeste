@@ -2,6 +2,7 @@ import { Temporal } from '@js-temporal/polyfill';
 import { toPlainDate } from './dates/plainDate.js';
 import { isValidId } from './ids.js';
 import { AppError } from '../error/AppError.js';
+import { CALENDAR_COMMENT_MAX_LENGTH } from '../config/limits.js';
 
 export const isValidEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -62,4 +63,13 @@ export const assertObject = (value, label = 'Données') => {
         throw new AppError(`${label} invalides`, 400);
     }
     return value;
+};
+
+/** Commentaire d'un jour du calendrier : texte rogné (`''` si ce n'est pas une chaîne), 400 au-delà de la limite */
+export const normalizeComment = (value) => {
+    const comment = typeof value === 'string' ? value.trim() : '';
+    if (comment.length > CALENDAR_COMMENT_MAX_LENGTH) {
+        throw new AppError(`Le commentaire est limité à ${CALENDAR_COMMENT_MAX_LENGTH} caractères`, 400);
+    }
+    return comment;
 };

@@ -1,4 +1,4 @@
-import { isValidDate } from '../utils/validation.js';
+import { isValidDate, assertDay } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 import * as calendarEntryService from '../services/calendarEntry/index.js';
 
@@ -22,6 +22,23 @@ const registerEntry = async (req, res, next) => {
             ...result
         });
 
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Note d'un jour (`{ date, comment }`, commentaire vide : suppression), pour l'utilisateur du jeton
+const setComment = async (req, res, next) => {
+    try {
+        const { date, comment } = req.body;
+        assertDay(date);
+
+        const result = await calendarEntryService.setDayComment(req.user.userId, date, comment);
+
+        res.json({
+            message: result.userShift?.[0]?.comment ? 'Commentaire enregistré' : 'Commentaire supprimé',
+            ...result,
+        });
     } catch (error) {
         next(error);
     }
@@ -108,6 +125,7 @@ const remove = async (req, res, next) => {
 
 export {
     registerEntry,
+    setComment,
     getUserEntries,
     undoMods,
     remove

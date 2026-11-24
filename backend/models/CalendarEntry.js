@@ -8,6 +8,7 @@
  * Le dossier de services, le contrôleur et le fichier de routes s'appellent `calendarEntry` ; l'URL est `/calendar-entry`.
  */
 import mongoose from 'mongoose';
+import { CALENDAR_COMMENT_MAX_LENGTH } from '../config/limits.js';
 
 const ShiftDataSchema = new mongoose.Schema(
     {
@@ -58,7 +59,7 @@ const CalendarEntrySchema = new mongoose.Schema({
     comment: {
         type: String,
         default: '',
-        maxlength: 500
+        maxlength: CALENDAR_COMMENT_MAX_LENGTH
     },
 }, baseOptions)
 

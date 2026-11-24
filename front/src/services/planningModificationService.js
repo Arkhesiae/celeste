@@ -16,6 +16,15 @@ export const planningModificationService = {
     return response;
   },
 
+  /** Note du jour (commentaire indépendant de la vacation et des entrées) ; un commentaire vide la supprime. Renvoie le jour recalculé. */
+  async setDayComment(date, comment) {
+    const response = await apiFetch(`/calendar-entry/comment`, {
+      method: 'PUT',
+      body: JSON.stringify({ date, comment }),
+    });
+    return response;
+  },
+
   async deleteAssignment(userId, date) {
     console.log(userId, date);
     const response = await apiFetch(`/calendar-entry/delete-assignment`, {

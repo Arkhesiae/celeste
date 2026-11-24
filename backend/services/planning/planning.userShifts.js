@@ -8,6 +8,7 @@ import { cycleDayIndex } from '../team/team.cycleIndex.js';
 import Center from '../../models/Center.js';
 import User from "../../models/User.js";
 import { Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
+import DayComment from '../../models/DayComment.js';
 import Rotation from '../../models/Rotation.js';
 import { AppError } from '../../error/AppError.js';
 
@@ -229,6 +230,12 @@ const applyHourPatch = (resolvedShift, latestHourPatch) => {
     }
 }
 
+/** Les notes de jour (`DayComment`) de l'utilisateur sur une plage de dates : jour -> commentaire */
+const getDayCommentsByDates = async (userId, dateStrs) => {
+    const notes = await DayComment.find({ userId, date: { $in: dateStrs } }).select('date comment').lean();
+    return new Map(notes.map((note) => [note.date, note.comment]));
+};
+
 /** Charge toutes les entries actives sur une plage de dates, groupées par jour */
 const getActiveEntriesByDates = async (user, dateStrs) => {
     const populateShiftData = (query) => query
@@ -326,6 +333,8 @@ const computeUserShifts = async (dates, userId) => {
             return { day, dateStr: day.toString() };
         });
 
+        const noteByDate = await getDayCommentsByDates(userId, normalizedDates.map((d) => d.dateStr));
+
         const entriesByDate = await getActiveEntriesByDates(
             user,
             normalizedDates.map((d) => d.dateStr)
@@ -410,7 +419,8 @@ const computeUserShifts = async (dates, userId) => {
                 return { ...resolvedShift, date: dateStr, history: assignmentHistory };
             })
         );
-        return results;
+        // La note du jour, indépendante de la vacation et des entrées, l'emporte sur le commentaire d'une affectation
+        return results.map((result) => (noteByDate.has(result.date) ? { ...result, comment: noteByDate.get(result.date) } : result));
     } catch (error) {
         console.error('Erreur dans le calcul des vacations : ', error.message);
         throw error;

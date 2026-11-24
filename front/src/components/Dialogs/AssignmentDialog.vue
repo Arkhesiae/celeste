@@ -71,7 +71,7 @@
         rows="2"
         auto-grow
         counter
-        :maxlength="MAX_COMMENT_LENGTH"
+        :maxlength="CALENDAR_COMMENT_MAX_LENGTH"
         hide-details="auto"
       />
     </div>
@@ -88,6 +88,7 @@
 
 <script setup>
 import { entryTypes } from '@/utils/entryIcons';
+import { CALENDAR_COMMENT_MAX_LENGTH } from '@/config/limits.js';
 
 /**
  * Ajout d'une entrée de calendrier (formation, bureau, congé...) : le type se choisit sur des tuiles, avec les horaires
@@ -105,7 +106,6 @@ const emit = defineEmits(['submit']);
 
 const DEFAULT_START = '09:00';
 const DEFAULT_END = '17:00';
-const MAX_COMMENT_LENGTH = 500; // la limite du serveur
 
 const type = ref(null);
 const startTime = ref(DEFAULT_START);
@@ -123,7 +123,7 @@ const normalizeTime = (value) => {
 const canSubmit = computed(() => {
   const start = normalizeTime(startTime.value);
   const end = normalizeTime(endTime.value);
-  return Boolean(type.value && start && end && start !== end && comment.value.length <= MAX_COMMENT_LENGTH);
+  return Boolean(type.value && start && end && start !== end && comment.value.length <= CALENDAR_COMMENT_MAX_LENGTH);
 });
 
 // Une saisie neuve à chaque ouverture

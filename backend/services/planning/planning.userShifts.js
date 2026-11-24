@@ -1,45 +1,73 @@
-import { getTeamAtDay } from "../team/team.atDay.js";
-import { activationDaysOf } from '../../utils/dates/dayAccess.js';
-import { DEFAULT_TIME_ZONE } from '../../utils/dates/constants.js';
-import { compareDays, toPlainDate, todayIn } from '../../utils/dates/plainDate.js';
-import { Temporal } from '@js-temporal/polyfill';
-import { toCalendarDay } from '../../utils/dates/calendarDay.js';
+import { getTeamAtDay } from '../team/team.atDay.js';
 import { cycleDayIndex } from '../team/team.cycleIndex.js';
+import { activationDaysOf } from '../../utils/dates/dayAccess.js';
+import { isValidDate } from '../../utils/validation.js';
 import Center from '../../models/Center.js';
-import User from "../../models/User.js";
-import { Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
-import DayComment from '../../models/DayComment.js';
+import User from '../../models/User.js';
 import Rotation from '../../models/Rotation.js';
+import DayComment from '../../models/DayComment.js';
+import { Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
 import { AppError } from '../../error/AppError.js';
 
-// ── Utilitaires temps ─────────────────────────────────────────────────
+/**
+ * Calcul des vacations d'un utilisateur, jour par jour : la rotation de son équipe (`baseShift`), puis ce qui s'y ajoute (affectations,
+ * modifications, ajustements d'horaires, note du jour). Voir `computeUserShifts` pour le résultat d'un jour.
+ */
 
+// ── Heures ────────────────────────────────────────────────────────────
+
+const MINUTES_PER_DAY = 1440;
+
+/** `'06:30'` -> 390 */
 const toMinutes = (time) => {
-    const [h, m] = time.split(':').map(Number)
-    return h * 60 + m
-}
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+};
 
-const toTime = (minutes) => {
-    const total = ((minutes % 1440) + 1440) % 1440
-    const h = Math.floor(total / 60).toString().padStart(2, '0')
-    const m = (total % 60).toString().padStart(2, '0')
-    return `${h}:${m}`
-}
+/** 390 -> `'06:30'` ; au-delà d'un jour (ou en dessous de zéro), on repart de minuit */
+const toTime = (totalMinutes) => {
+    const minutesOfDay = ((totalMinutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY;
+    const hours = Math.floor(minutesOfDay / 60).toString().padStart(2, '0');
+    const minutes = (minutesOfDay % 60).toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+};
 
-const addHours = (time, hours) => toTime(toMinutes(time) + Math.round(hours * 60))
+const addHours = (time, hoursToAdd) => toTime(toMinutes(time) + Math.round(hoursToAdd * 60));
 
-// ── Cohérence ─────────────────────────────────────────────────────────
+// ── Types d'affectation ───────────────────────────────────────────────
 
-const checkHourPatchCoherence = (latestModification) => {
-    if (latestModification?.subType === 'absence') {
-        throw new Error('hourPatch incohérent : le shift est annulé (absence)')
-    }
-}
+/**
+ * Types d'affectation qui comptent comme du travail. Les congés (`absence` = « Congé » dans l'interface, `sick_leave`,
+ * `maternity_leave`) et la substitution ne comptent pas.
+ */
+const ASSIGNMENT_WORK_SUBTYPES = new Set([
+    'manager', 'english_training', 'training', 'simulation', 'other', 'test', 'office', 'stage', 'instruc', 'custom', 'vis_med',
+]);
 
-const isSameShift = (resolvedShift, entry) =>
-    resolvedShift?.shiftData?.shift?._id?.equals(entry?.shiftData?.shift?._id);
+// ── Résultat d'un jour ────────────────────────────────────────────────
 
-// ── Résolution ────────────────────────────────────────────────────────
+/**
+ * Résultat d'un jour : ce que l'utilisateur TIENT (`shiftData`, vide s'il est remplacé ou sur une affectation), ce que la rotation
+ * prévoyait (`baseShift`, toujours le document `Shift` de la rotation, jamais ce qui a été modifié), sa `presence`, s'il y a eu
+ * une substitution laquelle (`substitution`), et le commentaire du jour (`comment`, la note du jour ou à défaut celui de
+ * l'affectation, vide sinon).
+ * @param {Object} [overrides] - `baseShift` vaut par défaut la vacation tenue (jour sans entrée : c'est celle de la rotation)
+ */
+const buildShiftResult = (dayKey, shift, team, overrides = {}) => ({
+    date: dayKey,
+    type: shift ? 'shift' : 'empty',
+    isBaseShift: true,
+    presence: 'present',
+    shiftData: { shift, selectedVariation: null, team },
+    startTime: shift?.default?.startTime,
+    endTime: shift?.default?.endTime,
+    baseShift: shift,
+    substitution: null,
+    comment: '',
+    ...overrides,
+});
+
+// ── Affectations ──────────────────────────────────────────────────────
 
 /**
  * Ce que l'entrée de substitution dit de la vacation de l'utilisateur, ou `null` pour toute autre affectation :
@@ -50,99 +78,46 @@ const isSameShift = (resolvedShift, entry) =>
  *   cède celle de la rotation, exact hors chaîne.
  */
 const substitutionOf = (assignment, rotationDay) => {
-    if (assignment?.subType !== 'substitution') return null
-    const took = assignment.shiftData?.shift ?? null
-    const gave = assignment.substitution?.gave?.shift
+    if (assignment?.subType !== 'substitution') return null;
+
+    const shiftTaken = assignment.shiftData?.shift ?? null;
+    const shiftGiven = assignment.substitution?.gave?.shift
         ? assignment.substitution.gave
-        : (took ? null : { shift: rotationDay?.shift ?? null, team: rotationDay?.team ?? null, selectedVariation: null })
+        : (shiftTaken ? null : { shift: rotationDay?.shift ?? null, team: rotationDay?.team ?? null, selectedVariation: null });
+
     return {
-        kind: took ? (gave ? 'exchanged' : 'replacing') : 'replaced',
+        kind: shiftTaken ? (shiftGiven ? 'exchanged' : 'replacing') : 'replaced',
         demandId: assignment.substitution?.id ?? null,
-        gave: gave?.shift ? { shift: gave.shift, team: gave.team ?? null, selectedVariation: gave.selectedVariation ?? null } : null,
-    }
-}
+        gave: shiftGiven?.shift
+            ? { shift: shiftGiven.shift, team: shiftGiven.team ?? null, selectedVariation: shiftGiven.selectedVariation ?? null }
+            : null,
+    };
+};
 
 /**
  * Historique du jour : les affectations actives dans l'ordre où elles ont été posées. Chaque pas de substitution porte la
  * demande et ce qui a été cédé : dans une chaîne (A remplacé par B, B par C), le pas de B dit « repris de A » puis « cédé à C ».
  */
 const buildAssignmentHistory = (assignments, rotationDay) =>
-    assignments.map((a) => ({
-        type: a.subType,
-        shiftData: a.shiftData,
-        wasOverride: a.wasOverride,
-        comment: a.comment ?? '',
-        substitution: substitutionOf(a, rotationDay),
-    }))
+    assignments.map((assignment) => ({
+        type: assignment.subType,
+        shiftData: assignment.shiftData,
+        wasOverride: assignment.wasOverride,
+        comment: assignment.comment ?? '',
+        substitution: substitutionOf(assignment, rotationDay),
+    }));
 
 /**
+ * La vacation du jour une fois la dernière affectation appliquée à celle de la rotation.
  * @param {{ shift: Object|null, team: Object|null }} rotationDay - ce que la rotation prévoit ce jour-là
  */
-export const applyEntries = (rotationDay, assignments, modifications, hoursPatches, { day, today }) => {
-    const latestAssignment = assignments.at(-1) ?? null
-    const latestModification = modifications.at(-1) ?? null
-    const latestHourPatch = hoursPatches.at(-1) ?? null
-
-    let resolvedShift = resolveAssignment(rotationDay, latestAssignment)
-
-    // Une modification porte sur la vacation tenue ; remplacé, l'agent n'en tient plus (`shiftData.shift` vide) : rien à modifier
-    if (isSameShift(resolvedShift, latestModification)) {
-        resolvedShift = applyModification(resolvedShift, latestModification)
-    }
-
-    if (resolvedShift.presence === 'present'
-        && isUnconfirmedOptional(resolvedShift.shiftData?.shift, { latestAssignment, latestModification })) {
-        resolvedShift = { ...resolvedShift, presence: 'unconfirmed' }
-    }
-
-    if (resolvedShift.presence === 'present') checkHourPatchCoherence(latestModification)
-    resolvedShift = applyHourPatch(resolvedShift, latestHourPatch)
-
-    resolvedShift = { ...resolvedShift, isWorked: computeIsWorked(resolvedShift, { latestAssignment, day, today }) }
-
-    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments, rotationDay) }
-}
-
-/** Jour facultatif de la rotation que rien n'a confirmé (ni affectation, ni modification) : l'agent n'y est pas */
-const isUnconfirmedOptional = (shift, { latestAssignment, latestModification } = {}) =>
-    Boolean(shift?.optional) && !latestAssignment && !["pres", "variation", "vic"].includes(latestModification?.subType)
-
-/**
- * `isWorked` : le jour compte comme TRAVAILLÉ pour les règles de repos et de charge (compatibilité, contrôle des 7 jours).
- * Ce n'est pas `presence`, qui dit seulement si l'agent est à ce qu'il tient (présent, en dispo, jour facultatif non confirmé,
- * remplacé) : un jour peut être « présent » sans être travaillé (repos, congé, VIC passé).
- * - pas présent (dispo, non confirmé, remplacé) : non ;
- * - affectation sans vacation : travaillée si son type est dans ASSIGNMENT_WORK_SUBTYPES et qu'elle a ses horaires ;
- * - vacation de travail : travaillée, sauf un VIC dont le jour est passé (compté comme un jour off) ;
- * - tout le reste (repos, congé, arrêt maladie...) : non.
- */
-const computeIsWorked = (result, { latestAssignment, day, today }) => {
-    if (result.presence !== 'present') return false
-
-    if (latestAssignment && !latestAssignment.shiftData?.shift) {
-        return ASSIGNMENT_WORK_SUBTYPES.has(latestAssignment.subType) && Boolean(result.startTime && result.endTime)
-    }
-
-    const shift = result.shiftData?.shift
-    if (shift?.type !== 'work') return false
-
-    if (result.shiftData.selectedVariation === 'vic' && compareDays(day, today) < 0) return false
-
-    return true
-}
-
-/** Types d'affectation qui comptent comme du travail ; les congés (`absence` = « Congé » dans l'interface, `sick_leave`, `maternity_leave`) et la substitution non */
-const ASSIGNMENT_WORK_SUBTYPES = new Set([
-    'manager', 'english_training', 'training', 'simulation', 'other', 'test', 'office', 'stage', 'instruc', 'custom', 'vis_med',
-])
-
 export const resolveAssignment = (rotationDay, latestAssignment) => {
-    const rotationShift = rotationDay?.shift ?? null
+    const rotationShift = rotationDay?.shift ?? null;
     if (!latestAssignment) {
-        return buildShiftResult(null, rotationShift, rotationDay?.team ?? null)
+        return buildShiftResult(null, rotationShift, rotationDay?.team ?? null);
     }
 
-    const substitution = substitutionOf(latestAssignment, rotationDay)
+    const substitution = substitutionOf(latestAssignment, rotationDay);
 
     // Vacation concrète : accepteur d'un remplacement, permutation (chacun prend celle de l'autre), affectation à une vacation
     if (latestAssignment.shiftData?.shift) {
@@ -152,7 +127,7 @@ export const resolveAssignment = (rotationDay, latestAssignment) => {
             baseShift: rotationShift,
             comment: latestAssignment.comment ?? '',
             substitution,
-        })
+        });
     }
 
     // Aucune vacation tenue : `shiftData.shift` est vide. Remplacé, l'agent a cédé la sienne (`substitution.gave`, ce qu'on barre à
@@ -168,259 +143,319 @@ export const resolveAssignment = (rotationDay, latestAssignment) => {
         baseShift: rotationShift,
         comment: latestAssignment.comment ?? '',
         substitution,
-    }
-}
+    };
+};
 
-const applyModification = (resolvedShift, latestModification) => {
-    const modShiftData = latestModification.shiftData
+// ── Modifications et ajustements d'horaires ───────────────────────────
 
-    switch (latestModification.subType) {
-        case 'variation':
-            return {
-                ...resolvedShift,
-                shiftData: {
-                    ...resolvedShift.shiftData,
-                    selectedVariation: modShiftData.selectedVariation,
-                    team: modShiftData.team ?? resolvedShift.shiftData.team,
-                },
-                startTime: modShiftData.selectedVariation.startTime,
-                endTime: modShiftData.selectedVariation.endTime,
-            }
+/** Une modification porte sur la vacation tenue : la même que celle de la vacation déjà résolue (remplacé, l'agent n'en tient plus) */
+const isSameShift = (resolvedShift, modification) =>
+    resolvedShift?.shiftData?.shift?._id?.equals(modification?.shiftData?.shift?._id);
+
+/** Ce que fait une modification (présent, dispo, VIC, variation) à la vacation tenue */
+const applyModification = (resolvedShift, modification) => {
+    const modificationShiftData = modification.shiftData;
+
+    // La vacation tenue avec une autre variation choisie (ou aucune), et l'équipe de la modification si elle en donne une
+    const withSelectedVariation = (selectedVariation, otherChanges = {}) => ({
+        ...resolvedShift,
+        ...otherChanges,
+        shiftData: {
+            ...resolvedShift.shiftData,
+            selectedVariation,
+            team: modificationShiftData.team ?? resolvedShift.shiftData.team,
+        },
+    });
+
+    switch (modification.subType) {
+        case 'variation': {
+            const variation = modificationShiftData.selectedVariation;
+            return withSelectedVariation(variation, { startTime: variation.startTime, endTime: variation.endTime });
+        }
         case 'vic':
-            return {
-                ...resolvedShift,
-                shiftData: {
-                    ...resolvedShift.shiftData,
-                    selectedVariation: 'vic',
-                    team: modShiftData.team ?? resolvedShift.shiftData.team,
-                },
-            }
+            return withSelectedVariation('vic');
         case 'disp':
-            return {
-                ...resolvedShift,
-                presence: 'released',
-                shiftData: {
-                    ...resolvedShift.shiftData,
-                    selectedVariation: 'disp',
-                    team: modShiftData.team ?? resolvedShift.shiftData.team,
-                },
-            }
+            return withSelectedVariation('disp', { presence: 'released' });
         case 'pres':
-            return {
-                ...resolvedShift,
-                presence: 'present',
-                shiftData: {
-                    ...resolvedShift.shiftData,
-                    selectedVariation: null,
-                    team: modShiftData.team ?? resolvedShift.shiftData.team,
-                },
-            }
+            return withSelectedVariation(null, { presence: 'present' });
         default:
-            return resolvedShift
+            return resolvedShift;
     }
-}
+};
 
+/** Un ajustement d'horaires (MDDA) décale le début et la fin de la vacation d'un agent présent */
 const applyHourPatch = (resolvedShift, latestHourPatch) => {
-    if (!latestHourPatch || resolvedShift.presence !== 'present') return resolvedShift
+    if (!latestHourPatch || resolvedShift.presence !== 'present') return resolvedShift;
     return {
         ...resolvedShift,
         wasPatched: true,
         startTime: addHours(resolvedShift.startTime, latestHourPatch.adjustedTime.adjustedStart),
         endTime: addHours(resolvedShift.endTime, latestHourPatch.adjustedTime.adjustedEnd),
-    }
-}
+    };
+};
 
-/** Les notes de jour (`DayComment`) de l'utilisateur sur une plage de dates : jour -> commentaire */
-const getDayCommentsByDates = async (userId, dateStrs) => {
-    const notes = await DayComment.find({ userId, date: { $in: dateStrs } }).select('date comment').lean();
+/** Un ajustement d'horaires n'a pas de sens sur une vacation annulée par une absence */
+const checkHourPatchCoherence = (latestModification) => {
+    if (latestModification?.subType === 'absence') {
+        throw new Error('hourPatch incohérent : le shift est annulé (absence)');
+    }
+};
+
+// ── Présence et travail ───────────────────────────────────────────────
+
+/** Jour facultatif de la rotation que rien n'a confirmé (ni affectation, ni modification) : l'agent n'y est pas */
+const isUnconfirmedOptional = (shift, { latestAssignment, latestModification } = {}) =>
+    Boolean(shift?.optional)
+    && !latestAssignment
+    && !['pres', 'variation', 'vic'].includes(latestModification?.subType);
+
+/**
+ * `isWorked` : le jour compte comme TRAVAILLÉ pour les règles de repos et de charge (compatibilité, contrôle des 7 jours).
+ * Ce n'est pas `presence`, qui dit seulement si l'agent est à ce qu'il tient (présent, en dispo, jour facultatif non confirmé,
+ * remplacé) : un jour peut être « présent » sans être travaillé (repos, congé, VIC passé).
+ * - pas présent (dispo, non confirmé, remplacé) : non ;
+ * - affectation sans vacation : travaillée si son type est dans ASSIGNMENT_WORK_SUBTYPES et qu'elle a ses horaires ;
+ * - vacation de travail : travaillée, un VIC aussi, même passé (règle de travail : le VIC compte comme un jour travaillé) ;
+ * - tout le reste (repos, congé, arrêt maladie...) : non.
+ */
+const computeIsWorked = (resolvedShift, { latestAssignment }) => {
+    if (resolvedShift.presence !== 'present') return false;
+
+    const isAssignmentWithoutShift = latestAssignment && !latestAssignment.shiftData?.shift;
+    if (isAssignmentWithoutShift) {
+        return ASSIGNMENT_WORK_SUBTYPES.has(latestAssignment.subType) && Boolean(resolvedShift.startTime && resolvedShift.endTime);
+    }
+
+    return resolvedShift.shiftData?.shift?.type === 'work';
+};
+
+// ── Un jour : la rotation, puis les entrées ───────────────────────────
+
+/**
+ * Applique à la vacation de la rotation les entrées actives du jour, dans l'ordre : affectation, modification, présence d'un jour
+ * facultatif, ajustement d'horaires ; puis calcule `isWorked`.
+ * @param {{ shift: Object|null, team: Object|null }} rotationDay - ce que la rotation prévoit ce jour-là
+ * @param {Array} assignments - dans l'ordre où elles ont été posées
+ * @param {Array} modifications - idem
+ * @param {Array} hourPatches - idem
+ */
+export const applyEntries = (rotationDay, assignments, modifications, hourPatches) => {
+    const latestAssignment = assignments.at(-1) ?? null;
+    const latestModification = modifications.at(-1) ?? null;
+    const latestHourPatch = hourPatches.at(-1) ?? null;
+
+    let resolvedShift = resolveAssignment(rotationDay, latestAssignment);
+
+    // Une modification porte sur la vacation tenue ; remplacé, l'agent n'en tient plus (`shiftData.shift` vide) : rien à modifier
+    if (isSameShift(resolvedShift, latestModification)) {
+        resolvedShift = applyModification(resolvedShift, latestModification);
+    }
+
+    const isUnconfirmed = isUnconfirmedOptional(resolvedShift.shiftData?.shift, { latestAssignment, latestModification });
+    if (resolvedShift.presence === 'present' && isUnconfirmed) {
+        resolvedShift = { ...resolvedShift, presence: 'unconfirmed' };
+    }
+
+    if (resolvedShift.presence === 'present') checkHourPatchCoherence(latestModification);
+    resolvedShift = applyHourPatch(resolvedShift, latestHourPatch);
+
+    resolvedShift = { ...resolvedShift, isWorked: computeIsWorked(resolvedShift, { latestAssignment }) };
+
+    return { resolvedShift, assignmentHistory: buildAssignmentHistory(assignments, rotationDay) };
+};
+
+// ── Chargement des entrées et des notes ───────────────────────────────
+
+/** Le jour (`YYYY-MM-DD`) d'une entrée : sa date est une chaîne, ou un `Date` pour les plus anciennes */
+const dayKeyOfEntry = (entry) => (typeof entry.date === 'string' ? entry.date.slice(0, 10) : entry.date);
+
+/** Les notes de jour (`DayComment`) de l'utilisateur sur une plage de jours : jour -> commentaire */
+const getDayCommentsByDay = async (userId, dayKeys) => {
+    const notes = await DayComment.find({ userId, date: { $in: dayKeys } }).select('date comment').lean();
     return new Map(notes.map((note) => [note.date, note.comment]));
 };
 
-/** Charge toutes les entries actives sur une plage de dates, groupées par jour */
-const getActiveEntriesByDates = async (user, dateStrs) => {
+/** Charge toutes les entrées actives de l'utilisateur sur une plage de jours, groupées par jour */
+const getActiveEntriesByDay = async (user, dayKeys) => {
     const populateShiftData = (query) => query
         .populate({ path: 'shiftData', populate: 'shift' })
         .populate({ path: 'shiftData.shift', populate: 'variations' })
         .populate({ path: 'shiftData.selectedVariation' })
         .populate({ path: 'shiftData.team' });
 
-    const baseQuery = { userId: user._id, active: true, date: { $in: dateStrs } };
+    const activeEntriesFilter = { userId: user._id, active: true, date: { $in: dayKeys } };
 
-    const [assignments, modifications, hoursPatches] = await Promise.all([
-        populateShiftData(Assignment.find(baseQuery))
+    const [assignments, modifications, hourPatches] = await Promise.all([
+        populateShiftData(Assignment.find(activeEntriesFilter))
             .populate({ path: 'substitution.gave.shift', populate: 'variations' })
             .populate({ path: 'substitution.gave.selectedVariation' })
             .sort({ createdAt: 1 }).lean(),
-        populateShiftData(Modification.find(baseQuery)).sort({ createdAt: 1 }).lean(),
-        HourPatch.find(baseQuery).sort({ createdAt: 1 }).lean(),
+        populateShiftData(Modification.find(activeEntriesFilter)).sort({ createdAt: 1 }).lean(),
+        HourPatch.find(activeEntriesFilter).sort({ createdAt: 1 }).lean(),
     ]);
 
-    const byDate = Object.fromEntries(dateStrs.map((d) => [d, {
-        assignments: [],
-        modifications: [],
-        hoursPatches: [],
-    }]));
+    const entriesByDay = Object.fromEntries(
+        dayKeys.map((dayKey) => [dayKey, { assignments: [], modifications: [], hourPatches: [] }]),
+    );
 
-    for (const a of assignments) {
-        const key = typeof a.date === 'string' ? a.date.slice(0, 10) : a.date;
-        if (byDate[key]) byDate[key].assignments.push(a);
-    }
-    for (const m of modifications) {
-        const key = typeof m.date === 'string' ? m.date.slice(0, 10) : m.date;
-        if (byDate[key]) byDate[key].modifications.push(m);
-    }
-    for (const h of hoursPatches) {
-        const key = typeof h.date === 'string' ? h.date.slice(0, 10) : h.date;
-        if (byDate[key]) byDate[key].hoursPatches.push(h);
-    }
+    const groupByDay = (entries, listName) => {
+        for (const entry of entries) {
+            entriesByDay[dayKeyOfEntry(entry)]?.[listName].push(entry);
+        }
+    };
+    groupByDay(assignments, 'assignments');
+    groupByDay(modifications, 'modifications');
+    groupByDay(hourPatches, 'hourPatches');
 
-    return byDate;
-}
+    return entriesByDay;
+};
+
+// ── Ce que la rotation prévoit ────────────────────────────────────────
+
+/** L'identifiant du centre d'une équipe (peuplé ou non) */
+const centerIdOf = (team) => team.center?._id ?? team.center;
 
 /**
- * Résultat d'un jour : ce que l'utilisateur TIENT (`shiftData`, vide s'il est remplacé ou sur une affectation), ce que la rotation
- * prévoyait (`baseShift`, toujours le document `Shift` de la rotation, jamais ce qui a été modifié), sa `presence`, s'il y a eu
- * une substitution laquelle (`substitution`), et le commentaire de l'affectation du jour (`comment`, vide sans affectation).
- * @param {Object} [overrides] - `baseShift` vaut par défaut la vacation tenue (jour sans entrée : c'est celle de la rotation)
+ * Les centres des équipes de l'utilisateur, par identifiant, en une seule lecture : le cycle d'une équipe part de l'ancre de son centre.
+ * (Les équipes d'un utilisateur peuvent être de plusieurs centres : une mutation, avec ses anciennes équipes.)
  */
-const buildShiftResult = (dateStr, shift, team, overrides = {}) => ({
-    date: dateStr,
-    type: shift ? 'shift' : "empty",
-    isBaseShift: true,
-    presence: 'present',
-    shiftData: { shift, selectedVariation: null, team: team },
-    startTime: shift?.default?.startTime,
-    endTime: shift?.default?.endTime,
-    baseShift: shift,
-    substitution: null,
-    comment: '',
-    ...overrides,
-})
+const loadTeamCenters = async (user) => {
+    const centerIds = (user.teams ?? []).map((occurrence) => occurrence.teamId && centerIdOf(occurrence.teamId)).filter(Boolean);
+    const centers = await Center.find({ _id: { $in: centerIds } }).select('cycleAnchorDate cycleAnchorDay').lean();
+    return new Map(centers.map((center) => [String(center._id), center]));
+};
 
 /**
- * Récupère le shift d'un utilisateur à une date donnée en prenant en compte les substitutions et modifications de planning
- * @param {Array} dates - Les dates pour lesquelles on souhaite récupérer le shift
+ * Ce que la rotation active prévoit pour une équipe un jour donné. La rotation active est résolue jour par jour (dernière activation
+ * <= ce jour, comme findLatestRotation) : avant, une seule rotation (celle de la dernière date du lot) servait à tout le lot, et un
+ * mois contenant un changement de rotation affichait la nouvelle rotation avant son activation.
+ * La chronologie des activations est chargée une fois par centre, chaque rotation peuplée une fois.
+ * @param {Map<string, Object>} centersById - voir loadTeamCenters
+ * @returns {(team: Object, dayKey: string) => Promise<Object|null>} la vacation (`Shift`) de la rotation, ou `null`
+ */
+const createRotationShiftResolver = (centersById) => {
+    const activationTimelineByCenter = new Map();
+    const populatedRotationById = new Map();
+
+    /** Les activations de rotation d'un centre, de la plus ancienne à la plus récente : `[{ rotationId, day }]` */
+    const getActivationTimeline = (centerId) => {
+        const key = String(centerId);
+        if (!activationTimelineByCenter.has(key)) {
+            activationTimelineByCenter.set(key, (async () => {
+                const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates activationDays').lean();
+                return rotations
+                    .flatMap((rotation) => activationDaysOf(rotation).map((activationDay) => ({
+                        rotationId: String(rotation._id),
+                        day: activationDay,
+                    })))
+                    .sort((first, second) => first.day.localeCompare(second.day)); // les clés de jour se comparent comme les jours
+            })());
+        }
+        return activationTimelineByCenter.get(key);
+    };
+
+    /** La rotation en vigueur le jour donné, avec ses jours et leurs variations, ou `null` */
+    const getActiveRotation = async (team, dayKey) => {
+        const centerId = centerIdOf(team);
+        if (!centerId) return null;
+
+        const timeline = await getActivationTimeline(centerId);
+        const latestActivation = timeline.filter((activation) => activation.day <= dayKey).at(-1);
+        if (!latestActivation) return null;
+
+        if (!populatedRotationById.has(latestActivation.rotationId)) {
+            populatedRotationById.set(latestActivation.rotationId, Rotation.findById(latestActivation.rotationId).populate({
+                path: 'days',
+                populate: { path: 'variations' },
+            }).exec()); // exec() : une promesse réutilisable, pas une Query qu'on ne peut attendre qu'une fois
+        }
+        return populatedRotationById.get(latestActivation.rotationId);
+    };
+
+    return async (team, dayKey) => {
+        const rotation = await getActiveRotation(team, dayKey);
+        const center = centersById.get(String(centerIdOf(team))) ?? null;
+
+        if (!rotation?.days?.length) return null;
+        const dayIndex = cycleDayIndex(team, center, dayKey, rotation.days.length);
+        if (dayIndex === null) return null;
+        return rotation.days[dayIndex] || null;
+    };
+};
+
+// ── Résultat de computeUserShifts ─────────────────────────────────────
+
+/**
+ * Les jours demandés, un tableau de clés `YYYY-MM-DD` (une seule clé est acceptée aussi). Rien d'autre qu'une clé de jour n'est accepté
+ * (400) : un instant (`Date`, ISO avec heure) dépend d'un fuseau, c'est à l'appelant de le placer sur un jour (`toCalendarDay`,
+ * `posterDayOf`...).
+ */
+const toDayKeys = (dayKeys) => {
+    const keys = Array.isArray(dayKeys) ? dayKeys : [dayKeys];
+    for (const dayKey of keys) {
+        if (!isValidDate(dayKey)) throw new AppError(`Date invalide: ${dayKey}`, 400);
+    }
+    return keys;
+};
+
+/**
+ * Récupère les vacations d'un utilisateur à des dates données, en prenant en compte les substitutions, modifications et notes de
+ * planning. Un résultat par date demandée, dans l'ordre :
+ * - `shiftData`, `baseShift`, `presence`, `substitution`, `history`, `isWorked`, `comment`... : voir `buildShiftResult` et
+ *   `applyEntries` ;
+ * - un jour facultatif de la rotation que rien n'a confirmé n'est pas travaillé (`presence: 'unconfirmed'`).
+ * @param {string|string[]} dayKeys - Les jours (`YYYY-MM-DD`), un seul ou un tableau
  * @param {string} userId - L'ID de l'utilisateur
  * @returns {Promise<Array>} - Un tableau des shifts de l'utilisateur
  */
-const computeUserShifts = async (dates, userId) => {
+const computeUserShifts = async (dayKeys, userId) => {
     try {
-        const user = await User.findById(userId).populate([
-            { path: 'teams.teamId' }
-        ]);
-
+        const user = await User.findById(userId).populate([{ path: 'teams.teamId' }]);
         if (!user) {
             throw new AppError('Utilisateur non trouvé', 404);
         }
 
-        // Centre de l'utilisateur : son fuseau place les instants reçus (horodatages) sur un jour calendaire
-        const centerByKey = new Map();
-        const getCenter = (centerId) => {
-            const key = String(centerId);
-            if (!centerByKey.has(key)) centerByKey.set(key, Center.findById(centerId).select('cycleAnchorDate cycleAnchorDay timeZone').lean().exec());
-            return centerByKey.get(key);
-        };
-        const userCenter = user.centerId ? await getCenter(user.centerId) : null;
-        const timeZone = userCenter?.timeZone || DEFAULT_TIME_ZONE;
-        const today = todayIn(timeZone);
+        const requestedDayKeys = toDayKeys(dayKeys);
 
-        // Chaque date devient un jour calendaire (PlainDate) ; les jours sont déjà des chaînes YYYY-MM-DD dans la
-        // plupart des appels, les instants (Date, ISO avec fuseau) sont lus dans le fuseau du centre
-        const dateArray = Array.isArray(dates) ? dates : [dates];
-        const normalizedDates = dateArray.map((rawDate) => {
-            const day = toCalendarDay(rawDate, timeZone);
-            if (!day) throw new AppError(`Date invalide: ${rawDate}`, 400);
-            return { day, dateStr: day.toString() };
-        });
+        const [dayComments, entriesByDay, centersById] = await Promise.all([
+            getDayCommentsByDay(userId, requestedDayKeys),
+            getActiveEntriesByDay(user, requestedDayKeys),
+            loadTeamCenters(user),
+        ]);
+        const getRotationShift = createRotationShiftResolver(centersById);
 
-        const noteByDate = await getDayCommentsByDates(userId, normalizedDates.map((d) => d.dateStr));
+        const computeDay = async (dayKey) => {
+            const teamOccurrence = user.teams?.length ? getTeamAtDay(user.teams, dayKey) : null;
+            const team = teamOccurrence?.teamId ?? null;
+            const baseShift = team ? await getRotationShift(team, dayKey) : null;
 
-        const entriesByDate = await getActiveEntriesByDates(
-            user,
-            normalizedDates.map((d) => d.dateStr)
-        );
+            const { assignments, modifications, hourPatches } =
+                entriesByDay[dayKey] ?? { assignments: [], modifications: [], hourPatches: [] };
+            const hasEntries = assignments.length || modifications.length || hourPatches.length;
 
-        // Rotation active à chaque date : même règle que findLatestRotation (dernière activation <= date), mais
-        // résolue jour par jour. Avant, une seule rotation (celle de la dernière date du lot) servait à tout le lot :
-        // un mois contenant un changement de rotation affichait la nouvelle rotation avant son activation.
-        // Chronologie des activations chargée une fois par centre, rotations peuplées une fois chacune.
-        const timelineByCenter = new Map();
-        const populatedRotations = new Map();
-
-        const getTimeline = async (centerId) => {
-            const key = String(centerId);
-            if (!timelineByCenter.has(key)) {
-                timelineByCenter.set(key, (async () => {
-                    const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates activationDays').lean();
-                    return rotations
-                        .flatMap((r) => activationDaysOf(r).map((d) => ({ rotationId: String(r._id), day: toPlainDate(d) })))
-                        .sort((a, b) => Temporal.PlainDate.compare(a.day, b.day));
-                })());
+            // Sans rien d'explicite, un jour facultatif de la rotation n'est pas travaillé
+            if (!hasEntries) {
+                const isUnconfirmed = isUnconfirmedOptional(baseShift);
+                return buildShiftResult(dayKey, baseShift, team, {
+                    presence: isUnconfirmed ? 'unconfirmed' : 'present',
+                    isWorked: baseShift?.type === 'work' && !isUnconfirmed,
+                    history: [],
+                });
             }
-            return timelineByCenter.get(key);
+
+            const { resolvedShift, assignmentHistory } = applyEntries(
+                { shift: baseShift, team },
+                assignments,
+                modifications,
+                hourPatches,
+            );
+            return { ...resolvedShift, date: dayKey, history: assignmentHistory };
         };
 
-        const getPopulatedRotation = async (team, day) => {
-            const centerId = team.center?._id ?? team.center;
-            if (!centerId) return null;
+        const shifts = await Promise.all(requestedDayKeys.map(computeDay));
 
-            const timeline = await getTimeline(centerId);
-            const active = timeline.filter((entry) => Temporal.PlainDate.compare(entry.day, day) <= 0).at(-1);
-            if (!active) return null;
-
-            if (!populatedRotations.has(active.rotationId)) {
-                populatedRotations.set(active.rotationId, Rotation.findById(active.rotationId).populate({
-                    path: 'days',
-                    populate: { path: 'variations' }
-                }).exec());   // exec() : une promesse réutilisable, pas une Query qu'on ne peut attendre qu'une fois
-            }
-            return populatedRotations.get(active.rotationId);
-        };
-        const shiftFromRotation = (team, center, day, rotation) => {
-            if (!rotation?.days?.length) return null;
-            const dayIndex = cycleDayIndex(team, center, day, rotation.days.length);
-            if (dayIndex === null) return null;
-            return rotation.days[dayIndex] || null;
-        };
-
-        const results = await Promise.all(
-            normalizedDates.map(async ({ day, dateStr }) => {
-                const teamOcc = user.teams?.length ? getTeamAtDay(user.teams, day) : null;
-                const team = teamOcc?.teamId ?? null;
-
-                let baseShift = null;
-                if (team) {
-                    const rotation = await getPopulatedRotation(team, day);
-                    const center = await getCenter(team.center?._id ?? team.center);
-                    baseShift = shiftFromRotation(team, center, day, rotation);
-                }
-
-                const { assignments, modifications, hoursPatches } = entriesByDate[dateStr]
-                    || { assignments: [], modifications: [], hoursPatches: [] };
-
-                // Sans rien d'explicite, un jour facultatif de la rotation n'est pas travaillé
-                if (!assignments.length && !modifications.length && !hoursPatches.length) {
-                    const unconfirmed = isUnconfirmedOptional(baseShift)
-                    return buildShiftResult(dateStr, baseShift, team, {
-                        presence: unconfirmed ? 'unconfirmed' : 'present',
-                        isWorked: baseShift?.type === 'work' && !unconfirmed,
-                        history: [],
-                    });
-                }
-
-                const { resolvedShift, assignmentHistory } = applyEntries(
-                    { shift: baseShift, team },
-                    assignments,
-                    modifications,
-                    hoursPatches,
-                    { day, today }
-                );
-
-                return { ...resolvedShift, date: dateStr, history: assignmentHistory };
-            })
-        );
         // La note du jour, indépendante de la vacation et des entrées, l'emporte sur le commentaire d'une affectation
-        return results.map((result) => (noteByDate.has(result.date) ? { ...result, comment: noteByDate.get(result.date) } : result));
+        return shifts.map((shift) => (dayComments.has(shift.date) ? { ...shift, comment: dayComments.get(shift.date) } : shift));
     } catch (error) {
         console.error('Erreur dans le calcul des vacations : ', error.message);
         throw error;

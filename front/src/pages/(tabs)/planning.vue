@@ -24,11 +24,10 @@
 </template>
 
 <script setup>
-import { useScrollRestoration } from 'vue-router/experimental';
 
 // Onglet du bas : racine de ses pages, il retrouve son défilement (router/scrollRestoration.js)
 definePage({ meta: { tab: 'planning' } });
-useScrollRestoration();
+
 
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';

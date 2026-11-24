@@ -60,7 +60,7 @@ expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` e
   (`modShiftData.selectedVariation.startTime` sur `null`).
 - `checkHourPatchCoherence` teste `latestModification.subType === 'absence'`, ce qui ne peut pas arriver (l'enum des modifications est `disp, vic, variation, pres`). Contrôle mort.
 - `isSameShift` renvoie `undefined` (pas un booléen) quand un id manque, et le `isSameShift(userShift, data)` de `registerEntry` porte le même nom avec une autre signature (section 5).
-- `getActiveEntriesByDates` contient des branches impossibles : `typeof a.date === 'string' ? a.date.slice(0, 10) : a.date` (le champ est toujours une chaîne), le
+- `getActiveEntriesByDay` (ex `getActiveEntriesByDates`, regroupement désormais factorisé dans `groupByDay` / `dayKeyOfEntry`) contient une branche inutile : `typeof a.date === 'string' ? a.date.slice(0, 10) : a.date` (le champ est toujours une chaîne), le
   repli `|| { assignments: [] ... }` dans `computeUserShifts` (la table est pré-remplie pour chaque date), et une chaîne de populate répétée trois fois pour un `shiftData` qui est un
   sous-document, pas une référence (`populate({ path: 'shiftData', populate: 'shift' })` ne fait rien à côté du populate de `shiftData.shift`).
 - Seuls la **dernière** affectation, modification et dernier patch sont utilisés (`.at(-1)`). Cela suppose que les écrivains gardent une seule entrée active ; `cancelSubstitutionEntries` et `deleteAssignment`
@@ -170,7 +170,7 @@ dans les services ; un `Date` n'apparaît qu'à une frontière Mongo ou biblioth
 ## 6. Simplification (sans changer le comportement)
 
 1. **`registerEntry`** : ne charger que ce dont chaque gestionnaire a besoin ; un seul point de validation pour « le jour ne doit pas être impliqué dans un remplacement actif » au lieu de contrôles écrits dans chaque gestionnaire (affectation, modification et ajustement d'horaires les ont désormais chacun).
-2. **`getActiveEntriesByDates`** : trois requêtes, c'est correct ; le regroupement peut être un seul `groupBy` sur `a.date` sans branche `typeof`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
+2. **`getActiveEntriesByDay`** : trois requêtes, c'est correct ; le regroupement est factorisé (`groupByDay`), il reste à retirer la branche `typeof` de `dayKeyOfEntry`, et les chemins de populate réduits à ceux qui existent (`shiftData.shift` avec `variations`, `shiftData.selectedVariation`, `shiftData.team`).
 3. **Machine à états des demandes.** Les transitions légales (`open → accepted | cancelled | expired`, `accepted → open (retrait) | cancelled | completed`) sont implicites dans des `if (status === ...)` dispersés dans accept, cancel, withdraw, expiry.
    Une petite table `canTransition(from, to)` contrôlée aux points d'entrée (l'annulation en a déjà un : `CANCELLABLE_STATUSES`) ferait de S9 (contrôles de date) une règle de plus au même endroit.
 4. **Forme des résultats.** Supprimer `updatedDemands: null` (6 endroits), les `posterShift`/`accepterShift` toujours `null` en mode transaction, et renvoyer `{ root, cascaded }` au lieu d'un tableau dont le dernier élément est spécial (3.2, point 8).

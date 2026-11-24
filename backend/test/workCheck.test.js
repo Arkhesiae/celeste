@@ -8,7 +8,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import mongoose from 'mongoose';
-import { Temporal } from '@js-temporal/polyfill';
 import { analyzeWork } from '../services/user/user.workCheck.js';
 
 const TZ = 'Europe/Paris';
@@ -101,14 +100,12 @@ test('35 h : le repos est borné par la période (comportement voulu, identique 
 
 // ── isWorked : ce qui compte comme travail (planning.userShifts.js) ──────────────────────────────
 
-const day = Temporal.PlainDate.from('2027-03-10');
-const today = Temporal.PlainDate.from('2027-03-10');
 const shiftId = new mongoose.Types.ObjectId();
 const work = { _id: shiftId, name: 'J4', type: 'work', default: { startTime: '08:00', endTime: '16:00' } };
 const rest = { _id: new mongoose.Types.ObjectId(), name: 'R', type: 'rest', default: {} };
-const resolved = async (base, { assignments = [], modifications = [], on = day } = {}) => {
+const resolved = async (base, { assignments = [], modifications = [] } = {}) => {
   const { applyEntries } = await import('../services/planning/planning.userShifts.js');
-  return applyEntries({ shift: base, team: null }, assignments, modifications, [], { day: on, today }).resolvedShift;
+  return applyEntries({ shift: base, team: null }, assignments, modifications, []).resolvedShift;
 };
 const worked = async (...args) => (await resolved(...args)).isWorked;
 const vic = { subType: 'vic', shiftData: { shift: work, team: null } };
@@ -118,10 +115,10 @@ test("isWorked : une vacation de travail l'est, un repos non", async () => {
   assert.equal(await worked(rest), false);
 });
 
-test("isWorked : un VIC l'est seulement s'il n'est pas passé", async () => {
-  assert.equal(await worked(work, { modifications: [vic], on: day }), true);
-  assert.equal(await worked(work, { modifications: [vic], on: Temporal.PlainDate.from('2027-03-09') }), false);
-  assert.equal(await worked(work, { modifications: [vic], on: Temporal.PlainDate.from('2027-03-11') }), true);
+// Règle de travail : un VIC compte comme un jour travaillé, quel que soit le jour (passé, aujourd'hui ou à venir) ; le jour n'entre plus
+// dans le calcul (de bout en bout avec des jours passés : test/workedDays.db.test.js)
+test("isWorked : un VIC est un jour travaillé", async () => {
+  assert.equal(await worked(work, { modifications: [vic] }), true);
 });
 
 test("isWorked : un jour facultatif de la rotation ne l'est que s'il est confirmé (présent, variante ou VIC)", async () => {
@@ -196,7 +193,7 @@ test('isWorked : affectation = type à part, travaillée sauf congé / absence /
   const { applyEntries } = await import('../services/planning/planning.userShifts.js');
   const resolve = (subType) => ({
     date: '2027-03-10',
-    ...applyEntries({ shift: rest, team: null }, [{ subType, startTime: '09:00', endTime: '17:00' }], [], [], { day, today }).resolvedShift,
+    ...applyEntries({ shift: rest, team: null }, [{ subType, startTime: '09:00', endTime: '17:00' }], [], []).resolvedShift,
   });
   const map = toShiftsMap([resolve('training')]);
   assert.equal(map.get('2027-03-10').shift, null);

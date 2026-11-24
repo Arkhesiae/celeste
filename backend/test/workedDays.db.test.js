@@ -47,7 +47,7 @@ after(async () => {
   await mongoose.disconnect();
 });
 
-test('isWorked : VIC passé / à venir, jour facultatif, affectation, congé et arrêt maladie', async (t) => {
+test('isWorked : VIC passé ou à venir, jour facultatif, affectation, congé et arrêt maladie', async (t) => {
   if (!available) return t.skip('MongoDB indisponible');
 
   // Cycle de 3 jours qui commence aujourd'hui : J (travail), O (travail facultatif), R (repos), puis J...
@@ -63,7 +63,8 @@ test('isWorked : VIC passé / à venir, jour facultatif, affectation, congé et 
   const rest = await Shift.create({ name: 'R', order: 2, type: 'rest', default: { startTime: null, endTime: null, points: 0 } });
   await Rotation.create({
     name: 'rot', centerId: center._id, days: [work._id, optional._id, rest._id],
-    activationDates: [new Date(`${today}T00:00:00Z`)], activationDays: [today.toString()],
+    // Activée depuis 10 jours : le jour passé testé (-3) a une vacation de rotation sur laquelle poser le VIC
+    activationDates: [new Date(`${today.subtract({ days: 10 })}T00:00:00Z`)], activationDays: [today.subtract({ days: 10 }).toString()],
   });
   const user = await User.create({
     name: 'Test', lastName: 'User', email: 'worked@example.com', password: 'x', centerId: center._id,
@@ -74,7 +75,7 @@ test('isWorked : VIC passé / à venir, jour facultatif, affectation, congé et 
   const modify = (offset, subType, shift) => Modification.create({ ...base, date: at(offset), subType, shiftData: { shift: shift._id, team: team._id } });
   const assign = (offset, subType, times = { startTime: '09:00', endTime: '17:00' }) => Assignment.create({ ...base, date: at(offset), subType, ...times });
 
-  await modify(-3, 'vic', work);      // J passé en VIC : compté comme off
+  await modify(-3, 'vic', work);      // J passé en VIC : travaillé (règle de travail : le VIC compte, même passé)
   await modify(3, 'vic', work);       // J à venir en VIC : travaillé
   await modify(4, 'pres', optional);  // O confirmé : travaillé (O du lendemain de J+3 sans rien : non)
   await assign(5, 'training');        // repos + formation : travaillé
@@ -86,7 +87,7 @@ test('isWorked : VIC passé / à venir, jour facultatif, affectation, congé et 
   const state = Object.fromEntries(offsets.map((offset) => [offset, map.has(at(offset))]));
 
   assert.deepEqual(state, {
-    '-3': false,  // VIC passé
+    '-3': true,   // VIC passé : travaillé
     0: true,      // J
     1: false,     // O facultatif non confirmé
     2: false,     // congé
@@ -252,4 +253,34 @@ test('permutation : chacun prend la vacation de l’autre, et peut la modifier (
   await registerEntry(accepter._id, at(0), {
     type: 'hourPatch', shiftId: shiftJ._id, teamId: team1._id, startTime: '09:00', endTime: '17:00',
   });
+});
+
+test('rotation : un changement de rotation dans la période s’applique le jour de son activation, pas avant', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+
+  const today = Temporal.Now.plainDateISO('Europe/Paris');
+  const at = (offset) => today.add({ days: offset }).toString();
+  const center = await Center.create({
+    name: 'C', OACI: 'TESTR', type: 'app', timeZone: 'Europe/Paris',
+    cycleAnchorDate: new Date(`${today}T00:00:00Z`), cycleAnchorDay: today.toString(),
+  });
+  const team = await Team.create({ name: 'R', center: center._id, cycleOffset: 0, cycleStartDate: new Date(`${today}T00:00:00Z`) });
+  const shiftOld = await Shift.create({ name: 'OLD', order: 0, type: 'work', default: { startTime: '08:00', endTime: '16:00', points: 10 } });
+  const shiftNew = await Shift.create({ name: 'NEW', order: 0, type: 'work', default: { startTime: '10:00', endTime: '18:00', points: 10 } });
+  // Une rotation d'un jour activée depuis 10 jours, remplacée par une autre dans 2 jours (déclarées dans le désordre : la chronologie est triée)
+  await Rotation.create({
+    name: 'nouvelle', centerId: center._id, days: [shiftNew._id],
+    activationDates: [new Date(`${today.add({ days: 2 })}T00:00:00Z`)], activationDays: [at(2)],
+  });
+  await Rotation.create({
+    name: 'ancienne', centerId: center._id, days: [shiftOld._id],
+    activationDates: [new Date(`${today.subtract({ days: 10 })}T00:00:00Z`)], activationDays: [today.subtract({ days: 10 }).toString()],
+  });
+  const user = await User.create({
+    name: 'Chg', lastName: 'Rot', email: 'rotation-change@example.com', password: 'x', centerId: center._id,
+    teams: [{ teamId: team._id, fromDate: new Date('2020-01-01T00:00:00Z'), fromDay: '2020-01-01', toDate: null, toDay: null }],
+  });
+
+  const results = await computeUserShifts([at(0), at(1), at(2), at(3)], user._id);
+  assert.deepEqual(results.map((result) => result.shiftData.shift.name), ['OLD', 'OLD', 'NEW', 'NEW']);
 });

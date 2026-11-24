@@ -216,6 +216,7 @@ test('PUT /calendar-entry/comment : jeton requis, jour et longueur validés, et 
 
   assert.equal((await put({ date: day, comment: 'x' }, false)).status, 401);
   assert.equal((await put({ date: 'pas un jour', comment: 'x' })).status, 400);
+  assert.equal((await put({ date: `${day}T10:00:00Z`, comment: 'x' })).status, 400); // une clé de jour, pas un instant
   assert.equal((await put({ date: day, comment: 'x'.repeat(CALENDAR_COMMENT_MAX_LENGTH + 1) })).status, 400);
 
   const saved = await put({ date: day, comment: 'via l’API' });
@@ -229,4 +230,17 @@ test('PUT /calendar-entry/comment : jeton requis, jour et longueur validés, et 
   assert.equal(removed.status, 200);
   assert.equal((await removed.json()).userShift[0].comment, '');
   assert.equal(await DayComment.countDocuments({ userId: A._id, date: day }), 0);
+});
+
+test('computeUserShifts : une clé de jour ou un tableau de clés, jamais un instant', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const { day, otherDay, A } = await setup();
+  const isBadRequest = (error) => (error.status ?? error.statusCode) === 400;
+
+  assert.equal((await computeUserShifts(day, A._id)).length, 1); // une clé
+  assert.deepEqual((await computeUserShifts([otherDay, day], A._id)).map((result) => result.date), [otherDay, day]); // un tableau, dans l'ordre
+
+  await assert.rejects(() => computeUserShifts(new Date(`${day}T00:00:00Z`), A._id), isBadRequest);
+  await assert.rejects(() => computeUserShifts([`${day}T10:00:00Z`], A._id), isBadRequest);
+  await assert.rejects(() => computeUserShifts(['2026-02-30'], A._id), isBadRequest);
 });

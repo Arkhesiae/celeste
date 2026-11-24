@@ -1,4 +1,4 @@
-import { isValidDate, assertDay } from '../utils/validation.js';
+import { isValidDate } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
 import * as calendarEntryService from '../services/calendarEntry/index.js';
 
@@ -31,7 +31,9 @@ const registerEntry = async (req, res, next) => {
 const setComment = async (req, res, next) => {
     try {
         const { date, comment } = req.body;
-        assertDay(date);
+        if (!isValidDate(date)) {
+            throw new AppError('La date est invalide', 400);
+        }
 
         const result = await calendarEntryService.setDayComment(req.user.userId, date, comment);
 

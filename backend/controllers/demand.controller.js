@@ -143,7 +143,11 @@ const checkUserShift = async (req, res, next) => {
             throw new AppError('La date est requise', 400);
         }
 
-        const userShift = await planningService.computeUserShifts(new Date(date), userId);
+        if (!isValidDate(date)) {
+            throw new AppError('La date est invalide', 400);
+        }
+
+        const userShift = await planningService.computeUserShifts(date, userId);
         const entry = userShift[0];
         // computeUserShifts : `shiftData.shift` est la vacation tenue (vide si remplacé), `presence` dit s'il y est (dispo, jour
         // facultatif non confirmé : non)

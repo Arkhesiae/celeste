@@ -48,7 +48,7 @@ export async function restoreInitialShift (userId, date) {
  * Désactive les entrées de calendrier créées par une substitution (et celles qui les suivent) pour l'auteur
  * et l'accepteur.
  * @param {string} demandId
- * @param {{ posterId, accepterId, date: Date }} params
+ * @param {{ posterId, accepterId, date: string }} params - `date` : le jour de la demande (`YYYY-MM-DD`)
  * @param {Object} [opts]
  * @param {ClientSession} [opts.session] - lectures et écritures dans la transaction. Dans ce cas les vacations
  *   recalculées ne sont pas retournées (`posterShift` / `accepterShift` = null) : computeUserShifts ne lit pas

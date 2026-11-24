@@ -10,9 +10,9 @@
         <WelcomeTitle :user-name="userName"> </WelcomeTitle>
       </Transition>
 
-      <Transition name="donations-transition" appear>
+      <!-- <Transition name="donations-transition" appear>
         <Donations></Donations>
-      </Transition>
+      </Transition> -->
 
       <SetupAlerts />
 
@@ -66,6 +66,7 @@
                 :points="stats.points"
                 :transactions="[]"
                 @transfer="transferDialog = true"
+                @show-history="transactionsDialog = true"
               />
 
               <DashboardCalendarSection />
@@ -85,8 +86,11 @@
         :model-value="pointSectionVisible"
         @update:model-value="pointSectionVisible = $event"
       >
-        <PointsCard class="pa-4" :points="stats.points" :transactions="[]" @transfer="transferDialog = true" />
+        <PointsCard class="pa-4" :points="stats.points" :transactions="[]" @transfer="transferDialog = true"
+                @show-history="transactionsDialog = true" />
       </v-bottom-sheet>
+
+      <TransactionHistoryDialog v-model="transactionsDialog" />
 
       <TransferDialog
         :dialog-visible="transferDialog"
@@ -100,6 +104,12 @@
 </template>
 
 <script setup>
+import { useScrollRestoration } from 'vue-router/experimental';
+
+// Onglet du bas : racine de ses pages, il retrouve son défilement (router/scrollRestoration.js)
+definePage({ meta: { tab: 'dashboard' } });
+useScrollRestoration();
+
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDisplay } from 'vuetify';
 
@@ -120,6 +130,7 @@ const stats = ref({
 });
 
 const transferDialog = ref(false);
+const transactionsDialog = ref(false);
 
 // Container padding tracking
 const containerRef = ref(null);

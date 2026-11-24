@@ -3,20 +3,18 @@
 // Le plugin expérimental de vue-router n'agit que pour les composants qui appellent `useScrollRestoration()` (il met `history.scrollRestoration`
 // à `manual` et il n'y a plus de `scrollBehavior` : une page sans appel garderait le défilement de la précédente). Deux niveaux d'appel :
 // - les layouts : le cas général, pour toute page ;
-// - les pages des onglets (dashboard, planning/calendar, planning/grid, demand-page/demands/index, center/centers, center/[centerId]/teams) : leur
+// - la page racine de chaque onglet (dashboard, planning, demand-page/demands, center), qui déclare `definePage({ meta: { tab: true } })` : son
 //   appel l'emporte sur celui du layout (même clé, le plus imbriqué gagne) et rétablit la position une fois la page affichée, ce que le layout
 //   ne peut pas faire (il agit quand lui-même est mis à jour, la page précédente est encore là et coupe la position à sa hauteur).
-// La décision par chemin est dans `restore` : un onglet reprend sa position sauvegardée, toute autre page repart du haut (ou de son ancre `#`).
+// La décision est dans `restore`, selon `meta.tab` : un onglet reprend sa position sauvegardée, toute autre page repart du haut (ou de son ancre `#`).
 import { SCROLL_RESTORATION_CAPTURE_DEFAULT, SCROLL_RESTORATION_RESTORE_DEFAULT } from 'vue-router/experimental';
 
-const MAIN_TAB_PREFIXES = ['/dashboard', '/planning', '/demand-page', '/center/'];
-
-const isMainTab = (path) => MAIN_TAB_PREFIXES.some((prefix) => path.startsWith(prefix));
+const isMainTab = (route) => route.matched.some((record) => record.meta.tab);
 
 // À passer à `app.use(ScrollRestoration, ...)`, avant le routeur
 export const scrollRestorationOptions = (router) => ({
   router,
   capture: SCROLL_RESTORATION_CAPTURE_DEFAULT,
   // Sans position (`null`), la fonction par défaut remonte en haut
-  restore: (entry, to) => SCROLL_RESTORATION_RESTORE_DEFAULT(isMainTab(to.path) ? entry : null, to),
+  restore: (entry, to) => SCROLL_RESTORATION_RESTORE_DEFAULT(isMainTab(to) ? entry : null, to),
 });

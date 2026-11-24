@@ -2,7 +2,6 @@
   <v-container class="pa-4">
     <MainTitle
       title="Historique des changements d'équipe"
-      :back-button="true"
       subtitle="Voir tous les changements d'équipe"
     />
 
@@ -103,6 +102,9 @@
 </template>
 
 <script setup>
+// Sous-page du profil : layout `alternative`, dont la barre porte la flèche de retour vers l'onglet
+definePage({ meta: { layout: 'alternative' } });
+
 import { formatDateLong as formatDate } from '@/utils/formatDate';
 import { occurrenceDays, todayKey } from '@/utils/dayFields.js';
 import { useTeamStore } from '@/stores/teamStore';

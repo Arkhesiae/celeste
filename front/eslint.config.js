@@ -47,7 +47,8 @@ export default typescriptEslint.config(
     },
   },
   {
-    files: ['src/pages/**/*.vue'],
+    // Pages and layouts are named by their file (`login`, `admin`...), the router and the layouts plugin read the name
+    files: ['src/pages/**/*.vue', 'src/layouts/**/*.vue'],
     rules: {
       'vue/multi-word-component-names': 'off',
     },

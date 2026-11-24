@@ -73,10 +73,10 @@ const initial = computed(() => (props.name ?? authStore.userData?.name ?? '').sl
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);
+  background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 20%, transparent 120%);
 }
 
 .user-avatar__inner {
-  background-color: color-mix(in srgb, rgb(var(--v-theme-background)) 80%, transparent);
+  background-color: rgb(var(--v-theme-surface));
 }
 </style>

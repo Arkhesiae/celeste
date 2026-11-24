@@ -1,7 +1,7 @@
 <template>
   <v-container class="page-art-content">
     <PageIllustration><UndrawSettings /></PageIllustration>
-    <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" :back-button="true" />
+    <MainTitle title="Paramètres" subtitle="Gérez vos paramètres" />
 
     <v-row>
       <v-col cols="12" md="6">
@@ -135,6 +135,9 @@
 </template>
 
 <script setup>
+// Sous-page du profil : layout `alternative`, dont la barre porte la flèche de retour vers l'onglet
+definePage({ meta: { layout: 'alternative' } });
+
 import { birthDayOf, formatDay } from '@/utils/dayFields.js';
 import { useAuthStore } from '@/stores/authStore';
 import { useSnackbarStore } from '@/stores/snackbarStore';

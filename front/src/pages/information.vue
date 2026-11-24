@@ -25,6 +25,9 @@
 </template>
 
 <script setup>
+// Les pages d'information : layout `alternative` (barre avec retour vers l'onglet)
+definePage({ meta: { layout: 'alternative' } });
+
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 

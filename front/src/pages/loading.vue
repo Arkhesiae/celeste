@@ -5,7 +5,7 @@
 <script setup>
 definePage({
   meta: {
-    layout: 'alternative',
+    layout: 'loading',
   },
 });
 

@@ -4,12 +4,13 @@
       :title="centerName"
       subtitle="Liste des équipes et leurs membres"
       :back-button="authStore.userData.adminType === 'master'"
+      back-to="/center/centers"
     >
       <template #actions>
-        <v-btn variant="tonal" color="primary" prepend-icon="mdi-account-group-outline" @click="usersDialog = true">
+        <v-btn variant="tonal" color="primary" prepend-icon="mdi-account-group-outline" @click="router.push({ path: '/center/users', query: { center: centerId } })">
           Utilisateurs
         </v-btn>
-        <v-btn variant="tonal" color="primary" prepend-icon="mdi-file-clock-outline" @click="rotationsDialog = true">
+        <v-btn variant="tonal" color="primary" prepend-icon="mdi-file-clock-outline" @click="router.push({ path: '/center/rotations', query: { center: centerId } })">
           Tours de service
         </v-btn>
         <v-btn v-if="!smAndDown" color="primary" prepend flat prepend-icon="mdi-plus" @click="openAddTeamDialog">
@@ -62,19 +63,6 @@
     <GenericDialog v-model="gridDialog" :title="gridTitle" max-width="1200px">
       <template #content>
         <TeamGridView v-if="gridDialog" :center-id="centerId" :team-id="gridTeamId" @change="onGridChange" />
-      </template>
-    </GenericDialog>
-
-    <!-- Utilisateurs et tours de service du centre, en plein écran (les pages /users et /rotation affichent les mêmes) -->
-    <GenericDialog v-model="usersDialog" title="Utilisateurs" fullscreen max-width="100%">
-      <template #content>
-        <UserList v-if="usersDialog" :center-id="centerId" embedded />
-      </template>
-    </GenericDialog>
-
-    <GenericDialog v-model="rotationsDialog" title="Tours de service" fullscreen max-width="100%">
-      <template #content>
-        <RotationsView v-if="rotationsDialog" :center-id="centerId" embedded />
       </template>
     </GenericDialog>
 
@@ -241,7 +229,7 @@
 <script setup>
 import { useTeamStore } from '@/stores/teamStore';
 import { useUserStore } from '@/stores/userStore';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useSnackbarStore } from '@/stores/snackbarStore';
 import { VueDraggable } from 'vue-draggable-plus';
 import { useRotationStore } from '@/stores/rotationStore';
@@ -253,7 +241,7 @@ import { toDateKey } from '@/utils/dateKey';
 
 const teamStore = useTeamStore();
 const userStore = useUserStore();
-// const router = useRouter();
+const router = useRouter();
 const route = useRoute();
 const snackbarStore = useSnackbarStore();
 const rotationStore = useRotationStore();
@@ -563,9 +551,6 @@ const teamCountWarning = computed(() => {
     "il faut autant d'équipes que de jours pour que chaque jour du tour soit assuré."
   );
 });
-
-const usersDialog = ref(false);
-const rotationsDialog = ref(false);
 
 const gridDialog = ref(false);
 const gridTeamId = ref(null);

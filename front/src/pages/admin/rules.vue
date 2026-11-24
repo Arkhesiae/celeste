@@ -190,7 +190,6 @@ defineOptions({
     requiresAuth: true,
     requiresAuth: true,
     requiresAdmin: true, // Changed from requiresMasterAdmin because local admins also access
-    layout: 'default',
   },
 });
 

@@ -48,7 +48,7 @@
               variant="text"
               size="x-small"
               color="auto"
-              @click="$router.push('/profile/' + authStore.userData.userId + '/transaction-history')"
+              @click="$emit('show-history')"
             >
               Voir tout
               <v-icon end> mdi-chevron-right </v-icon>

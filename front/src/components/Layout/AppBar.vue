@@ -89,13 +89,14 @@ import { useDisplay } from 'vuetify';
 
 // Stores
 import { useAuthStore } from '@/stores/authStore.js';
+import { useAssistanceStore } from '@/stores/assistanceStore.js';
 import { useTeamStore } from '@/stores/teamStore.js';
 import { usePointStore } from '@/stores/pointStore.js';
 import { useTicketStore } from '@/stores/ticketStore';
+import { parametersPath } from '@/utils/profilePaths.js';
 
 // Constants
 const HOME_PATH = '/landing';
-const PARAMETER_PATH = '/parameter';
 
 // Props
 defineProps({
@@ -125,6 +126,7 @@ const route = useRoute();
 
 // Stores
 const authStore = useAuthStore();
+const assistance = useAssistanceStore();
 const teamStore = useTeamStore();
 const pointStore = usePointStore();
 const ticketStore = useTicketStore();
@@ -132,8 +134,8 @@ const ticketStore = useTicketStore();
 // Computed properties
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const isAdmin = computed(() => authStore.userData.isAdmin);
-const isHomepage = computed(() => route.name === '/landing');
-const isDashboard = computed(() => route.name === '/dashboard');
+const isHomepage = computed(() => route.name === '/(public)/landing');
+const isDashboard = computed(() => route.name === '/(tabs)/dashboard');
 const username = computed(() => authStore.userData.name);
 const currentTeam = computed(() => teamStore.currentTeam);
 const points = computed(() => pointStore.points);
@@ -156,11 +158,11 @@ const navigateToProfile = () => {
 };
 
 const navigateToParameter = () => {
-  router.push({ path: PARAMETER_PATH });
+  router.push({ path: parametersPath(authStore.userData.userId) });
 };
 
 const navigateToContact = () => {
-  router.push({ path: '/contact-admin' });
+  assistance.open();
 };
 
 const handleLogout = async () => {

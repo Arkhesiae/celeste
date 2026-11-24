@@ -33,6 +33,8 @@
 </template>
 
 <script setup>
+// Membres, candidatures et mutations reliés en un seul groupe, le contenu de la page est dessous (`<router-view />`). Les deux jeux de pages
+// (`pages/(tabs)/center/users*` pour le centre, `pages/admin/users*` pour l'administration) l'utilisent avec leur adresse de base.
 import { useRoute, useRouter } from 'vue-router';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
@@ -40,7 +42,15 @@ import { useUserStore } from '@/stores/userStore.js';
 import { useCenterTransferStore } from '@/stores/centerTransferStore.js';
 
 defineOptions({
-  name: 'Users',
+  name: 'UsersSections',
+});
+
+const props = defineProps({
+  // Adresse des pages : `/center/users` ou `/admin/users`
+  basePath: {
+    type: String,
+    required: true,
+  },
 });
 
 const route = useRoute();
@@ -62,17 +72,17 @@ const pendingUsersCount = computed(
 );
 
 const sections = computed(() => [
-  { value: 'members', path: '/users', title: 'Utilisateurs', icon: 'mdi-account-group-outline' },
+  { value: 'members', path: props.basePath, title: 'Utilisateurs', icon: 'mdi-account-group-outline' },
   {
     value: 'candidatures',
-    path: '/users/candidatures',
+    path: `${props.basePath}/candidatures`,
     title: 'Candidatures',
     icon: 'mdi-account-clock-outline',
     badge: pendingUsersCount.value,
   },
   {
     value: 'mutations',
-    path: '/users/mutations',
+    path: `${props.basePath}/mutations`,
     title: 'Mutations',
     icon: 'mdi-swap-horizontal',
     badge: transferStore.pendingCount,
@@ -83,6 +93,6 @@ const section = computed(() => sections.value.find((item) => item.path === route
 
 const goTo = (value) => {
   const target = sections.value.find((item) => item.value === value);
-  if (target && value !== section.value) router.push({ path: target.path });
+  if (target && value !== section.value) router.push({ path: target.path, query: route.query });
 };
 </script>

@@ -61,7 +61,7 @@
       <!-- Trois liens reliés en un seul groupe -->
       <v-btn-group connected variant="flat" color="primaryContainer" size="small" class="w-100 pa-0">
         <v-btn class="flex-grow-1" prepend-icon="mdi-account-cog" @click="$emit('navigate-profile')"> Profil </v-btn>
-        <v-btn class="flex-grow-1" prepend-icon="mdi-cog" @click="router.push('/user-params')">
+        <v-btn class="flex-grow-1" prepend-icon="mdi-cog" @click="router.push(parametersPath(authStore.userData.userId))">
           Paramètres
           <template v-if="!hasPhone" #append>
             <v-badge color="error" icon="mdi-exclamation-thick" inline />
@@ -89,6 +89,7 @@
 import { usePointStore } from '@/stores/pointStore';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useRouter } from 'vue-router';
+import { parametersPath } from '@/utils/profilePaths.js';
 
 const authStore = useAuthStore();
 const router = useRouter();

@@ -41,12 +41,13 @@
   </v-container>
 </template>
 
-<route lang="yaml">
-meta:
-  layout: default
-</route>
-
 <script setup>
+import { useScrollRestoration } from 'vue-router/experimental';
+
+// Onglet du bas : racine de ses pages, il retrouve son défilement (router/scrollRestoration.js)
+definePage({ meta: { tab: 'demands' } });
+useScrollRestoration();
+
 import { useDemandStore } from '@/stores/demandStore.js';
 
 import { useDisplay } from 'vuetify';

@@ -4,10 +4,47 @@ import { routes } from 'vue-router/auto-routes';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useInitializationStore } from '@/stores/initializationStore';
 import { setupLayouts } from 'virtual:generated-layouts';
+import { trackNavigation } from './tabMemory.js';
+import { parametersPath } from '@/utils/profilePaths.js';
+
+const isPublicRoute = (route) => route.matched.some((record) => record.meta.public);
+const requiresAdmin = (route) => route.matched.some((record) => record.meta.requiresAdmin);
+
+// Un enfant prend le layout de son parent, sauf s'il en nomme un autre (`definePage({ meta: { layout } })`). Le plugin de layouts n'écrase pas :
+// il emboîte (le layout du parent autour de celui de l'enfant). On le fait donc ici : quand un parent a un layout (le sien, ou hérité de plus
+// haut) et qu'un descendant en nomme un autre, le parent n'est pas enveloppé et chacun de ses enfants l'est par le sien, le layout du parent
+// pour ceux qui n'en nomment pas. Sinon (aucun descendant ne nomme un autre layout) le parent est enveloppé une fois, pour tous ses enfants.
+// Un dossier sans page crée un parent sans nom au-dessus d'une racine (`profile/` au-dessus de `profile/[userId].vue`) : il est traversé.
+const namesAnotherLayout = (route, layout) =>
+  (route.children ?? []).some(
+    (child) => (child.meta?.layout && child.meta.layout !== layout) || namesAnotherLayout(child, layout),
+  );
+
+const inheritLayouts = (list, inherited = null) =>
+  list.map((route) => {
+    const layout = route.meta?.layout ?? inherited;
+    if (!route.children?.length)
+      return !route.meta?.layout && layout ? { ...route, meta: { ...route.meta, layout } } : route;
+
+    // Le parent est une simple traversée : ses enfants reçoivent le layout, lui n'en a pas
+    if (layout && namesAnotherLayout(route, layout)) {
+      return { ...route, meta: { ...route.meta, layout: undefined }, children: inheritLayouts(route.children, layout) };
+    }
+    // Sans layout hérité, rien à pousser : on traverse seulement (un parent sans nom au-dessus d'une racine)
+    if (!layout) return { ...route, children: inheritLayouts(route.children, null) };
+    // Enveloppé ici, une fois, pour tous ses descendants
+    return { ...route, meta: { ...route.meta, layout }, children: route.children };
+  });
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: setupLayouts(routes),
+  routes: setupLayouts(inheritLayouts(routes)),
+});
+
+// Les piles de navigation des onglets (une navigation qui n'a pas eu lieu ne compte pas). La gestion de l'historique du navigateur est
+// désactivée : `router/historyHandling.js`.
+router.afterEach((to, _from, failure) => {
+  if (!failure) trackNavigation(to);
 });
 
 // Anciennes adresses des pages réunies sous /information
@@ -15,40 +52,24 @@ router.addRoute({ path: '/financement', redirect: '/information/financement' });
 router.addRoute({ path: '/patchnotes', redirect: '/information/patchnotes' });
 // Anciennes adresses du calendrier et de la grille, réunis sous /planning (le centre de la grille passe en requête)
 router.addRoute({ path: '/calendar', redirect: '/planning/calendar' });
-router.addRoute({ path: '/admin/pending-users', redirect: '/users/candidatures' });
+router.addRoute({ path: '/admin/pending-users', redirect: '/center/users/candidatures' });
+// Les utilisateurs et les tours de service sont des pages du centre
+router.addRoute({ path: '/users', redirect: '/center/users' });
+router.addRoute({ path: '/users/candidatures', redirect: '/center/users/candidatures' });
+router.addRoute({ path: '/users/mutations', redirect: '/center/users/mutations' });
+router.addRoute({ path: '/rotation', redirect: '/center/rotations' });
+// L'assistance est une fenêtre, les paramètres une sous-page du profil
+router.addRoute({ path: '/contact-admin', redirect: '/' });
+router.addRoute({ path: '/user-params', redirect: () => parametersPath(useAuthStore().userData.userId) });
 router.addRoute({
   path: '/center/:centerId/grid',
   redirect: (to) => ({ path: '/planning/grid', query: { ...to.query, center: to.params.centerId } }),
 });
 
-const noAuth = [
-  '/login',
-  '/(account-creation)/creation',
-  '/landing',
-  '/(account-creation)/get-started',
-  '/reset-password',
-  '/(account-creation)/account-recovery',
-];
-const both = ['/contact-admin', '/loading'];
+// L'écran de chargement n'est pas une page publique (layout `loading`) mais s'ouvre sans compte
+const LOADING_ROUTE = '/loading';
 
-// Configuration des transitions
-// const transitionConfigs = {
-//   parameter: {
-//     forward: 'slide-lefty',
-//     backward: 'slide-righty'
-//   },
-//   auth: {
-//     routes: ['/login', '/(account-creation)/creation'],
-//     forward: 'slide-left',
-//     backward: 'slide-right'
-//   },
-//   teams: {
-//     routes: ['/center/centers', '/center/[centerId]/teams'],
-//     forward: 'slide-lefty',
-//     backward: 'slide-righty'
-//   }
-// };
-
+// Accès : le compte, l'écran de chargement, les pages publiques et celles des administrateurs
 router.beforeEach(async (to) => {
   if (to.path.startsWith('/.well-known/acme-challenge/')) {
     return;
@@ -71,7 +92,7 @@ router.beforeEach(async (to) => {
   }
 
   if (authStore.isLoggedIn) {
-    if (!initializationStore.isAppReady && to.path !== '/loading') {
+    if (!initializationStore.isAppReady && to.path !== LOADING_ROUTE) {
       initializationStore.setPendingRoute(to.path);
       return '/loading';
     }
@@ -80,29 +101,21 @@ router.beforeEach(async (to) => {
       return '/pending-approval';
     }
 
-    if (noAuth.includes(to.name) && !both.includes(to.name)) {
+    if (isPublicRoute(to)) {
       return '/';
     }
 
-    if (to.path.startsWith('/admin') || to.path === '/admin-panel' || to.path.startsWith('/users/')) {
+    if (requiresAdmin(to)) {
       if (!authStore.userData.isAdmin) {
         return '/';
       }
     }
   } else {
-    if (to.path !== '/login' && !noAuth.includes(to.name) && !both.includes(to.name)) {
+    if (to.path !== '/login' && !isPublicRoute(to) && to.name !== LOADING_ROUTE) {
       return '/login';
     }
   }
 });
-
-if (import.meta.hot) {
-  import.meta.hot.accept((newModule) => {
-    if (newModule) {
-      console.log('updated : count is now ', newModule.count);
-    }
-  });
-}
 
 // Gestion des erreurs de chargement dynamique
 router.onError((err) => {

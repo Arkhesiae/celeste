@@ -118,9 +118,6 @@
 definePage({
   name: 'admin-panel',
   path: '/admin/admin-panel',
-  meta: {
-    layout: 'default',
-  },
 });
 
 import { useRouter } from 'vue-router';
@@ -180,7 +177,7 @@ const quickStats = computed(() => [
     value: stats.value.pendingUsers,
     label: 'En attente',
     icon: 'mdi-account-clock',
-    path: '/users/candidatures',
+    path: '/admin/users/candidatures',
     color: 'warning',
   },
   {
@@ -217,7 +214,7 @@ const mainSections = computed(() => [
         icon: 'mdi-account-clock',
         key: 'pendingUsers',
         iconColor: 'warning',
-        path: '/users/candidatures',
+        path: '/admin/users/candidatures',
         requiresMaster: false,
       },
       {
@@ -226,7 +223,7 @@ const mainSections = computed(() => [
 
         icon: 'mdi-account-multiple',
         iconColor: 'primary',
-        path: '/users',
+        path: '/admin/users',
         requiresMaster: false,
       },
     ],
@@ -349,7 +346,7 @@ const mainSections = computed(() => [
 //     title: 'Approuver des candidatures',
 //     color: 'primary',
 //     icon: 'mdi-account-plus',
-//     path: '/users/candidatures',
+//     path: '/admin/users/candidatures',
 //     requiresMaster: false
 //   },
 //   {

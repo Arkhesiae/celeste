@@ -84,10 +84,10 @@
             <v-list class="pa-0 ga-1 d-flex flex-column" bg-color="transparent" rounded="30">
               <v-list-item
                 v-for="link in menuLinks"
-                :key="link.path"
+                :key="link.title"
                 class="bg-surfaceContainer text-body-medium font-weight-bold pa-6 rounded-lg"
                 :title="link.title"
-                @click="handleClick(link.path)"
+                @click="openLink(link)"
               >
                 <template #prepend>
                   <v-icon :icon="link.icon" color="primary" />
@@ -142,6 +142,8 @@ import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useUserStore } from '@/stores/userStore.js';
 import { API_URL } from '@/config/api.js';
+import { useAssistanceStore } from '@/stores/assistanceStore.js';
+import { parametersPath } from '@/utils/profilePaths.js';
 
 defineProps({
   modelValue: {
@@ -155,17 +157,19 @@ const emit = defineEmits(['update:modelValue']);
 const router = useRouter();
 const { smAndDown } = useDisplay();
 const authStore = useAuthStore();
+const assistance = useAssistanceStore();
 const userStore = useUserStore();
 
 const isLoggedIn = computed(() => authStore.isLoggedIn);
 const missingPhone = computed(() => !authStore.userData?.phone);
 
 // Les pages principales sont dans la barre du bas ; le tiroir porte le reste
-const menuLinks = [
-  { title: 'Assistance', path: '/contact-admin', icon: 'mdi-help-circle-outline' },
+const menuLinks = computed(() => [
+  // Une fenêtre, pas une page
+  { title: 'Assistance', action: () => assistance.open(), icon: 'mdi-help-circle-outline' },
   { title: 'Informations', path: '/information', icon: 'mdi-information-outline' },
-  { title: 'Paramètres', path: '/user-params', icon: 'mdi-cog-outline' },
-];
+  { title: 'Paramètres', path: parametersPath(authStore.userData.userId), icon: 'mdi-cog-outline' },
+]);
 
 const externalLinks = [
   { title: 'Icnagenda', href: 'https://icnagenda.FR' },
@@ -182,6 +186,15 @@ const lastName = computed(() => userInfo.value?.lastName?.toUpperCase() ?? '');
 const handleClick = (path) => {
   router.push({ path });
   emit('update:modelValue', false);
+};
+
+const openLink = (link) => {
+  if (link.action) {
+    link.action();
+    emit('update:modelValue', false);
+  } else {
+    handleClick(link.path);
+  }
 };
 
 const handleLogout = async () => {

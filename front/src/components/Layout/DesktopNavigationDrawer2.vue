@@ -6,7 +6,7 @@
         class="desktop-nav__home"
         elevation="0"
         color="primary"
-        to="/dashboard"
+        :to="tabTarget('dashboard', '/dashboard')"
         :ripple="false"
         aria-label="Tableau de bord"
       >
@@ -22,7 +22,7 @@
       <VNavigationBtn
         v-for="navItem in visibleItems"
         :key="navItem.path"
-        :to="navItem.path"
+        :to="navItem.tab ? tabTarget(navItem.tab, navItem.path) : navItem.path"
         :active="navItem.match ? navItem.match(route.path) : undefined"
         stacked
         :icon="navItem.iconInactive"
@@ -40,7 +40,7 @@
       <nav class="py-4" aria-label="Aide et réglages">
         <VNavigationBtn
           v-for="navItem in footerItems"
-          :key="navItem.path"
+          :key="navItem.title"
           :to="navItem.path"
           stacked
           :icon="navItem.iconInactive"
@@ -51,6 +51,7 @@
           class="desktop-nav__outlined"
           color="primary"
           base-color="onBackground"
+          @click="navItem.action?.()"
         />
       </nav>
     </template>
@@ -63,17 +64,18 @@ import { VNavigationBtn } from 'vuetify/labs/VNavigationBtn';
 import { useDisplay } from 'vuetify';
 import { useAuthStore } from '@/stores/authStore.js';
 import { useDemandStore } from '@/stores/demandStore';
-import { useUserStore } from '@/stores/userStore';
+import { tabTarget } from '@/router/tabMemory.js';
+import { useAssistanceStore } from '@/stores/assistanceStore.js';
+import { parametersPath } from '@/utils/profilePaths.js';
 
-const userStore = useUserStore();
 const demandStore = useDemandStore();
 const authStore = useAuthStore();
+const assistance = useAssistanceStore();
 const { smAndDown } = useDisplay();
 const route = useRoute();
-const isHome = computed(() => route.name === '/dashboard');
+const isHome = computed(() => route.name === '/(tabs)/dashboard');
 
 const isLoggedIn = computed(() => authStore.isLoggedIn);
-const isAdmin = computed(() => authStore.userData.isAdmin);
 const isMaster = computed(() => authStore.userData.adminType === 'master');
 const centerId = computed(() => authStore.userData.centerId);
 
@@ -84,15 +86,12 @@ const demandsCount = computed(
     demandStore.otherDemands.length,
 );
 
-const pendingUsersCount = computed(
-  () => userStore.users.filter((user) => user.registrationStatus === 'pending').length,
-);
-
 // `show: false` retire l'entrée. « Mon centre » dépend du centre : un administrateur principal sans centre choisit d'abord un centre
 // (« Centres »). `match` remplace la comparaison de l'adresse pour savoir si l'entrée est active.
 const navigationItems = computed(() => [
   {
     path: '/demand-page/demands',
+    tab: 'demands',
     title: 'Demandes',
     value: 'replace',
     iconActive: 'mdi-account-arrow-left',
@@ -101,6 +100,7 @@ const navigationItems = computed(() => [
   },
   {
     path: '/planning/calendar',
+    tab: 'planning',
     title: 'Planning',
     value: 'rep',
     iconActive: 'mdi-calendar',
@@ -109,14 +109,9 @@ const navigationItems = computed(() => [
     match: (path) => path.startsWith('/planning'),
   },
   {
-    path: '/rotation',
-    title: 'Tours de service',
-    value: 'tservice',
-    iconActive: 'mdi-file-plus',
-    iconInactive: 'mdi-file-plus-outline',
-  },
-  {
     path: `/center/${centerId.value}/teams`,
+    tab: 'center',
+    match: (path) => path.startsWith('/center/'),
     title: 'Mon centre',
     value: 'my-center',
     iconActive: 'mdi-airport',
@@ -124,17 +119,9 @@ const navigationItems = computed(() => [
     show: !isMaster.value && !!centerId.value,
   },
   {
-    path: '/users',
-    title: 'Utilisateurs',
-    value: 'users',
-    iconActive: 'mdi-account-group',
-    iconInactive: 'mdi-account-group-outline',
-    // Membres, candidatures et mutations sont réunis sous /users ; le badge compte les candidatures en attente (administrateurs)
-    match: (path) => path.startsWith('/users'),
-    badgeCount: isAdmin.value ? pendingUsersCount.value : 0,
-  },
-  {
     path: '/center/centers',
+    tab: 'center',
+    match: (path) => path.startsWith('/center/'),
     title: 'Centres',
     value: 'centers',
     iconActive: 'mdi-home',
@@ -146,7 +133,7 @@ const navigationItems = computed(() => [
 const visibleItems = computed(() => navigationItems.value.filter((item) => item.show !== false));
 
 // Bas du rail : Informations (financement, notes de versions), Assistance et Paramètres, comme dans le tiroir mobile, en icônes seules (pleine sur la page active)
-const footerItems = [
+const footerItems = computed(() => [
   {
     path: '/information',
     title: 'Infos',
@@ -155,18 +142,19 @@ const footerItems = [
     iconInactive: 'mdi-information-outline',
   },
   {
-    path: '/contact-admin',
+    // Une fenêtre, pas une page
+    action: () => assistance.open(),
     title: 'Assistance',
     iconActive: 'mdi-help-circle',
     iconInactive: 'mdi-help-circle-outline',
   },
   {
-    path: '/user-params',
+    path: parametersPath(authStore.userData.userId),
     title: 'Paramètres',
     iconActive: 'mdi-cog',
     iconInactive: 'mdi-cog-outline',
   },
-];
+]);
 </script>
 
 <style scoped>

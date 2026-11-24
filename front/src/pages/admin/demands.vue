@@ -55,7 +55,6 @@ defineOptions({
   meta: {
     requiresAuth: true,
     requiresAdmin: true,
-    layout: 'default',
   },
 });
 

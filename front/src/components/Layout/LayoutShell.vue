@@ -7,9 +7,11 @@
       @toggle-drawer="toggleDrawer"
     />
 
-    <DesktopNavigationDrawer2 />
+    <template v-if="navigation">
+      <DesktopNavigationDrawer2 />
 
-    <MobileNavigationDrawer v-model:model-value="mobileDrawer" class="user-safe-area" />
+      <MobileNavigationDrawer v-model:model-value="mobileDrawer" class="user-safe-area" />
+    </template>
 
     <LoginButtons v-if="isDev" />
 
@@ -33,7 +35,7 @@
       <!-- <LoadingScreen v-if="showLoadingScreen" class="loading-screen" /> -->
     </v-main>
 
-    <BottomNavigation />
+    <BottomNavigation v-if="navigation" />
     <AdditionnalSnackbar />
     <GlobalSnackbar />
   </div>
@@ -41,6 +43,15 @@
 
 <script setup>
 import { useScrollRestoration } from 'vue-router/experimental';
+
+// Coque commune des layouts `public`, `user` et `admin` (voir layouts/) : seule la navigation (tiroirs, barre du bas) les distingue
+defineProps({
+  // Tiroirs et barre du bas : pages connectées
+  navigation: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 // Défilement des pages hors onglets (en haut) : le choix par chemin est dans les options du plugin (router/scrollRestoration.js)
 const { scroll } = useScrollRestoration({ manual: true });

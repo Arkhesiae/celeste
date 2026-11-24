@@ -16,6 +16,8 @@ export default defineConfig({
   plugins: [
     VueRouter(),
     Layouts({
+      // Les layouts se choisissent par dossier de pages (router/index.js) ; sans règle, la page est une page connectée
+      defaultLayout: 'user',
       inheritDefaultLayout: false
     }),
     Vue({

@@ -2,7 +2,7 @@
   <div ref="titleRef" class="main-title px-4 py-16 mx-n2">
     <div class="d-flex justify-space-between align-center flex-shrink-0">
       <div class="d-flex align-center ga-4">
-        <v-btn v-if="backButton" icon="mdi-arrow-left" variant="text" @click="router.back()" />
+        <v-btn v-if="backButton" icon="mdi-arrow-left" variant="text" @click="goBack" />
         <div class="d-flex flex-column" :style="{ maxWidth: titleMaxWidth + 'px' }">
           <div class="d-flex align-center">
             <span
@@ -34,7 +34,9 @@ import { useDisplay } from 'vuetify';
 const { smAndDown } = useDisplay();
 const router = useRouter();
 
-defineProps({
+const goBack = () => (props.backTo ? router.push(props.backTo) : router.back());
+
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -46,6 +48,11 @@ defineProps({
   backButton: {
     type: Boolean,
     required: false,
+  },
+  // Où mène la flèche ; sans elle, retour dans l'historique (`router.back()`)
+  backTo: {
+    type: String,
+    default: undefined,
   },
 });
 

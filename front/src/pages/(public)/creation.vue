@@ -72,7 +72,7 @@
                       <a
                         class="text-body-small d-flex align-center text-primary"
                         style="color: #85cde8; text-decoration: none; cursor: pointer"
-                        @click="router.push('/contact-admin')"
+                        @click="assistance.open()"
                       >
                         Contacter un administrateur
                         <v-icon>mdi-chevron-right</v-icon>
@@ -383,6 +383,7 @@
 
 <script setup>
 import { useCenterStore } from '@/stores/centerStore.js';
+import { useAssistanceStore } from '@/stores/assistanceStore.js';
 import { useTeamStore } from '@/stores/teamStore.js';
 import { accountCreationService } from '@/services/accountCreationService.js';
 import { useRouter } from 'vue-router';
@@ -392,6 +393,7 @@ import OTPVerification from '@/components/Login/OTPVerification.vue';
 import ContactAdminForm from '@/components/Forms/ContactAdminForm.vue';
 
 const router = useRouter();
+const assistance = useAssistanceStore();
 const centerStore = useCenterStore();
 const snackbarStore = useSnackbarStore();
 const teamStore = useTeamStore();

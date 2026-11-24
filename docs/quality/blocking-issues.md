@@ -57,7 +57,7 @@ The center guards (`middleware/centerAuth.js`) cover users, teams, tickets, dema
 
 ### 6. Public endpoints that need throttling (they cannot require a token) — P1
 These routes are reached before an account exists or before login. They return the strict minimum (see `CLAUDE.md`) but stay open to abuse until #8 is done:
-- `POST /api/ticket/create` (the `/contact-admin` form also serves people who cannot log in): spam and mail flooding to administrators;
+- `POST /api/ticket/create` (the assistance form, `AssistanceDialog` since the `/contact-admin` page became a modal, also serves people who cannot log in): spam and mail flooding to administrators;
 - `POST /api/user/check-email`, `GET /api/user/info/:email` (login screen shows name, avatar, center), `POST /api/user/create`, `POST /api/otp/*`: account enumeration and OTP guessing;
 - `GET /api/team/public/:centerId`, `GET /api/center`, `GET /api/stat*`: harmless data (names, counters) but scrapeable.
 
@@ -128,6 +128,10 @@ About 26 uses of `var(--v-theme-on-surface)` and `var(--v-theme-surface-variant)
 
 ### 55. Google Fonts imported at runtime, twice — P2
 `components/common/Titles/WelcomeTitle.vue:175` and `components/Financement/Donations.vue:227` each `@import url('https://fonts.googleapis.com/...DM+Serif+Display')`: a render-blocking third-party request that also fails offline (Capacitor). Self-host the font (one `@font-face`, woff2) in `styles/`.
+
+### 56. Navigation and page groups restructured, only partly verified — P2
+The history handling (back to the dashboard from a tab root, dashboard seeded below pages opened directly) is commented out in `router/index.js` since 2026-11-23, so points (3) and (4) below only apply once it is re-enabled.
+`router/index.js`, `router/tabMemory.js`, `layouts/*`, the root pages (`pages/(public).vue`, `admin.vue`, `center.vue`, `profile/[userId].vue`) and the per-tab piles were checked with the route table, a Node model of the piles and the back rule, and the real browser history on a scratch build with the auth guard skipped; **nothing was run signed in**. Open points: (1) the bare root addresses `/admin`, `/center` and `/demand-page` match a root page with nothing inside (blank page): redirect them. (2) The shell's `<transition>` and `@enter` scroll hook do not run between two pages of one section (the root page stays mounted), and a sub-page registered by the `alternative` layout restores scroll when the layout updates, which can clamp to the previous page's height (see the scroll-restoration note in CLAUDE.md). (3) Android's hardware back has no handler (`@capacitor/app` not installed): it goes through the browser history and the rules in `router/index.js`, untested on a device, and cannot exit the app from the dashboard on purpose. (4) A back to `/loading` is redirected to the dashboard; the pending-route flow after login (`/loading` pushing the pending page) was not exercised. (5) The modals (assistance, dashboard transaction history), the toolbar back arrow, the redirects of the old addresses (`/users`, `/rotation`, `/user-params`, `/contact-admin`) and the users pages for non-admin members (members list open to everyone) were not exercised.
 
 ---
 

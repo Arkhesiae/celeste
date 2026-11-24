@@ -1,19 +1,6 @@
 <template>
-  <v-container class="pa-4">
-    <!-- <div class="d-flex justify-space-between my-16 flex-column">
-      <div class="d-flex align-center"> 
-        
-        <span class="text-headline-large font-weight-medium">Historique des transactions</span>
-
-      </div>
-      <span class="text-headline-large text-label-medium text-medium-emphasis">
-        Voir toutes les transactions
-      </span>
-    </div> -->
-
-    <MainTitle title="Historique des transactions" :back-button="true" subtitle="Voir toutes les transactions" />
-
-    <v-row class="ma-0 pt-0 mt-16 position-sticky top-0">
+  <div>
+    <v-row class="ma-0 pt-0 position-sticky top-0">
       <div class="d-flex justify-center chip-container pa-2">
         <v-chip-group v-model="selectedTransactionType" class="pa-0 ma-0 ga-2 d-flex justify-center">
           <v-chip
@@ -96,10 +83,11 @@
         </v-card>
       </v-col>
     </v-row>
-  </v-container>
+  </div>
 </template>
 
 <script setup>
+// Historique des transactions (filtres, liste, transactions en attente) : la sous-page du profil et la fenêtre du tableau de bord l'affichent
 import { usePointStore } from '@/stores/pointStore';
 
 import TransactionItem from '@/components/Transaction/TransactionItem.vue';
@@ -134,14 +122,6 @@ const filteredTransactions = computed(() => {
 
   return sorted;
 });
-
-// const formatDate = (dateString) => {
-//   return new Date(dateString).toLocaleDateString('fr-FR', {
-//     day: '2-digit',
-//     month: '2-digit',
-//     year: 'numeric'
-//   });
-// };
 
 onMounted(() => {
   pointStore.fetchTransactions();

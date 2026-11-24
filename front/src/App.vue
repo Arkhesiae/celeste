@@ -1,17 +1,9 @@
 <template>
   <v-app class="app-container">
-    <div
-      class="position-absolute"
-      style="z-index: 100000000000000 !important; position: absolute; top: 50px; left: 0; background-color: red"
-    >
-      {{ insets }}
-    </div>
-    <!-- <span class="safe-area-top" style=" z-index: 10000000;position:  absolute; top: 0; left: 0; width: 100%; background-color: red;">{{ safeAreaTop }}</span> -->
-    <router-view v-slot="{ Component, route }">
-      <transition :name="route.meta.transition || ''" mode="out-in">
-        <component :is="Component" class="page" />
-      </transition>
-    </router-view>
+    <router-view />
+
+    <!-- Assistance : une fenêtre, ouverte de partout par useAssistanceStore().open() -->
+    <AssistanceDialog />
   </v-app>
 </template>
 
@@ -19,136 +11,40 @@
 import { useAppInitialization } from '@/composables/useAppInitialization';
 import { SafeArea } from 'capacitor-plugin-safe-area';
 
-const safeAreaTop = ref([]);
-const safeAreaBottom = ref([]);
-
 const { initializeCenters } = useAppInitialization();
 
-onMounted(async () => {
-  await getSafeAreaAndApply();
-  await initializeCenters();
-  // await router.isReady();
-  // const savedPath = router.currentRoute.value || { path: '/' };
+// Zones de sécurité de l'appareil (encoche, barres du système) en variables CSS : `--safe-area-top`, `--safe-area-bottom`...
+const applyInsets = (insets) => {
+  for (const [key, value] of Object.entries(insets)) {
+    document.documentElement.style.setProperty(`--safe-area-${key}`, `${value}px`);
+    document.documentElement.style.setProperty(`--safe-area-inset-${key}`, `${value}px`);
+    document.documentElement.style.setProperty(`safe-area-inset-${key}`, `${value}px`);
+  }
+};
 
-  // try {
-  //   // Initialisation de l'application avec callback pour savoir si c'est une init connectée
-  //   await initializeApp(({ loggedIn }) => {
-  //     if (loggedIn && savedPath.path !== '/loading') {
-  //       // Sauvegarder la route en cours
-  //       sessionStorage.setItem('pendingRoute', JSON.stringify(savedPath));
-  //       sessionStorage.setItem('loadingRedirected', 'true');
-
-  //       // Redirection uniquement si utilisateur connecté
-  //       router.push({ path: '/loading', replace: true });
-  //     }
-  //   });
-
-  // } catch (error) {
-  //   console.error('❌ Erreur lors de l\'initialisation de l\'application :', error);
-  // } finally {
-  //   let routeToRestore = savedPath;
-
-  //   try {
-  //     const stored = sessionStorage.getItem('pendingRoute');
-  //     if (stored) routeToRestore = JSON.parse(stored);
-  //   } catch (e) {
-  //     console.warn('⚠️ Route sauvegardée invalide, fallback sur route actuelle');
-  //   }
-
-  //   sessionStorage.removeItem('pendingRoute');
-  //   sessionStorage.removeItem('loadingRedirected');
-
-  //   if (routeToRestore.path !== '/loading') {
-  //     await router.push({
-  //       path: routeToRestore.path,
-  //       replace: true,
-  //       query: routeToRestore.query || {},
-  //       params: routeToRestore.params || {},
-  //     });
-  //   } else {
-  //     await router.push({ path: '/', replace: true });
-  //   }
-  // }
-});
-
-const insets = ref();
-
-async function getSafeAreaAndApply() {
+const watchSafeArea = async () => {
   try {
-    await SafeArea.getSafeAreaInsets().then(({ insets }) => {
-      const top = insets.top;
-      const bottom = insets.bottom;
-
-      safeAreaTop.value.push(top);
-      safeAreaBottom.value.push(bottom);
-
-      for (const [key, value] of Object.entries(insets)) {
-        // console.log(key, value, 'key, value');
-        document.documentElement.style.setProperty(`--safe-area-${key}`, `${value}px`);
-        document.documentElement.style.setProperty(`--safe-area-inset-${key}`, `${value}px`);
-        document.documentElement.style.setProperty(`safe-area-inset-${key}`, `${value}px`);
-      }
-    });
-
-    await SafeArea.getStatusBarHeight().then(() => {
-      // console.log(statusBarHeight, 'statusbarHeight');
-    });
+    const { insets } = await SafeArea.getSafeAreaInsets();
+    applyInsets(insets);
 
     await SafeArea.removeAllListeners();
-
-    // when safe-area changed
-    await SafeArea.addListener('safeAreaChanged', (data) => {
-      const { insets } = data;
-      // console.log(insets, 'insets');
-      const top = insets.top;
-      const bottom = insets.bottom;
-      safeAreaTop.value.push(top);
-      safeAreaBottom.value.push(bottom);
-
-      for (const [key, value] of Object.entries(insets)) {
-        // console.log(key, value, 'key, value');
-        document.documentElement.style.setProperty(`--safe-area-${key}`, `${value}px`);
-        document.documentElement.style.setProperty(`--safe-area-inset-${key}`, `${value}px`);
-        document.documentElement.style.setProperty(`safe-area-inset-${key}`, `${value}px`);
-      }
-    });
+    await SafeArea.addListener('safeAreaChanged', ({ insets: changed }) => applyInsets(changed));
   } catch {
-    insets.value = 'error';
+    // Sans le plugin natif (navigateur), les variables gardent leur valeur par défaut
   }
-}
+};
+
+onMounted(async () => {
+  await watchSafeArea();
+  await initializeCenters();
+});
 </script>
 
 <style>
 .app-container {
-  /* Marges de sécurité pour éviter le notch et les barres de statut */
-  /* padding-top: var(--safe-area-top) !important; */
-
-  /* Layered on top of a background color */
-  /* background:
-        radial-gradient(ellipse 80% 40% at 20% 0%, rgba(var(--v-theme-primary), .05) 0%, rgba(var(--v-theme-background), 1) 100%),
-
-        rgba(var(--v-theme-background), 1) !important; */
+  /* Marges de sécurité sur les côtés (encoche en paysage) */
   padding-left: var(--safe-area-left) !important;
   padding-right: var(--safe-area-right) !important;
-}
-
-/* .app-container::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.085;
-  filter: url(#grain);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 300px 300px;
-} */
-
-.debug {
-  border: 1px solid red;
 }
 
 /* Remove chrome autofill color from inputs */
@@ -159,58 +55,8 @@ input:-webkit-autofill:active {
   transition: background-color 50000000000s ease-in-out 0s;
 }
 
-/* :root {
-  --inset-top: 80px;
-  --inset-bottom: env(safe-area-inset-bottom);
-}
-
-body,
-.v-navigation-drawer,
-.v-overlay__content > .v-card {
-  padding-top: var(--inset-top) !important;
-  padding-bottom: var(--inset-bottom) !important;
-}
-
-.v-app-bar:not(.v-app-bar--bottom) {
-  padding-top: var(--inset-top) !important;
-}
-
-.v-app-bar--bottom {
-  padding-bottom: var(--inset-bottom) !important;
-} */
-
-/* Add this to your main CSS file or in the <style> section of your main Vue component */
 .v-btn {
   text-transform: none;
-  /* Optionally, add custom logic to capitalize only the first letter if needed */
-}
-
-/* Styles de transition globaux */
-.slide-lefty-enter-active,
-.slide-lefty-leave-active,
-.slide-righty-enter-active,
-.slide-righty-leave-active {
-  transition: all 0.2s ease-out !important;
-}
-
-.slide-lefty-enter-from {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.slide-lefty-leave-to {
-  opacity: 0;
-  transform: scale(0.98);
-}
-
-.slide-righty-enter-from {
-  opacity: 0;
-  transform: scale(0.98);
-}
-
-.slide-righty-leave-to {
-  opacity: 0;
-  transform: translateX(100%);
 }
 
 @media (min-width: 1400px) {
@@ -218,5 +64,4 @@ body,
     max-width: 1400px;
   }
 }
-
 </style>

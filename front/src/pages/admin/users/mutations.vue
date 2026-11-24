@@ -1,3 +1,3 @@
 <template>
-  <RotationsView />
+  <UserMutations />
 </template>

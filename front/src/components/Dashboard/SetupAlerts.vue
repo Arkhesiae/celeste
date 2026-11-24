@@ -43,7 +43,7 @@
       class="mb-4 pa-4"
       icon="mdi-alert-outline"
       style="cursor: pointer"
-      @click="router.push('/contact-admin')"
+      @click="assistance.open()"
     >
       <AlertContent title="Equipe inactive" chevron>
         <template #default>
@@ -80,6 +80,7 @@
 
 <script setup>
 import { useAuthStore } from '@/stores/authStore';
+import { useAssistanceStore } from '@/stores/assistanceStore.js';
 import { useTeamStore } from '@/stores/teamStore';
 import { useRotationStore } from '@/stores/rotationStore';
 import { useRouter } from 'vue-router';
@@ -88,6 +89,7 @@ const authStore = useAuthStore();
 const teamStore = useTeamStore();
 const rotationStore = useRotationStore();
 const router = useRouter();
+const assistance = useAssistanceStore();
 
 const activeRotation = computed(() => rotationStore.getActiveRotationForCenter(authStore.userData.centerId));
 </script>

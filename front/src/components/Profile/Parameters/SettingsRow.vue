@@ -2,7 +2,7 @@
   <!-- Une ligne de réglage : icône, titre, sous-titre et, à la fin, un chevron (ou ce que remplit le slot `append`). Le clic vient du parent. -->
   <v-list-item class="settings-row bg-surfaceContainer" :disabled="disabled">
     <template #prepend>
-      <v-icon class="px-3" :icon="icon" size="20" color="primary" />
+      <v-icon class="mx-1" :icon="icon" size="20" color="primary" />
     </template>
 
     <v-list-item-title class="text-body-medium">{{ title }}</v-list-item-title>

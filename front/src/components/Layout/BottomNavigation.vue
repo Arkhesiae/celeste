@@ -17,7 +17,7 @@
       :class="isActive('/dashboard') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/dashboard'"
       @click="
-        router.push({ path: '/dashboard' });
+        router.push(tabTarget('dashboard', '/dashboard'));
         hapticsImpact();
       "
     >
@@ -33,7 +33,7 @@
       :class="isPlanning ? 'active-item' : 'inactive-item'"
       :active="isPlanning"
       @click="
-        router.push({ path: '/planning/calendar' });
+        router.push(tabTarget('planning', '/planning/calendar'));
         hapticsImpact();
       "
     >
@@ -49,7 +49,7 @@
       :class="isActive('/demand-page/demands') ? 'active-item' : 'inactive-item'"
       :active="router.currentRoute.value.path === '/demand-page/demands'"
       @click="
-        router.push({ path: '/demand-page/demands' });
+        router.push(tabTarget('demands', '/demand-page/demands'));
         hapticsImpact();
       "
     >
@@ -76,7 +76,7 @@
       :class="isCenter ? 'active-item' : 'inactive-item'"
       :active="isCenter"
       @click="
-        router.push({ path: centerPath });
+        router.push(tabTarget('center', centerPath));
         hapticsImpact();
       "
     >
@@ -96,6 +96,8 @@ import { useRouter } from 'vue-router';
 import { computed } from 'vue';
 import { useDemandStore } from '@/stores/demandStore';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
+
+import { tabTarget } from '@/router/tabMemory.js';
 
 const hapticsImpact = async () => {
   await Haptics.impact({ style: ImpactStyle.Light });

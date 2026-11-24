@@ -22,8 +22,10 @@ export const sendOtp = async (req, res, next) => {
 
     if (existingOtp) {
       const timeSinceLastOtp = Math.floor((new Date() - existingOtp.createdAt) / 1000);
-      const nextTryMinutes = Math.floor((10 * 60 - timeSinceLastOtp) / 60);
-      const nextTrySeconds = (10 * 60 - timeSinceLastOtp) % 60;
+      // Le code précédent reste valable OTP_VALIDITY_MS : pas de nouvel envoi avant son expiration
+      const secondsLeft = Math.max(0, OTP_VALIDITY_MS / 1000 - timeSinceLastOtp);
+      const nextTryMinutes = Math.floor(secondsLeft / 60);
+      const nextTrySeconds = secondsLeft % 60;
       
       throw new AppError('Le code envoyé précédemment est toujours valide. Prochaine tentative dans ' + nextTryMinutes + 'm' + nextTrySeconds + 's', 400);
     }
@@ -31,13 +33,6 @@ export const sendOtp = async (req, res, next) => {
     // Générer un nouveau code OTP
     const otp = generateOtp();
     const expiresAt = new Date(Date.now() + OTP_VALIDITY_MS);
-
-    // Sauvegarder l'OTP dans la base de données
-    await Otp.create({
-      email,
-      code: otp,
-      expiresAt
-    });
 
     // En mode développement, afficher le code dans la console
     if (process.env.NODE_ENV !== 'production') {
@@ -50,6 +45,13 @@ export const sendOtp = async (req, res, next) => {
       // En production, envoyer l'email
       await emailService.sendEmailOtp(email.toLowerCase(), otp);
     }
+
+    // Le code n'est enregistré qu'une fois envoyé : un envoi raté ne bloque pas l'utilisateur pendant la durée de validité
+    await Otp.create({
+      email,
+      code: otp,
+      expiresAt
+    });
 
     res.json({ message: 'Code OTP envoyé avec succès' });
   } catch (error) {

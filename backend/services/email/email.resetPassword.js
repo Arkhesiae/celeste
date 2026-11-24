@@ -1,5 +1,6 @@
 import * as emailService from './email.transport.js';
 import { renderMail } from './email.renderer.js';
+import { PASSWORD_RESET_VALIDITY_HOURS } from '../../config/auth.js';
 
 /**
  * Envoie un email de réinitialisation de mot de passe
@@ -11,6 +12,7 @@ async function sendPasswordResetEmail(toEmail, resetLink, userName = '') {
   const templateData = {
     resetLink: resetLink,
     userName: userName || 'Utilisateur',
+    validityHours: PASSWORD_RESET_VALIDITY_HOURS,
   };
 
   const html = renderMail('resetPassword', templateData);
@@ -20,7 +22,7 @@ Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le li
 
 ${resetLink}
 
-Important : Ce lien est valable pendant 1 heure. Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.
+Important : Ce lien est valable pendant ${PASSWORD_RESET_VALIDITY_HOURS} heure(s). Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.
 
 Cordialement,
 L'équipe Celeste`

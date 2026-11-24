@@ -1,0 +1,24 @@
+{{> hello }}
+{{> title text="Transfert de points annulé" }}
+<mj-section><mj-column>
+  <mj-text>Le transfert de points {{#ifEquals role 'receiver'}}de <strong>{{counterpartName}}</strong> vers votre compte{{else}}vers <strong>{{counterpartName}}</strong>{{/ifEquals}} n'a pas pu avoir lieu et a été annulé.</mj-text>
+</mj-column></mj-section>
+{{> pointsAmount cancelled=true }}
+<mj-section padding="8px 0 0"><mj-column background-color="#FFDAD6" border-radius="16px" border-left="4px solid #682b36" padding="10px 18px">
+  <mj-text mj-class="label" color="#682b36" padding="0 0 2px">Raison</mj-text>
+  {{#ifEquals reason 'demandNoLongerAccepted'}}
+  <mj-text color="#410002" padding="0">La demande à l'origine de ce transfert n'est plus acceptée (annulée ou désistement).</mj-text>
+  {{else}}{{#ifEquals reason 'insufficientBalance'}}
+  <mj-text color="#410002" padding="0">{{#ifEquals role 'sender'}}Votre solde ne permettait pas{{else}}Le solde de l'expéditeur ne permettait pas{{/ifEquals}} d'effectuer ce transfert (solde minimum autorisé : {{minBalance}} points).</mj-text>
+  {{else}}{{#ifEquals reason 'cancelledByUser'}}
+  <mj-text color="#410002" padding="0">Le transfert différé a été annulé avant son exécution.</mj-text>
+  {{else}}{{#ifEquals reason 'centerTransfer'}}
+  <mj-text color="#410002" padding="0">Un des deux utilisateurs a changé de centre : ses transferts différés ont été annulés.</mj-text>
+  {{else}}
+  <mj-text color="#410002" padding="0">Une erreur technique a empêché l'exécution du transfert.</mj-text>
+  {{/ifEquals}}{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text padding="14px 0 0">Aucun point n'a été débité ni crédité.</mj-text>
+</mj-column></mj-section>
+{{> button }}

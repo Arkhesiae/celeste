@@ -1,0 +1,11 @@
+{{> hello }}
+<mj-section><mj-column>
+  <mj-text><strong>{{posterName}}</strong> a posté une nouvelle demande :</mj-text>
+  {{#if canSwitch}}<mj-text font-size="13px" font-weight="700" color="#675496" padding="0">Vous pouvez accepter cette demande en permutant avec l'utilisateur.</mj-text>{{/if}}
+  {{#if canReplace}}<mj-text font-size="13px" font-weight="700" color="#675496" padding="0">Vous pouvez accepter cette demande en remplaçant l'utilisateur.</mj-text>{{/if}}
+</mj-column></mj-section>
+{{> demand }}
+<mj-section><mj-column>
+  <mj-text mj-class="muted" align="center" padding="16px 0 0">Vous faites partie du pool d'utilisateurs pouvant potentiellement accepter cette demande.</mj-text>
+</mj-column></mj-section>
+{{> button }}

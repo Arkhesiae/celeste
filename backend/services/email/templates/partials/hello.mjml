@@ -1,0 +1,3 @@
+<mj-section><mj-column>
+  <mj-text mj-class="hello">{{#if userName}}Bonjour {{userName}},{{else}}Bonjour,{{/if}}</mj-text>
+</mj-column></mj-section>

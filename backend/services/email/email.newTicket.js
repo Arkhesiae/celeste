@@ -1,6 +1,9 @@
 import * as emailService from './email.transport.js';
 import { renderMail } from './email.renderer.js';
 import Center from '../../models/Center.js';
+import { fullName } from '../../utils/names.js';
+
+const TICKET_TYPE_LABELS = { assistance: 'Assistance', review: 'Avis', other: 'Autre' };
 
 /**
  * Envoie un email de notification aux administrateurs concernant un nouveau ticket
@@ -27,11 +30,14 @@ async function sendNewTicketNotificationEmail(adminEmails, ticketData, userData)
 
     const templateData = {
       isLocal: isLocal,
-      ticketId: ticketData._id.toString().slice(-6),
+      ticketId: ticketData.shortId || ticketData._id.toString().slice(-6),
+      typeLabel: TICKET_TYPE_LABELS[ticketData.type] ?? ticketData.type,
+      userName: fullName(userData),
       title: ticketData.title,
       content: ticketData.content,
       userEmail: userData.email,
       centerName: center?.name,
+      centerOACI: center?.OACI,
       creationDate: new Date(ticketData.createdAt).toLocaleDateString('fr-FR', {
         day: '2-digit',
         month: '2-digit',
@@ -48,8 +54,11 @@ Bonjour Administrateur,
 
 ${isLocal ? 'Un nouvel utilisateur de votre centre a créé un ticket d\'assistance.' : 'Un nouvel utilisateur a créé un ticket d\'assistance.'}
 
-Ticket #${ticketData._id.toString().slice(-6)}
+Ticket #${templateData.ticketId} (${templateData.typeLabel})
 Sujet : ${ticketData.title}
+Auteur : ${templateData.userName} (${userData.email})${center?.name ? `
+Centre : ${center.name}${center.OACI ? ` (${center.OACI})` : ''}` : ''}
+Date : ${templateData.creationDate}
 
 Message :
 ${ticketData.content}

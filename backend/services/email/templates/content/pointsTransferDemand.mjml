@@ -1,0 +1,11 @@
+{{> hello }}
+{{> title text=(byRole role "Points reçus" "Points débités") }}
+<mj-section><mj-column>
+  {{#ifEquals role 'receiver'}}
+  <mj-text>Suite à {{#if typeText}}votre <span class="chip chip-primary">{{typeText}}</span>{{else}}votre demande acceptée{{/if}} avec <strong>{{counterpartName}}</strong> pour le <strong>{{demandDate}}</strong>{{#if shift}} ({{shift}}){{/if}}, les points ont été crédités à votre solde.</mj-text>
+  {{else}}
+  <mj-text>Votre demande{{#if typeText}} de <span class="chip chip-primary">{{typeText}}</span>{{/if}} du <strong>{{demandDate}}</strong>{{#if shift}} ({{shift}}){{/if}}, acceptée par <strong>{{counterpartName}}</strong>, a été réglée : les points ont été débités de votre solde.</mj-text>
+  {{/ifEquals}}
+</mj-column></mj-section>
+{{> pointsAmount }}
+{{> button }}

@@ -1,0 +1,41 @@
+<mj-section padding="14px 0 4px"><mj-column>
+  <mj-text padding="0 0 8px"><span class="chip">{{demandDate}}</span> <span class="chip chip-primary">{{typeText}}</span></mj-text>
+</mj-column></mj-section>
+<mj-section background-color="#f0f4f6" border-radius="20px" padding="14px 20px">
+  <mj-group>
+    <mj-column width="72%" vertical-align="middle">
+      <mj-text padding="0" font-size="22px" font-weight="700">{{shift}}</mj-text>
+      <mj-text padding="2px 0 0" font-size="12px" font-weight="700" color="#40484C">{{startTime}} - {{endTime}}</mj-text>
+      <mj-text padding="0" font-size="12px" color="#40484C">Dans l'équipe {{teamName}}</mj-text>
+    </mj-column>
+    {{#ifNotEquals demandType 'switch'}}
+    <mj-column width="28%" vertical-align="middle">
+      <mj-text align="right" padding="0" font-size="24px" font-weight="900" color="#675496">{{points}}</mj-text>
+      <mj-text align="right" padding="0" font-size="11px" color="#40484C">points</mj-text>
+    </mj-column>
+    {{/ifNotEquals}}
+  </mj-group>
+</mj-section>
+{{#if acceptedSwitches}}
+<mj-section padding="14px 0 0"><mj-column>
+  <mj-text font-size="12px" font-weight="700" padding="0 0 6px">Permutations acceptées par l'utilisateur</mj-text>
+</mj-column></mj-section>
+{{#each acceptedSwitches}}
+<mj-section background-color="#f0f4f6" border-radius="16px" padding="10px 20px">
+  <mj-group>
+    <mj-column width="72%" vertical-align="middle">
+      <mj-text padding="0" font-size="14px" font-weight="700">{{shift}} <span style="font-size:12px;font-weight:500;color:#40484C;">&nbsp;{{startTime}} - {{endTime}}</span></mj-text>
+    </mj-column>
+    <mj-column width="28%" vertical-align="middle">
+      <mj-text align="right" padding="0" font-size="14px" font-weight="700" color="#675496">{{points}} pts</mj-text>
+    </mj-column>
+  </mj-group>
+</mj-section>
+<mj-section padding="0"><mj-column><mj-spacer height="6px" /></mj-column></mj-section>
+{{/each}}
+{{/if}}
+{{#if comment}}
+<mj-section padding="12px 0 0"><mj-column border="1px solid #C0C8CC" border-radius="16px" padding="8px 16px">
+  <mj-text mj-class="muted">{{comment}}</mj-text>
+</mj-column></mj-section>
+{{/if}}

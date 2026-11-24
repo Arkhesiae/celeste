@@ -1,0 +1,15 @@
+{{> hello }}
+{{> title text="Demande annulée" }}
+<mj-section><mj-column>
+  {{#ifEquals role "accepter"}}
+  <mj-text>La demande{{#if typeText}} de <span class="chip chip-primary">{{typeText}}</span>{{/if}} de <strong>{{counterpartName}}</strong> du <strong>{{posterShiftDate}}</strong>, que vous aviez acceptée, a été annulée.</mj-text>
+  <mj-text>Vous n'êtes plus engagé(e) sur cette vacation et les points associés ne vous seront pas attribués.</mj-text>
+  {{else}}
+  <mj-text>Votre demande{{#if typeText}} de <span class="chip chip-primary">{{typeText}}</span>{{/if}} du <strong>{{posterShiftDate}}</strong> a été annulée.</mj-text>
+  {{#if counterpartName}}
+  <mj-text><strong>{{counterpartName}}</strong> ne vous remplace plus. Si ce remplacement avait déjà été déclaré, pensez à mettre à jour votre déclaration sur OLAFATCO.</mj-text>
+  {{/if}}
+  <mj-text mj-class="muted">Vous pouvez publier une nouvelle demande si nécessaire.</mj-text>
+  {{/ifEquals}}
+</mj-column></mj-section>
+{{> button }}

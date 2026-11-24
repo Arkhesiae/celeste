@@ -1,0 +1,10 @@
+{{> hello }}
+<mj-section><mj-column>
+  <mj-text>Bienvenue sur Céleste ! Voici votre code de vérification, il est valable {{validityMinutes}} minutes :</mj-text>
+</mj-column></mj-section>
+<mj-section padding="10px 0"><mj-column background-color="#f0f4f6" border-radius="20px" padding="18px 10px">
+  <mj-text align="center" padding="0"><span class="code">{{otpCode}}</span></mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text mj-class="small" align="center">Si vous n'avez pas créé de compte, vous pouvez ignorer cet email.</mj-text>
+</mj-column></mj-section>

@@ -2,7 +2,7 @@ import User from '../../models/User.js';
 import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { inTransaction } from '../../utils/mongo.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
-import { sendCancelledAcceptanceEmail } from '../email/demand/demand.emails.js';
+import { sendWithdrawalEmail } from '../email/demand/demand.emails.js';
 import { categorizeDemands } from './demand.list.js';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromDemandWithSession } from './demand.cascade.js';
@@ -52,7 +52,7 @@ export async function withdrawFromDemand (demandId, userId) {
         { path: 'posterId', select: 'name lastName email' },
     ]);
 
-    sendCancelledAcceptanceEmail(updatedDemand, originalAccepter)
+    sendWithdrawalEmail(updatedDemand, originalAccepter)
         .then(({ sent, failed }) =>
             console.log('📧 Notifications envoyées:', { demandId: updatedDemand._id, sent, failed })
         )

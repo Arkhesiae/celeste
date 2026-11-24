@@ -1,0 +1,7 @@
+{{> hello }}
+{{> title text="Demande non acceptée" }}
+<mj-section><mj-column>
+  <mj-text>Votre demande de remplacement pour le <strong>{{posterShiftDate}}</strong> (créée le {{creationDate}}) n'a pas été acceptée.</mj-text>
+  <mj-text>Votre demande reste visible pour d'autres collègues qui pourraient l'accepter.</mj-text>
+</mj-column></mj-section>
+{{> button }}

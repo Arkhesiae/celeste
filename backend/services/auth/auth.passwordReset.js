@@ -5,6 +5,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { sendPasswordResetEmail } from '../email/email.resetPassword.js';
 import { AppError } from '../../error/AppError.js';
+import { PASSWORD_RESET_VALIDITY_HOURS } from '../../config/auth.js';
 
 /**
  * Demande une réinitialisation de mot de passe
@@ -21,7 +22,7 @@ export async function requestPasswordReset (email) {
     // Générer un token de réinitialisation
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpiry = new Date();
-    resetTokenExpiry.setHours(resetTokenExpiry.getHours() + 1); // Token valide 1 heure
+    resetTokenExpiry.setHours(resetTokenExpiry.getHours() + PASSWORD_RESET_VALIDITY_HOURS);
 
     // Sauvegarder le token dans la base de données
     user.resetPasswordToken = resetToken;

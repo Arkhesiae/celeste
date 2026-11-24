@@ -1,0 +1,19 @@
+{{> hello }}
+{{> title text="Nouveau tour de service" }}
+<mj-section><mj-column>
+  <mj-text>Un nouveau tour de service est programmé pour le centre {{centerName}} :</mj-text>
+</mj-column></mj-section>
+<mj-section padding="6px 0"><mj-column background-color="#f0f4f6" border-radius="20px" padding="16px 22px">
+  <mj-text mj-class="label">Tour de service</mj-text>
+  <mj-text font-size="20px" font-weight="700" padding="0 0 8px">{{rotationName}}</mj-text>
+  <mj-text padding="2px 0"><strong>Entre en vigueur le :</strong> {{activationDate}}</mj-text>
+  {{#if previousRotationName}}<mj-text padding="2px 0"><strong>Remplace :</strong> {{previousRotationName}}</mj-text>{{/if}}
+  {{#if daysCount}}<mj-text padding="2px 0"><strong>Durée du cycle :</strong> {{daysCount}} jours</mj-text>{{/if}}
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text padding="14px 0 0">Votre planning est recalculé à partir de cette date : consultez-le dans Céleste pour vérifier vos vacations.</mj-text>
+  {{#if demandsAffected}}
+  <mj-text mj-class="muted">Certaines demandes en cours ont pu être modifiées ou annulées par ce changement ; vous en êtes informé(e) séparément le cas échéant.</mj-text>
+  {{/if}}
+</mj-column></mj-section>
+{{> button }}

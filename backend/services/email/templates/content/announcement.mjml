@@ -1,0 +1,24 @@
+{{> hello }}
+<mj-section padding="14px 0 6px"><mj-column>
+  <mj-text><span class="chip chip-primary">{{#if isGlobal}}Annonce{{else}}Annonce locale{{/if}}</span></mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column background-color="#f0f4f6" border-radius="20px" padding="18px 22px">
+  <mj-text font-size="19px" font-weight="700" padding="0 0 8px">{{title}}</mj-text>
+  <mj-text line-height="1.6" padding="0">{{formatText message}}</mj-text>
+  {{#if announcementDate}}<mj-text mj-class="muted" padding="14px 0 0">Publié le {{announcementDate}}</mj-text>{{/if}}
+  {{#if announcementAuthor}}<mj-text mj-class="muted" padding="0">Par {{announcementAuthor}}</mj-text>{{/if}}
+</mj-column></mj-section>
+{{#if announcementDetails}}
+<mj-section padding="16px 0 0"><mj-column>
+  <mj-text mj-class="label">Détails supplémentaires</mj-text>
+  <mj-text>{{formatText announcementDetails}}</mj-text>
+</mj-column></mj-section>
+{{/if}}
+{{#if announcementUrl}}{{> button href=announcementUrl label="En savoir plus" }}{{/if}}
+<mj-section><mj-column>
+  {{#if isGlobal}}
+  <mj-text mj-class="small" align="center" padding="16px 0 0">Cette annonce a été envoyée à tous les utilisateurs de Céleste.</mj-text>
+  {{else}}{{#if centerName}}
+  <mj-text mj-class="small" align="center" padding="16px 0 0">Cette annonce a été envoyée à tous les utilisateurs du centre {{centerName}}.</mj-text>
+  {{/if}}{{/if}}
+</mj-column></mj-section>

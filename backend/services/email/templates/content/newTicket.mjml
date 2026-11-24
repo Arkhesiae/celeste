@@ -1,0 +1,20 @@
+{{> adminHello }}
+<mj-section><mj-column>
+  <mj-text mj-class="title">{{#if isLocal}}Nouveau ticket local{{else}}Nouveau ticket{{/if}}</mj-text>
+  <mj-text>Un nouveau ticket a été créé.</mj-text>
+</mj-column></mj-section>
+<mj-section padding="10px 0"><mj-column background-color="#f0f4f6" border-radius="20px" padding="16px 20px">
+  <mj-text mj-class="label">Ticket #{{ticketId}}</mj-text>
+  <mj-text padding="2px 0"><strong>Sujet :</strong> {{title}}</mj-text>
+  {{#if typeLabel}}<mj-text padding="2px 0"><strong>Type :</strong> {{typeLabel}}</mj-text>{{/if}}
+  {{#if userName}}<mj-text padding="2px 0"><strong>Auteur :</strong> {{userName}}</mj-text>{{/if}}
+  {{#if centerName}}<mj-text padding="2px 0"><strong>Centre :</strong> {{centerName}}{{#if centerOACI}} ({{centerOACI}}){{/if}}</mj-text>{{/if}}
+  <mj-text padding="2px 0"><strong>Email :</strong> {{userEmail}}</mj-text>
+  {{#if creationDate}}<mj-text padding="2px 0"><strong>Créé le :</strong> {{creationDate}}</mj-text>{{/if}}
+</mj-column></mj-section>
+<mj-section padding="8px 0 0"><mj-column>
+  <mj-text mj-class="label">Message</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column border="1px solid #C0C8CC" border-left="4px solid #675496" border-radius="16px" padding="10px 18px">
+  <mj-text line-height="1.6">{{formatText content}}</mj-text>
+</mj-column></mj-section>

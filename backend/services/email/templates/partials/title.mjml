@@ -1,0 +1,3 @@
+<mj-section><mj-column>
+  <mj-text mj-class="title">{{text}}</mj-text>
+</mj-column></mj-section>

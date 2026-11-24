@@ -1,0 +1,12 @@
+{{> hello }}
+{{> title text="Demande annulée" }}
+<mj-section><mj-column>
+  <mj-text><strong>{{posterName}} {{posterLastName}}</strong> a annulé sa demande de remplacement pour le <strong>{{posterShiftDate}}</strong>{{#if creationDate}} (créée le {{creationDate}}){{/if}}.</mj-text>
+  {{#if youWereAccepter}}
+  <mj-text>Vous aviez accepté cette demande : vous n'êtes plus engagé(e) sur cette vacation et les points associés ne vous seront pas attribués.</mj-text>
+  {{/if}}
+  {{#if accepters}}
+  <mj-text mj-class="muted"><strong>Note :</strong> cette demande avait été acceptée par : {{accepters}}</mj-text>
+  {{/if}}
+</mj-column></mj-section>
+{{> button }}

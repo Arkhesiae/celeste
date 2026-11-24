@@ -6,13 +6,13 @@ import { idOf } from '../../../utils/ids.js';
 import User from '../../../models/User.js';
 import * as emailService from '../email.transport.js';
 import { renderMail } from '../email.renderer.js';
-import { sendCancelledAcceptanceEmail, sendCancelledDemandEmail } from './demand.emails.js';
+import { sendWithdrawalEmail, sendCancelledDemandEmail } from './demand.emails.js';
 
 /**
  * Notifications envoyées aux tiers touchés quand une demande est annulée ou qu'un accepteur
  * en est retiré en dehors d'une action directe de leur part (changement d'équipe, changement de tour de service).
  * Les emails sont volontairement génériques : ils ne précisent ni la cause ni que l'opération est automatique.
- *  - retrait d'un accepteur → l'auteur reçoit l'email « acceptation annulée » (cancelledAcceptance), le même que
+ *  - retrait d'un accepteur → l'auteur reçoit l'email « désistement » (withdrawal), le même que
  *    lorsque l'accepteur se désiste lui-même
  *  - annulation → l'auteur et/ou l'accepteur reçoivent l'email « demande annulée » (systemCancel), cascade comprise
  *
@@ -58,7 +58,7 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
             const accepter = accepterById.get(String(accepterId));
             if (!demand || !accepter || !isRecipient(demand.posterId)) continue;
             try {
-                await sendCancelledAcceptanceEmail(demand, accepter);
+                await sendWithdrawalEmail(demand, accepter);
                 sent += 1;
             } catch (error) {
                 console.error('❌ Erreur envoi email de retrait :', error);

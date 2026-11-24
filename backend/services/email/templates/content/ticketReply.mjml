@@ -1,0 +1,18 @@
+{{> hello }}
+{{> title text="Nouvelle réponse à votre ticket" }}
+<mj-section><mj-column>
+  <mj-text>Votre ticket a reçu une nouvelle réponse de l'équipe support.</mj-text>
+</mj-column></mj-section>
+<mj-section padding="10px 0"><mj-column background-color="#f0f4f6" border-radius="20px" padding="14px 20px">
+  <mj-text mj-class="label">Ticket #{{ticketId}}</mj-text>
+  <mj-text padding="2px 0"><strong>Sujet :</strong> {{title}}</mj-text>
+</mj-column></mj-section>
+<mj-section padding="8px 0 0"><mj-column>
+  <mj-text mj-class="label">Réponse</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column border="1px solid #C0C8CC" border-left="4px solid #675496" border-radius="16px" padding="10px 18px">
+  <mj-text line-height="1.6">{{formatText replyContent}}</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text mj-class="muted" align="center" padding="16px 0 0">Pour envoyer une réponse, répondez à ce message.</mj-text>
+</mj-column></mj-section>

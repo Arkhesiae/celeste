@@ -1,0 +1,9 @@
+{{> hello }}
+{{> title text="Votre compte est désactivé" }}
+<mj-section padding="8px 0"><mj-column background-color="#FFDAD6" border-radius="16px" border-left="4px solid #682b36" padding="10px 18px">
+  <mj-text color="#410002">Votre compte Céleste a été désactivé{{#if centerName}} par l'administration du centre {{centerName}}{{/if}}. Vous ne pouvez plus vous connecter.</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text>Vos demandes en cours ne sont plus visibles des autres utilisateurs.</mj-text>
+  <mj-text>Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur de votre centre.</mj-text>
+</mj-column></mj-section>

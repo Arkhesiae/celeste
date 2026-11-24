@@ -1,0 +1,19 @@
+<mj-section padding="10px 0 0"><mj-column><mj-spacer height="1px" /></mj-column></mj-section>
+<mj-section background-color="#f0f4f6" border-radius="20px" padding="16px 22px">
+  <mj-group>
+    <mj-column width="68%" vertical-align="middle">
+      <mj-text mj-class="label">{{#ifEquals role 'receiver'}}De la part de{{else}}Pour{{/ifEquals}}</mj-text>
+      <mj-text padding="0" font-size="18px" font-weight="700">{{counterpartName}}</mj-text>
+      {{#if date}}<mj-text padding="2px 0 0" font-size="12px" color="#40484C">{{date}}</mj-text>{{/if}}
+    </mj-column>
+    <mj-column width="32%" vertical-align="middle">
+      <mj-text align="right" padding="0" font-size="30px" font-weight="900" color="{{#if cancelled}}#70787C{{else}}#675496{{/if}}">{{#unless cancelled}}{{#ifEquals role 'receiver'}}+{{else}}&minus;{{/ifEquals}}{{/unless}}{{amount}}</mj-text>
+      <mj-text align="right" padding="0" font-size="11px" color="#40484C">points</mj-text>
+    </mj-column>
+  </mj-group>
+</mj-section>
+{{#if (isNumber balance)}}
+<mj-section><mj-column>
+  <mj-text mj-class="muted" align="right" padding="0">Nouveau solde : <strong>{{balance}} points</strong></mj-text>
+</mj-column></mj-section>
+{{/if}}

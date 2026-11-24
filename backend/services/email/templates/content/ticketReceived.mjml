@@ -1,0 +1,14 @@
+{{> hello }}
+{{> title text="Nous avons bien reçu votre ticket" }}
+<mj-section><mj-column>
+  <mj-text>Votre message a été transmis à l'équipe support. Vous recevrez la réponse par e-mail.</mj-text>
+</mj-column></mj-section>
+<mj-section padding="10px 0"><mj-column background-color="#f0f4f6" border-radius="20px" padding="14px 20px">
+  <mj-text mj-class="label">Ticket #{{ticketId}}</mj-text>
+  <mj-text padding="2px 0"><strong>Sujet :</strong> {{title}}</mj-text>
+  {{#if typeLabel}}<mj-text padding="2px 0"><strong>Type :</strong> {{typeLabel}}</mj-text>{{/if}}
+  {{#if creationDate}}<mj-text padding="2px 0"><strong>Créé le :</strong> {{creationDate}}</mj-text>{{/if}}
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text mj-class="muted" align="center" padding="12px 0 0">Pour ajouter une précision, répondez simplement à ce message.</mj-text>
+</mj-column></mj-section>

@@ -1,0 +1,21 @@
+{{> adminHello }}
+{{> title text="Demande à prendre en compte" }}
+<mj-section><mj-column>
+  <mj-text>Un agent du centre {{centerName}} a publié sur Céleste la demande ci-dessous, concernant son planning :</mj-text>
+</mj-column></mj-section>
+<mj-section padding="6px 0 0"><mj-column>
+  <mj-text mj-class="label" padding="8px 0 0">Agent</mj-text>
+  <mj-text padding="0"><strong>{{posterName}}</strong></mj-text>
+  {{#if accepterName}}
+  <mj-text mj-class="label" padding="8px 0 0">{{#ifEquals demandType 'switch'}}Permute avec{{else}}Remplacé par{{/ifEquals}}</mj-text>
+  <mj-text padding="0"><strong>{{accepterName}}</strong>{{#if accepterShift}} <span style="color:#40484C;">(vacation : {{accepterShift}})</span>{{/if}}</mj-text>
+  {{/if}}
+</mj-column></mj-section>
+{{> demand }}
+<mj-section padding="18px 0 0"><mj-column background-color="#f0f4f6" border-radius="16px" border-left="4px solid #675496" padding="10px 18px">
+  <mj-text>Nous vous prions de bien vouloir prendre cette demande en compte <strong>formellement</strong>, sous réserve qu'elle soit conforme aux règles de travail (repos minimal, durée du travail, jours consécutifs, vacations de nuit).</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text mj-class="small" padding="14px 0 0">Si la demande ne respecte pas ces règles, merci de ne pas la valider et d'en informer l'agent.</mj-text>
+</mj-column></mj-section>
+{{> button }}

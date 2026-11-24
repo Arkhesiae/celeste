@@ -114,6 +114,7 @@ declare module 'vue' {
     SettingsRow: typeof import('./src/components/Profile/Parameters/SettingsRow.vue')['default']
     SettingsSection: typeof import('./src/components/Profile/Parameters/SettingsSection.vue')['default']
     SetupAlerts: typeof import('./src/components/Dashboard/SetupAlerts.vue')['default']
+    ShapeBadge: typeof import('./src/components/common/ShapeBadge.vue')['default']
     ShiftCard: typeof import('./src/components/Calendar/ShiftCard.vue')['default']
     SortSplitButton: typeof import('./src/components/common/SortSplitButton.vue')['default']
     TeamCard: typeof import('./src/components/Teams/TeamCard.vue')['default']

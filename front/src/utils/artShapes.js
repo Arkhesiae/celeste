@@ -79,7 +79,7 @@ export const shapeGeometry = (kind, { size = 20, rotation = 0 } = {}) => {
       sides: polygon.sides,
       radius: size * polygon.radius,
       rotation: polygon.start + rotation,
-      fillet: size * 0.4,
+      fillet: size * 0.45,
     }),
   };
 };

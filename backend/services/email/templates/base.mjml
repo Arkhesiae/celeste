@@ -1,0 +1,56 @@
+<mjml>
+  <mj-head>
+    <mj-title>Céleste</mj-title>
+    <mj-font name="Roboto" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700;900&amp;display=swap" />
+    <!--
+      Couleurs du site (front/src/plugins/vuetify.js) : l'en-tête et le pied reprennent le thème sombre (fond #0F1416,
+      primaire #b4b3f5, secondaire #e2ff6e), le corps le thème clair (primaire #675496, fond #eff0f3, tuiles #f0f4f6)
+      pour rester lisible dans tous les clients de messagerie.
+    -->
+    <mj-attributes>
+      <mj-all font-family="Roboto, Arial, sans-serif" />
+      <mj-text font-size="15px" line-height="1.55" color="#171D1E" padding="6px 0" />
+      <mj-section padding="0" />
+      <mj-column padding="0" />
+      <mj-button background-color="#675496" color="#ffffff" font-size="14px" font-weight="500" border-radius="20px" inner-padding="12px 26px" padding="18px 0 6px" />
+      <mj-class name="title" font-size="22px" font-weight="700" line-height="1.25" padding="22px 0 6px" />
+      <mj-class name="hello" font-size="17px" font-weight="500" padding="26px 0 4px" />
+      <mj-class name="muted" font-size="13px" color="#40484C" />
+      <mj-class name="small" font-size="12px" color="#70787C" />
+      <mj-class name="label" font-size="11px" font-weight="700" color="#675496" text-transform="uppercase" letter-spacing="1px" padding="0 0 2px" />
+    </mj-attributes>
+    <mj-style>
+      .chip { display: inline-block; background: #E9EFF1; color: #171D1E; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 700; }
+      .chip-primary { background: #d4ccef; color: #3a2d63; }
+      .code { font-size: 34px; font-weight: 700; letter-spacing: 12px; color: #675496; }
+      a { color: #675496; }
+    </mj-style>
+  </mj-head>
+  <mj-body background-color="#eff0f3" width="600px">
+    <mj-section padding="24px 0 0" background-color="#eff0f3"><mj-column><mj-spacer height="1px" /></mj-column></mj-section>
+
+    <!-- En-tête : radar du site (PNG, voir scripts/buildMailArt.mjs) sur le fond sombre -->
+    <mj-section background-color="#0F1416" background-url="{{assetsUrl}}/header.png" background-size="600px 190px" background-repeat="no-repeat" border-radius="20px 20px 0 0">
+      <mj-column padding="38px 32px 46px">
+        <mj-text color="#b4b3f5" font-size="32px" font-weight="900" letter-spacing="1px" line-height="1" padding="0">Céleste<span style="color:#e2ff6e;">.</span></mj-text>
+        <mj-text color="#C0C8CC" font-size="13px" padding="6px 0 0">Votre site de remplacement</mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Contenu -->
+    <mj-wrapper background-color="#ffffff" padding="0 32px 28px">
+      {{{body}}}
+    </mj-wrapper>
+
+    <!-- Pied : une bande de lignes (PNG), puis le texte sur le fond uni -->
+    <mj-section background-color="#0F1416" background-url="{{assetsUrl}}/footer.png" background-size="600px 70px" background-repeat="no-repeat"><mj-column><mj-spacer height="70px" /></mj-column></mj-section>
+    <mj-section background-color="#0F1416" border-radius="0 0 20px 20px">
+      <mj-column padding="0 32px 26px">
+        <mj-text color="#DEE3E6" font-size="13px" align="center" padding="0">Merci d'utiliser Céleste !</mj-text>
+        <mj-text color="#C0C8CC" font-size="12px" align="center" padding="10px 0 0">Ce mail est envoyé automatiquement par le système Céleste. Pour arrêter de recevoir les mails Céleste, rendez-vous dans vos paramètres, sur la page profil.</mj-text>
+        <mj-text color="#8A9296" font-size="11px" align="center" padding="10px 0 0">© {{year}} Céleste</mj-text>
+      </mj-column>
+    </mj-section>
+    <mj-section padding="24px 0 0" background-color="#eff0f3"><mj-column><mj-spacer height="1px" /></mj-column></mj-section>
+  </mj-body>
+</mjml>

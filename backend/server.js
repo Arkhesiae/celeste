@@ -7,16 +7,16 @@ import express from 'express';
 import { errorHandler } from './middleware/errorHandler.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { renderMail } from './services/email/index.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { DEFAULT_PORT, MONGO_MAX_RETRIES, MONGO_RETRY_DELAY_MS } from './config/server.js';
 import { REQUEST_BODY_LIMIT } from './config/limits.js';
-import { PUBLIC_DIRECTORY, AVATARS_DIRECTORY } from './config/paths.js';
+import { PUBLIC_DIRECTORY, AVATARS_DIRECTORY, MAIL_ASSETS_DIRECTORY } from './config/paths.js';
 
 // ─── Import du routeur principal ─────────────────────────────────────────────
 import mainRouter from './routes/index.js';
+import emailPreviewRouter from './routes/emailPreview.routes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,10 +62,12 @@ app.use(cookieParser());
 // Les avatars téléversés ne sont pas suivis par git : le dossier est créé au besoin
 fs.mkdirSync(AVATARS_DIRECTORY, { recursive: true });
 app.use('/api/avatars', express.static(AVATARS_DIRECTORY));
-app.get("/preview/:template", (req, res) => {
-  const html = renderMail(req.params.template, {});
-  res.send(html);
-});
+// Décor des mails (PNG), chargé par les clients de messagerie : public, il ne contient aucune donnée
+app.use('/api/mail-assets', express.static(MAIL_ASSETS_DIRECTORY));
+// Aperçu des mails (navigation entre les modèles), pour le développement seulement
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/preview', emailPreviewRouter);
+}
 
 app.use('/', express.static(PUBLIC_DIRECTORY));
 

@@ -1,0 +1,10 @@
+{{> hello }}
+{{> title text="Demande acceptée" }}
+<mj-section><mj-column>
+  <mj-text>Bonne nouvelle ! <strong>{{accepterName}}</strong> a accepté votre demande{{#if typeText}} <span class="chip chip-primary">{{typeText}}</span> du{{/if}} <strong>{{posterShiftDate}}</strong> en <span class="chip">{{posterShift}}</span></mj-text>
+  {{#if accepterShift}}
+  <mj-text>Vous travaillerez donc en <span class="chip">{{accepterShift}}</span> ce jour dans l'équipe {{accepterTeam}}.</mj-text>
+  {{/if}}
+  <mj-text>N'oubliez pas de déclarer ce remplacement sur OLAFATCO.</mj-text>
+</mj-column></mj-section>
+{{> button }}

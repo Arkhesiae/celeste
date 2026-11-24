@@ -1,0 +1,8 @@
+{{> hello }}
+{{> title text="Inscription rejetée" }}
+<mj-section padding="8px 0"><mj-column background-color="#FFDAD6" border-radius="16px" border-left="4px solid #682b36" padding="10px 18px">
+  <mj-text color="#410002">Votre inscription a été rejetée par votre administrateur.</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text>Veuillez contacter l'administrateur du site pour plus d'informations.</mj-text>
+</mj-column></mj-section>

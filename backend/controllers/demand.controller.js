@@ -1,10 +1,7 @@
 import Demand from '../models/Demand.js';
 import User from '../models/User.js';
 import Rule from '../models/Rule.js';
-import { posterDayOf } from '../utils/dates/dayAccess.js';
-import { formatDateFr } from '../utils/dates/format.js';
 import { findOrThrow } from '../utils/mongo.js';
-import { fullName } from '../utils/names.js';
 import { sameId } from '../utils/ids.js';
 import { assertDay, assertId, assertObject, isValidDate, isValidDateRange } from '../utils/validation.js';
 import { AppError } from '../error/AppError.js';
@@ -340,39 +337,17 @@ const sendAdminEmail = async (req, res, next) => {
             throw new AppError('Aucune adresse e-mail configurée pour le mailing de ce centre', 400);
         }
 
-        const populatedDemand = await Demand.findById(demandId)
-            .populate('posterId', 'name lastName email')
-            .populate('posterShift.shift')
-            .populate('posterShift.teamId');
+        const populatedDemand = await Demand.findById(demandId).populate([
+            { path: 'posterId', select: 'name lastName' },
+            { path: 'accepterId', select: 'name lastName' },
+            { path: 'centerId', select: 'name' },
+            { path: 'posterShift.shift', populate: { path: 'variations' } },
+            { path: 'posterShift.selectedVariation' },
+            { path: 'posterShift.teamId', select: 'name' },
+            { path: 'accepterShift.shift', select: 'name' },
+        ]);
 
-        const posterName = fullName(populatedDemand.posterId) || 'Un utilisateur';
-
-        const shiftName = populatedDemand.posterShift?.shift?.name || 'Vacation';
-        const teamName = populatedDemand.posterShift?.teamId?.name || 'Équipe';
-        const dateStr = formatDateFr(posterDayOf(populatedDemand), { short: true });
-
-        const typeStr = populatedDemand.type === 'switch' ? 'Permutation' : populatedDemand.type === 'substitution' ? 'Remplacement' : 'Remplacement ou permutation';
-
-        const mailSubject = `[Céleste] Demande de ${typeStr} - ${posterName}`;
-        const mailContent = `
-            <h3>Nouvelle demande de changement de planning</h3>
-            <p>Bonjour,</p>
-            <p>Une nouvelle demande a été publiée sur Céleste :</p>
-            <ul>
-                <li><strong>Utilisateur :</strong> ${posterName}</li>
-                <li><strong>Type de demande :</strong> ${typeStr}</li>
-                <li><strong>Date de vacation :</strong> ${dateStr}</li>
-                <li><strong>Vacation :</strong> ${shiftName} (${teamName})</li>
-                <li><strong>Points :</strong> ${populatedDemand.points}</li>
-            </ul>
-            <p>Ce mail est généré automatiquement par le système Céleste.</p>
-        `;
-
-        const result = await emailService.sendEmail({
-            to: emails,
-            subject: mailSubject,
-            html: mailContent
-        });
+        const result = await emailService.sendAdministrationRequestEmail(emails, populatedDemand);
 
         if (result && result.sent) {
             demand.mailStatus = 'sent';

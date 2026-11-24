@@ -1,7 +1,7 @@
 import * as emailService from '../email.transport.js';
 import { posterDayOf, shiftDayOf } from '../../../utils/dates/dayAccess.js';
 import { formatDateFr } from '../../../utils/dates/format.js';
-import { shortName } from '../../../utils/names.js';
+import { fullName, shortName } from '../../../utils/names.js';
 import { renderMail } from '../email.renderer.js';
 import { getEffectiveShiftTimes } from '../../../utils/shifts/getEffectiveShiftTimes.js';
 
@@ -25,9 +25,7 @@ async function sendUserPoolNotification(userPool, demand) {
     }
 
     // Utiliser les informations peuplées de l'utilisateur
-    const posterName = demand.posterId?.name || 'Utilisateur';
-    const posterLastName = demand.posterId?.lastName.slice(0, 1) + '.' || '';
-    const fullName = `${posterName} ${posterLastName}`.trim();
+    const fullName = shortName(demand.posterId) || 'Utilisateur';
 
     const typeText = () => {
       switch (demand.type) {
@@ -139,9 +137,7 @@ L'équipe Celeste
  */
 async function sendAcceptedDemandEmail (demand) {
   try {
-    const accepterName = demand.accepterId?.name;
-    const accepterLastName = demand.accepterId?.lastName?.slice(0, 1) + '.';
-    const fullName = `${accepterName} ${accepterLastName}`;
+    const fullName = shortName(demand.accepterId) || 'Un collègue';
     const subject = `Votre demande a été acceptée par ${fullName}`;
     const text = `
 Bonjour ${demand.posterId.name},
@@ -210,14 +206,14 @@ L'équipe Celeste
  * @param {string} shiftDay - Le jour du shift concerné
  * @returns {Object} Résultat de l'envoi
  */
-async function sendCancelledAcceptanceEmail(demand, originalAccepter) {
+async function sendWithdrawalEmail(demand, originalAccepter) {
   try {
     const fullName = shortName(originalAccepter) ?? '';
-    const subject = `${fullName} a annulé son acceptation`;
+    const subject = `${fullName} s'est désisté de votre demande`;
     const text = `
 Bonjour ${demand.posterId.name},
 
-${fullName} ne vous remplace plus pour votre demande le ${formatDateFr(posterDayOf(demand))}.
+${fullName} s'est désisté(e) de votre demande du ${formatDateFr(posterDayOf(demand))} : il ou elle ne vous remplace plus.
 
 Votre demande est à nouveau visible pour d'autres collègues.
 
@@ -246,7 +242,7 @@ L'équipe Celeste
     }
 
 
-    const html = renderMail('cancelledAcceptance', templateData);
+    const html = renderMail('withdrawal', templateData);
 
     // Préparer les options d'email
 
@@ -374,10 +370,65 @@ L'équipe Celeste
   });
 }
 
+/**
+ * Envoie à l'administration du centre (adresses de la règle « Mailing administration ») la demande d'un agent, pour qu'elle soit
+ * prise en compte formellement si elle respecte les règles de travail (email `administrationRequest`).
+ * @param {string[]} emails - adresses de l'administration
+ * @param {Object} demand - demande avec posterId (name, lastName), accepterId (name, lastName), posterShift.shift (+ variations),
+ *   posterShift.selectedVariation, posterShift.teamId (name), accepterShift.shift (name) et centerId (name) peuplés
+ * @returns {Promise<Object>} résultat de l'envoi ({ sent: false } en cas d'échec : emailService.sendEmail ne lève pas)
+ */
+async function sendAdministrationRequestEmail (emails, demand) {
+  const posterShift = demand.posterShift;
+  const typeText = { switch: 'Permutation', hybrid: 'Hybride', substitution: 'Remplacement' }[demand.type] ?? demand.type;
+  const posterName = fullName(demand.posterId) || 'Un agent';
+  const accepterName = fullName(demand.accepterId) || null;
+  const date = formatDateFr(posterDayOf(demand));
+  const selectedVariation = posterShift?.selectedVariation;
+  const variationName = selectedVariation && typeof selectedVariation === 'object' ? selectedVariation.name ?? '' : '';
+  const times = getEffectiveShiftTimes(posterShift?.shift, selectedVariation) || posterShift?.shift?.default;
+
+  const html = renderMail('administrationRequest', {
+    centerName: demand.centerId?.name,
+    posterName,
+    accepterName,
+    accepterShift: demand.accepterShift?.shift?.name,
+    demandDate: date,
+    typeText,
+    demandType: demand.type,
+    shift: (posterShift?.shift?.name ?? 'Vacation') + variationName,
+    startTime: times?.startTime,
+    endTime: times?.endTime,
+    teamName: posterShift?.teamId?.name,
+    points: demand.points,
+    comment: demand.comment,
+  });
+
+  const text = `
+Bonjour,
+
+${posterName} a publié sur Céleste une demande de ${typeText.toLowerCase()} pour le ${date} (${posterShift?.shift?.name ?? 'vacation'}${times ? `, ${times.startTime} - ${times.endTime}` : ''})${accepterName ? `, avec ${accepterName}` : ''}.
+
+Nous vous prions de bien vouloir prendre cette demande en compte formellement, sous réserve qu'elle soit conforme aux règles de travail.
+
+Cordialement,
+L'équipe Celeste
+  `.trim();
+
+  return emailService.sendEmail({
+    to: emails,
+    from: 'Celeste <notification@celeste-app.fr>',
+    subject: `[Céleste] Demande de ${typeText.toLowerCase()} - ${posterName}`,
+    html,
+    text,
+  });
+}
+
 export {
+  sendAdministrationRequestEmail,
   sendUserPoolNotification,
   sendAcceptedDemandEmail,
-  sendCancelledAcceptanceEmail,
+  sendWithdrawalEmail,
   sendCancelledDemandEmail,
   sendReplacementReminderEmail
 };

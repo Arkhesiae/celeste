@@ -83,8 +83,8 @@
                 </div>
               </div>
             </div>
-            <div>
-              <span style="position: relative; top: 1px; font-size: 1.2rem; font-weight: 600">{{ getShiftName }}</span>
+            <div>              
+              <span style="position: relative; top: 1px; font-size: 1.2rem; font-weight: 600">{{ getShiftName }}</span>                      
             </div>
           </div>
           <div class="d-flex align-start flex-column justify-space-between">

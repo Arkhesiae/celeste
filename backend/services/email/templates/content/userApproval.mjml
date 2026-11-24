@@ -1,0 +1,9 @@
+{{> hello }}
+{{> title text="Inscription approuvée" }}
+<mj-section padding="8px 0"><mj-column background-color="#e3f6ee" border-radius="16px" border-left="4px solid #4edfaa" padding="10px 18px">
+  <mj-text>Excellente nouvelle ! Votre inscription a été approuvée par votre administrateur.</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text>Vous pouvez maintenant vous connecter à votre compte.</mj-text>
+</mj-column></mj-section>
+{{> button }}

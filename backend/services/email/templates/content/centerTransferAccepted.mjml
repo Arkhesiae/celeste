@@ -1,0 +1,13 @@
+{{> hello }}
+{{> title text="Votre mutation est acceptée" }}
+<mj-section padding="8px 0"><mj-column background-color="#e3f6ee" border-radius="16px" border-left="4px solid #4edfaa" padding="10px 18px">
+  <mj-text>Votre demande de changement de centre a été acceptée : vous faites désormais partie du centre <strong>{{centerName}}</strong>{{#if previousCenterName}} (précédemment {{previousCenterName}}){{/if}}.</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text mj-class="label" padding="10px 0 2px">Ce qui change</mj-text>
+  <mj-text padding="2px 0">• Vous n'êtes plus rattaché(e) à une équipe : l'administrateur de votre nouveau centre vous en attribuera une.</mj-text>
+  <mj-text padding="2px 0">• Votre solde de points repart de 0.</mj-text>
+  <mj-text padding="2px 0">• Vos demandes et vos entrées de planning à venir dans l'ancien centre ont été annulées.</mj-text>
+  <mj-text mj-class="muted" padding="10px 0 0">Reconnectez-vous si votre planning ne s'est pas encore mis à jour.</mj-text>
+</mj-column></mj-section>
+{{> button }}

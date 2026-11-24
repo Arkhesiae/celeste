@@ -1,0 +1,16 @@
+{{> adminHello }}
+{{> title text="Nouvelle inscription en attente d'approbation" }}
+<mj-section><mj-column>
+  <mj-text>Un nouvel utilisateur s'est inscrit et nécessite votre approbation pour le centre.</mj-text>
+</mj-column></mj-section>
+<mj-section padding="10px 0"><mj-column background-color="#f0f4f6" border-radius="20px" padding="16px 20px">
+  <mj-text mj-class="label">Nouvel utilisateur</mj-text>
+  <mj-text font-size="18px" font-weight="700" padding="0 0 10px">{{newUserName}} {{newUserLastName}}</mj-text>
+  <mj-text padding="2px 0"><strong>Email :</strong> {{newUserEmail}}</mj-text>
+  <mj-text padding="2px 0"><strong>Centre :</strong> {{newUserCenter}} ({{newUserCenterOACI}})</mj-text>
+  <mj-text padding="2px 0"><strong>Date d'inscription :</strong> {{newUserCreatedAt}}</mj-text>
+</mj-column></mj-section>
+<mj-section><mj-column>
+  <mj-text>Veuillez vous connecter à l'interface d'administration pour examiner et approuver cette inscription.</mj-text>
+</mj-column></mj-section>
+{{> button }}

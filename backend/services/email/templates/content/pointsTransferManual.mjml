@@ -1,0 +1,17 @@
+{{> hello }}
+{{> title text=(byRole role "Vous avez reçu des points" "Votre transfert de points est effectué") }}
+<mj-section><mj-column>
+  {{#ifEquals role 'receiver'}}
+  <mj-text><strong>{{counterpartName}}</strong> vous a transféré des points.</mj-text>
+  {{else}}
+  <mj-text>Vous avez transféré des points à <strong>{{counterpartName}}</strong>.</mj-text>
+  {{/ifEquals}}
+</mj-column></mj-section>
+{{> pointsAmount }}
+{{#if description}}
+<mj-section padding="8px 0 0"><mj-column border="1px solid #C0C8CC" border-left="4px solid #675496" border-radius="16px" padding="8px 18px">
+  <mj-text mj-class="label" padding="4px 0 0">Message</mj-text>
+  <mj-text line-height="1.6">{{formatText description}}</mj-text>
+</mj-column></mj-section>
+{{/if}}
+{{> button }}

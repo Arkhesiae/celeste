@@ -66,8 +66,8 @@
 
     <div class="d-flex justify-end ga-2 mt-4 mb-4 position-relative">
       <v-slide-y-transition>
-        <div v-if="disabled" class="text-error" style="position: absolute; top: 32px">
-          <span style="font-size: 10px !important; opacity: 0.6">{{ disabledReason }}</span>
+        <div v-if="disabled" class="text-error position-absolute" style="top: 32px;">
+          <span class="opacity-60" style="font-size: 10px !important;">{{ disabledReason }}</span>
         </div>
       </v-slide-y-transition>
 
@@ -181,7 +181,7 @@
         </v-tooltip>
       </div>
       <div v-else class="mb-2">
-        <span style="font-size: 12px !important; opacity: 0.6">Aucune demande disponible</span>
+        <span class="opacity-60" style="font-size: 12px !important;">Aucune demande disponible</span>
       </div>
     </v-fade-transition>
 
@@ -430,10 +430,6 @@ watch(
 </script>
 
 <style scoped>
-.safe-area-bottom {
-  padding-bottom: calc(env(safe-area-inset-bottom) + 24px) !important;
-}
-
 .category-indicator {
   padding: 0 2px;
   height: 16px;

@@ -1,5 +1,5 @@
 <template>
-  <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+  <v-card elevation="0" class="pa-6" color="surfaceContainer">
     <h3 class="text-title-large font-weight-medium mb-4">Prévision sur 12 Mois</h3>
     <div class="months-forecast">
       <div class="months-grid py-16">

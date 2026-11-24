@@ -1,7 +1,7 @@
 <template>
   <v-card :class="smAndDown ? 'points-card-mobile' : 'points-card'" elevation="0" class="">
-    <v-card-text class="pa-0 height-transition" style="height: 100%">
-      <div class="d-flex flex-column justify-space-between height-transition" style="height: 100%">
+    <v-card-text class="pa-0 height-transition h-100">
+      <div class="d-flex flex-column justify-space-between height-transition h-100">
         <!-- En-tête avec l'icône et le menu -->
         <div class="d-flex justify-space-between align-center mb-4">
           <div class="points-icon d-flex justify-center align-center">
@@ -22,7 +22,7 @@
               {{ points }}
             </div>
           </transition>
-          <div class="text-body-large text-center mb-1 mt-n1" style="opacity: 0.5">points</div>
+          <div class="text-body-large text-center mb-1 mt-n1 opacity-50">points</div>
         </div>
 
         <!-- Boutons d'action -->

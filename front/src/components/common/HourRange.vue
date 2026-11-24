@@ -14,8 +14,8 @@ defineProps({
       <span style="line-height: 1.2" class="text-body-small font-weight-bold">{{ hours.endTime }}</span>
       <span
         v-if="endsNextDay"
-        class="text-body-small font-weight-bold opacity-50 ml-1"
-        style="line-height: 1.2; font-size: 10px !important; top: -2px; position: relative"
+        class="text-body-small font-weight-bold opacity-50 ml-1 position-relative"
+        style="line-height: 1.2; font-size: 10px !important; top: -2px;"
         >+1</span
       >
     </div>

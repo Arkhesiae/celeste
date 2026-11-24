@@ -3,24 +3,16 @@
   <v-card ref="teamCard" elevation="0" class="pa-2 team-card">
     <div class="d-flex align-start justify-space-between">
       <v-card-title class="text-body-large font-weight-bold"> Mon équipe </v-card-title>
-      <v-icon
+      <v-icon class="position-absolute opacity-10"
         icon="mdi-crowd"
         size="16"
         color="onBackground"
-        style="
-          position: absolute;
-          bottom: 40px;
-          left: 16px;
-          transform: scale(12);
-          filter: blur(0px);
-          z-index: -1;
-          opacity: 0.1;
-        "
+        style="bottom: 40px; left: 16px; transform: scale(12); filter: blur(0px); z-index: -1;"
       />
 
       <div v-if="teamStore.currentTeam" class="d-flex flex-column align-end pa-2">
         <div class="d-flex align-center flex-column justify-space-between ga-2">
-          <v-avatar color="background" size="48" class="smooth-shadow">
+          <v-avatar color="background" size="48">
             <v-icon icon="mdi-crowd" size="24" />
           </v-avatar>
           <div class="text-body-large font-weight-bold">Equipe {{ teamStore.currentTeam.name }}</div>

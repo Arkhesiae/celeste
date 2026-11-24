@@ -1,8 +1,8 @@
 <template>
   <v-container class="position-relative" :class="smAndDown ? 'pa-0' : ''">
-    <div ref="container" class="w-100 debug3 my-16" :style="{ height: containerHeight + 'px' }">
-      <div ref="sentinel" class="debug4" />
-      <v-card ref="header" flat class="debug2" :style="headerStyle">
+    <div ref="container" class="w-100 my-16" :style="{ height: containerHeight + 'px' }">
+      <div ref="sentinel" />
+      <v-card ref="header" flat :style="headerStyle">
         <div class="d-flex align-start justify-space-between pa-6">
           <div class="d-flex align-start flex-column justify-space-between">
             <v-card-title v-if="!isSticky" class="text-headline-small pa-0 mb-4"> Profil </v-card-title>

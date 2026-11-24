@@ -1,10 +1,10 @@
 <template>
-  <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+  <v-card elevation="0" class="pa-6" color="surfaceContainer">
     <h3 class="text-title-large font-weight-medium mb-4">
       <v-icon icon="mdi-code-braces" color="success" class="mr-2" />
       Coûts de Développement
     </h3>
-    <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+    <v-card elevation="0" class="pa-6" color="surfaceContainer">
       <div class="d-flex align-center mb-4">
         <v-icon icon="mdi-robot" color="primary" class="mr-3" size="32" />
         <div>
@@ -21,7 +21,7 @@
           <strong>éthique et responsable</strong>
           pour accélérer et améliorer le développement de cette application.
         </p>
-        <div class="d-flex flex-wrap gap-4">
+        <div class="d-flex flex-wrap ga-4">
           <div class="d-flex align-center">
             <v-icon icon="mdi-check-circle" color="success" class="mr-2" />
             <span class="text-body-medium">Code toujours révisé et validé</span>

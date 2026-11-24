@@ -69,7 +69,4 @@ onMounted(async () => {
   border-color: rgba(var(--v-theme-primary), 0.2);
 }
 
-.gap-2 {
-  gap: 8px;
-}
 </style>

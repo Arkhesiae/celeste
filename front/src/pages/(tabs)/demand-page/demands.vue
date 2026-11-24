@@ -15,8 +15,8 @@
     
 
     <!-- 
-    <v-alert v-if="!activeRotation" color="error" rounded="xl" class="mb-4 pa-4"
-      icon="mdi-alert-outline" style="cursor: pointer;" @click="router.push('/profile/' + authStore.userData.userId)">
+    <v-alert v-if="!activeRotation" color="error" rounded="xl" class="mb-4 pa-4 cursor-pointer"
+      icon="mdi-alert-outline" @click="router.push('/profile/' + authStore.userData.userId)">
       <div class="d-flex align-center justify-space-between">
         <div>
           <v-card-title class="text-title-large font-weight-medium">Aucun tour de service actif</v-card-title>

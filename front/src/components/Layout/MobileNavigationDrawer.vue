@@ -2,23 +2,15 @@
   <v-slide-y-reverse-transition>
     <div
       v-if="modelValue && smAndDown"
-      class="d-flex"
-      style="
-        margin-top: calc(64px + var(--safe-area-top));
-        height: calc(100dvh - 64px - var(--safe-area-top) - var(--safe-area-bottom));
-        width: 100%;
-        z-index: 4000 !important;
-        position: fixed;
-        top: 0;
-        left: 0;
-      "
+      class="d-flex w-100 position-fixed"
+      style="margin-top: calc(64px + var(--safe-area-top)); height: calc(100dvh - 64px - var(--safe-area-top) - var(--safe-area-bottom)); z-index: 4000 !important; top: 0; left: 0;"
     >
       <v-card
-        class="pa-0 px-6 d-flex flex-column align-center flex-0-0 rounded-0"
+        class="pa-0 px-6 d-flex flex-column align-center flex-0-0 rounded-0 w-100 h-100"
         tile
         color="background"
         flat
-        style="width: 100%; height: 100%; overflow-y: auto"
+        style="overflow-y: auto;"
       >
         <!-- Utilisateur : ouvre le profil ; le bouton à droite déconnecte -->
         <v-scale-transition appear>
@@ -41,14 +33,8 @@
                 location="top start"
               >
                 <div
-                  class="d-flex align-center justify-center"
-                  style="
-                    width: 36px;
-                    height: 36px;
-                    border-radius: 50%;
-                    background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);
-                    position: relative;
-                  "
+                  class="d-flex align-center justify-center position-relative"
+                  style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(90deg, rgb(var(--v-theme-primary)) 0%, transparent 100%);"
                 >
                   <v-avatar size="32" variant="flat" style="background-color: rgba(var(--v-theme-background), 0.8)">
                     <v-img

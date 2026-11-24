@@ -17,7 +17,7 @@
           </div>
 
           <div class="d-flex align-center">
-            <v-icon size="small" class="mr -1"> mdi-identifier </v-icon>
+            <v-icon size="small" class="mr-1"> mdi-identifier </v-icon>
             <span class="text-body-medium">{{ ticket._id.slice(-6) }}</span>
           </div>
           <!-- Date -->

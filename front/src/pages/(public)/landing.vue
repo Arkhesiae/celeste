@@ -63,7 +63,7 @@
         </v-col>
       </v-row>
 
-      <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch" width="100%" style="min-height: 200px; width: 100%">
+      <v-row class="px-4 py-16 mt-16 d-flex align-content-stretch w-100" width="100%" style="min-height: 200px;">
         <v-col v-for="(card, index) in cards" :key="index" cols="12" md="4">
           <div
             :ref="
@@ -121,7 +121,7 @@
           </v-col>
           <v-col key="replace" cols="12" md="4">
             <v-card color="transparent" flat height="100%" class="flex-column align-center d-flex pa-4">
-              <span class="text-display-large mt-2 font-weight-bold" style="opacity: 0.7">{{
+              <span class="text-display-large mt-2 font-weight-bold opacity-70">{{
                 Math.floor(animatedReplacements)
               }}</span>
               <span class="text-body-large text-medium-emphasis">remplacements</span>

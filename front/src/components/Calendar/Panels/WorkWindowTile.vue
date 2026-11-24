@@ -4,7 +4,7 @@
          fenêtre de 7 jours) et en sort pour revenir au choix d'un jour. Rond au repos ; activé il devient un carré arrondi,
          change de couleur et d'icône. `aria-expanded` / `aria-controls` le relient à la carte. -->
     <div v-if="!headerless" class="d-flex justify-space-between align-center" :class="{ 'mb-2': active }">
-      <span class="text-title font-weight-medium">Fenêtre de 7 jours</span>
+      <span class="text-title-medium font-weight-medium">Fenêtre de 7 jours</span>
       <v-icon-btn
         v-model:active="active"
         size="default"

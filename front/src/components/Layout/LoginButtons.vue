@@ -49,7 +49,7 @@
         </template>
 
         <v-card min-width="320" max-height="420" class="overflow-y-auto">
-          <v-card-title class="d-flex align-center text-body-1">
+          <v-card-title class="d-flex align-center text-body-large">
             Agents test
             <v-spacer />
             <v-btn icon="mdi-refresh" variant="text" size="small" :loading="loadingUsers" @click="fetchTeamUsers" />

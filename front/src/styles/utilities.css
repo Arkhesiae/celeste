@@ -1,0 +1,22 @@
+/* ==========================================================================
+   Petits utilitaires que Vuetify n'a pas, partagés par plusieurs composants (un style `scoped` ne sert que son propre composant).
+   ========================================================================== */
+
+/* Autorise un enfant de flex ou de grille à rétrécir sous la taille de son contenu (un texte long ne le force plus à déborder) */
+.min-width-0 {
+  min-width: 0;
+}
+
+/* Cache la barre de défilement sans empêcher de défiler */
+.hide-scrollbar {
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Safari avant 18.2 */
+}
+
+/* Marge du bas qui laisse la place de la barre d'accueil des iPhone (zone de sécurité) */
+.safe-area-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24px) !important;
+}

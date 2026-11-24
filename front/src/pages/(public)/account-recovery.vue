@@ -171,7 +171,7 @@ async function handleRecovery() {
             <v-col cols="12" md="6">
               <v-scroll-y-transition appear hide-on-leave>
                 <div class="d-flex flex-column justify-center align-start mt-8">
-                  <span class="pl-0 text-headline-large" style="font-weight: 500">Récupérer mon compte</span>
+                  <span class="pl-0 text-headline-large font-weight-medium">Récupérer mon compte</span>
                   <span class="text-body-medium text-medium-emphasis pl-0">
                     Remplissez les champs pour récupérer votre compte.
                   </span>

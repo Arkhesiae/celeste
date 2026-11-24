@@ -14,7 +14,7 @@
                 <div class="d-flex align-start ga-3">
                   <div class="d-flex flex-column align-start">
                     <div class="d-flex align-center ga-1">
-                      <span style="font-size: 12px; font-weight: bold" :class="rule.locked ? 'opacity-50' : ''">{{
+                      <span class="font-weight-bold" style="font-size: 12px;" :class="rule.locked ? 'opacity-50' : ''">{{
                         rule.name
                       }}</span>
                       <v-icon v-if="rule.locked" icon="mdi-lock-outline" size="x-small" color="error" />
@@ -49,12 +49,12 @@
                       density="compact"
                      
                     />
-                    <span v-else-if="rule.name === 'Mailing administration'" style="font-size: 14px; font-weight: bold">
+                    <span class="font-weight-bold" v-else-if="rule.name === 'Mailing administration'" style="font-size: 14px;">
                       {{
                         rule.value?.enabled ? 'Activé (' + (rule.value?.emails?.length || 0) + ' dest.)' : 'Désactivé'
                       }}
                     </span>
-                    <span v-else style="font-size: 14px; font-weight: bold">{{ rule.value }}</span>
+                    <span class="font-weight-bold" v-else style="font-size: 14px;">{{ rule.value }}</span>
                   </div>
                   <v-btn
                     v-if="rule.isOverridden && !isMasterAdmin"
@@ -390,9 +390,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.gap-2 {
-  gap: 8px;
-}
 
 .custom-switch {
   transform: scale(1);

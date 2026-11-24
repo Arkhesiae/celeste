@@ -156,7 +156,8 @@
         :animation="150"
         ghost-class="ghost"
         target=".sort-target"
-        class="flex flex-col gap-2 pr-4 w-300px bg-gray-500/5 rounded"
+        class="d-flex flex-column ga-2 pr-4 rounded"
+        style="width: 300px; background-color: rgb(var(--v-theme-onSurface) / 5%)"
       >
         <TransitionGroup type="transition" tag="div" name="fade" class="sort-target">
           <div
@@ -595,9 +596,6 @@ onMounted(async () => {
   transition: transform 0.2s;
 }
 
-.gap-2 {
-  gap: 8px;
-}
 
 .search-field {
   max-width: 300px;

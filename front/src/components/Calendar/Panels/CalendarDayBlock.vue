@@ -20,7 +20,7 @@
     @keydown.space.prevent="handleClick"
   >
     <!-- Date number + shift name row -->
-    <div class="d-flex justify-space-between align-start px-0 day-header" style="min-width: 0; overflow: hidden">
+    <div class="d-flex justify-space-between align-start px-0 day-header overflow-hidden" style="min-width: 0;">
       <!-- Day number -->
       <div class="day_label_container align-center" :class="inPast ? 'text-disabled' : ''">
         <span class="day-number" :class="{ 'today-pill': isToday, xs: xs }">
@@ -85,7 +85,7 @@
     </div>
 
     <!-- Indicator dots (bottom-left) -->
-    <div style="position: absolute; bottom: 8px; left: 8px" class="d-flex justify-center">
+    <div style="bottom: 8px; left: 8px;" class="d-flex justify-center position-absolute">
       <div class="d-flex justify-center ga-1">
         <div v-if="hasAvailableSubstitutions" class="dot dot--primary remplacement" />
         <div v-if="hasAvailableSwitches" class="dot dot--primary permutation" />

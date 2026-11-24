@@ -1,5 +1,5 @@
 <template>
-  <v-row class="0">
+  <v-row>
     <v-col cols="12">
       <div class="d-flex align-center justify-space-between">
         <FilterChipGroup

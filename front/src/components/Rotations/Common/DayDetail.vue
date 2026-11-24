@@ -40,8 +40,8 @@
                 </div>
                 <span
                   v-if="day?.default?.endsNextDay"
-                  class="ml-1"
-                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                  class="ml-1 opacity-80 position-relative"
+                  style="font-size: 10px; top: -2px;"
                   >+1</span
                 >
               </div>
@@ -104,14 +104,14 @@
 
                 <span
                   v-if="selectedVariant === undefined && day?.default?.endsNextDay"
-                  class="ml-1"
-                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                  class="ml-1 opacity-80 position-relative"
+                  style="font-size: 10px; top: -2px;"
                   >+1</span
                 >
                 <span
                   v-if="selectedVariant !== undefined && day?.variations[selectedVariant]?.endsNextDay"
-                  class="ml-1"
-                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                  class="ml-1 opacity-80 position-relative"
+                  style="font-size: 10px; top: -2px;"
                   >+1</span
                 >
               </div>

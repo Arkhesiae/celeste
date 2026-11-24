@@ -8,7 +8,7 @@
         <v-btn
           v-if="!smAndDown"
           height="48px"
-          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow"
+          class="px-6 bg-surfaceContainerHighest text-primary"
           flat
           style="border-radius: 16px !important"
           prepend-icon="mdi-github"
@@ -20,7 +20,7 @@
           v-else
           size="small"
           height="32px"
-          class="px-6 bg-surfaceContainerHighest text-primary highlight-shadow"
+          class="px-6 bg-surfaceContainerHighest text-primary"
           flat
           style="border-radius: 16px !important"
           prepend-icon="mdi-github"
@@ -161,7 +161,7 @@
           v-if="selectedVersion"
           :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
           elevation="0"
-          class="smooth-shadow pa-2 pt-16"
+          class="pa-2 pt-16"
           color="transparent"
         >
           <!-- En-tête de la version -->
@@ -260,7 +260,7 @@
           <!-- Liens -->
           <div v-if="selectedVersion.links?.length > 0" class="mb-6">
             <h3 class="text-title-large font-weight-medium mb-3">Liens utiles</h3>
-            <div class="d-flex flex-wrap gap-2">
+            <div class="d-flex flex-wrap ga-2">
               <v-btn
                 v-for="link in selectedVersion.links"
                 :key="link.url"
@@ -277,7 +277,7 @@
         </v-card>
 
         <!-- État vide -->
-        <v-card v-else elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card v-else elevation="0" class="pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-file-document-outline" size="64" color="medium-emphasis" class="mb-4" />
             <h3 class="text-title-large font-weight-medium mb-2">Sélectionnez une version</h3>

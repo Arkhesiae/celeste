@@ -76,8 +76,8 @@
                     <span v-else class="text-body-large font-weight-bold">{{ newDay.default.endTime }}</span>
                     <span
                       v-if="endsNextDay(null)"
-                      class="ml-1 0"
-                      style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                      class="ml-1 opacity-80 position-relative"
+                      style="font-size: 10px; top: -2px;"
                       >+1</span
                     >
                   </div>
@@ -107,7 +107,7 @@
 
               <v-chip
                 size="small"
-                class="m-2 px-4"
+                class="ma-2 px-4"
                 rounded="lg"
                 append-icon="mdi-menu-down"
                 @click="openTimePicker('startTime')"
@@ -116,10 +116,10 @@
                 <span v-if="!xs && newDay.default.startTime">Début à</span>
                 <span v-if="newDay.default.startTime" class="ml-1">{{ newDay.default.startTime }}</span>
               </v-chip>
-              <span class="">-</span>
+              <span>-</span>
               <v-chip
                 size="small"
-                class="m-2 px-4"
+                class="ma-2 px-4"
                 rounded="lg"
                 append-icon="mdi-menu-down"
                 @click="openTimePicker('endTime')"
@@ -129,8 +129,8 @@
                 <span v-if="newDay.default.endTime" class="ml-1">{{ newDay.default.endTime }}</span>
                 <span
                   v-if="endsNextDay(null)"
-                  class="ml-1"
-                  style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                  class="ml-1 opacity-80 position-relative"
+                  style="font-size: 10px; top: -2px;"
                   >+1</span
                 >
               </v-chip>
@@ -171,7 +171,7 @@
                       {{ newDay.name + ' ' + variant.name }}
                     </v-chip>
                     <v-chip
-                      class="m-2 px-4"
+                      class="ma-2 px-4"
                       rounded="lg"
                       append-icon="mdi-menu-down"
                       size="small"
@@ -193,8 +193,8 @@
                       <span v-if="variant.endTime" class="ml-1">{{ variant.endTime }}</span>
                       <span
                         v-if="endsNextDay(index)"
-                        class="ml-1"
-                        style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                        class="ml-1 opacity-80 position-relative"
+                        style="font-size: 10px; top: -2px;"
                         >+1</span
                       >
                     </v-chip>
@@ -204,7 +204,7 @@
                     variant="text"
                     size="small"
                     color="onBackground"
-                    class="justify ma-1"
+                    class="ma-1"
                     @click="removeVariant(index)"
                   />
                 </v-card>
@@ -266,7 +266,7 @@
   <!-- <v-dialog v-model="localDialogVisible" :fullscreen="xs" max-width="600" style="z-index: 3100 !important;">
     <v-card color="surfaceContainer">
       <v-card-item class="pa-6  mb-4">
-        <v-card-title class="">
+        <v-card-title>
           <div class="text-title-large font-weight-medium">{{ mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'
           }}
           </div>
@@ -300,7 +300,7 @@
   <v-dialog v-model="showVariantNameDialog" max-width="500" style="z-index: 3300 !important">
     <v-card color="surfaceContainer">
       <v-card-item class="pa-6 mb-4">
-        <v-card-title class="">
+        <v-card-title>
           <div class="text-title-large font-weight-medium">Modifier le nom de la variante</div>
         </v-card-title>
       </v-card-item>

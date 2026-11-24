@@ -4,9 +4,8 @@
       v-if="!authStore.userData.centerId"
       color="error"
       rounded="xl"
-      class="mb-4 pa-4"
+      class="mb-4 pa-4 cursor-pointer"
       icon="mdi-alert-outline"
-      style="cursor: pointer"
       @click="router.push('/profile/' + authStore.userData.userId)"
     >
       <AlertContent title="Aucun centre assigné" chevron>
@@ -21,9 +20,8 @@
       v-if="!teamStore.currentTeam"
       color="error"
       rounded="xl"
-      class="mb-4 pa-4"
+      class="mb-4 pa-4 cursor-pointer"
       icon="mdi-alert-circle-outline"
-      style="cursor: pointer"
       @click="router.push('/profile/' + authStore.userData.userId)"
     >
       <AlertContent title="Aucune équipe assignée" chevron>
@@ -40,9 +38,8 @@
       v-if="teamStore.currentTeam && !teamStore.currentTeam.cycleStartDate"
       color="error"
       rounded="xl"
-      class="mb-4 pa-4"
+      class="mb-4 pa-4 cursor-pointer"
       icon="mdi-alert-outline"
-      style="cursor: pointer"
       @click="assistance.open()"
     >
       <AlertContent title="Equipe inactive" chevron>
@@ -60,9 +57,8 @@
       v-if="!activeRotation"
       color="error"
       rounded="xl"
-      class="mb-4 pa-4"
+      class="mb-4 pa-4 cursor-pointer"
       icon="mdi-alert-outline"
-      style="cursor: pointer"
       @click="router.push('/profile/' + authStore.userData.userId)"
     >
       <AlertContent title="Aucun tour de service actif">

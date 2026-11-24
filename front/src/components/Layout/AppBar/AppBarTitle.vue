@@ -12,7 +12,7 @@
         <v-icon :color="isDev ? 'error' : 'primary'">
           <template v-if="isDev"> mdi-dev-to </template>
           <template v-else>
-            <Logo style="left: 1px; top: -2px; position: relative" />
+            <Logo class="position-relative" style="left: 1px; top: -2px;" />
           </template>
         </v-icon>
       </v-btn>
@@ -20,7 +20,7 @@
         <v-icon :color="isDev ? 'error' : 'primary'">
           <template v-if="isDev"> mdi-dev-to </template>
           <template v-else>
-            <Logo style="left: 1px; top: -2px; position: relative" />
+            <Logo class="position-relative" style="left: 1px; top: -2px;" />
           </template>
         </v-icon>
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="amplitude-graph-container pa-4 d-flex flex-column" style="height: 100%">
+  <div class="amplitude-graph-container pa-4 d-flex flex-column h-100">
     <!-- Header -->
     <div class="d-flex justify-end ga-2 align-center mb-4">
       <v-menu location="bottom start">
@@ -9,8 +9,7 @@
             variant="tonal"
             rounded="lg"
             color="primary"
-            class="font-weight-bold"
-            style="cursor: pointer"
+            class="font-weight-bold cursor-pointer"
           >
             Orientation {{ isVertical ? 'verticale' : 'horizontale' }}
             <v-icon end icon="mdi-chevron-down" size="small" />
@@ -187,7 +186,7 @@
         <!-- Window Controls -->
         <div class="controls-section mt-4 pt-2">
           <div class="d-flex align-center justify-end">
-            <div class="d-flex align-center" style="gap: 8px">
+            <div class="d-flex align-center ga-2">
               <v-btn
                 icon="mdi-chevron-left"
                 variant="text"
@@ -227,7 +226,7 @@
     </v-window>
 
     <!-- Footer Indicators -->
-    <!-- <div class="d-flex justify-center mt-4" style="gap: 8px;">
+    <!-- <div class="d-flex justify-center mt-4 ga-2">
             <div v-for="i in 3" :key="i" class="window-dot" :class="{ 'is-active': step === i - 1 }"
                 @click="step = i - 1"></div>
         </div> -->

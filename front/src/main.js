@@ -17,6 +17,7 @@ import './styles/tile.css';
 import './styles/day.css';
 import './styles/dot.css';
 import './styles/art.css';
+import './styles/utilities.css';
 
 const app = createApp(App);
 

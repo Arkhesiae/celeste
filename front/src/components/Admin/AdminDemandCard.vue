@@ -7,7 +7,7 @@
             <v-icon :icon="typeIcon" :color="typeColor" size="20" />
             <span class="text-title-large font-weight-bold">{{ getTypeName(demand?.type) }}</span>
           </div>
-          <div class="d-flex align-center ga-2" style="cursor: pointer" @click="showUserDialog('poster')">
+          <div class="d-flex align-center ga-2 cursor-pointer" @click="showUserDialog('poster')">
             <v-avatar size="24" variant="tonal">
               <v-img v-if="posterData?.avatar" :src="`${API_URL}${posterData?.avatar}`" alt="Avatar" />
               <v-icon v-else size="x-small"> mdi-account </v-icon>
@@ -62,7 +62,7 @@
           <v-icon icon="mdi-account-check-outline" size="20" color="success" />
           <span class="text-body-small font-weight-bold opacity-70">Accepteur</span>
         </div>
-        <div class="d-flex align-center ga-2" style="cursor: pointer" @click="showUserDialog('accepter')">
+        <div class="d-flex align-center ga-2 cursor-pointer" @click="showUserDialog('accepter')">
           <v-avatar size="24" variant="tonal">
             <v-img v-if="accepterData?.avatar" :src="`${API_URL}${accepterData?.avatar}`" alt="Avatar" />
             <v-icon v-else size="x-small"> mdi-account </v-icon>
@@ -77,7 +77,7 @@
       <div class="d-flex align-center justify-space-between">
         <span class="text-body-small font-weight-bold opacity-70">Points</span>
         <v-chip color="primary" variant="tonal" size="small" rounded="lg" class="font-weight-bold">
-          <LogoCopy color="primary" style="top: -2px; position: relative" />
+          <LogoCopy class="position-relative" color="primary" style="top: -2px;" />
           {{ demand?.points }}
         </v-chip>
       </div>

@@ -69,7 +69,7 @@
         <v-chip v-if="transaction.status === 'cancelled'" color="error" rounded="lg" size="x-small" class="ml-2" label>
           Annulée
         </v-chip>
-        <span class="text-body-large" style="font-weight: 900">
+        <span class="text-body-large font-weight-black">
           {{ transaction.flow === 'received' ? '+' : '-' }}{{ transaction.amount }}
         </span>
       </div>

@@ -15,9 +15,9 @@
             paddingLeft: smAndDown ? '4px !important' : '24px !important',
           }"
           :class="[
-            'pb-2 pr-2  d-flex align-center justify-space-between pa-0 ma-0 transition-all duration-300',
-            isScrolled ? 'bg-surfaceContainerHigh' : '',
-          ]"
+ 'pb-2 pr-2 d-flex align-center justify-space-between pa-0 ma-0 ',
+ isScrolled ? 'bg-surfaceContainerHigh' : '',
+ ]"
         >
           <div class="d-flex align-center justify-space-between flex-grow-1">
             <div class="d-flex align-center">
@@ -37,7 +37,7 @@
             <v-btn v-if="!smAndDown" icon="mdi-close" variant="text" @click="handleClose" />
           </div>
 
-          <div v-if="smAndDown" class="d-flex align-center gap-2">
+          <div v-if="smAndDown" class="d-flex align-center ga-2">
             <slot name="actions" />
           </div>
         </div>

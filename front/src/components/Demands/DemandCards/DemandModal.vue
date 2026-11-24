@@ -67,7 +67,7 @@
       <div class="connected-cards mb-4">
         <v-card color="background" elevation="0" class="pa-4">
           <div class="d-flex align-center justify-space-between">
-            <div class="d-flex align-center" style="position: relative; width: 20px">
+            <div class="d-flex align-center position-relative" style="width: 20px;">
               <div v-if="demand?.type === 'switch'" class="d-flex align-center ga-2">
                 <v-icon class="" style="top: 1px; font-size: 14px" icon="mdi-swap-horizontal" />
               </div>
@@ -77,8 +77,8 @@
               <div v-if="demand?.type === 'hybrid'" class="d-flex align-center ga-2 position-relative">
                 <v-icon class="ml-n1" style="top: 1px; font-size: 14px" icon="mdi-account-arrow-left-outline " />
                 <v-icon
-                  class="ml-n2"
-                  style="top: 2px; font-size: 14px; position: absolute; left: 10px"
+                  class="ml-n2 position-absolute"
+                  style="top: 2px; font-size: 14px; left: 10px;"
                   icon="mdi-swap-horizontal"
                 />
               </div>

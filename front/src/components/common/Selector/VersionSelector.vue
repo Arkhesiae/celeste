@@ -1,10 +1,9 @@
 <template>
   <!-- Carte de sélection -->
 
-  <v-card
-    style="cursor: pointer"
+  <v-card
     elevation="0"
-    class="mt-2 smooth-shadow pa-6 d-flex align-center justify-space-between"
+    class="mt-2 pa-6 d-flex align-center justify-space-between cursor-pointer"
     color="surfaceContainer"
     @click="hasData ? openDialog() : null"
   >

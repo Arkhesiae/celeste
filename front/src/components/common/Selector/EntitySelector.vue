@@ -199,12 +199,4 @@ onMounted(() => {
   transition: all 0.2s ease-in-out;
 }
 
-/* Hide scrollbar */
-.hide-scrollbar {
-  scrollbar-width: none;
-}
-
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
-}
 </style>

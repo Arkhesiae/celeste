@@ -8,7 +8,7 @@
         <div v-if="!isBaseShift" class="d-flex align-center ga-1 pa-0">
           <span class="text-body-large font-weight-medium text-disabled">{{ baseShift?.name }}</span>
           <div v-for="(entry, index) in history" :key="index" class="d-flex align-center ga-1">
-            <v-icon size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" style="opacity: 0.8" />
+            <v-icon class="opacity-80" size="x-small" icon="mdi-arrow-right-drop-circle-outline" color="primary" />
             <span
               v-if="['shift', 'substitution'].includes(entry.type)"
               class="text-body-large font-weight-medium"

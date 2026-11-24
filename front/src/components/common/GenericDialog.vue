@@ -39,7 +39,7 @@
           <v-btn v-if="!smAndDown && showCloseButton" icon="mdi-close" variant="text" @click="handleClose" />
         </div>
 
-        <div v-if="smAndDown" class="d-flex align-center gap-2">
+        <div v-if="smAndDown" class="d-flex align-center ga-2">
           <slot name="actions" />
         </div>
       </div>

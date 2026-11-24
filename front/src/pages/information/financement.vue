@@ -232,7 +232,7 @@
     <!-- Graphique d'évolution -->
     <!-- <v-row>
       <v-col cols="12" class="pa-2">
-        <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6" color="surfaceContainer">
           <h3 class="text-title-large font-weight-medium mb-4">
             <v-icon icon="mdi-chart-line" color="info" class="mr-2" />
             Évolution du Budget
@@ -258,7 +258,7 @@
     <!-- Actions -->
     <!-- <v-row>
       <v-col cols="12" class="pa-2">
-        <v-card elevation="0" class="smooth-shadow pa-6" color="surfaceContainer">
+        <v-card elevation="0" class="pa-6" color="surfaceContainer">
           <div class="text-center">
             <v-icon icon="mdi-heart" color="error" size="48" class="mb-4" />
             <h3 class="text-headline-small font-weight-bold mb-2">Soutenez le projet</h3>
@@ -266,7 +266,7 @@
               Votre soutien nous permet de maintenir et améliorer l'application pour tous les utilisateurs.
             </p>
 
-            <div class="d-flex justify-center gap-4 flex-wrap">
+            <div class="d-flex justify-center ga-4 flex-wrap">
               <v-btn color="primary" variant="flat" size="large" prepend-icon="mdi-coffee" @click="supportProject">
                 Offrir un café (3€)
               </v-btn>

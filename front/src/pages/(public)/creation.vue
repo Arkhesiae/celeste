@@ -23,8 +23,8 @@
                       fonctionnalités !
                     </span>
                     <a
-                      class="text-body-small d-flex align-center"
-                      style="color: rgb(var(--v-theme-pendingDemand)); text-decoration: none; cursor: pointer"
+                      class="text-body-small d-flex align-center cursor-pointer"
+                      style="color: rgb(var(--v-theme-pendingDemand)); text-decoration: none;"
                       @click="router.push('/account-recovery')"
                     >
                       J'ai déjà un compte et je souhaite le récupérer ?
@@ -70,8 +70,8 @@
                         Vous ne trouvez pas votre organisme dans la liste ?
                       </span>
                       <a
-                        class="text-body-small d-flex align-center text-primary"
-                        style="color: #85cde8; text-decoration: none; cursor: pointer"
+                        class="text-body-small d-flex align-center text-primary cursor-pointer"
+                        style="color: #85cde8; text-decoration: none;"
                         @click="assistance.open()"
                       >
                         Contacter un administrateur
@@ -100,8 +100,8 @@
                         <v-alert v-if="showLegacyAlert" color="error" rounded="lg" class="mt-2">
                           <p class="text-body-small">Cette adresse email correspond à un compte <b>REMPLACER.OVH</b></p>
                           <a
-                            class="text-body-small d-flex align-center"
-                            style="color: rgb(var(--v-theme-onBackground)); text-decoration: none; cursor: pointer"
+                            class="text-body-small d-flex align-center cursor-pointer"
+                            style="color: rgb(var(--v-theme-onBackground)); text-decoration: none;"
                             @click="router.push('/account-recovery')"
                           >
                             Récupérer mon compte <v-icon>mdi-chevron-right</v-icon>
@@ -189,8 +189,8 @@
                         fonctionnement du site.
                       </span>
                       <a
-                        class="text-body-small d-flex align-center text-primary"
-                        style="text-decoration: none; cursor: pointer"
+                        class="text-body-small d-flex align-center text-primary cursor-pointer"
+                        style="text-decoration: none;"
                         @click="showSidePanel('privacy')"
                       >
                         En savoir plus sur l'utilisation des données

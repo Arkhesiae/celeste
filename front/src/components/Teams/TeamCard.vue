@@ -51,7 +51,7 @@
     </v-card-item>
 
     <v-card-text>
-      <div class="d-flex flex-column gap-2">
+      <div class="d-flex flex-column ga-2">
         <div>
           <v-chip v-if="renfortsCount > 0" class="ml-1" color="onBackground" size="small" rounded="lg">
             dont {{ renfortsCount }} renfort(s)

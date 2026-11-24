@@ -83,7 +83,7 @@
               </template>
 
               <template #selection="{ props, item }">
-                <v-list-item style="font-weight: 700" base-color="onSurface" v-bind="props" :title="item.title">
+                <v-list-item class="font-weight-bold" base-color="onSurface" v-bind="props" :title="item.title">
                   <template #prepend>
                     <v-icon
                       :icon="

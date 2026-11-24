@@ -7,7 +7,7 @@
 
     <v-row class="ma-0">
       <div class="d-flex justify-center chip-container pa-2">
-        <v-chip-group v-model="selectedChangeType" class="pa-0 ma-0 gap-2 d-flex justify-center">
+        <v-chip-group v-model="selectedChangeType" class="pa-0 ma-0 ga-2 d-flex justify-center">
           <v-chip
             class="pa-0 ma-0 mr-2 px-4 text-body-medium"
             value="all"

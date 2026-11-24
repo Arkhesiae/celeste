@@ -95,7 +95,7 @@
             heure au 7e jour à 23 h 59.
           </p>
 
-          <p class="mb text-body-medium text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             Une vacation de jour ne peut débuter avant 6 heures ni se terminer après 1 heure le lendemain du début de la
             vacation. Durant la période comprise entre 5 heures et 24 heures un agent ne peut commencer qu'une seule
             vacation de contrôle.
@@ -105,11 +105,11 @@
             Une vacation de contrôle ne peut être programmée pour une durée inférieure à 5 heures.
           </p>
 
-          <p class="mb text-body-medium text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             La durée maximale d'une vacation de contrôle de jour est de 10 heures.
           </p>
 
-          <p class="mb text-body-medium text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             La durée maximale d'une vacation de contrôle de nuit is de 11 heures (durée augmentée d'une heure les nuits
             d'automne de changement d'heure).
           </p>
@@ -120,7 +120,7 @@
             heures maximum. Cette durée est portée à 3 heures pour les CRNA.
           </p>
 
-          <p class="mb text-body-medium text-medium-emphasis">
+          <p class="mb-4 text-body-medium text-medium-emphasis">
             La durée maximale d'une plage de tenue de poste de contrôle est de 2,5 heures pour les organismes des listes
             1 à 3 et de 4 heures pour les organismes des listes 4 et 5.
           </p>

@@ -46,7 +46,7 @@
               "
               class="d-flex align-center justify-center"
             >
-              <span class="text-truncate" style="font-size: 0.625rem; font-weight: 700; opacity: 0.8">{{
+              <span class="text-truncate font-weight-bold opacity-80" style="font-size: 0.625rem;">{{
                 posterTeamName
               }}</span>
             </div>
@@ -57,10 +57,9 @@
 
             <template v-if="isMailingEnabled">
               <div class="dot dot--xs" />
-              <v-icon
+              <v-icon class="opacity-70"
                 :icon="demand?.mailStatus === 'sent' ? 'mdi-email-check-outline' : 'mdi-email-outline'"
                 :color="demand?.mailStatus === 'sent' ? 'primary' : 'medium-emphasis'"
-                style="opacity: 0.7"
                 size="x-small"
               />
             </template>
@@ -73,17 +72,17 @@
               title="Liée à une autre demande"
               aria-label="Liée à une autre demande"
             />
-            <v-icon v-if="demand?.comment" size="x-small" color="onBackground" style="opacity: 0.8">
+            <v-icon class="opacity-80" v-if="demand?.comment" size="x-small" color="onBackground">
               mdi-comment-text-outline
             </v-icon>
 
             <v-chip variant="outlined" size="x-small" rounded="lg" class="font-weight-bold point-chip mr-2">
-              <LogoCopy color="onBackground" style="top: -2px; position: relative; transform: scale(0.87)" />
+              <LogoCopy class="position-relative" color="onBackground" style="top: -2px; transform: scale(0.87);" />
               <span :class="pointClass" style="font-size: 0.875rem; font-weight: 600">{{ totalPoints }}</span>
-              <v-icon
+              <v-icon class="position-relative"
                 v-if="hasVariablePoints && !demand.accepterId"
                 color="primary"
-                style="position: relative; top: 0px"
+                style="top: 0px;"
                 icon="mdi-tune"
               />
             </v-chip>
@@ -91,7 +90,7 @@
         </div>
 
         <div class="d-flex align-start" style="height: 14px">
-          <div class="d-flex align-center" style="position: relative; width: 20px">
+          <div class="d-flex align-center position-relative" style="width: 20px;">
             <v-icon size="x-small"> {{ getDemandIcon(demand, authStore.userData.userId) }}</v-icon>
           </div>
         </div>
@@ -106,12 +105,11 @@
             <!-- <span v-if="firstShiftHours" class="text-body-small font-weight-medium text-medium-emphasis"
               style="font-size: .70rem;">{{ firstShiftHours.startTime }} - {{ firstShiftHours.endTime }}</span> -->
           </div>
-          <v-icon
+          <v-icon class="opacity-80"
             v-if="isAccepted"
             size="x-small"
             icon="mdi-arrow-right-drop-circle-outline"
             color="primary"
-            style="opacity: 0.8"
           />
           <div v-if="secondShift" class="d-flex align-center ga-2">
             <span
@@ -132,7 +130,7 @@
 
       <div class="d-flex align-center flex-shrink-0 justify-space-between">
         <div class="d-flex align-center ga-1">
-          <v-icon size="x-small" icon="mdi-eye-outline" color="onBackground" style="opacity: 0.8" />
+          <v-icon class="opacity-80" size="x-small" icon="mdi-eye-outline" color="onBackground" />
           <span class="text-medium-emphasis" style="font-size: 0.7rem; font-weight: 600">{{
             demand?.seenBy?.length || 0
           }}</span>
@@ -163,7 +161,7 @@
                 "
                 class="d-flex align-center justify-center"
               >
-                <span class="text-truncate" style="font-size: 0.625rem; font-weight: 700; opacity: 0.8">{{
+                <span class="text-truncate font-weight-bold opacity-80" style="font-size: 0.625rem;">{{
                   accepterTeamName
                 }}</span>
               </div>

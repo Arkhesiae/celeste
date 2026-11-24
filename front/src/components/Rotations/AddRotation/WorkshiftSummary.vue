@@ -99,8 +99,8 @@ const handleUpdate = (updatedDay) => {
                     {{ day?.default?.startTime || '--:--' }} - {{ day?.default?.endTime || '--:--'
                     }}<span
                       v-if="day?.default?.endsNextDay"
-                      class="ml-1 0"
-                      style="font-size: 10px; opacity: 0.8; top: -2px; position: relative"
+                      class="ml-1 opacity-80 position-relative"
+                      style="font-size: 10px; top: -2px;"
                       >+1</span
                     >
                   </v-card-subtitle>

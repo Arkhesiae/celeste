@@ -47,8 +47,8 @@
           single-line
           hide-details
           density="compact"
-          class="search-field"
-          style="max-width: 360px; width: 100%"
+          class="search-field w-100"
+          style="max-width: 360px;"
           clearable
         />
       </v-col>

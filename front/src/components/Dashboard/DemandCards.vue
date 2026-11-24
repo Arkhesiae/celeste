@@ -1,6 +1,6 @@
 <template>
   <!-- Mobile: Swiper -->
-  <div class="d-flex justify-space-between align-start w-100 flex-column ga-4" style="width: 100%; max-width: 100%">
+  <div class="d-flex justify-space-between align-start w-100 flex-column ga-4" style="max-width: 100%;">
     <span class="text-title-large font-weight-medium pa-0"> Mes demandes à venir </span>
 
     <div v-if="smAndDown" class="w-100">
@@ -24,7 +24,7 @@
     </div>
 
     <!-- Desktop: side by side -->
-    <div v-else class="w-100 ga-4 d-flex flex-wrap" style="width: 100%; max-width: 100%">
+    <div v-else class="w-100 ga-4 d-flex flex-wrap" style="max-width: 100%;">
       <OwnDemandCard
         v-for="(demand, index) in demandList"
         :key="index"

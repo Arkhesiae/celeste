@@ -12,7 +12,7 @@
           <div class="my-10 mt-3 rounded-xl bg-background pa-4 px-4 position-relative d-flex flex-column ga-4">
             <div class="d-flex align-center pl-2 ga-3">
               <div class="pb-0 mb-0">
-                <span class="text-display-medium font-weight-medium" style="position: relative; top: 2px">{{
+                <span class="text-display-medium font-weight-medium position-relative" style="top: 2px;">{{
                   shiftName
                 }}</span>
               </div>
@@ -23,8 +23,8 @@
                   </span>
                   <span
                     v-if="displayShiftEndsNextDay"
-                    class="text-body-small font-weight-bold opacity-50 ml-1"
-                    style="font-size: 10px !important; top: -2px; position: relative"
+                    class="text-body-small font-weight-bold opacity-50 ml-1 position-relative"
+                    style="font-size: 10px !important; top: -2px;"
                     >+1</span
                   >
                 </div>

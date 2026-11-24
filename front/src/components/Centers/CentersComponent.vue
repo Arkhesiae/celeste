@@ -25,7 +25,7 @@
         </v-chip-group>
       </v-col>
 
-      <v-col cols="12" md="6" class="d-flex justify-end gap-2">
+      <v-col cols="12" md="6" class="d-flex justify-end ga-2">
         <v-text-field
           v-model="searchQuery"
           label="Rechercher"

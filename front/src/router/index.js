@@ -22,13 +22,24 @@ const namesAnotherLayout = (route, layout) =>
 
 const inheritLayouts = (list, inherited = null) =>
   list.map((route) => {
+    console.log(route)
     const layout = route.meta?.layout ?? inherited;
     if (!route.children?.length)
       return !route.meta?.layout && layout ? { ...route, meta: { ...route.meta, layout } } : route;
 
-    // Le parent est une simple traversée : ses enfants reçoivent le layout, lui n'en a pas
+    // Le parent est une simple traversée : ses enfants reçoivent le layout, lui n'en a pas. Il n'a pas de composant non plus : sa page racine
+    // ne fait que porter les réglages de la section (`definePage`) et afficher ses enfants, et un composant entre le routeur de l'application et
+    // les layouts changerait la forme de l'arbre d'une section à l'autre (`center > layout` face à `layout` seul) : Vue démonte alors tout le
+    // layout (barre, tiroirs, barre du bas) en passant de l'une à l'autre. Une route sans composant n'ajoute pas de niveau de `<router-view>`.
     if (layout && namesAnotherLayout(route, layout)) {
-      return { ...route, meta: { ...route.meta, layout: undefined }, children: inheritLayouts(route.children, layout) };
+      const sectionRoot = { ...route };
+      delete sectionRoot.component;
+      delete sectionRoot.components;
+      return {
+        ...sectionRoot,
+        meta: { ...route.meta, layout: undefined },
+        children: inheritLayouts(route.children, layout),
+      };
     }
     // Sans layout hérité, rien à pousser : on traverse seulement (un parent sans nom au-dessus d'une racine)
     if (!layout) return { ...route, children: inheritLayouts(route.children, null) };

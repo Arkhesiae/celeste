@@ -45,7 +45,7 @@
             :item-status="'status'"
             :model-value="selectedVersion"
             title="Versions"
-            max-height="70vh"
+            max-height="70dvh"
             @update:model-value="selectVersion"
           >
             <template #statusChip="{ item }">
@@ -398,7 +398,7 @@ onMounted(() => {
 }
 
 .version-list {
-  max-height: 70vh;
+  max-height: 70dvh;
   overflow-y: auto;
 }
 
@@ -470,7 +470,7 @@ onMounted(() => {
 /* Responsive */
 @media (max-width: 960px) {
   .version-list {
-    max-height: 50vh;
+    max-height: 50dvh;
   }
 }
 </style>

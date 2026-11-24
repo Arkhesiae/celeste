@@ -172,8 +172,6 @@ const headerStyle = reactive({
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
-
 /* .main-title.scrolled {
   border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   position:fixed;
@@ -184,14 +182,11 @@ const headerStyle = reactive({
 } */
 
 .gradient {
-  fill: transparent;
-  color: #000;
+  color: transparent;
   font-weight: 900 !important;
   background: linear-gradient(to right, rgb(var(--v-theme-primary)) 20%, rgb(var(--v-theme-background)) 80%);
   background-size: 200% auto;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-fill-color: transparent;
   animation: animatedTextGradient 15s linear infinite;
 }
 

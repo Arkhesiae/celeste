@@ -32,10 +32,17 @@ export default defineConfig({
     Components(),
     Fonts({
       google: {
-        families: [{
-          name: 'Roboto',
-          styles: 'wght@100;300;400;500;700;900',
-        }],
+        families: [
+          {
+            name: 'Roboto',
+            styles: 'wght@100;300;400;500;700;900',
+          },
+          // Titre de la carte des dons (components/Financement/Donations.vue)
+          {
+            name: 'DM Serif Display',
+            styles: 'ital@0;1',
+          },
+        ],
       },
     }),
     svgLoader(),

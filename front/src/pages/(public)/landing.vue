@@ -309,8 +309,7 @@ onUnmounted(() => {
 }
 
 .gradient {
-  fill: transparent;
-  color: #000;
+  color: transparent;
   font-weight: 900 !important;
   background: linear-gradient(
     to right,
@@ -321,8 +320,6 @@ onUnmounted(() => {
   );
   background-size: 200% auto;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
-  text-fill-color: transparent;
   animation: animatedTextGradient 10s linear infinite;
 }
 

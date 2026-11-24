@@ -112,7 +112,7 @@ const formattedDate = computed(() => {
   display: flex !important;
   align-items: flex-end !important;
   justify-content: end !important;
-  width: 100vw !important;
+  width: 100% !important;
   max-width: 600px !important;
 }
 </style>

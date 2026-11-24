@@ -223,8 +223,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
-
 .campaign-title {
   font-family: 'DM Serif Display', Georgia, serif;
   font-size: clamp(22px, 4vw, 30px);

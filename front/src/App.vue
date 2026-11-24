@@ -55,6 +55,14 @@ input:-webkit-autofill:active {
   transition: background-color 50000000000s ease-in-out 0s;
 }
 
+/* Le nom standard (Chrome 110, Safari 15, Firefox 86) : dans une règle à part, car un sélecteur inconnu d'une liste annule toute la règle */
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+  transition: background-color 50000000000s ease-in-out 0s;
+}
+
 .v-btn {
   text-transform: none;
 }

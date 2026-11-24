@@ -143,9 +143,7 @@ function isVariationSelected(v: Variation): boolean {
   overflow-x: auto;
   overflow-y: hidden;
   white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .chips-container::-webkit-scrollbar {
@@ -159,9 +157,7 @@ function isVariationSelected(v: Variation): boolean {
   overflow-y: hidden;
   transition: all 0.5s ease-in-out;
   white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .chips-container-alt::-webkit-scrollbar {

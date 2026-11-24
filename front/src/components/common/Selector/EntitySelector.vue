@@ -201,8 +201,7 @@ onMounted(() => {
 
 /* Hide scrollbar */
 .hide-scrollbar {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none;
 }
 
 .hide-scrollbar::-webkit-scrollbar {

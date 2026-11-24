@@ -351,8 +351,7 @@ const cancelImpact = () => {
 }
 
 .gradient {
-  fill: transparent;
-  color: #000;
+  color: transparent;
   font-weight: 700 !important;
   background: linear-gradient(
     to right,
@@ -363,7 +362,6 @@ const cancelImpact = () => {
   );
   background-size: 200% auto;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
   animation: animatedTextGradient 15s linear infinite;
 }
 </style>

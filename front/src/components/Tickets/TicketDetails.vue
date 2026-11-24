@@ -256,7 +256,7 @@ const openReplyDialog = () => {
 
 .pre {
   white-space: pre-line;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   font-family: inherit;
 }
 </style>

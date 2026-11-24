@@ -249,7 +249,7 @@
       @success="handlePasswordResetSuccess"
       @error="handlePasswordResetError"
     />
-    <div class="position-absolute top-0 d-flex justify-end align-center w-100" style="height: 70vh">
+    <div class="position-absolute top-0 d-flex justify-end align-center w-100" style="height: 70dvh">
       <img v-if="smAndDown" src="@/assets/Orly1.png" class="img-mobile" :class="{ 'img-mobile-xs': xs }" />
     </div>
 

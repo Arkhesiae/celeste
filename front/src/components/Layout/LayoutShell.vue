@@ -236,7 +236,7 @@ a {
 
   top: 0;
   left: 0;
-  max-width: 100vw !important;
+  max-width: 100% !important;
   width: 100% !important;
   height: 100% !important;
   background-color: rgb(var(--v-theme-background));

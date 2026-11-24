@@ -34,7 +34,7 @@ const props = defineProps({
   // De combien le décor glisse entre le haut et le bas de la page, en % de la hauteur de l'écran : 30 = un tiers d'écran
   reach: {
     type: Number,
-    default: 30,
+    default: 70,
   },
   // Collé à la fenêtre au lieu d'être posé dans la page
   fixed: {

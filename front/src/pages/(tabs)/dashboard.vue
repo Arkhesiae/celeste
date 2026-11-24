@@ -1,9 +1,9 @@
 <template>
   <div class="dashboard-page">
-    <!-- Écran radar dans le coin haut-droit de la page, sous le contenu -->
-    <div class="radar-layer" aria-hidden="true">
+    <!-- Écran radar dans le coin haut-droit de la page, sous le contenu ; en parallaxe, il défile moins vite que la page -->
+    <ParallaxLayer class="radar-layer">
       <ArtRadarField class="art art--radar" />
-    </div>
+    </ParallaxLayer>
 
     <v-container ref="containerRef" class="dashboard-content" :class="smAndDown ? 'mb-n16' : ''">
       <Transition name="title-transition" appear>
@@ -167,6 +167,8 @@ onUnmounted(() => {
 <style scoped>
 .dashboard-page {
   position: relative;
+  /* Le radar, décalé vers le bas par la parallaxe, ne doit pas allonger la page : il est coupé au bord de la page */
+  overflow: clip;
 }
 
 /* Le radar occupe le coin haut-droit de la page ; il est coupé par la couche, jamais par le contenu, et ne gêne aucun clic */

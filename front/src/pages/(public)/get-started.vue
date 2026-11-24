@@ -31,18 +31,22 @@ const handleExistingAccount = () => {
             </div>
             <div class="options-container">
               <Transition name="slide-up" appear>
-                <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
-                  <span class="text-title-large font-weight-bold">Compte Remplacer</span>
-                  <span class="text-body-medium text-medium-emphasis"
-                    >Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span
-                  >
-                </div>
+                <LineBurst block constrain>
+                  <div class="option-card ga-4 pa-6" @click="handleExistingAccount">
+                    <span class="text-title-large font-weight-bold">Compte Remplacer</span>
+                    <span class="text-body-medium text-medium-emphasis"
+                      >Je possède déjà un compte REMPLACER.OVH et je souhaite le récupérer</span
+                    >
+                  </div>
+                </LineBurst>
               </Transition>
               <Transition name="slide-up" appear>
-                <div class="option-card ga-4 pa-6" @click="handleNewAccount">
-                  <span class="text-title-large font-weight-bold">Nouveau compte</span>
-                  <span class="text-body-medium text-medium-emphasis">Je souhaite créer un nouveau compte</span>
-                </div>
+                <RadarBurst block constrain :opacity="0.9">
+                  <div class="option-card ga-4 pa-6" @click="handleNewAccount">
+                    <span class="text-title-large font-weight-bold">Nouveau compte</span>
+                    <span class="text-body-medium text-medium-emphasis">Je souhaite créer un nouveau compte</span>
+                  </div>
+                </RadarBurst>
               </Transition>
             </div>
           </div>
@@ -88,7 +92,7 @@ h1 {
 }
 
 .option-card:hover {
-  transform: translateY(-5px);
+
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 

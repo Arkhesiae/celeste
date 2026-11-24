@@ -1,11 +1,9 @@
 <template>
   <div class="landing-page">
     <!-- Droites qui se croisent et formes arrondies : hors du conteneur, sur toute la largeur de la page, en parallaxe (elles défilent moins vite que la page) -->
-    <div class="landing-art" aria-hidden="true">
-      <div ref="artLayer" class="landing-art__layer">
-        <ArtLineField class="art art--lines" />
-      </div>
-    </div>
+    <ParallaxLayer fixed>
+      <ArtLineField class="art art--lines" />
+    </ParallaxLayer>
 
     <v-container fluid class="landing-content">
       <v-row align="center" justify="start" style="min-height: 800px">
@@ -14,8 +12,6 @@
             <v-card variant="text" style="z-index: 34 !important">
               <v-card-text class="d-flex align-start flex-column" :class="{ 'align-center': !mdAndUp }">
                 <div class="text-label-medium subtitle-animation">Votre site de rempla</div>
-                <!-- <img src="@/assets/celeste.svg" alt="logo" class="img-fluid celeste-logo" /> -->
-
                 <div
                   class="font-weight-medium d-flex flex-wrap mt-4 text-display-large"
                   :class="[mdAndUp ? 'text-display-large' : 'text-display-medium ', { 'justify-center': !mdAndUp }]"
@@ -43,20 +39,23 @@
                     Get started
                   </v-btn>
                 </div>
+
                 <div class="d-flex button-animation soft-glow" style="animation-delay: 1.3s; z-index: 34 !important">
-                  <v-btn
-                    class="px-8 pr-8"
-                    variant="flat"
-                    style="border-radius: 200px !important"
-                    height="48px"
-                    color="surfaceContainer"
-                    @click="router.push({ path: '/login' })"
-                  >
-                    <template #append>
-                      <v-icon color="primary"> mdi-arrow-right </v-icon>
-                    </template>
-                    Se connecter
-                  </v-btn>
+                  <ShapeBurst>
+                    <v-btn
+                      class="px-8 pr-8"
+                      variant="flat"
+                      style="border-radius: 200px !important"
+                      height="48px"
+                      color="surfaceContainer"
+                      @click="router.push({ path: '/login' })"
+                    >
+                      <template #append>
+                        <v-icon color="primary"> mdi-arrow-right </v-icon>
+                      </template>
+                      Se connecter
+                    </v-btn>
+                  </ShapeBurst>
                 </div>
               </v-card-actions>
             </v-card>
@@ -96,8 +95,6 @@
         </v-col>
       </v-row>
 
-      <!-- Troisième section (désactivée pour l'instant) : la France, avec l'image du CRNA au survol de Paris. Pour la remettre : <FranceSection /> -->
-
       <v-row class="px-4 pt-16 pb-16 mt-16 d-flex align-content-stretch mb-16">
         <v-fade-transition group appear>
           <v-col key="center" cols="12" md="4">
@@ -132,17 +129,6 @@
           </v-col>
         </v-fade-transition>
       </v-row>
-      <!-- 
-    <v-row class="px-4 mt-16 d-flex align-content-stretch">
-      <v-col cols="12" md="12">
-        <v-card flat height="100%" class="flex-column d-flex pa-8">
-          <v-card-title class="text-title-large mt-2 font-weight-bold">
-            <v-icon color="primary">mdi-rocket-launch</v-icon>
-          </v-card-title>
-          <span class="text-body-small text-medium-emphasis"></span>
-        </v-card>
-      </v-col>
-    </v-row> -->
     </v-container>
   </div>
 </template>
@@ -155,10 +141,8 @@ import { useStatStore } from '@/stores/statStore';
 
 const statStore = useStatStore();
 
-const emit = defineEmits(['update-topbar']);
 const { mdAndUp } = useDisplay();
 const router = useRouter();
-const inScreen = ref(false);
 const cardRefs = ref([]);
 
 const cards = ref([
@@ -216,36 +200,6 @@ const setupIntersectionObserver = async () => {
   });
 };
 
-const setupTopbarObserver = async () => {
-  await nextTick();
-  console.log("Initialisation de l'observateur de la barre supérieure");
-
-  const topbarOptions = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 0.1,
-  };
-
-  const topbarObserver = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      inScreen.value = entry.isIntersecting;
-      emit('update-topbar', inScreen.value);
-    });
-  }, topbarOptions);
-
-  const buttonsSection = document.querySelector('.v-card-actions');
-  if (buttonsSection) {
-    console.log('Section des boutons trouvée, observation démarrée');
-    topbarObserver.observe(buttonsSection);
-  } else {
-    console.warn('Section des boutons non trouvée');
-  }
-
-  return topbarObserver;
-};
-
-let topbarObserver = null;
-
 const animatedNumber = ref(0);
 const animatedCenters = ref(0);
 const animatedReplacements = ref(0);
@@ -290,7 +244,6 @@ const setupStatsObserver = async () => {
   const statsObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        console.log('ae');
         startAnimation(statStore.totalUsers, animatedNumber, 'controllers', 1000);
         startAnimation(statStore.totalCenters, animatedCenters, 'centers', 1500);
         startAnimation(statStore.totalDemands, animatedReplacements, 'replacements', 2000);
@@ -309,7 +262,6 @@ const setupStatsObserver = async () => {
 
   const element = statsRef.value?.$el || statsRef.value;
   if (element) {
-    console.log('Observing stats section', element);
     statsObserver.observe(element);
   } else {
     console.warn('Stats ref is not available');
@@ -320,51 +272,15 @@ const setupStatsObserver = async () => {
 
 let statsObserver = null;
 
-// Parallaxe : la couche du fond suit le défilement à `PARALLAX` de sa vitesse (donc moins vite que la page). Elle est assez haute pour couvrir
-// la fenêtre jusqu'en bas de page ; avec « réduire les animations », elle défile exactement comme la page.
-const artLayer = ref(null);
-const PARALLAX = 0.3;
-let artFrame = 0;
-
-const updateArtLayer = () => {
-  artFrame = 0;
-  const layer = artLayer.value;
-  if (!layer) return;
-  const factor = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : PARALLAX;
-  const scrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
-  layer.style.setProperty('--art-height', `${window.innerHeight + scrollable * factor}px`);
-  layer.style.setProperty('--art-shift', `${-window.scrollY * factor}px`);
-};
-
-const scheduleArtLayer = () => {
-  if (!artFrame) artFrame = requestAnimationFrame(updateArtLayer);
-};
-
-onMounted(() => {
-  updateArtLayer();
-  window.addEventListener('scroll', scheduleArtLayer, { passive: true });
-  window.addEventListener('resize', scheduleArtLayer);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', scheduleArtLayer);
-  window.removeEventListener('resize', scheduleArtLayer);
-  if (artFrame) cancelAnimationFrame(artFrame);
-});
-
 onMounted(async () => {
   getStats();
   await setupIntersectionObserver();
-  topbarObserver = await setupTopbarObserver();
   statsObserver = await setupStatsObserver();
 });
 
 onUnmounted(() => {
   if (observer) {
     observer.disconnect();
-  }
-  if (topbarObserver) {
-    topbarObserver.disconnect();
   }
   if (statsObserver) {
     statsObserver.disconnect();
@@ -373,31 +289,6 @@ onUnmounted(() => {
     if (interval) clearInterval(interval);
   });
 });
-
-onMounted(() => {
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-        }
-      });
-    },
-    {
-      threshold: 0.1,
-    },
-  );
-
-  const buttonSection = document.querySelector('.button-section');
-  if (buttonSection) {
-    observer.observe(buttonSection);
-  }
-
-  const statsSection = document.querySelector('.stats-section');
-  if (statsSection) {
-    observer.observe(statsSection);
-  }
-});
 </script>
 
 <style scoped>
@@ -405,27 +296,8 @@ onMounted(() => {
   position: relative;
 }
 
-/* Le fond n'est pas limité au conteneur : une fenêtre fixe (toute la largeur, jusque sous la barre du haut) le rogne, et sa couche, plus haute que la
-   fenêtre, est décalée de `--art-shift` par le script de parallaxe. Il ne reçoit aucun clic. */
-.landing-art {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.landing-art__layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--art-height, 100vh);
-  transform: translate3d(0, var(--art-shift, 0px), 0);
-  will-change: transform;
-}
-
-.landing-art .art--lines {
+/* Le fond (`ParallaxLayer`) remplit sa couche */
+.art--lines {
   width: 100%;
   height: 100%;
   opacity: 1;
@@ -464,24 +336,6 @@ onMounted(() => {
   }
 }
 
-@keyframes steam {
-  0% {
-    background-position: 0 0;
-  }
-
-  99% {
-    background-position: 400% 0;
-  }
-
-  100% {
-    background-position: 400% 0;
-  }
-}
-
-.block:after {
-  filter: blur(0px);
-}
-
 @keyframes buttonEntrance {
   0% {
     opacity: 0;
@@ -504,30 +358,6 @@ onMounted(() => {
     opacity: 1;
     transform: translateY(-0px);
   }
-}
-
-@keyframes subtitleEntrance {
-  0% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 1;
-  }
-}
-
-.title-move {
-  transition: all 8s cubic-bezier(0.55, 0, 0.1, 1);
-}
-
-.title-enter-active,
-.title-leave-active {
-  transition: all 8s cubic-bezier(0.55, 0, 0.1, 1);
-}
-
-.title-enter-from,
-.title-leave-to {
-  opacity: 0 !important;
 }
 
 .soft-glow {
@@ -573,16 +403,6 @@ onMounted(() => {
   opacity: 0;
 }
 
-.card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform, box-shadow;
-}
-
-.card-hover:hover {
-  transform: translateY(-5px) scale(1.02);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
 .v-card {
   transition: all 0.3s ease;
 }
@@ -612,14 +432,4 @@ onMounted(() => {
   transform: translateY(30px);
 }
 
-.celeste-logo {
-  width: 90px;
-  margin-left: -10px;
-  margin-bottom: -20px;
-  height: 90px;
-}
-
-.celeste-logo .cls-1 {
-  fill: rgb(var(--v-theme-primary));
-}
 </style>

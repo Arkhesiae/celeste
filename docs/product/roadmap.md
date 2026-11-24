@@ -26,6 +26,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (see known issues).
 
 ## Done
+- (2026-11-24) Three parametrable button wrappers with art effects on hover or click: `ShapeBurst` (shapes spread out), `LineBurst` (2-3 lines drawn), `RadarBurst` (range rings); not used on any page yet.
 - (2026-11-24) Points mails wired (`email.pointTransfer.js`): executed transfer for a demand (both people), manual transfer (receiver), cancelled transfer with its reason (both people) from the transfers job, the immediate transfer and the center transfer acceptance; tests `pointTransferMails.test.js` and `pointTransfer.db.test.js`. No mail yet when a user cancels a manual deferred transfer (no route for it).
 - (2026-11-24) `components/common/ShapeBadge.vue`: a rounded art shape (diamond, triangle, hexagon...) as a badge for 1-2 characters, with settable width and theme colour; not used on any page yet.
 - (2026-11-24) Every mail rewritten in MJML (`backend/services/email/templates/*.mjml`) with the site's colours and radar / line art (PNG in `backend/assets/mail/`), plus a dev preview with navigation at `/preview` (samples in `email.samples.js`, test `test/emailTemplates.test.js`); `formatText` now really escapes user text.

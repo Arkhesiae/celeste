@@ -64,6 +64,19 @@ export const authorizeCenterParam = (param = 'centerId') => guard((req, caller) 
 });
 
 /**
+ * Le centre visé est dans la chaîne de requête (`?centerId=`), pour une lecture dont l'appelant peut aussi omettre le centre : s'il est
+ * donné, l'appelant doit en faire partie (le master peut viser n'importe lequel) ; s'il est omis, rien à contrôler (le contrôleur prend
+ * alors le centre de l'appelant, ou aucun pour le master). La vérification du centre dans l'URL reste préférable (`authorizeCenterParam`) ;
+ * celle-ci n'est là que pour les routes dont l'adresse ne change pas.
+ */
+export const authorizeCenterQuery = (param = 'centerId') => guard((req, caller) => {
+    const centerId = req.query[param];
+    if (centerId === undefined || centerId === '') return;
+    if (!isValidId(centerId)) throw new AppError('ID de centre invalide.', 400);
+    if (!isMaster(caller) && !sameCenter(caller.centerId, centerId)) throw new AppError(FORBIDDEN, 403);
+});
+
+/**
  * La route cible une ressource par son id (`req.params[param]`) : elle doit appartenir au centre de l'appelant.
  * @param {Model} Model
  * @param {Object} [opts]

@@ -6,8 +6,6 @@ import { assertUserActive } from '../../middleware/userStatus.js';
 import jwt from 'jsonwebtoken';
 import { DEFAULT_ACCESS_TOKEN_EXPIRY, REFRESH_TOKEN_EXPIRY } from '../../config/auth.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh-secret';
 const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || DEFAULT_ACCESS_TOKEN_EXPIRY;
 
 /**
@@ -23,7 +21,7 @@ export function generateAccessToken (payload) {
             adminType: payload.adminType,
             centerId: payload.centerId ? String(payload.centerId) : undefined
         },
-        JWT_SECRET,
+        process.env.JWT_SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 }
@@ -36,11 +34,11 @@ export function generateAccessToken (payload) {
 export const generateRefreshToken = (userId) => {
     const token = jwt.sign(
         { userId },
-        JWT_REFRESH_SECRET,
+        process.env.JWT_REFRESH_SECRET,
         { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
 
-    const decoded = jwt.verify(token, JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const expiresAt = new Date(decoded.exp * 1000);
 
     return {
@@ -57,7 +55,7 @@ export const generateRefreshToken = (userId) => {
  */
 export function verifyRefreshToken (refreshToken) {
     try {
-        return jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+        return jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
     } catch {
         throw new AppError('Session invalide ou expirée', 401, 'INVALID_REFRESH_TOKEN');
     }

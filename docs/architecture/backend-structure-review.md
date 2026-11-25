@@ -1,6 +1,6 @@
 # Backend structure review
 
-Review of `backend/` folders, file names and layering (first written 2026-11-12, rechecked 2026-11-13). This page lists
+Review of `backend/` folders, file names and layering (first written 2026-11-12, rechecked 2026-11-25). This page lists
 **only what is still out of place or not standard**, with the target position or name, so the changes can be done in
 small, separate steps. What was done is removed from here and recorded in `docs/product/roadmap.md` ("Done"). Facts come
 from `git ls-files`, an import graph of the backend modules, and line counts.
@@ -15,15 +15,15 @@ style `<domain>.<action>.js` (`user.team.js`, `demand.accept.js`).
 |---|---|---|
 | `backend/error/` | singular folder with a single file (`AppError.js`); the other error code is `middleware/errorHandler.js` | `backend/errors/AppError.js`, or `utils/AppError.js` |
 | `backend/scripts/` | two migration scripts (`migrateCycleOffsets.js`, `migrateDayFields.js`), both marked `TEMPORARY`; another `scripts/` folder exists at the repository root (`backup_mongo.sh`, ssh helpers) | `backend/scripts/migrations/` and a note that they are deleted after the cut-over; keep one rule for what goes in the root `scripts/` |
-| repository root | tracked files that are not part of the app: `replacement.txt`, `ssh_config`, `Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt` (secrets tracked: known issue #5) | remove from git, add to `.gitignore` |
+| repository root | tracked files that are not part of the app: `replacement.txt`, `ssh_config`, `Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt`, an empty `.env` (known issue #5) | remove from git, add to `.gitignore` |
 
 ## 2. Layering (`routes → controllers → services → models`)
 
-- **10 of 15 controllers still import models directly** (`accountRecovery`, `announcement`, `auth`, `center`, `message`,
-  `otp`, `rule`, `stat`, `substitution`, `team`) and run queries and business rules themselves; the biggest is
-  `demand.controller.js` (457 lines). Proposed: controllers read **and validate** the request, call a service and
+- **9 of 16 controllers still import models directly** (`accountRecovery`, `announcement`, `auth`, `center`, `demand`,
+  `message`, `otp`, `stat`, `team`) and run queries and business rules themselves; the biggest is
+  `demand.controller.js`. Proposed: controllers read **and validate** the request, call a service and
   answer in the one response shape described in `CLAUDE.md`; move the rest to `services/<domain>/`, one resource per
-  change, `substitution` next, then `center`, `team` and the small ones. The same pass should apply the validators of
+  change, `demand` next, then `center`, `team` and the small ones. The same pass should apply the validators of
   `utils/validation.js` (`assertId`, `assertEmail`, ...) to each controller's inputs and drop the `console.error` calls in
   controllers (`errorHandler` logs).
 - `accountRecovery.controller.js` imports `readNewUser` from `user.controller.js`, the only controller-to-controller
@@ -56,17 +56,15 @@ Decide whether sub-paths follow the same rule (`/stat/user`, `/user/team/:center
 
 ## 6. Hygiene
 
-- **63 `console.log` calls** in controllers (12), services (45), middleware (3) and jobs (3), plus 3 in `bootstrap/` and 5
-  in `dev/`, and no logger: add a small `utils/logger.js` with levels, and stop logging in controllers.
+- **62 `console.log` calls** in controllers (11), services (45), middleware (3) and jobs (3), plus the ones in `bootstrap/` and
+  `dev/`, and no logger: add a small `utils/logger.js` with levels, and stop logging in controllers.
 - `package.json`: no lint configuration for the backend (the checks in this repository use the front's ESLint with a
   temporary configuration); no `engines` field although the Dockerfile uses Node 20 (and the tests ran on Node 26).
-- `MAIL_SERVICE` is read in `services/email/email.transport.js` but never used: mails go to the console unless
-  `NODE_ENV=production`, then through SES. Either make `MAIL_SERVICE` decide (as `CLAUDE.md` says) or stop reading it.
-- Files over 500 lines (candidates to split): `services/rotation/rotation.activation.js` 502.
+- No file is over 500 lines any more; the largest are `services/rotation/rotation.activation.js` (497), `services/planning/planning.userShifts.js` (465) and `services/email/demand/demand.emails.js` (451).
 
 ## 7. Suggested order of what remains
 
-1. Extract the controller logic of `substitution`, then `center`, `team` and the small ones into services, one resource per
+1. Extract the controller logic of `demand`, then `center`, `team` and the small ones into services, one resource per
    change, with input validation and the common response shape (section 2); add each new service file to its
    domain's `index.js`.
 2. Add a logger, and a backend lint configuration with `engines` (`backend/.env.example` is done).

@@ -1,7 +1,19 @@
 import nodemailer from 'nodemailer';
 
-const mailService = process.env.MAIL_SERVICE || 'console';
-const isDevelopment = process.env.NODE_ENV !== 'production';
+/**
+ * Les mails partent-ils vraiment ? En production (`NODE_ENV=production`) toujours, par Amazon SES, quelle que soit la valeur de `MAIL_SERVICE`
+ * (un fichier d'environnement copié de `.env.example` y porte `console` : il ne doit pas couper les mails). Ailleurs ils sont seulement affichés
+ * dans la console, sauf si `MAIL_SERVICE` vaut autre chose que `console` (par exemple `ses`) : un serveur de test qui doit envoyer pour de
+ * bon n'a pas besoin de `NODE_ENV=production`. Lu à chaque envoi.
+ */
+const usesConsole = () => {
+  if (process.env.NODE_ENV === 'production') return false;
+  const service = process.env.MAIL_SERVICE;
+  return !service || service === 'console';
+};
+
+/** Port du serveur SMTP, le même pour l'envoi unitaire et l'envoi en masse (587 par défaut) */
+const smtpPort = () => parseInt(process.env.EMAIL_PORT || '587', 10);
 
 /**
  * Crée un transporteur Amazon SES
@@ -9,11 +21,11 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 function createSESTransporter() {
   console.log("🔍 Creating SES transporter...");
   console.log("🔍 SES_HOST:", process.env.SES_HOST);
-  console.log("🔍 SES_PORT:", process.env.SES_PORT);
+  console.log("🔍 EMAIL_PORT:", smtpPort());
 
   return nodemailer.createTransport({
     host: process.env.SES_HOST,
-    port: parseInt(process.env.EMAIL_PORT || '587', 10),
+    port: smtpPort(),
     secure: false,
     auth: {
       user: process.env.SES_USERNAME,
@@ -24,15 +36,15 @@ function createSESTransporter() {
 
 function createBulkSESTransporter() {
   console.log("🔍 Creating bulk SES transporter...");
-  console.log("🔍 EMAIL_HOST:", process.env.SES_HOST);
-  console.log("🔍 EMAIL_PORT:", process.env.SES_PORT);
+  console.log("🔍 SES_HOST:", process.env.SES_HOST);
+  console.log("🔍 EMAIL_PORT:", smtpPort());
 
   return nodemailer.createTransport({
     pool: true,
     maxConnections: 1,
     maxMessages: 5,
     host: process.env.SES_HOST,
-    port: parseInt(process.env.EMAIL_PORT, 10),
+    port: smtpPort(),
     secure: false, // TLS, pas SSL
     auth: {
       user: process.env.SES_USERNAME,
@@ -42,19 +54,14 @@ function createBulkSESTransporter() {
 }
 
 /**
- * Crée un transporteur console pour les tests
+ * Transporteur « console » (développement, tests, `MAIL_SERVICE=console`) : rien ne part, mais l'envoi est dit simulé dans la console et dans le
+ * résultat (`simulated: true`), pour qu'un serveur qui n'envoie rien ne passe pas pour un serveur qui envoie.
  */
 function createConsoleTransporter() {
   return {
     sendMail: async (mailOptions) => {
-
-      if (mailOptions.html) {
-        // console.log('   Contenu HTML disponible');
-      }
-      if (mailOptions.text) {
-        // console.log('   Contenu texte:', mailOptions.text.substring(0, 100) + '...');
-      }
-      return { messageId: 'dev-message-id' };
+      console.log(`📪 Mail simulé (aucun envoi réel) : à ${[].concat(mailOptions.to).join(', ')} — ${mailOptions.subject}`);
+      return { messageId: 'dev-message-id', simulated: true };
     },
     close: () => console.log('🔧 Transporteur de développement fermé')
   };
@@ -66,8 +73,7 @@ function createConsoleTransporter() {
  * Crée un transporteur selon le service configuré
  */
 function createTransporter(bulk = false) {
-  // En développement, on utilise un transporteur de test
-  if (isDevelopment) {
+  if (usesConsole()) {
     return createConsoleTransporter();
   }
 

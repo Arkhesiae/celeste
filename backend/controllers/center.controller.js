@@ -162,7 +162,7 @@ const deleteCenter = async (req, res, next) => {
 
         // Suppression des rotations
         await Rotation.updateMany(
-            { center: id },
+            { centerId: id },
             { $set: { deleted: true } }
         );
 

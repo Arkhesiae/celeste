@@ -2,6 +2,8 @@
 
 Date de la revue : 2026-11-14. Revue faite en lecture seule ; les points corrigés depuis (S1 à S3, S5 à S7, S12, et S10, par le retrait du sélecteur) ont été retirés. Ce qui reste est une proposition en attente de décision.
 
+**Revérifié le 2026-11-25.** S4, S8 et S9 sont toujours ouverts (voir le classement par facilité de correction dans `docs/quality/blocking-issues.md`, où ils figurent sous les mêmes noms). Toujours vrais aussi : `savedEntry` écrit et jamais lu, le contrôle mort `latestModification?.subType === 'absence'` de `checkHourPatchCoherence`, le `dependsOn` rempli côté demandeur seulement (toutes les demandes acceptées du jour) et le hook `pre('save')` de cycle. Les autres points n'ont pas été rejoués ; les noms de la section 5 datent de la revue (plusieurs fichiers `request.*` s'appellent depuis `demand.*`).
+
 Périmètre lu en entier : `services/calendarEntry/*`, `controllers/calendarEntry.controller.js`, `routes/calendarEntry.routes.js`,
 `services/planning/planning.userShifts.js`, `services/demand/request.{accept,cancel,cascade,creation,delete,expiry,list,withdraw}.js`,
 `services/demand/demand.userPool.js`, `models/Demand.js`, `models/CalendarEntry.js`, `controllers/demand.controller.js`,
@@ -39,8 +41,7 @@ mal nommé : c'est un **statut** final, pas une raison.
 **S9 (P1). L'acceptation n'est pas re-validée côté serveur.** `acceptDemandWithSession` vérifie le statut, l'auto-acceptation et une demande ouverte de l'accepteur ce jour-là,
 et rien d'autre : pas de compatibilité repos/charge (toute la pile `compatibility.*` ne tourne que pour l'affichage), pas de vérification que l'accepteur ne travaille pas déjà
 ce jour-là (un utilisateur qui tient un autre remplacement ce jour peut en accepter un second), pas de contrôle de date (une demande d'un jour passé que le job de 30 minutes n'a pas encore
-expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` existe dans le modèle et n'est lu nulle part (donc une demande réservée est ouverte à tous), et
-`isTrueSwitch` n'est jamais stocké (champ de schéma mort). Le serveur est le seul endroit digne de confiance face à une course ou à un client falsifié.
+expirée peut encore être acceptée, annulée, retirée), `reservedForUserId` existe dans le modèle et n'est lu nulle part (donc une demande réservée est ouverte à tous). Le serveur est le seul endroit digne de confiance face à une course ou à un client falsifié.
 
 **Autres points**
 - Écritures non atomiques dans `registerEntry` (pas de transaction) : `registerHourPatch` désactive le patch précédent **avant** les validations qui peuvent répondre 422 ; un 422 laisse le jour sans son patch.
@@ -158,7 +159,7 @@ Personne n'est prévenu quand la chaîne en dessous change (S2 de B accepté, re
 | `reason` | `cancelDemandWithSession` | c'est un **statut** final | `finalStatus` |
 | `initialCancel` | `demand.cancel.js` | c'est la demande racine qui a été annulée | `rootRequest` |
 | `date` | partout dans `calendarEntry.*`, `registerEntry(userId, date, data)` | c'est une **chaîne** `YYYY-MM-DD` (le type du schéma est String), alors que `Demand.posterShift.date` est un vrai `Date` ; `toDay`, `toDateKey`, `posterDayOf`, `new Date(...)` convertissent dans les deux sens | `day` pour la chaîne, `date` seulement pour un `Date` |
-| `isTrueSwitch` | corps de requête | jamais stocké, `type` le dit déjà | supprimer |
+| `isTrueSwitch` | corps de requête et champ de schéma | le corps décide du `type` à la création (`demand.creation.js`, envoyé par le front) ; le champ du schéma n'est lu nulle part | supprimer le champ du schéma seulement |
 
 **Conversions aller-retour à supprimer (chaîne de jour ↔ `Date` ↔ chaîne).**
 `posterDayOf(demand)` (chaîne) → `new Date(...)` pour la date de transaction → retour ; `cancelSubstitutionEntries({ date })` est documentée comme un `Date`, reçoit une chaîne, applique `toDateKey(date)` pour obtenir une chaîne et

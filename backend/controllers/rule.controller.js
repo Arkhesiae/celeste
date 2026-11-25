@@ -3,9 +3,20 @@ import * as ruleService from '../services/rule/index.js';
 
 export const getAllRules = async (req, res, next) => {
   try {
-    const { centerId } = req.query;
+    // Le contrôle du centre demandé est fait par `authorizeCenterQuery` (route). Hors administrateur principal, on répond pour le centre de
+    // l'appelant même si la requête n'en nomme aucun, et sans les valeurs que les autres centres ont données à chaque règle (`adminValues`).
+    const isMaster = req.user.isAdmin && req.user.adminType === 'master';
+    const centerId = req.query.centerId || (isMaster ? undefined : req.user.centerId);
     const rules = await ruleService.getAllRules(centerId);
-    res.status(200).json(rules);
+    res.status(200).json(
+      isMaster
+        ? rules
+        : rules.map((rule) => {
+            const own = { ...rule };
+            delete own.adminValues;
+            return own;
+          }),
+    );
   } catch (error) {
     console.error('Error fetching rules:', error);
     next(error);

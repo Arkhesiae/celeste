@@ -19,6 +19,10 @@ import routes from '../routes/index.js';
 import { errorHandler } from '../middleware/errorHandler.js';
 import { generateAccessToken } from '../services/auth/auth.refreshToken.js';
 
+// Les tests signent des jetons : le secret vient de l'environnement (ici une valeur d'essai si le fichier .env n'est pas chargé)
+process.env.JWT_SECRET ??= 'test-secret';
+process.env.JWT_REFRESH_SECRET ??= 'test-refresh-secret';
+
 const URI = process.env.TEST_ROTATION_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_rotationread';
 let available = false;
 let server;

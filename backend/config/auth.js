@@ -1,5 +1,5 @@
 /**
- * Durées liées à l'authentification. Les secrets, eux, restent dans les variables d'environnement.
+ * Durées liées à l'authentification. Les secrets, eux, restent dans les variables d'environnement (`JWT_SECRET`, `JWT_REFRESH_SECRET`).
  */
 
 /** Durée de vie du jeton d'accès, si ACCESS_TOKEN_EXPIRY n'est pas défini (format de `jsonwebtoken`) */

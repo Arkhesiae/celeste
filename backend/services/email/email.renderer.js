@@ -84,6 +84,19 @@ export function defaultAssetsUrl() {
 }
 
 /**
+ * Au démarrage, en production : prévient quand le décor des mails ne pourra pas se charger. Sans `MAIL_ASSETS_URL` ni `FRONT_URL` /
+ * `FRONTEND_URL`, l'adresse est relative (`/api/mail-assets`) et aucun client de messagerie ne peut l'ouvrir : les mails partent, sans
+ * leur en-tête ni leur pied illustrés, et rien ne le signale.
+ */
+export function checkMailAssetsUrl() {
+  if (process.env.NODE_ENV === "production" && !/^https?:\/\//.test(defaultAssetsUrl())) {
+    console.warn(
+      `⚠️ Mails : l'adresse du décor (${defaultAssetsUrl()}) n'est pas absolue. Définissez MAIL_ASSETS_URL (ou FRONT_URL) pour que les images des mails s'affichent.`,
+    );
+  }
+}
+
+/**
  * Fabrique le HTML d'un mail.
  * @param {string} templateName - Nom du modèle (fichier de `templates/content`, sans extension)
  * @param {object} data - Données du modèle ; `assetsUrl` remplace l'adresse du décor (l'aperçu y met son propre serveur)

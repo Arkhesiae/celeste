@@ -5,6 +5,7 @@ import 'dotenv/config';
 import mongoose from 'mongoose';
 import express from 'express';
 import { errorHandler } from './middleware/errorHandler.js';
+import { checkMailAssetsUrl } from './services/email/email.renderer.js';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import fs from 'fs';
@@ -52,6 +53,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Avertit (production) si les images des mails n'auront pas d'adresse publique
+checkMailAssetsUrl();
 
 // ─── Middlewares Express ──────────────────────────────────────────────────────
 app.use(express.json({ limit: REQUEST_BODY_LIMIT }));

@@ -1,11 +1,13 @@
 import { findOrThrow, inTransaction } from '../../utils/mongo.js';
 import { toDay } from '../../utils/dates/dayFields.js';
-import { sameId } from '../../utils/ids.js';
+import { todayIn } from '../../utils/dates/plainDate.js';
+import { sameId, isValidId } from '../../utils/ids.js';
 import User from '../../models/User.js';
 import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
 import { buildTeamSegments, diffTeamSegments } from '../team/team.segments.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
+import { getCenterTimeZone } from '../center/center.timezone.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 
 
@@ -19,6 +21,18 @@ function planTeamChange (user, afterTeams) {
     const before = buildTeamSegments(user.teams);
     const after = buildTeamSegments(afterTeams);
     return { before, after, changes: diffTeamSegments(before, after) };
+}
+
+/**
+ * Le passé ne se modifie pas : une période changée ne peut pas commencer avant aujourd'hui, dans le fuseau du centre de
+ * l'utilisateur. Les jours sont des clés `YYYY-MM-DD`, comparées telles quelles.
+ */
+async function assertNoPastChange (user, { changes }) {
+    if (!changes.length) return;
+    const today = todayIn(await getCenterTimeZone(user.centerId)).toString();
+    if (changes.some(({ from }) => from < today)) {
+        throw new AppError("Un changement d'équipe ne peut pas modifier le passé : il doit commencer aujourd'hui ou plus tard", 400, 'TEAM_CHANGE_PAST');
+    }
 }
 
 /**
@@ -81,12 +95,14 @@ async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
     if (!confirmed) {
         const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
         const plan = planTeamChange(user, computeAfter(user));
+        await assertNoPastChange(user, plan);
         const approval = await buildApprovalRequest(user, plan);
         if (approval) return approval;
     }
 
     const { changes, cancelled, withdrawn } = await inTransaction(async (session) => {
         const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', session });
+        await assertNoPastChange(user, planTeamChange(user, computeAfter(user)));
         return sanitizeAndSaveTeams(user, computeAfter(user), session);
     });
 
@@ -133,6 +149,13 @@ export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = 
 export async function assignTeamToUser (userId, newTeam, { confirmed = false, replaceOccurrenceId, actorId } = {}) {
     if (!newTeam.teamId || !newTeam.fromDate) {
         throw new AppError('teamId and fromDate are required', 400);
+    }
+    if (!isValidId(newTeam.teamId)) {
+        throw new AppError("Identifiant d'équipe invalide", 400);
+    }
+    // Les dates sont des jours `YYYY-MM-DD` : elles se comparent telles quelles. Une fin avant le début serait enregistrée puis ignorée par `buildTeamSegments`
+    if (newTeam.toDate && newTeam.toDate < newTeam.fromDate) {
+        throw new AppError('La date de fin ne peut pas précéder la date de début', 400);
     }
 
     const teamExists = await findOrThrow(Team, newTeam.teamId, { message: 'Équipe non trouvée' });

@@ -16,7 +16,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Test team assignment / occurrence deletion end to end against MongoDB (sanitize + save in one transaction).
 - (2026-11-02) Authentication and authorization fixes from `docs/quality/blocking-issues.md` (#5, #8, #11, #20; #4 is done).
 - (2026-11-02) Remove committed secrets from git and rotate credentials (#5).
-- (2026-11-25) Work through `docs/quality/blocking-issues.md` in the order of its ranking table (cheapest first: #65, #24, #31 take minutes each); #5, #2 and #21 before any production deploy.
+- (2026-11-25) Work through `docs/quality/blocking-issues.md` in the order of its ranking table (cheapest first: #31, #36, #18, #54 take under an hour each); #5, #2 and #21 before any production deploy.
 
 - (2026-11-17) Run `npm run format` once over `front/src` (about 260 files differ from Prettier) in its own commit, then fix the ESLint errors that remain (about 150, mostly unused variables, `no-useless-catch`, `v-if` with `v-for`) and add `lint:check` / `format:check` to a pre-commit hook (husky + lint-staged).
 
@@ -26,6 +26,8 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-25) Team changes (assign, replace, delete an occurrence) can no longer modify the past: a changed period starting before today in the center's time zone is refused with 400 `TEAM_CHANGE_PAST` (`services/user/user.team.js`).
+- (2026-11-25) Known issue #24 fixed (team-change body: malformed `teamId` and `toDate` before `fromDate` refused with a 400, test `test/teamChangeInput.test.js`); #65 (unused `FranceSection.vue`) set aside in the "Ignored for now" subsection of `docs/quality/blocking-issues.md`.
 - (2026-11-25) Known issues #4, #53, #38 and #59 fixed (#60 declared intended): JWT secrets read straight from the environment (no public fallback), `GET /api/rule` behind the token, `deleteCenter` now deletes the center's rotations (test `test/centerDelete.db.test.js`), startup warning for a relative mail art URL. Follow-up #66 (rules of another center) fixed the same day with a `authorizeCenterQuery` guard (test `test/ruleRead.db.test.js`); #58 (mail transport: `MAIL_SERVICE` honoured, one SMTP port, simulated sends visible) fixed too.
 - (2026-11-25) Dashboard: card "Mes 7 prochains jours" (`components/Dashboard/UpcomingWorkWindow.vue`): the 7-day work window from today (work vs the 48 h limit, longest rest vs 35 h, hours per day) with its controls disabled and a new unDraw illustration `UndrawChilling` (people resting on a sofa). Checked against a mocked `work-check` answer, not against a real server.
 - (2026-11-25) Vuetify utility classes audit of the front: typos (`mb`, `mr -1`, `m-2`, stray `0` and `justify`), old typography (`text-body-1`, `text-title`), Tailwind leftovers (`flex flex-col gap-2 w-300px bg-gray-500/5`, `gap-2` / `gap-4` used outside the component that declared them, `duration-300`) fixed with Vuetify names; `.min-width-0`, `.hide-scrollbar`, `.safe-area-bottom` moved to a global `src/styles/utilities.css`; dead `smooth-shadow` / `highlight-shadow` / `debug2-4` classes removed; 86 static inline style declarations on 73 tags (28 files) became utility classes.

@@ -10,54 +10,38 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 
 | Rank | # | Issue | Sev. | Effort |
 |---|---|---|---|---|
-| 1 | 65 | `FranceSection.vue` is used nowhere | P3 | minutes |
-| 2 | 24 | Team-change body: no `toDate >= fromDate`, `teamId` not validated | P2 | minutes |
-| 3 | 31 | `updateDayInRotation`: `rest` ignored, variation clean-up is a no-op | P1 | under 1 h |
-| 4 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
-| 5 | 18 | Dead conflict dialogs in the team UI | P2 | under 1 h |
-| 6 | 54 | Kebab-case theme variables resolve to Vuetify's defaults | P2 | under 1 h |
-| 7 | 62 | Demand pile "+" marker has no style in the day block | P2 | under 1 h |
-| 8 | 64 | The dashboard 7-day card takes "today" from the browser, not the center | P3 | under 1 h |
-| 9 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
-| 10 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
-| 11 | 30 | `deleteRotation` allows deleting a rotation that was active in the past | P1 | 1 h |
-| 12 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
-| 13 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
-| 14 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
-| 15 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
-| 16 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
-| 17 | 20 | Admin routes without a center guard | P1 | 2 h |
-| 18 | 11 | Request bodies and avatar upload | P1 | 2 h |
-| 19 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
-| 20 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
-| 21 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
-| 22 | 2 | Guessable local admin passwords in production | P0 | ops |
-| 23 | 63 | The dashboard calendar throws a `TypeError` when the API is unreachable | P2 | to investigate |
-| 24 | 39 | Center and role in the access token can be stale | P2 | 1 day |
-| 25 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
-| 26 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
-| 27 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
-| 28 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
-| 29 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
-| 30 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
-| 31 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
-| 32 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
+| 1 | 31 | `updateDayInRotation`: `rest` ignored, variation clean-up is a no-op | P1 | under 1 h |
+| 2 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
+| 3 | 18 | Dead conflict dialogs in the team UI | P2 | under 1 h |
+| 4 | 54 | Kebab-case theme variables resolve to Vuetify's defaults | P2 | under 1 h |
+| 5 | 62 | Demand pile "+" marker has no style in the day block | P2 | under 1 h |
+| 6 | 64 | The dashboard 7-day card takes "today" from the browser, not the center | P3 | under 1 h |
+| 7 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
+| 8 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
+| 9 | 30 | `deleteRotation` allows deleting a rotation that was active in the past | P1 | 1 h |
+| 10 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
+| 11 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
+| 12 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
+| 13 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
+| 14 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
+| 15 | 20 | Admin routes without a center guard | P1 | 2 h |
+| 16 | 11 | Request bodies and avatar upload | P1 | 2 h |
+| 17 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
+| 18 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
+| 19 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
+| 20 | 2 | Guessable local admin passwords in production | P0 | ops |
+| 21 | 63 | The dashboard calendar throws a `TypeError` when the API is unreachable | P2 | to investigate |
+| 22 | 39 | Center and role in the access token can be stale | P2 | 1 day |
+| 23 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
+| 24 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
+| 25 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
+| 26 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
+| 27 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
+| 28 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
+| 29 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
+| 30 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
 
 `S4`, `S8` and `S9` come from `docs/quality/calendar-substitution-review.md`, where they are described in full and were rechecked on 2026-11-25.
-
----
-
-## Minutes
-
-### 65. `FranceSection.vue` is used nowhere — P3
-`components/Landing/FranceSection.vue` (the France map for the landing page) is imported nowhere since the placeholder comment was removed from `landing.vue` on 2026-11-25. The project rule is that dead front code is deleted.
-**Fix:** delete it (it stays in git history) or put it back on the landing page.
-
-### 24. Team-change body: missing validation — P2
-`services/user/user.team.js` (`assignTeamToUser`): the route ids (`:id`, `occurrenceId`, `replaceOccurrenceId`) are now validated, but
-- `toDate >= fromDate` is not checked: an inverted occurrence is stored and silently ignored by `buildTeamSegments`;
-- `newTeam.teamId` is only tested for presence, so a malformed id raises a Mongoose `CastError` that comes back as a generic 500 instead of a 400;
-- the exported helpers (`sanitizeUserPeriod`, `previewUserPeriodImpact`) put `userId` straight into query objects: safe today, but a future caller passing `req.body` values would allow operator injection.
 
 ---
 
@@ -205,6 +189,16 @@ The twin fields, dual write and dual read are in place, but the data is only con
 
 ---
 
+## Ignored for now
+Open on purpose: the owner decided not to act on these yet. They are not ranked above.
+
+### 65. `FranceSection.vue` is used nowhere — P3
+`components/Landing/FranceSection.vue` (the France map for the landing page) is imported nowhere since the placeholder comment was removed from `landing.vue` on 2026-11-25. The project rule is that dead front code is deleted.
+**Fix:** delete it (it stays in git history) or put it back on the landing page.
+*(Ignored on 2026-11-25.)*
+
+---
+
 ## Not covered
 - `front/` beyond the issues listed above (auth storage in the browser, Capacitor config, XSS in rendered content). Mail layouts were checked in a desktop browser only.
 - Runtime behaviour in production: tests run on scratch databases (`backend/test/`); the app was never exercised end to end against the production topology (replica set, team-change, cycle-position and rotation approval flows).
@@ -213,6 +207,7 @@ The twin fields, dual write and dual read are in place, but the data is only con
 - Front ESLint errors (about 150, see the roadmap) and the optional legacy-CSS leftovers (see the roadmap line of 2026-11-25).
 
 ## Removed from this file on 2026-11-25
+- **#24** (team-change body): fixed the simple way in `assignTeamToUser` (`services/user/user.team.js`): a malformed `teamId` and a `toDate` before `fromDate` are refused with a 400 before any query (test `test/teamChangeInput.test.js`). The note about future callers passing `req.body` into `sanitizeUserPeriod` was a caution, not a defect, and is dropped.
 - **#66** (rules of any center readable by any logged-in user): fixed. A new guard `authorizeCenterQuery` (`middleware/centerAuth.js`) refuses another center's `?centerId=` (403) except for the master admin; `getAllRules` answers for the caller's own center when none is named and no longer sends `adminValues` (the other centers' values) to anyone but the master. Test `test/ruleRead.db.test.js`.
 - **#58** (mail transport): fixed. One SMTP port (`EMAIL_PORT`, default 587) for both transporters, the logs name it; `MAIL_SERVICE` now decides (see `CLAUDE.md`): in production mails always go out through SES, elsewhere they are simulated unless `MAIL_SERVICE=ses`; the console transporter prints "Mail simulé" and returns `simulated: true` instead of silently reporting a send.
 - **#4** (JWT secrets fall back to public literals): fixed the simple way: `authMiddleware.js` and `auth.refreshToken.js` read `process.env.JWT_SECRET` / `JWT_REFRESH_SECRET` directly, with no fallback literal (a missing secret makes signing fail instead of using a public value). No startup check, no rotation: the values in the production environment file stay as they are (decision: not a threat given the current audience of the app).

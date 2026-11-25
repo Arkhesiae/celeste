@@ -40,6 +40,8 @@
             @cancel-demand="(demand) => demandDeps.handleCancel(demand)"
             @withdraw-demand="(demand) => demandDeps.handleWithdraw(demand)"
           />
+
+          <UpcomingWorkWindow class="mt-8" />
         </v-col>
 
         <v-col :class="smAndDown ? '' : 'right-col'">
@@ -50,6 +52,8 @@
           <LocalRecommendationsCard />
 
           <ActiveRotationCard />
+
+       
 
           <v-card
 

@@ -46,7 +46,7 @@
               variant="text"
               size="small"
               aria-label="Fenêtre commençant un jour plus tôt"
-              :disabled="!previousStart"
+              :disabled="controlsDisabled || !previousStart"
               @click="emit('update:windowStart', previousStart)"
             />
             <v-btn
@@ -54,7 +54,7 @@
               variant="text"
               size="small"
               aria-label="Fenêtre commençant un jour plus tard"
-              :disabled="!nextStart"
+              :disabled="controlsDisabled || !nextStart"
               @click="emit('update:windowStart', nextStart)"
             />
           </div>
@@ -159,6 +159,8 @@ const props = defineProps({
   daysByDate: { type: Object, required: true },
   /** Seuils appliqués par le serveur */
   limits: { type: Object, required: true },
+  /** Fenêtre figée : les flèches qui la font glisser restent visibles mais inactives (tableau de bord) */
+  controlsDisabled: { type: Boolean, default: false },
 });
 const emit = defineEmits(['update:windowStart']);
 

@@ -1,3 +1,4 @@
+import { sameId } from '../../utils/ids.js';
 import { getTeamAtDay } from '../team/team.atDay.js';
 import { cycleDayIndex } from '../team/team.cycleIndex.js';
 import { activationDaysOf } from '../../utils/dates/dayAccess.js';
@@ -183,9 +184,17 @@ const applyModification = (resolvedShift, modification) => {
     }
 };
 
-/** Un ajustement d'horaires (MDDA) décale le début et la fin de la vacation d'un agent présent */
+/**
+ * Un ajustement d'horaires (MDDA) décale le début et la fin de la vacation d'un agent présent. Il ne vaut que pour la vacation sur
+ * laquelle il a été saisi (comme une modification) : après un changement de tour, de position ou d'équipe, il est ignoré. Sans
+ * horaires (jour devenu un repos), il n'y a rien à décaler.
+ */
 const applyHourPatch = (resolvedShift, latestHourPatch) => {
     if (!latestHourPatch || resolvedShift.presence !== 'present') return resolvedShift;
+    // La vacation de l'ajustement est un identifiant (ou un document, selon la lecture)
+    const patchedShift = latestHourPatch.shiftData?.shift;
+    if (!sameId(resolvedShift.shiftData?.shift?._id, patchedShift?._id ?? patchedShift)) return resolvedShift;
+    if (!resolvedShift.startTime || !resolvedShift.endTime) return resolvedShift;
     return {
         ...resolvedShift,
         wasPatched: true,

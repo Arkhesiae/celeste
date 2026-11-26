@@ -26,6 +26,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-26) Known issue #70 fixed: an hour patch (MDDA) only applies to its own shift and can no longer break the planning computation.
 - (2026-11-26) Mails wired: center transfer accepted, ticket acknowledgement (existing accounts only), new rotation activation (to the center's users). Not wired, no trigger exists: account deactivated, demand not accepted.
 - (2026-11-26) Known issue #41 fixed: demands expire or complete according to today in their center's time zone.
 - (2026-11-26) Known issue #2 (guessable local admin passwords) moved to "Ignored for now" by decision; nothing changed in code or accounts.

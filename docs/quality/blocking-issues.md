@@ -13,26 +13,27 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 | 1 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
 | 2 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
 | 3 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
-| 4 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
-| 5 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
-| 6 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
-| 7 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
-| 8 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
-| 9 | 20 | Admin routes without a center guard | P1 | 2 h |
-| 10 | 11 | Request bodies and avatar upload | P1 | 2 h |
-| 11 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
-| 12 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
-| 13 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
-| 14 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
-| 15 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
-| 16 | 39 | Center and role in the access token can be stale | P2 | 1 day |
-| 17 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
-| 18 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
-| 19 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
-| 20 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
-| 21 | 52 | Inactive accounts | P2 | 2 days |
-| 22 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
-| 23 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
+| 4 | 71 | Deleting a team leaves its members in it | P1 | 1-2 h + a decision |
+| 5 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
+| 6 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
+| 7 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
+| 8 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
+| 9 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
+| 10 | 20 | Admin routes without a center guard | P1 | 2 h |
+| 11 | 11 | Request bodies and avatar upload | P1 | 2 h |
+| 12 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
+| 13 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
+| 14 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
+| 15 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
+| 16 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
+| 17 | 39 | Center and role in the access token can be stale | P2 | 1 day |
+| 18 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
+| 19 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
+| 20 | 35 | Stale calendar entries after a rotation, cycle or team change | P2 | 1-2 days |
+| 21 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
+| 22 | 52 | Inactive accounts | P2 | 2 days |
+| 23 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
+| 24 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
 
 `S4`, `S8` and `S9` come from `docs/quality/calendar-substitution-review.md`, where they are described in full and were rechecked on 2026-11-25.
 
@@ -49,6 +50,10 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 ---
 
 ## An hour
+
+### 71. Deleting a team leaves its members in it — P1
+`deleteTeam` (`controllers/team.controller.js`) runs `$pull: { teams: { team: id } }`, but the field is `teams.teamId`, so nothing is removed. Members keep the occurrence, and `computeUserShifts` does not check `team.deleted`, so their planning keeps following the deleted team. No demand or entry is cleaned, no one is told. Found by reading the code on 2026-11-26.
+**Fix:** decide what deletion means for current members (refuse while the team has current or future members is the simplest); do not just correct the field, which would erase past plannings.
 
 ### S4. Any center member can cancel anyone's demand or mail the administration — P0
 `POST /demand/:id/cancel` and `POST /demand/:id/send-email` are only behind `authorizeDemandAccess` (same center); `cancelDemand` uses `actorId` only for the notification. Rechecked 2026-11-25: still open. Details in `calendar-substitution-review.md`.
@@ -125,8 +130,18 @@ The client may send `confirmed: true` at any time; the server does not check tha
 4. a back to `/loading` is redirected to the dashboard; the pending-route flow after login was not exercised;
 5. the modals (assistance, dashboard transaction history), the toolbar back arrow, the redirects of the old addresses and the users pages for non-admin members were not exercised.
 
-### 35. Rotation change leaves stale variations and calendar entries — P2
-Converted demands keep `posterShift.selectedVariation` pointing at a variation of the old shift. Calendar entries are never touched by a rotation change (unlike team changes; the rotation activation code does not reference `CalendarEntry`): an accepted substitution's accepter assignment stores the old `shiftData.shift`, which `computeUserShifts` applies directly, so after conversion the calendar can show the old shift while the demand shows the new one; modifications and hour patches on old shift ids are ignored by the consistency check and accumulate.
+### 35. Stale calendar entries after a rotation, cycle or team change — P2
+How a stale entry behaves (`applyEntries`, `planning.userShifts.js`; checked on 2026-11-26): an **assignment** with a shift (substitution, switch, assignment on a shift) replaces the base shift, so the old shift stays on screen and counts as work; a replaced poster stays "replaced". A **modification** is ignored when its shift no longer matches, except that `pres`, `variation` or `vic` still confirm an optional day of another shift. An **hour patch** is ignored when its shift no longer matches (fixed, was #70).
+- **Activation added or removed** (`rotation.activation.js`): only demands are converted or cancelled. Cancelled and reopened ones clean their substitution entries; **converted** accepted demands keep entries on the old shifts, and no other entry is touched.
+- Converted demands also keep `posterShift.selectedVariation` of the old shift.
+- **Rotation day edit with `confirmed`** (#68): same `Shift` id, so entries stay attached with new hours, past included; a removed variation stays on the entries that use it; a day turned to rest drops its hour patches from the planning.
+- **Cycle position** (`team.cycle.js`): entries are cleaned only from the `date` sent by the client, which is not checked to be today, while the new offset applies to every day (#67). Deactivated members (`isActive: false`) are skipped.
+- **Team deleted** (`deleteTeam`): nothing is cleaned (#71).
+- **Center transfer accepted**: cleaned from today, but `teams = []` also removes the past base shifts: old assignments with a shift stay, modifications and hour patches are ignored.
+- **`assignUserToCenter`** (`POST /user/:id/assign-center`) and **`deleteCenter`**: teams are removed with no cleanup of entries or demands.
+- **User deleted** (`deleteUserById`): the user's demands are not cancelled, so counterparts keep substitution entries.
+- **A stale demand accepted later**: `addSubstitutionEntries` copies the demand's shifts without checking that the poster still holds them.
+- Not affected: team assignment changes clean every changed period (from today on); day notes are independent of shifts on purpose.
 
 ### S9. Acceptance of a demand is not validated on the server — P1
 `acceptDemandWithSession` (`services/demand/demand.accept.js`) checks the status, self-acceptance, an open demand of the accepter that day, and for a switch the held shift; but no rest or workload compatibility (the `compatibility.*` stack only runs for display), no check that the accepter is not already working that day, no date check (a past demand that the 30-minute job has not expired yet can still be accepted, cancelled or withdrawn), and `reservedForUserId` (in the model) is read nowhere, so a reserved demand is open to everyone. Rechecked 2026-11-25: still open. Details in `calendar-substitution-review.md`.
@@ -181,6 +196,7 @@ Existing production accounts `admin-<oaci>@celeste-app.fr` still have the old gu
 - Front ESLint errors (about 150, see the roadmap) and the optional legacy-CSS leftovers (see the roadmap line of 2026-11-25).
 
 ## Removed from this file on 2026-11-25
+- **#70** (stale hour patch): fixed on 2026-11-26. `applyHourPatch` applies a patch only to the shift it was entered on, and only when that day has hours. Test `test/hourPatch.test.js`.
 - **#41** (expiry job used the default time zone): fixed on 2026-11-26. `demand.expiry.js` judges each demand against today in its own center's time zone, and re-checks the status when writing. `reminderJob` already did it per center. Test `test/demandExpiry.db.test.js`.
 - **#63** (dashboard `TypeError` without an API): fixed on 2026-11-26. `ShiftCard.vue` read `vacation.type` when the store had no entry for the day (the error came from the same build chunk as `useCalendarData`, not from it); it now shows the empty card. `fetchMonthData` no longer shows a second snackbar nor throws into the mounted hooks and watchers. Reproduced and checked in headless Edge against a stub API.
 - **#31** (`updateDayInRotation`): fixed on 2026-11-26. A day can become a rest day (hours, variations and `optional` cleared); removed variations are deleted unless a demand or calendar entry still points to them; only the day's own variations can be rewritten (any other id used to update that variation, whatever its rotation or center); hours are validated before the first write. Test `test/rotationDayUpdate.db.test.js`.

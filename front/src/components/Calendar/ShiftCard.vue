@@ -23,7 +23,7 @@
           </div>
         </div>
 
-        <div v-if="vacation.type === 'empty'">
+        <div v-if="!vacation || vacation.type === 'empty'">
           <span class="text-disabled">C'est vide</span>
         </div>
         <div v-else class="d-flex align-center ga-4">

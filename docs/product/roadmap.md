@@ -26,6 +26,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-26) Known issue #63 fixed: the shift card no longer throws without data for its day, and a failed calendar load shows one snackbar per failed request without an unhandled error.
 - (2026-11-26) Never-activated rotations are marked on their card; editing a day of an activated rotation now asks for confirmation (409, then `confirmed: true`; provisional bypass, known issue #68). The day editor works on a copy, so a cancelled edit no longer shows unsaved hours.
 - (2026-11-26) Known issue #31 fixed: editing a rotation day handles rest days and cleans up removed variations; it can no longer rewrite another day's variation.
 - (2026-11-26) Rotation activation timeline redesigned: one tile per period with a state icon, date range, duration and a remove button for today's and later activations; deleted rotations are labelled (`sortedRotations[].deleted`).

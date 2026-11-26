@@ -78,12 +78,9 @@ export function useCalendarData(calendarDays, neighbors = null) {
   const fetchWorkCheck = () => workCheckStore.fetchWorkCheck(authStore.userData.userId, startDate.value, endDate.value);
 
   const fetchMonthData = async () => {
-    try {
-      await Promise.all([fetchShifts(), fetchSubstitutions(), fetchWorkCheck()]);
-    } catch (err) {
-      snackbarStore.showNotification(err.message, 'onError', 'mdi-alert-outline');
-      throw err;
-    }
+    // Chaque chargement signale lui-même son échec (le contrôle du temps de travail l'absorbe) : rien à relancer, les appelants
+    // (montage, changement de mois) n'ont rien d'autre à faire
+    await Promise.allSettled([fetchShifts(), fetchSubstitutions(), fetchWorkCheck()]);
   };
 
   watch(calendarDays, async (newCalendarDays) => {

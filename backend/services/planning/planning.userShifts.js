@@ -342,7 +342,8 @@ const createRotationShiftResolver = (centersById) => {
         const key = String(centerId);
         if (!activationTimelineByCenter.has(key)) {
             activationTimelineByCenter.set(key, (async () => {
-                const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates activationDays').lean();
+                // Tours supprimés compris : ils restent ceux des jours passés
+                const rotations = await Rotation.find({ centerId }).select('activationDates activationDays').lean();
                 return rotations
                     .flatMap((rotation) => activationDaysOf(rotation).map((activationDay) => ({
                         rotationId: String(rotation._id),

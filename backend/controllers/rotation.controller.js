@@ -58,8 +58,9 @@ const removeActivationDate = activationDateHandler('remove');
 // Mettre à jour un jour dans une rotation
 const updateDayInRotation = async (req, res, next) => {
     try {
-        const rotation = await rotationService.updateDayInRotation(req.params.id, req.body.updatedDay);
-        res.json({ message: 'Jour mis à jour avec succès', rotation });
+        const result = await rotationService.updateDayInRotation(req.params.id, req.body.updatedDay, { confirmed: req.body.confirmed === true });
+        if (result.needsApproval) return res.status(409).json(result);
+        res.json({ message: 'Jour mis à jour avec succès', rotation: result });
     } catch (error) {
         next(error);
     }

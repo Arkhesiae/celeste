@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mb-4 pa-4" elevation="0" :class="{ 'active-rotation': isActive }">
+  <v-card class="mb-4 pa-4" elevation="0" :class="{ 'active-rotation': isActive, 'new-rotation': neverActivated }">
     <v-card-item>
       <div class="d-flex align-center">
         <template v-if="!smAndDown && isEditing">
@@ -33,6 +33,10 @@
       <v-card-subtitle>Tour de service</v-card-subtitle>
       <template #append>
         <v-chip v-if="isActive" class="ml-3" color="primary" rounded="lg"> Actif </v-chip>
+        <v-chip v-if="neverActivated" class="ml-3" color="secondary" rounded="lg" prepend-icon="mdi-new-box">
+          Jamais activé
+          <v-tooltip activator="parent" location="top" text="Ses jours sont librement modifiables" />
+        </v-chip>
         <v-menu v-if="isAdmin" location="bottom end" @click.stop>
           <template #activator="{ props }">
             <v-btn icon v-bind="props" variant="text" color="default">
@@ -87,6 +91,17 @@
     @update:model-value="showEditDayDialog = $event"
   />
 
+  <ConfirmationDialog
+    v-model="showDayConfirmation"
+    title="Modifier un tour déjà activé ?"
+    :text="dayConfirmationText"
+    icon="mdi-alert-outline"
+    confirm-text="Modifier quand même"
+    confirm-color="error"
+    @confirm="confirmDayEdit"
+    @cancel="pendingDay = null"
+  />
+
   <!-- Desktop Dialog -->
   <v-dialog v-if="!smAndDown" v-model="showDayDetail" max-width="400">
     <DayDetail
@@ -138,6 +153,9 @@ const showEditNameDialog = ref(false);
 const isEditing = ref(false);
 const editedName = ref('');
 const nameInput = ref(null);
+const showDayConfirmation = ref(false);
+const dayConfirmationText = ref('');
+const pendingDay = ref(null);
 
 const props = defineProps({
   rotation: {
@@ -164,6 +182,10 @@ const teamCountMismatch = computed(
   () => props.teamsCount !== null && (props.rotation.days?.length ?? 0) !== props.teamsCount,
 );
 
+// Jamais activé : aucune date d'activation, passée ou à venir
+// TEMPORARY(day-fields): le repli sur `activationDates` disparaît avec l'ancien champ
+const neverActivated = computed(() => !(props.rotation.activationDays?.length || props.rotation.activationDates?.length));
+
 defineEmits(['set-activation-date', 'delete', 'toggle-expand', 'edit']);
 
 const rotationStore = useRotationStore();
@@ -173,9 +195,17 @@ const handleDayClick = (day) => {
   showDayDetail.value = true;
 };
 
-const handleQuickDayEdit = async (updatedDay) => {
+const handleQuickDayEdit = async (updatedDay, { confirm = false } = {}) => {
   try {
-    await rotationStore.updateDayInRotation(props.rotation._id, updatedDay, props.rotation.centerId);
+    const result = await rotationStore.updateDayInRotation(props.rotation._id, updatedDay, props.rotation.centerId, {
+      confirm,
+    });
+    if (result?.needsApproval) {
+      pendingDay.value = updatedDay;
+      dayConfirmationText.value = result.message;
+      showDayConfirmation.value = true;
+      return;
+    }
     snackbarStore.showNotification('Jour modifié', 'onPrimary', 'mdi-check');
     showEditDayDialog.value = false;
     showDayDetail.value = false;
@@ -187,6 +217,12 @@ const handleQuickDayEdit = async (updatedDay) => {
       'mdi-alert-circle-outline',
     );
   }
+};
+
+const confirmDayEdit = async () => {
+  const day = pendingDay.value;
+  pendingDay.value = null;
+  if (day) await handleQuickDayEdit(day, { confirm: true });
 };
 
 const handleDuplicate = async (rotation) => {
@@ -234,6 +270,10 @@ const handleNameEdit = async (updatedRotation) => {
 </script>
 
 <style scoped>
+.new-rotation {
+  border: 2px dashed rgba(var(--v-theme-secondary), 0.7);
+}
+
 .active-rotation {
   position: relative;
 }

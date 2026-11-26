@@ -386,6 +386,9 @@ const newDay = ref({
   optional: false,
 });
 
+// Copie profonde : les horaires et variantes saisis ne touchent pas le jour affiché tant qu'ils ne sont pas enregistrés
+const copyDay = (day) => JSON.parse(JSON.stringify(day));
+
 const rules = {
   required: (value) => !!value || 'Ce champ est requis',
   maxLength: (max) => (value) => value.length <= max || `Le nom ne doit pas dépasser ${max} caractères`,
@@ -431,7 +434,7 @@ watch(
     if (newValue) {
       dialogMode.value = 'edit';
       console.log('newValue', newValue);
-      newDay.value = { ...newValue };
+      newDay.value = copyDay(newValue);
       console.log('newDay', newDay.value);
 
       // Déterminer le type d'heures basé sur les variants existants
@@ -460,7 +463,7 @@ watch(
 
 const reset = () => {
   if (dialogMode.value === 'edit' && props.day) {
-    newDay.value = { ...props.day };
+    newDay.value = copyDay(props.day);
     hourType.value = props.day.variations?.length > 0 || props.day.variants?.length > 0 ? 'variable' : 'fixed';
     currentStep.value = 2;
   } else {

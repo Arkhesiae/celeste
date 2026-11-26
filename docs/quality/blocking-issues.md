@@ -10,22 +10,22 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 
 | Rank | # | Issue | Sev. | Effort |
 |---|---|---|---|---|
-| 1 | 31 | `updateDayInRotation`: `rest` ignored, variation clean-up is a no-op | P1 | under 1 h |
-| 2 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
-| 3 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
-| 4 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
-| 5 | 30 | `deleteRotation` allows deleting a rotation that was active in the past | P1 | 1 h |
-| 6 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
-| 7 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
-| 8 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
-| 9 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
-| 10 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
-| 11 | 20 | Admin routes without a center guard | P1 | 2 h |
-| 12 | 11 | Request bodies and avatar upload | P1 | 2 h |
-| 13 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
-| 14 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
-| 15 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
-| 16 | 2 | Guessable local admin passwords in production | P0 | ops |
+| 1 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
+| 2 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
+| 3 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
+| 4 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
+| 5 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
+| 6 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
+| 7 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
+| 8 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
+| 9 | 20 | Admin routes without a center guard | P1 | 2 h |
+| 10 | 11 | Request bodies and avatar upload | P1 | 2 h |
+| 11 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
+| 12 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
+| 13 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
+| 14 | 2 | Guessable local admin passwords in production | P0 | ops |
+| 15 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
+| 16 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
 | 17 | 63 | The dashboard calendar throws a `TypeError` when the API is unreachable | P2 | to investigate |
 | 18 | 39 | Center and role in the access token can be stale | P2 | 1 day |
 | 19 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
@@ -43,14 +43,7 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 
 ## Under an hour
 
-### 31. `updateDayInRotation` residual defects — P1
-`PUT /rotation/:id/day` refuses (400 `ROTATION_HAS_ACTIVATIONS`) any rotation that has activation dates, so days can only be edited on a never-activated rotation. Two bugs remain in `services/rotation/rotation.update.js`:
-- setting a day to `rest` is silently ignored: the update block is guarded by `type !== 'rest'` (line 52) but 200 is returned;
-- the clean-up `Variation.deleteMany({ _id: { $nin: newList, $in: shift.variations } })` (line 93) is a no-op because `shift.variations` was already reset to the new list (line 65), so removed variations are orphaned.
-
 ### 36. Rotation flow, smaller defects — P2
-- Removing a date that does not exist succeeds silently: `rotation.activation.js` only throws "Aucune activation trouvée" when the rotation itself is missing (`findByIdAndUpdate` returns the document even when `$pull` matched nothing).
-- Retroactive activation changes also convert or cancel past demands that the cron has not archived yet.
 - `saveRotation` (`rotation.create.js`) assumes `days` exists and fails with a 500 when it is missing; the `days` branch of `updateRotation` is dead (commented out).
 
 ### S8. Cascade children lose the final status of the root — P1
@@ -63,10 +56,6 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 ### S4. Any center member can cancel anyone's demand or mail the administration — P0
 `POST /demand/:id/cancel` and `POST /demand/:id/send-email` are only behind `authorizeDemandAccess` (same center); `cancelDemand` uses `actorId` only for the notification. Rechecked 2026-11-25: still open. Details in `calendar-substitution-review.md`.
 **Fix:** require the poster (or an admin of the center) in the service.
-
-### 30. `deleteRotation` allows deleting a rotation that was active in the past — P1
-`services/rotation/rotation.delete.js` only blocks a rotation that is active now or has future activations. Deleting one that was active in the past rewrites history: `findLatestRotation` ignores deleted rotations, so past days are recomputed from an earlier rotation, and completed substitutions point to deleted shifts.
-**Fix:** refuse any rotation with an activation date (the `updateDayInRotation` rule), or archive it instead of deleting it.
 
 ### 5. Server details committed to git — P0
 Still tracked (`git ls-files`): `ssh_config` (production host IP, login `root`, `StrictHostKeyChecking no`, which disables host verification), `replacement.txt`, `Microsoft/Windows/PowerShell/PSReadLine/ConsoleHost_history.txt` (a shell history file: content not inspected), and an empty `.env`. `front/.env.production` only holds `VITE_API_URL=` (no secret). The JVM crash logs listed in the previous review are no longer tracked.
@@ -118,6 +107,14 @@ Existing production accounts `admin-<oaci>@celeste-app.fr` still have the old gu
 ---
 
 ## A day or two
+
+### 68. A day of an activated rotation can be edited after a simple confirmation — P1
+`PUT /rotation/:id/day` with `confirmed: true` (`services/rotation/rotation.update.js`) changes the `Shift` document in place, on purpose and provisionally (decision 2026-11-26). Past plannings and work checks change, open and accepted demands silently get the new hours (no compatibility check, no email, points unchanged), and a variation's new hours apply to every demand or entry that chose it.
+**Fix:** remove the bypass (refuse whenever there is an activation date, offering to duplicate the rotation), or version the days so that an edit only applies from a date.
+
+### 67. Moving a team in the cycle also rewrites its past planning — P1
+A team has one start of cycle (`Center.cycleAnchorDate` + `Team.cycleOffset`, `services/team/team.cycleIndex.js`) with no effective date, and base shifts are computed, not stored. `PUT /team/:id/cycle-position` (`services/team/team.cycle.js`) cleans demands and entries from today on, but the new offset also applies to every earlier day: past calendars and work checks change. Found by reading the code on 2026-11-26, not reproduced.
+**Fix:** needs a decision: keep dated cycle positions (one per change, resolved per day like rotation activations).
 
 ### 63. The dashboard calendar throws a `TypeError` when the API is unreachable — P2
 Loading the dashboard in a build with no API (2026-11-25, headless browser) logged `TypeError: Cannot read properties of undefined (reading 'type')` from the `useCalendarData` chunk, twice, on the dashboard. The cause was not traced: it is somewhere in the load chain that `useCalendarData` starts (shifts, demands, work check) when a request fails. A server error should show the snackbar and nothing else.
@@ -187,6 +184,8 @@ Open on purpose: the owner decided not to act on these yet. They are not ranked 
 - Front ESLint errors (about 150, see the roadmap) and the optional legacy-CSS leftovers (see the roadmap line of 2026-11-25).
 
 ## Removed from this file on 2026-11-25
+- **#31** (`updateDayInRotation`): fixed on 2026-11-26. A day can become a rest day (hours, variations and `optional` cleared); removed variations are deleted unless a demand or calendar entry still points to them; only the day's own variations can be rewritten (any other id used to update that variation, whatever its rotation or center); hours are validated before the first write. Test `test/rotationDayUpdate.db.test.js`.
+- **#30** (deleting a rotation active in the past rewrote history): fixed on 2026-11-26. The deletion is still allowed for such a rotation, and every reader of past days (planning, `findLatestRotation`, activation timeline, status list) now includes deleted rotations; only the rotation cards leave them out. A removal that would bring a deleted rotation back into force is refused. The same work refuses removing a past activation date and answers 404 for an unknown one (the first two points of #36). Rotations deleted before this fix count again for their past days. Test `test/rotationGuards.db.test.js`.
 - **#64** (dashboard 7-day card used the browser's day): fixed, `UpcomingWorkWindow.vue` takes today in the center's time zone (Temporal, centers loaded if needed, `Europe/Paris` fallback). Not tried in a browser.
 - **#62** (demand pile "+" marker unstyled): fixed, `.chipe` moved from `CalendarDesktop.vue` (where nothing used it) into the scoped style of `CalendarDayBlock.vue`. Not looked at on screen.
 - **#54** (kebab-case theme variables): fixed, the 34 uses of `--v-theme-on-surface`, `-on-background`, `-surface-variant` and `-surface-container` now use the camelCase names the theme defines (none left in `front/src`). Not looked at on screen.

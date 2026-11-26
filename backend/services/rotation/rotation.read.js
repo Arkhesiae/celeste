@@ -30,15 +30,18 @@ const determineRotationStatus = (today, activations, index) => {
  */
 export async function listRotationsWithStatus (centerId) {
     const today = todayIn(await getCenterTimeZone(centerId)).toString();   // jour courant du centre
-    const rotations = await Rotation.find({ centerId, deleted: false })
+    const everyRotation = await Rotation.find({ centerId })
         .populate(POPULATE_DAYS_AND_VARIATIONS)
         .lean();
+    // La liste des tours ignore les supprimés ; la chronologie garde leurs périodes passées
+    const rotations = everyRotation.filter((rotation) => !rotation.deleted);
 
-    const expanded = rotations.flatMap((rotation) =>
+    const expanded = everyRotation.flatMap((rotation) =>
         activationDaysOf(rotation).map((day) => ({
             _id: rotation._id,
             centerId: rotation.centerId,
             name: rotation.name,
+            deleted: !!rotation.deleted,
             day,
             activationDate: new Date(day),   // YYYY-MM-DD = minuit UTC
         }))
@@ -51,6 +54,7 @@ export async function listRotationsWithStatus (centerId) {
             _id: rotation._id,
             centerId: rotation.centerId,
             name: rotation.name,
+            deleted: rotation.deleted,
             activationDate: rotation.activationDate,
             startDate: new Date(startDate),
             endDate: new Date(endDate),

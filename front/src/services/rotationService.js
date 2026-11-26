@@ -93,10 +93,10 @@ export const rotationService = {
    * @param {Object} updatedDay - Les nouvelles données du jour.
    * @returns {Promise<Object>} La rotation mise à jour.
    */
-  async updateDayInRotation(id, updatedDay) {
+  async updateDayInRotation(id, updatedDay, confirm = false) {
     const response = await apiFetch(`/rotation/${id}/day`, {
       method: 'PUT',
-      body: JSON.stringify({ updatedDay }),
+      body: JSON.stringify({ updatedDay, confirmed: confirm }),
     });
     return response;
   },

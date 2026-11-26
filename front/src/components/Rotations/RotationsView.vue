@@ -158,7 +158,7 @@
     <ConfirmationDialog
       v-model="showConfirmationDialog"
       :title="'Suppression du tour de service'"
-      :text="'Êtes-vous sûr de vouloir supprimer ce tour de service ? Cette action est irréversible.'"
+      text="Êtes-vous sûr de vouloir supprimer ce tour de service ? Les plannings passés qui l'ont utilisé ne changent pas. Cette action est irréversible."
       :icon="'mdi-delete-outline'"
       :icon-color="'error'"
       :confirm-text="'Supprimer'"

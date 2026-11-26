@@ -1,29 +1,29 @@
 import Rotation from '../../models/Rotation.js';
 import Shift from '../../models/Shift.js';
-import { toPlainDate } from '../../utils/dates/plainDate.js';
+import { todayIn } from '../../utils/dates/plainDate.js';
 import { activationDaysOf } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import { AppError } from '../../error/AppError.js';
 import { findLatestRotation } from './rotation.latest.js';
+import { getCenterTimeZone } from '../center/center.timezone.js';
 
 /**
  * Suppression (logique) d'un tour de service et de ses jours.
- * Refusée tant qu'il est le tour actif du centre ou qu'il lui reste des activations à venir.
+ * Refusée tant qu'il est actif ou qu'il lui reste des activations à venir (« aujourd'hui » est le jour du centre). Ses activations
+ * passées restent : un tour supprimé n'est plus proposé, mais le planning et la chronologie continuent de le lire pour le passé.
  */
 export async function deleteRotation (id) {
     const rotation = await findOrThrow(Rotation, id, { message: 'Rotation non trouvée.' });
-    const currentDate = new Date();
-    const lastActiveRotation = await findLatestRotation(rotation.centerId, currentDate);
+    const today = todayIn(await getCenterTimeZone(rotation.centerId)).toString();
+    const activationDays = activationDaysOf(rotation);
 
-    if (lastActiveRotation && sameId(lastActiveRotation._id, rotation._id)) {
+    const activeRotation = await findLatestRotation(rotation.centerId, today);
+    if (activeRotation && sameId(activeRotation._id, rotation._id)) {
         throw new AppError('Le tour de service ne peut pas être supprimé car il est actif.', 400, 'ActiveRotation');
     }
 
-    const today = toPlainDate(currentDate).toString();
-    const hasFutureActivations = activationDaysOf(rotation).some(day => day > today);
-
-    if (hasFutureActivations) {
+    if (activationDays.some(day => day > today)) {
         throw new AppError('Le tour de service ne peut pas être supprimé car il reste des activations.', 400, 'RemainingOccurences');
     }
 

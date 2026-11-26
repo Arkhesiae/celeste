@@ -156,10 +156,12 @@ export const useRotationStore = defineStore('rotation', () => {
    * @param {Object} updatedDay - Les nouvelles données du jour.
    * @param {string} centerId - L'ID du centre pour rafraîchir les données.
    */
-  const updateDayInRotation = async (rotationId, updatedDay, centerId) => {
+  const updateDayInRotation = async (rotationId, updatedDay, centerId, { confirm = false } = {}) => {
     try {
-      await rotationService.updateDayInRotation(rotationId, updatedDay);
+      const result = await rotationService.updateDayInRotation(rotationId, updatedDay, confirm);
+      if (result?.needsApproval) return result; // rien n'est écrit : à confirmer
       await fetchRotations(centerId); // Rafraîchir les données
+      return result;
     } catch (error) {
       console.error('Erreur lors de la mise à jour du jour :', error);
       throw error;

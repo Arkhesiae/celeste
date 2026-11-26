@@ -25,18 +25,35 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
     const targetDate = new Date(activationDate);
     const targetDay = toDay(targetDate);   // jumeau « jour » de targetDate : écrit en même temps
 
+    const dateKey = toDateKey(activationDate);
+    if (!dateKey || Number.isNaN(targetDate.getTime())) throw new AppError("Date d'activation invalide.", 400);
+
+    // Le passé ne se modifie pas (ni ajout ni retrait) : seuls le jour courant et les jours futurs, selon le fuseau du centre
+    const center = await Center.findById(centerId).select('timeZone').lean();
+    const today = Temporal.Now.plainDateISO(center?.timeZone || 'Europe/Paris').toString();
+    if (dateKey < today) {
+        const message = action === 'add'
+            ? "La date d'activation ne peut pas être dans le passé."
+            : "Une date d'activation passée ne peut pas être supprimée : les plannings passés en dépendent.";
+        throw new AppError(message, 400, 'ROTATION_ACTIVATION_DATE_PAST');
+    }
+
+    if (action === 'remove' && !activationDaysOf(rotationToUpdate).includes(dateKey)) {
+        throw new AppError(`Aucune activation trouvée à la date ${dateKey}`, 404);
+    }
+
+    // Retirer une activation remet en vigueur la précédente : ce ne peut pas être un tour supprimé
+    if (action === 'remove') {
+        const previous = (await getOrderedActivationDates(centerId))
+            .filter((activation) => toDay(activation.activationDate) < dateKey)
+            .at(-1);
+        if (previous && await Rotation.exists({ _id: previous.rotationId, deleted: true })) {
+            throw new AppError('Cette date ne peut pas être supprimée : le tour de service précédent, qui reprendrait, a été supprimé.', 400, 'ROTATION_PREVIOUS_DELETED');
+        }
+    }
+
     // Une seule rotation peut être activée à une date donnée dans un centre : sinon la rotation active ce jour-là est ambiguë
     if (action === 'add') {
-        const dateKey = toDateKey(activationDate);
-        if (!dateKey || Number.isNaN(targetDate.getTime())) throw new AppError("Date d'activation invalide.", 400);
-
-        // Seuls le jour courant et les jours futurs sont acceptés, selon le fuseau horaire du centre
-        const center = await Center.findById(centerId).select('timeZone').lean();
-        const today = Temporal.Now.plainDateISO(center?.timeZone || 'Europe/Paris').toString();
-        if (dateKey < today) {
-            throw new AppError("La date d'activation ne peut pas être dans le passé.", 400, 'ROTATION_ACTIVATION_DATE_PAST');
-        }
-
         const sameDate = await Rotation.exists({ centerId, deleted: false, ...dayInArrayFilter('activationDays', 'activationDates', dateKey) });
         if (sameDate) {
             throw new AppError('Une rotation est déjà activée à cette date dans ce centre.', 400, 'ROTATION_ACTIVATION_DATE_TAKEN');
@@ -85,10 +102,6 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
             const updatedRotation = await Rotation.findByIdAndUpdate(
                 rotationId, mongoOp, { new: true, session }
             );
-
-            if (action === 'remove' && !updatedRotation) {
-                throw new AppError(`Aucune activation trouvée à la date ${activationDate}`, 404);
-            }
 
             const afterList = await getOrderedActivationDates(centerId, session);
             const { cleanedList, repetitionToRemove } = removeSuccessiveRepetitions(afterList);
@@ -427,7 +440,8 @@ const systemCancelDemands = async (demands, session, notifications = { cancelled
  * @returns {Array} Liste ordonnée des activations avec rotation et date
  */
 const getOrderedActivationDates = async (centerId, session = null) => {
-    const rotations = await Rotation.find({ centerId, deleted: false }).select('activationDates activationDays').session(session).lean();
+    // Tours supprimés compris : ils font partie de la chronologie passée
+    const rotations = await Rotation.find({ centerId }).select('activationDates activationDays').session(session).lean();
 
     return rotations
         .flatMap((rotation) => activationDaysOf(rotation).map((day) => ({

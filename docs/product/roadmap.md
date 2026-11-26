@@ -16,7 +16,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Test team assignment / occurrence deletion end to end against MongoDB (sanitize + save in one transaction).
 - (2026-11-02) Authentication and authorization fixes from `docs/quality/blocking-issues.md` (#5, #8, #11, #20; #4 is done).
 - (2026-11-02) Remove committed secrets from git and rotate credentials (#5).
-- (2026-11-25) Work through `docs/quality/blocking-issues.md` in the order of its ranking table (cheapest first: #31, #36, #18, #54 take under an hour each); #5, #2 and #21 before any production deploy.
+- (2026-11-25) Work through `docs/quality/blocking-issues.md` in the order of its ranking table (cheapest first: #31, #36 take under an hour each); #5, #2 and #21 before any production deploy.
 
 - (2026-11-17) Run `npm run format` once over `front/src` (about 260 files differ from Prettier) in its own commit, then fix the ESLint errors that remain (about 150, mostly unused variables, `no-useless-catch`, `v-if` with `v-for`) and add `lint:check` / `format:check` to a pre-commit hook (husky + lint-staged).
 
@@ -26,6 +26,10 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-25) Known issue #64 fixed: the dashboard 7-day card starts today in the center's time zone.
+- (2026-11-25) Known issue #62 fixed: the `.chipe` "+" marker style moved into `CalendarDayBlock.vue`.
+- (2026-11-25) Known issue #54 fixed: kebab-case `--v-theme-*` variables replaced by the project's camelCase ones (34 uses, 18 files).
+- (2026-11-25) Known issue #18 fixed (dead conflict dialogs removed). Team change dialog: the "renfort already planned" alert now detects any overlap with a bounded occurrence (day keys compared as strings; it used to miss a planned renfort inside the chosen period and compared `Date`s), and the "change already planned that day" confirmation now submits when validated.
 - (2026-11-25) Team changes (assign, replace, delete an occurrence) can no longer modify the past: a changed period starting before today in the center's time zone is refused with 400 `TEAM_CHANGE_PAST` (`services/user/user.team.js`).
 - (2026-11-25) Known issue #24 fixed (team-change body: malformed `teamId` and `toDate` before `fromDate` refused with a 400, test `test/teamChangeInput.test.js`); #65 (unused `FranceSection.vue`) set aside in the "Ignored for now" subsection of `docs/quality/blocking-issues.md`.
 - (2026-11-25) Known issues #4, #53, #38 and #59 fixed (#60 declared intended): JWT secrets read straight from the environment (no public fallback), `GET /api/rule` behind the token, `deleteCenter` now deletes the center's rotations (test `test/centerDelete.db.test.js`), startup warning for a relative mail art URL. Follow-up #66 (rules of another center) fixed the same day with a `authorizeCenterQuery` guard (test `test/ruleRead.db.test.js`); #58 (mail transport: `MAIL_SERVICE` honoured, one SMTP port, simulated sends visible) fixed too.

@@ -167,13 +167,13 @@ const headerStyle = reactive({
   width: computed(() => headerWidth.value),
   zIndex: '10',
 
-  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-on-surface), 0.001)' : 'none')),
+  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-onSurface), 0.001)' : 'none')),
 });
 </script>
 
 <style scoped>
 /* .main-title.scrolled {
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+  border-bottom: 1px solid rgba(var(--v-theme-onSurface), 0.1);
   position:fixed;
   margin-top: 64px;
   padding: 0 !important;

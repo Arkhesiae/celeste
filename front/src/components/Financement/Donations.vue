@@ -69,7 +69,7 @@
       <div class="d-flex flex-column ga-2 mb-4">
         <v-card
           v-for="item in paymentItems"
-          :key="item.id"
+          :key="item.id"
           variant="outlined"
           class="copy-card"
           ripple
@@ -229,7 +229,7 @@ onMounted(() => {
   font-weight: 400;
   font-style: italic;
   line-height: 1.2;
-  color: rgb(var(--v-theme-on-surface));
+  color: rgb(var(--v-theme-onSurface));
 }
 
 .campaign-desc {
@@ -282,7 +282,7 @@ onMounted(() => {
   position: relative;
   height: 10px;
   border-radius: 99px;
-  background: rgba(var(--v-theme-on-surface), 0.08);
+  background: rgba(var(--v-theme-onSurface), 0.08);
   overflow: hidden;
 }
 
@@ -318,7 +318,7 @@ onMounted(() => {
 .goal-marker__line {
   width: 1.5px;
   height: 14px;
-  background: rgba(var(--v-theme-on-surface), 0.35);
+  background: rgba(var(--v-theme-onSurface), 0.35);
   border-radius: 1px;
   margin-bottom: 2px;
 }
@@ -326,7 +326,7 @@ onMounted(() => {
 .goal-marker__label {
   font-size: 10px;
   font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.5);
+  color: rgba(var(--v-theme-onSurface), 0.5);
   white-space: nowrap;
   letter-spacing: 0.02em;
 }

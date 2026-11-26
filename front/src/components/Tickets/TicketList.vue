@@ -224,7 +224,7 @@ const formatDateExtraShort = (date) => {
 }
 
 .ticket-item:hover {
-  background-color: rgba(var(--v-theme-surface-variant), 0.1);
+  background-color: rgba(var(--v-theme-surfaceVariant), 0.1);
 }
 
 .unread {

@@ -17,7 +17,7 @@
             <v-card
               :class="['pa-4 cursor-pointer transition-all', hourType === 'fixed' ? 'selected' : 'outlined']"
               :color="hourType === 'fixed' ? 'onBackground' : 'surface'"
-              flat
+              flat
               @click="hourType = 'fixed'"
             >
               <div class="d-flex align-center">
@@ -31,7 +31,7 @@
             <v-card
               :class="['pa-4 cursor-pointer transition-all', hourType === 'variable' ? 'selected' : 'outlined']"
               :color="hourType === 'variable' ? 'onBackground' : 'surface'"
-              flat
+              flat
               @click="hourType = 'variable'"
             >
               <div class="d-flex align-center">
@@ -92,7 +92,7 @@
                 true-icon="mdi-plus-box-outline"
                 icon-color="onBackground"
                 base-color="surfaceContainerHighest"
-               
+               
               />
               <span class="text-body-medium">Jour optionnel</span>
             </div>
@@ -648,7 +648,7 @@ const newVariantName = ref('');
 
 <style scoped>
 .v-card.v-card__bordered {
-  border: 1px solid rgba(var(--v-theme-surface-variant), 0.10002);
+  border: 1px solid rgba(var(--v-theme-surfaceVariant), 0.10002);
 }
 
 .cursor-pointer {

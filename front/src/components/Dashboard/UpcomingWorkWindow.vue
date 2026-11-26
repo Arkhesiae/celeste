@@ -25,13 +25,16 @@
 import { Temporal } from 'temporal-polyfill';
 import { useAuthStore } from '@/stores/authStore.js';
 import { userService } from '@/services/userService.js';
-import { todayKey } from '@/utils/dayFields.js';
+import { useCenterStore } from '@/stores/centerStore.js';
+
+const DEFAULT_TIME_ZONE = 'Europe/Paris';
 
 const authStore = useAuthStore();
+const centerStore = useCenterStore();
 
 // Chargé ici et non dans `workCheckStore` : ce store garde la période du calendrier affiché, que cette tuile ne doit ni changer ni suivre
-const start = todayKey();
-const end = Temporal.PlainDate.from(start).add({ days: 6 }).toString();
+// « Aujourd'hui » est le jour du centre, comme pour le serveur, pas celui du navigateur
+const start = ref('');
 
 const windows = ref([]);
 const daysByDate = ref({});
@@ -39,7 +42,12 @@ const limits = ref(null);
 
 onMounted(async () => {
   try {
-    const data = await userService.fetchWorkCheck(authStore.userData.userId, start, end);
+    if (!centerStore.centers.length) await centerStore.fetchCenters().catch(() => {});
+    const timeZone = centerStore.centers.find((c) => c._id === authStore.userData.centerId)?.timeZone || DEFAULT_TIME_ZONE;
+    const today = Temporal.Now.plainDateISO(timeZone);
+    const end = today.add({ days: 6 }).toString();
+    const data = await userService.fetchWorkCheck(authStore.userData.userId, today.toString(), end);
+    start.value = today.toString();
     windows.value = data.windows;
     daysByDate.value = Object.fromEntries(data.days.map((day) => [day.date, day]));
     limits.value = data.limits;

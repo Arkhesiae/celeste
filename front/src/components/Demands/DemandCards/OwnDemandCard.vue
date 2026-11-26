@@ -556,7 +556,7 @@ const openDetails = () => {
   justify-content: center;
   /* Dashed border styling */
   border: 1px dashed rgba(var(--v-theme-onBackground), 0.5);
-  background: rgba(var(--v-theme-surface-variant), 0.01);
+  background: rgba(var(--v-theme-surfaceVariant), 0.01);
   /* Light background */
 }
 

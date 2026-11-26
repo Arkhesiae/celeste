@@ -159,7 +159,7 @@
       <v-col cols="12" md="8" lg="9">
         <v-card
           v-if="selectedVersion"
-          :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
+          :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
           elevation="0"
           class="pa-2 pt-16"
           color="transparent"
@@ -454,7 +454,7 @@ onMounted(() => {
 }
 
 .version-list::-webkit-scrollbar-track {
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  background: rgba(var(--v-theme-onSurface), 0.05);
   border-radius: 3px;
 }
 

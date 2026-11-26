@@ -975,7 +975,7 @@ const getWindowDateLabel = (idx) => {
 .info-stem {
   width: 1px;
   height: 10px;
-  background-color: rgb(var(--v-theme-on-background) / 0.1);
+  background-color: rgb(var(--v-theme-onBackground) / 0.1);
   transition: height 0.2s cubic-bezier(0.25, 0.8, 0.5, 1);
 }
 
@@ -1153,7 +1153,7 @@ const getWindowDateLabel = (idx) => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: rgb(var(--v-theme-on-surface) / 0.2);
+  background-color: rgb(var(--v-theme-onSurface) / 0.2);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
   cursor: pointer;
 }

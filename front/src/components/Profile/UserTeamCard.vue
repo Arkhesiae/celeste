@@ -184,39 +184,6 @@
     </v-navigation-drawer>
   </teleport>
 
-  <v-dialog v-model="showConflictDialog" max-width="600px">
-    <v-card elevation="0" class="pa-6">
-      <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
-        <v-card-title>Conflits détectés</v-card-title>
-      </v-card-item>
-      <v-card-text class="pa-0 my-4 ma-0">
-        <div v-if="substitutionConflicts.length">
-          <p>Les demandes suivantes sont impactées par le changement d'équipe / annulation et seront annulées :</p>
-          <v-list class="pa-0 ga-3 my-2 d-flex flex-column">
-            <v-card
-              v-for="(conf, idx) in substitutionConflicts"
-              :key="idx"
-              color="background"
-              class="pa-4"
-              elevation="0"
-            >
-              <v-list-item-title> Demande du {{ toDisplayFormat(posterDay(conf.sub)) }} </v-list-item-title>
-              <v-list-item-subtitle>
-                Demande initiale : <strong>{{ conf.sub?.posterShift?.shift?.name }}</strong> → après changement :
-                <strong>{{ conf.newShift?.name }}</strong>
-              </v-list-item-subtitle>
-            </v-card>
-          </v-list>
-        </div>
-      </v-card-text>
-      <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" rounded="xl" @click="showConflictDialog = false"> Annuler </v-btn>
-        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleDeleteAndSubmit">
-          Valider et annuler les demandes
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 
   <ConfirmationDialog
     v-model="showConfirmationDialog"
@@ -239,7 +206,7 @@
 </template>
 
 <script setup>
-import { posterDay, occurrenceDays, formatDay } from '@/utils/dayFields.js';
+import { occurrenceDays, formatDay } from '@/utils/dayFields.js';
 import { useTeamStore } from '@/stores/teamStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
 
@@ -335,7 +302,7 @@ const cancelImpact = () => {
 
 <style>
 .team-subtitle {
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: rgba(var(--v-theme-onSurface), 0.7);
   font-size: 12px;
 }
 

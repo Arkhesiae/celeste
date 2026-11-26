@@ -246,7 +246,7 @@ const timelineLabel = computed(
 .timeline-row-label {
   width: 44px;
   flex-shrink: 0;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: rgba(var(--v-theme-onSurface), 0.7);
 }
 
 .timeline-track {
@@ -301,7 +301,7 @@ const timelineLabel = computed(
   justify-content: space-between;
   margin-left: 52px;
   height: 20px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: rgba(var(--v-theme-onSurface), 0.7);
 }
 
 .timeline-axis-mark {

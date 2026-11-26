@@ -228,48 +228,13 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-
-  <v-dialog v-model="showConflictDialog" max-width="600px">
-    <v-card elevation="0" class="pa-6">
-      <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
-        <v-card-title>Conflits détectés</v-card-title>
-      </v-card-item>
-      <v-card-text class="pa-0 my-4 ma-0">
-        <div v-if="substitutionConflicts.length">
-          <p>Les demandes suivantes sont impactées par le changement d'équipe / annulation et seront annulées :</p>
-          <v-list class="pa-0 ga-3 my-2 d-flex flex-column">
-            <v-card
-              v-for="(conf, idx) in substitutionConflicts"
-              :key="idx"
-              color="background"
-              class="pa-4"
-              elevation="0"
-            >
-              <v-list-item-title> Demande du {{ toDisplayFormat(posterDay(conf.sub)) }} </v-list-item-title>
-              <v-list-item-subtitle>
-                Demande initiale : <strong>{{ conf.sub?.posterShift?.shift?.name }}</strong> → après changement :
-                <strong>{{ conf.newShift?.name }}</strong>
-              </v-list-item-subtitle>
-            </v-card>
-          </v-list>
-        </div>
-      </v-card-text>
-      <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" rounded="xl" @click="showConflictDialog = false"> Annuler </v-btn>
-        <v-btn variant="tonal" rounded="xl" color="primary" @click="handleDeleteAndSubmit">
-          Valider et annuler les demandes
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
 </template>
 
 <script setup>
 import { sameDateKey, pickerDayKey } from '@/utils/dateKey';
-import { posterDay, occurrenceDays } from '@/utils/dayFields.js';
+import { occurrenceDays } from '@/utils/dayFields.js';
 import { useDate } from 'vuetify';
 import { useTeamStore } from '@/stores/teamStore';
-import { demandService } from '@/services/demandService';
 
 const props = defineProps({
   dialogMode: {
@@ -296,7 +261,6 @@ const formattedStartDate = ref('');
 const formattedEndDate = ref('');
 const formattedDate = ref('');
 const formValid = ref(false);
-const showConflictDialog = ref(false);
 
 const selectedTeamName = computed(() => {
   const team = teams.value.find((t) => t._id === selectedTeam.value);
@@ -367,20 +331,16 @@ const updateFormattedDate = (val) => {
   }
 };
 
+// Renfort déjà prévu qui chevauche la période choisie (jours `YYYY-MM-DD`, comparés tels quels)
 const enRenfortConflict = computed(() => {
   if (!selectedDates.value.startDate || !selectedDates.value.endDate || !teamStore.teamOccurrences?.allOccurrences)
     return null;
-  const startOfRenfort = new Date(pickerDayKey(selectedDates.value.startDate));
-  const endOfRenfort = new Date(pickerDayKey(selectedDates.value.endDate));
+  const start = pickerDayKey(selectedDates.value.startDate);
+  const end = pickerDayKey(selectedDates.value.endDate);
   return (
-    teamStore.teamOccurrences?.allOccurrences.find((occurrence) => {
+    teamStore.teamOccurrences.allOccurrences.find((occurrence) => {
       const { from, to } = occurrenceDays(occurrence);
-      const startDate = new Date(from);
-      const endDate = to ? new Date(to) : null;
-      return (
-        (startDate <= startOfRenfort && endDate >= startOfRenfort) ||
-        (startDate <= endOfRenfort && endDate >= endOfRenfort)
-      );
+      return !!to && from <= end && to >= start;
     }) || null
   );
 });
@@ -419,13 +379,6 @@ const checkDateConflict = () => {
 
 const overrideDateConflict = () => {
   showConfirmationDialog.value = false;
-};
-
-const handleDeleteAndSubmit = async () => {
-  showConflictDialog.value = false;
-  for (const conflict of substitutionConflicts.value) {
-    await demandService.cancelDemand(conflict.id);
-  }
   handleSubmit();
 };
 

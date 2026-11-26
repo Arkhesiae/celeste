@@ -128,7 +128,7 @@ const handleDelete = (occurrenceId) => {
 .occurrence-title {
   font-size: 12px;
   font-weight: 500;
-  color: rgb(var(--v-theme-on-surface));
+  color: rgb(var(--v-theme-onSurface));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -151,7 +151,7 @@ const handleDelete = (occurrenceId) => {
 .occurrence-sub {
   font-size: 12px;
   opacity: 0.8;
-  color: rgb(var(--v-theme-on-surface));
+  color: rgb(var(--v-theme-onSurface));
   line-height: 1.4;
 }
 
@@ -175,7 +175,7 @@ const handleDelete = (occurrenceId) => {
 
   border-radius: 999px;
   /* border: 0.5px solid rgba(var(--v-border-color), var(--v-border-opacity)); */
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  color: rgba(var(--v-theme-onSurface), 0.6);
   white-space: nowrap;
   line-height: 1.6;
 }

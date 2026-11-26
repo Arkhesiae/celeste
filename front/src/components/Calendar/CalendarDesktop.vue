@@ -170,17 +170,6 @@ const demandsForDate = (dateStr) => (dateStr ? (demandsMap.value.get(dateStr) ??
   background: rgb(var(--v-theme-tertiary));
 }
 
-.chipe {
-  height: 14px;
-  width: 14px;
-  transform: translateY(-50%) translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(var(--v-theme-primary), 1) !important;
-  border-radius: 8px !important;
-}
-
 .top-left-corner {
   border-top-left-radius: 24px !important;
 }

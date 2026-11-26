@@ -227,7 +227,7 @@ const getUserFullName = (user) => {
 
 :deep(.v-btn--icon) {
   color: rgb(var(--v-theme-primary)) !important;
-  background-color: rgb(var(--v-theme-surface-container)) !important;
+  background-color: rgb(var(--v-theme-surfaceContainer)) !important;
 
 
 } */

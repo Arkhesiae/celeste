@@ -12,34 +12,30 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 |---|---|---|---|---|
 | 1 | 31 | `updateDayInRotation`: `rest` ignored, variation clean-up is a no-op | P1 | under 1 h |
 | 2 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
-| 3 | 18 | Dead conflict dialogs in the team UI | P2 | under 1 h |
-| 4 | 54 | Kebab-case theme variables resolve to Vuetify's defaults | P2 | under 1 h |
-| 5 | 62 | Demand pile "+" marker has no style in the day block | P2 | under 1 h |
-| 6 | 64 | The dashboard 7-day card takes "today" from the browser, not the center | P3 | under 1 h |
-| 7 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
-| 8 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
-| 9 | 30 | `deleteRotation` allows deleting a rotation that was active in the past | P1 | 1 h |
-| 10 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
-| 11 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
-| 12 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
-| 13 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
-| 14 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
-| 15 | 20 | Admin routes without a center guard | P1 | 2 h |
-| 16 | 11 | Request bodies and avatar upload | P1 | 2 h |
-| 17 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
-| 18 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
-| 19 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
-| 20 | 2 | Guessable local admin passwords in production | P0 | ops |
-| 21 | 63 | The dashboard calendar throws a `TypeError` when the API is unreachable | P2 | to investigate |
-| 22 | 39 | Center and role in the access token can be stale | P2 | 1 day |
-| 23 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
-| 24 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
-| 25 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
-| 26 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
-| 27 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
-| 28 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
-| 29 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
-| 30 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
+| 3 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
+| 4 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
+| 5 | 30 | `deleteRotation` allows deleting a rotation that was active in the past | P1 | 1 h |
+| 6 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
+| 7 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
+| 8 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
+| 9 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
+| 10 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
+| 11 | 20 | Admin routes without a center guard | P1 | 2 h |
+| 12 | 11 | Request bodies and avatar upload | P1 | 2 h |
+| 13 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
+| 14 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
+| 15 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
+| 16 | 2 | Guessable local admin passwords in production | P0 | ops |
+| 17 | 63 | The dashboard calendar throws a `TypeError` when the API is unreachable | P2 | to investigate |
+| 18 | 39 | Center and role in the access token can be stale | P2 | 1 day |
+| 19 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
+| 20 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
+| 21 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
+| 22 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
+| 23 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
+| 24 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
+| 25 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
+| 26 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
 
 `S4`, `S8` and `S9` come from `docs/quality/calendar-substitution-review.md`, where they are described in full and were rechecked on 2026-11-25.
 
@@ -56,22 +52,6 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 - Removing a date that does not exist succeeds silently: `rotation.activation.js` only throws "Aucune activation trouvée" when the rotation itself is missing (`findByIdAndUpdate` returns the document even when `$pull` matched nothing).
 - Retroactive activation changes also convert or cancel past demands that the cron has not archived yet.
 - `saveRotation` (`rotation.create.js`) assumes `days` exists and fails with a 500 when it is missing; the `days` branch of `updateRotation` is dead (commented out).
-
-### 18. Dead conflict dialogs in the team UI — P2
-`UserTeamCard.vue:187` and `TeamChangeDialog.vue:232` render a "Conflits détectés" dialog using `substitutionConflicts`, `handleDeleteAndSubmit` and `showConflictDialog`; `showConflictDialog` is never set to true. Superseded by the server-driven 409 flow (`TeamChangeImpactDialog`).
-**Fix:** delete both dialogs and their handlers.
-
-### 54. Kebab-case theme variables resolve to Vuetify's defaults — P2
-33 uses of `var(--v-theme-on-surface)`, `var(--v-theme-surface-variant)` and similar (kebab-case; e.g. `WelcomeTitle.vue`, `WorkdayAmplitudeGraph.vue`, `OwnDemandCard.vue`, `CurrentBudgetCard.vue`, `Donations.vue`, `TeamChangeImpactDialog.vue`, `TeamOccurrence.vue`, `UserTeamCard.vue`) read Vuetify's built-in palette, because the project defines `onSurface` / `surfaceVariant` (camelCase). The colour is close but not the theme's, and light and dark may differ (found by the 2026-11-23 front scan, count rechecked 2026-11-25).
-**Fix:** replace with the camelCase variables and look at the screens.
-
-### 62. The demand pile "+" marker has no style in the day block — P2
-`components/Calendar/Panels/CalendarDayBlock.vue:82` uses `class="chipe position-absolute"`, but `.chipe` (14 px circle, centred by a transform) is declared only in `CalendarDesktop.vue`'s scoped style, so the marker is unstyled in the day block. Found by the 2026-11-25 utility-class scan; not checked on screen.
-**Fix:** move `.chipe` to the day block (or a global file), then check the calendar.
-
-### 64. The dashboard 7-day card takes "today" from the browser, not the center — P3
-`components/Dashboard/UpcomingWorkWindow.vue` uses `todayKey()` (the browser's local day). The server computes shifts in the center's time zone, so someone connecting from another zone can see the window starting a day off.
-**Fix:** use the center's `timeZone` (served by `GET /center`) with Temporal.
 
 ### S8. Cascade children lose the final status of the root — P1
 `services/demand/demand.cascade.js:100`: `cancelDemandWithSession(child._id, { visited, session, cancelledDemands })` drops `reason`, so when the root is cancelled with `system-cancelled` the children get `cancelled`. The parameter is also misnamed (it is a final **status**). Details in `calendar-substitution-review.md`.
@@ -207,6 +187,10 @@ Open on purpose: the owner decided not to act on these yet. They are not ranked 
 - Front ESLint errors (about 150, see the roadmap) and the optional legacy-CSS leftovers (see the roadmap line of 2026-11-25).
 
 ## Removed from this file on 2026-11-25
+- **#64** (dashboard 7-day card used the browser's day): fixed, `UpcomingWorkWindow.vue` takes today in the center's time zone (Temporal, centers loaded if needed, `Europe/Paris` fallback). Not tried in a browser.
+- **#62** (demand pile "+" marker unstyled): fixed, `.chipe` moved from `CalendarDesktop.vue` (where nothing used it) into the scoped style of `CalendarDayBlock.vue`. Not looked at on screen.
+- **#54** (kebab-case theme variables): fixed, the 34 uses of `--v-theme-on-surface`, `-on-background`, `-surface-variant` and `-surface-container` now use the camelCase names the theme defines (none left in `front/src`). Not looked at on screen.
+- **#18** (dead conflict dialogs in the team UI): fixed, both dialogs and their handlers deleted from `UserTeamCard.vue` and `TeamChangeDialog.vue`.
 - **#24** (team-change body): fixed the simple way in `assignTeamToUser` (`services/user/user.team.js`): a malformed `teamId` and a `toDate` before `fromDate` are refused with a 400 before any query (test `test/teamChangeInput.test.js`). The note about future callers passing `req.body` into `sanitizeUserPeriod` was a caution, not a defect, and is dropped.
 - **#66** (rules of any center readable by any logged-in user): fixed. A new guard `authorizeCenterQuery` (`middleware/centerAuth.js`) refuses another center's `?centerId=` (403) except for the master admin; `getAllRules` answers for the caller's own center when none is named and no longer sends `adminValues` (the other centers' values) to anyone but the master. Test `test/ruleRead.db.test.js`.
 - **#58** (mail transport): fixed. One SMTP port (`EMAIL_PORT`, default 587) for both transporters, the logs name it; `MAIL_SERVICE` now decides (see `CLAUDE.md`): in production mails always go out through SES, elsewhere they are simulated unless `MAIL_SERVICE=ses`; the console transporter prints "Mail simulé" and returns `simulated: true` instead of silently reporting a send.

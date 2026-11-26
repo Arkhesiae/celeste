@@ -215,7 +215,7 @@ const close = () => {
                 <v-card
                   v-if="newRotation.days.length > 0"
                   color="background"
-                  class="mb-8 pa-4"
+                  class="mb-8 pa-4"
                   elevation="0"
                 >
                   <v-card-item>
@@ -302,7 +302,7 @@ const close = () => {
 
 <style scoped>
 .v-card {
-  border: 1px solid rgba(var(--v-theme-surface-variant), 0.12);
+  border: 1px solid rgba(var(--v-theme-surfaceVariant), 0.12);
 }
 
 .v-btn {

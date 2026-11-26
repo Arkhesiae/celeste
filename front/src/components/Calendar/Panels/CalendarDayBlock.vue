@@ -258,6 +258,17 @@ const handleClick = async () => {
 </script>
 
 <style scoped>
+.chipe {
+  height: 14px;
+  width: 14px;
+  transform: translateY(-50%) translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--v-theme-primary), 1) !important;
+  border-radius: 8px !important;
+}
+
 /* Les utilitaires de la tuile (d-flex, pa-2, overflow-hidden) imposent affichage, marge intérieure et débordement :
    ils ne sont pas répétés ici. */
 

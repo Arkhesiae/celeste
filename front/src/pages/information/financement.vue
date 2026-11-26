@@ -533,7 +533,7 @@ const previousCampaignsRemainder = computed(() => {
 
 .timeline-description {
   font-size: 0.9em;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: rgba(var(--v-theme-onSurface), 0.7);
 }
 
 /* Indicateur de budget utilisé */
@@ -562,7 +562,7 @@ const previousCampaignsRemainder = computed(() => {
 
 .label-subtitle {
   font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: rgba(var(--v-theme-onSurface), 0.7);
   line-height: 1;
   margin-top: 2px;
 }
@@ -696,7 +696,7 @@ const previousCampaignsRemainder = computed(() => {
   font-size: 0.5rem;
   opacity: 0.5;
   font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
+  color: rgb(var(--v-theme-onSurface));
   z-index: 2;
 }
 

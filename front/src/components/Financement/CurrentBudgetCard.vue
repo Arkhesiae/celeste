@@ -1,5 +1,5 @@
 <template>
-  <v-card
+  <v-card
     elevation="0"
     :class="!smAndDown ? 'pl-16' : 'pl-2 pr-2'"
     class="pt-16 pb-4 overflow-visible d-flex flex-column"
@@ -157,7 +157,7 @@ const progressPercentage = computed(() => {
 
 .label-subtitle {
   font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: rgba(var(--v-theme-onSurface), 0.7);
   line-height: 1;
   margin-top: 2px;
 }

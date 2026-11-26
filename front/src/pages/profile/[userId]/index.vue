@@ -434,7 +434,7 @@ const headerStyle = reactive({
       : 'none',
   ),
   zIndex: '10',
-  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-on-surface), 0.1)' : 'none')),
+  borderBottom: computed(() => (isSticky.value ? '1px solid rgba(var(--v-theme-onSurface), 0.1)' : 'none')),
 });
 </script>
 

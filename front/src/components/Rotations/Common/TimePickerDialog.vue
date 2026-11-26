@@ -70,6 +70,6 @@ const saveTimePicker = () => {
 <style scoped>
 :deep(.v-time-picker-clock) {
   background: rgba(var(--v-theme-background), 1) !important;
-  border: 1px solid rgba(var(--v-theme-surface-variant), 0.05);
+  border: 1px solid rgba(var(--v-theme-surfaceVariant), 0.05);
 }
 </style>

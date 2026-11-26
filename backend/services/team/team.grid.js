@@ -1,156 +1,181 @@
-import { Temporal } from '@js-temporal/polyfill';
 import { occurrenceDays } from '../../utils/dates/dayAccess.js';
-import { eachDay, toMongoDate } from '../../utils/dates/plainDate.js';
+import { daysBetween, eachDay } from '../../utils/dates/plainDate.js';
 import { fullName } from '../../utils/names.js';
 import { sameId } from '../../utils/ids.js';
+import { isValidDate } from '../../utils/validation.js';
+import { TEAM_GRID_MAX_DAYS as MAX_DAYS } from '../../config/limits.js';
 import Team from '../../models/Team.js';
 import User from '../../models/User.js';
 import Demand from '../../models/Demand.js';
 import { Assignment } from '../../models/CalendarEntry.js';
+import { AppError } from '../../error/AppError.js';
 import { computeUserShifts } from '../planning/planning.userShifts.js';
-import { computeShiftOfTeam } from '../planning/planning.teamShift.js';
+import { createTeamShiftReader } from '../planning/planning.teamShift.js';
 import { getTeamAtDay } from './team.atDay.js';
 
-import { AppError } from '../../error/AppError.js';
-import { isValidDate } from '../../utils/validation.js';
-
-
-import { TEAM_GRID_MAX_DAYS as MAX_DAYS } from '../../config/limits.js';
 /**
- * Grille d'une équipe : pour chaque membre (permanent ou renfort) sur la période, la vacation ou l'entrée
- * de calendrier de chaque jour (une vacation de nuit appartient au jour où elle commence).
- * @param {string} teamId
- * @param {string} startDate - YYYY-MM-DD
- * @param {string} endDate - YYYY-MM-DD
+ * Grille d'une équipe : pour chaque membre (permanent ou renfort) sur la période, la vacation ou l'entrée de calendrier de chaque
+ * jour. `getTeamGrid` assemble ; chaque étape a sa fonction.
  */
-export async function getTeamGrid (teamId, startDate, endDate) {
-    if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {   // YYYY-MM-DD : l'ordre des chaînes est l'ordre chronologique
+
+/** Refuse une période qui n'est pas faite de deux jours existants, dans l'ordre, et assez courte (avant de lister ses jours) */
+const assertGridPeriod = (startDate, endDate) => {
+    // YYYY-MM-DD : l'ordre des chaînes est l'ordre chronologique
+    if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {
         throw new AppError('Période invalide (YYYY-MM-DD)', 400);
     }
-    for (const key of [startDate, endDate]) {
-        try { Temporal.PlainDate.from(key); } catch { throw new AppError('Période invalide (YYYY-MM-DD)', 400); }
-    }
-    if (eachDay(startDate, endDate).length > MAX_DAYS) {
+    if (daysBetween(startDate, endDate) + 1 > MAX_DAYS) {
         throw new AppError(`La période ne peut pas dépasser ${MAX_DAYS} jours`, 400);
     }
+};
 
-    const team = await Team.findById(teamId).select('name center cycleStartDate cycleOffset deleted').lean();
-    if (!team || team.deleted) throw new AppError('Équipe non trouvée', 404);
-
-    const dates = eachDay(startDate, endDate);
-
+/**
+ * Les utilisateurs qui sont dans l'équipe au moins un jour de la période, jour par jour (voir getTeamAtDay : un renfort ailleurs les
+ * en sort ces jours-là). `isRenfort` : aucun de ces jours ne vient d'une affectation permanente.
+ * @returns {Promise<Array<{ user: Object, inTeamDates: Set<string>, isRenfort: boolean }>>}
+ */
+const findGridMembers = async (team, dates) => {
     const users = await User.find({
         centerId: team.center,
         isActive: { $ne: false },
         'teams.teamId': team._id,
     }).select('name lastName teams').lean();
 
-    // Appartenance jour par jour : l'équipe effective d'un utilisateur un jour donné (un renfort l'emporte sur
-    // l'équipe permanente). Un membre n'apparaît que s'il fait partie de l'équipe au moins un jour de la période.
-    const members = [];
-    for (const user of users) {
+    return users.flatMap((user) => {
         const inTeamDates = new Set();
         let hasPermanentDay = false;
         for (const date of dates) {
-            const occurrence = getTeamAtDay(user.teams, Temporal.PlainDate.from(date));
-            if (occurrence && sameId(occurrence.teamId, team._id)) {
-                inTeamDates.add(date);
-                if (!occurrenceDays(occurrence).to) hasPermanentDay = true;
-            }
+            const occurrence = getTeamAtDay(user.teams, date);
+            if (!occurrence || !sameId(occurrence.teamId, team._id)) continue;
+            inTeamDates.add(date);
+            if (!occurrenceDays(occurrence).to) hasPermanentDay = true;
         }
-        if (inTeamDates.size === 0) continue;
-        members.push({ user, inTeamDates, isRenfort: !hasPermanentDay });
-    }
+        return inTeamDates.size ? [{ user, inTeamDates, isRenfort: !hasPermanentDay }] : [];
+    });
+};
 
-    // Vacation « normale » de l'équipe pour chaque jour : affichée une seule fois dans l'en-tête de la grille
-    const teamShiftList = await Promise.all(dates.map(async (date) => {
-        // Null si l'équipe n'a pas de début de cycle
-        return [date, await computeShiftOfTeam(toMongoDate(Temporal.PlainDate.from(date)), team)];
-    }));
+/**
+ * La vacation « normale » de l'équipe chaque jour, affichée une seule fois dans l'en-tête de la grille. Un jour sans vacation (pas de
+ * tour en vigueur, équipe sans position dans le cycle) est absent des deux résultats.
+ * @returns {Promise<{ teamShifts: Object, shiftIdByDate: Map<string, string> }>}
+ */
+const readTeamShifts = async (team, dates) => {
+    const readShift = createTeamShiftReader();
+    const shifts = await Promise.all(dates.map((date) => readShift(team, date)));
+
     const teamShifts = {};
-    const teamShiftIds = new Map();
-    for (const [date, shift] of teamShiftList) {
-        if (!shift) continue;
-        teamShiftIds.set(date, String(shift._id));
-        teamShifts[date] = {
+    const shiftIdByDate = new Map();
+    shifts.forEach((shift, index) => {
+        if (!shift) return;
+        shiftIdByDate.set(dates[index], String(shift._id));
+        teamShifts[dates[index]] = {
             name: shift.name,
             isRest: shift.type === 'rest',
             startTime: shift.default?.startTime ?? null,
             endTime: shift.default?.endTime ?? null,
         };
-    }
+    });
+    return { teamShifts, shiftIdByDate };
+};
 
-    // Contrepartie des remplacements / permutations, lue sur les entrées de calendrier de la période
-    const userIds = members.map((m) => m.user._id);
+/**
+ * Avec qui chaque membre a un remplacement ou une permutation, lu sur les entrées de calendrier de la période (la dernière du jour).
+ * @returns {Promise<(userId, date: string) => ({ name: string, isSwitch: boolean } | null)>}
+ */
+const readCounterparts = async (userIds, dates) => {
     const assignments = await Assignment.find({
         userId: { $in: userIds }, date: { $in: dates }, active: true, subType: 'substitution', 'substitution.id': { $ne: null },
     }).select('userId date substitution.id createdAt').sort({ createdAt: 1 }).lean();
 
-    const substitutions = await Demand.find({ _id: { $in: assignments.map((a) => a.substitution.id) } })
+    const demands = await Demand.find({ _id: { $in: assignments.map((a) => a.substitution.id) } })
         .select('posterId accepterId accepterShift').lean();
-    const subById = new Map(substitutions.map((s) => [String(s._id), s]));
+    const demandById = new Map(demands.map((demand) => [String(demand._id), demand]));
 
-    const counterpartIds = new Set();
-    for (const s of substitutions) {
-        if (s.posterId) counterpartIds.add(String(s.posterId));
-        if (s.accepterId) counterpartIds.add(String(s.accepterId));
-    }
-    const counterpartUsers = await User.find({ _id: { $in: [...counterpartIds] } }).select('name lastName').lean();
-    const nameById = new Map(counterpartUsers.map((u) => [String(u._id), fullName(u)]));
+    const people = await User.find({ _id: { $in: demands.flatMap((d) => [d.posterId, d.accepterId]).filter(Boolean) } })
+        .select('name lastName').lean();
+    const nameById = new Map(people.map((person) => [String(person._id), fullName(person)]));
 
-    // Dernière entrée de remplacement par (utilisateur, jour)
-    const subByUserDate = new Map();
-    for (const a of assignments) subByUserDate.set(`${a.userId}|${a.date}`, subById.get(String(a.substitution.id)));
+    const keyOf = (userId, date) => `${userId}|${date}`;
+    // Triées par création : la dernière entrée d'un jour remplace les précédentes
+    const demandByUserDate = new Map(assignments.map((a) => [keyOf(a.userId, a.date), demandById.get(String(a.substitution.id))]));
 
-    const counterpartOf = (userId, date) => {
-        const sub = subByUserDate.get(`${userId}|${date}`);
-        if (!sub) return null;
-        const isPoster = sameId(sub.posterId, userId);
-        const otherId = isPoster ? sub.accepterId : sub.posterId;
+    return (userId, date) => {
+        const demand = demandByUserDate.get(keyOf(userId, date));
+        if (!demand) return null;
+        const otherId = sameId(demand.posterId, userId) ? demand.accepterId : demand.posterId;
         const name = otherId ? nameById.get(String(otherId)) : null;
-        if (!name) return null;
-        return { name, isSwitch: Boolean(sub.accepterShift?.shift) };
+        return name ? { name, isSwitch: Boolean(demand.accepterShift?.shift) } : null;
     };
+};
 
-    const rows = await Promise.all(members.map(async ({ user, isRenfort, inTeamDates }) => {
-        const shifts = await computeUserShifts(dates, user._id);
-        const days = [];
+/**
+ * La case d'un jour d'un membre, ou `null` pour une case vide : un repos sans rien de particulier, ou la vacation habituelle de
+ * l'équipe, déjà dans l'en-tête.
+ * @param {Object} result - un jour de computeUserShifts
+ * @param {{ counterpart: Object|null, usualShiftId: string|undefined }} context
+ */
+const toGridCell = (result, { counterpart, usualShiftId }) => {
+    const shift = result.shiftData?.shift ?? null;
+    // Un remplacé ne tient plus rien, mais la grille montre quelle vacation il a cédée
+    const shownShift = shift ?? result.substitution?.gave?.shift ?? null;
+    const isRest = !shownShift || shownShift.type === 'rest';
+    const isEntry = !['shift', 'empty'].includes(result.type);   // entrée de calendrier (congé, stage, remplacement...)
+    if (isRest && !isEntry && !counterpart) return null;
 
-        for (const r of shifts) {
-            if (!inTeamDates.has(r.date)) continue;   // jour où il n'est pas dans cette équipe : pas de cellule
-            const shift = r.shiftData?.shift ?? null;
-            // Un remplacé ne tient plus rien, mais la grille montre quelle vacation il a cédée
-            const shownShift = shift ?? r.substitution?.gave?.shift ?? null;
-            const isRest = !shownShift || shownShift.type === 'rest';
-            const isEntry = !['shift', 'empty'].includes(r.type);   // entrée de calendrier (congé, stage, remplacement...)
-            const counterpart = counterpartOf(user._id, r.date);
-            // Journée de repos sans rien de particulier : cellule vide
-            if (isRest && !isEntry && !counterpart) continue;
+    const variation = result.shiftData?.selectedVariation;
+    const isUsualShift = result.type === 'shift' && result.presence === 'present' && !variation && !result.wasPatched && !counterpart
+        && String(shift?._id) === usualShiftId;
+    if (isUsualShift) return null;
 
-            const variation = r.shiftData?.selectedVariation;
-            // Vacation habituelle de l'équipe, sans rien de particulier : déjà dans l'en-tête, cellule vide
-            const isUsualShift = r.type === 'shift' && r.presence === 'present' && !variation && !r.wasPatched && !counterpart
-                && String(shift?._id) === teamShiftIds.get(r.date);
-            if (isUsualShift) continue;
+    return {
+        date: result.date,
+        type: result.type,
+        shiftName: shownShift?.name ?? null,
+        variation: typeof variation === 'object' ? variation?.name ?? null : variation ?? null,
+        startTime: result.startTime ?? shift?.default?.startTime ?? null,
+        endTime: result.endTime ?? shift?.default?.endTime ?? null,
+        presence: result.presence,
+        isRest,
+        counterpart,
+    };
+};
 
-            days.push({
-                date: r.date,
-                type: r.type,
-                shiftName: shownShift?.name ?? null,
-                variation: typeof variation === 'object' ? variation?.name ?? null : variation ?? null,
-                startTime: r.startTime ?? shift?.default?.startTime ?? null,
-                endTime: r.endTime ?? shift?.default?.endTime ?? null,
-                presence: r.presence,
-                isRest,
-                counterpart,
-            });
-        }
+/** La ligne d'un membre : ses cases non vides, les jours où il est dans l'équipe */
+const buildMemberRow = async ({ user, isRenfort, inTeamDates }, { dates, shiftIdByDate, counterpartOf }) => {
+    const days = (await computeUserShifts(dates, user._id))
+        .filter((result) => inTeamDates.has(result.date))
+        .map((result) => toGridCell(result, {
+            counterpart: counterpartOf(user._id, result.date),
+            usualShiftId: shiftIdByDate.get(result.date),
+        }))
+        .filter(Boolean);
 
-        return { userId: user._id, name: user.name, lastName: user.lastName, isRenfort, inTeamDates: [...inTeamDates], days };
-    }));
+    return { userId: user._id, name: user.name, lastName: user.lastName, isRenfort, inTeamDates: [...inTeamDates], days };
+};
 
-    rows.sort((a, b) => Number(a.isRenfort) - Number(b.isRenfort)
-        || `${a.lastName}${a.name}`.localeCompare(`${b.lastName}${b.name}`));
+/** Les membres permanents d'abord, puis les renforts ; par nom */
+const byRoleThenName = (a, b) => Number(a.isRenfort) - Number(b.isRenfort)
+    || `${a.lastName}${a.name}`.localeCompare(`${b.lastName}${b.name}`);
+
+/**
+ * Grille d'une équipe sur une courte période (une vacation de nuit appartient au jour où elle commence).
+ * @param {string} teamId
+ * @param {string} startDate - YYYY-MM-DD
+ * @param {string} endDate - YYYY-MM-DD
+ */
+export async function getTeamGrid (teamId, startDate, endDate) {
+    assertGridPeriod(startDate, endDate);
+
+    const team = await Team.findById(teamId).select('name center cycleStartDate cycleOffset deleted').lean();
+    if (!team || team.deleted) throw new AppError('Équipe non trouvée', 404);
+
+    const dates = eachDay(startDate, endDate);
+    const members = await findGridMembers(team, dates);
+    const { teamShifts, shiftIdByDate } = await readTeamShifts(team, dates);
+    const counterpartOf = await readCounterparts(members.map((member) => member.user._id), dates);
+
+    const rows = await Promise.all(members.map((member) => buildMemberRow(member, { dates, shiftIdByDate, counterpartOf })));
+    rows.sort(byRoleThenName);
 
     return { team: { _id: team._id, name: team.name }, startDate, endDate, teamShifts, members: rows };
 }

@@ -1,62 +1,56 @@
-import Team from '../../models/Team.js';
-import { findOrThrow } from '../../utils/mongo.js';
 import Center from '../../models/Center.js';
-import { findLatestRotation } from '../rotation/rotation.latest.js';
-import Shift from '../../models/Shift.js';
 import Rotation from '../../models/Rotation.js';
-import { AppError } from '../../error/AppError.js';
+import { activationAt, activationTimelineOf } from '../rotation/rotation.latest.js';
 import { cycleDayIndex } from '../team/team.cycleIndex.js';
 
-// Calculer le shift de travail pour une équipe donnée et une date donnée
-const computeShiftOfTeam = async (date, teamData) => {
-    try {
-        if (!date) {
-            throw new AppError('Aucune date fournie', 400);
-        }
+/**
+ * La vacation que la rotation prévoit pour une équipe un jour donné, pour le planning d'un utilisateur comme pour la grille d'une
+ * équipe : le tour en vigueur ce jour-là (rotation.latest.js), puis la position de l'équipe dans son cycle (team.cycleIndex.js).
+ */
 
-        if (!teamData) {
-            throw new AppError('Données d\'équipe invalides', 400);
-        }
-
-        if (!teamData.center) {
-            throw new AppError(`Aucun centre associé à l'équipe: ${teamData.teamId}`, 404);
-        }
-
-        const center = await findOrThrow(Center, teamData.center, { message: `Centre non trouvé pour l'ID: ${teamData.center}` });
-        let latestRotation = await findLatestRotation(center._id, date);
-        if (!latestRotation) {
-            return null;
-        }   
-
-        if (latestRotation.days.length > 0) {
-            const firstDay = latestRotation.days[0];
-            const needsPopulate = typeof firstDay === 'string' ||
-                firstDay?.constructor?.name === 'ObjectId' ||
-                firstDay?.constructor?.name === 'ObjectID' ||
-                !firstDay?.default;
-            if (needsPopulate) {
-                latestRotation = await Rotation.findById(latestRotation._id).populate({
-                    path: 'days',
-                    populate: { path: 'variations' }
-                });
-            }
-        }
-        
-
-        const rotationPattern = latestRotation.days;
-        if (!rotationPattern || rotationPattern.length === 0) {
-            throw new Error('Pattern de rotation invalide');
-        }
-
-        // Début de cycle défini par l'ancre du centre + offset de l'équipe (repli : ancien cycleStartDate)
-        const dayIndex = cycleDayIndex(teamData, center, date, rotationPattern.length);
-        if (dayIndex === null) return null;   // équipe sans début de cycle
-
-        return rotationPattern[dayIndex];
-    } catch (error) {
-        console.error('Erreur dans computeShiftOfTeam:', error.message);
-        throw error;
-    }
+/** `load(key)` appelé une seule fois par clé : les appels suivants, même simultanés, reçoivent la même promesse */
+const cachedByKey = (load) => {
+    const results = new Map();
+    return (key) => {
+        const id = String(key);
+        if (!results.has(id)) results.set(id, load(id));
+        return results.get(id);
+    };
 };
 
-export { computeShiftOfTeam };
+// Ce qui est mis en cache doit être une vraie promesse, que plusieurs jours peuvent attendre : une Query Mongoose ne s'attend qu'une
+// fois, d'où `exec()` (les fonctions `async` en rendent déjà une)
+const loadCenter = (centerId) => Center.findById(centerId).select('cycleAnchorDate cycleAnchorDay').lean().exec();
+
+const loadTimeline = async (centerId) =>
+    activationTimelineOf(await Rotation.find({ centerId }).select('activationDates activationDays').lean());
+
+const loadRotation = (rotationId) =>
+    Rotation.findById(rotationId).populate({ path: 'days', populate: { path: 'variations' } }).exec();
+
+/**
+ * Le lecteur de vacations d'équipe, à créer pour un lot de jours (une requête, une grille) : le centre, sa chronologie
+ * d'activations et chaque tour ne sont lus qu'une fois, et seulement s'ils servent.
+ * Le tour est choisi jour par jour : un lot qui traverse un changement de tour donne à chaque jour le sien.
+ * @returns {(team: Object, dayKey: string) => Promise<Object|null>} la vacation (`Shift`, variations peuplées) ; `null` sans
+ *   centre, sans tour en vigueur, sans jours dans le tour ou si l'équipe n'a pas de position dans le cycle
+ */
+export const createTeamShiftReader = () => {
+    const centerOf = cachedByKey(loadCenter);
+    const timelineOf = cachedByKey(loadTimeline);
+    const rotationOf = cachedByKey(loadRotation);
+
+    return async (team, dayKey) => {
+        const centerId = team.center?._id ?? team.center;   // centre peuplé ou non
+        if (!centerId) return null;
+
+        const activation = activationAt(await timelineOf(centerId), dayKey);
+        if (!activation) return null;
+
+        const rotation = await rotationOf(activation.rotation._id);
+        if (!rotation?.days?.length) return null;
+
+        const dayIndex = cycleDayIndex(team, await centerOf(centerId), dayKey, rotation.days.length);
+        return dayIndex === null ? null : rotation.days[dayIndex] || null;
+    };
+};

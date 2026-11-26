@@ -7,3 +7,4 @@ export * from './team.cycle.js';
 export * from './team.cycleIndex.js';
 export * from './team.grid.js';
 export * from './team.segments.js';
+export * from './team.membership.js';

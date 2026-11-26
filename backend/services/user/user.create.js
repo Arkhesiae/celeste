@@ -27,7 +27,7 @@ export const createUserService = async (userData) => {
     });
 
 
-    const firstTeam = await Team.findOne({ _id: team, center: centerId });
+    const firstTeam = await Team.findOne({ _id: team, center: centerId, deleted: { $ne: true } });
     if (!firstTeam) {
         throw new AppError('Equipe non trouvée', 404);
     }

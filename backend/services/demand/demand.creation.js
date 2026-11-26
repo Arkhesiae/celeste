@@ -29,7 +29,7 @@ export async function createDemand(data) {
     } = data;
 
     // Validate user
-    const user = await findOrThrow(User, posterId, { message: 'Utilisateur non trouvé', populate: 'teams' });
+    const user = await findOrThrow(User, posterId, { message: 'Utilisateur non trouvé' });
     const maxPoints = maximumTransactionPoints(points, acceptedSwitches)
     if (user.points - maxPoints < MIN_POINTS_BALANCE) {
         throw new AppError("Vous ne pouvez pas poster cette demande, vous n'avez pas assez de points", 400);

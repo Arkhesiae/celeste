@@ -25,6 +25,14 @@ const cycleStartOf = (team, center) => {
     return team?.cycleStartDate ? toPlainDate(team.cycleStartDate) : null;
 };
 
+/** Offset d'une équipe par rapport à l'ancre : son `cycleOffset`, sinon celui que donne l'ancien `cycleStartDate` ; null si inconnu */
+// TEMPORARY(day-fields): le repli disparait avec Team.cycleStartDate ; il ne restera que `team.cycleOffset`.
+export const effectiveOffset = (team, anchor, total) => {
+    if (Number.isInteger(team.cycleOffset)) return team.cycleOffset;
+    if (team.cycleStartDate) return mod(daysBetween(anchor, team.cycleStartDate), total);
+    return null;
+};
+
 /** Indice (0-based) du jour de la rotation pour `date`, selon le début de cycle de l'équipe ; null si inconnu */
 export const cycleDayIndex = (team, center, date, total) => {
     const start = cycleStartOf(team, center);

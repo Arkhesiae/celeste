@@ -1,5 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 import { occurrenceDays } from '../../utils/dates/dayAccess.js';
+import { ownerAt } from './team.atDay.js';
 import { AppError } from '../../error/AppError.js';
 import { idOf } from '../../utils/ids.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
@@ -13,9 +14,7 @@ import { toDateKey } from '../../utils/dates/dateKey.js';
  *   - les segments sont triés, disjoints, et deux segments contigus de la même équipe sont fusionnés
  *   - les jours sans équipe n'appartiennent à aucun segment
  *
- * Règle de propriétaire d'un jour (identique à getTeamAtDay) : une occurrence bornée (renfort) qui
- * couvre le jour l'emporte sur l'occurrence permanente (sans toDate) ; à égalité de type, la plus récente
- * `fromDate` l'emporte.
+ * Le propriétaire d'un jour est donné par `ownerAt` (team.atDay.js), la même règle que `getTeamAtDay`.
  *
  * Fonctions pures, sans accès base de données.
  */
@@ -30,29 +29,9 @@ function normalizeOccurrences (occurrences) {
         if (!from || (hasEnd && !to)) {
             throw new AppError("Occurrence d'équipe invalide : date de début ou de fin illisible.", 400);
         }
-        return { teamId: idOf(occurrence.teamId), from, to };
+        // Sans équipe (fin d'appartenance) : reste `null` (`idOf` en ferait le texte « null »)
+        return { teamId: occurrence.teamId == null ? null : idOf(occurrence.teamId), from, to };
     });
-}
-
-function ownerAt (normalized, key) {
-    return ownerOccurrenceAt(normalized, key)?.teamId ?? null;
-}
-
-/** Occurrence qui fait autorité un jour donné (renfort borné > permanente, puis la plus récente), ou null. */
-function ownerOccurrenceAt (normalized, key) {
-    let bounded = null;
-    let permanent = null;
-
-    for (const occ of normalized) {
-        if (occ.from > key) continue;
-        if (occ.to === null) {
-            if (!permanent || occ.from > permanent.from) permanent = occ;
-        } else if (occ.to >= key) {
-            if (!bounded || occ.from > bounded.from) bounded = occ;
-        }
-    }
-
-    return bounded ?? permanent ?? null;
 }
 
 /**
@@ -91,10 +70,23 @@ export function buildTeamSegments (occurrences) {
 
     return sweep(
         boundaries,
-        (key) => ownerAt(normalized, key),
+        (key) => ownerAt(normalized, key)?.teamId ?? null,
         (a, b) => a === b,
         ({ from, to, result }) => ({ teamId: result, from, to })
     ).filter((segment) => segment.teamId !== null);
+}
+
+/**
+ * L'utilisateur tient-il l'une de ces équipes le jour `dayKey` ou après ? « Tenir » au sens de la règle d'un jour : une affectation
+ * remplacée depuis, ou arrêtée par la marque « sans équipe », ne compte pas, même si elle n'a pas de date de fin.
+ * @param {Array} occurrences - user.teams
+ * @param {Array<string|Object>} teamIds
+ * @param {string} dayKey - YYYY-MM-DD
+ */
+export function holdsAnyTeamFrom (occurrences, teamIds, dayKey) {
+    const wanted = new Set(teamIds.map(idOf));
+    return buildTeamSegments(occurrences)
+        .some((segment) => wanted.has(segment.teamId) && (segment.to === null || segment.to >= dayKey));
 }
 
 /**
@@ -112,8 +104,8 @@ export function buildTeamTimeline (occurrences) {
     return sweep(
         boundaries,
         (key) => {
-            const occ = ownerOccurrenceAt(normalized, key);
-            return occ ? { teamId: occ.teamId, kind: occ.to === null ? 'permanent' : 'reinforcement' } : null;
+            const occ = ownerAt(normalized, key);
+            return occ?.teamId ? { teamId: occ.teamId, kind: occ.to === null ? 'permanent' : 'reinforcement' } : null;
         },
         (a, b) => a?.teamId === b?.teamId && a?.kind === b?.kind,
         ({ from, to, result }) => (result ? { teamId: result.teamId, kind: result.kind, from, to } : null)

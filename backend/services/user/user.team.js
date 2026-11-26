@@ -1,5 +1,6 @@
 import { findOrThrow, inTransaction } from '../../utils/mongo.js';
 import { toDay } from '../../utils/dates/dayFields.js';
+import { occurrenceDays } from '../../utils/dates/dayAccess.js';
 import { todayIn } from '../../utils/dates/plainDate.js';
 import { sameId, isValidId } from '../../utils/ids.js';
 import User from '../../models/User.js';
@@ -65,8 +66,7 @@ async function buildApprovalRequest (user, { before, after, changes }) {
  * Assainit chaque période modifiée (demandes + entrées de calendrier) puis enregistre les nouvelles
  * occurrences — le tout dans la transaction fournie.
  */
-async function sanitizeAndSaveTeams (user, afterTeams, session) {
-    const { changes } = planTeamChange(user, afterTeams);
+async function sanitizeAndSaveTeams (user, afterTeams, changes, session) {
     const cancelled = new Set();
     const withdrawn = new Set();
 
@@ -102,8 +102,10 @@ async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
 
     const { changes, cancelled, withdrawn } = await inTransaction(async (session) => {
         const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé', session });
-        await assertNoPastChange(user, planTeamChange(user, computeAfter(user)));
-        return sanitizeAndSaveTeams(user, computeAfter(user), session);
+        const afterTeams = computeAfter(user);
+        const plan = planTeamChange(user, afterTeams);
+        await assertNoPastChange(user, plan);
+        return sanitizeAndSaveTeams(user, afterTeams, plan.changes, session);
     });
 
     // Après le commit uniquement : les tiers touchés (contrepartie, demandes en cascade) sont prévenus par email
@@ -117,6 +119,18 @@ async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
 }
 
 
+/**
+ * Les occurrences sans celle désignée ; 404 si elle n'y est pas. La marque « sans équipe » ne se retire pas : l'ancienne équipe
+ * reviendrait en vigueur.
+ */
+function withoutOccurrence (occurrences, occurrenceId, notFoundMessage) {
+    const kept = occurrences.filter(t => !sameId(t._id, occurrenceId) || t.teamId === null);
+    if (kept.length === occurrences.length) {
+        throw new AppError(notFoundMessage, 404);
+    }
+    return kept;
+}
+
 // ─── Service functions ────────────────────────────────────────────────────────
 
 /**
@@ -127,15 +141,12 @@ async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
  * @returns {Promise<{ changes: Array } | { needsApproval: true, segments, teams, changes: Array }>}
  */
 export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = false, actorId } = {}) {
-    return applyTeamChange(userId, (user) => {
-        const after = user.teams.filter(t => !sameId(t._id, occurrenceId));
-
-        if (user.teams.length === after.length) {
-            throw new AppError('Occurrence non trouvée', 404);
-        }
-
-        return after;
-    }, confirmed, actorId);
+    return applyTeamChange(
+        userId,
+        (user) => withoutOccurrence(user.teams, occurrenceId, 'Occurrence non trouvée'),
+        confirmed,
+        actorId,
+    );
 }
 
 /**
@@ -159,17 +170,24 @@ export async function assignTeamToUser (userId, newTeam, { confirmed = false, re
     }
 
     const teamExists = await findOrThrow(Team, newTeam.teamId, { message: 'Équipe non trouvée' });
+    if (teamExists.deleted) throw new AppError('Équipe non trouvée', 404);
     return applyTeamChange(userId, (user) => {
         if (!sameId(teamExists.center, user.centerId)) {
             throw new AppError("Erreur dans la correspondance entre l'équipe et le centre", 400);
         }
 
-        const kept = replaceOccurrenceId
-            ? user.teams.filter(t => !sameId(t._id, replaceOccurrenceId))
+        let kept = replaceOccurrenceId
+            ? withoutOccurrence(user.teams, replaceOccurrenceId, 'Occurrence à remplacer non trouvée')
             : [...user.teams];
 
-        if (replaceOccurrenceId && kept.length === user.teams.length) {
-            throw new AppError('Occurrence à remplacer non trouvée', 404);
+        // Une équipe permanente peut commencer avant la marque « sans équipe » (centre d'arrivée à un autre fuseau) : la marque,
+        // plus récente, la masquerait. Elle recule à ce jour (à égalité l'équipe passe devant), et reste là si l'équipe est retirée
+        // TEMPORARY(day-fields): `fromDate` disparaît avec l'ancien champ
+        if (!newTeam.toDate) {
+            const from = toDay(newTeam.fromDate);
+            kept = kept.map((t) => (t.teamId === null && occurrenceDays(t).from > from
+                ? { ...(t.toObject?.() ?? t), fromDate: newTeam.fromDate, fromDay: from }
+                : t));
         }
 
         return [...kept, {

@@ -26,6 +26,10 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-26) `getUserTeamOccurrences` uses the shared team rule: the profile card's current teams now match the planning when two periods start the same day (nothing else changes). Found #75.
+- (2026-11-26) Readability pass on the team services, no change of behaviour except one: the rotation in force on a day is one rule shared by the planning and the active rotation (on old data with two activations on a day, the active rotation now matches the planning); the team shift reader loads what it needs; the team grid and the cycle move are split into named steps. Found #74.
+- (2026-11-26) Team services cleanup: one team-on-a-day rule, one rotation-shift lookup (93-day grid: 372 queries for the team shift down to a few), smaller repetitions removed; a deleted team can no longer be joined; known issue #72 fixed (a cycle move no longer cleans former members). Found #73.
+- (2026-11-26) Team history is kept on center transfer, center reassignment and center deletion: a "no team" occurrence (`teamId: null`) ends the membership instead of erasing the teams (past planning unchanged, test `test/teamMembership.db.test.js`). Also fixed: assigning a user the center they are already in wiped their teams. Teams erased earlier are not recovered.
 - (2026-11-26) Known issue #70 fixed: an hour patch (MDDA) only applies to its own shift and can no longer break the planning computation.
 - (2026-11-26) Mails wired: center transfer accepted, ticket acknowledgement (existing accounts only), new rotation activation (to the center's users). Not wired, no trigger exists: account deactivated, demand not accepted.
 - (2026-11-26) Known issue #41 fixed: demands expire or complete according to today in their center's time zone.

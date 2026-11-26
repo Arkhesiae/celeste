@@ -4,6 +4,7 @@ import { AppError } from '../../error/AppError.js';
 import { findOrThrow, inTransaction } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import { sanitizeUserPeriod } from '../user/user.sanitizePeriod.js';
+import { endTeamMembership } from '../team/team.membership.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 import { notifyPointTransferCancelled } from '../email/email.pointTransfer.js';
 import { notifyCenterTransferAccepted } from '../email/email.centerTransfer.js';
@@ -13,7 +14,8 @@ import { upcomingPeriod } from './centerTransfer.request.js';
  * Acceptation d'une mutation par l'administrateur du centre d'arrivée (ou l'administrateur principal). Dans une seule transaction :
  *  - la période à venir est assainie (demandes annulées ou désistement, entrées de calendrier liées à une vacation désactivées),
  *  - les transferts de points différés en attente sont annulés,
- *  - l'utilisateur change de centre, ses équipes et ses points sont remis à zéro, et la demande disparaît ;
+ *  - l'utilisateur change de centre, n'a plus d'équipe à partir d'aujourd'hui (ses équipes passées restent), ses points sont remis
+ *    à zéro, et la demande disparaît ;
  *    un administrateur local ne l'est plus dans le nouveau centre.
  * Le jeton de l'utilisateur porte l'ancien centre jusqu'à son prochain renouvellement (15 min par défaut).
  *
@@ -49,7 +51,8 @@ export async function acceptCenterTransfer (userId, caller) {
         );
 
         current.centerId = current.pendingCenterTransfer.toCenterId;
-        current.teams = [];
+        // Les équipes passées restent (le planning passé en dépend) ; plus d'équipe à partir d'aujourd'hui
+        current.teams = endTeamMembership(current.teams, period.from);
         current.points = 0;
         current.pendingCenterTransfer = null;
         if (current.adminType === 'local') {

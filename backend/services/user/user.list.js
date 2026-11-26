@@ -5,10 +5,13 @@ import * as ruleService from '../rule/rule.service.js';
 import { getTeamAtDay } from "../team/team.atDay.js";
 import { AppError } from '../../error/AppError.js';
 
+/** Un utilisateur (objet simple) avec son équipe d'un jour : l'occurrence qui fait autorité, ou `null` */
+const withCurrentTeam = (user, today) => ({ ...user.toObject(), currentTeam: getTeamAtDay(user.teams, today) });
+
 // Obtenir les utilisateurs d'un centre spécifique
 export const getUsersByCenter = async (centerId, requestingUser) => {
     try {
-        const users = await User.find({ centerId }).populate('teams');
+        const users = await User.find({ centerId });
         if (!users.length) {
             return [];
         }
@@ -23,22 +26,11 @@ export const getUsersByCenter = async (centerId, requestingUser) => {
         // « Aujourd'hui » dans le fuseau du centre
         const today = todayIn(await getCenterTimeZone(centerId));
 
-        const usersWithCurrentTeam = await Promise.all(users.map(async (user) => {
-            const currentTeam = getTeamAtDay(user.teams, today);
-            const userObj = user.toObject();
-
-            if (!requestingUserIsAdmin && !showPoints) {
-                delete userObj.points;
-            }
-
-
-            return {
-                ...userObj,
-                currentTeam
-            };
-        }));
-
-        return usersWithCurrentTeam;
+        return users.map((user) => {
+            const listed = withCurrentTeam(user, today);
+            if (!requestingUserIsAdmin && !showPoints) delete listed.points;
+            return listed;
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs pour un centre:', error);
         throw error;
@@ -53,13 +45,10 @@ export const getAllUsers = async (requestingUser) => {
     const isMaster = requestingUser.adminType === 'master';
     if (!isMaster && !requestingUser.centerId) throw new AppError('Accès refusé. Aucun centre associé.', 403);
 
-    const users = await User.find(isMaster ? {} : { centerId: requestingUser.centerId }).populate('teams');
+    const users = await User.find(isMaster ? {} : { centerId: requestingUser.centerId });
     const timeZones = await getCenterTimeZones(users.map((u) => u.centerId));
 
-    return users.map((user) => ({
-        ...user.toObject(),
-        currentTeam: getTeamAtDay(user.teams, todayIn(timeZones.get(String(user.centerId))))
-    }));
+    return users.map((user) => withCurrentTeam(user, todayIn(timeZones.get(String(user.centerId)))));
 };
 
 /** Un utilisateur par identifiant ; 404 s'il n'existe pas */

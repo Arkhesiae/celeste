@@ -10,36 +10,47 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 
 | Rank | # | Issue | Sev. | Effort |
 |---|---|---|---|---|
-| 1 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
-| 2 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
-| 3 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
-| 4 | 71 | Deleting a team leaves its members in it | P1 | 1-2 h + a decision |
-| 5 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
-| 6 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
-| 7 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
-| 8 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
-| 9 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
-| 10 | 20 | Admin routes without a center guard | P1 | 2 h |
-| 11 | 11 | Request bodies and avatar upload | P1 | 2 h |
-| 12 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
-| 13 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
-| 14 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
-| 15 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
-| 16 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
-| 17 | 39 | Center and role in the access token can be stale | P2 | 1 day |
-| 18 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
-| 19 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
-| 20 | 35 | Stale calendar entries after a rotation, cycle or team change | P2 | 1-2 days |
-| 21 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
-| 22 | 52 | Inactive accounts | P2 | 2 days |
-| 23 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
-| 24 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
+| 1 | 75 | A second team from the same day is saved but ignored | P1 | under 1 h |
+| 2 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
+| 3 | 74 | The member list by team includes deleted teams | P3 | under 1 h |
+| 4 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
+| 5 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
+| 6 | 71 | Deleting a team leaves its members in it | P1 | 1-2 h + a decision |
+| 7 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
+| 8 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
+| 9 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
+| 10 | 73 | A cycle move cleans a member's whole future, not only their days in the team | P2 | 1-2 h |
+| 11 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
+| 12 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
+| 13 | 20 | Admin routes without a center guard | P1 | 2 h |
+| 14 | 11 | Request bodies and avatar upload | P1 | 2 h |
+| 15 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
+| 16 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
+| 17 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
+| 18 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
+| 19 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
+| 20 | 39 | Center and role in the access token can be stale | P2 | 1 day |
+| 21 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
+| 22 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
+| 23 | 35 | Stale calendar entries after a rotation, cycle or team change | P2 | 1-2 days |
+| 24 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
+| 25 | 52 | Inactive accounts | P2 | 2 days |
+| 26 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
+| 27 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
 
 `S4`, `S8` and `S9` come from `docs/quality/calendar-substitution-review.md`, where they are described in full and were rechecked on 2026-11-25.
 
 ---
 
 ## Under an hour
+
+### 75. A second team from the same day is saved but ignored — P1
+`assignTeamToUser` (`services/user/user.team.js`) without `replaceOccurrenceId` adds the occurrence even when one of the same kind already starts that day. On an equal start day the first of the list wins (`ownerAt`, `services/team/team.atDay.js`), so the new team changes nothing: the request succeeds, reports no change and asks for no confirmation. Reproduced on 2026-11-26. The profile card used to show the ignored team; since the same day it shows the one the planning uses. The team change dialog normally sends `replaceOccurrenceId` for a permanent team already planned that day, so this takes a direct API call, outdated dialog data, or a same-day team that has been deleted (not listed to the dialog).
+**Fix:** in `assignTeamToUser`, make a new occurrence replace the ones of the same kind starting that day (through the same change, so the impact is previewed). Do not change the tie rule: it would rewrite the past planning of users who already have such pairs.
+
+### 74. The member list by team includes deleted teams — P3
+`getUsersGroupedByTeam` (`services/user/user.teamRead.js`, `GET /user/teams/:centerId`) reads `Team.find({ center })` without `deleted: false`, so a deleted team is returned like a live one. Reproduced on 2026-11-26. What the screens that use it show was not checked.
+**Fix:** filter deleted teams, after checking that no screen relies on them (past dates can be asked for, and a team deleted since then had members).
 
 ### 36. Rotation flow, smaller defects — P2
 - `saveRotation` (`rotation.create.js`) assumes `days` exists and fails with a 500 when it is missing; the `days` branch of `updateRotation` is dead (commented out).
@@ -67,6 +78,10 @@ Still tracked (`git ls-files`): `ssh_config` (production host IP, login `root`, 
 ---
 
 ## A few hours
+
+### 73. A cycle move cleans a member's whole future, not only their days in the team — P2
+`setTeamCyclePosition` (`services/team/team.cycle.js`) sanitizes every affected member from the date with no end. A member whose time in the moved team is bounded (a reinforcement, or a move to another team later on) also loses demands and shift entries on days outside the team. Found by reading the code on 2026-11-26, older than the fix of #72.
+**Fix:** sanitize only the periods where the member holds a moved team (`buildTeamSegments`, clipped to the date).
 
 ### 69. A failed startup request leaves the app on the loading screen — P2
 `pages/loading.vue` awaits `initializeApp` (`composables/useAppInitialization.js`) and `App.vue` awaits `initializeCenters`, with no handling on screen: when one of these requests fails (500 or dropped connection), the loading page stays, with no message and no retry, and the errors are unhandled. Also, `handleResponse` (`config/api.js`) turns a 200 that is not JSON (an HTML fallback page) into `{}`, so the stores then fail with `newShifts.forEach is not a function`. Seen on 2026-11-26 in headless Edge against a stub API.
@@ -137,8 +152,7 @@ How a stale entry behaves (`applyEntries`, `planning.userShifts.js`; checked on 
 - **Rotation day edit with `confirmed`** (#68): same `Shift` id, so entries stay attached with new hours, past included; a removed variation stays on the entries that use it; a day turned to rest drops its hour patches from the planning.
 - **Cycle position** (`team.cycle.js`): entries are cleaned only from the `date` sent by the client, which is not checked to be today, while the new offset applies to every day (#67). Deactivated members (`isActive: false`) are skipped.
 - **Team deleted** (`deleteTeam`): nothing is cleaned (#71).
-- **Center transfer accepted**: cleaned from today, but `teams = []` also removes the past base shifts: old assignments with a shift stay, modifications and hour patches are ignored.
-- **`assignUserToCenter`** (`POST /user/:id/assign-center`) and **`deleteCenter`**: teams are removed with no cleanup of entries or demands.
+- **`assignUserToCenter`** (`POST /user/:id/assign-center`) and **`deleteCenter`**: demands and entries from today on are not cleaned (past planning is kept since 2026-11-26).
 - **User deleted** (`deleteUserById`): the user's demands are not cancelled, so counterparts keep substitution entries.
 - **A stale demand accepted later**: `addSubstitutionEntries` copies the demand's shifts without checking that the poster still holds them.
 - Not affected: team assignment changes clean every changed period (from today on); day notes are independent of shifts on purpose.
@@ -196,6 +210,7 @@ Existing production accounts `admin-<oaci>@celeste-app.fr` still have the old gu
 - Front ESLint errors (about 150, see the roadmap) and the optional legacy-CSS leftovers (see the roadmap line of 2026-11-25).
 
 ## Removed from this file on 2026-11-25
+- **#72** (a cycle move also cleaned former members): fixed on 2026-11-26. `membersOfTeams` keeps only those who hold a moved team on or after the date (`holdsAnyTeamFrom`). Test `test/teamServices.db.test.js`.
 - **#70** (stale hour patch): fixed on 2026-11-26. `applyHourPatch` applies a patch only to the shift it was entered on, and only when that day has hours. Test `test/hourPatch.test.js`.
 - **#41** (expiry job used the default time zone): fixed on 2026-11-26. `demand.expiry.js` judges each demand against today in its own center's time zone, and re-checks the status when writing. `reminderJob` already did it per center. Test `test/demandExpiry.db.test.js`.
 - **#63** (dashboard `TypeError` without an API): fixed on 2026-11-26. `ShiftCard.vue` read `vacation.type` when the store had no entry for the day (the error came from the same build chunk as `useCalendarData`, not from it); it now shows the empty card. `fetchMonthData` no longer shows a second snackbar nor throws into the mounted hooks and watchers. Reproduced and checked in headless Edge against a stub API.

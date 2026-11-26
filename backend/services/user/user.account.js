@@ -1,6 +1,10 @@
 import User, { LegacyUser } from '../../models/User.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
+import { sameId } from '../../utils/ids.js';
+import { todayIn } from '../../utils/dates/plainDate.js';
+import { getCenterTimeZone } from '../center/center.timezone.js';
+import { endTeamMembership } from '../team/team.membership.js';
 import { sendEmailApproval, sendEmailRejection } from '../email/email.approval.js';
 
 /**
@@ -77,15 +81,15 @@ export async function removeUserAdmin (id) {
     await user.save();
 }
 
-/** Rattache un utilisateur à un centre : ses équipes sont réinitialisées */
+/** Rattache un utilisateur à un centre : plus d'équipe à partir d'aujourd'hui (jour de l'ancien centre), le passé reste */
 export async function assignUserToCenter (userId, centerId) {
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
-    if (user.centerId === centerId) {
+    if (sameId(user.centerId, centerId)) {
         throw new AppError('L\'utilisateur est déjà assigné à ce centre', 400);
     }
 
     user.centerId = centerId;
-    user.teams = [];
+    user.teams = endTeamMembership(user.teams, todayIn(await getCenterTimeZone(user.centerId)).toString());
     user.isLocalAdmin = false;
     await user.save();
 }

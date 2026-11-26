@@ -150,7 +150,8 @@ test('mutation de centre : demande, annulation, visibilité, acceptation et remi
 
   const moved = await User.findById(user._id);
   assert.equal(String(moved.centerId), String(centerB._id));
-  assert.equal(moved.teams.length, 0);
+  // les équipes passées restent, suivies de la marque « sans équipe » à partir d'aujourd'hui
+  assert.deepEqual(moved.teams.map((o) => [o.teamId === null, o.toDay]), [[false, null], [true, null]]);
   assert.equal(moved.points, 0);
   assert.equal(moved.pendingCenterTransfer, null);
   assert.equal((await Assignment.findById(entry._id)).active, false);

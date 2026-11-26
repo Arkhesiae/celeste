@@ -7,6 +7,7 @@ import { todayIn } from '../utils/dates/plainDate.js';
 import { AppError } from '../error/AppError.js';
 import * as rotationService from '../services/rotation/index.js';
 import * as centerService from '../services/center/index.js';
+import * as teamService from '../services/team/index.js';
 
 // GET ALL CENTERS (route publique : formulaires d'inscription / contact) — champs publics uniquement :
 // pas d'`admins` (ids d'utilisateurs), de `relatedCenters`, de `timeZone` ni de drapeaux internes
@@ -155,10 +156,14 @@ const deleteCenter = async (req, res, next) => {
         deletedCenter.deleted = true;
         await deletedCenter.save();
 
-        await User.updateMany(
-            { centerId: id },
-            { $unset: { centerId: "", teams: "" } }
-        );
+        // Détachés du centre ; leurs équipes passées restent (le planning passé en dépend), plus d'équipe à partir d'aujourd'hui
+        const today = todayIn(await centerService.getCenterTimeZone(id)).toString();
+        for (const member of await User.find({ centerId: id }).select('teams')) {
+            await User.updateOne(
+                { _id: member._id },
+                { $unset: { centerId: "" }, $set: { teams: teamService.endTeamMembership(member.teams, today) } }
+            );
+        }
 
         // Suppression des rotations
         await Rotation.updateMany(

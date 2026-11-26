@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 import { dayField } from '../utils/dates/dayFields.js';
 
 const TeamOccurrenceSchema = new mongoose.Schema({
-    teamId : { type: mongoose.Schema.Types.ObjectId, ref: 'Team', required: true },
+    // `null` explicite = fin d'appartenance : plus d'équipe à partir de ce jour (voir services/team/team.membership.js).
+    // Un `teamId` absent reste refusé
+    teamId : { type: mongoose.Schema.Types.ObjectId, ref: 'Team', required: function () { return this.teamId !== null; } },
     // TEMPORARY(day-fields): ancien champ Date (idem toDate ci-dessous) : a supprimer avec la bascule (restent fromDay / toDay).
     fromDate : { type: Date, default: () => {
         const currentDate = new Date();

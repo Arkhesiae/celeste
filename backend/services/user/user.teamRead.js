@@ -7,7 +7,7 @@ import { todayIn } from '../../utils/dates/plainDate.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { AppError } from '../../error/AppError.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
-import { getTeamAtDay } from '../team/team.atDay.js';
+import { getTeamAtDay, withDays, permanentAt, reinforcementsAt } from '../team/team.atDay.js';
 
 /**
  * Lecture des équipes d'un utilisateur et des membres d'un centre par équipe (les changements d'équipe sont dans
@@ -18,7 +18,7 @@ import { getTeamAtDay } from '../team/team.atDay.js';
 // TEMPORARY(day-fields): ajoute fromDay/toDay aux sorties d'API pour le front ; inutile quand l'API ne renverra plus que les jumeaux (le front lit deja les deux).
 const dayBounds = (occurrence) => { const { from, to } = occurrenceDays(occurrence); return { fromDay: from, toDay: to }; };
 
-const getUserWithTeams = (userId) => findOrThrow(User, userId, { message: 'User not found', populate: 'teams' });
+const getUserWithTeams = (userId) => findOrThrow(User, userId, { message: 'User not found' });
 
 /** Occurrence d'équipe d'un jour, avec le nom de l'équipe et son type (renfort ou changement) */
 const getTeamAtDate = async (teams, day) => {
@@ -45,54 +45,49 @@ export async function getUserCurrentTeam (userId) {
     return getTeamAtDate(user.teams, todayIn(await getCenterTimeZone(user.centerId)));
 }
 
+/** Le nom de chaque équipe non supprimée parmi celles de ces occurrences, en une seule lecture : id (chaîne) -> nom */
+const readTeamNames = async (occurrences) => {
+    const teams = await Team.find({
+        _id: { $in: occurrences.map((occurrence) => occurrence.teamId).filter(Boolean) },
+        deleted: { $ne: true },
+    }).select('name');
+    return new Map(teams.map((team) => [String(team._id), team.name]));
+};
+
 /**
- * Affectations d'équipe d'un utilisateur, classées : équipe permanente, renfort en cours, affectations à venir, toutes.
- * « Aujourd'hui » est le jour du centre ; les bornes des occurrences sont lues en jours (jumeau, repli signalé).
+ * Affectations d'équipe d'un utilisateur : l'équipe permanente et le renfort d'aujourd'hui (jour du centre), les affectations à
+ * venir, et toutes, de la plus ancienne à la plus récente. « Aujourd'hui » suit la même règle que le planning (`permanentAt`,
+ * `reinforcementsAt` de team.atDay.js) : un renfort ne retire pas l'équipe permanente, il s'ajoute (`temporaryTeam`).
+ * Les occurrences d'une équipe supprimée ne sont pas listées, ni la marque « sans équipe », qui met fin à l'équipe permanente.
  */
 export async function getUserTeamOccurrences (userId) {
     const user = await getUserWithTeams(userId);
     const today = todayIn(await getCenterTimeZone(user.centerId)).toString();
-    const fromOf = (occurrence) => occurrenceDays(occurrence).from ?? '';
-    const sortedOccurrences = [...user.teams].sort((a, b) => fromOf(a).localeCompare(fromOf(b)));
+    const teamNames = await readTeamNames(user.teams);
 
-    const categorizedOccurrences = {
-        permanentTeam: null,
-        temporaryTeam: null,
-        nextOccurrences: [],
-        allOccurrences: []
+    const listed = withDays(user.teams).filter(({ teamId }) => teamId === null || teamNames.has(String(teamId)));
+    const assignments = listed.filter(({ teamId }) => teamId !== null);
+
+    const describe = ({ occurrence, teamId, from, to }) => ({
+        ...occurrence.toObject(),
+        fromDay: from,
+        toDay: to,
+        teamName: teamNames.get(String(teamId)),
+        type: to ? "Renfort" : "Changement"
+    });
+
+    const permanent = permanentAt(listed, today);
+    const reinforcement = reinforcementsAt(assignments, today)[0];
+    const allOccurrences = [...assignments]
+        .sort((first, second) => (first.from ?? '').localeCompare(second.from ?? ''))
+        .map(describe);
+
+    return {
+        permanentTeam: permanent?.teamId ? describe(permanent) : null,
+        temporaryTeam: reinforcement ? describe(reinforcement) : null,
+        nextOccurrences: allOccurrences.filter((occurrence) => occurrence.fromDay > today),
+        allOccurrences
     };
-
-    for (const occurrence of sortedOccurrences) {
-        const occurrenceObj = occurrence.toObject();
-        const { from: startDay, to: endDay } = occurrenceDays(occurrence);
-        const team = await Team.findById(occurrenceObj.teamId);
-
-        if (!team || team.deleted) continue;
-
-        const occurrenceWithTeam = {
-            ...occurrenceObj,
-            fromDay: startDay,
-            toDay: endDay,
-            teamName: team.name,
-            type: endDay ? "Renfort" : "Changement"
-        };
-
-        if (startDay <= today && endDay && endDay >= today) {
-            categorizedOccurrences.temporaryTeam = occurrenceWithTeam;
-        }
-
-        if (startDay <= today && !endDay) {
-            categorizedOccurrences.permanentTeam = occurrenceWithTeam;
-        }
-
-        if (startDay > today) {
-            categorizedOccurrences.nextOccurrences.push(occurrenceWithTeam);
-        }
-
-        categorizedOccurrences.allOccurrences.push(occurrenceWithTeam);
-    }
-
-    return categorizedOccurrences;
 }
 
 /**
@@ -143,29 +138,20 @@ export async function getUsersGroupedByTeam (centerId, requestedDate) {
     });
 
     for (const user of users) {
-        // Occurrences d'équipes du centre, la plus récente d'abord
-        const validOccurrences = user.teams
-            .filter(occurrence => teamsMap.has(occurrence.teamId.toString()))
-            .sort((a, b) => (occurrenceDays(b).from ?? '').localeCompare(occurrenceDays(a).from ?? ''));
+        // Occurrences d'équipes du centre et fins d'appartenance : un utilisateur revenu dans un centre ne retrouve pas l'équipe
+        // qu'il y avait avant de le quitter
+        const items = withDays(user.teams)
+            .filter(({ teamId }) => teamId === null || teamsMap.has(String(teamId)));
 
-        // Équipe permanente : la dernière affectation sans fin commencée à cette date
-        const mainTeamOccurrence = validOccurrences.find(occurrence => {
-            const { from, to } = occurrenceDays(occurrence);
-            return !to && from <= dayKey;
-        });
-
-        if (mainTeamOccurrence) {
-            const teamResult = resultMap.get(mainTeamOccurrence.teamId.toString());
-            if (teamResult) teamResult.users.push(memberOf(user, mainTeamOccurrence));
+        // Ici, à la différence de `getTeamAtDay`, un renfort ne retire pas l'utilisateur de son équipe permanente : il figure dans
+        // celle-ci (`users`) et dans chaque équipe qu'il renforce ce jour (`renforts`)
+        const permanent = permanentAt(items, dayKey);
+        if (permanent?.teamId) {
+            resultMap.get(String(permanent.teamId))?.users.push(memberOf(user, permanent.occurrence));
         }
 
-        // Renforts : les affectations bornées qui couvrent ce jour
-        for (const occurrence of validOccurrences) {
-            const { from, to } = occurrenceDays(occurrence);
-            if (to) {
-                const teamResult = resultMap.get(occurrence.teamId.toString());
-                if (teamResult && from <= dayKey && to >= dayKey) teamResult.renforts.push(memberOf(user, occurrence));
-            }
+        for (const { teamId, occurrence } of reinforcementsAt(items, dayKey)) {
+            if (teamId) resultMap.get(String(teamId))?.renforts.push(memberOf(user, occurrence));
         }
     }
 

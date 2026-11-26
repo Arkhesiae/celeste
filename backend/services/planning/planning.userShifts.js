@@ -1,11 +1,8 @@
 import { sameId } from '../../utils/ids.js';
+import { createTeamShiftReader } from './planning.teamShift.js';
 import { getTeamAtDay } from '../team/team.atDay.js';
-import { cycleDayIndex } from '../team/team.cycleIndex.js';
-import { activationDaysOf } from '../../utils/dates/dayAccess.js';
 import { isValidDate } from '../../utils/validation.js';
-import Center from '../../models/Center.js';
 import User from '../../models/User.js';
-import Rotation from '../../models/Rotation.js';
 import DayComment from '../../models/DayComment.js';
 import { Assignment, Modification, HourPatch } from '../../models/CalendarEntry.js';
 import { AppError } from '../../error/AppError.js';
@@ -319,80 +316,6 @@ const getActiveEntriesByDay = async (user, dayKeys) => {
     return entriesByDay;
 };
 
-// ── Ce que la rotation prévoit ────────────────────────────────────────
-
-/** L'identifiant du centre d'une équipe (peuplé ou non) */
-const centerIdOf = (team) => team.center?._id ?? team.center;
-
-/**
- * Les centres des équipes de l'utilisateur, par identifiant, en une seule lecture : le cycle d'une équipe part de l'ancre de son centre.
- * (Les équipes d'un utilisateur peuvent être de plusieurs centres : une mutation, avec ses anciennes équipes.)
- */
-const loadTeamCenters = async (user) => {
-    const centerIds = (user.teams ?? []).map((occurrence) => occurrence.teamId && centerIdOf(occurrence.teamId)).filter(Boolean);
-    const centers = await Center.find({ _id: { $in: centerIds } }).select('cycleAnchorDate cycleAnchorDay').lean();
-    return new Map(centers.map((center) => [String(center._id), center]));
-};
-
-/**
- * Ce que la rotation active prévoit pour une équipe un jour donné. La rotation active est résolue jour par jour (dernière activation
- * <= ce jour, comme findLatestRotation) : avant, une seule rotation (celle de la dernière date du lot) servait à tout le lot, et un
- * mois contenant un changement de rotation affichait la nouvelle rotation avant son activation.
- * La chronologie des activations est chargée une fois par centre, chaque rotation peuplée une fois.
- * @param {Map<string, Object>} centersById - voir loadTeamCenters
- * @returns {(team: Object, dayKey: string) => Promise<Object|null>} la vacation (`Shift`) de la rotation, ou `null`
- */
-const createRotationShiftResolver = (centersById) => {
-    const activationTimelineByCenter = new Map();
-    const populatedRotationById = new Map();
-
-    /** Les activations de rotation d'un centre, de la plus ancienne à la plus récente : `[{ rotationId, day }]` */
-    const getActivationTimeline = (centerId) => {
-        const key = String(centerId);
-        if (!activationTimelineByCenter.has(key)) {
-            activationTimelineByCenter.set(key, (async () => {
-                // Tours supprimés compris : ils restent ceux des jours passés
-                const rotations = await Rotation.find({ centerId }).select('activationDates activationDays').lean();
-                return rotations
-                    .flatMap((rotation) => activationDaysOf(rotation).map((activationDay) => ({
-                        rotationId: String(rotation._id),
-                        day: activationDay,
-                    })))
-                    .sort((first, second) => first.day.localeCompare(second.day)); // les clés de jour se comparent comme les jours
-            })());
-        }
-        return activationTimelineByCenter.get(key);
-    };
-
-    /** La rotation en vigueur le jour donné, avec ses jours et leurs variations, ou `null` */
-    const getActiveRotation = async (team, dayKey) => {
-        const centerId = centerIdOf(team);
-        if (!centerId) return null;
-
-        const timeline = await getActivationTimeline(centerId);
-        const latestActivation = timeline.filter((activation) => activation.day <= dayKey).at(-1);
-        if (!latestActivation) return null;
-
-        if (!populatedRotationById.has(latestActivation.rotationId)) {
-            populatedRotationById.set(latestActivation.rotationId, Rotation.findById(latestActivation.rotationId).populate({
-                path: 'days',
-                populate: { path: 'variations' },
-            }).exec()); // exec() : une promesse réutilisable, pas une Query qu'on ne peut attendre qu'une fois
-        }
-        return populatedRotationById.get(latestActivation.rotationId);
-    };
-
-    return async (team, dayKey) => {
-        const rotation = await getActiveRotation(team, dayKey);
-        const center = centersById.get(String(centerIdOf(team))) ?? null;
-
-        if (!rotation?.days?.length) return null;
-        const dayIndex = cycleDayIndex(team, center, dayKey, rotation.days.length);
-        if (dayIndex === null) return null;
-        return rotation.days[dayIndex] || null;
-    };
-};
-
 // ── Résultat de computeUserShifts ─────────────────────────────────────
 
 /**
@@ -427,17 +350,17 @@ const computeUserShifts = async (dayKeys, userId) => {
 
         const requestedDayKeys = toDayKeys(dayKeys);
 
-        const [dayComments, entriesByDay, centersById] = await Promise.all([
+        const [dayComments, entriesByDay] = await Promise.all([
             getDayCommentsByDay(userId, requestedDayKeys),
             getActiveEntriesByDay(user, requestedDayKeys),
-            loadTeamCenters(user),
         ]);
-        const getRotationShift = createRotationShiftResolver(centersById);
+        // Les équipes d'un utilisateur peuvent être de plusieurs centres (mutation) : le lecteur lit chacun d'eux au besoin
+        const readTeamShift = createTeamShiftReader();
 
         const computeDay = async (dayKey) => {
             const teamOccurrence = user.teams?.length ? getTeamAtDay(user.teams, dayKey) : null;
             const team = teamOccurrence?.teamId ?? null;
-            const baseShift = team ? await getRotationShift(team, dayKey) : null;
+            const baseShift = team ? await readTeamShift(team, dayKey) : null;
 
             const { assignments, modifications, hourPatches } =
                 entriesByDay[dayKey] ?? { assignments: [], modifications: [], hourPatches: [] };

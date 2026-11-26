@@ -131,6 +131,18 @@ function withoutOccurrence (occurrences, occurrenceId, notFoundMessage) {
     return kept;
 }
 
+/**
+ * Les occurrences sans celles que la nouvelle affectation remplace : celles du même type (permanente, ou renfort) qui commencent le
+ * même jour. À jour de début égal, la première de la liste l'emporte (`ownerAt`) : gardées, elles rendraient la nouvelle sans effet.
+ * La marque « sans équipe » n'est pas une affectation : elle reste (une équipe du même jour passe déjà devant elle).
+ */
+function withoutSameStart (occurrences, { fromDay, isReinforcement }) {
+    return occurrences.filter((occurrence) => {
+        const { from, to } = occurrenceDays(occurrence);
+        return occurrence.teamId === null || from !== fromDay || Boolean(to) !== isReinforcement;
+    });
+}
+
 // ─── Service functions ────────────────────────────────────────────────────────
 
 /**
@@ -154,7 +166,8 @@ export async function deleteTeamOccurrence (userId, occurrenceId, { confirmed = 
  * @param {string} userId
  * @param {{ teamId: string, fromDate: string, toDate?: string }} newTeam
  * @param {{ confirmed?: boolean, replaceOccurrenceId?: string, actorId?: string }} [opts]
- *   replaceOccurrenceId : occurrence remplacée par la nouvelle, dans le même changement
+ *   replaceOccurrenceId : occurrence remplacée par la nouvelle, dans le même changement. Sans lui aussi, la nouvelle remplace les
+ *   occurrences du même type qui commencent le même jour (voir `withoutSameStart`)
  * @returns {Promise<{ changes: Array } | { needsApproval: true, segments, teams, changes: Array }>}
  */
 export async function assignTeamToUser (userId, newTeam, { confirmed = false, replaceOccurrenceId, actorId } = {}) {
@@ -179,6 +192,7 @@ export async function assignTeamToUser (userId, newTeam, { confirmed = false, re
         let kept = replaceOccurrenceId
             ? withoutOccurrence(user.teams, replaceOccurrenceId, 'Occurrence à remplacer non trouvée')
             : [...user.teams];
+        kept = withoutSameStart(kept, { fromDay: toDay(newTeam.fromDate), isReinforcement: Boolean(newTeam.toDate) });
 
         // Une équipe permanente peut commencer avant la marque « sans équipe » (centre d'arrivée à un autre fuseau) : la marque,
         // plus récente, la masquerait. Elle recule à ce jour (à égalité l'équipe passe devant), et reste là si l'équipe est retirée

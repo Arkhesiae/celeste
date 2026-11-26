@@ -26,6 +26,8 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-26) Known issue #75 fixed: a new team assignment replaces those of the same kind starting that day.
+- (2026-11-26) Hard deletion of an account by the master admin, after an impact preview and a confirmation: everything of the account is erased, upcoming demands are cancelled or reopened with emails, colleagues' past is kept. The delete button did not work before (missing store action).
 - (2026-11-26) Files renamed (`rotation.latest.js` -> `rotation.timeline.js`, `team.cycle.js` -> `team.cyclePosition.js`); center deletion moved to `services/center/center.delete.js` and now marks the center last, so a failed deletion can be run again (no transaction: #21); the activation change preview uses the shared rotation rule (differs only on old data with two activations on a day, where it now matches the planning).
 - (2026-11-26) `getUserTeamOccurrences` uses the shared team rule: the profile card's current teams now match the planning when two periods start the same day (nothing else changes). Found #75.
 - (2026-11-26) Readability pass on the team services, no change of behaviour except one: the rotation in force on a day is one rule shared by the planning and the active rotation (on old data with two activations on a day, the active rotation now matches the planning); the team shift reader loads what it needs; the team grid and the cycle move are split into named steps. Found #74.

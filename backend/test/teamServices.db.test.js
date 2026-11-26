@@ -253,3 +253,110 @@ test('the current teams of the profile follow the same rule as the planning', as
   const withDeleted = await read([occurrence(a._id, -60), occurrence(gone._id, -5)]);
   assert.deepEqual([withDeleted.permanent, withDeleted.all], ['a', ['a']]);
 });
+
+test('a new team from a day that already has one of the same kind replaces it (#75)', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const center = await makeCenter();
+  const [a, b, c, d] = await Promise.all(['a', 'b', 'c', 'd'].map((name) => Team.create({ name, center: center._id })));
+  const user = await makeUser(center._id, 'same', [occurrence(a._id, -60)]);
+  const assign = (team, from, to, options = {}) => assignTeamToUser(String(user._id),
+    { teamId: String(team._id), fromDate: day(from), ...(to === undefined ? {} : { toDate: day(to) }) }, { confirmed: true, ...options });
+  const stored = async () => (await User.findById(user._id)).teams.map((o) => [String(o.teamId ?? 'none'), o.fromDay, o.toDay ?? null]);
+  const id = (team) => String(team._id);
+  const ownerOn = async (offset) => getTeamAtDay((await User.findById(user._id)).teams, day(offset))?.teamId.toString() ?? null;
+
+  await assign(b, 0);
+  const second = await assign(c, 0);
+  assert.deepEqual(second.changes.map((x) => [x.from, x.to, x.oldTeam, x.newTeam]), [[day(0), null, id(b), id(c)]], 'the change is reported');
+  assert.equal(await ownerOn(0), id(c));
+  assert.deepEqual(await stored(), [[id(a), day(-60), null], [id(c), day(0), null]], 'the replaced one is gone, the past one stays');
+
+  // same team again: nothing changes and nothing piles up
+  assert.deepEqual((await assign(c, 0)).changes, []);
+  assert.equal((await stored()).length, 2);
+
+  // a reinforcement does not replace the permanent team of that day, nor the other way round
+  await assign(b, 0, 6);
+  assert.deepEqual((await stored()).slice(1), [[id(c), day(0), null], [id(b), day(0), day(6)]]);
+  await assign(d, 0, 2);
+  assert.deepEqual((await stored()).slice(1), [[id(c), day(0), null], [id(d), day(0), day(2)]], 'one reinforcement from that day: the new one, with its own end');
+  assert.deepEqual([await ownerOn(0), await ownerOn(3)], [id(d), id(c)]);
+  await assign(a, 0);
+  assert.deepEqual((await stored()).map((o) => o[0]), [id(a), id(d), id(a)], 'the reinforcement survives a permanent change');
+
+  // pairs already stored are cleaned up by the next assignment from that day
+  await User.updateOne({ _id: user._id }, { teams: [occurrence(a._id, -60), occurrence(b._id, 5), occurrence(c._id, 5), occurrence(d._id, 9)] });
+  await assign(d, 5);
+  assert.deepEqual(await stored(), [[id(a), day(-60), null], [id(d), day(9), null], [id(d), day(5), null]], 'other start days are left alone');
+
+  // the "no team" marker is not an assignment: it stays, and the team of the same day wins over it
+  await User.updateOne({ _id: user._id }, { teams: [occurrence(a._id, -60), occurrence(null, 0)] });
+  await assign(b, 0);
+  await assign(c, 0);
+  assert.deepEqual(await stored(), [[id(a), day(-60), null], ['none', day(0), null], [id(c), day(0), null]]);
+  assert.equal(await ownerOn(0), id(c));
+
+  // together with an explicit replacement of another occurrence
+  await User.updateOne({ _id: user._id }, { teams: [occurrence(a._id, -60), occurrence(b._id, 4), occurrence(c._id, 8)] });
+  const planned = (await User.findById(user._id)).teams.find((o) => o.fromDay === day(8));
+  await assign(d, 4, undefined, { replaceOccurrenceId: String(planned._id) });
+  assert.deepEqual(await stored(), [[id(a), day(-60), null], [id(d), day(4), null]]);
+
+  // the past stays protected: a start day in the past cannot be used to replace what was in force then
+  await User.updateOne({ _id: user._id }, { teams: [occurrence(a._id, -60), occurrence(b._id, -10)] });
+  await assert.rejects(assign(c, -10), { status: 400, code: 'TEAM_CHANGE_PAST' });
+  assert.deepEqual(await stored(), [[id(a), day(-60), null], [id(b), day(-10), null]]);
+  // ... but a running reinforcement can be given a new end from its own start day, when no past day changes
+  await User.updateOne({ _id: user._id }, { teams: [occurrence(a._id, -60), occurrence(b._id, -3, 2)] });
+  const extended = await assign(b, -3, 7);
+  assert.deepEqual(extended.changes.map((x) => [x.from, x.to]), [[day(3), day(7)]]);
+  assert.deepEqual(await stored(), [[id(a), day(-60), null], [id(b), day(-3), day(7)]]);
+});
+
+test('replacing a team of the same day asks for confirmation when something would be cancelled, and writes nothing before it', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const center = await makeCenter();
+  const [a, b, c] = await Promise.all(['a', 'b', 'c'].map((name) => Team.create({ name, center: center._id })));
+  const user = await makeUser(center._id, 'preview', [occurrence(a._id, -60), occurrence(b._id, 2)]);
+  const entry = await Assignment.create({ userId: user._id, centerId: center._id, date: day(5), subType: 'training', shiftData: { shift: new mongoose.Types.ObjectId(), team: b._id } });
+  const before_ = JSON.stringify((await User.findById(user._id)).teams);
+  const change = { teamId: String(c._id), fromDate: day(2) };
+
+  const preview = await assignTeamToUser(String(user._id), change);
+  assert.equal(preview.needsApproval, true);
+  assert.deepEqual([preview.changes[0].oldTeam, preview.changes[0].newTeam, preview.changes[0].entries.length], [String(b._id), String(c._id), 1]);
+  assert.equal(JSON.stringify((await User.findById(user._id)).teams), before_);
+  assert.equal((await Assignment.findById(entry._id)).active, true);
+
+  await assignTeamToUser(String(user._id), change, { confirmed: true });
+  assert.equal((await Assignment.findById(entry._id)).active, false);
+  assert.equal((await User.findById(user._id)).teams.length, 2);
+});
+
+test('after any sequence of assignments the latest one is in force, with one occurrence of a kind per start day', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const center = await makeCenter();
+  const teams = await Promise.all(['a', 'b', 'c'].map((name) => Team.create({ name, center: center._id })));
+  let seed = 4242;
+  const rnd = (n) => { seed = (seed * 1103515245 + 12345) % 2147483648; return Math.floor(seed / 65536) % n; };
+  let checked = 0;
+  for (let history = 0; history < 25; history++) {
+    const user = await makeUser(center._id, `r${history}`, [occurrence(teams[0]._id, -60)]);
+    for (let step = 0; step < 14; step++) {
+      const team = teams[rnd(3)];
+      const from = rnd(4) * 2;                         // few start days: many collisions
+      const bounded = rnd(2) === 0;
+      await assignTeamToUser(String(user._id), { teamId: String(team._id), fromDate: day(from), ...(bounded ? { toDate: day(from + rnd(6)) } : {}) }, { confirmed: true });
+      const occurrences = (await User.findById(user._id)).teams;
+      const keys = occurrences.map((o) => `${o.fromDay}|${o.toDay ? 'reinforcement' : 'permanent'}`);
+      assert.equal(new Set(keys).size, keys.length, `history ${history} step ${step}: ${keys.join(', ')}`);
+      const reinforced = occurrences.some((o) => o.toDay && o.fromDay <= day(from) && o.toDay >= day(from));
+      if (bounded || !reinforced) {
+        assert.equal(getTeamAtDay(occurrences, day(from))?.teamId.toString(), String(team._id), `history ${history} step ${step}: the assignment is in force on its first day`);
+        checked++;
+      }
+    }
+  }
+  assert.ok(checked > 200, `${checked}`);
+});
+

@@ -1,11 +1,11 @@
 import Center from '../../models/Center.js';
 import Rotation from '../../models/Rotation.js';
-import { activationAt, activationTimelineOf } from '../rotation/rotation.latest.js';
+import { activationAt, activationTimelineOf } from '../rotation/rotation.timeline.js';
 import { cycleDayIndex } from '../team/team.cycleIndex.js';
 
 /**
  * La vacation que la rotation prévoit pour une équipe un jour donné, pour le planning d'un utilisateur comme pour la grille d'une
- * équipe : le tour en vigueur ce jour-là (rotation.latest.js), puis la position de l'équipe dans son cycle (team.cycleIndex.js).
+ * équipe : le tour en vigueur ce jour-là (rotation.timeline.js), puis la position de l'équipe dans son cycle (team.cycleIndex.js).
  */
 
 /** `load(key)` appelé une seule fois par clé : les appels suivants, même simultanés, reçoivent la même promesse */

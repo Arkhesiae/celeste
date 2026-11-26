@@ -10,7 +10,7 @@ import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
 import { effectiveOffset } from './team.cycleIndex.js';
 import { holdsAnyTeamFrom } from './team.segments.js';
-import { findLatestRotation } from '../rotation/rotation.latest.js';
+import { findLatestRotation } from '../rotation/rotation.timeline.js';
 import { previewUserPeriodImpact, sanitizeUserPeriod } from '../user/user.sanitizePeriod.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 

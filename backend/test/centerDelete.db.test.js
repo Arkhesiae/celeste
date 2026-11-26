@@ -16,6 +16,7 @@ import Rotation from '../models/Rotation.js';
 import Team from '../models/Team.js';
 import User from '../models/User.js';
 import { deleteCenter } from '../controllers/center.controller.js';
+import * as centerService from '../services/center/index.js';
 
 const URI = process.env.TEST_CENTER_DELETE_MONGO_URI || 'mongodb://127.0.0.1:27017/celeste_test_center_delete';
 let available = false;
@@ -63,4 +64,47 @@ test('deleting a center deletes its rotations and teams and detaches its users, 
   assert.equal((await Rotation.findById(rotationOfKept._id)).deleted, false);
   assert.equal((await Team.findById(teamOfKept._id)).deleted, false);
   assert.equal(String((await User.findById(userOfKept._id)).centerId), String(kept._id));
+});
+
+test('a deletion that fails on the way leaves the center in place, and running it again completes it', async (t) => {
+  if (!available) return t.skip('MongoDB indisponible');
+  const today = new Date().toISOString().slice(0, 10);
+  // une panne à chaque étape d'écriture, la dernière étant le centre lui-même
+  const failures = [
+    ['users', User, 'updateOne'],
+    ['rotations', Rotation, 'updateMany'],
+    ['teams', Team, 'updateMany'],
+    ['the center itself', Center.prototype, 'save'],
+  ];
+  for (const [index, [label, target, method]] of failures.entries()) {
+    const center = await makeCenter(`F${index}`, `FFF${index}`);
+    const rotation = await Rotation.create({ name: `R-F${index}`, centerId: center._id });
+    const team = await Team.create({ name: '1', center: center._id });
+    const members = [];
+    for (const who of ['a', 'b']) {
+      members.push(await User.create({
+        name: who, lastName: 'T', email: `${who}${index}@fail.fr`, password: await bcrypt.hash('x', 4), registrationStatus: 'verified',
+        centerId: center._id, teams: [{ teamId: team._id, fromDay: '2020-01-01', fromDate: new Date('2020-01-01') }],
+      }));
+    }
+
+    const real = target[method];
+    target[method] = async () => { throw new Error(`failure on ${label}`); };
+    try {
+      await assert.rejects(centerService.deleteCenter(String(center._id)), new RegExp(`failure on ${label}`), label);
+    } finally {
+      target[method] = real;
+    }
+    assert.equal((await Center.findById(center._id)).deleted, false, `${label}: the center is still there`);
+
+    await centerService.deleteCenter(String(center._id));
+    assert.equal((await Center.findById(center._id)).deleted, true, label);
+    assert.equal((await Rotation.findById(rotation._id)).deleted, true, label);
+    assert.equal((await Team.findById(team._id)).deleted, true, label);
+    for (const member of members) {
+      const after = await User.findById(member._id);
+      assert.equal(after.centerId, undefined, label);
+      assert.deepEqual(after.teams.map((o) => [o.teamId === null, o.fromDay <= today || o.teamId === null]), [[false, true], [true, true]], `${label}: past team kept, one marker`);
+    }
+  }
 });

@@ -13,8 +13,8 @@ import mongoose from 'mongoose';
 import Center from '../models/Center.js';
 import Rotation from '../models/Rotation.js';
 import { deleteRotation } from '../services/rotation/rotation.delete.js';
-import { updateActivationDate } from '../services/rotation/rotation.activation.js';
-import { findLatestRotation } from '../services/rotation/rotation.latest.js';
+import { updateActivationDate, findChangedPeriods } from '../services/rotation/rotation.activation.js';
+import { findLatestRotation } from '../services/rotation/rotation.timeline.js';
 import { listRotationsWithStatus } from '../services/rotation/rotation.read.js';
 import { todayIn } from '../utils/dates/plainDate.js';
 
@@ -81,4 +81,18 @@ test('a deleted rotation keeps its past: planning, timeline, and it never comes 
   assert.deepEqual(sortedRotations.map((r) => [r.name, r.status]), [['old', 'past'], ['current', 'active']]);
 
   assert.equal(await codeOf(updateActivationDate('remove', current._id, day(0), true)), 'ROTATION_PREVIOUS_DELETED');
+});
+
+test('the periods a change affects follow the same rotation rule as the planning, shared days included', () => {
+  const at = (rotationId, key) => ({ rotationId, activationDate: new Date(`${key}T00:00:00Z`) });
+  const summary = (changes) => changes.map((c) => [c.from.toISOString().slice(0, 10), c.to?.toISOString().slice(0, 10) ?? null, c.oldRule, c.newRule]);
+
+  const before = [at('a', '2030-01-01'), at('b', '2030-03-01')];
+  const added = [before[0], at('c', '2030-02-01'), before[1]];
+  assert.deepEqual(summary(findChangedPeriods(before, added)), [['2030-02-01', '2030-03-01', 'a', 'c']]);
+
+  // old data, two rotations on one day: the last one is in force, as for the planning
+  const shared = [at('a', '2030-01-01'), at('b', '2030-02-01'), at('c', '2030-02-01')];
+  const withoutFirst = [shared[0], shared[2]];
+  assert.deepEqual(summary(findChangedPeriods(shared, withoutFirst)), [], 'removing the one that was not in force changes nothing');
 });

@@ -80,7 +80,7 @@ Still tracked (`git ls-files`): `ssh_config` (production host IP, login `root`, 
 ## A few hours
 
 ### 73. A cycle move cleans a member's whole future, not only their days in the team — P2
-`setTeamCyclePosition` (`services/team/team.cycle.js`) sanitizes every affected member from the date with no end. A member whose time in the moved team is bounded (a reinforcement, or a move to another team later on) also loses demands and shift entries on days outside the team. Found by reading the code on 2026-11-26, older than the fix of #72.
+`setTeamCyclePosition` (`services/team/team.cyclePosition.js`) sanitizes every affected member from the date with no end. A member whose time in the moved team is bounded (a reinforcement, or a move to another team later on) also loses demands and shift entries on days outside the team. Found by reading the code on 2026-11-26, older than the fix of #72.
 **Fix:** sanitize only the periods where the member holds a moved team (`buildTeamSegments`, clipped to the date).
 
 ### 69. A failed startup request leaves the app on the loading screen — P2
@@ -118,6 +118,7 @@ The center guards (`middleware/centerAuth.js`) cover users, teams, tickets, dema
 
 ### 21. Production MongoDB is a standalone server but several flows need transactions — P1
 `inTransaction` (`utils/mongo.js`, used by team changes, cycle position changes, rotation activation, demand accept, cancel and withdraw, center transfer) uses `session.withTransaction`, which fails on a standalone `mongod` ("Transaction numbers are only allowed on a replica set member or mongos"). The root `docker-compose.yml` starts `mongo:8.0` with `--bind_ip_all --port 27017` and no `--replSet`; only `backend/docker-compose.yml` (dev) sets `--replSet rs0`. If production runs this way, all of those flows return 500.
+Center deletion stays without a transaction for this reason (it marks the center last, so it can be run again after a failure). Once production is a replica set, it can be wrapped in `inTransaction`.
 
 ---
 
@@ -128,7 +129,7 @@ The center guards (`middleware/centerAuth.js`) cover users, teams, tickets, dema
 **Fix:** remove the bypass (refuse whenever there is an activation date, offering to duplicate the rotation), or version the days so that an edit only applies from a date.
 
 ### 67. Moving a team in the cycle also rewrites its past planning — P1
-A team has one start of cycle (`Center.cycleAnchorDate` + `Team.cycleOffset`, `services/team/team.cycleIndex.js`) with no effective date, and base shifts are computed, not stored. `PUT /team/:id/cycle-position` (`services/team/team.cycle.js`) cleans demands and entries from today on, but the new offset also applies to every earlier day: past calendars and work checks change. Found by reading the code on 2026-11-26, not reproduced.
+A team has one start of cycle (`Center.cycleAnchorDate` + `Team.cycleOffset`, `services/team/team.cycleIndex.js`) with no effective date, and base shifts are computed, not stored. `PUT /team/:id/cycle-position` (`services/team/team.cyclePosition.js`) cleans demands and entries from today on, but the new offset also applies to every earlier day: past calendars and work checks change. Found by reading the code on 2026-11-26, not reproduced.
 **Fix:** needs a decision: keep dated cycle positions (one per change, resolved per day like rotation activations).
 
 ### 39. Center and role in the access token can be stale — P2
@@ -150,7 +151,7 @@ How a stale entry behaves (`applyEntries`, `planning.userShifts.js`; checked on 
 - **Activation added or removed** (`rotation.activation.js`): only demands are converted or cancelled. Cancelled and reopened ones clean their substitution entries; **converted** accepted demands keep entries on the old shifts, and no other entry is touched.
 - Converted demands also keep `posterShift.selectedVariation` of the old shift.
 - **Rotation day edit with `confirmed`** (#68): same `Shift` id, so entries stay attached with new hours, past included; a removed variation stays on the entries that use it; a day turned to rest drops its hour patches from the planning.
-- **Cycle position** (`team.cycle.js`): entries are cleaned only from the `date` sent by the client, which is not checked to be today, while the new offset applies to every day (#67). Deactivated members (`isActive: false`) are skipped.
+- **Cycle position** (`team.cyclePosition.js`): entries are cleaned only from the `date` sent by the client, which is not checked to be today, while the new offset applies to every day (#67). Deactivated members (`isActive: false`) are skipped.
 - **Team deleted** (`deleteTeam`): nothing is cleaned (#71).
 - **`assignUserToCenter`** (`POST /user/:id/assign-center`) and **`deleteCenter`**: demands and entries from today on are not cleaned (past planning is kept since 2026-11-26).
 - **User deleted** (`deleteUserById`): the user's demands are not cancelled, so counterparts keep substitution entries.

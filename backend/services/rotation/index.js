@@ -6,6 +6,6 @@ export * from './rotation.activation.js';
 export * from './rotation.activationRequest.js';
 export * from './rotation.create.js';
 export * from './rotation.delete.js';
-export * from './rotation.latest.js';
+export * from './rotation.timeline.js';
 export * from './rotation.read.js';
 export * from './rotation.update.js';

@@ -15,7 +15,7 @@ import Rotation from '../models/Rotation.js';
 import '../models/Shift.js';
 import '../models/Variation.js';
 import { listRotationsWithStatus } from '../services/rotation/rotation.read.js';
-import { findLatestRotation } from '../services/rotation/rotation.latest.js';
+import { findLatestRotation } from '../services/rotation/rotation.timeline.js';
 import { getCenterTimeZone } from '../services/center/center.timezone.js';
 import { todayIn } from '../utils/dates/plainDate.js';
 

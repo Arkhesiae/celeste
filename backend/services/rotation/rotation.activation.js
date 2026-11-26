@@ -1,4 +1,5 @@
 import Rotation from '../../models/Rotation.js';
+import { activationAt, activationTimelineOf } from './rotation.timeline.js';
 import { activationDaysOf, dayFilter, dayInArrayFilter } from '../../utils/dates/dayAccess.js';
 import { toDay } from '../../utils/dates/dayFields.js';
 import { inTransaction } from '../../utils/mongo.js';
@@ -458,13 +459,11 @@ const getOrderedActivationDates = async (centerId, session = null) => {
     // Tours supprimés compris : ils font partie de la chronologie passée
     const rotations = await Rotation.find({ centerId }).select('activationDates activationDays').session(session).lean();
 
-    return rotations
-        .flatMap((rotation) => activationDaysOf(rotation).map((day) => ({
-            _id: rotation._id,
-            rotationId: rotation._id,
-            activationDate: new Date(day),   // YYYY-MM-DD = minuit UTC
-        })))
-        .sort((a, b) => a.activationDate - b.activationDate);
+    return activationTimelineOf(rotations).map(({ rotation, day }) => ({
+        _id: rotation._id,
+        rotationId: rotation._id,
+        activationDate: new Date(day),   // YYYY-MM-DD = minuit UTC
+    }));
 };
 
 
@@ -495,21 +494,21 @@ function findChangedPeriods (before, after) {
 
     const parseDate = d => new Date(d);
 
-    // Helper: find active rule at a given time
-    const getActiveRule = (list, date) => {
-        const beforeDates = list
-            .filter(a => parseDate(a.activationDate) <= date)
-            .sort((a, b) => b.activationDate - a.activationDate);
-        return beforeDates[0]?.rotationId || null;
-    };
+    // Les listes (réelles ou simulées) sous la forme de la chronologie partagée, pour appliquer la règle de rotation.timeline.js
+    const asTimeline = (list) => list
+        .map((a) => ({ rotationId: a.rotationId, day: toDay(parseDate(a.activationDate)) }))
+        .sort((first, second) => first.day.localeCompare(second.day));
+    const beforeTimeline = asTimeline(before);
+    const afterTimeline = asTimeline(after);
+    const getActiveRule = (timeline, date) => activationAt(timeline, toDay(date))?.rotationId ?? null;
 
     const changes = [];
     for (let i = 0; i < allDates.length; i++) {
         const from = parseDate(allDates[i]);
         const to = allDates[i + 1] ? parseDate(allDates[i + 1]) : null;
 
-        const oldRule = getActiveRule(before, from);
-        const newRule = getActiveRule(after, from);
+        const oldRule = getActiveRule(beforeTimeline, from);
+        const newRule = getActiveRule(afterTimeline, from);
 
         if (oldRule?.toString() !== newRule?.toString()) {
             changes.push({ from, to, oldRule, newRule });

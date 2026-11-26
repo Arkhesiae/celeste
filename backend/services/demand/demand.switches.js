@@ -3,7 +3,7 @@ import { posterDayOf } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import Demand from '../../models/Demand.js';
-import { findLatestRotation } from '../rotation/rotation.latest.js';
+import { findLatestRotation } from '../rotation/rotation.timeline.js';
 import { generateShiftsMap } from '../planning/planning.shiftsMap.js';
 import { shiftMapToArray } from '../planning/planning.shiftsMap.js';
 import { legalLimitsFor } from './compatibility/compatibility.rules.js';

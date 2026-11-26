@@ -5,7 +5,7 @@ import { activationDaysOf } from '../../utils/dates/dayAccess.js';
 import { findOrThrow } from '../../utils/mongo.js';
 import { sameId } from '../../utils/ids.js';
 import { AppError } from '../../error/AppError.js';
-import { findLatestRotation } from './rotation.latest.js';
+import { findLatestRotation } from './rotation.timeline.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
 
 /**

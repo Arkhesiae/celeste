@@ -22,7 +22,7 @@ import { endTeamMembership } from '../services/team/team.membership.js';
 import { getTeamAtDay } from '../services/team/team.atDay.js';
 import { buildTeamSegments, buildTeamTimeline } from '../services/team/team.segments.js';
 import { getTeamGrid } from '../services/team/team.grid.js';
-import { setTeamCyclePosition } from '../services/team/team.cycle.js';
+import { setTeamCyclePosition } from '../services/team/team.cyclePosition.js';
 import { computeUserShifts } from '../services/planning/planning.userShifts.js';
 import { getUserCurrentTeam, getUserTeamOccurrences, getUsersGroupedByTeam } from '../services/user/user.teamRead.js';
 import { getCenterTeamsTimeline, getUserTeamTimeline } from '../services/user/user.teamTimeline.js';

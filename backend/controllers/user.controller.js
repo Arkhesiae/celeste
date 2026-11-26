@@ -92,10 +92,22 @@ const getUserById = async (req, res, next) => {
 };
 
 // Supprimer un compte utilisateur par ID
+// Suppression définitive (administrateur principal, voir la route) : sans `?confirmed=true`, rien n'est modifié et la réponse 409
+// détaille ce qui serait supprimé
 const deleteUserById = async (req, res, next) => {
     try {
-        await userService.deleteUserById(assertId(req.params.id, 'ID utilisateur'));
-        res.json({ message: 'Utilisateur supprimé avec succès' });
+        const id = assertId(req.params.id, 'ID utilisateur');
+        const actorId = req.user.userId;
+        if (req.query.confirmed !== 'true') {
+            const impact = await userService.previewUserDeletion(id, { actorId });
+            return res.status(409).json({
+                needsApproval: true,
+                message: 'La suppression de ce compte est définitive. Confirmation requise.',
+                impact,
+            });
+        }
+        const result = await userService.deleteUserCompletely(id, { actorId });
+        res.json({ message: 'Utilisateur supprimé avec succès', ...result });
     } catch (error) {
         next(error);
     }

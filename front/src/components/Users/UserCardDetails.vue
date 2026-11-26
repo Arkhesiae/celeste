@@ -103,7 +103,7 @@
           </v-col>
           <v-col cols="12" md="12">
             <v-card
-              v-if="isLocalAdmin || isMasterAdmin"
+              v-if="isMasterAdmin && user && user._id !== authStore.userData.userId"
               flat
               class="pa-4"
               color="error"
@@ -144,7 +144,6 @@ const props = defineProps({
 defineEmits(['update:dialogVisible', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
 
 const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
-const isLocalAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'local');
 
 const user = computed(() => {
   return userStore.users.find((user) => user._id === props.userId) || null;

@@ -57,12 +57,13 @@ export const userService = {
   },
 
   /**
-   * Supprime un utilisateur.
+   * Supprime définitivement un utilisateur (administrateur principal). Sans `confirm`, rien n'est modifié : la réponse
+   * `{ needsApproval, message, impact }` dit ce qui serait supprimé.
    * @param {string} id - L'ID de l'utilisateur à supprimer.
-   * @returns {Promise<void>}
+   * @param {boolean} [confirm]
    */
-  async deleteUser(id) {
-    const response = await apiFetch(`/user/${id}`, {
+  async deleteUser(id, confirm = false) {
+    const response = await apiFetch(`/user/${id}${confirm ? '?confirmed=true' : ''}`, {
       method: 'DELETE',
     });
     return response;

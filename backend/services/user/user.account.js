@@ -9,7 +9,7 @@ import { sendEmailApproval, sendEmailRejection } from '../email/email.approval.j
 
 /**
  * Compte d'un utilisateur : disponibilité de l'e-mail, approbation d'une inscription, rôle d'administrateur,
- * rattachement à un centre, suppression.
+ * rattachement à un centre, rejet d'une inscription (la suppression d'un compte est dans user.delete.js).
  */
 
 /** Disponibilité d'une adresse e-mail (et existence d'un ancien compte du même e-mail) */
@@ -17,14 +17,6 @@ export async function checkEmailAvailability (email) {
     const existingUser = await User.findOne({ email });
     const existingLegacyUser = await LegacyUser.findOne({ email });
     return { available: !existingUser, legacy: !!existingLegacyUser };
-}
-
-/** Supprime un compte par identifiant ; 404 s'il n'existe pas */
-export async function deleteUserById (id) {
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-        throw new AppError('User not found.', 404);
-    }
 }
 
 /** Approuve une inscription et prévient l'utilisateur par e-mail */

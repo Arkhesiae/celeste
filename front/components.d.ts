@@ -167,6 +167,7 @@ declare module 'vue' {
     UserCandidatures: typeof import('./src/components/Users/UserCandidatures.vue')['default']
     UserCard: typeof import('./src/components/Users/UserCard.vue')['default']
     UserCardDetails: typeof import('./src/components/Users/UserCardDetails.vue')['default']
+    UserDeletionDialog: typeof import('./src/components/Users/UserDeletionDialog.vue')['default']
     UserList: typeof import('./src/components/Users/UserList.vue')['default']
     UserMenu: typeof import('./src/components/Layout/AppBar/UserMenu.vue')['default']
     UserMutations: typeof import('./src/components/Users/UserMutations.vue')['default']

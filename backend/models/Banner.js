@@ -45,10 +45,11 @@ const bannerSchema = new mongoose.Schema({
     ref: 'Center',
     default: null
   },
+  // `null` quand le compte de l'auteur a été supprimé : la bannière reste (et doit rester enregistrable, un « lu » la réenregistre)
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null
   },
   acknowledgedBy: {
     type: [acknowledgedBySchema],

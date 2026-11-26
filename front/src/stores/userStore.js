@@ -145,6 +145,17 @@ export const useUserStore = defineStore('user', () => {
   };
 
   /**
+   * Supprime définitivement un compte (voir userService.deleteUser). Sans `confirm`, renvoie l'impact et ne retire rien.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @param {{ confirm?: boolean }} [options]
+   */
+  const deleteUser = async (userId, { confirm = false } = {}) => {
+    const result = await userService.deleteUser(userId, confirm);
+    if (!result?.needsApproval) users.value = users.value.filter((user) => user._id !== userId);
+    return result;
+  };
+
+  /**
    * Rend un utilisateur administrateur.
    * @param {string} userId - L'ID de l'utilisateur.
    */
@@ -246,6 +257,7 @@ export const useUserStore = defineStore('user', () => {
     assignCenter,
     approvePendingUser,
     deletePendingUser,
+    deleteUser,
     makeAdmin,
     removeAdmin,
     fetchUsersAndGroupByTeam,

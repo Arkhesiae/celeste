@@ -30,14 +30,16 @@ const TYPE_TEXT = { switch: 'Permutation', hybrid: 'Hybride', substitution: 'Rem
  * @param {Array<string|ObjectId>} [params.cancelledIds] - demandes annulées (cascade comprise)
  * @param {Array<{ demandId, accepterId }>} [params.withdrawn] - demandes rouvertes après retrait d'un accepteur
  * @param {string|ObjectId} [params.actorId] - utilisateur à l'origine du changement : jamais notifié
+ * @param {{ demands: Array, accepters: Array, excludedUserIds?: string[] }} [params.loaded] - documents lus avant le commit, quand
+ *   ils n'existent plus après (compte supprimé) : `demands` avec `posterId` / `accepterId` peuplés ; `excludedUserIds` : jamais notifiés
  * @returns {Promise<{ sent: number }>}
  */
-export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], actorId } = {}) {
+export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], actorId, loaded } = {}) {
     try {
         const ids = [...new Set([...cancelledIds, ...withdrawn.map((w) => w.demandId)].map(String))];
         if (!ids.length) return { sent: 0 };
 
-        const [demands, accepters] = await Promise.all([
+        const [demands, accepters] = loaded ? [loaded.demands, loaded.accepters.filter(Boolean)] : await Promise.all([
             Demand.find({ _id: { $in: ids } }).populate([
                 { path: 'posterId', select: 'name lastName email personalData.phoneNumber' },
                 { path: 'accepterId', select: 'name lastName email personalData.phoneNumber' },
@@ -48,7 +50,8 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
         const demandById = new Map(demands.map((d) => [idOf(d), d]));
         const accepterById = new Map(accepters.map((u) => [idOf(u), u]));
         const skip = actorId ? idOf(actorId) : null;
-        const isRecipient = (user) => user?.email?.trim() && !(skip && idOf(user) === skip);
+        const excluded = new Set([...(skip ? [skip] : []), ...(loaded?.excludedUserIds ?? [])]);
+        const isRecipient = (user) => user?.email?.trim() && !excluded.has(idOf(user));
 
         let sent = 0;
 

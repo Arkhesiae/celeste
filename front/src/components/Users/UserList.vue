@@ -97,6 +97,12 @@
       @assign-center="openCenterDialog"
       @delete="deleteUser"
     />
+    <UserDeletionDialog
+      v-model="deletionDialog"
+      :impact="deletionImpact"
+      :loading="deleting"
+      @confirm="confirmDeletion"
+    />
     <!-- 
     Center Assignment Dialog -->
     <AssignCenterDialog
@@ -119,6 +125,7 @@ import { useDisplay } from 'vuetify';
 import UserCard from '@/components/Users/UserCard.vue';
 import UserCardDetails from '@/components/Users/UserCardDetails.vue';
 import AssignCenterDialog from '@/components/Users/AssignCenterDialog.vue';
+import UserDeletionDialog from '@/components/Users/UserDeletionDialog.vue';
 
 // Liste des utilisateurs, ou fenêtre de la page d'un centre (`centerId` : les membres de ce centre, sans titre ni choix de centre)
 const props = defineProps({
@@ -242,15 +249,34 @@ const assignCenter = async ({ userId, centerId }) => {
   }
 };
 
-const deleteUser = async (user) => {
-  if (!confirm(`Êtes-vous sûr de vouloir supprimer ${user.name} ?`)) return;
+const deletionDialog = ref(false);
+const deletionImpact = ref(null);
+const deleting = ref(false);
 
+// Premier appel : rien n'est supprimé, le serveur dit ce qui le serait ; la suppression n'a lieu qu'après la confirmation
+const deleteUser = async (user) => {
   try {
-    await userStore.deleteUser(user._id);
+    const result = await userStore.deleteUser(user._id);
+    userDialog.value = false;
+    deletionImpact.value = result.impact;
+    deletionDialog.value = true;
+  } catch (error) {
+    console.error('Error previewing user deletion:', error);
+    snackbarStore.showNotification(error.message || 'Erreur lors de la suppression', 'onError', 'mdi-alert-circle');
+  }
+};
+
+const confirmDeletion = async () => {
+  deleting.value = true;
+  try {
+    await userStore.deleteUser(deletionImpact.value.user._id, { confirm: true });
+    deletionDialog.value = false;
     snackbarStore.showNotification('Utilisateur supprimé', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Error deleting user:', error);
-    snackbarStore.showNotification('Erreur lors de la suppression', 'onError', 'mdi-alert-circle');
+    snackbarStore.showNotification(error.message || 'Erreur lors de la suppression', 'onError', 'mdi-alert-circle');
+  } finally {
+    deleting.value = false;
   }
 };
 

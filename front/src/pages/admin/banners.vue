@@ -79,7 +79,7 @@
               <p class="text-body-small text-medium-emphasis message-preview mb-0">{{ ann.message }}</p>
               <div class="row-footer">
                 <span class="text-body-small text-disabled">
-                  Par {{ ann.createdBy?.name }} {{ ann.createdBy?.lastName }} ·
+                  <template v-if="ann.createdBy">Par {{ ann.createdBy.name }} {{ ann.createdBy.lastName }} ·</template>
                   {{ formatDateTime(ann.createdAt) }}
                 </span>
                 <span v-if="ann.expiresAt" class="text-body-small text-warning">

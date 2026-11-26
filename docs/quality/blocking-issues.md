@@ -27,13 +27,12 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 | 15 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
 | 16 | 39 | Center and role in the access token can be stale | P2 | 1 day |
 | 17 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
-| 18 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
-| 19 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
-| 20 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
-| 21 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
-| 22 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
-| 23 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
-| 24 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
+| 18 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
+| 19 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
+| 20 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
+| 21 | 52 | Inactive accounts | P2 | 2 days |
+| 22 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
+| 23 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
 
 `S4`, `S8` and `S9` come from `docs/quality/calendar-substitution-review.md`, where they are described in full and were rechecked on 2026-11-25.
 
@@ -118,9 +117,6 @@ A team has one start of cycle (`Center.cycleAnchorDate` + `Team.cycleOffset`, `s
 ### 22. The `confirmed` flag is advisory and not bound to what was previewed — P2
 The client may send `confirmed: true` at any time; the server does not check that the caller saw the impact. Between the 409 preview and the confirmation, new substitutions or entries can appear and be cancelled without the user having seen them. The rotation activation flow and the team cycle position flow (`PUT /team/:id/cycle-position`) behave the same (the confirm path recomputes the changes instead of applying the previewed ones). Not a privilege issue, the safeguard is only UX.
 
-### 50. Account recovery does not prove ownership of the legacy account — P1
-`initiateAccountRecovery` (`controllers/accountRecovery.controller.js`, public route) lets anyone who knows a legacy account's `login` or old email claim it: nothing proves the caller owns it, because the OTP step is client side only. Needs a decision on what proves ownership (a code sent to the old address, for instance).
-
 ### 56. Navigation restructuring only partly verified — P2
 `router/index.js`, `router/tabMemory.js`, `layouts/*`, the root pages and the per-tab piles were checked with the route table, a Node model of the piles and the back rule, and the real browser history on a scratch build with the auth guard skipped; **nothing was run signed in**. The history handling (back to the dashboard from a tab root, dashboard seeded below pages opened directly) is switched off in `router/index.js`, so points 3 and 4 only apply once it is back. Open points:
 1. the bare root addresses `/admin`, `/center` and `/demand-page` match a root page with nothing inside (blank page): they have no redirect;
@@ -139,15 +135,15 @@ Converted demands keep `posterShift.selectedVariation` pointing at a variation o
 
 ## Several days, or a decision first
 
-### 52. Inactive accounts and center transfer refusal — P2
-- The receiving admin can accept a center transfer but not refuse it; only the user can cancel it. The agent is not emailed when it is accepted (the template `centerTransferAccepted` exists, not wired: see #61).
+### 52. Inactive accounts — P2
 - The front does not react to 403 `ACCOUNT_INACTIVE` (no match in `front/src`): no rejection dialog at login, no logout of an open session.
 - Nothing lets an admin deactivate an account (`User.isActive` is only set by seeds); the template `accountDeactivated` exists, not wired.
 - Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `demandJob` / `reminderJob` still go to an inactive accepter.
 
 ### 61. Mail leftovers — P3
 - The template `unacceptedDemand` is sent by nothing.
-- Four templates are preview-only, with no sender and no call site: `rotationChange`, `centerTransferAccepted`, `accountDeactivated`, `ticketReceived`.
+- `accountDeactivated` is preview-only: nothing deactivates an account (#52). `rotationChange`, `centerTransferAccepted` and `ticketReceived` were wired on 2026-11-26.
+- `rotationChange` is sent when the activation is saved, even for a date far ahead, and nothing is sent when an activation is removed (a rotation announced earlier is not retracted).
 - The points template `pointsTransferCancelled` has a reason `cancelledByUser` that nothing triggers (no route cancels a manual deferred transfer).
 - `cancelledDemand` always says "demande de remplacement" (even for a switch) and shows the poster's full last name where the other demand mails abbreviate it; its `accepters` and `youWereAccepter` branches never run.
 - The announcement mail never receives a date, author, details or link (only title, message, scope and center name) and is not addressed to the user by name.
@@ -170,6 +166,10 @@ Open on purpose: the owner decided not to act on these yet. They are not ranked 
 ### 2. Local admin passwords in production are guessable — P0
 Existing production accounts `admin-<oaci>@celeste-app.fr` still have the old guessable password `admin-<oaci>` until changed by hand (operations, not code; not checkable from the repository). `backend/dev/seedDefaultConfig.js` also hardcodes the passwords `user` and `admin-lfbb` (acceptable only if strictly dev, see the `ensureDev` guard in `dev.routes.js`).
 *(Ignored on 2026-11-26 by the owner's decision. The accounts have not been checked or changed.)*
+
+### 50. Account recovery does not prove ownership of the legacy account — P1
+`initiateAccountRecovery` (`controllers/accountRecovery.controller.js`, public route) lets anyone who knows a legacy account's `login` or old email claim it: nothing proves the caller owns it, because the OTP step is client side only. Proof of ownership would need, for instance, a code sent to the old address.
+*(By design and not critical, owner's decision of 2026-11-26. Nothing changed.)*
 
 ---
 

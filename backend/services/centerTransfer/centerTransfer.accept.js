@@ -6,6 +6,7 @@ import { sameId } from '../../utils/ids.js';
 import { sanitizeUserPeriod } from '../user/user.sanitizePeriod.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 import { notifyPointTransferCancelled } from '../email/email.pointTransfer.js';
+import { notifyCenterTransferAccepted } from '../email/email.centerTransfer.js';
 import { upcomingPeriod } from './centerTransfer.request.js';
 
 /**
@@ -71,6 +72,9 @@ export async function acceptCenterTransfer (userId, caller) {
     for (const transferId of cancelledTransferIds) {
         await notifyPointTransferCancelled(transferId, 'centerTransfer');
     }
+
+    // L'utilisateur lui-même : sa mutation est faite (`user` a été lu avant le changement : il porte encore l'ancien centre)
+    await notifyCenterTransferAccepted(userId, user.centerId);
 
     return { cancelled: cancelled.length, withdrawn: withdrawn.length };
 }

@@ -1,7 +1,9 @@
+import mongoose from 'mongoose';
 import Ticket from '../../models/Ticket.js';
 import User from '../../models/User.js';
 import { AppError } from '../../error/AppError.js';
 import { sendNewTicketNotificationEmail } from '../email/email.newTicket.js';
+import { notifyTicketReceived } from '../email/email.ticketReceived.js';
 import { populateTicket } from './ticket.read.js';
 
 const MASTER_ADMIN_EMAIL = process.env.MASTER_ADMIN_EMAIL;
@@ -25,7 +27,11 @@ export const createNewTicket = async (ticketData) => {
 
   const sender = await User.findOne({ email });
 
+  const ticketId = new mongoose.Types.ObjectId();
   const newTicket = await Ticket.create({
+    _id: ticketId,
+    // Numéro affiché dans les mails, et repéré dans l'objet des réponses reçues
+    shortId: ticketId.toString().slice(-6),
     title: subject,
     content: message,
     type,
@@ -54,6 +60,8 @@ export const createNewTicket = async (ticketData) => {
   } catch (error) {
     console.error('Erreur envoi email notification ticket:', error);
   }
+
+  await notifyTicketReceived(newTicket, sender);
 
   return populatedTicket;
 };

@@ -10,6 +10,7 @@ import { toDateKey } from '../../utils/dates/dateKey.js';
 import { AppError } from '../../error/AppError.js';
 import { withdrawFromDemandWithSession, cancelDemandWithSession } from '../demand/demand.cascade.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
+import { notifyRotationChange } from '../email/email.rotationChange.js';
 
 
 
@@ -128,6 +129,20 @@ const updateActivationDate = async (action, rotationId, activationDate, confirme
             cancelledIds: notifications.cancelled,
             withdrawn: notifications.withdrawn,
         });
+
+        // Une activation ajoutée qui change le tour en vigueur : les utilisateurs du centre sont prévenus (sans faire attendre la réponse)
+        const startsAt = action === 'add'
+            ? outcome.changes.find((change) => toDay(change.from) === targetDay && sameId(change.newRule, rotationId))
+            : null;
+        if (startsAt) {
+            notifyRotationChange({
+                centerId,
+                rotationId,
+                previousRotationId: startsAt.oldRule,
+                day: targetDay,
+                demandsAffected: notifications.cancelled.length + notifications.withdrawn.length > 0,
+            });
+        }
         return outcome;
     }
     catch (err) {

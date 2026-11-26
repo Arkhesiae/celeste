@@ -4,7 +4,7 @@ Last reviewed: 2026-11-25. Every issue below was checked against the code on tha
 
 This file lists **open issues only**, **ranked by how easy they are to fix** (cheapest first, severity breaking ties). Issue numbers are stable identifiers, so the numbering has gaps. **P0** = the app cannot run or is trivially compromised; **P1** = serious security/correctness defect; **P2** = latent bug or hardening; **P3** = cosmetic or housekeeping.
 
-Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is done: the JWT secrets must now be in the environment).
+Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done: the JWT secrets must now be in the environment).
 
 ## Ranking
 
@@ -16,26 +16,24 @@ Whatever the ease, **#5, #2 and #21 come before any production deploy** (#4 is d
 | 4 | 5 | Server details committed to git | P0 | 1 h + rotation of credentials |
 | 5 | 47 | Overlapping shifts counted twice in the 48 h total | P2 | 1-2 h |
 | 6 | 23 | Cascaded cancellation mails give no reason | P2 | 1-2 h |
-| 7 | 41 | Cron jobs compute "today" in the default time zone | P2 | 2 h |
-| 8 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
-| 9 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
-| 10 | 20 | Admin routes without a center guard | P1 | 2 h |
-| 11 | 11 | Request bodies and avatar upload | P1 | 2 h |
-| 12 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
-| 13 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
-| 14 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
-| 15 | 2 | Guessable local admin passwords in production | P0 | ops |
-| 16 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
-| 17 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
-| 18 | 39 | Center and role in the access token can be stale | P2 | 1 day |
-| 19 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
-| 20 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
-| 21 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
-| 22 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
-| 23 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
-| 24 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
-| 25 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
-| 26 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
+| 7 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
+| 8 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
+| 9 | 20 | Admin routes without a center guard | P1 | 2 h |
+| 10 | 11 | Request bodies and avatar upload | P1 | 2 h |
+| 11 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
+| 12 | 7 | SNS inbound-mail webhook is unauthenticated | P1 | half a day |
+| 13 | 21 | Production MongoDB standalone, flows need transactions | P1 | half a day (ops) |
+| 14 | 67 | Moving a team in the cycle also rewrites its past planning | P1 | 1-2 days |
+| 15 | 68 | A day of an activated rotation can be edited after a simple confirmation | P1 | 1 h to remove, days to version |
+| 16 | 39 | Center and role in the access token can be stale | P2 | 1 day |
+| 17 | 22 | The `confirmed` flag is not bound to what was previewed | P2 | 1 day |
+| 18 | 50 | Account recovery does not prove ownership of the legacy account | P1 | 1 day + a decision |
+| 19 | 56 | Navigation restructuring only partly verified | P2 | 1 day of testing |
+| 20 | 35 | Rotation change leaves stale variations and calendar entries | P2 | 1-2 days |
+| 21 | S9 | Acceptance of a demand is not validated on the server | P1 | 1-2 days |
+| 22 | 52 | Inactive accounts and center transfer refusal | P2 | 2 days |
+| 23 | 61 | Mail leftovers: unused template, four unwired templates, wording | P3 | 1 day |
+| 24 | 40 | Day-field and cycle migrations are not finished | P1 | ops, several steps |
 
 `S4`, `S8` and `S9` come from `docs/quality/calendar-substitution-review.md`, where they are described in full and were rechecked on 2026-11-25.
 
@@ -76,9 +74,6 @@ Still tracked (`git ls-files`): `ssh_config` (production host IP, login `root`, 
 ### 23. Cascaded cancellation mails give no reason — P2
 Cascaded children get the same cancellation mail as the demand that caused it, with nothing saying that their request depended on another one that was cancelled. (The `systemCancel` title no longer says "[système]" since the MJML rewrite of 2026-11-24.)
 
-### 41. Cron jobs compute "today" in the default time zone, not per center — P2
-`services/demand/demand.expiry.js` (`processPastDemands`, lines 14 and 43, and `processAndCompleteDemands`) call `todayIn()` with the default zone (`Europe/Paris`), so a center in another zone has demands cancelled or archived at the wrong moment around midnight.
-
 ### 57. A failed mail send is silent for most mails — P2
 `emailService.sendEmail` never throws; it returns `{ sent: false }`. The OTP mail now checks it (fixed 2026-11-24, the code is saved only after a successful send), but the password reset (`email.resetPassword.js:40`) and the approval and rejection mails (`email.approval.js`) do not look at the result, and `sendMassEmail` / `sendBulkEmail` only count failures (the announcement and the ticket mails return the counts to their callers). A user waiting for a reset link gets "sent" whatever happened. There are no tests of the sender functions, only of the templates and of the points mails.
 
@@ -104,9 +99,6 @@ The center guards (`middleware/centerAuth.js`) cover users, teams, tickets, dema
 
 ### 21. Production MongoDB is a standalone server but several flows need transactions — P1
 `inTransaction` (`utils/mongo.js`, used by team changes, cycle position changes, rotation activation, demand accept, cancel and withdraw, center transfer) uses `session.withTransaction`, which fails on a standalone `mongod` ("Transaction numbers are only allowed on a replica set member or mongos"). The root `docker-compose.yml` starts `mongo:8.0` with `--bind_ip_all --port 27017` and no `--replSet`; only `backend/docker-compose.yml` (dev) sets `--replSet rs0`. If production runs this way, all of those flows return 500.
-
-### 2. Local admin passwords in production are guessable — P0
-Existing production accounts `admin-<oaci>@celeste-app.fr` still have the old guessable password `admin-<oaci>` until changed by hand (operations, not code; not checkable from the repository). `backend/dev/seedDefaultConfig.js` also hardcodes the passwords `user` and `admin-lfbb` (acceptable only if strictly dev, see the `ensureDev` guard in `dev.routes.js`).
 
 ---
 
@@ -175,6 +167,10 @@ Open on purpose: the owner decided not to act on these yet. They are not ranked 
 **Fix:** delete it (it stays in git history) or put it back on the landing page.
 *(Ignored on 2026-11-25.)*
 
+### 2. Local admin passwords in production are guessable — P0
+Existing production accounts `admin-<oaci>@celeste-app.fr` still have the old guessable password `admin-<oaci>` until changed by hand (operations, not code; not checkable from the repository). `backend/dev/seedDefaultConfig.js` also hardcodes the passwords `user` and `admin-lfbb` (acceptable only if strictly dev, see the `ensureDev` guard in `dev.routes.js`).
+*(Ignored on 2026-11-26 by the owner's decision. The accounts have not been checked or changed.)*
+
 ---
 
 ## Not covered
@@ -185,6 +181,7 @@ Open on purpose: the owner decided not to act on these yet. They are not ranked 
 - Front ESLint errors (about 150, see the roadmap) and the optional legacy-CSS leftovers (see the roadmap line of 2026-11-25).
 
 ## Removed from this file on 2026-11-25
+- **#41** (expiry job used the default time zone): fixed on 2026-11-26. `demand.expiry.js` judges each demand against today in its own center's time zone, and re-checks the status when writing. `reminderJob` already did it per center. Test `test/demandExpiry.db.test.js`.
 - **#63** (dashboard `TypeError` without an API): fixed on 2026-11-26. `ShiftCard.vue` read `vacation.type` when the store had no entry for the day (the error came from the same build chunk as `useCalendarData`, not from it); it now shows the empty card. `fetchMonthData` no longer shows a second snackbar nor throws into the mounted hooks and watchers. Reproduced and checked in headless Edge against a stub API.
 - **#31** (`updateDayInRotation`): fixed on 2026-11-26. A day can become a rest day (hours, variations and `optional` cleared); removed variations are deleted unless a demand or calendar entry still points to them; only the day's own variations can be rewritten (any other id used to update that variation, whatever its rotation or center); hours are validated before the first write. Test `test/rotationDayUpdate.db.test.js`.
 - **#30** (deleting a rotation active in the past rewrote history): fixed on 2026-11-26. The deletion is still allowed for such a rotation, and every reader of past days (planning, `findLatestRotation`, activation timeline, status list) now includes deleted rotations; only the rotation cards leave them out. A removal that would bring a deleted rotation back into force is refused. The same work refuses removing a past activation date and answers 404 for an unknown one (the first two points of #36). Rotations deleted before this fix count again for their past days. Test `test/rotationGuards.db.test.js`.

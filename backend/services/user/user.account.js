@@ -53,19 +53,24 @@ export async function makeUserLocalAdmin (id) {
     await user.save();
 }
 
+/** Vrai quand ce compte est le seul administrateur local actif de son centre (un compte désactivé n'administre plus rien) */
+export async function isLastCenterAdmin (user) {
+    if (!user.isAdmin || user.adminType !== 'local' || !user.centerId || user.isActive === false) return false;
+    const others = await User.countDocuments({
+        centerId: user.centerId,
+        isAdmin: true,
+        adminType: 'local',
+        isActive: { $ne: false },
+        _id: { $ne: user._id }
+    });
+    return others === 0;
+}
+
 /** Retire le rôle d'administrateur ; refusé pour le dernier administrateur local d'un centre */
 export async function removeUserAdmin (id) {
     const user = await findOrThrow(User, id, { message: 'Utilisateur non trouvé' });
-    if (user.isAdmin && user.adminType === 'local') {
-        const centerAdmins = await User.countDocuments({
-            centerId: user.centerId,
-            isAdmin: true,
-            adminType: 'local'
-        });
-
-        if (centerAdmins <= 1) {
-            throw new AppError('Impossible de retirer le statut admin : c\'est le dernier administrateur du centre', 400);
-        }
+    if (await isLastCenterAdmin(user)) {
+        throw new AppError('Impossible de retirer le statut admin : c\'est le dernier administrateur du centre', 400);
     }
 
     user.isAdmin = false;

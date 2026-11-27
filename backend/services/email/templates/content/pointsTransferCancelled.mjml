@@ -16,9 +16,11 @@
   <mj-text color="#410002" padding="0">Un des deux utilisateurs a changé de centre : ses transferts différés ont été annulés.</mj-text>
   {{else}}{{#ifEquals reason 'accountDeleted'}}
   <mj-text color="#410002" padding="0">Le compte de l'autre personne a été supprimé.</mj-text>
+  {{else}}{{#ifEquals reason 'accountDeactivated'}}
+  <mj-text color="#410002" padding="0">{{#ifEquals role 'sender'}}Le compte du destinataire{{else}}Le compte de l'expéditeur{{/ifEquals}} a été désactivé.</mj-text>
   {{else}}
   <mj-text color="#410002" padding="0">Une erreur technique a empêché l'exécution du transfert.</mj-text>
-  {{/ifEquals}}{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}
+  {{/ifEquals}}{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}{{/ifEquals}}
 </mj-column></mj-section>
 <mj-section><mj-column>
   <mj-text padding="14px 0 0">Aucun point n'a été débité ni crédité.</mj-text>

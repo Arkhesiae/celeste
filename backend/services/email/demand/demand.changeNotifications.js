@@ -32,9 +32,10 @@ const TYPE_TEXT = { switch: 'Permutation', hybrid: 'Hybride', substitution: 'Rem
  * @param {string|ObjectId} [params.actorId] - utilisateur à l'origine du changement : jamais notifié
  * @param {{ demands: Array, accepters: Array, excludedUserIds?: string[] }} [params.loaded] - documents lus avant le commit, quand
  *   ils n'existent plus après (compte supprimé) : `demands` avec `posterId` / `accepterId` peuplés ; `excludedUserIds` : jamais notifiés
+ * @param {Array<string>} [params.excludedUserIds] - autres utilisateurs à ne pas notifier (compte désactivé)
  * @returns {Promise<{ sent: number }>}
  */
-export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], actorId, loaded } = {}) {
+export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], actorId, loaded, excludedUserIds = [] } = {}) {
     try {
         const ids = [...new Set([...cancelledIds, ...withdrawn.map((w) => w.demandId)].map(String))];
         if (!ids.length) return { sent: 0 };
@@ -50,7 +51,7 @@ export async function notifyDemandChanges ({ cancelledIds = [], withdrawn = [], 
         const demandById = new Map(demands.map((d) => [idOf(d), d]));
         const accepterById = new Map(accepters.map((u) => [idOf(u), u]));
         const skip = actorId ? idOf(actorId) : null;
-        const excluded = new Set([...(skip ? [skip] : []), ...(loaded?.excludedUserIds ?? [])]);
+        const excluded = new Set([...(skip ? [skip] : []), ...(loaded?.excludedUserIds ?? []), ...excludedUserIds]);
         const isRecipient = (user) => user?.email?.trim() && !excluded.has(idOf(user));
 
         let sent = 0;

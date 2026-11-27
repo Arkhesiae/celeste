@@ -185,6 +185,11 @@ export async function assignTeamToUser (userId, newTeam, { confirmed = false, re
     const teamExists = await findOrThrow(Team, newTeam.teamId, { message: 'Équipe non trouvée' });
     if (teamExists.deleted) throw new AppError('Équipe non trouvée', 404);
     return applyTeamChange(userId, (user) => {
+        // Un compte désactivé n'appartient à aucune équipe (user.deactivate.js) : à réactiver d'abord. Pas de 403 ACCOUNT_INACTIVE,
+        // que le front réserve au compte de l'appelant
+        if (user.isActive === false) {
+            throw new AppError('Ce compte est désactivé : réactivez-le avant de lui assigner une équipe', 400, 'TARGET_ACCOUNT_INACTIVE');
+        }
         if (!sameId(teamExists.center, user.centerId)) {
             throw new AppError("Erreur dans la correspondance entre l'équipe et le centre", 400);
         }

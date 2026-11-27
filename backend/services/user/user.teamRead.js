@@ -108,7 +108,7 @@ export async function getUsersGroupedByTeam (centerId, requestedDate) {
     const [center, teams, users] = await Promise.all([
         Center.findById(centerId),
         Team.find({ center: centerId }),
-        User.find({ centerId })
+        User.find({ centerId, isActive: { $ne: false } })
     ]);
 
     if (!center) {

@@ -70,6 +70,27 @@ export const userService = {
   },
 
   /**
+   * Désactive un compte (administrateur). Sans `confirm`, rien n'est modifié : la réponse
+   * `{ needsApproval, message, impact }` dit ce que la désactivation ferait.
+   * @param {string} id - L'ID de l'utilisateur.
+   * @param {boolean} [confirm]
+   */
+  async deactivateUser(id, confirm = false) {
+    return apiFetch(`/user/${id}/deactivate`, {
+      method: 'POST',
+      body: JSON.stringify({ confirmed: confirm }),
+    });
+  },
+
+  /**
+   * Réactive un compte désactivé (administrateur).
+   * @param {string} id - L'ID de l'utilisateur.
+   */
+  async reactivateUser(id) {
+    return apiFetch(`/user/${id}/reactivate`, { method: 'POST' });
+  },
+
+  /**
    * Met à jour les préférences de l'utilisateur.
    * @param {string} userId - L'ID de l'utilisateur.
    * @param {Object} preferences - Les nouvelles préférences.

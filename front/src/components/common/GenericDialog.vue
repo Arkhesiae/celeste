@@ -27,6 +27,7 @@
             <v-btn
               v-if="smAndDown && showCloseButton"
               icon="mdi-arrow-left"
+              aria-label="Retour"
               variant="text"
               class="mr-1"
               @click="handleClose"
@@ -36,7 +37,13 @@
             </span>
           </div>
 
-          <v-btn v-if="!smAndDown && showCloseButton" icon="mdi-close" variant="text" @click="handleClose" />
+          <v-btn
+            v-if="!smAndDown && showCloseButton"
+            icon="mdi-close"
+            aria-label="Fermer"
+            variant="text"
+            @click="handleClose"
+          />
         </div>
 
         <div v-if="smAndDown" class="d-flex align-center ga-2">

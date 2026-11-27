@@ -133,7 +133,7 @@ const fetchAvailableUsers = async () => {
     }
 
     // Filtrer l'utilisateur courant de la liste
-    availableUsers.value = users.filter((user) => user._id !== props.userId);
+    availableUsers.value = users.filter((user) => user._id !== props.userId && user.isActive !== false);
   } catch {
     snackbarStore.showNotification('Erreur lors de la récupération des utilisateurs', 'onError', 'mdi-alert-circle');
   } finally {

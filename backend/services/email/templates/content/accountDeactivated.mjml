@@ -4,6 +4,6 @@
   <mj-text color="#410002">Votre compte Céleste a été désactivé{{#if centerName}} par l'administration du centre {{centerName}}{{/if}}. Vous ne pouvez plus vous connecter.</mj-text>
 </mj-column></mj-section>
 <mj-section><mj-column>
-  <mj-text>Vos demandes en cours ne sont plus visibles des autres utilisateurs.</mj-text>
+  <mj-text>Vos demandes à venir ont été annulées, et vous avez été retiré(e) de celles que vous aviez acceptées.</mj-text>
   <mj-text>Si vous pensez qu'il s'agit d'une erreur, contactez l'administrateur de votre centre.</mj-text>
 </mj-column></mj-section>

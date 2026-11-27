@@ -33,6 +33,7 @@
           <v-chip variant="text" color="tertiary" rounded="lg" value="admin"> Administrateurs </v-chip>
           <v-chip variant="text" rounded="lg" value="user"> Utilisateurs </v-chip>
           <v-chip variant="text" rounded="lg" value="pending"> En attente </v-chip>
+          <v-chip v-if="authStore.userData.isAdmin" variant="text" rounded="lg" value="inactive"> Désactivés </v-chip>
         </v-chip-group>
       </v-col>
 
@@ -96,6 +97,14 @@
       @remove-admin="removeAdmin"
       @assign-center="openCenterDialog"
       @delete="deleteUser"
+      @deactivate="deactivateUser"
+      @reactivate="reactivateUser"
+    />
+    <UserDeactivationDialog
+      v-model="deactivationDialog"
+      :impact="deactivationImpact"
+      :loading="deactivating"
+      @confirm="confirmDeactivation"
     />
     <UserDeletionDialog
       v-model="deletionDialog"
@@ -126,6 +135,7 @@ import UserCard from '@/components/Users/UserCard.vue';
 import UserCardDetails from '@/components/Users/UserCardDetails.vue';
 import AssignCenterDialog from '@/components/Users/AssignCenterDialog.vue';
 import UserDeletionDialog from '@/components/Users/UserDeletionDialog.vue';
+import UserDeactivationDialog from '@/components/Users/UserDeactivationDialog.vue';
 
 // Liste des utilisateurs, ou fenêtre de la page d'un centre (`centerId` : les membres de ce centre, sans titre ni choix de centre)
 const props = defineProps({
@@ -195,6 +205,8 @@ const filteredUsers = computed(() => {
     filtered = filtered.filter((user) => user.status === 'pending');
   } else if (selectedFilter.value === 'user') {
     filtered = filtered.filter((user) => !user.isAdmin);
+  } else if (selectedFilter.value === 'inactive') {
+    filtered = filtered.filter((user) => user.isActive === false);
   }
 
   if (searchQuery.value) {
@@ -277,6 +289,47 @@ const confirmDeletion = async () => {
     snackbarStore.showNotification(error.message || 'Erreur lors de la suppression', 'onError', 'mdi-alert-circle');
   } finally {
     deleting.value = false;
+  }
+};
+
+const deactivationDialog = ref(false);
+const deactivationImpact = ref(null);
+const deactivating = ref(false);
+
+// Comme la suppression : le premier appel ne change rien et dit ce que la désactivation ferait
+const deactivateUser = async (user) => {
+  try {
+    const result = await userStore.deactivateUser(user._id);
+    userDialog.value = false;
+    deactivationImpact.value = result.impact;
+    deactivationDialog.value = true;
+  } catch (error) {
+    console.error('Error previewing user deactivation:', error);
+    snackbarStore.showNotification(error.message || 'Erreur lors de la désactivation', 'onError', 'mdi-alert-circle');
+  }
+};
+
+const confirmDeactivation = async () => {
+  deactivating.value = true;
+  try {
+    await userStore.deactivateUser(deactivationImpact.value.user._id, { confirm: true });
+    deactivationDialog.value = false;
+    snackbarStore.showNotification('Compte désactivé', 'onSuccess', 'mdi-check-circle');
+  } catch (error) {
+    console.error('Error deactivating user:', error);
+    snackbarStore.showNotification(error.message || 'Erreur lors de la désactivation', 'onError', 'mdi-alert-circle');
+  } finally {
+    deactivating.value = false;
+  }
+};
+
+const reactivateUser = async (user) => {
+  try {
+    await userStore.reactivateUser(user._id);
+    snackbarStore.showNotification('Compte réactivé', 'onSuccess', 'mdi-check-circle');
+  } catch (error) {
+    console.error('Error reactivating user:', error);
+    snackbarStore.showNotification(error.message || 'Erreur lors de la réactivation', 'onError', 'mdi-alert-circle');
   }
 };
 

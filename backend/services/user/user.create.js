@@ -46,7 +46,8 @@ export const createUserService = async (userData) => {
             if (center) {
                 const admins = await User.find({
                     centerId: centerId,
-                    isAdmin: true
+                    isAdmin: true,
+                    isActive: { $ne: false }
                 }).select('email');
 
                 const adminEmails = admins

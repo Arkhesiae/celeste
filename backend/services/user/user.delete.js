@@ -20,7 +20,8 @@ import { getCenterTimeZone } from '../center/center.timezone.js';
 import { sendMassEmail } from '../email/email.transport.js';
 import { buildPointTransferMails } from '../email/email.pointTransfer.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
-import { previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
+import { describePendingTransfers, previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
+import { isLastCenterAdmin } from './user.account.js';
 
 /**
  * Suppression définitive d'un compte et de tout ce qui le concerne (réservée à l'administrateur principal).
@@ -74,22 +75,24 @@ const upcomingPeriodOf = async (user) => ({ from: todayIn(await getCenterTimeZon
 
 /**
  * Ce que la suppression ferait, sans rien modifier : à montrer à l'administrateur avant confirmation.
- * @returns {Promise<{ user: Object, from: string, demands: Array, isLastCenterAdmin: boolean }>}
+ * @returns {Promise<{ user: Object, from: string, demands: Array, pendingTransfers: Array, isLastCenterAdmin: boolean }>}
+ *   `pendingTransfers` : les transferts en attente qui n'auront pas lieu et qu'aucune demande listée ne porte déjà
  */
 export async function previewUserDeletion (userId, { actorId } = {}) {
     assertDeletable(userId, actorId);
     const user = await findOrThrow(User, userId, { message: 'Utilisateur non trouvé' });
     const period = await upcomingPeriodOf(user);
     const { demands } = await previewUserPeriodImpact(user._id, period);
-
-    const isLastCenterAdmin = Boolean(user.isAdmin && user.adminType === 'local' && user.centerId)
-        && await User.countDocuments({ centerId: user.centerId, isAdmin: true, adminType: 'local', _id: { $ne: user._id } }) === 0;
+    const listed = new Set(demands.flatMap((demand) => demand.transfers.map((transfer) => transfer.id)));
+    const pendingTransfers = (await describePendingTransfers({ $or: [{ sender: user._id }, { receiver: user._id }] }))
+        .filter((transfer) => !listed.has(transfer.id));
 
     return {
         user: { _id: user._id, name: fullName(user), email: user.email },
         from: period.from,
         demands,
-        isLastCenterAdmin,
+        pendingTransfers,
+        isLastCenterAdmin: await isLastCenterAdmin(user),
     };
 }
 

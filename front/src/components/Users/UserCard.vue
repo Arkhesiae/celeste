@@ -52,6 +52,8 @@
         {{ getTeamName(user.currentTeam?.teamId) }}
       </v-chip>
 
+      <v-chip v-if="user.isActive === false" color="error" rounded="lg" size="small" class="mr-2">Désactivé</v-chip>
+
       <v-chip v-if="user.status === 'pending'" :color="user.status === 'pending' ? 'warning' : 'success'" size="small">
         {{ user.status === 'pending' ? 'En attente' : 'Approuvé' }}
       </v-chip>

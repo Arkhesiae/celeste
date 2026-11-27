@@ -21,7 +21,7 @@ export const createNewTicket = async (ticketData) => {
 
   let localAdmins = [];
   if (adminType === 'local') {
-    localAdmins = await User.find({ isAdmin: true, adminType: 'local', centerId }).select('email');
+    localAdmins = await User.find({ isAdmin: true, adminType: 'local', centerId, isActive: { $ne: false } }).select('email');
     if (!localAdmins.length) throw new AppError('Aucun admin local trouvé pour ce centre', 404);
   }
 

@@ -1,122 +1,75 @@
 <template>
-  <v-dialog
+  <GenericDialog
     :model-value="modelValue"
-    :fullscreen="smAndDown"
-    max-width="900px"
+    title="Confirmer le changement d'équipe"
+    max-width="900"
     persistent
     @update:model-value="emit('update:modelValue', $event)"
+    @close="emit('cancel')"
   >
-    <v-card elevation="0" class="pa-6">
-      <v-card-item prepend-icon="mdi-alert-outline" class="pa-0 ma-0">
-        <v-card-title>Confirmer le changement d'équipe</v-card-title>
-      </v-card-item>
+    <template #content>
+      <v-alert type="warning" icon="mdi-alert-outline" rounded="xl">
+        Ce changement modifie l'équipe sur {{ changes.length > 1 ? 'les périodes' : 'la période' }} ci-dessous. Les
+        demandes, transferts de points et entrées de calendrier listés seront annulés.
+      </v-alert>
 
-      <v-card-text class="pa-0 my-4 ma-0">
-        <span class="text-body-small">
-          Ce changement modifie l'équipe sur {{ changes.length > 1 ? 'les périodes' : 'la période' }} ci-dessous. Les
-          demandes et entrées de calendrier listées seront annulées.
-        </span>
-
-        <!-- Frise : équipe propriétaire avant / après, périodes modifiées en surbrillance -->
-        <div class="timeline my-6" role="img" :aria-label="timelineLabel">
-          <div v-for="row in rows" :key="row.key" class="timeline-row">
-            <span class="timeline-row-label text-label-small">{{ row.label }}</span>
-            <div class="timeline-track">
-              <div v-for="(bar, i) in row.bars" :key="i" class="timeline-bar" :style="bar.style" :title="bar.title">
-                <span class="timeline-bar-text">{{ bar.name }}</span>
-              </div>
-              <div v-for="band in bands" :key="band.index" class="timeline-band" :style="band.style" />
+      <!-- Frise : équipe propriétaire avant / après, périodes modifiées en surbrillance -->
+      <div class="timeline my-6" role="img" :aria-label="timelineLabel">
+        <div v-for="row in rows" :key="row.key" class="timeline-row">
+          <span class="timeline-row-label text-label-small">{{ row.label }}</span>
+          <div class="timeline-track">
+            <div v-for="(bar, i) in row.bars" :key="i" class="timeline-bar" :style="bar.style" :title="bar.title">
+              <span class="timeline-bar-text">{{ bar.name }}</span>
             </div>
-          </div>
-          <div class="timeline-axis text-label-small">
-            <span>{{ axis.start }}</span>
-            <span v-for="band in bands" :key="band.index" class="timeline-axis-mark" :style="{ left: band.left }">
-              {{ band.index }}
-            </span>
-            <span>{{ axis.end }}</span>
+            <div v-for="band in bands" :key="band.index" class="timeline-band" :style="band.style" />
           </div>
         </div>
+        <div class="timeline-axis text-label-small">
+          <span>{{ axis.start }}</span>
+          <span v-for="band in bands" :key="band.index" class="timeline-axis-mark" :style="{ left: band.left }">
+            {{ band.index }}
+          </span>
+          <span>{{ axis.end }}</span>
+        </div>
+      </div>
 
-        <v-card
-          v-for="(change, i) in changes"
-          :key="i"
-          class="pa-4 my-4"
-          elevation="0"
-          color="surfaceContainer"
-        >
-          <div class="d-flex align-center flex-wrap ga-2">
-            <v-chip size="x-small" color="error" variant="flat" rounded="xl">{{ i + 1 }}</v-chip>
-            <span class="text-body-small">{{ periodLabel(change) }}</span>
-            <v-spacer />
-            <v-chip size="x-small" variant="tonal" rounded="xl">{{ teamName(change.oldTeam) }}</v-chip>
-            <v-icon icon="mdi-arrow-right" size="x-small" color="primary" />
-            <v-chip size="x-small" variant="tonal" rounded="xl">{{ teamName(change.newTeam) }}</v-chip>
-          </div>
+      <section v-for="(change, i) in changes" :key="i" :aria-labelledby="`${uid}-period-${i}`">
+        <v-card class="pa-4 my-4" elevation="0" color="surfaceContainer">
+          <h3 :id="`${uid}-period-${i}`" class="d-flex align-center flex-wrap ga-2 text-title-medium">
+            <v-chip size="small" color="error" variant="flat" rounded="xl" aria-hidden="true">{{ i + 1 }}</v-chip>
+            <span
+              ><span class="d-sr-only">Période {{ i + 1 }} : </span>{{ periodLabel(change) }}</span
+            >
+          </h3>
+          <p class="d-flex align-center flex-wrap ga-2 mt-2">
+            <span class="d-sr-only">Équipe : de</span>
+            <v-chip size="small" variant="tonal" rounded="xl">{{ teamName(change.oldTeam) }}</v-chip>
+            <v-icon icon="mdi-arrow-right" size="small" color="primary" aria-hidden="true" />
+            <span class="d-sr-only">vers</span>
+            <v-chip size="small" variant="tonal" rounded="xl">{{ teamName(change.newTeam) }}</v-chip>
+          </p>
 
           <v-divider class="my-3" />
 
-          <div class="text-label-large font-weight-bold mb-1">Demandes ({{ change.demands.length }})</div>
-          <div v-if="!change.demands.length" class="text-body-small text-medium-emphasis">
-            Aucune demande concernée
-          </div>
-          <v-list v-else density="compact" class="pa-0 impact-list" bg-color="transparent">
-            <v-list-item v-for="sub in change.demands" :key="sub.id" class="px-0">
-              <template #prepend>
-                <v-chip
-                  size="x-small"
-                  rounded="xl"
-                  variant="tonal"
-                  class="mr-2"
-                  :color="sub.action === 'withdraw' ? 'warning' : 'error'"
-                >
-                  {{ actionLabel(sub) }}
-                </v-chip>
-              </template>
-              <v-list-item-title class="text-body-small">
-                {{ typeLabel(sub.type) }} du {{ formatKey(sub.date) }}
-                <span v-if="sub.accepterDate && sub.accepterDate !== sub.date">
-                  / {{ formatKey(sub.accepterDate) }}</span
-                >
-              </v-list-item-title>
-              <v-list-item-subtitle class="text-label-small">
-                {{ sub.poster }}<template v-if="sub.accepter"> → {{ sub.accepter }}</template> ·
-                {{ sub.status === 'accepted' ? 'acceptée' : 'ouverte' }}
-              </v-list-item-subtitle>
-            </v-list-item>
-          </v-list>
-
-          <div class="text-label-large font-weight-bold mt-4 mb-1">
-            Entrées de calendrier ({{ change.entries.length }})
-          </div>
-          <div v-if="!change.entries.length" class="text-body-small text-medium-emphasis">Aucune entrée concernée</div>
-          <div v-else class="d-flex flex-wrap ga-1 impact-list">
-            <v-chip v-for="entry in change.entries" :key="entry.id" size="x-small" rounded="xl" variant="tonal">
-              {{ formatKey(entry.date) }} · {{ entryLabel(entry) }}
-            </v-chip>
-          </div>
+          <ImpactPreview :demands="change.demands" :entries="change.entries" heading-tag="h4" />
         </v-card>
-      </v-card-text>
-
-      <v-card-actions class="pa-0">
-        <v-btn color="secondary" variant="outlined" rounded="xl" :disabled="loading" @click="emit('cancel')">
-          Annuler
-        </v-btn>
-        <v-spacer />
-        <v-btn color="primary" variant="flat" rounded="xl" :loading="loading" @click="emit('confirm')">
-          Confirmer et annuler
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </section>
+    </template>
+    <template #footer>
+      <v-btn variant="text" :disabled="loading" @click="emit('cancel')">Annuler</v-btn>
+      <v-btn color="error" variant="flat" :loading="loading" @click="emit('confirm')">Confirmer le changement</v-btn>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import { useDisplay } from 'vuetify';
+import { computed, useId } from 'vue';
+import ImpactPreview from '@/components/Impact/ImpactPreview.vue';
+import { formatDay } from '@/utils/dayFields.js';
 
 /**
  * Impact d'un changement d'équipe (réponse 409 de /users/:id/assign-team et /team-occurrences/:id) :
- * frise avant/après + demandes et entrées de calendrier qui seront annulées.
+ * frise avant/après + ce qui sera annulé sur chaque période (ImpactPreview).
  * `approval` = { segments: { before, after }, teams: { [id]: name }, changes: [...] }
  */
 const props = defineProps({
@@ -126,7 +79,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
 
-const { smAndDown } = useDisplay();
+const uid = useId();
 
 const DAY_MS = 86400000;
 const dayOf = (key) => Math.floor(Date.parse(`${key}T00:00:00Z`) / DAY_MS);
@@ -135,31 +88,10 @@ const changes = computed(() => props.approval?.changes ?? []);
 
 const teamName = (id) => (id ? `Équipe ${props.approval?.teams?.[id] ?? '?'}` : 'Aucune équipe');
 
-const formatKey = (key) =>
-  key
-    ? new Date(`${key}T00:00:00Z`).toLocaleDateString('fr-FR', {
-        timeZone: 'UTC',
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      })
-    : '';
+const formatKey = (key) => formatDay(key, { day: 'numeric', month: 'short', year: 'numeric' });
 
 const periodLabel = ({ from, to }) =>
   to ? `Du ${formatKey(from)} au ${formatKey(to)}` : `À partir du ${formatKey(from)}`;
-
-// ── Libellés ────────────────────────────────────────────────────────────────
-
-const TYPE_LABELS = { substitution: 'Remplacement', switch: 'Permutation', hybrid: 'Remplacement / permutation' };
-const typeLabel = (type) => TYPE_LABELS[type] ?? 'Demande';
-
-const actionLabel = (sub) => {
-  if (sub.action === 'withdraw') return 'Désistement';
-  return sub.cascade ? 'Annulée (cascade)' : 'Annulée';
-};
-
-const ENTRY_LABELS = { assignment: 'Affectation', modification: 'Modification', hour_patch: 'Ajustement horaire' };
-const entryLabel = ({ type, subType }) => `${ENTRY_LABELS[type] ?? type}${subType ? ` (${subType})` : ''}`;
 
 // ── Frise ───────────────────────────────────────────────────────────────────
 // Fenêtre centrée sur les périodes modifiées ; les segments qui la dépassent sont tronqués.
@@ -226,9 +158,14 @@ const axis = computed(() => ({
   end: formatKey(keyOfDay(windowDays.value.end)),
 }));
 
-const timelineLabel = computed(
-  () => `Frise des équipes avant et après le changement, ${changes.value.length} période(s) modifiée(s)`,
-);
+// La frise est une image pour les lecteurs d'écran : son texte de remplacement en dit le contenu
+const timelineLabel = computed(() => {
+  const describe = (segments = []) =>
+    segments.map((segment) => `${teamName(segment.teamId)}, ${periodLabel(segment).toLowerCase()}`).join(' ; ') ||
+    'aucune équipe';
+  const { before, after } = props.approval?.segments ?? {};
+  return `Frise des équipes. Avant : ${describe(before)}. Après : ${describe(after)}.`;
+});
 </script>
 
 <style scoped>
@@ -266,9 +203,9 @@ const timelineLabel = computed(
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  color: #fff;
+  color: rgb(var(--v-theme-onPrimary));
   font-size: 11px;
-  background: rgba(var(--v-theme-primary), 0.7);
+  background: rgb(var(--v-theme-primary));
   font-weight: 600;
   border-right: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -309,10 +246,5 @@ const timelineLabel = computed(
   transform: translateX(-50%);
   font-weight: 700;
   color: rgb(var(--v-theme-error));
-}
-
-.impact-list {
-  max-height: 200px;
-  overflow-y: auto;
 }
 </style>

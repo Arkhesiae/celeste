@@ -38,6 +38,10 @@ export async function transferPoints ({ fromUserId, toUserId, amount, descriptio
         throw new AppError('Utilisateur non trouvé', 404);
     }
 
+    if (receiver.isActive === false) {
+        throw new AppError('Le compte du destinataire est désactivé', 400);
+    }
+
     const amountInt = parseInt(amount);
     if (scheduledDate) {
         const transaction = await createScheduledTransaction({

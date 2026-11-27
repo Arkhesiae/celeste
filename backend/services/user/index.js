@@ -4,6 +4,7 @@
  */
 export * from './user.account.js';
 export * from './user.create.js';
+export * from './user.deactivate.js';
 export * from './user.delete.js';
 export * from './user.list.js';
 export * from './user.points.js';

@@ -37,6 +37,9 @@
                   >
                     {{ user.registrationStatus === 'pending' ? 'Candidature en attente' : 'Candidature approuvée' }}
                   </v-chip>
+                  <v-chip v-if="user.isActive === false" rounded="lg" color="error" size="small" class="ml-2">
+                    Compte désactivé
+                  </v-chip>
                 </v-list-item-subtitle>
               </v-list-item>
               <v-list-item>
@@ -66,7 +69,7 @@
               v-if="!user.isAdmin && isMasterAdmin"
               flat
               class="pa-4"
-              color="surfaceContainerHighest"
+              color="surfaceContainerHighest"
               @click="$emit('makeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -78,7 +81,7 @@
               v-if="user.isAdmin && isMasterAdmin"
               flat
               class="pa-4"
-              color="surfaceContainerHighest"
+              color="surfaceContainerHighest"
               @click="$emit('removeAdmin', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -92,7 +95,7 @@
               v-if="isMasterAdmin"
               flat
               class="pa-4"
-              color="surfaceContainerHighest"
+              color="surfaceContainerHighest"
               @click="$emit('assignCenter', userId)"
             >
               <div class="d-flex align-center ga-3">
@@ -101,12 +104,40 @@
               </div>
             </v-card>
           </v-col>
+          <v-col v-if="canManageAccount" cols="12" md="12">
+            <v-card
+              v-if="user.isActive !== false"
+              flat
+              class="pa-4"
+              color="surfaceContainerHighest"
+              role="button"
+              @click="$emit('deactivate', user)"
+            >
+              <div class="d-flex align-center ga-3">
+                <v-icon color="error">mdi-account-off-outline</v-icon>
+                <v-list-item-title>Désactiver le compte</v-list-item-title>
+              </div>
+            </v-card>
+            <v-card
+              v-else
+              flat
+              class="pa-4"
+              color="surfaceContainerHighest"
+              role="button"
+              @click="$emit('reactivate', user)"
+            >
+              <div class="d-flex align-center ga-3">
+                <v-icon color="primary">mdi-account-reactivate-outline</v-icon>
+                <v-list-item-title>Réactiver le compte</v-list-item-title>
+              </div>
+            </v-card>
+          </v-col>
           <v-col cols="12" md="12">
             <v-card
               v-if="isMasterAdmin && user && user._id !== authStore.userData.userId"
               flat
               class="pa-4"
-              color="error"
+              color="error"
               @click="$emit('delete', user)"
             >
               <div class="d-flex align-center ga-3">
@@ -141,12 +172,20 @@ const props = defineProps({
   },
 });
 
-defineEmits(['update:dialogVisible', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete']);
+defineEmits(['update:dialogVisible', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete', 'deactivate', 'reactivate']);
 
 const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
 
 const user = computed(() => {
   return userStore.users.find((user) => user._id === props.userId) || null;
+});
+
+// Désactiver / réactiver (le serveur applique la même règle) : jamais soi-même ; le master pour tout compte, un administrateur
+// local pour les membres non administrateurs de son centre
+const canManageAccount = computed(() => {
+  const me = authStore.userData;
+  if (!me.isAdmin || !user.value || user.value._id === me.userId) return false;
+  return isMasterAdmin.value || (!user.value.isAdmin && user.value.centerId === me.centerId);
 });
 
 const getCenterName = computed(() => {

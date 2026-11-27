@@ -237,7 +237,7 @@ test('only the master admin may delete, never themselves, and without confirmati
   assert.equal(impact.user.email, 'gone@del.fr');
   assert.equal(impact.from, today.toString());
   assert.deepEqual(impact.demands.map((d) => d.action).sort(), ['cancel', 'cancel', 'withdraw']);
-  assert.deepEqual(Object.keys(impact).sort(), ['demands', 'from', 'isLastCenterAdmin', 'user']);
+  assert.deepEqual(Object.keys(impact).sort(), ['demands', 'from', 'isLastCenterAdmin', 'pendingTransfers', 'user']);
   assert.equal(impact.isLastCenterAdmin, false);
   assert.equal((await previewUserDeletion(String(s.admin._id), { actorId: String(s.master._id) })).isLastCenterAdmin, true);
 

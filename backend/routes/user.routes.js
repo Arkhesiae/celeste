@@ -76,6 +76,9 @@ router.use(isAdmin);
 router.get('/', resolveCenterId, userController.getAllUsers);
 router.post('/pending/:id/approve', authorizeSelfOrCenterAdmin('id'), userController.approveUser);
 router.delete('/pending/:id', authorizeSelfOrCenterAdmin('id'), userController.deletePendingUser);
+// Désactivation / réactivation : jamais soi-même, et le compte d'un administrateur est réservé au master (voir le service)
+router.post('/:id/deactivate', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.deactivateUser);
+router.post('/:id/reactivate', hasNoPendingCenterTransfer, authorizeSelfOrCenterAdmin('id'), userController.reactivateUser);
 
 // À partir d'ici : administrateur principal uniquement
 router.use(isMasterAdmin);
@@ -86,4 +89,4 @@ router.post('/:id/remove-admin', userController.removeUserAdmin);
 router.delete('/:id', userController.deleteUserById);
 router.post('/:id/assign-center', userController.assignUserToCenter);
 
-export default router;
+export default router;

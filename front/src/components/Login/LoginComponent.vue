@@ -440,7 +440,9 @@ const handleLogin = async () => {
     //   throw error;
     // }
   } catch (error) {
-    if (error.status === 401) {
+    if (error.code === 'ACCOUNT_INACTIVE') {
+      // La fenêtre « compte désactivé » est déjà ouverte (apiFetch)
+    } else if (error.status === 401) {
       snackbarStore.showNotification('Identifiants incorrects', 'onError', 'mdi-alert-circle');
     } else {
       snackbarStore.showNotification(error.message || 'Erreur de connexion', 'onError', 'mdi-alert-circle');

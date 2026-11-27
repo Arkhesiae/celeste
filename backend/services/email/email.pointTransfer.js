@@ -16,7 +16,7 @@ import { MIN_POINTS_BALANCE } from '../../config/points.js';
  * définie à false) n'en reçoit pas. À appeler APRÈS le commit ; ne lève jamais : une panne d'envoi ne doit pas faire échouer
  * l'opération sur les points.
  *
- * Raisons d'annulation (`reason`) : `demandNoLongerAccepted`, `insufficientBalance`, `centerTransfer`, `accountDeleted`, `cancelledByUser`
+ * Raisons d'annulation (`reason`) : `demandNoLongerAccepted`, `insufficientBalance`, `centerTransfer`, `accountDeleted`, `accountDeactivated`, `cancelledByUser`
  * ou autre chose pour une erreur technique (voir le modèle `pointsTransferCancelled`).
  *
  * La demande annulée par l'utilisateur (`demand.pendingTransactions.js`) n'envoie pas de mail de points : les mails de la demande
@@ -37,6 +37,7 @@ const REASON_TEXT = {
   insufficientBalance: `le solde de l'expéditeur ne permettait pas le transfert (minimum autorisé : ${MIN_POINTS_BALANCE} points)`,
   centerTransfer: "un des deux utilisateurs a changé de centre",
   accountDeleted: "le compte de l'autre personne a été supprimé",
+  accountDeactivated: "le compte de l'autre personne a été désactivé",
   cancelledByUser: "le transfert différé a été annulé avant son exécution",
 };
 

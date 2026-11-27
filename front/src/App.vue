@@ -4,6 +4,8 @@
 
     <!-- Assistance : une fenêtre, ouverte de partout par useAssistanceStore().open() -->
     <AssistanceDialog />
+    <!-- Compte désactivé : ouverte par useDialogStore (apiFetch, quand le serveur répond ACCOUNT_INACTIVE) -->
+    <InactiveAccountDialog />
   </v-app>
 </template>
 

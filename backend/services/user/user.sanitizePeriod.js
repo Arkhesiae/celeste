@@ -4,9 +4,11 @@ import { fullName } from '../../utils/names.js';
 import { sameId } from '../../utils/ids.js';
 import Demand from '../../models/Demand.js';
 import { CalendarEntry } from '../../models/CalendarEntry.js';
+import PointTransfer from '../../models/PointTransfer.js';
 import { AppError } from '../../error/AppError.js';
 import { toDateKey } from '../../utils/dates/dateKey.js';
 import {
+    CANCELLABLE_STATUSES,
     cancelDemandWithSession,
     withdrawFromDemandWithSession,
 } from '../demand/demand.cascade.js';
@@ -140,15 +142,36 @@ export async function clearUserCalendarEntriesInPeriod (userId, period, { sessio
 }
 
 /**
+ * Les transferts de points en attente qui répondent au filtre, décrits pour un aperçu
+ * @returns {Promise<Array<{ id: string, demandId: string|null, amount: number, sender: string|null, receiver: string|null, date: string|null }>>}
+ */
+export async function describePendingTransfers (filter) {
+    const transfers = await PointTransfer.find({ ...filter, status: 'pending' })
+        .sort({ effectiveDate: 1 })
+        .populate([{ path: 'sender', select: 'name lastName' }, { path: 'receiver', select: 'name lastName' }]);
+
+    return transfers.map((transfer) => ({
+        id: transfer._id.toString(),
+        demandId: transfer.request?.toString() ?? null,
+        amount: transfer.amount,
+        sender: fullName(transfer.sender) || null,
+        receiver: fullName(transfer.receiver) || null,
+        date: toDateKey(transfer.effectiveDate),
+    }));
+}
+
+/**
  * Aperçu en lecture seule de ce que ferait `sanitizeUserPeriod` (rien n'est modifié) : demandes qui seraient
  * annulées ou dont l'utilisateur se désisterait (y compris les demandes dépendantes annulées en cascade),
- * et entrées de calendrier qui seraient désactivées.
+ * et entrées de calendrier qui seraient désactivées. Chaque demande porte les transferts de points différés annulés avec elle
+ * (`transfers`).
  *
  * @param {string|ObjectId} userId
  * @param {{ from: Date|string, to?: Date|string }} period
  * @returns {Promise<{
  *   demands: Array<{ id: string, action: 'cancel'|'withdraw', cascade: boolean, type: string, status: string,
- *                          date: string|null, accepterDate: string|null, poster: string, accepter: string|null }>,
+ *                          date: string|null, accepterDate: string|null, poster: string, accepter: string|null,
+ *                          transfers: Array }>,
  *   entries: Array<{ id: string, date: string, type: string, subType: string }>
  * }>}
  */
@@ -171,6 +194,7 @@ export async function previewUserPeriodImpact (userId, period) {
             accepterDate: accepterDayOf(demand),
             poster: fullName(demand.posterId) || null,
             accepter: fullName(demand.accepterId) || null,
+            transfers: [],
         });
     };
 
@@ -189,12 +213,19 @@ export async function previewUserPeriodImpact (userId, period) {
     // Annulations en cascade (demandes dépendantes), à tout niveau
     while (queue.length) {
         const parentId = queue.shift();
-        const children = await Demand.find({ dependsOn: parentId }).populate(populate);
+        // Comme l'annulation réelle : une demande terminée ou déjà annulée reste telle quelle, ainsi que ce qui en dépend
+        const children = await Demand.find({ dependsOn: parentId, status: { $in: CANCELLABLE_STATUSES } }).populate(populate);
         for (const child of children) {
             if (byId.has(child._id.toString())) continue;
             describe(child, 'cancel', true);
             queue.push(child._id);
         }
+    }
+
+    // Seule une demande acceptée a des transferts à annuler (voir demand.cascade.js)
+    const acceptedIds = [...byId.values()].filter((demand) => demand.status === 'accepted').map((demand) => demand.id);
+    for (const transfer of await describePendingTransfers({ request: { $in: acceptedIds } })) {
+        byId.get(transfer.demandId).transfers.push(transfer);
     }
 
     const entries = await CalendarEntry.find(periodEntriesQuery(userId, normalized)).sort({ date: 1 });

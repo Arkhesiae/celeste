@@ -20,44 +20,35 @@
           C'est le dernier administrateur de son centre : le centre n'aura plus d'administrateur.
         </v-alert>
 
-        <section>
-          <div class="text-title-small mb-1">À partir du {{ formatDay(impact.from) }}, pour les autres utilisateurs</div>
-          <div v-if="!impact.demands.length" class="text-body-medium text-medium-emphasis">
-            Aucune demande à venir concernée.
-          </div>
-          <template v-else>
-            <div class="text-body-small text-medium-emphasis mb-2">
-              Les personnes concernées seront prévenues par e-mail.
-            </div>
-            <v-list density="compact" bg-color="transparent" class="pa-0 demand-list">
-              <v-list-item
-                v-for="demand in impact.demands"
-                :key="demand.id"
-                class="px-0"
-                :prepend-icon="demand.action === 'cancel' ? 'mdi-close-circle-outline' : 'mdi-account-arrow-left-outline'"
-                :title="demandTitle(demand)"
-                :subtitle="demandSubtitle(demand)"
-              />
-            </v-list>
-          </template>
+        <section class="d-flex flex-column ga-2" aria-label="Ce qui sera annulé pour les autres utilisateurs">
+          <p class="text-body-small text-medium-emphasis">
+            Pour les autres utilisateurs : demandes à partir du {{ formatDay(impact.from) }} et transferts de points en
+            attente. Les personnes concernées seront prévenues par e-mail.
+          </p>
+          <ImpactPreview :demands="impact.demands" :transfers="impact.pendingTransfers" />
         </section>
 
         <section>
           <div class="text-title-small mb-1">Sera effacé</div>
           <div class="text-body-medium">
-            Le profil, le calendrier et ses notes, les demandes publiées (passées comprises), les transferts de points (ceux en
-            attente n'auront pas lieu), les tickets, les messages et les données de l'ancien site.
+            Le profil, le calendrier et ses notes, les demandes publiées (passées comprises), les transferts de points
+            (ceux en attente n'auront pas lieu), les tickets, les messages et les données de l'ancien site.
           </div>
         </section>
 
         <section class="text-body-small text-medium-emphasis">
           <div class="text-title-small text-high-emphasis mb-1">Ne change pas</div>
           Le planning passé des collègues, leurs propres demandes (celles que ce compte avait acceptées n'ont plus
-          d'accepteur), les soldes de points et les bannières écrites par ce compte, qui restent sans auteur. Les transferts
-          effacés disparaissent aussi de l'historique de l'autre personne.
+          d'accepteur), les soldes de points et les bannières écrites par ce compte, qui restent sans auteur. Les
+          transferts effacés disparaissent aussi de l'historique de l'autre personne.
         </section>
 
-        <v-checkbox v-model="understood" color="error" hide-details label="Je comprends que cette suppression est définitive" />
+        <v-checkbox
+          v-model="understood"
+          color="error"
+          hide-details
+          label="Je comprends que cette suppression est définitive"
+        />
       </div>
     </template>
     <template #footer>
@@ -70,6 +61,7 @@
 </template>
 
 <script setup>
+import ImpactPreview from '@/components/Impact/ImpactPreview.vue';
 import { formatDay } from '@/utils/dayFields.js';
 
 const props = defineProps({
@@ -94,25 +86,4 @@ const cancel = () => {
   emit('update:modelValue', false);
   emit('cancel');
 };
-
-const SHORT_DATE = { day: 'numeric', month: 'short', year: 'numeric' };
-
-const demandTitle = (demand) => {
-  const day = formatDay(demand.date, SHORT_DATE);
-  return demand.action === 'cancel' ? `Demande du ${day} annulée` : `Désistement de la demande du ${day}`;
-};
-
-const demandSubtitle = (demand) => {
-  const people = [`de ${demand.poster ?? '?'}`];
-  if (demand.accepter) people.push(`acceptée par ${demand.accepter}`);
-  if (demand.cascade) people.push('dépend d’une autre demande');
-  return people.join(' · ');
-};
 </script>
-
-<style scoped>
-.demand-list {
-  max-height: 240px;
-  overflow-y: auto;
-}
-</style>

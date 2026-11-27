@@ -173,13 +173,16 @@ How a stale entry behaves (`applyEntries`, `planning.userShifts.js`; checked on 
 ## Several days, or a decision first
 
 ### 52. Inactive accounts — P2
-- The front does not react to 403 `ACCOUNT_INACTIVE` (no match in `front/src`): no rejection dialog at login, no logout of an open session.
-- Nothing lets an admin deactivate an account (`User.isActive` is only set by seeds); the template `accountDeactivated` exists, not wired.
-- Undecided: scheduled points transfers (`services/transaction/transaction.scheduled.js`) still run for inactive or pending users, and the mails of `demandJob` / `reminderJob` still go to an inactive accepter.
+- Fixed 2026-11-28: admins can deactivate and reactivate an account (`services/user/user.deactivate.js`, user list dialog; deactivation also ends team membership and a deactivated account cannot be assigned a team), and the front reacts to 403 `ACCOUNT_INACTIVE` with a dialog and closes the open session. On deactivation, manual pending points transfers are cancelled and the future demands are cancelled or withdrawn.
+- Still undecided: a demand-linked scheduled transfer (work already done) still runs for an inactive account, and any scheduled transfer runs for a user with a pending center transfer.
+- `services/transaction/transaction.scheduled.js` does not check `isActive`: a manual transfer created through another path for an inactive account would run. Reminder mails already skip an inactive accepter.
+
+### 79. The full backend test run is intermittently red — P2
+- Seen 2026-11-28 with `npm test` (`backend/package.json`, test files run in parallel against the same MongoDB): one run failed 5 tests of `test/planningPresence.db.test.js`, another 8 of `test/teamServices.db.test.js`, a third passed (219 pass, 1 `todo`). `planningPresence` run alone passed 6/6. Later the same day two `npm test` runs never ended, stuck on `test/demandExpiry.db.test.js` (which passes alone in about 1s), and a run with `--test-timeout=90000` failed 2 tests of `test/wiredMails.db.test.js`. The cause was not investigated (contention between parallel database tests is a guess), so a red run needs a rerun to be trusted; use `--test-timeout` so that a hang is reported.
 
 ### 61. Mail leftovers — P3
 - The template `unacceptedDemand` is sent by nothing.
-- `accountDeactivated` is preview-only: nothing deactivates an account (#52). `rotationChange`, `centerTransferAccepted` and `ticketReceived` were wired on 2026-11-26.
+- `accountDeactivated` was wired on 2026-11-28 (account deactivation). `rotationChange`, `centerTransferAccepted` and `ticketReceived` were wired on 2026-11-26.
 - `rotationChange` is sent when the activation is saved, even for a date far ahead, and nothing is sent when an activation is removed (a rotation announced earlier is not retracted).
 - The points template `pointsTransferCancelled` has a reason `cancelledByUser` that nothing triggers (no route cancels a manual deferred transfer).
 - `cancelledDemand` always says "demande de remplacement" (even for a switch) and shows the poster's full last name where the other demand mails abbreviate it; its `accepters` and `youWereAccepter` branches never run.

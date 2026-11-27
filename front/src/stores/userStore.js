@@ -155,6 +155,31 @@ export const useUserStore = defineStore('user', () => {
     return result;
   };
 
+  // La liste chargée est mise à jour sur place : elle peut être celle d'un centre, qu'un rechargement global remplacerait
+  const patchUser = (userId, changes) => {
+    users.value = users.value.map((user) => (user._id === userId ? { ...user, ...changes } : user));
+  };
+
+  /**
+   * Désactive un compte (voir userService.deactivateUser). Sans `confirm`, renvoie l'impact et ne change rien.
+   * @param {string} userId - L'ID de l'utilisateur.
+   * @param {{ confirm?: boolean }} [options]
+   */
+  const deactivateUser = async (userId, { confirm = false } = {}) => {
+    const result = await userService.deactivateUser(userId, confirm);
+    if (!result?.needsApproval) patchUser(userId, { isActive: false, currentTeam: null, pendingCenterTransfer: null });
+    return result;
+  };
+
+  /**
+   * Réactive un compte désactivé.
+   * @param {string} userId - L'ID de l'utilisateur.
+   */
+  const reactivateUser = async (userId) => {
+    await userService.reactivateUser(userId);
+    patchUser(userId, { isActive: true });
+  };
+
   /**
    * Rend un utilisateur administrateur.
    * @param {string} userId - L'ID de l'utilisateur.
@@ -258,6 +283,8 @@ export const useUserStore = defineStore('user', () => {
     approvePendingUser,
     deletePendingUser,
     deleteUser,
+    deactivateUser,
+    reactivateUser,
     makeAdmin,
     removeAdmin,
     fetchUsersAndGroupByTeam,

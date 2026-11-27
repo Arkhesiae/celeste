@@ -113,6 +113,35 @@ const deleteUserById = async (req, res, next) => {
     }
 };
 
+// Désactivation (suppression « douce ») : sans `confirmed: true`, rien n'est modifié et la réponse 409 détaille les effets.
+// Le droit d'agir sur ce compte-là est contrôlé par le service, à partir de l'appelant (jeton)
+const deactivateUser = async (req, res, next) => {
+    try {
+        const id = assertId(req.params.id, 'ID utilisateur');
+        if (req.body?.confirmed !== true) {
+            const impact = await userService.previewUserDeactivation(id, { actor: req.user });
+            return res.status(409).json({
+                needsApproval: true,
+                message: 'La désactivation de ce compte demande une confirmation.',
+                impact,
+            });
+        }
+        const result = await userService.deactivateUser(id, { actor: req.user });
+        res.json({ message: 'Compte désactivé avec succès', ...result });
+    } catch (error) {
+        next(error);
+    }
+};
+
+const reactivateUser = async (req, res, next) => {
+    try {
+        await userService.reactivateUser(assertId(req.params.id, 'ID utilisateur'), { actor: req.user });
+        res.json({ message: 'Compte réactivé avec succès' });
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Approuver un utilisateur
 const approveUser = async (req, res, next) => {
     try {
@@ -432,6 +461,8 @@ export {
     getAllUsers,
     getUserById,
     deleteUserById,
+    deactivateUser,
+    reactivateUser,
     getPointsById,
     getUserWorkCheck,
     approveUser,

@@ -2,6 +2,7 @@
  * Configuration de l'API
  */
 import { useAuthStore } from '@/stores/authStore';
+import { useDialogStore } from '@/stores/dialogStore';
 import router from '@/router';
 import { authService } from '@/services/authService';
 
@@ -55,6 +56,10 @@ export const handleResponse = async (response, retryFn, retry = true) => {
     return handle401(retryFn);
   }
 
+  if (response.status === 403 && data.code === 'ACCOUNT_INACTIVE') {
+    handleInactiveAccount(data.message);
+  }
+
   // Cas d’erreur classique
   if (!response.ok) {
     console.error('API Error:', data);
@@ -66,6 +71,22 @@ export const handleResponse = async (response, retryFn, retry = true) => {
 
   // Succès normal
   return data;
+};
+
+/**
+ * Compte désactivé (à la connexion, à la reprise d'une session ou en cours de session) : la fenêtre le dit, et une session
+ * ouverte est fermée. Plusieurs requêtes refusées en même temps n'ont qu'un effet : `logOut` repasse tout de suite
+ * `isLoggedIn` à faux. L'erreur est ensuite levée comme toute autre.
+ * @param {string} message
+ */
+const handleInactiveAccount = (message) => {
+  useDialogStore().open('inactiveAccount', { message });
+
+  const authStore = useAuthStore();
+  if (authStore.isLoggedIn) {
+    authStore.logOut();
+    router.push('/login');
+  }
 };
 
 /**

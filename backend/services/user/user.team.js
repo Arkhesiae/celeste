@@ -7,7 +7,7 @@ import User from '../../models/User.js';
 import Team from '../../models/Team.js';
 import { AppError } from '../../error/AppError.js';
 import { buildTeamSegments, diffTeamSegments } from '../team/team.segments.js';
-import { previewUserPeriodImpact, sanitizeUserPeriod } from './user.sanitizePeriod.js';
+import { hasPeriodImpact, previewUserPeriodImpact, sanitizeUserPeriods } from './user.sanitizePeriod.js';
 import { getCenterTimeZone } from '../center/center.timezone.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 
@@ -45,7 +45,7 @@ async function assertNoPastChange (user, { changes }) {
 async function buildApprovalRequest (user, { before, after, changes }) {
     const impacts = await Promise.all(changes.map((change) => previewUserPeriodImpact(user._id, change)));
 
-    if (!impacts.some(({ demands, entries }) => demands.length || entries.length)) {
+    if (!impacts.some(hasPeriodImpact)) {
         return null;
     }
 
@@ -67,20 +67,14 @@ async function buildApprovalRequest (user, { before, after, changes }) {
  * occurrences — le tout dans la transaction fournie.
  */
 async function sanitizeAndSaveTeams (user, afterTeams, changes, session) {
-    const cancelled = new Set();
-    const withdrawn = new Set();
-
-    for (const { from, to } of changes) {
-        const result = await sanitizeUserPeriod(user._id, { from, to }, { session });
-        result.cancelled.forEach((id) => cancelled.add(id));
-        result.withdrawn.forEach((id) => withdrawn.add(id));
-    }
+    const periods = changes.map(({ from, to }) => ({ userId: user._id, from, to }));
+    const { cancelled, withdrawn } = await sanitizeUserPeriods(periods, { session });
 
     user.teams = afterTeams;
     await user.save({ session });
 
     // changes + demandes annulées (cascade comprise) / dont l'utilisateur s'est retiré, pour prévenir les tiers après le commit
-    return { changes, cancelled: [...cancelled], withdrawn: [...withdrawn] };
+    return { changes, cancelled, withdrawn };
 }
 
 /**
@@ -109,11 +103,7 @@ async function applyTeamChange (userId, computeAfter, confirmed, actorId) {
     });
 
     // Après le commit uniquement : les tiers touchés (contrepartie, demandes en cascade) sont prévenus par email
-    notifyDemandChanges({
-        cancelledIds: cancelled,
-        withdrawn: withdrawn.map((demandId) => ({ demandId, accepterId: userId })),
-        actorId,
-    });
+    notifyDemandChanges({ cancelledIds: cancelled, withdrawn, actorId });
 
     return { changes };
 }

@@ -26,7 +26,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
-- (2026-11-28) One impact preview for the team change, deactivation and deletion confirmations (demands with their point transfers, other transfers, calendar entries; icons, headings and lists for accessibility). Possible next step: use it in `CycleChangeImpactDialog.vue`.
+- (2026-11-28) One impact preview for the team change, deactivation and deletion confirmations (demands with their point transfers, other transfers, calendar entries; icons, headings and lists for accessibility). The cycle position dialog uses it too since the same day, and all four confirmations share `ImpactDialog.vue` (backend: `sanitizeUserPeriods`).
 - (2026-11-28) Account deactivation (soft deletion) and reactivation from the user list, with impact preview and confirmation, period cleanup, `accountDeactivated` mail, and the front dialog for a deactivated account.
 - (2026-11-27) Account deletion simplified: removed the cleanups nothing needed (early closing of past accepted demands, left to the expiry job; two unused fields; shared-avatar check) and the per-category counts of the confirmation dialog. Found #77.
 - (2026-11-26) Known issue #75 fixed: a new team assignment replaces those of the same kind starting that day.

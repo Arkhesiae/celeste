@@ -5,7 +5,7 @@
     :fullscreen="smAndDown"
     :max-width="maxWidth"
     :persistent="persistent"
-    :retain-focus="false"
+    :retain-focus="retainFocus"
     @after-enter="handleAfterEnter"
     @after-leave="handleAfterLeave"
   >
@@ -81,11 +81,14 @@ const props = withDefaults(
     maxWidth?: string | number;
     persistent?: boolean;
     showCloseButton?: boolean;
+    /** Garde le focus clavier dans la fenêtre */
+    retainFocus?: boolean;
   }>(),
   {
     maxWidth: '600px',
     persistent: false,
     showCloseButton: true,
+    retainFocus: false,
   },
 );
 

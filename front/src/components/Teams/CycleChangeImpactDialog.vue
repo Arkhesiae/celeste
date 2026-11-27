@@ -1,85 +1,50 @@
 <template>
-  <base-dialog
+  <ImpactDialog
     v-model="modelValue"
-    title="Ce changement affecte des plannings"
-    icon="mdi-alert-outline"
-    max-width="520"
-    persistent
+    title="Confirmer le changement de position"
+    confirm-label="Forcer le changement"
+    :loading="loading"
+    @confirm="emit('confirm')"
   >
-    <p class="text-body-medium mb-2">
-      {{ impact?.message }}
-    </p>
-    <p class="text-body-small text-medium-emphasis mb-4">
-      Si vous continuez, les demandes ci-dessous sont annulées (ou l'accepteur est retiré), les entrées de calendrier
-      liées à une vacation sont désactivées, et les personnes concernées sont prévenues par email. Les absences et
-      formations sans vacation sont conservées.
-    </p>
-
-    <!-- Une ligne compacte par membre : nom + compteurs ; un clic déroule le détail -->
-    <div class="cic-list">
-      <div v-for="member in impact?.members ?? []" :key="member.userId" class="cic-member">
-        <div
-          class="cic-row d-flex align-center ga-2 px-3 py-2 cursor-pointer"
-          role="button"
-          tabindex="0"
-          :aria-expanded="isOpen(member.userId)"
-          @click="toggle(member.userId)"
-          @keydown.enter.prevent="toggle(member.userId)"
-          @keydown.space.prevent="toggle(member.userId)"
-        >
-          <span class="text-body-medium font-weight-bold text-truncate flex-grow-1">{{ member.name }}</span>
-          <v-chip
-            v-if="member.demands.length"
-            size="x-small"
-            rounded="lg"
-            variant="tonal"
-            prepend-icon="mdi-swap-horizontal"
-          >
-            {{ member.demands.length }}
-          </v-chip>
-          <v-chip
-            v-if="member.entries.length"
-            size="x-small"
-            rounded="lg"
-            variant="tonal"
-            prepend-icon="mdi-calendar-remove-outline"
-          >
-            {{ member.entries.length }}
-          </v-chip>
-          <v-icon size="20" class="cic-chevron" :class="{ 'cic-chevron--open': isOpen(member.userId) }">
-            mdi-chevron-down
-          </v-icon>
-        </div>
-
-        <v-expand-transition>
-          <div v-show="isOpen(member.userId)" class="px-3 pb-2">
-            <div v-for="sub in member.demands" :key="sub.id" class="text-body-small">
-              <v-icon size="14" class="mr-1"> mdi-swap-horizontal </v-icon>
-              {{ formatDay(sub.date) }} · {{ typeLabel(sub.type) }} · {{ actionLabel(sub) }}
-            </div>
-            <div v-for="entry in member.entries" :key="entry.id" class="text-body-small">
-              <v-icon size="14" class="mr-1"> mdi-calendar-remove-outline </v-icon>
-              {{ formatDay(entry.date) }} · {{ entryLabel(entry) }} désactivée
-            </div>
-          </div>
-        </v-expand-transition>
-      </div>
-    </div>
-
-    <template #actions>
-      <v-spacer />
-      <v-btn variant="text" @click="modelValue = false"> Annuler </v-btn>
-      <v-btn variant="text" color="error" :loading="loading" @click="emit('confirm')"> Forcer le changement </v-btn>
+    <template #alert>
+      <p>{{ impact?.message }}</p>
+      <p class="text-body-small mt-1">
+        Les personnes concernées sont prévenues par e-mail. Les congés et autres entrées sans vacation sont conservés.
+      </p>
     </template>
-  </base-dialog>
+
+    <!-- Un panneau par membre (repliés : la liste reste courte), son en-tête dit ce qu'il contient -->
+    <v-expansion-panels v-model="openedMembers" multiple variant="accordion" rounded="xl" elevation="0">
+      <v-expansion-panel
+        v-for="member in members"
+        :key="member.userId"
+        :value="member.userId"
+        bg-color="surfaceContainer"
+      >
+        <v-expansion-panel-title>
+          <div class="d-flex align-center flex-wrap ga-2 min-width-0 flex-grow-1 mr-2">
+            <span class="text-body-large font-weight-medium flex-grow-1">{{ member.name }}</span>
+            <v-chip v-for="count in countsOf(member)" :key="count.icon" size="small" rounded="lg" variant="tonal">
+              <v-icon :icon="count.icon" start aria-hidden="true" />
+              {{ count.value }}<span class="d-sr-only">&nbsp;{{ count.label }}</span>
+            </v-chip>
+          </div>
+        </v-expansion-panel-title>
+        <v-expansion-panel-text>
+          <ImpactPreview :demands="member.demands" :entries="member.entries" />
+        </v-expansion-panel-text>
+      </v-expansion-panel>
+    </v-expansion-panels>
+  </ImpactDialog>
 </template>
 
 <script setup>
-import { Temporal } from 'temporal-polyfill';
-import { entryTypes } from '@/utils/entryIcons';
+import ImpactDialog from '@/components/Impact/ImpactDialog.vue';
+import ImpactPreview from '@/components/Impact/ImpactPreview.vue';
+import { impactCounts as countsOf } from '@/utils/impactLabels.js';
 
-defineProps({
-  /** Réponse 409 de PUT /teams/:id/cycle-position : { message, teams, members: [{ userId, name, demands, entries }] } */
+const props = defineProps({
+  /** Réponse 409 de PUT /team/:id/cycle-position : { message, teams, members: [{ userId, name, demands, entries }] } */
   impact: { type: Object, default: null },
   loading: { type: Boolean, default: false },
 });
@@ -87,66 +52,15 @@ defineProps({
 const modelValue = defineModel({ type: Boolean, default: false });
 const emit = defineEmits(['confirm']);
 
-// Membres dont le détail est déroulé (tous repliés au départ : la liste reste courte)
-const openIds = ref(new Set());
-const isOpen = (id) => openIds.value.has(id);
-const toggle = (id) => {
-  const next = new Set(openIds.value);
-  if (!next.delete(id)) next.add(id);
-  openIds.value = next;
-};
+const members = computed(() => props.impact?.members ?? []);
 
-const TYPE_LABELS = { substitution: 'Remplacement', switch: 'Permutation', hybrid: 'Hybride' };
-
-const typeLabel = (type) => TYPE_LABELS[type] ?? 'Demande';
-
-const actionLabel = (sub) => {
-  if (sub.action === 'withdraw') return "retrait de l'accepteur";
-  return sub.cascade ? "annulée (dépend d'une autre demande)" : 'annulée';
-};
-
-const entryLabel = (entry) =>
-  entryTypes.find((e) => e.key === entry.subType)?.label ??
-  { modification: 'Modification', assignment: 'Affectation', hourpatch: "Ajustement d'horaires" }[
-    entry.type?.toLowerCase()
-  ] ??
-  'Entrée';
-
-const formatDay = (key) =>
-  key
-    ? Temporal.PlainDate.from(key).toLocaleString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })
-    : '—';
+// Un seul membre : son détail est montré d'emblée
+const openedMembers = ref([]);
+watch(
+  members,
+  (list) => {
+    openedMembers.value = list.length === 1 ? [list[0].userId] : [];
+  },
+  { immediate: true },
+);
 </script>
-
-<style scoped>
-.cic-list {
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.cic-member {
-  border-bottom: 1px solid rgba(var(--v-theme-outlineVariant), 0.4);
-}
-.cic-member:last-child {
-  border-bottom: 0;
-}
-
-.cic-row {
-  border-radius: 12px;
-  transition: background var(--motion-standard-fast-effects);
-}
-.cic-row:hover {
-  background: rgba(var(--v-theme-onSurface), 0.05);
-}
-.cic-row:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-primary));
-  outline-offset: -2px;
-}
-
-.cic-chevron {
-  transition: transform var(--motion-standard-fast-effects);
-}
-.cic-chevron--open {
-  transform: rotate(180deg);
-}
-</style>

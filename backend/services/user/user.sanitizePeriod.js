@@ -18,6 +18,7 @@ import {
  *  - cancelUserDemandsInPeriod : annule / se désiste de ses demandes
  *  - clearUserCalendarEntriesInPeriod : désactive ses entrées de calendrier liées aux vacations
  *  - sanitizeUserPeriod : les deux, dans une même transaction
+ *  - sanitizeUserPeriods : plusieurs périodes (d'un ou plusieurs utilisateurs), résultats réunis
  *
  * Période : { from, to } — `from` obligatoire, `to` optionnel (absent = sans limite de fin).
  * Les deux bornes sont incluses. Date | 'YYYY-MM-DD' | ISO string acceptés.
@@ -141,6 +142,9 @@ export async function clearUserCalendarEntriesInPeriod (userId, period, { sessio
     return { deactivated: result.modifiedCount };
 }
 
+/** Vrai quand un aperçu (`previewUserPeriodImpact`) annonce quelque chose : sans quoi aucune confirmation n'est demandée */
+export const hasPeriodImpact = ({ demands, entries }) => demands.length > 0 || entries.length > 0;
+
 /**
  * Les transferts de points en attente qui répondent au filtre, décrits pour un aperçu
  * @returns {Promise<Array<{ id: string, demandId: string|null, amount: number, sender: string|null, receiver: string|null, date: string|null }>>}
@@ -259,5 +263,33 @@ export async function sanitizeUserPeriod (userId, period, { session, reason } = 
         const demands = await cancelUserDemandsInPeriod(userId, period, { session: activeSession, reason });
         const entries = await clearUserCalendarEntriesInPeriod(userId, period, { session: activeSession });
         return { ...demands, ...entries };
+    }, { session });
+}
+
+/**
+ * Assainit plusieurs périodes, d'un ou plusieurs utilisateurs, dans une même transaction, et réunit les résultats sous la forme
+ * qu'attend `notifyDemandChanges`.
+ *
+ * @param {Array<{ userId: string|ObjectId, from: string, to?: string|null }>} periods
+ * @param {Object} [opts]
+ * @param {ClientSession} [opts.session]
+ * @returns {Promise<{ cancelled: string[], withdrawn: Array<{ demandId: string, accepterId: string|ObjectId }>, deactivated: number }>}
+ */
+export async function sanitizeUserPeriods (periods, { session } = {}) {
+    return inTransaction(async (activeSession) => {
+        // Recréé à chaque tentative : une transaction rejouée repart de zéro
+        const cancelled = new Set();
+        const withdrawn = [];
+        let deactivated = 0;
+
+        // Séquentiel : des opérations concurrentes sur une même session de transaction ne sont pas permises
+        for (const { userId, from, to } of periods) {
+            const result = await sanitizeUserPeriod(userId, { from, to }, { session: activeSession });
+            result.cancelled.forEach((id) => cancelled.add(id));
+            withdrawn.push(...result.withdrawn.map((demandId) => ({ demandId, accepterId: userId })));
+            deactivated += result.deactivated;
+        }
+
+        return { cancelled: [...cancelled], withdrawn, deactivated };
     }, { session });
 }

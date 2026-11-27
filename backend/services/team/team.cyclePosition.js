@@ -11,7 +11,7 @@ import { AppError } from '../../error/AppError.js';
 import { effectiveOffset } from './team.cycleIndex.js';
 import { holdsAnyTeamFrom } from './team.segments.js';
 import { findLatestRotation } from '../rotation/rotation.timeline.js';
-import { previewUserPeriodImpact, sanitizeUserPeriod } from '../user/user.sanitizePeriod.js';
+import { hasPeriodImpact, previewUserPeriodImpact, sanitizeUserPeriods } from '../user/user.sanitizePeriod.js';
 import { notifyDemandChanges } from '../email/demand/demand.changeNotifications.js';
 
 /**
@@ -80,7 +80,7 @@ const previewImpact = async (members, period) => {
     const impact = [];
     for (const member of members) {
         const { demands, entries } = await previewUserPeriodImpact(member._id, period);
-        if (demands.length || entries.length) {
+        if (hasPeriodImpact({ demands, entries })) {
             impact.push({ userId: member._id, name: fullName(member), demands, entries });
         }
     }
@@ -112,15 +112,7 @@ const applyCycleMove = async (center, plan, members, period) => {
     }
 
     return inTransaction(async (session) => {
-        // Recréé à chaque tentative : une transaction rejouée repart de zéro
-        const done = { cancelled: [], withdrawn: [], deactivated: 0 };
-        // Séquentiel : des opérations concurrentes sur une même session de transaction ne sont pas permises
-        for (const member of members) {
-            const result = await sanitizeUserPeriod(member._id, period, { session });
-            done.cancelled.push(...result.cancelled);
-            done.withdrawn.push(...result.withdrawn.map((demandId) => ({ demandId, accepterId: member._id })));
-            done.deactivated += result.deactivated;
-        }
+        const done = await sanitizeUserPeriods(members.map((member) => ({ userId: member._id, ...period })), { session });
         await savePositions(center, plan, session);
         return done;
     });

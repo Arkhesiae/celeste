@@ -1,18 +1,21 @@
 <template>
-  <GenericDialog
+  <ImpactDialog
     :model-value="modelValue"
     title="Confirmer le changement d'équipe"
+    confirm-label="Confirmer le changement"
     max-width="900"
-    persistent
+    :loading="loading"
     @update:model-value="emit('update:modelValue', $event)"
-    @close="emit('cancel')"
+    @confirm="emit('confirm')"
+    @cancel="emit('cancel')"
   >
-    <template #content>
-      <v-alert type="warning" icon="mdi-alert-outline" rounded="xl">
-        Ce changement modifie l'équipe sur {{ changes.length > 1 ? 'les périodes' : 'la période' }} ci-dessous. Les
-        demandes, transferts de points et entrées de calendrier listés seront annulés.
-      </v-alert>
+    <template #alert>
+      Ce changement modifie l'équipe sur {{ changes.length > 1 ? 'les périodes' : 'la période' }} ci-dessous. Les
+      demandes, transferts de points et entrées de calendrier listés seront annulés.
+    </template>
 
+    <!-- Un seul bloc : l'espacement entre la frise et les périodes reste le leur, pas celui du cadre -->
+    <div>
       <!-- Frise : équipe propriétaire avant / après, périodes modifiées en surbrillance -->
       <div class="timeline my-6" role="img" :aria-label="timelineLabel">
         <div v-for="row in rows" :key="row.key" class="timeline-row">
@@ -54,16 +57,13 @@
           <ImpactPreview :demands="change.demands" :entries="change.entries" heading-tag="h4" />
         </v-card>
       </section>
-    </template>
-    <template #footer>
-      <v-btn variant="text" :disabled="loading" @click="emit('cancel')">Annuler</v-btn>
-      <v-btn color="error" variant="flat" :loading="loading" @click="emit('confirm')">Confirmer le changement</v-btn>
-    </template>
-  </GenericDialog>
+    </div>
+  </ImpactDialog>
 </template>
 
 <script setup>
 import { computed, useId } from 'vue';
+import ImpactDialog from '@/components/Impact/ImpactDialog.vue';
 import ImpactPreview from '@/components/Impact/ImpactPreview.vue';
 import { formatDay } from '@/utils/dayFields.js';
 

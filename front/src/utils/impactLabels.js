@@ -37,6 +37,22 @@ export const demandImpact = (demand) => {
 export const transferTitle = ({ amount, sender, receiver }) =>
   `Transfert de ${amount} points de ${sender ?? '?'} vers ${receiver ?? '?'} annulé`;
 
+const plural = (value, word) => `${word}${value > 1 ? 's' : ''}`;
+
+/** Résumé chiffré d'un impact `{ demands, entries }` : seulement ce qui n'est pas vide */
+export const impactCounts = ({ demands = [], entries = [] }) => {
+  const transfers = demands.reduce((total, demand) => total + (demand.transfers?.length ?? 0), 0);
+  return [
+    { value: demands.length, icon: 'mdi-account-arrow-right-outline', label: plural(demands.length, 'demande') },
+    { value: transfers, icon: 'mdi-cash-remove', label: `${plural(transfers, 'transfert')} de points` },
+    {
+      value: entries.length,
+      icon: 'mdi-calendar-remove-outline',
+      label: `${plural(entries.length, 'entrée')} de calendrier`,
+    },
+  ].filter((count) => count.value);
+};
+
 /** Modifications et ajustements d'horaires, par `subType` ; les affectations viennent d'entryIcons.js */
 const ENTRY_KINDS = {
   substitution: { label: 'Remplacement', icon: 'mdi-account-switch-outline' },

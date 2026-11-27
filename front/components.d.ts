@@ -81,6 +81,7 @@ declare module 'vue' {
     GraphWrapper: typeof import('./src/components/common/Titles/GraphWrapper.vue')['default']
     HomeNavigation: typeof import('./src/components/Layout/AppBar/HomeNavigation.vue')['default']
     HourRange: typeof import('./src/components/common/HourRange.vue')['default']
+    ImpactDialog: typeof import('./src/components/Impact/ImpactDialog.vue')['default']
     ImpactPreview: typeof import('./src/components/Impact/ImpactPreview.vue')['default']
     InactiveAccountDialog: typeof import('./src/components/Dialogs/InactiveAccountDialog.vue')['default']
     LayoutShell: typeof import('./src/components/Layout/LayoutShell.vue')['default']

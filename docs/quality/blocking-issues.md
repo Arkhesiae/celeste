@@ -12,6 +12,8 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 |---|---|---|---|---|
 | 1 | 36 | Rotation flow, smaller defects | P2 | under 1 h |
 | 2 | 74 | The member list by team includes deleted teams | P3 | under 1 h |
+| 2 | 76 | `/information` is not redirected to its first section | P3 | under 1 h |
+| 2 | 77 | Replaced profile photos stay on disk | P3 | under 1 h |
 | 3 | S8 | Cascade children lose the final status of the root | P1 | under 1 h |
 | 4 | S4 | Any center member can cancel anyone's demand or mail the administration | P0 | 1 h |
 | 5 | 71 | Deleting a team leaves its members in it | P1 | 1-2 h + a decision |
@@ -21,6 +23,7 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 | 9 | 73 | A cycle move cleans a member's whole future, not only their days in the team | P2 | 1-2 h |
 | 10 | 57 | A failed mail send is silent for most mails | P2 | 2 h |
 | 11 | 69 | A failed startup request leaves the app on the loading screen | P2 | 2-3 h |
+| 11 | 78 | Intermittent router error when a page is opened directly | P2 | to investigate |
 | 12 | 20 | Admin routes without a center guard | P1 | 2 h |
 | 13 | 11 | Request bodies and avatar upload | P1 | 2 h |
 | 14 | 8 + 6 + 25 | No brute-force protection or throttling | P1 | half a day |
@@ -42,6 +45,13 @@ Whatever the ease, **#5 and #21 come before any production deploy** (#4 is done:
 ---
 
 ## Under an hour
+
+### 77. Replaced profile photos stay on disk, and stay public — P3
+`updateAvatar` (`backend/services/user/user.profile.js:59`) saves each upload under a new file name and does not delete the previous one. The old files remain in `public/avatars/`, served to anyone who has the address, and the hard deletion of an account (`user.delete.js`) only removes the current one. Found by reading the code on 2026-11-27, not reproduced.
+**Fix:** delete the previous file after the account is updated. Files already orphaned need a one-off cleanup (those no account references).
+
+### 76. `/information` is not redirected to its first section — P3
+`front/src/pages/information/index.vue:5`: the `<route lang="yaml">` block with `redirect` is not applied. Seen on 2026-11-26 on a production build with a mock API: the address stays `/information`, so no section is shown under the toggle. The links of the app point to the sections, so only a typed or shared `/information` address is affected.
 
 ### 74. The member list by team includes deleted teams — P3
 `getUsersGroupedByTeam` (`services/user/user.teamRead.js`, `GET /user/teams/:centerId`) reads `Team.find({ center })` without `deleted: false`, so a deleted team is returned like a live one. Reproduced on 2026-11-26. What the screens that use it show was not checked.
@@ -102,6 +112,9 @@ The center guards (`middleware/centerAuth.js`) cover users, teams, tickets, dema
 **Fix:** a small global body limit with a larger one only where needed; check the file's real signature.
 
 ---
+
+### 78. Intermittent router error when a page is opened directly — P2
+`TypeError: Invalid value used in weak set`, thrown from the setup of a component calling `useScrollRestoration()` (`front/src/layouts/alternative.vue`, from the stack of the built router chunk; the exact caller is not proven). Seen on 2026-11-27 on production builds with a **mock API**, opening `/information/patchnotes` directly in a fresh headless Edge (through the loading screen): 1 load out of 5 on the current code logged it and still showed the page; on an earlier build that also held a temporary extra page, 6 out of 6 stayed on `/loading`. `/dashboard`: 0 out of 5. Cause unknown; not checked with the real backend or another browser. May be related to #69 (stuck loading screen) and #56.
 
 ## Half a day
 

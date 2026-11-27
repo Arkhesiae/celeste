@@ -26,6 +26,7 @@ One line per item, with the date. Move items between sections as they progress.
 - (2026-11-02) Backend cleanup after the controllers/services refactor (what remains: `docs/architecture/backend-structure-review.md`).
 
 ## Done
+- (2026-11-27) Account deletion simplified: removed the cleanups nothing needed (early closing of past accepted demands, left to the expiry job; two unused fields; shared-avatar check) and the per-category counts of the confirmation dialog. Found #77.
 - (2026-11-26) Known issue #75 fixed: a new team assignment replaces those of the same kind starting that day.
 - (2026-11-26) Hard deletion of an account by the master admin, after an impact preview and a confirmation: everything of the account is erased, upcoming demands are cancelled or reopened with emails, colleagues' past is kept. The delete button did not work before (missing store action).
 - (2026-11-26) Files renamed (`rotation.latest.js` -> `rotation.timeline.js`, `team.cycle.js` -> `team.cyclePosition.js`); center deletion moved to `services/center/center.delete.js` and now marks the center last, so a failed deletion can be run again (no transaction: #21); the activation change preview uses the shared rotation rule (differs only on old data with two activations on a day, where it now matches the planning).

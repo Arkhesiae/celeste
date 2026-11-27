@@ -37,6 +37,7 @@ import { generateAccessToken } from '../services/auth/auth.refreshToken.js';
 import { computeUserShifts } from '../services/planning/planning.userShifts.js';
 import { createDemand } from '../services/demand/demand.creation.js';
 import { acceptDemand } from '../services/demand/demand.accept.js';
+import { processAndCompleteDemands } from '../services/demand/demand.expiry.js';
 import { acknowledgeBanner } from '../services/banner/banner.service.js';
 import { deleteUserCompletely, previewUserDeletion } from '../services/user/user.delete.js';
 import { AVATARS_DIRECTORY } from '../config/paths.js';
@@ -172,7 +173,7 @@ async function setup () {
   let otherDay;
   for (const n of range(21, 40)) if (await worksOn(bystander, n)) { otherDay = n; break; }
   const others = await post(bystander, otherDay);
-  await Demand.updateOne({ _id: others._id }, { $addToSet: { seenBy: gone._id, consultedBy: gone._id, interested: gone._id }, $set: { reservedForUserId: gone._id } });
+  await Demand.updateOne({ _id: others._id }, { $addToSet: { seenBy: gone._id, consultedBy: gone._id, interested: gone._id } });
 
   await Assignment.create({ userId: gone._id, centerId: center._id, date: day(45), subType: 'training', startTime: '09:00', endTime: '17:00' });
   await DayComment.create({ userId: gone._id, date: day(2), comment: 'note' });
@@ -195,7 +196,6 @@ async function setup () {
   await LegacyUser.create(legacy(2, 'bystander@del.fr'));
   const written = await Banner.create({ title: 'written by gone', message: 'm', createdBy: gone._id, centerId: center._id, isPermanent: false });
   const read = await Banner.create({ title: 'read by gone', message: 'm', createdBy: master._id, centerId: center._id, isPermanent: false, acknowledgedBy: [{ userId: gone._id }, { userId: bystander._id }] });
-  await Center.updateOne({ _id: center._id }, { $set: { admins: [gone._id, admin._id] } });
   await Announcement.collection.insertOne({ title: 't', message: 'm', results: { total: 2, sent: 0, failed: 2, errors: [{ email: 'gone@del.fr', error: 'e' }, { email: 'bystander@del.fr', error: 'e' }] } });
   fs.mkdirSync(AVATARS_DIRECTORY, { recursive: true });
   const avatarFile = path.join(AVATARS_DIRECTORY, 'gone-test-avatar.png');
@@ -237,11 +237,7 @@ test('only the master admin may delete, never themselves, and without confirmati
   assert.equal(impact.user.email, 'gone@del.fr');
   assert.equal(impact.from, today.toString());
   assert.deepEqual(impact.demands.map((d) => d.action).sort(), ['cancel', 'cancel', 'withdraw']);
-  assert.equal(impact.counts.ownDemands, 3);
-  assert.equal(impact.counts.pastAcceptedDemands, 1);
-  // deux transferts en attente : le manuel, et celui de la demande payante qu'il avait acceptée
-  assert.deepEqual([impact.counts.pendingTransfers, impact.counts.tickets, impact.counts.messages], [2, 2, 2]);
-  assert.deepEqual([impact.counts.legacyAccounts, impact.counts.verificationCodes, impact.counts.banners, impact.counts.dayNotes], [1, 1, 1, 1]);
+  assert.deepEqual(Object.keys(impact).sort(), ['demands', 'from', 'isLastCenterAdmin', 'user']);
   assert.equal(impact.isLastCenterAdmin, false);
   assert.equal((await previewUserDeletion(String(s.admin._id), { actorId: String(s.master._id) })).isLastCenterAdmin, true);
 
@@ -286,12 +282,18 @@ test('a confirmed deletion leaves no trace of the account, keeps the past of col
   const reopened = await Demand.findById(s.future.colleagueReplaced.id);
   assert.deepEqual([reopened.status, reopened.accepterId ?? null], ['open', null]);
 
-  // past demands: theirs are gone, the colleague's stays without accepter and closed
+  // past demands: theirs are gone, the colleague's stays without accepter, and the expiry job closes it like any past one
   assert.equal(await Demand.countDocuments({ _id: { $in: [s.past.goneReplaced.id, s.future.goneReplaced.id, s.open._id] } }), 0);
-  const kept = await Demand.findById(s.past.colleagueReplaced.id);
-  assert.deepEqual([String(kept.posterId), kept.accepterId ?? null, kept.status, kept.deleted], [String(s.colleague._id), null, 'completed', true]);
+  const keptState = async () => {
+    const kept = await Demand.findById(s.past.colleagueReplaced.id);
+    return [String(kept.posterId), kept.accepterId ?? null, kept.status, kept.deleted];
+  };
+  assert.deepEqual(await keptState(), [String(s.colleague._id), null, 'accepted', false]);
+  await processAndCompleteDemands();
+  assert.deepEqual(await keptState(), [String(s.colleague._id), null, 'completed', true]);
+  assert.deepEqual(await planningOf(s.colleague, PAST), pastBefore.colleague, 'closing it changes no planning');
   const others = await Demand.findById(s.others._id);
-  assert.deepEqual([others.status, others.seenBy.length, others.interested.length, others.reservedForUserId ?? null], ['open', 0, 0, null]);
+  assert.deepEqual([others.status, others.seenBy.length, others.interested.length], ['open', 0, 0]);
 
   // what belongs to others is still there
   assert.deepEqual((await Ticket.find()).map((x) => x.title), ['not theirs']);
@@ -300,7 +302,6 @@ test('a confirmed deletion leaves no trace of the account, keeps the past of col
   assert.deepEqual((await LegacyUser.find()).map((x) => x.email), ['bystander@del.fr']);
   assert.equal(await DayComment.countDocuments(), 1);
   assert.equal(await PointTransfer.countDocuments({ sender: s.colleague._id, receiver: s.bystander._id }), 1);
-  assert.deepEqual((await Center.findById(s.center._id)).admins.map(String), [String(s.admin._id)]);
   const announcement = await Announcement.collection.findOne();
   assert.deepEqual(announcement.results.errors.map((e) => e.email), ['bystander@del.fr']);
 
@@ -342,16 +343,14 @@ test('a failure anywhere leaves the database, the mails and the avatar untouched
   fs.rmSync(s.avatarFile, { force: true });
 });
 
-test('an account with nothing, without center or team, and an avatar shared with someone else', async (t) => {
+test('an account with nothing, without center or team, whose avatar file is already missing', async (t) => {
   if (!available) return t.skip('MongoDB indisponible');
   const s = await setup();
-  const shared = '/avatars/gone-test-avatar.png';
-  await User.updateOne({ _id: s.bystander._id }, { avatar: shared });
-  const lonely = await User.create({ name: 'Lonely', lastName: 'L', email: 'lonely@del.fr', password: 'x'.repeat(20), avatar: shared });
+  const lonely = await User.create({ name: 'Lonely', lastName: 'L', email: 'lonely@del.fr', password: 'x'.repeat(20), avatar: '/avatars/lonely-missing.png' });
   const lonelyDay = await computeUserShifts([day(1)], lonely._id);
   assert.equal(lonelyDay[0].baseShift, null);
   assert.deepEqual(await deleteUserCompletely(String(lonely._id), { actorId: String(s.master._id) }), { cancelled: 0, withdrawn: 0 });
-  assert.ok(fs.existsSync(s.avatarFile), 'someone else still uses that file');
+  assert.ok(fs.existsSync(s.avatarFile), "another account's file stays");
   assert.equal(await User.countDocuments({ _id: lonely._id }), 0);
   fs.rmSync(s.avatarFile, { force: true });
 });

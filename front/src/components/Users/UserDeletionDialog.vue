@@ -44,21 +44,17 @@
 
         <section>
           <div class="text-title-small mb-1">Sera effacé</div>
-          <ul class="text-body-medium pl-5">
-            <li v-for="line in erased" :key="line">{{ line }}</li>
-          </ul>
+          <div class="text-body-medium">
+            Le profil, le calendrier et ses notes, les demandes publiées (passées comprises), les transferts de points (ceux en
+            attente n'auront pas lieu), les tickets, les messages et les données de l'ancien site.
+          </div>
         </section>
 
         <section class="text-body-small text-medium-emphasis">
           <div class="text-title-small text-high-emphasis mb-1">Ne change pas</div>
           Le planning passé des collègues, leurs propres demandes (celles que ce compte avait acceptées n'ont plus
-          d'accepteur<template v-if="impact.counts.pastAcceptedDemands">
-            : {{ impact.counts.pastAcceptedDemands }} dans le passé</template
-          >) et les soldes de points. Les transferts effacés disparaissent aussi de l'historique de l'autre personne.<template
-            v-if="impact.counts.banners"
-          >
-            Les {{ impact.counts.banners }} bannière(s) écrite(s) par ce compte restent, sans auteur.
-          </template>
+          d'accepteur), les soldes de points et les bannières écrites par ce compte, qui restent sans auteur. Les transferts
+          effacés disparaissent aussi de l'historique de l'autre personne.
         </section>
 
         <v-checkbox v-model="understood" color="error" hide-details label="Je comprends que cette suppression est définitive" />
@@ -112,26 +108,6 @@ const demandSubtitle = (demand) => {
   if (demand.cascade) people.push('dépend d’une autre demande');
   return people.join(' · ');
 };
-
-const LABELS = {
-  calendarEntries: 'entrée(s) de calendrier',
-  dayNotes: 'note(s) de jour',
-  ownDemands: 'demande(s) publiée(s), passées comprises',
-  pointTransfers: 'transfert(s) de points',
-  tickets: 'ticket(s)',
-  messages: 'message(s)',
-  legacyAccounts: 'ancien compte (ancien site)',
-  verificationCodes: 'code(s) de vérification',
-};
-
-const erased = computed(() => {
-  const counts = props.impact?.counts ?? {};
-  const lines = Object.entries(LABELS)
-    .filter(([key]) => counts[key])
-    .map(([key, label]) => `${counts[key]} ${label}`);
-  if (counts.pendingTransfers) lines.push(`dont ${counts.pendingTransfers} transfert(s) en attente, qui n'auront pas lieu`);
-  return ['Le compte : profil, équipes, préférences, photo et sessions', ...lines];
-});
 </script>
 
 <style scoped>

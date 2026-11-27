@@ -1,11 +1,10 @@
 <template>
   <ImpactDialog
-    :model-value="modelValue"
+    v-model="modelValue"
     title="Désactiver le compte"
     confirm-label="Désactiver le compte"
     alert-icon="mdi-account-off-outline"
     :loading="loading"
-    @update:model-value="emit('update:modelValue', $event)"
     @confirm="emit('confirm')"
   >
     <template #alert>
@@ -53,11 +52,11 @@ import ImpactPreview from '@/components/Impact/ImpactPreview.vue';
 import { formatDay } from '@/utils/dayFields.js';
 
 defineProps({
-  modelValue: { type: Boolean, required: true },
   /** Réponse 409 de POST /user/:id/deactivate : ce que la désactivation ferait */
   impact: { type: Object, default: null },
   loading: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue', 'confirm']);
+const modelValue = defineModel({ type: Boolean, required: true });
+const emit = defineEmits(['confirm']);
 </script>

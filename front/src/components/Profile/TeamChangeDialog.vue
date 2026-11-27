@@ -1,11 +1,10 @@
 <template>
   <GenericDialog
-    :model-value="modelValue"
+    v-model="modelValue"
     max-width="900"
     :title="dialogMode === 'Renfort' ? 'Programmer un renfort' : 'Changer d\'équipe'"
     :subtitle="dialogMode === 'Renfort' ? 'Sélectionnez la période de renfort' : 'Sélectionnez la date de changement'"
     :icon="dialogMode === 'Renfort' ? 'mdi-calendar-plus' : 'mdi-account-outline'"
-    @update:model-value="emit('update:modelValue', $event)"
     @close="close"
   >
     <template #content>
@@ -211,23 +210,14 @@
     </template>
   </GenericDialog>
 
-  <!-- Confirmation Dialog -->
-  <v-dialog v-model="showConfirmationDialog" max-width="400px">
-    <v-card elevation="0" class="pa-2">
-      <v-card-item prepend-icon="mdi-alert-outline">
-        <v-card-title>Conflit de changement</v-card-title>
-      </v-card-item>
-
-      <v-card-text class="opacity-50">
-        Vous avez déjà un changement prévu dans l'équipe <strong>{{ conflict?.teamName || '?' }}</strong> pour le
-        <strong>{{ toDisplayFormat(occurrenceDays(conflict).from) || '?' }}</strong>. Ecraser le changement ?
-      </v-card-text>
-      <v-card-actions class="justify-space-between">
-        <v-btn variant="text" color="secondary" rounded="xl" @click="showConfirmationDialog = false"> Annuler </v-btn>
-        <v-btn variant="tonal" rounded="xl" color="primary" @click="overrideDateConflict"> Valider </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <ConfirmationDialog
+    v-model="showConfirmationDialog"
+    title="Conflit de changement"
+    icon="mdi-alert-outline"
+    :text="conflictText"
+    confirm-text="Valider"
+    @confirm="overrideDateConflict"
+  />
 </template>
 
 <script setup>
@@ -241,13 +231,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
 });
 
-const emit = defineEmits(['onClose', 'onSubmit', 'update:dialogMode', 'update:modelValue']);
+const modelValue = defineModel({ type: Boolean, required: true });
+const emit = defineEmits(['onClose', 'onSubmit', 'update:dialogMode']);
 
 const date = useDate();
 const teamStore = useTeamStore();
@@ -314,6 +301,13 @@ watch(
 const rules = {
   required: (value) => !!value || 'Ce champ est requis.',
 };
+
+// Texte de la confirmation quand un changement est déjà prévu à ces dates
+const conflictText = computed(
+  () =>
+    `Vous avez déjà un changement prévu dans l'équipe ${conflict.value?.teamName || '?'} pour le ` +
+    `${toDisplayFormat(occurrenceDays(conflict.value).from) || '?'}. Écraser le changement ?`,
+);
 
 const toDisplayFormat = (input) => {
   if (input) {
@@ -406,7 +400,7 @@ const resetForm = () => {
 };
 
 const close = () => {
-  emit('update:modelValue', false);
+  modelValue.value = false;
   resetForm();
 };
 </script>

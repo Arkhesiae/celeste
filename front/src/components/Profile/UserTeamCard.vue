@@ -139,25 +139,16 @@
 
   <!-- Dialogue d'information pour mobile -->
 
-  <v-dialog v-model="showInfo" fullscreen :scrim="false" transition="dialog-bottom-transition" class="d-md-none">
-    <v-card>
-      <v-toolbar color="surfaceContainer">
-        <v-btn icon @click="showInfo = false">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-toolbar>
-
-      <v-card-text class="pa-6">
-        <h2 class="text-headline-small mb-4">Comment fonctionne mon équipe ?</h2>
-        <p class="mb-4">Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :</p>
-        <div class="mb-4 d-flex flex-column ga-2">
-          <span class="text-title-small">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
-          <span class="text-title-small">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
-          <span class="text-title-small">Consulter votre historique et vos changements à venir</span>
-        </div>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+  <GenericDialog v-if="smAndDown" v-model="showInfo" title="Comment fonctionne mon équipe ?" retain-focus>
+    <template #content>
+      <p class="mb-4">Votre équipe actuelle est affichée en haut de la carte. Vous pouvez :</p>
+      <div class="mb-4 d-flex flex-column ga-2">
+        <span class="text-title-small">Changer d'équipe en cliquant sur le bouton "Changement d'équipe"</span>
+        <span class="text-title-small">Renforcer une autre équipe en cliquant sur le bouton "Renfort"</span>
+        <span class="text-title-small">Consulter votre historique et vos changements à venir</span>
+      </div>
+    </template>
+  </GenericDialog>
 
   <!-- Panneau latéral pour desktop -->
   <teleport to="body">
@@ -193,7 +184,6 @@
     icon-color="error"
     confirm-text="Supprimer"
     @confirm="confirmDelete"
-    @update:is-dialog-visible="showConfirmationDialog = $event"
   />
 
   <TeamChangeImpactDialog
@@ -209,9 +199,11 @@
 import { occurrenceDays, formatDay } from '@/utils/dayFields.js';
 import { useTeamStore } from '@/stores/teamStore.js';
 import { useAuthStore } from '@/stores/authStore.js';
+import { useDisplay } from 'vuetify';
 
 const emit = defineEmits(['show-team-change-dialog']);
 
+const { smAndDown } = useDisplay();
 const isHistoryRevealed = ref(false);
 const showInfo = ref(false);
 const showConfirmationDialog = ref(false);

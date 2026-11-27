@@ -146,18 +146,16 @@
     </v-row>
 
     <TransferDialog
-      :dialog-visible="transferDialog"
+      v-model="transferDialog"
       :user-id="userId"
-      @update:dialog-visible="transferDialog = $event"
       @transfer-success="handleTransferSuccess"
     />
 
     <TeamChangeDialog
+      v-model="showTeamChangeDialog"
       :dialog-mode="dialogMode"
-      :model-value="showTeamChangeDialog"
       @on-submit="handleTeamChange"
       @on-close="closeAddDialog"
-      @update:model-value="showTeamChangeDialog = $event"
     />
 
     <TeamChangeImpactDialog

@@ -1,21 +1,13 @@
 <script setup>
 const props = defineProps({
-  isDialogVisible: {
-    type: Boolean,
-    required: true,
-  },
   rotation: {
     type: Object,
     required: true,
   },
 });
 
-const emit = defineEmits(['update:dialogVisible', 'onSubmit']);
-
-const localDialogVisible = computed({
-  get: () => props.isDialogVisible,
-  set: (value) => emit('update:dialogVisible', value),
-});
+const modelValue = defineModel({ type: Boolean, required: true });
+const emit = defineEmits(['onSubmit']);
 
 const newName = ref(props.rotation.name);
 
@@ -23,12 +15,12 @@ const nameRules = [(v) => !!v || 'Le nom est requis'];
 
 const submit = () => {
   emit('onSubmit', { ...props.rotation, name: newName.value });
-  localDialogVisible.value = false;
+  modelValue.value = false;
 };
 </script>
 
 <template>
-  <BaseDialog v-model="localDialogVisible" title="Modifier le nom" :max-width="500">
+  <BaseDialog v-model="modelValue" title="Modifier le nom" :max-width="500">
     <p class="text-medium-emphasis text-body-medium mb-4">Modifiez le nom du tour de service</p>
     <v-text-field
       v-model="newName"

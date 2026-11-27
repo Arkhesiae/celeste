@@ -1,11 +1,10 @@
 <template>
   <ImpactDialog
-    :model-value="modelValue"
+    v-model="modelValue"
     title="Confirmer le changement d'équipe"
     confirm-label="Confirmer le changement"
     max-width="900"
     :loading="loading"
-    @update:model-value="emit('update:modelValue', $event)"
     @confirm="emit('confirm')"
     @cancel="emit('cancel')"
   >
@@ -73,11 +72,11 @@ import { formatDay } from '@/utils/dayFields.js';
  * `approval` = { segments: { before, after }, teams: { [id]: name }, changes: [...] }
  */
 const props = defineProps({
-  modelValue: { type: Boolean, default: false },
   approval: { type: Object, default: null },
   loading: { type: Boolean, default: false },
 });
-const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
+const modelValue = defineModel({ type: Boolean, default: false });
+const emit = defineEmits(['confirm', 'cancel']);
 
 const uid = useId();
 

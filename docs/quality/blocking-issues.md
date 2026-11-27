@@ -180,6 +180,11 @@ How a stale entry behaves (`applyEntries`, `planning.userShifts.js`; checked on 
 ### 79. The full backend test run is intermittently red — P2
 - Seen 2026-11-28 with `npm test` (`backend/package.json`, test files run in parallel against the same MongoDB): one run failed 5 tests of `test/planningPresence.db.test.js`, another 8 of `test/teamServices.db.test.js`, a third passed (219 pass, 1 `todo`). `planningPresence` run alone passed 6/6. Later the same day two `npm test` runs never ended, stuck on `test/demandExpiry.db.test.js` (which passes alone in about 1s), and a run with `--test-timeout=90000` failed 2 tests of `test/wiredMails.db.test.js`. The cause was not investigated (contention between parallel database tests is a guess), so a red run needs a rerun to be trusted; use `--test-timeout` so that a hang is reported.
 
+### 80. Templates reading names that do not exist — P2
+Found 2026-11-28 while compiling the dialog templates (both were there before):
+- `front/src/components/Tickets/TicketDetails.vue`: `ReplyDialog` has `@reply-sent="handleReplySent"`, which is not defined: nothing happens after a reply.
+- `front/src/pages/admin/emails.vue`: the email preview dialog reads `emailPreview`, which is not defined: it always shows the placeholder text (and its trigger `handlePreview` is only in commented-out code). The template there would be rendered with `v-html`, so sanitise it if it is ever wired.
+
 ### 61. Mail leftovers — P3
 - The template `unacceptedDemand` is sent by nothing.
 - `accountDeactivated` was wired on 2026-11-28 (account deactivation). `rotationChange`, `centerTransferAccepted` and `ticketReceived` were wired on 2026-11-26.

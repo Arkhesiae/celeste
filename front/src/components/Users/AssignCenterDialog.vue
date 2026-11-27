@@ -1,10 +1,5 @@
 <template>
-  <BaseDialog
-    :model-value="dialogVisible"
-    title="Changement de centre"
-    :max-width="500"
-    @update:model-value="$emit('update:dialogVisible', $event)"
-  >
+  <BaseDialog v-model="modelValue" title="Changement de centre" :max-width="500">
     <v-select
       v-model="selectedCenter"
       rounded="lg"
@@ -18,7 +13,7 @@
 
     <template #actions>
       <v-spacer />
-      <v-btn variant="text" @click="$emit('update:dialogVisible', false)">Annuler</v-btn>
+      <v-btn variant="text" @click="modelValue = false">Annuler</v-btn>
       <v-btn @click="handleAssignCenter">Assigner</v-btn>
     </template>
   </BaseDialog>
@@ -33,17 +28,15 @@ const userStore = useUserStore();
 const snackbarStore = useSnackbarStore();
 
 const props = defineProps({
-  dialogVisible: {
-    type: Boolean,
-    required: true,
-  },
   userId: {
     type: String,
     default: null,
   },
 });
 
-const emit = defineEmits(['update:dialogVisible', 'centerAssigned']);
+const modelValue = defineModel({ type: Boolean, required: true });
+
+const emit = defineEmits(['centerAssigned']);
 
 const selectedCenter = ref(null);
 
@@ -69,7 +62,7 @@ const handleAssignCenter = async () => {
       userId: user.value._id,
       centerId: selectedCenter.value,
     });
-    emit('update:dialogVisible', false);
+    modelValue.value = false;
     snackbarStore.showNotification('Centre assigné', 'onSuccess', 'mdi-check-circle');
   } catch (error) {
     console.error('Error assigning center:', error);

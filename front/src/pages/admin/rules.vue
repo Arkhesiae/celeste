@@ -82,88 +82,82 @@
       </v-col>
     </v-row>
 
-    <v-dialog v-model="isEditing" width="500">
-      <v-card class="pa-6 rounded-xl">
-        <span class="text-title-large">{{ ruleToEdit.name }}</span>
-        <span class="opacity-50">Définir une nouvelle valeur pour cette règle ?</span>
+    <BaseDialog v-model="isEditing" :title="ruleToEdit.name" max-width="500">
+      <p class="text-medium-emphasis">Définir une nouvelle valeur pour cette règle ?</p>
+      <v-number-input
+        v-model="ruleToEdit.value"
+        class="mt-4"
+        type="number"
+        control-variant="split"
+        rounded="xl"
+        flat
+        hide-details
+        color="primary"
+        size="small"
+        variant="underlined"
+        inset
+      />
 
-        <v-number-input
-          v-model="ruleToEdit.value"
-          class="my-4"
-          type="number"
-          control-variant="split"
-          rounded="xl"
-          flat
-          hide-details
-          color="primary"
-          size="small"
-          variant="underlined"
-          inset
-        />
-        <div class="d-flex align-center justify-space-between mt-4">
-          <v-spacer />
-          <v-btn color="primary" variant="text" @click="isEditing = false"> Annuler </v-btn>
-          <v-btn color="primary" variant="text" @click="updateRuleDialog"> Confirmer </v-btn>
-        </div>
-      </v-card>
-    </v-dialog>
+      <template #actions>
+        <v-spacer />
+        <v-btn color="primary" variant="text" @click="isEditing = false">Annuler</v-btn>
+        <v-btn color="primary" variant="text" @click="updateRuleDialog">Confirmer</v-btn>
+      </template>
+    </BaseDialog>
 
-    <v-dialog v-model="isEditingMailing" width="550">
-      <v-card v-if="mailingRuleToEdit" class="pa-6 rounded-xl">
-        <span class="text-title-large">{{ mailingRuleToEdit.name }}</span>
-        <span class="opacity-50 mb-4 d-block">{{ mailingRuleToEdit.description }}</span>
+    <BaseDialog v-model="isEditingMailing" :title="mailingRuleToEdit?.name ?? ''" max-width="550">
+      <template v-if="mailingRuleToEdit">
+        <p class="text-medium-emphasis mb-4">{{ mailingRuleToEdit.description }}</p>
 
-        <v-switch
-          v-model="mailingRuleToEdit.value.enabled"
-          label="Activer l'envoi de mails à l'administration"
-          color="primary"
-         
-          class="mb-4"
-        />
+      <v-switch
+        v-model="mailingRuleToEdit.value.enabled"
+        label="Activer l'envoi de mails à l'administration"
+        color="primary"
+       
+        class="mb-4"
+      />
 
-        <v-expand-transition>
-          <div v-if="mailingRuleToEdit.value.enabled">
-            <v-text-field
-              v-model="mailingEmailsInput"
-              label="Adresses e-mail des destinataires (séparées par des virgules)"
-              placeholder="admin1@example.com, admin2@example.com"
+      <v-expand-transition>
+        <div v-if="mailingRuleToEdit.value.enabled">
+          <v-text-field
+            v-model="mailingEmailsInput"
+            label="Adresses e-mail des destinataires (séparées par des virgules)"
+            placeholder="admin1@example.com, admin2@example.com"
+            variant="outlined"
+            density="comfortable"
+            rounded="lg"
+            class="mb-4"
+            hide-details
+          />
+
+          <div class="d-flex justify-start mb-4">
+            <v-btn
               variant="outlined"
-              density="comfortable"
-              rounded="lg"
-              class="mb-4"
-              hide-details
-            />
-
-            <div class="d-flex justify-start mb-4">
-              <v-btn
-                variant="outlined"
-                color="primary"
-                prepend-icon="mdi-eye-outline"
-                rounded="xl"
-                @click="showTemplatePreview = true"
-              >
-                Prévisualiser le modèle
-              </v-btn>
-            </div>
+              color="primary"
+              prepend-icon="mdi-eye-outline"
+              rounded="xl"
+              @click="showTemplatePreview = true"
+            >
+              Prévisualiser le modèle
+            </v-btn>
           </div>
-        </v-expand-transition>
-
-        <div class="d-flex align-center justify-space-between mt-4">
-          <v-spacer />
-          <v-btn color="primary" variant="text" @click="isEditingMailing = false"> Annuler </v-btn>
-          <v-btn color="primary" variant="text" :loading="isSaving" @click="updateMailingRule"> Confirmer </v-btn>
         </div>
-      </v-card>
-    </v-dialog>
+      </v-expand-transition>
+      </template>
 
-    <v-dialog v-model="showTemplatePreview" width="600">
-      <v-card class="pa-6 rounded-xl">
-        <div class="d-flex align-center justify-space-between mb-4">
-          <span class="text-title-large">Aperçu du modèle d'email</span>
-          <v-btn icon="mdi-close" variant="text" size="small" @click="showTemplatePreview = false" />
-        </div>
-      </v-card>
-    </v-dialog>
+      <template #actions>
+        <v-spacer />
+        <v-btn color="primary" variant="text" @click="isEditingMailing = false">Annuler</v-btn>
+        <v-btn color="primary" variant="text" :loading="isSaving" @click="updateMailingRule">Confirmer</v-btn>
+      </template>
+    </BaseDialog>
+
+    <BaseDialog v-model="showTemplatePreview" title="Aperçu du modèle d'email" max-width="600">
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="showTemplatePreview = false">Fermer</v-btn>
+      </template>
+    </BaseDialog>
 
     <ConfirmationDialog
       v-model="confirmLock"

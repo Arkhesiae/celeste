@@ -100,11 +100,9 @@
     </v-card>
 
     <!-- Dialog d'envoi d'annonce -->
-    <v-dialog v-model="announcementDialog" max-width="900px" persistent :fullscreen="smAndDown">
-      <v-card :rounded="smAndDown ? '' : 'xl'" color="surfaceContainerLow" flat class="pa-6">
-        <v-card-title class="pa-0 ma-0"> Nouveau message </v-card-title>
-
-        <v-card-text class="pa-0 pt-8">
+    <GenericDialog v-model="announcementDialog" title="Nouveau message" max-width="900" persistent retain-focus>
+      <template #content>
+        <div class="pt-4">
           <!-- Type de template -->
           <v-text-field
             v-model="formData.title"
@@ -189,68 +187,58 @@
               <v-btn color="onBackground" @click="handlePreview" rounded="lg" :size="smAndDown ? 'default' : 'small'"
                 :block="smAndDown">Aperçu</v-btn>
             </div> -->
-        </v-card-text>
+        </div>
+      </template>
 
-        <v-card-actions class="pa-0 mt-6">
-          <v-btn color="onSurface" variant="text" :disabled="emailStore.sending" @click="announcementDialog = false">
-            Annuler
-          </v-btn>
-          <v-spacer />
-          <v-btn color="surfaceContainerHigh" class="px-4" variant="flat" rounded="lg" @click="sendTest">
-            Envoi test
-          </v-btn>
-          <v-btn
-            color="onBackground"
-            variant="flat"
-            rounded="xl"
-            :loading="emailStore.sending"
-            :disabled="!formValid"
-            prepend-icon="mdi-send"
-            class="px-4"
-            @click="sendAnnouncement"
-          >
-            <template #prepend>
-              <v-icon size="12"> mdi-send </v-icon>
-            </template>
-            Envoi
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      <template #footer>
+        <v-btn color="onSurface" variant="text" :disabled="emailStore.sending" @click="announcementDialog = false">
+          Annuler
+        </v-btn>
+        <v-spacer />
+        <v-btn color="surfaceContainerHigh" class="px-4" variant="flat" rounded="lg" @click="sendTest">
+          Envoi test
+        </v-btn>
+        <v-btn
+          color="onBackground"
+          variant="flat"
+          rounded="xl"
+          :loading="emailStore.sending"
+          :disabled="!formValid"
+          prepend-icon="mdi-send"
+          class="px-4"
+          @click="sendAnnouncement"
+        >
+          <template #prepend>
+            <v-icon size="12"> mdi-send </v-icon>
+          </template>
+          Envoi
+        </v-btn>
+      </template>
+    </GenericDialog>
 
     <!-- Dialog d'aperçu -->
-    <v-dialog v-model="previewDialog" max-width="1200px">
-      <v-card color="surfaceContainerLow" flat class="pa-6">
-        <v-card-title class="pa-0 ma-0"> Aperçu de l'email </v-card-title>
-        <v-card-text class="pa-0 pt-8">
-          <div v-if="emailPreview" class="email-preview" v-html="emailPreview" />
-          <div v-else class="text-medium-emphasis text-center pa-4">
-            Sélectionnez un type d'annonce et entrez un message pour voir l'aperçu
-          </div>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <GenericDialog v-model="previewDialog" title="Aperçu de l'email" max-width="1200" retain-focus>
+      <template #content>
+        <div v-if="emailPreview" class="email-preview" v-html="emailPreview" />
+        <div v-else class="text-medium-emphasis text-center pa-4">
+          Sélectionnez un type d'annonce et entrez un message pour voir l'aperçu
+        </div>
+      </template>
+    </GenericDialog>
 
     <!-- Dialog de confirmation -->
-    <v-dialog v-model="confirmDialog" max-width="500px">
-      <v-card rounded="lg">
-        <v-card-title class="text-title-large">
-          <v-icon class="mr-2" color="warning"> mdi-alert </v-icon>
-          Confirmation d'envoi
-        </v-card-title>
-        <v-card-text>
-          <p>
-            Vous êtes sur le point d'envoyer une annonce à <strong>{{ emailStore.userCount }} utilisateurs</strong>.
-          </p>
-          <p class="text-medium-emphasis">Cette action ne peut pas être annulée.</p>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDialog = false"> Annuler </v-btn>
-          <v-btn color="primary" :loading="emailStore.sending" @click="confirmSend"> Confirmer l'envoi </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <BaseDialog v-model="confirmDialog" title="Confirmation d'envoi" icon="mdi-alert" max-width="500">
+      <p>
+        Vous êtes sur le point d'envoyer une annonce à <strong>{{ emailStore.userCount }} utilisateurs</strong>.
+      </p>
+      <p class="text-medium-emphasis">Cette action ne peut pas être annulée.</p>
+
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="confirmDialog = false">Annuler</v-btn>
+        <v-btn color="primary" :loading="emailStore.sending" @click="confirmSend">Confirmer l'envoi</v-btn>
+      </template>
+    </BaseDialog>
   </v-container>
 </template>
 

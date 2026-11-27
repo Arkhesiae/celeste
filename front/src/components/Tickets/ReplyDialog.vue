@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog v-model="isOpen" title="Envoyer une réponse" :max-width="600" persistent>
+  <GenericDialog v-model="modelValue" title="Envoyer une réponse" :max-width="600" persistent>
     <template #content>
       <div class="mb-4 d-flex align-center ga-3">
         <div class="text-title-small">Destinataire</div>
@@ -60,22 +60,15 @@ const snackbarStore = useSnackbarStore();
 const ticketStore = useTicketStore();
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
   ticket: {
     type: Object,
     default: null,
   },
 });
 
-const emit = defineEmits(['update:modelValue', 'reply-sent']);
+const modelValue = defineModel({ type: Boolean, default: false });
 
-const isOpen = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
+const emit = defineEmits(['reply-sent']);
 
 const replyContent = ref('');
 const isLoading = ref(false);
@@ -90,7 +83,7 @@ const replyRules = [
 
 const closeDialog = () => {
   replyContent.value = '';
-  isOpen.value = false;
+  modelValue.value = false;
 };
 
 const sendReply = async () => {
@@ -116,7 +109,7 @@ const sendReply = async () => {
 };
 
 // Réinitialiser le contenu quand le dialog s'ouvre
-watch(isOpen, (newValue) => {
+watch(modelValue, (newValue) => {
   if (newValue) {
     replyContent.value = '';
   }

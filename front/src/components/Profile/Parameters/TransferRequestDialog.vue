@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog v-model="localDialogVisible" :title="step === 'form' ? 'Demander une mutation' : 'Confirmer la mutation'" :max-width="600">
+  <GenericDialog v-model="modelValue" :title="step === 'form' ? 'Demander une mutation' : 'Confirmer la mutation'" :max-width="600">
     <template #content>
       <!-- 1. Centre d'arrivée et motif -->
       <v-form v-show="step === 'form'" ref="form" v-model="valid">
@@ -82,14 +82,9 @@ import { useCenterStore } from '@/stores/centerStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useCenterTransferStore } from '@/stores/centerTransferStore';
 
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
-});
+const modelValue = defineModel({ type: Boolean, default: false });
 
-const emit = defineEmits(['update:modelValue', 'success', 'error']);
+const emit = defineEmits(['success', 'error']);
 
 const centerStore = useCenterStore();
 const authStore = useAuthStore();
@@ -107,20 +102,11 @@ const impact = ref({ demands: 0, entries: 0, points: 0, negativePoints: false })
 const centers = computed(() => centerStore.centers.filter((center) => center._id !== authStore.userData.centerId));
 const destinationName = computed(() => centers.value.find((center) => center._id === selectedCenter.value)?.name ?? '');
 
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => {
-    emit('update:modelValue', value);
-    if (!value) resetForm();
-  },
+// À l'ouverture les centres sont chargés au besoin ; à la fermeture, quelle qu'en soit la façon, la saisie repart de zéro
+watch(modelValue, (visible) => {
+  if (!visible) resetForm();
+  else if (!centerStore.centers.length) centerStore.fetchCenters();
 });
-
-watch(
-  () => props.modelValue,
-  (visible) => {
-    if (visible && !centerStore.centers.length) centerStore.fetchCenters();
-  },
-);
 
 const resetForm = () => {
   step.value = 'form';
@@ -130,7 +116,7 @@ const resetForm = () => {
 };
 
 const close = () => {
-  localDialogVisible.value = false;
+  modelValue.value = false;
 };
 
 // Étape 1 -> 2 : on lit ce que l'acceptation effacerait avant de demander confirmation

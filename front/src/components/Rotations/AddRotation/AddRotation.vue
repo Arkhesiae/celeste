@@ -4,24 +4,17 @@ import WorkshiftSummary from './WorkshiftSummary.vue';
 import GenericDialog from '../../common/GenericDialog.vue';
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
   rotation: {
     type: Object,
     default: null,
   },
 });
 
-const emit = defineEmits(['rotationSubmit', 'update:modelValue', 'rotationEditSubmit', 'rotationEditCancel', 'close']);
+const modelValue = defineModel({ type: Boolean, required: true });
+
+const emit = defineEmits(['rotationSubmit', 'rotationEditSubmit', 'rotationEditCancel', 'close']);
 
 const { smAndDown } = useDisplay();
-
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
 
 const newRotation = ref({
   name: '',
@@ -145,7 +138,7 @@ const submit = () => {
       days: newRotation.value.days,
     });
   }
-  localDialogVisible.value = false;
+  modelValue.value = false;
 };
 
 const close = () => {
@@ -153,13 +146,13 @@ const close = () => {
     emit('rotationEditCancel');
   }
   emit('close');
-  localDialogVisible.value = false;
+  modelValue.value = false;
 };
 </script>
 
 <template>
   <GenericDialog
-    v-model="localDialogVisible"
+    v-model="modelValue"
     :title="props.rotation ? 'Modifier le TDS' : 'Ajouter un nouveau TDS'"
     max-width="900"
     @close="close"
@@ -291,12 +284,11 @@ const close = () => {
 
   <!-- Add Day Dialog -->
   <AddOrEditDay
-    :model-value="showAddDayDialog"
+    v-model="showAddDayDialog"
     :day-number="newRotation.days.filter((day) => day.type === 'work').length + 1"
     :day="dayToEdit"
     :mode="dayToEdit ? 'edit' : 'add'"
     @on-submit="handleSubmitDay"
-    @update:model-value="showAddDayDialog = $event"
   />
 </template>
 

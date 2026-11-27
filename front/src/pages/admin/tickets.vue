@@ -122,17 +122,15 @@
     />
 
     <!-- Dialog de confirmation de suppression -->
-    <v-dialog v-model="deleteDialog" max-width="400px">
-      <v-card class="pa-6">
-        <v-card-title class="pa-0"> Confirmer la suppression </v-card-title>
-        <v-card-text class="pa-0"> Êtes-vous sûr de vouloir supprimer ce ticket ? </v-card-text>
-        <v-card-actions class="pa-0">
-          <v-spacer />
-          <v-btn color="grey" variant="text" @click="deleteDialog = false"> Annuler </v-btn>
-          <v-btn color="error" :loading="deleting" @click="confirmDeleteAction"> Supprimer </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <BaseDialog v-model="deleteDialog" title="Confirmer la suppression" icon="mdi-delete-outline" max-width="400">
+      <p class="text-body-medium text-center">Êtes-vous sûr de vouloir supprimer ce ticket ?</p>
+
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="deleteDialog = false">Annuler</v-btn>
+        <v-btn color="error" :loading="deleting" @click="confirmDeleteAction">Supprimer</v-btn>
+      </template>
+    </BaseDialog>
   </v-container>
 </template>
 

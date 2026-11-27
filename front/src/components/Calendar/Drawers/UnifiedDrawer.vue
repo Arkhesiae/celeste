@@ -64,23 +64,21 @@ import { useDisplay } from 'vuetify';
 const { smAndDown } = useDisplay();
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
   selectedDate: {
     type: [String, null],
     required: true,
   },
 });
 
-const emit = defineEmits(['update:modelValue', 'handle-replacement', 'handle-switch', 'open-details']);
+const modelValue = defineModel({ type: Boolean, default: false });
+
+const emit = defineEmits(['handle-replacement', 'handle-switch', 'open-details']);
 
 const isScrolled = ref(false);
 
 // Methods
 const handleClose = () => {
-  emit('update:modelValue', false);
+  modelValue.value = false;
 };
 
 const handleReplacement = (demand) => {

@@ -82,7 +82,7 @@
         <!-- Mobile : carte compacte + dialog -->
         <template v-else>
           <VersionSelector
-            :model-value="selectedVersion"
+            :selection="selectedVersion"
             :width="400"
             :title="selectedVersion?.version || 'Sélectionner une version'"
             :subtitle="selectedVersion?.releaseDate || ''"

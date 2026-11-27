@@ -1,11 +1,10 @@
 <template>
   <GenericDialog
-    :model-value="modelValue"
+    v-model="modelValue"
     :title="title"
     :max-width="maxWidth"
     persistent
     retain-focus
-    @update:model-value="emit('update:modelValue', $event)"
     @close="emit('cancel')"
   >
     <template #content>
@@ -29,10 +28,9 @@
 /**
  * Cadre commun des confirmations qui annulent quelque chose (changement d'équipe, de position dans le cycle, désactivation et
  * suppression d'un compte) : fenêtre persistante, avertissement (slot `alert`), contenu (en général des `ImpactPreview`), boutons
- * Annuler / confirmer. Fermer par la croix ou par Annuler émet `update:modelValue` (false) et `cancel`.
+ * Annuler / confirmer. Fermer par la croix ou par Annuler ferme le `v-model` et émet `cancel`.
  */
 defineProps({
-  modelValue: { type: Boolean, default: false },
   title: { type: String, required: true },
   confirmLabel: { type: String, required: true },
   confirmDisabled: { type: Boolean, default: false },
@@ -42,10 +40,11 @@ defineProps({
   maxWidth: { type: [String, Number], default: 640 },
 });
 
-const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
+const modelValue = defineModel({ type: Boolean, default: false });
+const emit = defineEmits(['confirm', 'cancel']);
 
 const cancel = () => {
-  emit('update:modelValue', false);
+  modelValue.value = false;
   emit('cancel');
 };
 </script>

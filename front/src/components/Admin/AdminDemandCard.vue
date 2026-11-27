@@ -84,30 +84,33 @@
     </v-card-item>
 
     <!-- Dialog utilisateur -->
-    <v-dialog v-model="showUserDialogModal" max-width="350">
-      <v-card color="surfaceContainer" class="pa-6">
-        <div class="d-flex flex-column ga-2">
-          <div class="d-flex align-center ga-2">
-            <v-avatar size="40" variant="tonal">
-              <v-img v-if="selectedUserData?.avatar" :src="`${API_URL}${selectedUserData?.avatar}`" alt="Avatar" />
-              <v-icon v-else> mdi-account </v-icon>
-            </v-avatar>
-            <div>
-              <div class="text-body-large font-weight-bold">
-                {{ selectedUserData?.name }} {{ selectedUserData?.lastName }}
-              </div>
-              <div class="text-body-small opacity-70">
-                {{ selectedUserData?.email }}
-              </div>
+    <BaseDialog v-model="showUserDialogModal" title="Contact" max-width="350">
+      <div class="d-flex flex-column ga-2">
+        <div class="d-flex align-center ga-2">
+          <v-avatar size="40" variant="tonal">
+            <v-img v-if="selectedUserData?.avatar" :src="`${API_URL}${selectedUserData?.avatar}`" alt="Avatar" />
+            <v-icon v-else> mdi-account </v-icon>
+          </v-avatar>
+          <div>
+            <div class="text-body-large font-weight-bold">
+              {{ selectedUserData?.name }} {{ selectedUserData?.lastName }}
+            </div>
+            <div class="text-body-small opacity-70">
+              {{ selectedUserData?.email }}
             </div>
           </div>
-          <v-divider class="my-2" />
-          <div class="text-body-small">
-            <strong>Téléphone:</strong> {{ selectedUserData?.personalData?.phoneNumber || 'N/A' }}
-          </div>
         </div>
-      </v-card>
-    </v-dialog>
+        <v-divider class="my-2" />
+        <div class="text-body-small">
+          <strong>Téléphone:</strong> {{ selectedUserData?.personalData?.phoneNumber || 'N/A' }}
+        </div>
+      </div>
+
+      <template #actions>
+        <v-spacer />
+        <v-btn variant="text" @click="showUserDialogModal = false">Fermer</v-btn>
+      </template>
+    </BaseDialog>
   </v-card>
 </template>
 

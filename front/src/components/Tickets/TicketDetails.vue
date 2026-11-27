@@ -1,46 +1,45 @@
 <template>
-  <v-dialog v-model="isOpen" :fullscreen="smAndDown" max-width="800px">
-    <v-card v-if="ticket" :rounded="smAndDown ? '' : 'xl'" class="pa-6">
-      <v-card-title class="d-flex align-start pa-0 mb-4">
-        <div class="d-flex flex-column justify-start align-start">
-          <div class="d-flex align-center flex-wrap ga-1">
-            <v-icon :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)" size="small" />
+  <GenericDialog v-model="modelValue" title="Ticket" max-width="800" retain-focus @close="$emit('close')">
+    <template #content>
+      <template v-if="ticket">
+        <div class="d-flex align-start mb-4">
+          <div class="d-flex flex-column justify-start align-start min-width-0">
+            <div class="d-flex align-center flex-wrap ga-1">
+              <v-icon :icon="getTicketIcon(ticket.type)" :color="getTicketColor(ticket.type)" size="small" />
 
-            <span class="text-truncate title">{{ ticket.title }}</span>
-            <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg" color="primary">
-              Local
-            </v-chip>
+              <span class="text-title-large title">{{ ticket.title }}</span>
+              <v-chip v-if="ticket.adminType === 'local' && !xs" size="x-small" rounded="lg" color="primary">
+                Local
+              </v-chip>
 
-            <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
-              {{ ticket.centerId?.name }}
-            </v-chip>
-          </div>
+              <v-chip v-if="ticket.centerId?.name" size="x-small" rounded="lg" color="onBackground">
+                {{ ticket.centerId?.name }}
+              </v-chip>
+            </div>
 
-          <div class="d-flex align-center">
-            <v-icon size="small" class="mr-1"> mdi-identifier </v-icon>
-            <span class="text-body-medium">{{ ticket._id.slice(-6) }}</span>
-          </div>
-          <!-- Date -->
-          <div class="">
+            <div class="d-flex align-center">
+              <v-icon size="small" class="mr-1"> mdi-identifier </v-icon>
+              <span class="text-body-medium">{{ ticket._id.slice(-6) }}</span>
+            </div>
+            <!-- Date -->
             <div class="d-flex align-center">
               <v-icon size="x-small" class="mr-1"> mdi-clock-outline </v-icon>
-              <span class="date">{{ formatDate(ticket.createdAt) }}</span>
+              <span class="date text-body-small">{{ formatDate(ticket.createdAt) }}</span>
+            </div>
+          </div>
+          <v-spacer />
+          <div class="d-flex flex-column ga-1 justify-end align-end flex-0-0">
+            <v-chip v-if="ticket.type" size="small" rounded="lg" :color="getTicketColor(ticket.type)" class="ml-2">
+              {{ getTicketTypeLabel(ticket.type) }}
+            </v-chip>
+
+            <div class="flex-0-0">
+              <TicketStatus :ticket-id="ticket._id" :status="ticket.status" size="small" :prepend-icon="true" />
             </div>
           </div>
         </div>
-        <v-spacer />
-        <div class="d-flex flex-column ga-1 justify-end align-end flex-0-0">
-          <v-chip v-if="ticket.type" size="small" rounded="lg" :color="getTicketColor(ticket.type)" class="ml-2">
-            {{ getTicketTypeLabel(ticket.type) }}
-          </v-chip>
 
-          <div class="flex-0-0">
-            <TicketStatus :ticket-id="ticket._id" :status="ticket.status" size="small" :prepend-icon="true" />
-          </div>
-        </div>
-      </v-card-title>
-
-      <!-- Actions (haut) -->
+        <!-- Actions (haut) -->
       <div class="d-flex justify-end ga-2 mb-4">
         <v-btn
           v-if="ticket.archived"
@@ -65,7 +64,7 @@
         </v-btn>
       </div>
 
-      <v-card-text class="pa-0">
+        <div>
         <!-- Email avec possibilité de copier -->
         <div class="mb-4">
           <EmailButton :email="ticket.senderEmail" variant="button" height="32" size="small" />
@@ -130,17 +129,18 @@
             <span class="ml-2 font-weight-medium" style="font-size: 0.71rem !important">Répondre</span>
           </v-btn>
         </div>
-      </v-card-text>
+        </div>
+      </template>
+    </template>
 
-      <v-card-actions class="pa-0 mt-8">
-        <v-spacer />
-        <v-btn color="onSurface" variant="text" @click="$emit('close')"> Fermer </v-btn>
-      </v-card-actions>
-    </v-card>
+    <template #footer>
+      <v-spacer />
+      <v-btn color="onSurface" variant="text" @click="$emit('close')">Fermer</v-btn>
+    </template>
+  </GenericDialog>
 
-    <!-- Dialog de réponse -->
-    <ReplyDialog v-model="showReplyDialog" :ticket="ticket" @reply-sent="handleReplySent" />
-  </v-dialog>
+  <!-- Dialog de réponse -->
+  <ReplyDialog v-model="showReplyDialog" :ticket="ticket" @reply-sent="handleReplySent" />
 </template>
 
 <script setup>
@@ -154,7 +154,7 @@ import TicketStatus from './TicketStatus.vue';
 // import EmailButton from './EmailButton.vue';
 // import ReplyDialog from './ReplyDialog.vue';
 
-const { smAndDown } = useDisplay();
+const { xs } = useDisplay();
 
 const ticketStore = useTicketStore();
 // const snackbarStore = useSnackbarStore();
@@ -162,10 +162,6 @@ const ticketStore = useTicketStore();
 const showReplyDialog = ref(false);
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
   ticketId: {
     type: String,
     default: null,
@@ -176,19 +172,15 @@ const ticket = computed(() => {
   return ticketStore.tickets.find((ticket) => ticket._id === props.ticketId);
 });
 
-const emit = defineEmits([
-  'update:modelValue',
+const modelValue = defineModel({ type: Boolean, default: false });
+
+defineEmits([
   'close',
   'delete-ticket',
   'mark-read',
   'archive-ticket',
   'restore-ticket',
 ]);
-
-const isOpen = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
 
 const ticketTypes = [
   { title: "Demande d'assistance", value: 'assistance' },

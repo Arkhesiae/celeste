@@ -28,16 +28,20 @@
   </v-card>
 
   <!-- Dialog -->
-  <v-dialog v-model="dialogOpen" :width="dialogWidth">
-    <slot name="dialog">
+  <v-dialog v-model="open" :width="dialogWidth">
+    <slot name="dialog" :close="close">
       <!-- Par défaut, rien -->
     </slot>
   </v-dialog>
 </template>
 
 <script setup>
+/** Ouverture de la fenêtre de choix */
+const open = defineModel({ type: Boolean, default: false });
+
 const props = defineProps({
-  modelValue: {
+  /** L'élément choisi : quand il change, la fenêtre se ferme */
+  selection: {
     type: Object,
     default: null,
   },
@@ -62,25 +66,21 @@ const props = defineProps({
     default: '',
   },
 });
-const emit = defineEmits(['update:modelValue', 'open', 'close']);
+const emit = defineEmits(['open', 'close']);
 
-const dialogOpen = ref(false);
 const dialogWidth = props.width;
 
-// Support v-model
-watch(
-  () => props.modelValue,
-  (val) => {
-    dialogOpen.value = false;
-  },
-);
-watch(dialogOpen, (val) => {
-  emit('update:modelValue', val);
-  if (val) emit('open');
+const close = () => {
+  open.value = false;
+};
+
+watch(() => props.selection, close);
+watch(open, (isOpen) => {
+  if (isOpen) emit('open');
   else emit('close');
 });
 
 function openDialog() {
-  dialogOpen.value = true;
+  open.value = true;
 }
 </script>

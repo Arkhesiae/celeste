@@ -148,11 +148,10 @@
     </template>
 
     <ErrorDialog
+      v-model="showErrorDialog"
       error-title="Impossible de supprimer ce tour de service"
       :error-message="errorMessage"
       error-icon="mdi-delete-alert-outline"
-      :is-dialog-visible="showErrorDialog"
-      @update:dialog-visible="showErrorDialog = $event"
     />
 
     <ConfirmationDialog
@@ -163,7 +162,6 @@
       :icon-color="'error'"
       :confirm-text="'Supprimer'"
       @confirm="confirmDelete"
-      @update:model-value="showConfirmationDialog = $event"
     />
 
     <ConfirmationDialog
@@ -173,7 +171,6 @@
       :icon-color="'error'"
       :confirm-text="'Supprimer'"
       @confirm="removeActivationDate"
-      @update:model-value="showDateConfirmationDialog = $event"
     />
 
     <AddRotation
@@ -190,7 +187,6 @@
       :rotationId="activateParams.rotationId"
       :time-zone="activateTimeZone"
       @on-submit="setActivationDate"
-      @update:dialog-visible="showActivateDialog = $event"
     />
 
     <ConfirmChangeDialog

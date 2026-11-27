@@ -1,12 +1,11 @@
 <template>
   <ImpactDialog
-    :model-value="modelValue"
+    v-model="modelValue"
     title="Supprimer définitivement le compte"
     confirm-label="Supprimer définitivement"
     alert-type="error"
     :confirm-disabled="!understood"
     :loading="loading"
-    @update:model-value="emit('update:modelValue', $event)"
     @confirm="emit('confirm')"
     @cancel="emit('cancel')"
   >
@@ -63,18 +62,18 @@ import ImpactPreview from '@/components/Impact/ImpactPreview.vue';
 import { formatDay } from '@/utils/dayFields.js';
 
 const props = defineProps({
-  modelValue: { type: Boolean, required: true },
   /** Réponse 409 de DELETE /user/:id : ce que la suppression ferait */
   impact: { type: Object, default: null },
   loading: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue', 'confirm', 'cancel']);
+const modelValue = defineModel({ type: Boolean, required: true });
+const emit = defineEmits(['confirm', 'cancel']);
 
 // La case est à recocher à chaque ouverture
 const understood = ref(false);
 watch(
-  () => [props.modelValue, props.impact],
+  () => [modelValue.value, props.impact],
   () => {
     understood.value = false;
   },

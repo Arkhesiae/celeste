@@ -36,13 +36,12 @@
   </v-bottom-sheet>
 
   <DemandForm
+    v-model="showDemandForm"
     :submitting="subInProgress"
     :dialog-mode="dialogMode"
-    :dialog-visible="showDemandForm"
     :date="selectedDate"
     :selected-shift="selectedVacation"
     @on-submit="handleSubmit"
-    @update:dialog-visible="showDemandForm = $event"
   />
 
   <!-- Drawers -->

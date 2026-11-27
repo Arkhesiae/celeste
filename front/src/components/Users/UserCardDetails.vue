@@ -1,155 +1,152 @@
 <template>
-  <v-dialog :model-value="dialogVisible" max-width="600" @update:model-value="$emit('update:dialogVisible', $event)">
-    <v-card v-if="user" variant="flat" class="pa-6">
-      <v-card-title class="d-flex justify-space-between align-center pa-0">
+  <GenericDialog v-model="modelValue" title="Utilisateur" max-width="600" retain-focus>
+    <template #content>
+      <template v-if="user">
         <div class="d-flex align-center">
           <v-avatar color="primary" size="60" class="mr-3">
             {{ user.name.charAt(0) }}{{ user.lastName.charAt(0) }}
           </v-avatar>
-          <div>
+          <div class="min-width-0">
             <div class="text-headline-small">{{ user.name }} {{ user.lastName.toUpperCase() }}</div>
             <div class="text-body-large text-medium-emphasis">
               {{ user.email }}
             </div>
           </div>
         </div>
-        <v-btn variant="text" icon @click="$emit('update:dialogVisible', false)">
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-card-title>
 
-      <v-card-text class="pa-0 mt-6">
-        <v-row>
-          <v-col cols="12" md="6">
-            <div class="text-body-large mb-2">Informations</div>
-            <v-list>
-              <v-list-item>
-                <template #prepend>
-                  <v-icon>mdi-account-check-outline</v-icon>
-                </template>
+        <div class="mt-6 mb-2">
+          <v-row>
+            <v-col cols="12" md="6">
+              <div class="text-body-large mb-2">Informations</div>
+              <v-list>
+                <v-list-item>
+                  <template #prepend>
+                    <v-icon>mdi-account-check-outline</v-icon>
+                  </template>
 
-                <v-list-item-subtitle>
-                  <v-chip
-                    rounded="lg"
-                    color="onBackground"
-                    :color="user.registrationStatus === 'pending' ? 'warning' : 'success'"
-                    size="small"
-                  >
-                    {{ user.registrationStatus === 'pending' ? 'Candidature en attente' : 'Candidature approuvée' }}
-                  </v-chip>
-                  <v-chip v-if="user.isActive === false" rounded="lg" color="error" size="small" class="ml-2">
-                    Compte désactivé
-                  </v-chip>
-                </v-list-item-subtitle>
-              </v-list-item>
-              <v-list-item>
-                <template #prepend>
+                  <v-list-item-subtitle>
+                    <v-chip
+                      rounded="lg"
+                      color="onBackground"
+                      :color="user.registrationStatus === 'pending' ? 'warning' : 'success'"
+                      size="small"
+                    >
+                      {{ user.registrationStatus === 'pending' ? 'Candidature en attente' : 'Candidature approuvée' }}
+                    </v-chip>
+                    <v-chip v-if="user.isActive === false" rounded="lg" color="error" size="small" class="ml-2">
+                      Compte désactivé
+                    </v-chip>
+                  </v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item>
+                  <template #prepend>
+                    <v-icon>mdi-airport</v-icon>
+                  </template>
+
+                  <v-list-item-subtitle>
+                    <v-chip color="onBackground" rounded="lg" size="small" class="mr-2">
+                      {{ getCenterName?.name || 'No center' }}
+                    </v-chip>
+                  </v-list-item-subtitle>
+                </v-list-item>
+                <v-list-item>
+                  <template #prepend>
+                    <v-icon>mdi-calendar</v-icon>
+                  </template>
+                  <v-list-item-title>Date d'inscription</v-list-item-title>
+                  <v-list-item-subtitle>{{ new Date(user.createdAt).toLocaleDateString() }}</v-list-item-subtitle>
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="12" md="6">
+              <v-card
+                v-if="!user.isAdmin && isMasterAdmin"
+                flat
+                class="pa-4"
+                color="surfaceContainerHighest"
+                @click="$emit('makeAdmin', user)"
+              >
+                <div class="d-flex align-center ga-3">
+                  <v-icon>mdi-shield-account</v-icon>
+                  <v-list-item-title>Octroyer statut admin</v-list-item-title>
+                </div>
+              </v-card>
+              <v-card
+                v-if="user.isAdmin && isMasterAdmin"
+                flat
+                class="pa-4"
+                color="surfaceContainerHighest"
+                @click="$emit('removeAdmin', user)"
+              >
+                <div class="d-flex align-center ga-3">
+                  <v-icon>mdi-shield-crown-outline</v-icon>
+                  <v-list-item-title>Enlever statut admin</v-list-item-title>
+                </div>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-card
+                v-if="isMasterAdmin"
+                flat
+                class="pa-4"
+                color="surfaceContainerHighest"
+                @click="$emit('assignCenter', userId)"
+              >
+                <div class="d-flex align-center ga-3">
                   <v-icon>mdi-airport</v-icon>
-                </template>
-
-                <v-list-item-subtitle>
-                  <v-chip color="onBackground" rounded="lg" size="small" class="mr-2">
-                    {{ getCenterName?.name || 'No center' }}
-                  </v-chip>
-                </v-list-item-subtitle>
-              </v-list-item>
-              <v-list-item>
-                <template #prepend>
-                  <v-icon>mdi-calendar</v-icon>
-                </template>
-                <v-list-item-title>Date d'inscription</v-list-item-title>
-                <v-list-item-subtitle>{{ new Date(user.createdAt).toLocaleDateString() }}</v-list-item-subtitle>
-              </v-list-item>
-            </v-list>
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col cols="12" md="6">
-            <v-card
-              v-if="!user.isAdmin && isMasterAdmin"
-              flat
-              class="pa-4"
-              color="surfaceContainerHighest"
-              @click="$emit('makeAdmin', user)"
-            >
-              <div class="d-flex align-center ga-3">
-                <v-icon>mdi-shield-account</v-icon>
-                <v-list-item-title>Octroyer statut admin</v-list-item-title>
-              </div>
-            </v-card>
-            <v-card
-              v-if="user.isAdmin && isMasterAdmin"
-              flat
-              class="pa-4"
-              color="surfaceContainerHighest"
-              @click="$emit('removeAdmin', user)"
-            >
-              <div class="d-flex align-center ga-3">
-                <v-icon>mdi-shield-crown-outline</v-icon>
-                <v-list-item-title>Enlever statut admin</v-list-item-title>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="6">
-            <v-card
-              v-if="isMasterAdmin"
-              flat
-              class="pa-4"
-              color="surfaceContainerHighest"
-              @click="$emit('assignCenter', userId)"
-            >
-              <div class="d-flex align-center ga-3">
-                <v-icon>mdi-airport</v-icon>
-                <v-list-item-title>Modifier le centre</v-list-item-title>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col v-if="canManageAccount" cols="12" md="12">
-            <v-card
-              v-if="user.isActive !== false"
-              flat
-              class="pa-4"
-              color="surfaceContainerHighest"
-              role="button"
-              @click="$emit('deactivate', user)"
-            >
-              <div class="d-flex align-center ga-3">
-                <v-icon color="error">mdi-account-off-outline</v-icon>
-                <v-list-item-title>Désactiver le compte</v-list-item-title>
-              </div>
-            </v-card>
-            <v-card
-              v-else
-              flat
-              class="pa-4"
-              color="surfaceContainerHighest"
-              role="button"
-              @click="$emit('reactivate', user)"
-            >
-              <div class="d-flex align-center ga-3">
-                <v-icon color="primary">mdi-account-reactivate-outline</v-icon>
-                <v-list-item-title>Réactiver le compte</v-list-item-title>
-              </div>
-            </v-card>
-          </v-col>
-          <v-col cols="12" md="12">
-            <v-card
-              v-if="isMasterAdmin && user && user._id !== authStore.userData.userId"
-              flat
-              class="pa-4"
-              color="error"
-              @click="$emit('delete', user)"
-            >
-              <div class="d-flex align-center ga-3">
-                <v-icon>mdi-delete</v-icon>
-                <v-list-item-title>Supprimer l'utilisateur</v-list-item-title>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+                  <v-list-item-title>Modifier le centre</v-list-item-title>
+                </div>
+              </v-card>
+            </v-col>
+            <v-col v-if="canManageAccount" cols="12" md="12">
+              <v-card
+                v-if="user.isActive !== false"
+                flat
+                class="pa-4"
+                color="surfaceContainerHighest"
+                role="button"
+                @click="$emit('deactivate', user)"
+              >
+                <div class="d-flex align-center ga-3">
+                  <v-icon color="error">mdi-account-off-outline</v-icon>
+                  <v-list-item-title>Désactiver le compte</v-list-item-title>
+                </div>
+              </v-card>
+              <v-card
+                v-else
+                flat
+                class="pa-4"
+                color="surfaceContainerHighest"
+                role="button"
+                @click="$emit('reactivate', user)"
+              >
+                <div class="d-flex align-center ga-3">
+                  <v-icon color="primary">mdi-account-reactivate-outline</v-icon>
+                  <v-list-item-title>Réactiver le compte</v-list-item-title>
+                </div>
+              </v-card>
+            </v-col>
+            <v-col cols="12" md="12">
+              <v-card
+                v-if="isMasterAdmin && user && user._id !== authStore.userData.userId"
+                flat
+                class="pa-4"
+                color="error"
+                @click="$emit('delete', user)"
+              >
+                <div class="d-flex align-center ga-3">
+                  <v-icon>mdi-delete</v-icon>
+                  <v-list-item-title>Supprimer l'utilisateur</v-list-item-title>
+                </div>
+              </v-card>
+            </v-col>
+          </v-row>
+        </div>
+      </template>
+    </template>
+  </GenericDialog>
 </template>
 
 <script setup>
@@ -166,13 +163,11 @@ const props = defineProps({
     type: String,
     required: true,
   },
-  dialogVisible: {
-    type: Boolean,
-    required: true,
-  },
 });
 
-defineEmits(['update:dialogVisible', 'makeAdmin', 'removeAdmin', 'assignCenter', 'delete', 'deactivate', 'reactivate']);
+const modelValue = defineModel({ type: Boolean, required: true });
+
+defineEmits(['makeAdmin', 'removeAdmin', 'assignCenter', 'delete', 'deactivate', 'reactivate']);
 
 const isMasterAdmin = computed(() => authStore.userData.isAdmin && authStore.userData.adminType === 'master');
 
@@ -189,6 +184,6 @@ const canManageAccount = computed(() => {
 });
 
 const getCenterName = computed(() => {
-  return centerStore.centers.find((center) => center._id === user.value.centerId) || null;
+  return centerStore.centers.find((center) => center._id === user.value?.centerId) || null;
 });
 </script>

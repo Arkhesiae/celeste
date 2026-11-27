@@ -1,54 +1,49 @@
 <template>
-  <v-dialog v-model="dialog" max-width="500px" transition="dialog-bottom-transition">
-    <v-card class="rounded-xl pa-2">
-      <v-card-title class="text-headline-small pa-6 pb-2"> Mot de passe oublié </v-card-title>
+  <BaseDialog v-model="modelValue" title="Mot de passe oublié" max-width="500">
+    <p class="text-body-medium text-medium-emphasis mb-4">
+      Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe. Si cet email existe,
+      vous recevrez un lien de réinitialisation de votre mot de passe.
+    </p>
+    <v-form ref="form" v-model="valid" @submit.prevent="submit">
+      <v-text-field
+        v-model="email"
+        :rules="emailRules"
+        label="Adresse e-mail"
+        required
+        type="email"
+        prepend-inner-icon="mdi-email-outline"
+        variant="solo-filled"
+        flat
+        color="primary"
+        rounded="xl"
+        bg-color="surface"
+        hide-details="auto"
+      />
+    </v-form>
 
-      <v-card-text class="pa-6 pt-4">
-        <p class="text-body-medium text-medium-emphasis mb-4">
-          Entrez votre adresse e-mail pour recevoir un lien de réinitialisation de votre mot de passe. Si cet email
-          existe, vous recevrez un lien de réinitialisation de votre mot de passe.
-        </p>
-        <v-form ref="form" v-model="valid" @submit.prevent="submit">
-          <v-text-field
-            v-model="email"
-            :rules="emailRules"
-            label="Adresse e-mail"
-            required
-            type="email"
-            prepend-inner-icon="mdi-email-outline"
-            variant="solo-filled"
-            flat
-            color="primary"
-            rounded="xl"
-            bg-color="surface"
-            hide-details="auto"
-          />
-        </v-form>
-      </v-card-text>
-
-      <v-card-actions class="pa-6 pt-2">
-        <v-spacer />
-        <v-btn color="primary" variant="text" rounded="xl" @click="closeDialog"> Annuler </v-btn>
-        <v-btn color="primary" variant="tonal" rounded="xl" :loading="loading" :disabled="!valid" @click="submit">
-          <v-icon icon="mdi-send" class="me-1" />
-          Réinitialiser
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+    <template #actions>
+      <v-spacer />
+      <v-btn color="primary" variant="text" @click="closeDialog">Annuler</v-btn>
+      <v-btn
+        color="primary"
+        variant="tonal"
+        prepend-icon="mdi-send"
+        :loading="loading"
+        :disabled="!valid"
+        @click="submit"
+      >
+        Réinitialiser
+      </v-btn>
+    </template>
+  </BaseDialog>
 </template>
 
 <script setup>
 import { authService } from '@/services/authService';
 
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false,
-  },
-});
+const modelValue = defineModel({ type: Boolean, default: false });
 
-const emit = defineEmits(['update:modelValue', 'success', 'error']);
+const emit = defineEmits(['success', 'error']);
 
 const form = ref(null);
 const valid = ref(false);
@@ -56,16 +51,6 @@ const loading = ref(false);
 const email = ref('');
 
 const emailRules = [(v) => !!v || "L'email est requis", (v) => /.+@.+\..+/.test(v) || "L'email doit être valide"];
-
-const dialog = computed({
-  get: () => props.modelValue,
-  set: (value) => {
-    emit('update:modelValue', value);
-    if (!value) {
-      resetForm();
-    }
-  },
-});
 
 const resetPassword = async (email) => {
   try {
@@ -82,8 +67,13 @@ const resetForm = () => {
 };
 
 const closeDialog = () => {
-  dialog.value = false;
+  modelValue.value = false;
 };
+
+// À la fermeture, quelle qu'en soit la façon, la saisie repart de zéro
+watch(modelValue, (isOpen) => {
+  if (!isOpen) resetForm();
+});
 
 const submit = async () => {
   // Validate form before submitting

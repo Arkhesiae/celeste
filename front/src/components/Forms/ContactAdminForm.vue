@@ -41,7 +41,7 @@
             <div class="my-6">
               <VersionSelector
                 :has-data="!!centers && centers.length > 0"
-                :model-value="formData.center"
+                :selection="formData.center"
                 :title="formData.center ? formData.center.name : 'Selectionnez un centre'"
                 :subtitle="formData.center ? formData.center.OACI : 'Selectionnez un centre'"
               >

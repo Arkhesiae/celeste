@@ -97,9 +97,8 @@
       <TransactionHistoryDialog v-model="transactionsDialog" />
 
       <TransferDialog
-        :dialog-visible="transferDialog"
+        v-model="transferDialog"
         :user-id="authStore.userData.userId"
-        @update:dialog-visible="transferDialog = $event"
       />
 
       <DemandDependencies ref="demandDeps" />

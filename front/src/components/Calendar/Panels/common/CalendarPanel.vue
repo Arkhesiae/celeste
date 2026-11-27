@@ -210,7 +210,7 @@
   <AssignmentDialog v-model="entryDialog" :loading="entrySaving" @submit="addCustomEntry" />
 
   <ConfirmationDialog
-    :model-value="confirmationDialog"
+    v-model="confirmationDialog"
     :title="confirmationDialogTitle"
     :text="confirmationDialogMessage"
     @confirm="confirmEntry"

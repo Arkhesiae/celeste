@@ -2,11 +2,10 @@
   <!-- <GeneralDialog v-model="localDialogVisible" title="Ajouter une vacation" :description="mode === 'edit' ? 'Modifier la vacation' : 'Ajouter une vacation'"  /> -->
 
   <GenericDialog
-    v-model="localDialogVisible"
+    v-model="modelValue"
     title="Ajouter une vacation"
     :description="dialogMode === 'add' ? 'Ajouter une vacation' : 'Modifier une vacation'"
     @close="close"
-    @update:model-value="localDialogVisible = $event"
   >
     <template #content>
       <v-fade-transition mode="out-in">
@@ -297,40 +296,23 @@
     @close="closeTimePicker"
   />
 
-  <v-dialog v-model="showVariantNameDialog" max-width="500" style="z-index: 3300 !important">
-    <v-card color="surfaceContainer">
-      <v-card-item class="pa-6 mb-4">
-        <v-card-title>
-          <div class="text-title-large font-weight-medium">Modifier le nom de la variante</div>
-        </v-card-title>
-      </v-card-item>
-      <v-card-text class="pa-6 pt-0">
-        <v-text-field
-          v-model="newVariantName"
-          label="Nom de la variante"
-          variant="outlined"
-          class="mb-6 flex-grow-1"
-          bg-color="surface"
-          min-width="100px"
-          rounded="lg"
-          placeholder="Ex: Variante 1"
-          :rules="[rules.required, rules.maxLength(5)]"
-        />
-      </v-card-text>
-      <v-card-actions class="pa-6 d-flex justify-end">
-        <v-btn
-          color="primary"
-          variant="text"
-          rounded="xl"
-          class="ml-4"
-          :disabled="!isValidVariantName"
-          @click="submitVariantName"
-        >
-          Modifier
-        </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+  <BaseDialog v-model="showVariantNameDialog" title="Modifier le nom de la variante" max-width="500" style="z-index: 3300 !important">
+    <v-text-field
+      v-model="newVariantName"
+      label="Nom de la variante"
+      variant="outlined"
+      bg-color="surface"
+      rounded="lg"
+      placeholder="Ex: Variante 1"
+      :rules="[rules.required, rules.maxLength(5)]"
+    />
+
+    <template #actions>
+      <v-spacer />
+      <v-btn variant="text" @click="showVariantNameDialog = false">Annuler</v-btn>
+      <v-btn color="primary" :disabled="!isValidVariantName" @click="submitVariantName">Modifier</v-btn>
+    </template>
+  </BaseDialog>
 </template>
 
 <script setup>
@@ -340,10 +322,6 @@ import { VCard } from 'vuetify/components';
 const { smAndDown, xs } = useDisplay();
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
   day: {
     type: Object,
     default: null,
@@ -362,12 +340,8 @@ const props = defineProps({
 });
 
 const dialogMode = ref('add');
-const emit = defineEmits(['onSubmit', 'update:modelValue']);
-
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
+const modelValue = defineModel({ type: Boolean, required: true });
+const emit = defineEmits(['onSubmit']);
 
 // Gestion des étapes
 const currentStep = ref(1);
@@ -622,12 +596,12 @@ const submit = () => {
   newDay.value.default.endsNextDay = endsNextDay();
   emit('onSubmit', { ...newDay.value });
   reset();
-  localDialogVisible.value = false;
+  modelValue.value = false;
 };
 
 const close = () => {
   reset();
-  localDialogVisible.value = false;
+  modelValue.value = false;
 };
 
 const handleChangeVariantName = (index) => {

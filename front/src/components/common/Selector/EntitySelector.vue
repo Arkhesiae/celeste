@@ -78,7 +78,6 @@ const props = defineProps({
 
 const modelValue = defineModel();
 
-const emit = defineEmits(['update:modelValue']);
 
 const scrollContainer = ref(null);
 const isScrolledToBottom = ref(false);
@@ -87,7 +86,6 @@ const isScrolledToTop = ref(false);
 function selectItem(item) {
   item[props.itemKey] = item[props.itemKey];
   modelValue.value = item;
-  emit('update:modelValue', item);
 }
 
 function handleScroll() {

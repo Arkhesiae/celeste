@@ -84,11 +84,10 @@
   </v-card>
 
   <AddOrEditDay
-    :model-value="showEditDayDialog"
+    v-model="showEditDayDialog"
     mode="edit"
     :day="selectedDay"
     @on-submit="handleQuickDayEdit"
-    @update:model-value="showEditDayDialog = $event"
   />
 
   <ConfirmationDialog
@@ -128,9 +127,8 @@
   <!-- Edit Name Dialog -->
   <EditRotationNameDialog
     v-if="smAndDown"
-    :is-dialog-visible="showEditNameDialog"
+    v-model="showEditNameDialog"
     :rotation="rotation"
-    @update:dialog-visible="showEditNameDialog = $event"
     @on-submit="handleNameEdit"
   />
 </template>

@@ -153,28 +153,24 @@
     <!-- ═══════════════════════════════════════════════════════════════════════
          Create / Edit dialog
     ═══════════════════════════════════════════════════════════════════════ -->
-    <v-dialog v-model="dialog" max-width="640px" :fullscreen="smAndDown" persistent>
-      <v-card :rounded="smAndDown ? '' : 'xl'" color="surfaceContainerLow" flat>
-        <!-- Dialog header -->
-        <div class="dialog-header pa-6 pb-0">
-          <div class="d-flex align-center ga-3 mb-1">
-            <v-avatar color="primary" variant="tonal" size="32">
-              <v-icon size="16">mdi-bullhorn</v-icon>
-            </v-avatar>
-            <span class="text-title-large font-weight-bold">
-              {{ editingId ? 'Modifier la bannière' : 'Nouvelle bannière' }}
-            </span>
-          </div>
-          <p class="text-body-small text-medium-emphasis mb-0 ml-11">
+    <GenericDialog
+      v-model="dialog"
+      :title="editingId ? 'Modifier la bannière' : 'Nouvelle bannière'"
+      max-width="640"
+      persistent
+      retain-focus
+      @close="closeDialog"
+    >
+      <template #content>
+        <div>
+          <p class="text-body-small text-medium-emphasis mb-6">
             {{
               editingId
                 ? 'Modifiez les champs ci-dessous.'
                 : 'La bannière sera visible immédiatement sur le tableau de bord.'
             }}
           </p>
-        </div>
 
-        <v-card-text class="pa-6 pt-6">
           <!-- Live preview -->
           <div class="preview-banner mb-6" :class="`type-${form.type}`">
             <div class="preview-accent" />
@@ -299,9 +295,10 @@
             hint="Laisser vide pour ne pas expirer automatiquement"
             persistent-hint
           />
-        </v-card-text>
+        </div>
+      </template>
 
-        <v-card-actions class="pa-6 pt-0">
+      <template #footer>
           <v-btn variant="text" color="onSurface" :disabled="store.saving" @click="closeDialog"> Annuler </v-btn>
           <v-spacer />
           <v-btn
@@ -314,9 +311,8 @@
           >
             {{ editingId ? 'Enregistrer' : 'Publier' }}
           </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+      </template>
+    </GenericDialog>
 
     <ConfirmationDialog
       v-model="deleteDialog"
@@ -336,12 +332,10 @@ import { formatDateTime } from '@/utils/formatDate';
 import { useAuthStore } from '@/stores/authStore';
 import { useBannerStore } from '@/stores/bannerStore';
 import { useCenterStore } from '@/stores/centerStore';
-import { useDisplay } from 'vuetify';
 
 const authStore = useAuthStore();
 const store = useBannerStore();
 const centerStore = useCenterStore();
-const { smAndDown } = useDisplay();
 
 const isMasterAdmin = computed(() => authStore.userData.adminType === 'master');
 const centers = computed(() => centerStore.centers ?? []);
@@ -599,11 +593,6 @@ onMounted(async () => {
 }
 
 /* ── Dialog ──────────────────────────────────────────────────────────────── */
-.dialog-header {
-  border-bottom: 1px solid rgba(var(--v-theme-outline), 0.08);
-  padding-bottom: 16px !important;
-}
-
 /* ── Live preview ────────────────────────────────────────────────────────── */
 .preview-banner {
   position: relative;

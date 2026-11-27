@@ -1,30 +1,15 @@
 <script setup>
-const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
+const modelValue = defineModel({ type: Boolean, required: true });
+const time = defineModel('time', { type: String, default: '' });
+
+defineProps({
   type: {
     type: String,
     required: true,
   },
-  time: {
-    type: String,
-    default: '',
-  },
 });
 
-const emit = defineEmits(['update:modelValue', 'update:time', 'save', 'close']);
-
-const localDialogVisible = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
-
-const localTime = computed({
-  get: () => props.time,
-  set: (value) => emit('update:time', value),
-});
+const emit = defineEmits(['save', 'close']);
 
 const closeTimePicker = () => {
   emit('close');
@@ -37,7 +22,7 @@ const saveTimePicker = () => {
 
 <template>
   <BaseDialog
-    v-model="localDialogVisible"
+    v-model="modelValue"
     persistent
     :title="type === 'startTime' ? 'Heure de début' : 'Heure de fin'"
     :max-width="500"
@@ -45,7 +30,7 @@ const saveTimePicker = () => {
     <p class="text-medium-emphasis text-body-medium mb-4">Sélectionnez l'heure pour cette vacation</p>
     <div class="d-flex justify-center">
       <v-time-picker
-        v-model="localTime"
+        v-model="time"
         color="primary"
         bg-color="transparent"
         format="24hr"

@@ -77,7 +77,7 @@
         </template>
         <template v-else>
           <VersionSelector
-            v-model="dialogOpen"
+            :selection="selectedCampaign"
             :width="400"
             :title="'Campagne ' + campaigns.find((c) => c.index === selectedCampaign?.index)?.index"
             :subtitle="
@@ -121,7 +121,7 @@
                 Terminé
               </v-chip>
             </template>
-            <template #dialog>
+            <template #dialog="{ close }">
               <EntitySelector
                 :items="campaigns"
                 class="flex-grow-1"
@@ -135,7 +135,7 @@
                 @update:model-value="
                   (c) => {
                     selectCampaign(c.index);
-                    dialogOpen = false;
+                    close();
                   }
                 "
               >

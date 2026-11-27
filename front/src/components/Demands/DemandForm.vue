@@ -1,5 +1,5 @@
 <template>
-  <GenericDialog v-model="dialogVisible" :title="dialogTitle" max-width="600px" @close="closeDialog">
+  <GenericDialog v-model="modelValue" :title="dialogTitle" max-width="600px" @close="closeDialog">
     <template #actions> </template>
 
     <template #content>
@@ -235,7 +235,6 @@
     :text="'Êtes-vous sûr de vouloir poster une demande avec 0 point ?'"
     :confirm-text="'Poster quand même'"
     @confirm="confirmSubmit"
-    @update:is-dialog-visible="showConfirmationDialog = $event"
   />
 </template>
 
@@ -244,7 +243,7 @@ import { useDate } from 'vuetify';
 import { toDateKey } from '@/utils/dateKey';
 import { demandService } from '@/services/demandService';
 
-const dialogVisible = defineModel('dialogVisible', { type: Boolean, required: true });
+const modelValue = defineModel({ type: Boolean, required: true });
 
 const props = defineProps({
   dialogMode: { type: String, required: true },
@@ -253,7 +252,7 @@ const props = defineProps({
   selectedShift: { type: Object },
 });
 
-const emit = defineEmits(['onSubmit', 'update:dialogVisible', 'update:date']);
+const emit = defineEmits(['onSubmit', 'update:date']);
 
 const dateUtil = useDate();
 
@@ -399,7 +398,9 @@ const fetchCompatibleSwitches = async () => {
   return demandService.fetchCompatibleSwitches(toDateKey(localDate.value));
 };
 
-const closeDialog = () => emit('update:dialogVisible', false);
+const closeDialog = () => {
+  modelValue.value = false;
+};
 
 const resetForm = () => {
   currentWindow.value = 0;
@@ -466,7 +467,7 @@ watch(acceptedSwitches, (newSwitches, oldSwitches) => {
 });
 
 watch(
-  () => props.dialogVisible,
+  modelValue,
   async (value) => {
     if (value) {
       localDate.value = props.date;

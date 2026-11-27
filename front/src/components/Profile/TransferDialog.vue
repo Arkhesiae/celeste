@@ -1,5 +1,5 @@
 <template>
-  <BaseDialog v-model="localDialogVisible" title="Faire un virement" icon="mdi-transfer" :max-width="500">
+  <BaseDialog v-model="modelValue" title="Faire un virement" icon="mdi-transfer" :max-width="500">
     <v-form @submit.prevent="confirmTransfer">
       <div class="d-flex align-center w-100 flex-column ga-6">
         <div class="d-flex align-center w-100">
@@ -79,19 +79,16 @@ import { useCenterStore } from '@/stores/centerStore.js';
 const pointStore = usePointStore();
 const centerStore = useCenterStore();
 const props = defineProps({
-  dialogVisible: {
-    type: Boolean,
-    required: true,
-  },
   userId: {
     type: String,
     required: true,
   },
 });
 
-const emit = defineEmits(['update:dialogVisible', 'transfer-success']);
+const modelValue = defineModel({ type: Boolean, required: true });
 
-const localDialogVisible = ref(props.dialogVisible);
+const emit = defineEmits(['transfer-success']);
+
 const transferAmount = ref(0);
 const transferRecipient = ref('');
 const isLoading = ref(false);
@@ -103,20 +100,9 @@ const isDelayedTransfer = ref(false);
 const transferDate = ref('');
 const minDate = new Date().toISOString().split('T')[0];
 
-// Synchroniser la variable locale avec la prop
-watch(
-  () => props.dialogVisible,
-  (newValue) => {
-    localDialogVisible.value = newValue;
-    if (newValue) {
-      fetchAvailableUsers();
-    }
-  },
-);
-
-// Émettre les changements de la variable locale vers le parent
-watch(localDialogVisible, (newValue) => {
-  emit('update:dialogVisible', newValue);
+// Les destinataires sont relus à chaque ouverture
+watch(modelValue, (isOpen) => {
+  if (isOpen) fetchAvailableUsers();
 });
 
 const fetchAvailableUsers = async () => {
@@ -182,7 +168,7 @@ const confirmTransfer = async () => {
 };
 
 const closeDialog = () => {
-  localDialogVisible.value = false;
+  modelValue.value = false;
   transferAmount.value = 0;
   transferRecipient.value = '';
   isDelayedTransfer.value = false;

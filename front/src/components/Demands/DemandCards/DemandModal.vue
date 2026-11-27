@@ -1,10 +1,9 @@
 <template>
   <GenericDialog
+    v-model="modelValue"
     title="Demande "
-    :model-value="modelValue"
     max-width="800"
     :show-actions="false"
-    @update:model-value="$emit('update:modelValue', $event)"
   >
     <template #content>
       <!-- Après avoir ouvert une demande liée : retour à celle d'où l'on vient -->
@@ -335,7 +334,6 @@ const rotationStore = useRotationStore();
 const demandStore = useDemandStore();
 
 const emit = defineEmits([
-  'update:modelValue',
   'handle-replacement',
   'handle-switch',
   'withdraw-demand',
@@ -345,15 +343,13 @@ const emit = defineEmits([
 const showUserDetails = ref(false);
 
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    required: true,
-  },
   demand: {
     type: Object,
     default: null,
   },
 });
+
+const modelValue = defineModel({ type: Boolean, required: true });
 
 const getUserById = userStore.getUser;
 
@@ -510,7 +506,7 @@ const backToChild = () => {
 };
 
 watch(
-  () => props.modelValue,
+  modelValue,
   (open) => {
     if (!open) trail.value = [];
   },
@@ -556,7 +552,7 @@ onUnmounted(() => {
 });
 
 watch(
-  () => props.modelValue,
+  modelValue,
   async (newVal) => {
     if (newVal && props.demand && props.demand.isNew) {
       try {

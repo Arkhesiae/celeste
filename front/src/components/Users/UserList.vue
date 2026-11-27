@@ -90,9 +90,8 @@
 
     <!-- User Details Dialog -->
     <UserCardDetails
+      v-model="userDialog"
       :user-id="selectedUser"
-      :dialog-visible="userDialog"
-      @update:dialog-visible="userDialog = $event"
       @make-admin="makeAdmin"
       @remove-admin="removeAdmin"
       @assign-center="openCenterDialog"
@@ -115,9 +114,8 @@
     <!-- 
     Center Assignment Dialog -->
     <AssignCenterDialog
-      :dialog-visible="centerDialog"
+      v-model="centerDialog"
       :user-id="selectedUser"
-      @update:dialog-visible="centerDialog = $event"
       @center-assigned="assignCenter"
     />
   </v-container>
